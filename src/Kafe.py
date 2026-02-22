@@ -5,6 +5,7 @@ from antlr4 import InputStream, CommonTokenStream
 from Kafe_GrammarLexer import Kafe_GrammarLexer
 from Kafe_GrammarParser import Kafe_GrammarParser
 from EvalVisitorPrimitivo import EvalVisitorPrimitivo
+from KafeErrorListener import KafeErrorListener
 
 import globals
 
@@ -31,8 +32,15 @@ def main():
 
     input_stream = InputStream(contenido)
     lexer = Kafe_GrammarLexer(input_stream)
+    lexer.removeErrorListeners()
+    lexer.addErrorListener(KafeErrorListener())
+
     tokens = CommonTokenStream(lexer)
+
     parser = Kafe_GrammarParser(tokens)
+    parser.removeErrorListeners()
+    parser.addErrorListener(KafeErrorListener())
+
     tree = parser.program()
 
     visitor.visit(tree)
