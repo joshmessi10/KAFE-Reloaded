@@ -130,6 +130,15 @@ def functionDecl(self, ctx):
 
                 if act_p != exp_p or act_r != exp_r:
                     raiseSignatureMismatch(ret_type, sig_ret)
+                sig_ret = getattr(result, "signature", None)
+                if sig_ret is None:
+                    raiseSignatureMismatch(ret_type, "")
+
+                act_p, act_r = _parse_signature(sig_ret)
+                exp_p, exp_r = _parse_signature(ret_type)
+
+                if act_p != exp_p or act_r != exp_r:
+                    raiseSignatureMismatch(ret_type, sig_ret)
             else:
                 check_value_type(result, ret_type)
 
@@ -151,10 +160,45 @@ def lambdaExpr(self, ctx):
 
     in_types = [p.typeDecl().getText().replace(" ", "") for p in params]
     
+    
     total    = len(params)
     body     = ctx.expr()
     captured = dict(self.variables) if self.dentro_bloque else None
     outer    = self
+    saved_vars = dict(self.variables)
+    self.variables = dict(captured)
+
+    try:
+        for p in params:
+            pid = p.ID().getText()
+            ptype = p.typeDecl().getText().replace(" ", "")
+
+            if ptype == entero_t:
+                dummy = 0
+            elif ptype == "FLOAT":
+                dummy = 0.0
+            elif ptype == "BOOL":
+                dummy = False
+            elif ptype == "STR":
+                dummy = ""
+            else:
+                dummy = None
+
+            self.variables[pid] = (ptype, dummy)
+
+        inferred = self.visit(body)
+
+        if hasattr(inferred, "signature"):
+            return_type = inferred.signature
+        else:
+            from TypeUtils import obtener_tipo_dato
+            return_type = obtener_tipo_dato(inferred)
+
+    finally:
+        self.variables = saved_vars
+
+    lam_sig  = f"FUNC({','.join(in_types)})=>{return_type}"
+    
     saved_vars = dict(self.variables)
     self.variables = dict(captured) if captured is not None else dict(saved_vars)
 
