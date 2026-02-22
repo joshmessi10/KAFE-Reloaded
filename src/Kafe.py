@@ -3,13 +3,13 @@ import os
 import pathlib
 from antlr4 import InputStream, CommonTokenStream
 from antlr4.error.ErrorListener import ErrorListener
+from antlr4.error.ErrorListener import ErrorListener
 from Kafe_GrammarLexer import Kafe_GrammarLexer
 from Kafe_GrammarParser import Kafe_GrammarParser
 from EvalVisitorPrimitivo import EvalVisitorPrimitivo
-from KafeErrorListener import KafeErrorListener
+from errores import raiseScientificNotationError
 
 import globals
-
 
 class KafeErrorListener(ErrorListener):
     def syntaxError(self, recognizer, offendingSymbol, line, column, msg, e):
@@ -53,10 +53,16 @@ def main():
     lexer.removeErrorListeners()
     lexer.addErrorListener(KafeErrorListener())
 
+    lexer.removeErrorListeners()
+    lexer.addErrorListener(KafeErrorListener())
+
     tokens = CommonTokenStream(lexer)
 
 
     parser = Kafe_GrammarParser(tokens)
+    parser.removeErrorListeners()
+    parser.addErrorListener(KafeErrorListener())
+
     parser.removeErrorListeners()
     parser.addErrorListener(KafeErrorListener())
 
