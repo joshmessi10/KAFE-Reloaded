@@ -6,7 +6,7 @@ from antlr4.error.ErrorListener import ErrorListener
 from Kafe_GrammarLexer import Kafe_GrammarLexer
 from Kafe_GrammarParser import Kafe_GrammarParser
 from EvalVisitorPrimitivo import EvalVisitorPrimitivo
-from errores import raiseScientificNotationError
+from KafeErrorListener import KafeErrorListener
 
 import globals
 
@@ -53,15 +53,10 @@ def main():
     lexer.removeErrorListeners()
     lexer.addErrorListener(KafeErrorListener())
 
-    lexer.removeErrorListeners()
-    lexer.addErrorListener(KafeErrorListener())
-
     tokens = CommonTokenStream(lexer)
 
-    parser = Kafe_GrammarParser(tokens)
-    parser.removeErrorListeners()
-    parser.addErrorListener(KafeErrorListener())
 
+    parser = Kafe_GrammarParser(tokens)
     parser.removeErrorListeners()
     parser.addErrorListener(KafeErrorListener())
 
