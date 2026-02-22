@@ -117,3 +117,8 @@ def raiseSignatureMismatch(expected_signature, obtained_signature, origin=""):
     if origin:
         message = origin + ": " + message
     raise TypeError(message)
+
+def raiseScientificNotationError(line, column, msg):
+    print(f"Scientific Notation Error [Line {line}, Column {column}]: {msg}")
+    import sys
+    sys.exit(1)
