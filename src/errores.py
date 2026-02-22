@@ -117,3 +117,11 @@ def raiseSignatureMismatch(expected_signature, obtained_signature, origin=""):
     if origin:
         message = origin + ": " + message
     raise TypeError(message)
+
+def raiseInvalidEscape(escape_char):
+    message = f"Invalid escape sequence: \\{escape_char}"
+    raise Exception(message)
+
+def raiseIncompleteEscape():
+    message = "Incomplete escape sequence at end of string"
+    raise Exception(message)
