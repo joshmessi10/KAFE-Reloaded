@@ -118,6 +118,11 @@ def raiseSignatureMismatch(expected_signature, obtained_signature, origin=""):
         message = origin + ": " + message
     raise TypeError(message)
 
+def raiseScientificNotationError(line, column, msg):
+    print(f"Scientific Notation Error [Line {line}, Column {column}]: {msg}")
+    import sys
+    sys.exit(1)
+
 def raiseInvalidEscape(escape_char):
     message = f"Invalid escape sequence: \\{escape_char}"
     raise Exception(message)
