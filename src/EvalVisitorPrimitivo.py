@@ -112,7 +112,7 @@ class EvalVisitorPrimitivo(Kafe_GrammarVisitor):
 
     def visitFloatLiteral(self, ctx): return float(ctx.getText())
 
-    def interpretar_escapes(self, raw):
+    def visitInterpretEscapes(self, raw):
         escapes = {'n':'\n','t':'\t','r':'\r','\\':'\\','"':'"',"'" : "'"}
         resultado = []
         it = iter(raw)
@@ -132,7 +132,7 @@ class EvalVisitorPrimitivo(Kafe_GrammarVisitor):
         return ''.join(resultado)
 
     def visitStringLiteral(self, ctx):
-        return self.interpretar_escapes(ctx.getText()[1:-1])
+        return self.visitInterpretEscapes(ctx.getText()[1:-1])
 
     def visitBoolLiteral(self, ctx):
         if ctx.getText() == "False":
