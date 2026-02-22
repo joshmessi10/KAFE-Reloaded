@@ -2,14 +2,25 @@ import sys
 import os
 import pathlib
 from antlr4 import InputStream, CommonTokenStream
+from antlr4.error.ErrorListener import ErrorListener
 from Kafe_GrammarLexer import Kafe_GrammarLexer
 from Kafe_GrammarParser import Kafe_GrammarParser
 from EvalVisitorPrimitivo import EvalVisitorPrimitivo
-from KafeErrorListener import KafeErrorListener
+from errores import raiseScientificNotationError
 
 import globals
 
 
+class KafeErrorListener(ErrorListener):
+    def syntaxError(self, recognizer, offendingSymbol, line, column, msg, e):
+        # Detectamos si el error parece ser de notación científica
+        symbol_text = offendingSymbol.text if offendingSymbol else ""
+        if 'e' in symbol_text.lower() or 'exponent' in msg.lower():
+            raiseScientificNotationError(line, column, msg)
+        else:
+            # Error de sintaxis genérico
+            print(f"Syntax Error [Line {line}, Column {column}]: {msg}", file=sys.stderr)
+            sys.exit(1)
 def main():
     if len(sys.argv) < 2:
         print("Uso: python Kafe.py <archivo.kf>")
@@ -42,9 +53,15 @@ def main():
     lexer.removeErrorListeners()
     lexer.addErrorListener(KafeErrorListener())
 
+    lexer.removeErrorListeners()
+    lexer.addErrorListener(KafeErrorListener())
+
     tokens = CommonTokenStream(lexer)
 
     parser = Kafe_GrammarParser(tokens)
+    parser.removeErrorListeners()
+    parser.addErrorListener(KafeErrorListener())
+
     parser.removeErrorListeners()
     parser.addErrorListener(KafeErrorListener())
 
