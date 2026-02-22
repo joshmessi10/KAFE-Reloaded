@@ -71,7 +71,10 @@ PARDOS_TYPE : 'PARDOS';
 INT         : [0-9]+;
 BOOL        : 'True' | 'False';
 FLOAT       : [0-9]+ '.' [0-9]+;
-STRING      : '"' (~["\\])* '"' | '\'' (~['\\])* '\'';
+STRING
+    : '"' ( ~["\\] | '\\' [ntr\\"'] )* '"'
+    | '\'' ( ~['\\] | '\\' [ntr\\'] )* '\''
+    ;
 
 
 //  Identificadores
