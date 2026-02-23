@@ -35,6 +35,15 @@ def main():
     parser = Kafe_GrammarParser(tokens)
     tree = parser.program()
 
+    if parser.getNumberOfSyntaxErrors() > 0:
+        raise Exception("Syntax Error detected by parser")
+
+    if tokens.LA(1) != -1: 
+        token_name = tokens.LT(1).text
+        line = tokens.LT(1).line
+        column = tokens.LT(1).column
+        raise Exception(f"Syntax Error: Unexpected token '{token_name}' at line {line}:{column}")
+
     visitor.visit(tree)
 
 
