@@ -79,7 +79,7 @@ arg
     ;
 
 lambdaExpr
-    : LPAREN paramDecl RPAREN ARROW expr
+    : LPAREN paramList RPAREN ARROW expr
     ;
 
 returnStmt
