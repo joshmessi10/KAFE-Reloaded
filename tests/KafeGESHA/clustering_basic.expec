@@ -1,0 +1,22 @@
+Epoch 1/20 — Loss (soft k-means): 0.352173
+Epoch 2/20 — Loss (soft k-means): 0.389966
+Epoch 3/20 — Loss (soft k-means): 0.429780
+Epoch 4/20 — Loss (soft k-means): 0.469815
+Epoch 5/20 — Loss (soft k-means): 0.508198
+Epoch 6/20 — Loss (soft k-means): 0.540447
+Epoch 7/20 — Loss (soft k-means): 0.565762
+Epoch 8/20 — Loss (soft k-means): 0.586800
+Epoch 9/20 — Loss (soft k-means): 0.601318
+Epoch 10/20 — Loss (soft k-means): 0.612940
+Epoch 11/20 — Loss (soft k-means): 0.622675
+Epoch 12/20 — Loss (soft k-means): 0.630726
+Epoch 13/20 — Loss (soft k-means): 0.637326
+Epoch 14/20 — Loss (soft k-means): 0.641351
+Epoch 15/20 — Loss (soft k-means): 0.642269
+Epoch 16/20 — Loss (soft k-means): 0.643104
+Epoch 17/20 — Loss (soft k-means): 0.643858
+Epoch 18/20 — Loss (soft k-means): 0.644535
+Epoch 19/20 — Loss (soft k-means): 0.645145
+Epoch 20/20 — Loss (soft k-means): 0.645698
+Cluster probabilities: [0.47312663819802425, 0.5268733618019757]
+Assigned cluster: 1

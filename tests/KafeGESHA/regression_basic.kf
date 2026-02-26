@@ -1,0 +1,19 @@
+import geshaDeep;
+
+-- Simple regression test: y = 2x
+List[List[FLOAT]] X_train = [[1.0], [2.0], [3.0], [4.0]];
+List[FLOAT] y_train = [2.0, 4.0, 6.0, 8.0];
+
+GESHA model = geshaDeep.regression();
+GESHA layer = geshaDeep.create_dense(1, "linear", [1], 0.0, 42);
+model.add(layer);
+
+model.compile("sgd", "mse", []);
+model.fit(X_train, y_train, 50, 1, [], []);
+
+-- Predict
+List[FLOAT] pred1 = model.predict([5.0]);
+show("Prediction for [5.0]: " + str(pred1[0]));
+
+FLOAT prob = model.predict_proba([5.0]);
+show("Predict_proba for [5.0]: " + str(prob));

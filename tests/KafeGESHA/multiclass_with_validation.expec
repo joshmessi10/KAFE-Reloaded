@@ -1,0 +1,11 @@
+Epoch 1/10 — Loss 1.155365 — val_accuracy 0.5000
+Epoch 2/10 — Loss 1.154886 — val_accuracy 0.5000
+Epoch 3/10 — Loss 1.154408 — val_accuracy 0.5000
+Epoch 4/10 — Loss 1.153932 — val_accuracy 0.5000
+Epoch 5/10 — Loss 1.153458 — val_accuracy 0.5000
+Epoch 6/10 — Loss 1.152986 — val_accuracy 0.5000
+Epoch 7/10 — Loss 1.152515 — val_accuracy 0.5000
+Epoch 8/10 — Loss 1.152046 — val_accuracy 0.5000
+Epoch 9/10 — Loss 1.151579 — val_accuracy 0.5000
+Epoch 10/10 — Loss 1.151113 — val_accuracy 0.5000
+Predicted label: 0

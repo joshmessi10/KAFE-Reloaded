@@ -1,0 +1,15 @@
+import geshaDeep;
+
+-- Test predict_label on regression model
+List[List[FLOAT]] X_train = [[1.0], [2.0], [3.0]];
+List[FLOAT] y_train = [2.0, 4.0, 6.0];
+
+GESHA model = geshaDeep.regression();
+GESHA layer = geshaDeep.create_dense(1, "linear", [1], 0.0, 42);
+model.add(layer);
+
+model.compile("sgd", "mse", []);
+model.fit(X_train, y_train, 10, 1, [], []);
+
+-- Try to call predict_label on regression model
+INT label = model.predict_label([5.0]);

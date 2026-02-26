@@ -1,0 +1,18 @@
+Training with SGD:
+Epoch 1/5 — Loss 0.705999
+Epoch 2/5 — Loss 0.704178
+Epoch 3/5 — Loss 0.702381
+Epoch 4/5 — Loss 0.700607
+Epoch 5/5 — Loss 0.698856
+Training with Adam:
+Epoch 1/5 — Loss 0.704416
+Epoch 2/5 — Loss 0.704232
+Epoch 3/5 — Loss 0.704047
+Epoch 4/5 — Loss 0.703863
+Epoch 5/5 — Loss 0.703679
+Training with RMSprop:
+Epoch 1/5 — Loss 0.704416
+Epoch 2/5 — Loss 0.704232
+Epoch 3/5 — Loss 0.704047
+Epoch 4/5 — Loss 0.703863
+Epoch 5/5 — Loss 0.703679

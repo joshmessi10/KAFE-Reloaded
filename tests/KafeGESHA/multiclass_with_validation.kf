@@ -1,0 +1,35 @@
+import geshaDeep;
+
+-- Multiclass classification with validation data
+List[List[FLOAT]] X_train = [
+    [0.0, 0.0],
+    [0.0, 1.0],
+    [1.0, 0.0],
+    [1.0, 1.0],
+    [0.5, 0.5],
+    [0.2, 0.8]
+];
+List[List[INT]] y_train = [
+    [1, 0, 0],
+    [0, 1, 0],
+    [0, 1, 0],
+    [0, 0, 1],
+    [1, 0, 0],
+    [0, 1, 0]
+];
+
+List[List[FLOAT]] X_val = [[0.1, 0.1], [0.9, 0.9]];
+List[List[INT]] y_val = [[1, 0, 0], [0, 0, 1]];
+
+GESHA model = geshaDeep.classification();
+GESHA layer1 = geshaDeep.create_dense(4, "relu", [2], 0.0, 42);
+GESHA layer2 = geshaDeep.create_dense(3, "softmax", [], 0.0, 42);
+model.add(layer1);
+model.add(layer2);
+
+model.compile("adam", "categorical_crossentropy", ["accuracy"]);
+model.fit(X_train, y_train, 10, 2, X_val, y_val);
+
+-- Predict
+INT label = model.predict_label([0.1, 0.1]);
+show("Predicted label: " + str(label));

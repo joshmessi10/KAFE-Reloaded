@@ -1,0 +1,6 @@
+import plot;
+
+-- pie with zero total should raise error
+List[STR] labels = ["A", "B", "C"];
+List[INT] values = [0, 0, 0];
+plot.pie(labels, values);

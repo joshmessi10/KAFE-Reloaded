@@ -1,0 +1,4 @@
+import math;
+
+-- remainder with y = 0 should raise domain error
+show(math.remainder(10, 0));

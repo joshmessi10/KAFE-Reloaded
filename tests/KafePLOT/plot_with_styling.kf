@@ -1,0 +1,16 @@
+import plot;
+
+-- Plot with styling options
+plot.figure();
+plot.title("Styled Graph");
+plot.xlabel("X Axis");
+plot.ylabel("Y Axis");
+plot.grid(True);
+plot.color("blue");
+plot.pointColor("red");
+plot.pointSize(5);
+
+List[INT] x = [1, 2, 3, 4, 5];
+List[INT] y = [2, 4, 6, 8, 10];
+plot.graph(x, y, "both");
+plot.render();

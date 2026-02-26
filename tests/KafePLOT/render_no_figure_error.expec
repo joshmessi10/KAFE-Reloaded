@@ -1,0 +1,1 @@
+Exception: plot: render: No hay ninguna figura activa o no se llamó a graph() antes.

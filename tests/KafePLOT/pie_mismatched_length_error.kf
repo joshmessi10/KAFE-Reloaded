@@ -1,0 +1,6 @@
+import plot;
+
+-- pie with mismatched labels/values lengths should raise error
+List[STR] labels = ["A", "B", "C"];
+List[INT] values = [10, 20];
+plot.pie(labels, values);

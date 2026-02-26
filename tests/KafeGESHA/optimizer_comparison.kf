@@ -1,0 +1,29 @@
+import geshaDeep;
+
+-- Test different optimizers
+List[List[INT]] X = [[0, 0], [0, 1], [1, 0], [1, 1]];
+List[INT] y = [0, 0, 0, 1];
+
+-- SGD
+GESHA model1 = geshaDeep.binary();
+GESHA layer1 = geshaDeep.create_dense(1, "sigmoid", [2], 0.0, 42);
+model1.add(layer1);
+model1.compile("sgd", "binary_crossentropy", []);
+show("Training with SGD:");
+model1.fit(X, y, 5, 1, [], []);
+
+-- Adam
+GESHA model2 = geshaDeep.binary();
+GESHA layer2 = geshaDeep.create_dense(1, "sigmoid", [2], 0.0, 42);
+model2.add(layer2);
+model2.compile("adam", "binary_crossentropy", []);
+show("Training with Adam:");
+model2.fit(X, y, 5, 1, [], []);
+
+-- RMSprop
+GESHA model3 = geshaDeep.binary();
+GESHA layer3 = geshaDeep.create_dense(1, "sigmoid", [2], 0.0, 42);
+model3.add(layer3);
+model3.compile("rmsprop", "binary_crossentropy", []);
+show("Training with RMSprop:");
+model3.fit(X, y, 5, 1, [], []);
