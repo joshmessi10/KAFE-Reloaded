@@ -1,6 +1,6 @@
 import pardos;
 
-PARDOS df = pardos.read_csv("test2.csv");
+PARDOS df = pardos.read_csv("dataframe_float_column.csv");
 
 PARDOS all = df;
 show(all);

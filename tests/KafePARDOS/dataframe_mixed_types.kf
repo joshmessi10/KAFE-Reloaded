@@ -1,6 +1,6 @@
 import pardos;
 
-PARDOS df = pardos.read_csv("test4.csv");
+PARDOS df = pardos.read_csv("dataframe_mixed_types.csv");
 
 PARDOS all = df;
 show(all);

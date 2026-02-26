@@ -1,6 +1,6 @@
 import pardos;
 
-PARDOS df = pardos.read_csv("test8.csv");
+PARDOS df = pardos.read_csv("dataframe_groupby.csv");
 
 PARDOS all = df;
 show(all);
