@@ -27,7 +27,7 @@ def test_valid_programs(programa, entrada, salida_esperada):
     try:
         with open(txt_generado_path) as f:
             txt_generado = f.read()
-            os.remove(txt_generado_path)
+        os.remove(txt_generado_path)
     except FileNotFoundError:
         txt_generado = ""
 

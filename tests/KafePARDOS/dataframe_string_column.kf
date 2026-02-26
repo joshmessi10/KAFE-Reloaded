@@ -1,6 +1,6 @@
 import pardos;
 
-PARDOS df = pardos.read_csv("test3.csv");
+PARDOS df = pardos.read_csv("dataframe_string_column.csv");
 
 PARDOS all = df;
 show(all);

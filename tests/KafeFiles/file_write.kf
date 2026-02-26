@@ -1,2 +1,2 @@
 import files;
-files.write("archivo_test2.txt", "Hola desde KAFE");
+files.write("archivo_file_write.txt", "Hola desde KAFE");

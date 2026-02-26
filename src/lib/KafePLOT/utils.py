@@ -14,6 +14,7 @@ leyenda_pastel = None
 _figura_activa = False
 _series_acumuladas = []
 
+
 def resetear_variables():
     global eje_x_label, eje_y_label, titulo_grafico, mostrar_valores_barras
     global mostrar_grid, color_puntos, color_linea, tamaño_punto, leyenda_pastel
@@ -32,10 +33,11 @@ def resetear_variables():
     _figura_activa = False
     _series_acumuladas = []
 
+
 def guardar_svg(contenido):
     carpeta_destino = os.path.dirname(globals.ruta_programa)
     nombre_svg = os.path.splitext(os.path.basename(globals.ruta_programa))[0] + ".svg"
     ruta_svg = os.path.join(carpeta_destino, nombre_svg)
 
-    with open(ruta_svg, "w") as f:
+    with open(ruta_svg, "w", encoding="utf-8") as f:
         f.write(contenido)

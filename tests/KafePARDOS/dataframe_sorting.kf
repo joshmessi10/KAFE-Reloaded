@@ -1,6 +1,6 @@
 import pardos;
 
-PARDOS df = pardos.read_csv("test6.csv");
+PARDOS df = pardos.read_csv("dataframe_sorting.csv");
 
 PARDOS all = df;
 show(all);
