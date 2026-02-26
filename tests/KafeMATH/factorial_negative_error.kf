@@ -1,0 +1,4 @@
+import math;
+
+-- factorial with negative number should raise error
+show(math.factorial(-5));

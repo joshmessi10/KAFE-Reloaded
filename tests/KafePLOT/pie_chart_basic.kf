@@ -1,0 +1,6 @@
+import plot;
+
+-- Basic pie chart
+List[STR] labels = ["Red", "Blue", "Green"];
+List[INT] values = [30, 50, 20];
+plot.pie(labels, values);

@@ -1,0 +1,4 @@
+import math;
+
+-- log with x <= 0 should raise domain error
+show(math.log(-5));

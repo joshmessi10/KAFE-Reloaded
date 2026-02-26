@@ -1,0 +1,9 @@
+import geshaDeep;
+
+-- Test invalid optimizer
+GESHA model = geshaDeep.binary();
+GESHA layer = geshaDeep.create_dense(1, "sigmoid", [2], 0.0, 42);
+model.add(layer);
+
+-- Try to compile with invalid optimizer
+model.compile("invalid_opt", "binary_crossentropy", []);

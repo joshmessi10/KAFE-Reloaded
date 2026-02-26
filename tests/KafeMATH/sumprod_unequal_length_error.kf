@@ -1,0 +1,6 @@
+import math;
+
+-- sumprod with non-equal length sequences should raise error
+List[INT] p = [1, 2, 3];
+List[INT] q = [4, 5];
+show(math.sumprod(p, q));

@@ -1,0 +1,4 @@
+import math;
+
+-- asin with |x| > 1 should raise domain error
+show(math.asin(1.5));

@@ -1,0 +1,27 @@
+import geshaDeep;
+
+-- Simple clustering test
+List[List[FLOAT]] X_train = [
+    [1.0, 1.0],
+    [1.5, 2.0],
+    [5.0, 8.0],
+    [8.0, 8.0],
+    [1.0, 0.6],
+    [9.0, 11.0]
+];
+
+GESHA model = geshaDeep.clustering();
+GESHA layer1 = geshaDeep.create_dense(4, "relu", [2], 0.0, 42);
+GESHA layer2 = geshaDeep.create_dense(2, "softmax", [], 0.0, 42);
+model.add(layer1);
+model.add(layer2);
+
+model.compile("sgd", "categorical_crossentropy", []);
+model.fit(X_train, [], 20, 1, [], []);
+
+-- Predict cluster for a point
+List[FLOAT] probs = model.predict([1.2, 1.5]);
+show("Cluster probabilities: " + str(probs));
+
+INT cluster = model.predict_label([1.2, 1.5]);
+show("Assigned cluster: " + str(cluster));
