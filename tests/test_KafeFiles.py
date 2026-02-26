@@ -1,12 +1,21 @@
 import subprocess
+import sys
 import pytest
 import os
 from utils import obtener_parametros, get_programs, get_invalid_programs
 
-@pytest.mark.parametrize("programa, entrada, salida_esperada", list(obtener_parametros(get_programs("../tests/KafeFiles"))))
+
+@pytest.mark.parametrize(
+    "programa, entrada, salida_esperada",
+    list(obtener_parametros(get_programs("../tests/KafeFiles"))),
+)
 def test_valid_programs(programa, entrada, salida_esperada):
-    result = subprocess.run(["python", "Kafe.py", programa],
-                            capture_output=True, text=True, input=entrada)
+    result = subprocess.run(
+        [sys.executable, "Kafe.py", programa],
+        capture_output=True,
+        text=True,
+        input=entrada,
+    )
 
     carpeta_destino = os.path.dirname(programa)
     nombre_base = os.path.splitext(os.path.basename(programa))[0]
@@ -28,16 +37,26 @@ def test_valid_programs(programa, entrada, salida_esperada):
     except FileNotFoundError:
         txt_prueba = ""
 
-
-    assert txt_generado == txt_prueba, f"{txt_prueba_path} doesn't match {txt_generado_path}"
+    assert (
+        txt_generado == txt_prueba
+    ), f"{txt_prueba_path} doesn't match {txt_generado_path}"
     assert result.returncode == 0, f"Non-zero exit for {programa}"
     assert result.stdout == salida_esperada, f"Incorrect output for {programa}"
 
 
-@pytest.mark.parametrize("programa, entrada, salida_esperada", list(obtener_parametros(get_invalid_programs("../tests/KafeFiles"))))
+@pytest.mark.parametrize(
+    "programa, entrada, salida_esperada",
+    list(obtener_parametros(get_invalid_programs("../tests/KafeFiles"))),
+)
 def test_invalid_programs(programa, entrada, salida_esperada):
-    result = subprocess.run(["python", "Kafe.py", programa],
-                            capture_output=True, text=True, input=entrada)
+    result = subprocess.run(
+        [sys.executable, "Kafe.py", programa],
+        capture_output=True,
+        text=True,
+        input=entrada,
+    )
 
     assert result.returncode == 1, f"Zero exit for {programa}"
-    assert result.stderr.splitlines()[-1] + '\n' == salida_esperada, f"Incorrect output for {programa}"
+    assert (
+        result.stderr.splitlines()[-1] + "\n" == salida_esperada
+    ), f"Incorrect output for {programa}"
