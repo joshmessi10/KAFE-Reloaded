@@ -2,6 +2,11 @@
 **/__pycache__/
 **/.pytest_cache/
 
+# Virtual environment
+.venv/
+venv/
+env/
+
 # ANTLR4 generated files
 *Lexer.interp
 *Lexer.tokens
