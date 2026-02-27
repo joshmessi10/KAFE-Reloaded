@@ -1,0 +1,6 @@
+-- Test file to demonstrate clean error messages
+
+-- This will cause a division by zero error
+INT x = 10;
+INT y = 0;
+show(x / y);
