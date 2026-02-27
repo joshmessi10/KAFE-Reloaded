@@ -48,7 +48,7 @@ geshaDeep.compile(modelo, "adam", "categorical_crossentropy", []);
 geshaDeep.set_lr(modelo, 0.0005);
 
 
-modelo.fit(datos, y_dummy, 300, 2);
+modelo.fit(datos, y_dummy, 50, 2);
 
 
 List[FLOAT] X0 = [];

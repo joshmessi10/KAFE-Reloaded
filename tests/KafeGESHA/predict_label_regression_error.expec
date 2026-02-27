@@ -1,11 +1,11 @@
-Epoch 1/10 — Loss 13.000000
-Epoch 2/10 — Loss 13.000000
-Epoch 3/10 — Loss 13.000000
-Epoch 4/10 — Loss 13.000000
-Epoch 5/10 — Loss 13.000000
-Epoch 6/10 — Loss 13.000000
-Epoch 7/10 — Loss 13.000000
-Epoch 8/10 — Loss 13.000000
-Epoch 9/10 — Loss 13.000000
-Epoch 10/10 — Loss 13.000000
+Epoch 1/10 — Loss 13.590327
+Epoch 2/10 — Loss 6.606722
+Epoch 3/10 — Loss 3.225989
+Epoch 4/10 — Loss 1.590518
+Epoch 5/10 — Loss 0.800038
+Epoch 6/10 — Loss 0.418374
+Epoch 7/10 — Loss 0.234296
+Epoch 8/10 — Loss 0.145573
+Epoch 9/10 — Loss 0.102773
+Epoch 10/10 — Loss 0.082023
 Exception: model: predict_label() no aplica a modelos de regresión.
