@@ -8,4 +8,4 @@ while (x > 5):
 ;
 
 show(x);
--- y should not exist here, this would cause an error if we tried to access it
+-- y should not exist here
