@@ -1,7 +1,20 @@
 import os
 
 
+def get_kafe_path():
+    """Get the path to Kafe.py relative to the tests directory."""
+    return os.path.join(os.path.dirname(__file__), "..", "src", "Kafe.py")
+
+
+def get_src_dir():
+    """Get the src directory path."""
+    return os.path.join(os.path.dirname(__file__), "..", "src")
+
+
 def get_programs(dir):
+    # Resolve path relative to the tests directory
+    if dir.startswith("../tests/"):
+        dir = os.path.join(os.path.dirname(__file__), dir[len("../tests/") :])
     archivos = []
     for filename in os.listdir(dir):
         if filename.endswith(".kf") and not ("_error" in filename):
@@ -12,6 +25,9 @@ def get_programs(dir):
 
 
 def get_invalid_programs(dir):
+    # Resolve path relative to the tests directory
+    if dir.startswith("../tests/"):
+        dir = os.path.join(os.path.dirname(__file__), dir[len("../tests/") :])
     archivos = []
     for filename in os.listdir(dir):
         if filename.endswith("_error.kf"):

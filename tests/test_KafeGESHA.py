@@ -2,7 +2,15 @@ import subprocess
 import sys
 import os
 import pytest
-from utils import obtener_parametros, get_programs, get_invalid_programs
+from utils import (
+    obtener_parametros,
+    get_programs,
+    get_kafe_path,
+    get_src_dir,
+    get_invalid_programs,
+    get_kafe_path,
+    get_src_dir,
+)
 
 
 @pytest.mark.parametrize(
@@ -11,10 +19,11 @@ from utils import obtener_parametros, get_programs, get_invalid_programs
 )
 def test_valid_programs(programa, entrada, salida_esperada):
     result = subprocess.run(
-        [sys.executable, "Kafe.py", programa],
+        [sys.executable, get_kafe_path(), programa],
         capture_output=True,
         text=True,
         input=entrada,
+        cwd=get_src_dir(),
     )
 
     carpeta_destino = os.path.dirname(programa)
@@ -27,9 +36,14 @@ def test_valid_programs(programa, entrada, salida_esperada):
     try:
         with open(svg_generado_path) as f:
             svg_generado = f.read()
-            os.remove(svg_generado_path)
     except FileNotFoundError:
         svg_generado = ""
+    else:
+        # Try to remove the file, but don't fail if we can't (Windows file locking)
+        try:
+            os.remove(svg_generado_path)
+        except (PermissionError, OSError):
+            pass
 
     try:
         with open(svg_prueba_path) as f:
@@ -50,13 +64,14 @@ def test_valid_programs(programa, entrada, salida_esperada):
 )
 def test_invalid_programs(programa, entrada, salida_esperada):
     result = subprocess.run(
-        [sys.executable, "Kafe.py", programa],
+        [sys.executable, get_kafe_path(), programa],
         capture_output=True,
         text=True,
         input=entrada,
+        cwd=get_src_dir(),
     )
 
     assert result.returncode == 1, f"Zero exit for {programa}"
-    assert (
-        result.stderr.splitlines()[-1] + "\n" == salida_esperada
-    ), f"Incorrect output for {programa}"
+    # Combine stdout and stderr for error checking (training output goes to stdout, error to stderr)
+    combined_output = result.stdout + result.stderr.splitlines()[-1] + "\n"
+    assert combined_output == salida_esperada, f"Incorrect output for {programa}"

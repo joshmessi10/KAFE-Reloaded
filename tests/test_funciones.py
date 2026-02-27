@@ -1,10 +1,13 @@
 import subprocess
 import pytest
 import sys
-from utils import obtener_parametros, get_programs, get_invalid_programs
-
-# Use the current Python interpreter (should be from venv when running pytest from venv)
-PYTHON_EXE = sys.executable
+from utils import (
+    obtener_parametros,
+    get_programs,
+    get_invalid_programs,
+    get_kafe_path,
+    get_src_dir,
+)
 
 
 @pytest.mark.parametrize(
@@ -13,10 +16,11 @@ PYTHON_EXE = sys.executable
 )
 def test_valid_programs(programa, entrada, salida_esperada):
     result = subprocess.run(
-        [PYTHON_EXE, "../src/Kafe.py", programa],
+        [sys.executable, get_kafe_path(), programa],
         capture_output=True,
         text=True,
         input=entrada,
+        cwd=get_src_dir(),
     )
 
     assert result.returncode == 0, f"Non-zero exit for {programa}"
@@ -29,10 +33,11 @@ def test_valid_programs(programa, entrada, salida_esperada):
 )
 def test_invalid_programs(programa, entrada, salida_esperada):
     result = subprocess.run(
-        [PYTHON_EXE, "../src/Kafe.py", programa],
+        [sys.executable, get_kafe_path(), programa],
         capture_output=True,
         text=True,
         input=entrada,
+        cwd=get_src_dir(),
     )
 
     assert result.returncode == 1, f"Zero exit for {programa}"

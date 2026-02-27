@@ -27,10 +27,13 @@ Estudiantes de ciencias de la computacion E inteligencia artificial de la Univer
 
 ## 🛠️ Instalación
 
-### ✅ Requisitos
+### ✅ Requisitos (requirements.txt)
 
 - **Python** `>= 3.10`
 - **Git**
+- **ANTLR 4**
+- **Git**
+- **Pytest**
 
 ### 📥 Instalación
 
@@ -65,14 +68,88 @@ pip install -r requirements.txt
 
 ### 🚀 Ejecutar un programa
 
+Desde el directorio raíz del proyecto:
+
 ```bash
 python src/Kafe.py tests/Algorithms/Fibonacci.kf
+```
+
+O desde cualquier ubicación usando rutas absolutas o relativas:
+
+```bash
+# Ejemplo con ruta relativa
+cd src
+python Kafe.py ../tests/Algorithms/Fibonacci.kf
+
+# Ejemplo con ruta absoluta
+python src/Kafe.py C:/ruta/completa/a/tu/programa.kf
 ```
 
 ### 🧪 Ejecutar tests
 
 ```bash
 pytest tests/
+```
+
+### 🧪 Opción alternativa: Entorno reproducible con **Nix Flake**
+
+Si prefieres evitar instalar dependencias manualmente que recomendamos esta opcion, puedes utilizar nuestro entorno preconfigurado con **Nix Flake**. Este entorno contiene todas las herramientas necesarias para compilar y ejecutar KAFE, incluyendo:
+
+- Python 3.10+
+- ANTLR 4 runtime
+- OpenJDK
+- Git
+- Pytest
+
+#### 🚀 Usar KAFE con Nix
+
+### 🐧 Instalación de Nix en **Linux**
+
+1. Abre tu terminal.
+
+2. Ejecuta el siguiente comando para instalar Nix:
+
+```bash
+curl -L https://nixos.org/nix/install | sh
+```
+
+3.Una vez instalado, reinicia tu terminal o ejecuta:
+
+```bash
+. ~/.nix-profile/etc/profile.d/nix.sh
+```
+
+4. Habilita los flakes:
+
+```bash
+mkdir -p ~/.config/nix
+nano ~/.config/nix/nix.conf
+```
+
+Y dentro del archivo activa lo siguiente :
+
+```bash
+experimental-features = nix-command flakes
+```
+
+### 🍎 Instalación de Nix en macOS (Intel / Apple Silicon)
+
+1. Abre la aplicación Terminal.
+
+2. Ejecuta el siguiente comando:
+
+```bash
+curl -L https://nixos.org/nix/install | sh
+```
+
+3. En Apple Silicon (M1/M2/M3), si encuentras problemas, puedes ejecutar Terminal usando Rosetta o configurar el entorno adecuadamente para tu arquitectura.
+
+4. Activa flakes igual que en Linux
+
+✅ Una vez Nix esté listo, puedes iniciar el entorno de desarrollo con:
+
+```bash
+nix develop
 ```
 
 📺 **Tutorial en Video**

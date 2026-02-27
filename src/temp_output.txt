@@ -1,0 +1,189 @@
+﻿Epoch 1/10 ù Loss 13.590327
+Epoch 2/10 ù Loss 6.606722
+Epoch 3/10 ù Loss 3.225989
+Epoch 4/10 ù Loss 1.590518
+Epoch 5/10 ù Loss 0.800038
+Epoch 6/10 ù Loss 0.418374
+Epoch 7/10 ù Loss 0.234296
+Epoch 8/10 ù Loss 0.145573
+Epoch 9/10 ù Loss 0.102773
+Epoch 10/10 ù Loss 0.082023
+python : Traceback (most recent call last):
+At line:1 char:38
++ ... 'Continue'; python Kafe.py ../tests/KafeGESHA/predict_label_regressio ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Traceback (most recent call last)::String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  File "C:\Users\frank\OneDrive\Desktop\KAFE-Reloaded\src\EvalVisitorPrimitivo.py", line 152, in 
+visitObjectFunctionCall
+    return objectFunctionCall(self.variables[object_name][1], function_name, args)
+  File "C:\Users\frank\OneDrive\Desktop\KAFE-Reloaded\src\componentes_lenguaje\method_calling\funciones.py", 
+line 16, in objectFunctionCall
+    resultado = func(*args)
+  File "C:\Users\frank\OneDrive\Desktop\KAFE-Reloaded\src\lib\KafeGESHA\GeshaDeep.py", line 229, in predict_label
+    raise ValueError("predict_label() no aplica a modelos de regresi≤n.")
+ValueError: predict_label() no aplica a modelos de regresi≤n.
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\frank\OneDrive\Desktop\KAFE-Reloaded\src\Kafe.py", line 42, in <module>
+    main()
+    ~~~~^^
+  File "C:\Users\frank\OneDrive\Desktop\KAFE-Reloaded\src\Kafe.py", line 38, in main
+    visitor.visit(tree)
+    ~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\frank\OneDrive\Desktop\KAFE-Reloaded\.venv\Lib\site-packages\antlr4\tree\Tree.py", line 34, in 
+visit
+    return tree.accept(self)
+           ~~~~~~~~~~~^^^^^^
+  File "C:\Users\frank\OneDrive\Desktop\KAFE-Reloaded\src\Kafe_GrammarParser.py", line 373, in accept
+    return visitor.visitProgram(self)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\frank\OneDrive\Desktop\KAFE-Reloaded\src\Kafe_GrammarVisitor.py", line 14, in visitProgram
+    return self.visitChildren(ctx)
+           ~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\frank\OneDrive\Desktop\KAFE-Reloaded\.venv\Lib\site-packages\antlr4\tree\Tree.py", line 44, in 
+visitChildren
+    childResult = c.accept(self)
+  File "C:\Users\frank\OneDrive\Desktop\KAFE-Reloaded\src\Kafe_GrammarParser.py", line 524, in accept
+    return visitor.visitStmt(self)
+           ~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\frank\OneDrive\Desktop\KAFE-Reloaded\src\Kafe_GrammarVisitor.py", line 24, in visitStmt
+    return self.visitChildren(ctx)
+           ~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\frank\OneDrive\Desktop\KAFE-Reloaded\.venv\Lib\site-packages\antlr4\tree\Tree.py", line 44, in 
+visitChildren
+    childResult = c.accept(self)
+  File "C:\Users\frank\OneDrive\Desktop\KAFE-Reloaded\src\Kafe_GrammarParser.py", line 843, in accept
+    return visitor.visitVarDecl(self)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\frank\OneDrive\Desktop\KAFE-Reloaded\src\EvalVisitorPrimitivo.py", line 37, in visitVarDecl
+    def visitVarDecl(self, ctx): varDecl(self, ctx)
+                                 ~~~~~~~^^^^^^^^^^^
+  File "C:\Users\frank\OneDrive\Desktop\KAFE-Reloaded\src\componentes_lenguaje\base\funciones.py", line 18, in 
+varDecl
+    val = self.visit(ctx.expr())
+  File "C:\Users\frank\OneDrive\Desktop\KAFE-Reloaded\.venv\Lib\site-packages\antlr4\tree\Tree.py", line 34, in 
+visit
+    return tree.accept(self)
+           ~~~~~~~~~~~^^^^^^
+  File "C:\Users\frank\OneDrive\Desktop\KAFE-Reloaded\src\Kafe_GrammarParser.py", line 2362, in accept
+    return visitor.visitExpr(self)
+           ~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\frank\OneDrive\Desktop\KAFE-Reloaded\src\EvalVisitorPrimitivo.py", line 88, in visitExpr
+    def visitExpr(self, ctx): return expr(self, ctx)
+                                     ~~~~^^^^^^^^^^^
+  File "C:\Users\frank\OneDrive\Desktop\KAFE-Reloaded\src\componentes_lenguaje\base\funciones.py", line 52, in 
+expr
+    resultado = self.visitChildren(ctx)
+  File "C:\Users\frank\OneDrive\Desktop\KAFE-Reloaded\.venv\Lib\site-packages\antlr4\tree\Tree.py", line 44, in 
+visitChildren
+    childResult = c.accept(self)
+  File "C:\Users\frank\OneDrive\Desktop\KAFE-Reloaded\src\Kafe_GrammarParser.py", line 2417, in accept
+    return visitor.visitLogicExpr(self)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\frank\OneDrive\Desktop\KAFE-Reloaded\src\EvalVisitorPrimitivo.py", line 92, in visitLogicExpr
+    def visitLogicExpr(self, ctx): return logicExpr(self, ctx)
+                                          ~~~~~~~~~^^^^^^^^^^^
+  File "C:\Users\frank\OneDrive\Desktop\KAFE-Reloaded\src\componentes_lenguaje\base\funciones.py", line 61, in 
+logicExpr
+    result = self.visit(ctx.equalityExpr(0))
+  File "C:\Users\frank\OneDrive\Desktop\KAFE-Reloaded\.venv\Lib\site-packages\antlr4\tree\Tree.py", line 34, in 
+visit
+    return tree.accept(self)
+           ~~~~~~~~~~~^^^^^^
+  File "C:\Users\frank\OneDrive\Desktop\KAFE-Reloaded\src\Kafe_GrammarParser.py", line 2491, in accept
+    return visitor.visitEqualityExpr(self)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\frank\OneDrive\Desktop\KAFE-Reloaded\src\EvalVisitorPrimitivo.py", line 94, in visitEqualityExpr
+    def visitEqualityExpr(self, ctx): return equalityExpr(self, ctx)
+                                             ~~~~~~~~~~~~^^^^^^^^^^^
+  File "C:\Users\frank\OneDrive\Desktop\KAFE-Reloaded\src\componentes_lenguaje\base\funciones.py", line 72, in 
+equalityExpr
+    result = self.visit(ctx.relationalExpr(0))
+  File "C:\Users\frank\OneDrive\Desktop\KAFE-Reloaded\.venv\Lib\site-packages\antlr4\tree\Tree.py", line 34, in 
+visit
+    return tree.accept(self)
+           ~~~~~~~~~~~^^^^^^
+  File "C:\Users\frank\OneDrive\Desktop\KAFE-Reloaded\src\Kafe_GrammarParser.py", line 2577, in accept
+    return visitor.visitRelationalExpr(self)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\frank\OneDrive\Desktop\KAFE-Reloaded\src\EvalVisitorPrimitivo.py", line 96, in 
+visitRelationalExpr
+    def visitRelationalExpr(self, ctx): return relationalExpr(self, ctx)
+                                               ~~~~~~~~~~~~~~^^^^^^^^^^^
+  File "C:\Users\frank\OneDrive\Desktop\KAFE-Reloaded\src\componentes_lenguaje\base\funciones.py", line 83, in 
+relationalExpr
+    result = self.visit(ctx.additiveExpr(0))
+  File "C:\Users\frank\OneDrive\Desktop\KAFE-Reloaded\.venv\Lib\site-packages\antlr4\tree\Tree.py", line 34, in 
+visit
+    return tree.accept(self)
+           ~~~~~~~~~~~^^^^^^
+  File "C:\Users\frank\OneDrive\Desktop\KAFE-Reloaded\src\Kafe_GrammarParser.py", line 2651, in accept
+    return visitor.visitAdditiveExpr(self)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\frank\OneDrive\Desktop\KAFE-Reloaded\src\EvalVisitorPrimitivo.py", line 98, in visitAdditiveExpr
+    def visitAdditiveExpr(self, ctx): return additiveExpr(self, ctx)
+                                             ~~~~~~~~~~~~^^^^^^^^^^^
+  File "C:\Users\frank\OneDrive\Desktop\KAFE-Reloaded\src\componentes_lenguaje\base\funciones.py", line 98, in 
+additiveExpr
+    result = self.visit(ctx.multiplicativeExpr(0))
+  File "C:\Users\frank\OneDrive\Desktop\KAFE-Reloaded\.venv\Lib\site-packages\antlr4\tree\Tree.py", line 34, in 
+visit
+    return tree.accept(self)
+           ~~~~~~~~~~~^^^^^^
+  File "C:\Users\frank\OneDrive\Desktop\KAFE-Reloaded\src\Kafe_GrammarParser.py", line 2731, in accept
+    return visitor.visitMultiplicativeExpr(self)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\frank\OneDrive\Desktop\KAFE-Reloaded\src\EvalVisitorPrimitivo.py", line 100, in 
+visitMultiplicativeExpr
+    def visitMultiplicativeExpr(self, ctx): return multiplicativeExpr(self, ctx)
+                                                   ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^
+  File "C:\Users\frank\OneDrive\Desktop\KAFE-Reloaded\src\componentes_lenguaje\base\funciones.py", line 109, in 
+multiplicativeExpr
+    result = self.visit(ctx.powerExpr(0))
+  File "C:\Users\frank\OneDrive\Desktop\KAFE-Reloaded\.venv\Lib\site-packages\antlr4\tree\Tree.py", line 34, in 
+visit
+    return tree.accept(self)
+           ~~~~~~~~~~~^^^^^^
+  File "C:\Users\frank\OneDrive\Desktop\KAFE-Reloaded\src\Kafe_GrammarParser.py", line 2799, in accept
+    return visitor.visitPowerExpr(self)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\frank\OneDrive\Desktop\KAFE-Reloaded\src\EvalVisitorPrimitivo.py", line 102, in visitPowerExpr
+    def visitPowerExpr(self, ctx): return powerExpr(self, ctx)
+                                          ~~~~~~~~~^^^^^^^^^^^
+  File "C:\Users\frank\OneDrive\Desktop\KAFE-Reloaded\src\componentes_lenguaje\base\funciones.py", line 122, in 
+powerExpr
+    base = self.visit(ctx.unaryExpr(0))
+  File "C:\Users\frank\OneDrive\Desktop\KAFE-Reloaded\.venv\Lib\site-packages\antlr4\tree\Tree.py", line 34, in 
+visit
+    return tree.accept(self)
+           ~~~~~~~~~~~^^^^^^
+  File "C:\Users\frank\OneDrive\Desktop\KAFE-Reloaded\src\Kafe_GrammarParser.py", line 2886, in accept
+    return visitor.visitPrimaryExpresion(self)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\frank\OneDrive\Desktop\KAFE-Reloaded\src\Kafe_GrammarVisitor.py", line 204, in 
+visitPrimaryExpresion
+    return self.visitChildren(ctx)
+           ~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\frank\OneDrive\Desktop\KAFE-Reloaded\.venv\Lib\site-packages\antlr4\tree\Tree.py", line 44, in 
+visitChildren
+    childResult = c.accept(self)
+  File "C:\Users\frank\OneDrive\Desktop\KAFE-Reloaded\src\Kafe_GrammarParser.py", line 2983, in accept
+    return visitor.visitObjectExpr(self)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\frank\OneDrive\Desktop\KAFE-Reloaded\src\Kafe_GrammarVisitor.py", line 214, in visitObjectExpr
+    return self.visitChildren(ctx)
+           ~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\frank\OneDrive\Desktop\KAFE-Reloaded\.venv\Lib\site-packages\antlr4\tree\Tree.py", line 44, in 
+visitChildren
+    childResult = c.accept(self)
+  File "C:\Users\frank\OneDrive\Desktop\KAFE-Reloaded\src\Kafe_GrammarParser.py", line 746, in accept
+    return visitor.visitObjectFunctionCall(self)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\frank\OneDrive\Desktop\KAFE-Reloaded\src\EvalVisitorPrimitivo.py", line 156, in 
+visitObjectFunctionCall
+    raise Exception(f"{object_name}: {str(e)}")
+Exception: model: predict_label() no aplica a modelos de regresi≤n.
