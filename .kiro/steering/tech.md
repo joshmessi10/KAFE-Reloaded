@@ -22,13 +22,51 @@ pytest==9.0.2
 
 ## Build System
 
+### CRITICAL: First-Time Setup
+
+**Before running any KAFE programs, you MUST generate the parser files.** The repository does not include the ANTLR-generated files, so you'll get `ModuleNotFoundError: No module named 'Kafe_GrammarLexer'` if you skip this step.
+
+#### Prerequisites
+
+ANTLR requires Java to run. You have two options:
+
+**Option 1: Use Nix (Recommended)**
+
+```bash
+nix develop
+# Everything is pre-configured, grammar files available or auto-generated
+```
+
+**Option 2: Manual Installation**
+
+1. Install Java JDK (11 or higher):
+   - Download from [Adoptium](https://adoptium.net/) or [Oracle](https://www.oracle.com/java/technologies/downloads/)
+   - Verify: `java -version`
+
+2. Install ANTLR 4.13.2:
+
+   ```bash
+   # Download ANTLR jar
+   curl -O https://www.antlr.org/download/antlr-4.13.2-complete.jar
+
+   # Windows PowerShell: Add to profile
+   function antlr { java -jar C:\path\to\antlr-4.13.2-complete.jar $args }
+
+   # Linux/macOS: Add to ~/.bashrc or ~/.zshrc
+   alias antlr='java -jar /path/to/antlr-4.13.2-complete.jar'
+   ```
+
 ### Grammar Compilation
 
-The project uses ANTLR to generate lexer and parser from grammar files:
+Generate the parser files from grammar:
 
 ```bash
 # From src/ directory
 make antlr
+
+# Or manually:
+cd src
+antlr -no-listener -visitor -Dlanguage=Python3 Kafe_Grammar.g4
 ```
 
 This generates:
@@ -37,6 +75,11 @@ This generates:
 - `Kafe_GrammarParser.py`
 - `Kafe_GrammarVisitor.py`
 - Token files (`.tokens`, `.interp`)
+
+**You must run this after:**
+
+- Fresh clone of the repository
+- Any changes to `Kafe_Grammar.g4` or `Kafe_Lexer.g4`
 
 ### Clean Generated Files
 

@@ -27,44 +27,114 @@ Estudiantes de ciencias de la computacion E inteligencia artificial de la Univer
 
 ## 🛠️ Instalación
 
-### ✅ Requisitos (requirements.txt)
+### ✅ Requisitos
 
 - **Python** `>= 3.10`
 - **Git**
-- **ANTLR 4**
-- **Git**
+- **Java JDK** `>= 11` (requerido para ANTLR)
+- **ANTLR 4.13.2**
 - **Pytest**
 
 ### 📥 Instalación
 
-1. Clona el repositorio:
+#### Opción 1: Instalación Manual (Windows/Linux/macOS)
 
-```bash
-git clone https://github.com/pipe2711/KAFE.git
-cd KAFE
-```
+1. **Instala Java JDK**:
+   - Descarga desde [Oracle](https://www.oracle.com/java/technologies/downloads/)
+   - Verifica la instalación: `java -version`
 
-2. Crea un entorno virtual e instala las dependencias:
+2. **Instala ANTLR 4.13.2**:
 
-```bash
-python -m venv .venv
-```
+   **Windows:**
 
-3. Activa el entorno virtual:
+   a. Descarga el archivo JAR:
 
-```bash
-# Windows
-.venv\Scripts\activate
+   ```bash
+   curl -O https://www.antlr.org/download/antlr-4.13.2-complete.jar
+   ```
 
-# Linux/macOS
-source .venv/bin/activate
-```
+   b. Crea una carpeta para ANTLR (ejemplo: `C:\Users\TuUsuario\.antlr\`) y mueve el JAR ahí
 
-4. Instala las dependencias:
+   c. Crea un archivo `antlr.cmd` en esa misma carpeta con el siguiente contenido:
 
-```bash
-pip install -r requirements.txt
-```
+   ```batch
+   @echo off
+   java -jar C:\Users\TuUsuario\.antlr\antlr-4.13.2-complete.jar %*
+   ```
+
+   (Reemplaza `TuUsuario` con tu nombre de usuario real)
+
+   d. Agrega la carpeta a tu PATH:
+   - Abre "Variables de entorno" (busca en el menú inicio)
+   - En "Variables de usuario", selecciona "Path" y haz clic en "Editar"
+   - Haz clic en "Nuevo" y agrega: `C:\Users\TuUsuario\.antlr`
+   - Haz clic en "OK" en todas las ventanas
+   - **Reinicia tu terminal/PowerShell**
+
+   e. Verifica la instalación:
+
+   ```bash
+   antlr
+   # Deberías ver la ayuda de ANTLR
+   ```
+
+   **Linux/macOS:**
+
+   ```bash
+   # Descarga el archivo JAR
+   curl -O https://www.antlr.org/download/antlr-4.13.2-complete.jar
+
+   # Mueve a una ubicación permanente
+   sudo mkdir -p /usr/local/lib
+   sudo mv antlr-4.13.2-complete.jar /usr/local/lib/
+
+   # Agrega alias a ~/.bashrc o ~/.zshrc
+   echo "alias antlr='java -jar /usr/local/lib/antlr-4.13.2-complete.jar'" >> ~/.bashrc
+
+   # Recarga el perfil
+   source ~/.bashrc
+   ```
+
+3. **Clona el repositorio**:
+
+   ```bash
+   git clone https://github.com/joshmessi10/KAFE-Reloaded.git
+   cd KAFE-Reloaded
+   ```
+
+4. **Crea un entorno virtual**:
+
+   ```bash
+   python -m venv .venv
+   ```
+
+5. **Activa el entorno virtual**:
+
+   ```bash
+   # Windows
+   .venv\Scripts\activate
+
+   # Linux/macOS
+   source .venv/bin/activate
+   ```
+
+6. **Instala las dependencias de Python**:
+
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+7. **⚠️ CRÍTICO: Genera los archivos del parser**:
+
+   ```bash
+   cd src
+   antlr -no-listener -visitor -Dlanguage=Python3 Kafe_Grammar.g4
+   # O con make:
+   # make antlr
+   cd ..
+   ```
+
+   **Sin este paso, obtendrás el error**: `ModuleNotFoundError: No module named 'Kafe_GrammarLexer'`
 
 ### 🚀 Ejecutar un programa
 
@@ -91,15 +161,17 @@ python src/Kafe.py C:/ruta/completa/a/tu/programa.kf
 pytest tests/
 ```
 
-### 🧪 Opción alternativa: Entorno reproducible con **Nix Flake**
+### 🧪 Opción alternativa: Entorno reproducible con **Nix Flake** (Recomendado)
 
-Si prefieres evitar instalar dependencias manualmente que recomendamos esta opcion, puedes utilizar nuestro entorno preconfigurado con **Nix Flake**. Este entorno contiene todas las herramientas necesarias para compilar y ejecutar KAFE, incluyendo:
+Si prefieres evitar instalar dependencias manualmente, puedes utilizar nuestro entorno preconfigurado con **Nix Flake**. Este entorno contiene todas las herramientas necesarias para compilar y ejecutar KAFE, incluyendo:
 
 - Python 3.10+
 - ANTLR 4 runtime
-- OpenJDK
+- OpenJDK (para ANTLR)
 - Git
 - Pytest
+
+**Ventaja**: No necesitas instalar Java ni ANTLR manualmente, todo está preconfigurado.
 
 #### 🚀 Usar KAFE con Nix
 
@@ -151,6 +223,10 @@ curl -L https://nixos.org/nix/install | sh
 ```bash
 nix develop
 ```
+
+Esto te dará acceso a todas las herramientas necesarias. Los archivos del parser se generarán automáticamente o estarán disponibles.
+
+---
 
 📺 **Tutorial en Video**
 
