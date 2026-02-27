@@ -46,4 +46,9 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception as e:
+        # Print only the error message without the full traceback
+        print(f"{type(e).__name__}: {e}", file=sys.stderr)
+        sys.exit(1)
