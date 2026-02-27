@@ -80,5 +80,5 @@ ID          : [a-zA-Z_] [a-zA-Z0-9_]*;
 
 //  Comentarios y espacios en blanco
 LINE_COMMENT  : '--' ~[\r\n]*        -> skip;
-BLOCK_COMMENT : '->' .*? '<-'        -> skip;
+BLOCK_COMMENT : '->' ( BLOCK_COMMENT | ~[<] | '<' ~[-] )* '<-' -> skip;
 WS            : [ \t\r\n]+           -> skip;

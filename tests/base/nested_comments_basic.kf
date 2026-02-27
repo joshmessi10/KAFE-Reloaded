@@ -1,0 +1,10 @@
+->
+->
+Hola
+asdf
+<-
+asdf
+<-
+
+INT x = 123;
+show(x);
