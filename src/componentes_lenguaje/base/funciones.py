@@ -1,10 +1,25 @@
 from lib.KafeGESHA.Gesha import Gesha
 from errores import (
-     raiseVariableAlreadyDefined, raiseVariableNotDefined, raiseVoidAsVariableType,
-     raiseExpectedHomogeneousList, raiseNonIntegerIndex, raiseIndexOutOfBounds, raiseTypeMismatch
+    raiseVariableAlreadyDefined,
+    raiseVariableNotDefined,
+    raiseVoidAsVariableType,
+    raiseExpectedHomogeneousList,
+    raiseNonIntegerIndex,
+    raiseIndexOutOfBounds,
+    raiseTypeMismatch,
 )
-from TypeUtils import  obtener_tipo_dato, entero_t, flotante_t, cadena_t, booleano_t, lista_t, void_t, gesha_t
+from TypeUtils import (
+    obtener_tipo_dato,
+    entero_t,
+    flotante_t,
+    cadena_t,
+    booleano_t,
+    lista_t,
+    void_t,
+    gesha_t,
+)
 from global_utils import esTipoCorrecto, verificarHomogeneidad, asignar_variable
+
 
 def varDecl(self, ctx):
     tipo = ctx.typeDecl().getText()
@@ -17,7 +32,9 @@ def varDecl(self, ctx):
     if ctx.expr():
         val = self.visit(ctx.expr())
 
-    if name in self.variables and not self.dentro_bloque:
+    # Check if variable is already declared in the CURRENT scope only
+    # (allows shadowing variables from outer scopes)
+    if len(self.scope_stack) > 0 and name in self.scope_stack[-1]:
         raiseVariableAlreadyDefined(name)
 
     if val is None:
@@ -35,6 +52,9 @@ def varDecl(self, ctx):
             val = []
 
     asignar_variable(self, name, val, tipo)
+    # Mark variable as declared in current scope
+    self.mark_variable_in_scope(name)
+
 
 def assignStmt(self, ctx):
     id_text = ctx.ID().getText()
@@ -51,86 +71,94 @@ def assignStmt(self, ctx):
 def expr(self, ctx):
     resultado = self.visitChildren(ctx)
 
-    if (type(resultado) == list):
-        if (verificarHomogeneidad(resultado) == False):
+    if type(resultado) == list:
+        if verificarHomogeneidad(resultado) == False:
             raiseExpectedHomogeneousList()
 
     return resultado
+
 
 def logicExpr(self, ctx):
     result = self.visit(ctx.equalityExpr(0))
     for i in range(1, len(ctx.equalityExpr())):
         op = ctx.getChild(2 * i - 1).getText()
         right = self.visit(ctx.equalityExpr(i))
-        if op == '&&':
+        if op == "&&":
             result = result and right
-        elif op == '||':
-                result = result or right
+        elif op == "||":
+            result = result or right
     return result
+
 
 def equalityExpr(self, ctx):
     result = self.visit(ctx.relationalExpr(0))
     for i in range(1, len(ctx.relationalExpr())):
         op = ctx.getChild(2 * i - 1).getText()
         right = self.visit(ctx.relationalExpr(i))
-        if op == '==':
+        if op == "==":
             result = result == right
-        elif op == '!=':
+        elif op == "!=":
             result = result != right
     return result
+
 
 def relationalExpr(self, ctx):
     result = self.visit(ctx.additiveExpr(0))
     for i in range(1, len(ctx.additiveExpr())):
         op = ctx.getChild(2 * i - 1).getText()
         right = self.visit(ctx.additiveExpr(i))
-        if op == '<':
+        if op == "<":
             result = result < right
-        elif op == '<=':
+        elif op == "<=":
             result = result <= right
-        elif op == '>':
+        elif op == ">":
             result = result > right
-        elif op == '>=':
+        elif op == ">=":
             result = result >= right
     return result
+
 
 def additiveExpr(self, ctx):
     result = self.visit(ctx.multiplicativeExpr(0))
     for i in range(1, len(ctx.multiplicativeExpr())):
         op = ctx.getChild(2 * i - 1).getText()
         right = self.visit(ctx.multiplicativeExpr(i))
-        if op == '+':
+        if op == "+":
             result += right
-        elif op == '-':
+        elif op == "-":
             result -= right
     return result
+
 
 def multiplicativeExpr(self, ctx):
     result = self.visit(ctx.powerExpr(0))
     for i in range(1, len(ctx.powerExpr())):
         op = ctx.getChild(2 * i - 1).getText()
         right = self.visit(ctx.powerExpr(i))
-        if op == '*':
+        if op == "*":
             result *= right
-        elif op == '/':
+        elif op == "/":
             result /= right
-        elif op == '%':
+        elif op == "%":
             result %= right
     return result
 
+
 def powerExpr(self, ctx):
-   base = self.visit(ctx.unaryExpr(0))
-   for i in range(1,len(ctx.unaryExpr())):
-       base **= self.visit(ctx.unaryExpr(i))
-   return base
+    base = self.visit(ctx.unaryExpr(0))
+    for i in range(1, len(ctx.unaryExpr())):
+        base **= self.visit(ctx.unaryExpr(i))
+    return base
+
 
 def unaryExpresion(self, ctx):
-   op = ctx.getChild(0).getText()
-   value = self.visit(ctx.unaryExpr())
-   if op == '-':
-      return -value
-   elif op == '!':
-      return not value
+    op = ctx.getChild(0).getText()
+    value = self.visit(ctx.unaryExpr())
+    if op == "-":
+        return -value
+    elif op == "!":
+        return not value
+
 
 def indexingExpr(self, ctx):
     collection = self.visit(ctx.primaryExpr())
@@ -145,6 +173,7 @@ def indexingExpr(self, ctx):
         except IndexError:
             raiseIndexOutOfBounds(index, len(collection))
 
+
 def idExpr(self, ctx):
     id_text = ctx.ID().getText()
 
@@ -152,6 +181,7 @@ def idExpr(self, ctx):
         return self.variables[id_text][1]
 
     raiseVariableNotDefined(id_text)
+
 
 def indexedAssignStmt(self, ctx):
     nombre_lista = ctx.ID().getText()

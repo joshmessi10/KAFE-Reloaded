@@ -1,6 +1,8 @@
 from TypeUtils import obtener_tipo_dato, obtener_tipo_dentro_lista, cadena_t
 from errores import (
-    raiseConditionMustBeBoolean, raiseExceededIterationCount, raiseNonIterableVariable
+    raiseConditionMustBeBoolean,
+    raiseExceededIterationCount,
+    raiseNonIterableVariable,
 )
 from componentes_lenguaje.funciones.utils import ReturnValue
 
@@ -13,20 +15,20 @@ def whileLoop(self, ctx):
     max_iteraciones = 10000
     contador = 0
     while cond:
+        self.push_scope()
         try:
-            self.dentro_bloque = True
             self.visit(ctx.block())
         except ReturnValue as ret:
-            self.dentro_bloque = False
+            self.pop_scope()
             raise ret
+        finally:
+            self.pop_scope()
         contador += 1
         if contador > max_iteraciones:
             raiseExceededIterationCount()
         cond = self.visit(ctx.expr())
         if not isinstance(cond, bool):
             raiseConditionMustBeBoolean("while", cond)
-
-    self.dentro_bloque = False
 
 
 def forLoop(self, ctx):
@@ -43,17 +45,13 @@ def forLoop(self, ctx):
         raiseNonIterableVariable(iterable)
 
     for item in iterable:
+        self.push_scope()
         self.variables[var_name] = (tipo_elemento, item)
+        self.mark_variable_in_scope(var_name)
         try:
-            self.dentro_bloque = True
             self.visit(ctx.block())
         except ReturnValue as ret:
-            self.dentro_bloque = False
-            if var_name in self.variables:
-                del self.variables[var_name]
+            self.pop_scope()
             raise ret
-
-    if var_name in self.variables:
-        del self.variables[var_name]
-
-    self.dentro_bloque = False
+        finally:
+            self.pop_scope()
