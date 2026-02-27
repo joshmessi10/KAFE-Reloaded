@@ -15,3 +15,17 @@ env/
 *Visitor.py
 *.interp
 *.tokens
+
+# Generated output files
+*.svg
+output.txt
+temp_output.txt
+archivo_*.txt
+
+# Coverage reports
+.coverage
+htmlcov/
+*.cover
+
+# OS files
+.DS_Store
