@@ -100,7 +100,7 @@ lenCall: LEN '(' expr ')' ;
 
 // ======================  CONDICIONALES ======================
 ifElseExpr
-    : IF LPAREN expr RPAREN COLON block (SEMI? elifBranch)* (SEMI? ELSE COLON block)?
+    : IF LPAREN expr RPAREN COLON block (elifBranch)* (ELSE COLON block)?
     ;
 elifBranch
     : ELIF LPAREN expr RPAREN COLON block
