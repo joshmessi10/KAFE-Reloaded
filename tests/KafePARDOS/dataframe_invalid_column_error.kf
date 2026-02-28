@@ -1,0 +1,5 @@
+import pardos;
+
+PARDOS df = pardos.read_csv("dataframe_sorting.csv");
+
+show(df.col("z"));

@@ -1,0 +1,56 @@
+Epoch 1/50 — Loss (soft k-means): 0.643236
+Epoch 2/50 — Loss (soft k-means): 0.644244
+Epoch 3/50 — Loss (soft k-means): 0.645233
+Epoch 4/50 — Loss (soft k-means): 0.645948
+Epoch 5/50 — Loss (soft k-means): 0.646643
+Epoch 6/50 — Loss (soft k-means): 0.647327
+Epoch 7/50 — Loss (soft k-means): 0.648001
+Epoch 8/50 — Loss (soft k-means): 0.648665
+Epoch 9/50 — Loss (soft k-means): 0.649319
+Epoch 10/50 — Loss (soft k-means): 0.649963
+Epoch 11/50 — Loss (soft k-means): 0.650597
+Epoch 12/50 — Loss (soft k-means): 0.651222
+Epoch 13/50 — Loss (soft k-means): 0.651838
+Epoch 14/50 — Loss (soft k-means): 0.652444
+Epoch 15/50 — Loss (soft k-means): 0.653041
+Epoch 16/50 — Loss (soft k-means): 0.653629
+Epoch 17/50 — Loss (soft k-means): 0.654208
+Epoch 18/50 — Loss (soft k-means): 0.654778
+Epoch 19/50 — Loss (soft k-means): 0.655339
+Epoch 20/50 — Loss (soft k-means): 0.655892
+Epoch 21/50 — Loss (soft k-means): 0.656436
+Epoch 22/50 — Loss (soft k-means): 0.656972
+Epoch 23/50 — Loss (soft k-means): 0.657500
+Epoch 24/50 — Loss (soft k-means): 0.658019
+Epoch 25/50 — Loss (soft k-means): 0.658405
+Epoch 26/50 — Loss (soft k-means): 0.658645
+Epoch 27/50 — Loss (soft k-means): 0.658882
+Epoch 28/50 — Loss (soft k-means): 0.659118
+Epoch 29/50 — Loss (soft k-means): 0.659353
+Epoch 30/50 — Loss (soft k-means): 0.659586
+Epoch 31/50 — Loss (soft k-means): 0.659817
+Epoch 32/50 — Loss (soft k-means): 0.660047
+Epoch 33/50 — Loss (soft k-means): 0.660275
+Epoch 34/50 — Loss (soft k-means): 0.660502
+Epoch 35/50 — Loss (soft k-means): 0.660727
+Epoch 36/50 — Loss (soft k-means): 0.660951
+Epoch 37/50 — Loss (soft k-means): 0.661173
+Epoch 38/50 — Loss (soft k-means): 0.661393
+Epoch 39/50 — Loss (soft k-means): 0.661612
+Epoch 40/50 — Loss (soft k-means): 0.661830
+Epoch 41/50 — Loss (soft k-means): 0.662046
+Epoch 42/50 — Loss (soft k-means): 0.662261
+Epoch 43/50 — Loss (soft k-means): 0.662474
+Epoch 44/50 — Loss (soft k-means): 0.662686
+Epoch 45/50 — Loss (soft k-means): 0.662896
+Epoch 46/50 — Loss (soft k-means): 0.663105
+Epoch 47/50 — Loss (soft k-means): 0.663312
+Epoch 48/50 — Loss (soft k-means): 0.663518
+Epoch 49/50 — Loss (soft k-means): 0.663723
+Epoch 50/50 — Loss (soft k-means): 0.663926
+[0.5033408620001323, 0.4966591379998677]
+[0.5038887538084889, 0.49611124619151126]
+[0.5193146303589717, 0.48068536964102837]
+[0.5285577320615127, 0.4714422679384873]
+[0.5034942870353429, 0.4965057129646572]
+[0.5306900159713607, 0.46930998402863927]

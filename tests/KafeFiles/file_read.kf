@@ -1,0 +1,3 @@
+import files;
+STR contenido = files.read("input_file_read.txt");
+show(contenido);

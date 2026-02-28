@@ -1,0 +1,19 @@
+import pardos;
+
+PARDOS df = pardos.read_csv("dataframe_mixed_types.csv");
+
+PARDOS all = df;
+show(all);
+
+List[INT] shp = df.shape();
+show(shp);   -- [5, 1]
+
+List[FLOAT] contenido = df.col("value");
+show(contenido);
+
+show(df.dtypes());
+
+show(df.info());
+
+PARDOS desc = df.describe();
+show(desc);

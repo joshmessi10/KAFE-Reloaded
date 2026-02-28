@@ -1,0 +1,6 @@
+import files;
+files.create("archivo_file_append.txt");
+files.write("archivo_file_append.txt","KAFE: como el café, despierta tu código y tus ideas.");
+files.write("archivo_file_append.txt"," Esta es una segunda línea para probar el append.");
+STR mensaje = files.read("archivo_file_append.txt");
+show(mensaje);
