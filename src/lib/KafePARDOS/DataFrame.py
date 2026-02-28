@@ -1,6 +1,14 @@
 import lib.KafeMATH.funciones as math
 from global_utils import check_sig
-from TypeUtils import pardos_t, lista_cadenas_t, matriz_cualquiera_t, entero_t, cadena_t, flotante_t
+from TypeUtils import (
+    pardos_t,
+    lista_cadenas_t,
+    matriz_cualquiera_t,
+    entero_t,
+    cadena_t,
+    flotante_t,
+)
+
 
 class DataFrame:
     @check_sig([3], [pardos_t], [lista_cadenas_t], [matriz_cualquiera_t])
@@ -38,7 +46,7 @@ class DataFrame:
     @check_sig([1], [pardos_t])
     def shape(self):
         n_filas = len(self.data)
-        n_cols  = len(self.columns)
+        n_cols = len(self.columns)
         return [n_filas, n_cols]
 
     @check_sig([2], [pardos_t], [cadena_t])
@@ -88,7 +96,8 @@ class DataFrame:
             vals = [
                 row[j]
                 for row in self.data
-                if not (isinstance(row[j], float) and math.isnan(row[j])) and row[j] is not None
+                if not (isinstance(row[j], float) and math.isnan(row[j]))
+                and row[j] is not None
             ]
             tipo_col = cadena_t
             if len(vals) > 0 and all(isinstance(v, int) for v in vals):
@@ -102,17 +111,17 @@ class DataFrame:
     @check_sig([1], [pardos_t])
     def info(self):
         n_filas = len(self.data)
-        n_cols  = len(self.columns)
+        n_cols = len(self.columns)
 
         cols_str = ", ".join(self.columns)
         dtypes_rows = self.dtypes()
         dtypes_str = ", ".join(f"{c}:{t}" for c, t in dtypes_rows)
 
         filas = [
-            ["Rows",         n_filas],
-            ["Columns",      n_cols],
+            ["Rows", n_filas],
+            ["Columns", n_cols],
             ["Column_Names", cols_str],
-            ["Dtypes",       dtypes_str]
+            ["Dtypes", dtypes_str],
         ]
         return f"{filas}"
 
@@ -129,23 +138,26 @@ class DataFrame:
                 nums = [
                     row[idx]
                     for row in self.data
-                    if isinstance(row[idx], (int, float)) and not (isinstance(row[idx], float) and math.isnan(row[idx]))
+                    if isinstance(row[idx], (int, float))
+                    and not (isinstance(row[idx], float) and math.isnan(row[idx]))
                 ]
                 if not nums:
                     continue
-                count   = len(nums)
-                mean    = sum(nums) / count
-                var     = sum((x - mean) ** 2 for x in nums) / count
-                std     = var ** 0.5
+                count = len(nums)
+                mean = sum(nums) / count
+                var = sum((x - mean) ** 2 for x in nums) / count
+                std = var**0.5
                 min_val = min(nums)
                 max_val = max(nums)
-                filas.append([
-                    col_name,
-                    str(count),
-                    str(mean),
-                    str(std),
-                    str(min_val),
-                    str(max_val)
-                ])
+                filas.append(
+                    [
+                        col_name,
+                        str(count),
+                        str(mean),
+                        str(std),
+                        str(min_val),
+                        str(max_val),
+                    ]
+                )
 
         return DataFrame(cols, filas)

@@ -44,9 +44,10 @@ def functionDecl(self, ctx):
         if p.typeDecl().getText().replace(" ", "") == void_t:
             raiseVoidAsParameterType()
     ret_type = ctx.typeDecl().getText().replace(" ", "")
-    body     = ctx.block()
-    outer    = self
-    total    = len(params_flat)
+    body = ctx.block()
+    outer = self
+    total = len(params_flat)
+    captured = dict(self.variables)  # Capture current scope for nested functions
 
     if param_groups:
         prefix = "".join(f"FUNC({','.join(grp)})=>" for grp in param_groups)
@@ -83,9 +84,11 @@ def functionDecl(self, ctx):
 
             if captured is not None:
                 saved = outer.variables
+                saved_scope_stack = outer.scope_stack
                 outer.variables = dict(captured)
             else:
                 saved = dict(outer.variables)
+                saved_scope_stack = outer.scope_stack[:]
 
             try:
                 for decl, val in zip(params_flat, new_vals):
@@ -95,7 +98,11 @@ def functionDecl(self, ctx):
                     if sig_obt:
                         act_p, act_r = _parse_signature(sig_obt)
                         exp_p, exp_r = _parse_signature(expected)
-                        if not (act_p == exp_p and act_r == exp_r):
+                        # Allow ANY return type to match any expected return type
+                        if not (
+                            act_p == exp_p
+                            and (act_r == exp_r or act_r == "ANY" or exp_r == "ANY")
+                        ):
                             top_act = _get_top_params(sig_obt)
                             top_exp = _get_top_params(expected)
                             if len(top_act) != len(top_exp):
@@ -130,7 +137,10 @@ def functionDecl(self, ctx):
                 act_p, act_r = _parse_signature(sig_ret)
                 exp_p, exp_r = _parse_signature(ret_type)
 
-                if act_p != exp_p or act_r != exp_r:
+                # Allow ANY return type from lambdas to match any expected return type
+                if act_p != exp_p or (
+                    act_r != exp_r and act_r != "ANY" and exp_r != "ANY"
+                ):
                     raiseSignatureMismatch(ret_type, sig_ret)
             else:
                 check_value_type(result, ret_type)
@@ -161,8 +171,6 @@ def lambdaExpr(self, ctx):
     captured = dict(self.variables)
     outer = self
 
-    lam_sig  = f"FUNC({','.join(in_types)})=>{return_type}"
-    
     class LambdaFn:
         def __init__(self, collected=None):
             self.collected = collected[:] if collected else []
@@ -201,7 +209,11 @@ def lambdaExpr(self, ctx):
                     if sig_obt:
                         act_p, act_r = _parse_signature(sig_obt)
                         exp_p, exp_r = _parse_signature(expected)
-                        if not (act_p == exp_p and act_r == exp_r):
+                        # Allow ANY return type to match any expected return type
+                        if not (
+                            act_p == exp_p
+                            and (act_r == exp_r or act_r == "ANY" or exp_r == "ANY")
+                        ):
                             top_act = _get_top_params(sig_obt)
                             top_exp = _get_top_params(expected)
                             if len(top_act) != len(top_exp):
