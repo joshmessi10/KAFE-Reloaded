@@ -6,19 +6,21 @@ from errores import (
     raiseVoidAsParameterType,
     raiseWrongNumberOfArgs,
     raiseFunctionNotDefined,
-    raiseSignatureMismatch
+    raiseSignatureMismatch,
 )
 from global_utils import asignar_variable, check_sig
 from .utils import ReturnValue, check_value_type, _parse_signature
+
 
 def _get_top_params(signature: str) -> list[str]:
     s = signature.replace(" ", "")
     if not s.startswith("FUNC("):
         return []
-    inner = s[len("FUNC("):]
+    inner = s[len("FUNC(") :]
     idx = inner.find(")")
     params = inner[:idx]
     return params.split(",") if params else []
+
 
 def functionDecl(self, ctx):
     name = ctx.ID().getText()
@@ -27,8 +29,8 @@ def functionDecl(self, ctx):
         if tipo_existente == funcion_t:
             raiseFunctionAlreadyDefined(name)
 
-    param_lists  = ctx.getTypedRuleContexts(Kafe_GrammarParser.ParamListContext)
-    params_flat  = []
+    param_lists = ctx.getTypedRuleContexts(Kafe_GrammarParser.ParamListContext)
+    params_flat = []
     param_groups = []
     for pl in param_lists:
         grp = []
@@ -45,7 +47,6 @@ def functionDecl(self, ctx):
     body     = ctx.block()
     outer    = self
     total    = len(params_flat)
-    captured = dict(self.variables) if self.dentro_bloque else None
 
     if param_groups:
         prefix = "".join(f"FUNC({','.join(grp)})=>" for grp in param_groups)
@@ -55,10 +56,10 @@ def functionDecl(self, ctx):
 
     class KafeFunction:
         def __init__(self, collected=None):
-            self.collected      = collected[:] if collected else []
-            self._name          = name
-            self._signature     = full_sig
-            self._total         = total
+            self.collected = collected[:] if collected else []
+            self._name = name
+            self._signature = full_sig
+            self._total = total
 
         @property
         def signature(self):
@@ -68,6 +69,7 @@ def functionDecl(self, ctx):
             raise Exception(
                 f"'{self._name}' expects {self._total} args, got {len(self.collected)}"
             )
+
         __repr__ = __str__
 
         def __call__(self, *args):
@@ -84,7 +86,7 @@ def functionDecl(self, ctx):
                 outer.variables = dict(captured)
             else:
                 saved = dict(outer.variables)
-            saved_dentro = outer.dentro_bloque
+
             try:
                 for decl, val in zip(params_flat, new_vals):
                     expected = decl.typeDecl().getText().replace(" ", "")
@@ -106,19 +108,19 @@ def functionDecl(self, ctx):
 
                     check_value_type(val, expected)
 
-                    pid   = decl.ID().getText()
+                    pid = decl.ID().getText()
                     ptype = funcion_t if expected.startswith("FUNC") else expected
                     asignar_variable(outer, pid, val, ptype)
 
+                outer.scope_stack = [{}]  # Fresh scope stack for function
                 result = None
                 try:
-                    outer.dentro_bloque = True
                     outer.visit(body)
                 except ReturnValue as rv:
                     result = rv.value
             finally:
                 outer.variables = saved
-                outer.dentro_bloque = saved_dentro
+                outer.scope_stack = saved_scope_stack
 
             if ret_type.startswith("FUNC"):
                 sig_ret = getattr(result, "signature", None)
@@ -140,94 +142,32 @@ def functionDecl(self, ctx):
         captured[name] = (funcion_t, func_obj)
     self.variables[name] = (funcion_t, func_obj)
 
+
 def lambdaExpr(self, ctx):
-    params = (ctx.paramList().paramDecl()
-              if hasattr(ctx, "paramList") and ctx.paramList()
-              else [ctx.paramDecl()])
+    params = (
+        ctx.paramList().paramDecl()
+        if hasattr(ctx, "paramList") and ctx.paramList()
+        else [ctx.paramDecl()]
+    )
 
     for p in params:
         if p.typeDecl().getText().replace(" ", "") == void_t:
             raiseVoidAsParameterType()
 
     in_types = [p.typeDecl().getText().replace(" ", "") for p in params]
-       
-    total    = len(params)
-    body     = ctx.expr()
-    captured = dict(self.variables) if self.dentro_bloque else None
-    outer    = self
-    saved_vars = dict(self.variables)
-    self.variables = dict(captured) if captured is not None else dict(saved_vars)
-
-    try:
-        for p in params:
-            pid = p.ID().getText()
-            ptype = p.typeDecl().getText().replace(" ", "")
-
-            if ptype == entero_t:
-                dummy = 0
-            elif ptype == "FLOAT":
-                dummy = 0.0
-            elif ptype == "BOOL":
-                dummy = False
-            elif ptype == "STR":
-                dummy = ""
-            else:
-                dummy = None
-
-            self.variables[pid] = (ptype, dummy)
-
-        inferred = self.visit(body)
-
-        if hasattr(inferred, "signature"):
-            return_type = inferred.signature
-        else:
-            from TypeUtils import obtener_tipo_dato
-            return_type = obtener_tipo_dato(inferred)
-
-    finally:
-        self.variables = saved_vars
-
-    lam_sig  = f"FUNC({','.join(in_types)})=>{return_type}"
-    
-    saved_vars = dict(self.variables)
-    self.variables = dict(captured) if captured is not None else dict(saved_vars)
-
-    try:
-        for p in params:
-            pid = p.ID().getText()
-            ptype = p.typeDecl().getText().replace(" ", "")
-
-            if ptype == entero_t:
-                dummy = 0
-            elif ptype == "FLOAT":
-                dummy = 0.0
-            elif ptype == "BOOL":
-                dummy = False
-            elif ptype == "STR":
-                dummy = ""
-            else:
-                dummy = None
-
-            self.variables[pid] = (ptype, dummy)
-
-        inferred = self.visit(body)
-
-        if hasattr(inferred, "signature"):
-            return_type = inferred.signature
-        else:
-            from TypeUtils import obtener_tipo_dato
-            return_type = obtener_tipo_dato(inferred)
-
-    finally:
-        self.variables = saved_vars
+    lam_sig = f"FUNC({','.join(in_types)})=>ANY"
+    total = len(params)
+    body = ctx.expr()
+    captured = dict(self.variables)
+    outer = self
 
     lam_sig  = f"FUNC({','.join(in_types)})=>{return_type}"
     
     class LambdaFn:
         def __init__(self, collected=None):
-            self.collected  = collected[:] if collected else []
+            self.collected = collected[:] if collected else []
             self._signature = lam_sig
-            self._total     = total
+            self._total = total
 
         @property
         def signature(self):
@@ -237,6 +177,7 @@ def lambdaExpr(self, ctx):
             raise Exception(
                 f"'<lambda>' expects {self._total} args, got {len(self.collected)}"
             )
+
         __repr__ = __str__
 
         def __call__(self, *args):
@@ -249,14 +190,10 @@ def lambdaExpr(self, ctx):
                 return LambdaFn(new_vals)
 
             saved = outer.variables
-            if captured is not None:
-                outer.variables = dict(captured)
-            else:
-                outer.variables = dict(saved)
-            
-            saved_dentro = outer.dentro_bloque
+            saved_scope_stack = outer.scope_stack
+            outer.variables = dict(captured)
+            outer.scope_stack = [{}]  # Fresh scope stack for lambda
             try:
-                outer.dentro_bloque = True
                 for decl, val in zip(params, new_vals):
                     expected = decl.typeDecl().getText().replace(" ", "")
 
@@ -276,36 +213,31 @@ def lambdaExpr(self, ctx):
                                 )
 
                     check_value_type(val, expected)
-                    pid   = decl.ID().getText()
+                    pid = decl.ID().getText()
                     ptype = funcion_t if expected.startswith("FUNC") else expected
                     asignar_variable(outer, pid, val, ptype)
 
                 return outer.visit(body)
             finally:
                 outer.variables = saved
-                outer.dentro_bloque = saved_dentro
+                outer.scope_stack = saved_scope_stack
 
     return LambdaFn()
+
 
 def functionCall(self, ctx):
     name = ctx.ID().getText()
     if name not in self.variables:
         raiseFunctionNotDefined(name)
     func = self.variables[name][1]
-    
-    children = ctx.getTypedRuleContexts(Kafe_GrammarParser.ArgListContext)
-    
-    idx = 0
-    
-    arg_lists = ctx.getTypedRuleContexts(Kafe_GrammarParser.ArgListContext)
-    
     children = list(ctx.getChildren())
     i = 0
     while i < len(children):
         if children[i].getText() == "(":
-            if (i + 1 < len(children) 
-                and isinstance(children[i+1], Kafe_GrammarParser.ArgListContext)):
-                args = [self.visit(a) for a in children[i+1].arg()]
+            if i + 1 < len(children) and isinstance(
+                children[i + 1], Kafe_GrammarParser.ArgListContext
+            ):
+                args = [self.visit(a) for a in children[i + 1].arg()]
                 func = func(*args)
                 i += 3
             else:
@@ -315,21 +247,26 @@ def functionCall(self, ctx):
             i += 1
     return func
 
+
 def returnStmt(self, ctx):
     raise ReturnValue(self.visit(ctx.expr()))
+
 
 @check_sig([2], lista_cualquiera_t, todos_t, func_nombre="append")
 def visitAppendCall(lista, elem):
     lista.append(elem)
+
 
 @check_sig([2], lista_cualquiera_t, todos_t, func_nombre="remove")
 def visitRemoveCall(lista, elem):
     lista.remove(elem)
     return None
 
+
 @check_sig([1], lista_cualquiera_t, func_nombre="len")
 def visitLenCall(lista):
     return len(lista)
+
 
 @check_sig([1, 2, 3], [entero_t], [entero_t], [entero_t], func_nombre="range")
 def rangeExpr(*args):
@@ -353,11 +290,17 @@ def rangeExpr(*args):
     else:
         return list(range(start, stop, step))
 
+
 def showStmt(self, ctx):
     val = self.visit(ctx.expr())
-    if hasattr(val, 'total') and hasattr(val, 'collected') and len(val.collected) < val.total:
+    if (
+        hasattr(val, "total")
+        and hasattr(val, "collected")
+        and len(val.collected) < val.total
+    ):
         raiseWrongNumberOfArgs(val.name, val.total, len(val.collected))
     print(val)
+
 
 def pourStmt(self, ctx):
     return input(self.visit(ctx.expr()))
