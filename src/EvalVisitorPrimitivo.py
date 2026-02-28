@@ -191,6 +191,32 @@ class EvalVisitorPrimitivo(Kafe_GrammarVisitor):
     def visitStringLiteral(self, ctx):
         return ctx.getText()[1:-1]
 
+    def visitIntLiteral(self, ctx): return int(ctx.getText())
+
+    def visitFloatLiteral(self, ctx): return float(ctx.getText())
+
+    def visitInterpretEscapes(self, raw):
+        escapes = {'n':'\n','t':'\t','r':'\r','\\':'\\','"':'"',"'" : "'"}
+        resultado = []
+        it = iter(raw)
+        for c in it:
+            if c == '\\':
+                try:
+                    esc = next(it)
+                    if esc not in escapes:
+                        from errores import raiseInvalidEscape
+                        raiseInvalidEscape(esc)
+                    resultado.append(escapes[esc])
+                except StopIteration:
+                    from errores import raiseIncompleteEscape
+                    raiseIncompleteEscape()
+            else:
+                resultado.append(c)
+        return ''.join(resultado)
+
+    def visitStringLiteral(self, ctx):
+        return self.visitInterpretEscapes(ctx.getText()[1:-1])
+
     def visitBoolLiteral(self, ctx):
         if ctx.getText() == "False":
             return False

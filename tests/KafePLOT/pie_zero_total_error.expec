@@ -1,1 +1,1 @@
-Exception: plot: plot.pie: Total must be mayor que cero
+Exception: plot: plot.pie: Total must be greater than zero

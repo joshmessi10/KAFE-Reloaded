@@ -44,9 +44,9 @@ def functionDecl(self, ctx):
         if p.typeDecl().getText().replace(" ", "") == void_t:
             raiseVoidAsParameterType()
     ret_type = ctx.typeDecl().getText().replace(" ", "")
-    body = ctx.block()
-    outer = self
-    total = len(params_flat)
+    body     = ctx.block()
+    outer    = self
+    total    = len(params_flat)
 
     if param_groups:
         prefix = "".join(f"FUNC({','.join(grp)})=>" for grp in param_groups)
@@ -81,8 +81,12 @@ def functionDecl(self, ctx):
             if ncol < self._total:
                 return KafeFunction(new_vals)
 
-            saved = dict(outer.variables)
-            saved_scope_stack = outer.scope_stack
+            if captured is not None:
+                saved = outer.variables
+                outer.variables = dict(captured)
+            else:
+                saved = dict(outer.variables)
+
             try:
                 for decl, val in zip(params_flat, new_vals):
                     expected = decl.typeDecl().getText().replace(" ", "")
@@ -119,22 +123,24 @@ def functionDecl(self, ctx):
                 outer.scope_stack = saved_scope_stack
 
             if ret_type.startswith("FUNC"):
+                sig_ret = getattr(result, "signature", None)
+                if sig_ret is None:
+                    raiseSignatureMismatch(ret_type, "")
+
+                act_p, act_r = _parse_signature(sig_ret)
                 exp_p, exp_r = _parse_signature(ret_type)
-                if len(exp_p) > 1:
-                    sig_ret = getattr(result, "signature", None)
-                    if sig_ret is None:
-                        raiseSignatureMismatch(ret_type, "")
-                    act_p, act_r = _parse_signature(sig_ret)
-                    if act_p != exp_p or act_r != exp_r:
-                        raiseSignatureMismatch(ret_type, sig_ret)
-                else:
-                    pass
+
+                if act_p != exp_p or act_r != exp_r:
+                    raiseSignatureMismatch(ret_type, sig_ret)
             else:
                 check_value_type(result, ret_type)
 
             return result
 
-    self.variables[name] = (funcion_t, KafeFunction())
+    func_obj = KafeFunction()
+    if captured is not None:
+        captured[name] = (funcion_t, func_obj)
+    self.variables[name] = (funcion_t, func_obj)
 
 
 def lambdaExpr(self, ctx):
@@ -155,6 +161,8 @@ def lambdaExpr(self, ctx):
     captured = dict(self.variables)
     outer = self
 
+    lam_sig  = f"FUNC({','.join(in_types)})=>{return_type}"
+    
     class LambdaFn:
         def __init__(self, collected=None):
             self.collected = collected[:] if collected else []
