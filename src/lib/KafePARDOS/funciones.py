@@ -5,6 +5,7 @@ from .utils import inferir_tipo
 from .DataFrame import DataFrame
 from TypeUtils import cadena_t
 
+
 @check_sig([1], [cadena_t])
 def read_csv(path):
     import globals
