@@ -1,0 +1,9 @@
+<svg width="600" height="600" xmlns="http://www.w3.org/2000/svg">
+<rect width="100%" height="100%" fill="white"/>
+<path d="M 240,300 L 60.0,300.00000000000006 A 180,180 0 0,1 295.6230589874905,128.80982706687215 Z" fill="#f4d03f" stroke="white" stroke-width="1"/>
+<text x="169.4657697249033" y="202.9179606750063" font-size="12" text-anchor="middle" dominant-baseline="middle">30.0%</text>
+<path d="M 240,300 L 295.6230589874905,128.80982706687215 A 180,180 0 0,1 184.37694101250946,471.19017293312766 Z" fill="#82e0aa" stroke="white" stroke-width="1"/>
+<text x="354.12678195541844" y="337.0820393249937" font-size="12" text-anchor="middle" dominant-baseline="middle">50.0%</text>
+<path d="M 240,300 L 184.37694101250946,471.19017293312766 A 180,180 0 0,1 60.0,300.00000000000006 Z" fill="#ec7063" stroke="white" stroke-width="1"/>
+<text x="142.91796067500633" y="370.5342302750968" font-size="12" text-anchor="middle" dominant-baseline="middle">20.0%</text>
+</svg>

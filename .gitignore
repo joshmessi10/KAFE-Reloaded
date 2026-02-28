@@ -17,7 +17,10 @@ env/
 *.tokens
 
 # Generated output files
+# Note: Reference SVG files in tests/ (starting with grafico_) should be committed
+# Only ignore generated SVG files (those without grafico_ prefix in tests directories)
 *.svg
+!tests/**/grafico_*.svg
 output.txt
 temp_output.txt
 archivo_*.txt
