@@ -1,0 +1,22 @@
+-- Test de comentarios anidados
+
+->
+Este es un comentario de nivel 1
+->
+Este es un comentario anidado de nivel 2
+Hola
+asdf
+<-
+Texto después del comentario anidado
+<-
+
+INT x = 42;
+show(x);
+
+->
+Otro comentario
+-> anidado <- 
+más texto
+<-
+
+show(100);

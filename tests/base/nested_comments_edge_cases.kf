@@ -1,0 +1,18 @@
+-- Test edge cases for nested comments
+
+-> Simple comment <-
+INT a = 1;
+
+-> -> Double nested <- <-
+INT b = 2;
+
+-> -> -> Triple nested <- <- <-
+INT c = 3;
+
+-> Text before -> nested <- text after <-
+INT d = 4;
+
+show(a);
+show(b);
+show(c);
+show(d);
