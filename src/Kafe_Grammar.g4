@@ -55,6 +55,7 @@ functionDecl
     : DRIP ID '(' paramList? ')' ARROW typeDecl COLON block
     ;
 
+
 paramList
     : paramDecl (COMMA paramDecl)*
     ;
