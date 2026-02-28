@@ -81,13 +81,13 @@ if __name__ == "__main__":
     except Exception as e:
         error_msg = f"{type(e).__name__}: {e}"
 
-        # Check if this is an "_error.kf" file (invalid program test)
+        # Check if this is a ".error.kf" file (invalid program test)
         # These should exit with code 1 and print to stderr
-        if len(sys.argv) >= 2 and "_error.kf" in sys.argv[1]:
+        if len(sys.argv) >= 2 and ".error.kf" in sys.argv[1]:
             print(error_msg, file=sys.stderr)
             sys.exit(1)
         else:
-            # All other errors (including _err.kf files) print to stdout and exit 0
-            # These are "valid" programs that produce error output
+            # All other programs print errors to stdout and exit 0
+            # (valid programs that happen to produce runtime errors)
             print(error_msg)
             sys.exit(0)
