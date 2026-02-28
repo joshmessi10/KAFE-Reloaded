@@ -1,0 +1,11 @@
+INT x = 10;
+INT sum = 0;
+
+while (x > 0):
+    -- x and sum are from outer scope and should be accessible
+    sum = sum + x;
+    x = x - 1;
+;
+
+show(sum);
+show(x);

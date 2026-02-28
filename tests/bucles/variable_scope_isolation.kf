@@ -1,0 +1,11 @@
+INT x = 10;
+show(x);
+
+while (x > 5):
+    INT y = x * 2;
+    show(y);
+    x = x - 1;
+;
+
+show(x);
+-- y should not exist here
