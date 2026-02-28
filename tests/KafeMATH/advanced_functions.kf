@@ -1,0 +1,44 @@
+import math;
+
+-- Additional constants
+show(math.tau);
+show(math.inf);
+show(math.isnan(math.nan));
+
+-- Exponential variants
+show(math.exp2(3));
+show(math.expm1(0));
+show(math.cbrt(27));
+
+-- Logarithm variants
+show(math.log2(8));
+show(math.log10(100));
+
+-- Float manipulation
+show(math.trunc(3.7));
+show(math.fmod(10, 3));
+show(math.remainder(10, 3));
+show(math.copysign(5, -1));
+
+-- Float testing
+show(math.isclose(1.0, 1.0000001));
+show(math.isinf(math.inf));
+show(math.isfinite(42));
+
+-- Combinatorics
+show(math.comb(5, 2));
+show(math.perm(5, 2));
+
+-- Vector operations
+List[INT] p = [1, 2, 3];
+List[INT] q = [4, 5, 6];
+show(math.dist(p, q));
+show(math.sumprod(p, q));
+show(math.hypot(3, 4));
+
+List[FLOAT] vals = [0.1, 0.2, 0.3];
+show(math.fsum(vals));
+
+-- Special functions
+show(math.erf(0));
+show(math.erfc(0));

@@ -1,0 +1,4 @@
+import math;
+
+-- pow with negative base and non-integer exponent should raise domain error
+show(math.pow(-2, 0.5));

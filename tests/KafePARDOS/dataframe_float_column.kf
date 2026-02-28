@@ -1,0 +1,18 @@
+import pardos;
+
+PARDOS df = pardos.read_csv("dataframe_float_column.csv");
+
+PARDOS all = df;
+show(all);
+
+show(df.shape());
+
+List[FLOAT] valores = df.col("value");
+show(valores);
+
+show(df.dtypes());
+
+show(df.info());
+
+PARDOS desc = df.describe();
+show(desc);

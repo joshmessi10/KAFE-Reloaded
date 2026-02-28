@@ -1,5 +1,0 @@
-import pardos;
-
-PARDOS df = pardos.read_csv("test6.csv");
-
-show(df.col("z"));

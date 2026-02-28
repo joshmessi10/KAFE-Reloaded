@@ -1,0 +1,15 @@
+import pardos;
+
+PARDOS df = pardos.read_csv("dataframe_filtering.csv");
+
+PARDOS all = df;
+show(all);
+
+show(df.shape());
+
+show(df.dtypes());
+
+show(df.info());
+
+PARDOS desc = df.describe();
+show(desc);

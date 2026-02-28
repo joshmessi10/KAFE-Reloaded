@@ -1,0 +1,6 @@
+import pardos;
+
+PARDOS df = pardos.read_csv("dataframe_sorting.csv");
+
+// Trigger a type mismatch by performing arithmetic on column "z".
+show(df.col("z") + 1);

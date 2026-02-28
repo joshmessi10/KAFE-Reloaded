@@ -1,6 +1,0 @@
-import pardos;
-
-PARDOS df = pardos.read_csv("test10.csv");
-
-List[INT] vz = df.col("z");
-show(vz);

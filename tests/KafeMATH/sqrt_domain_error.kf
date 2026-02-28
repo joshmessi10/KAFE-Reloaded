@@ -1,0 +1,4 @@
+import math;
+
+-- sqrt with negative number should raise domain error
+show(math.sqrt(-16));

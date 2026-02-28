@@ -4,7 +4,6 @@ import pathlib
 from antlr4 import InputStream, CommonTokenStream
 from antlr4.error.ErrorListener import ErrorListener
 from Kafe_GrammarLexer import Kafe_GrammarLexer
-from Kafe_GrammarParser import Kafe_GrammarParser
 from EvalVisitorPrimitivo import EvalVisitorPrimitivo
 from errores import raiseScientificNotationError
 
@@ -23,6 +22,8 @@ class KafeErrorListener(ErrorListener):
         if 'e' in symbol_text.lower() or 'exponent' in msg.lower():
             raiseScientificNotationError(line, column, msg)
         else:
+            # Error de sintaxis genérico
+            print(f"Syntax Error [Line {line}, Column {column}]: {msg}", file=sys.stderr)
             # Error genérico de sintaxis
             raise Exception(
                 f"SyntaxError at line {line}:{column} -> {msg}"
@@ -32,17 +33,23 @@ def main():
         print("Uso: python Kafe.py <archivo.kf>")
         sys.exit(1)
 
-    base = pathlib.Path(__file__).parent
     input_file = sys.argv[1]
-    filepath = base / input_file
+
+    # Try to resolve the file path
+    # First, check if it's an absolute path or relative to current directory
+    filepath = pathlib.Path(input_file)
     if not filepath.is_file():
-        print(f"Archivo '{filepath}' no encontrado")
-        sys.exit(1)
+        # If not found, try relative to the script's directory (for backward compatibility)
+        base = pathlib.Path(__file__).parent
+        filepath = base / input_file
+        if not filepath.is_file():
+            print(f"Archivo '{input_file}' no encontrado")
+            sys.exit(1)
 
-    globals.ruta_programa = os.path.abspath(input_file)
-    globals.current_dir = os.path.dirname(globals.ruta_programa)
+    globals.ruta_programa = str(filepath.absolute())
+    globals.current_dir = str(filepath.parent.absolute())
 
-    contenido = filepath.read_text(encoding='utf-8')
+    contenido = filepath.read_text(encoding="utf-8")
 
     visitor = EvalVisitorPrimitivo()
 

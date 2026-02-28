@@ -1,0 +1,4 @@
+import plot;
+
+-- render without calling graph should raise error
+plot.render();

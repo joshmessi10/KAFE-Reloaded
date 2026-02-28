@@ -1,0 +1,4 @@
+import math;
+
+-- fmod with y = 0 should raise domain error
+show(math.fmod(10, 0));

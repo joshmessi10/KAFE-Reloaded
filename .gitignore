@@ -2,6 +2,11 @@
 **/__pycache__/
 **/.pytest_cache/
 
+# Virtual environment
+.venv/
+venv/
+env/
+
 # ANTLR4 generated files
 *Lexer.interp
 *Lexer.tokens
@@ -10,3 +15,17 @@
 *Visitor.py
 *.interp
 *.tokens
+
+# Generated output files
+*.svg
+output.txt
+temp_output.txt
+archivo_*.txt
+
+# Coverage reports
+.coverage
+htmlcov/
+*.cover
+
+# OS files
+.DS_Store

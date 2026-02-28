@@ -1,0 +1,6 @@
+import pardos;
+
+PARDOS df = pardos.read_csv("dataframe_statistics.csv");
+
+List[INT] vz = df.col("z");
+show(vz);
