@@ -130,15 +130,6 @@ def functionDecl(self, ctx):
 
                 if act_p != exp_p or act_r != exp_r:
                     raiseSignatureMismatch(ret_type, sig_ret)
-                sig_ret = getattr(result, "signature", None)
-                if sig_ret is None:
-                    raiseSignatureMismatch(ret_type, "")
-
-                act_p, act_r = _parse_signature(sig_ret)
-                exp_p, exp_r = _parse_signature(ret_type)
-
-                if act_p != exp_p or act_r != exp_r:
-                    raiseSignatureMismatch(ret_type, sig_ret)
             else:
                 check_value_type(result, ret_type)
 
@@ -159,8 +150,7 @@ def lambdaExpr(self, ctx):
             raiseVoidAsParameterType()
 
     in_types = [p.typeDecl().getText().replace(" ", "") for p in params]
-    
-    
+       
     total    = len(params)
     body     = ctx.expr()
     captured = dict(self.variables) if self.dentro_bloque else None
