@@ -24,7 +24,6 @@ class KafeErrorListener(ErrorListener):
         else:
             # Error de sintaxis genérico
             print(f"Syntax Error [Line {line}, Column {column}]: {msg}", file=sys.stderr)
-            sys.exit(1)
             # Error genérico de sintaxis
             raise Exception(
                 f"SyntaxError at line {line}:{column} -> {msg}"
