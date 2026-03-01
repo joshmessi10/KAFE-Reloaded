@@ -156,7 +156,7 @@ def lambdaExpr(self, ctx):
     captured = dict(self.variables) if self.dentro_bloque else None
     outer    = self
     saved_vars = dict(self.variables)
-    self.variables = dict(captured)
+    self.variables = dict(captured) if captured is not None else dict(saved_vars)
 
     try:
         for p in params:
