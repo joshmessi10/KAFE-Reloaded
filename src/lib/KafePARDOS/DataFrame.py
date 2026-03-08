@@ -1,4 +1,6 @@
 import lib.KafeMATH.funciones as math
+import json
+import os
 from global_utils import check_sig
 from TypeUtils import (
     pardos_t,
@@ -161,3 +163,60 @@ class DataFrame:
                 )
 
         return DataFrame(cols, filas)
+
+    @check_sig([2], [pardos_t], [cadena_t])
+    def to_csv(self, path):
+        """
+        Export DataFrame to CSV file.
+        """
+        import globals
+
+        # Resolve path relative to current directory
+        if os.path.isabs(path):
+            real_path = path
+        else:
+            real_path = os.path.join(globals.current_dir, path)
+
+        with open(real_path, "w", encoding="utf-8") as f:
+            # Write header
+            f.write(",".join(self.columns) + "\n")
+
+            # Write data rows
+            for row in self.data:
+                row_str = []
+                for val in row:
+                    if isinstance(val, float) and math.isnan(val):
+                        row_str.append("")
+                    else:
+                        row_str.append(str(val))
+                f.write(",".join(row_str) + "\n")
+
+    @check_sig([2], [pardos_t], [cadena_t])
+    def to_json(self, path):
+        """
+        Export DataFrame to JSON file in 'records' orient.
+        Format: [{"col1": val1, "col2": val2}, ...]
+        """
+        import globals
+
+        # Resolve path relative to current directory
+        if os.path.isabs(path):
+            real_path = path
+        else:
+            real_path = os.path.join(globals.current_dir, path)
+
+        # Build records format
+        records = []
+        for row in self.data:
+            record = {}
+            for i, col_name in enumerate(self.columns):
+                val = row[i]
+                # Handle NaN values
+                if isinstance(val, float) and math.isnan(val):
+                    record[col_name] = None
+                else:
+                    record[col_name] = val
+            records.append(record)
+
+        with open(real_path, "w", encoding="utf-8") as f:
+            json.dump(records, f, indent=2, ensure_ascii=False)
