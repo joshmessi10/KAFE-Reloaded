@@ -7,6 +7,7 @@ from TypeUtils import (
     entero_t,
     cadena_t,
     flotante_t,
+    booleano_t,
 )
 
 
@@ -161,3 +162,74 @@ class DataFrame:
                 )
 
         return DataFrame(cols, filas)
+
+    @check_sig([2], [pardos_t], [cadena_t])
+    def query(self, query_str):
+        import globals
+        visitor = globals.current_visitor
+        if visitor is None:
+            raise Exception("Pardos: No active interpreter visitor found")
+
+        # Lazy import to avoid crashes if antlr4 is missing in some environments
+        try:
+            from antlr4 import InputStream, CommonTokenStream
+            from Kafe_GrammarLexer import Kafe_GrammarLexer
+            from Kafe_GrammarParser import Kafe_GrammarParser
+        except ImportError:
+            raise Exception("Pardos: antlr4-python3-runtime is not installed")
+
+        # Parse the query string as an expression
+        input_stream = InputStream(query_str)
+        lexer = Kafe_GrammarLexer(input_stream)
+        stream = CommonTokenStream(lexer)
+        parser = Kafe_GrammarParser(stream)
+
+        # Use a flag-based error listener — BailErrorStrategy doesn't always work
+        # as expected when exceptions are swallowed inside ANTLR's error recovery
+        from antlr4.error.ErrorListener import ErrorListener
+        class QueryErrorListener(ErrorListener):
+            def __init__(self):
+                super().__init__()
+                self.errors = []
+            def syntaxError(self, recognizer, offendingSymbol, line, column, msg, e):
+                self.errors.append(f"Syntax error in query: {msg}")
+
+        error_listener = QueryErrorListener()
+        parser.removeErrorListeners()
+        parser.addErrorListener(error_listener)
+
+        tree = parser.expr()
+
+        # Now check if there were any errors recorded
+        if error_listener.errors:
+            raise Exception(error_listener.errors[0])
+
+        filtered_data = []
+
+        for row in self.data:
+            # Push a temporary scope with row values
+            visitor.push_scope()
+            try:
+                for i, col_name in enumerate(self.columns):
+                    val = row[i]
+                    if isinstance(val, bool):
+                        tipo = booleano_t
+                    elif isinstance(val, int):
+                        tipo = entero_t
+                    elif isinstance(val, float):
+                        tipo = flotante_t
+                    else:
+                        tipo = cadena_t
+                    
+                    from global_utils import asignar_variable
+                    asignar_variable(visitor, col_name, val, tipo)
+                
+                # Evaluate expression
+                result = visitor.visit(tree)
+                if result is True:
+                    filtered_data.append(row)
+            finally:
+                # Always pop scope
+                visitor.pop_scope()
+
+        return DataFrame(self.columns, filtered_data)

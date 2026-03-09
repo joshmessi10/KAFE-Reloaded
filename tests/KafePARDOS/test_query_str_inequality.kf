@@ -1,0 +1,5 @@
+import pardos;
+PARDOS df = pardos.read_csv("dataframe_basic_operations.csv");
+show("--- String Inequality: nombre != 'Alice' ---");
+PARDOS res = df.query("nombre != 'Alice'");
+show(res);
