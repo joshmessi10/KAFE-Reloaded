@@ -1,0 +1,17 @@
+import pardos;
+
+-- Test fillna() method
+PARDOS df = pardos.read_csv("column_manipulation_test.csv");
+
+show("Original DataFrame:");
+show(df);
+
+-- Fill NaN values with 0
+PARDOS df2 = df.fillna(0);
+show("After filling NaN with 0:");
+show(df2);
+
+-- Fill NaN values with -1
+PARDOS df3 = df.fillna(-1);
+show("After filling NaN with -1:");
+show(df3);
