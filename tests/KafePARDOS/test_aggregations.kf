@@ -1,0 +1,28 @@
+import pardos;
+
+PARDOS df = pardos.read_csv("dataframe_basic_operations.csv");
+
+show("--- value_counts: nombre ---");
+PARDOS vc = df.value_counts("nombre");
+show(vc);
+
+show("--- mean: salario ---");
+show(df.mean("salario"));
+
+show("--- sum: salario ---");
+show(df.sum("salario"));
+
+show("--- agg sum: salario ---");
+show(df.agg("salario", "sum"));
+
+show("--- agg mean: edad ---");
+show(df.agg("edad", "mean"));
+
+show("--- agg min: salario ---");
+show(df.agg("salario", "min"));
+
+show("--- agg max: salario ---");
+show(df.agg("salario", "max"));
+
+show("--- agg count: salario ---");
+show(df.agg("salario", "count"));
