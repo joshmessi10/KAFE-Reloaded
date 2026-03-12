@@ -1,0 +1,12 @@
+import pardos;
+
+PARDOS df1 = pardos.read_csv("merge_data1.csv");
+PARDOS df2 = pardos.read_csv("merge_data2.csv");
+
+show("--- Inner Merge ---");
+PARDOS inner = df1.merge(df2, "user_id", "inner");
+show(inner);
+
+show("--- Left Merge ---");
+PARDOS left = pardos.merge(df1, df2, "user_id", "left");
+show(left);
