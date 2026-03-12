@@ -1,0 +1,4 @@
+--- Inner Merge ---
+"cols: ['user_id', 'item', 'price'], rows: [[1, 'Laptop', 1200], [2, 'Phone', 800]]"
+--- Left Merge ---
+"cols: ['user_id', 'item', 'price'], rows: [[1, 'Laptop', 1200], [2, 'Phone', 800], [3, 'Tablet', None]]"

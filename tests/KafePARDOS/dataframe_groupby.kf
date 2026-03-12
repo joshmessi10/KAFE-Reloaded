@@ -1,24 +1,10 @@
 import pardos;
-
 PARDOS df = pardos.read_csv("dataframe_groupby.csv");
-
-PARDOS all = df;
-show(all);
-
+show(df);
 show(df.shape());
-
-List[STR] fechas = df.col("fecha");
-show(fechas);
-
-List[STR] eventos = df.col("evento");
-show(eventos);
-
-List[INT] ids = df.col("id");
-show(ids);
-
+show(df.col("fecha"));
+show(df.col("evento"));
+show(df.col("id"));
 show(df.dtypes());
-
 show(df.info());
-
-PARDOS desc = df.describe();
-show(desc);
+show(df.describe());

@@ -1,0 +1,17 @@
+import pardos;
+
+PARDOS df1 = pardos.read_csv("concat_data1.csv");
+PARDOS df2 = pardos.read_csv("concat_data2.csv");
+
+show("--- DF1 ---");
+show(df1);
+show("--- DF2 ---");
+show(df2);
+
+PARDOS res = df1.concat(df2);
+show("--- Concat Result ---");
+show(res);
+
+PARDOS res2 = pardos.concat(df1, df2);
+show("--- Top-level Concat Result ---");
+show(res2);
