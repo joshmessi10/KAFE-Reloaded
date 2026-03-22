@@ -32,8 +32,10 @@ def obtener_tipo_dato(dato):
         return nombre_tipos["func"]
     elif isinstance(dato, Gesha):
         return nombre_tipos["gesha"]
-    elif isinstance(dato, DataFrame):
+    elif isinstance(dato, DataFrame) or "GroupBy" in str(type(dato)):
         return nombre_tipos["pardos"]
+    elif dato is None:
+        return "VOID"
     else:
         return nombre_tipos[type(dato)]
 

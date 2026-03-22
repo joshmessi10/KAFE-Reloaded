@@ -17,6 +17,7 @@ from TypeUtils import (
     lista_t,
     void_t,
     gesha_t,
+    pardos_t,
 )
 from global_utils import esTipoCorrecto, verificarHomogeneidad, asignar_variable
 
@@ -48,6 +49,9 @@ def varDecl(self, ctx):
             val = False
         elif tipo == gesha_t:
             val = Gesha()
+        elif tipo == pardos_t:
+            from lib.KafePARDOS.DataFrame import DataFrame
+            val = DataFrame([], [])
         elif tipo.startswith(lista_t):
             val = []
 

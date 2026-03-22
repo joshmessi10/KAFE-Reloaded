@@ -321,3 +321,105 @@ class DataFrame:
                 visitor.pop_scope()
 
         return DataFrame(self.columns, filtered_data)
+
+    @check_sig([2], [pardos_t], [pardos_t])
+    def concat(self, other):
+        """Concatenate two DataFrames vertically."""
+        if self.columns != other.columns:
+            if sorted(self.columns) == sorted(other.columns):
+                # Reorder other's data to match self.columns
+                other_sorted_data = []
+                for row in other.data:
+                    new_row = [row[other.columns.index(col)] for col in self.columns]
+                    other_sorted_data.append(new_row)
+                return DataFrame(self.columns, self.data + other_sorted_data)
+            else:
+                raise Exception("pardos: concat: Columns do not match")
+        return DataFrame(self.columns, self.data + other.data)
+
+    @check_sig([3, 4], [pardos_t], [pardos_t], [cadena_t], [cadena_t])
+    def merge(self, other, on, how='inner'):
+        """Merge two DataFrames on a common column."""
+        if on not in self.columns or on not in other.columns:
+            raise Exception(f"pardos: merge: Column '{on}' not found in both DataFrames")
+        
+        idx_self = self.columns.index(on)
+        idx_other = other.columns.index(on)
+        
+        # Build hash map for the right side
+        right_map = {}
+        for row in other.data:
+            key = row[idx_other]
+            if key not in right_map:
+                right_map[key] = []
+            right_map[key].append(row)
+            
+        new_cols = list(self.columns)
+        other_cols_no_on = [c for c in other.columns if c != on]
+        new_cols.extend(other_cols_no_on)
+        
+        new_data = []
+        for row_left in self.data:
+            key = row_left[idx_self]
+            if key in right_map:
+                for row_right in right_map[key]:
+                    combined = list(row_left)
+                    combined.extend([row_right[other.columns.index(c)] for c in other_cols_no_on])
+                    new_data.append(combined)
+            elif how == 'left':
+                combined = list(row_left)
+                combined.extend([None] * len(other_cols_no_on))
+                new_data.append(combined)
+                
+        return DataFrame(new_cols, new_data)
+
+    @check_sig([2], [pardos_t], [cadena_t])
+    def groupby(self, column_name):
+        """Group the DataFrame by a column."""
+        if column_name not in self.columns:
+            raise Exception(f"pardos: groupby: Column '{column_name}' not found")
+        return GroupBy(self, column_name)
+
+
+class GroupBy:
+    def __init__(self, df, column):
+        self.df = df
+        self.column = column
+        self.idx = df.columns.index(column)
+        self.groups = {}
+        for row in df.data:
+            key = row[self.idx]
+            if key not in self.groups:
+                self.groups[key] = []
+            self.groups[key].append(row)
+
+    def _aggregate(self, func_name):
+        res_cols = [self.column, func_name]
+        res_data = []
+        for key in sorted(self.groups.keys(), key=lambda x: str(x)):
+            # Special case: 'count' should reflect the number of rows in each group,
+            # regardless of column types.
+            if func_name == 'count':
+                group_size = len(self.groups[key])
+                res_data.append([key, group_size])
+                continue
+
+            temp_df = DataFrame(self.df.columns, self.groups[key])
+            # Filter out non-numeric columns for aggregation, except the grouping column
+            numeric_cols = [c for c, t in temp_df.dtypes() if t in (entero_t, flotante_t)]
+
+            # If no numeric columns to aggregate, we can still fall back to any column
+            col_to_agg = numeric_cols[0] if numeric_cols else (self.df.columns[0] if self.df.columns else None)
+            if col_to_agg:
+                agg_val = temp_df.agg(col_to_agg, func_name)
+                res_data.append([key, agg_val])
+        return DataFrame(res_cols, res_data)
+
+    def mean(self):
+        return self._aggregate('mean')
+
+    def sum(self):
+        return self._aggregate('sum')
+
+    def count(self):
+        return self._aggregate('count')
