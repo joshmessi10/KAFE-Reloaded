@@ -1,0 +1,19 @@
+import pardos;
+
+
+PARDOS df = pardos.read_csv("dataframe_basic_operations.csv");
+
+show("--- DataFrame Original ---");
+show(df);
+
+show("--- Filtrado Simple: Edad > 30 ---");
+PARDOS mayores = df.query("edad > 30");
+show(mayores);
+
+show("--- Filtrado Múltiple: Edad > 28 && salario > 50000 ---");
+PARDOS multiple = df.query("edad > 28 && salario > 50000");
+show(multiple);
+
+show("--- Filtrado Múltiple (OR): nombre == 'Bob' || nombre == 'Eva' ---");
+PARDOS o_filtrado = df.query("nombre == 'Bob' || nombre == 'Eva'");
+show(o_filtrado);

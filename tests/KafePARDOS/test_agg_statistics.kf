@@ -1,0 +1,15 @@
+import pardos;
+
+PARDOS df = pardos.read_csv("dataframe_statistics.csv");
+
+show("--- sum z ---");
+show(df.sum("z"));
+
+show("--- mean z ---");
+show(df.mean("z"));
+
+show("--- agg max: z ---");
+show(df.agg("z", "max"));
+
+show("--- agg min: z ---");
+show(df.agg("z", "min"));
