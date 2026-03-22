@@ -397,13 +397,19 @@ class GroupBy:
         res_cols = [self.column, func_name]
         res_data = []
         for key in sorted(self.groups.keys(), key=lambda x: str(x)):
+            # Special case: 'count' should reflect the number of rows in each group,
+            # regardless of column types.
+            if func_name == 'count':
+                group_size = len(self.groups[key])
+                res_data.append([key, group_size])
+                continue
+
             temp_df = DataFrame(self.df.columns, self.groups[key])
-            # Filter out non-numeric columns for aggregation, and always exclude the grouping column
-            numeric_cols = [c for c, t in temp_df.dtypes() if c != self.column and t in (entero_t, flotante_t)]
-            
-            # If no numeric columns to aggregate, we can still count using any column
+            # Filter out non-numeric columns for aggregation, except the grouping column
+            numeric_cols = [c for c, t in temp_df.dtypes() if t in (entero_t, flotante_t)]
+
+            # If no numeric columns to aggregate, we can still fall back to any column
             col_to_agg = numeric_cols[0] if numeric_cols else (self.df.columns[0] if self.df.columns else None)
-            
             if col_to_agg:
                 agg_val = temp_df.agg(col_to_agg, func_name)
                 res_data.append([key, agg_val])
