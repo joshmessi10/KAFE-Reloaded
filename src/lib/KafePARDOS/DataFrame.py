@@ -182,7 +182,7 @@ class DataFrame:
         # Sort by count descending (same default as pandas)
         sorted_items = sorted(counts.items(), key=lambda x: -x[1])
         result_cols = ["value", "count"]
-        result_rows = [[str(k), v] for k, v in sorted_items]
+        result_rows = [[k, v] for k, v in sorted_items]
         return DataFrame(result_cols, result_rows)
 
     @check_sig([2], [pardos_t], [cadena_t])
