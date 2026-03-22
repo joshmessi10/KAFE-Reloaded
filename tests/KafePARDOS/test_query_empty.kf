@@ -1,0 +1,8 @@
+import pardos;
+PARDOS df = pardos.read_csv("dataframe_basic_operations.csv");
+
+show("--- Empty Result: edad > 100 ---");
+
+PARDOS res = df.query("edad > 100");
+
+show(res);

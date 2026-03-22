@@ -1,0 +1,2 @@
+--- String Inequality: nombre != 'Alice' ---
+"cols: ['id', 'edad', 'nombre', 'salario'], rows: [[2, 25, 'Bob', 48000], [3, 40, 'Carol', 72000], [4, 35, 'David', 61000], [5, 28, 'Eva', 53000]]"

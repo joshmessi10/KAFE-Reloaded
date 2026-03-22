@@ -1,0 +1,16 @@
+--- value_counts: nombre ---
+"cols: ['value', 'count'], rows: [['Alice', 1], ['Bob', 1], ['Carol', 1], ['David', 1], ['Eva', 1]]"
+--- mean: salario ---
+57800.0
+--- sum: salario ---
+289000
+--- agg sum: salario ---
+289000
+--- agg mean: edad ---
+31.6
+--- agg min: salario ---
+48000
+--- agg max: salario ---
+72000
+--- agg count: salario ---
+5

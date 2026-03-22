@@ -1,0 +1,15 @@
+import pardos;
+
+PARDOS df = pardos.read_csv("dataframe_export.csv");
+
+show("--- mean: puntaje ---");
+show(df.mean("puntaje"));
+
+show("--- sum: puntaje ---");
+show(df.sum("puntaje"));
+
+show("--- agg max: puntaje ---");
+show(df.agg("puntaje", "max"));
+
+show("--- agg min: puntaje ---");
+show(df.agg("puntaje", "min"));

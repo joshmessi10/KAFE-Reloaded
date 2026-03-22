@@ -1,0 +1,8 @@
+--- DataFrame Original ---
+"cols: ['id', 'edad', 'nombre', 'salario'], rows: [[1, 30, 'Alice', 55000], [2, 25, 'Bob', 48000], [3, 40, 'Carol', 72000], [4, 35, 'David', 61000], [5, 28, 'Eva', 53000]]"
+--- Filtrado Simple: Edad > 30 ---
+"cols: ['id', 'edad', 'nombre', 'salario'], rows: [[3, 40, 'Carol', 72000], [4, 35, 'David', 61000]]"
+--- Filtrado Múltiple: Edad > 28 && salario > 50000 ---
+"cols: ['id', 'edad', 'nombre', 'salario'], rows: [[1, 30, 'Alice', 55000], [3, 40, 'Carol', 72000], [4, 35, 'David', 61000]]"
+--- Filtrado Múltiple (OR): nombre == 'Bob' || nombre == 'Eva' ---
+"cols: ['id', 'edad', 'nombre', 'salario'], rows: [[2, 25, 'Bob', 48000], [5, 28, 'Eva', 53000]]"

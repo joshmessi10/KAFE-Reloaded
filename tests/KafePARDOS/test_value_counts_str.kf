@@ -1,0 +1,11 @@
+import pardos;
+
+PARDOS df = pardos.read_csv("dataframe_string_column.csv");
+
+show("--- value_counts: city ---");
+PARDOS vc = df.value_counts("city");
+show(vc);
+
+show("--- value_counts: name ---");
+PARDOS vc2 = df.value_counts("name");
+show(vc2);
