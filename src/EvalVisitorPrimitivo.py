@@ -62,6 +62,8 @@ class EvalVisitorPrimitivo(Kafe_GrammarVisitor):
             "pardos": [pardos_funcs_module, False],
         }
         self.imported = set()
+        import globals
+        globals.current_visitor = self
 
     def push_scope(self):
         """Enter a new scope (for loops, conditionals)"""

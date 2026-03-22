@@ -4,7 +4,7 @@ from errores import raiseFileNotFound
 from global_utils import check_sig
 from .utils import inferir_tipo
 from .DataFrame import DataFrame
-from TypeUtils import cadena_t
+from TypeUtils import cadena_t, pardos_t
 
 
 @check_sig([1], [cadena_t])
@@ -81,3 +81,11 @@ def read_json(path):
     raise Exception(
         "pardos: read_json: Unsupported JSON format. Expected list of records."
     )
+@check_sig([2], [pardos_t], [pardos_t])
+def concat(df1, df2):
+    return df1.concat(df2)
+
+
+@check_sig([3, 4], [pardos_t], [pardos_t], [cadena_t], [cadena_t])
+def merge(df1, df2, on, how='inner'):
+    return df1.merge(df2, on, how)

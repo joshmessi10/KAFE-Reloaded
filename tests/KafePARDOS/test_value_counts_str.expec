@@ -1,0 +1,4 @@
+--- value_counts: city ---
+"cols: ['value', 'count'], rows: [['Madrid', 1], ['Barcelona', 1], ['Valencia', 1]]"
+--- value_counts: name ---
+"cols: ['value', 'count'], rows: [['Alice', 1], ['Bob', 1], ['Carol', 1]]"

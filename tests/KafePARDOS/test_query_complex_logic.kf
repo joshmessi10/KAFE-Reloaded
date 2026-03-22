@@ -1,0 +1,9 @@
+import pardos;
+
+PARDOS df = pardos.read_csv("dataframe_basic_operations.csv");
+
+show("--- Complex Logic: (Edad < 30 && Salario > 50000) || Edad > 35 ---");
+
+PARDOS res = df.query("(edad < 30 && salario > 50000) || edad > 35");
+
+show(res);

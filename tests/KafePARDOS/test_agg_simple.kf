@@ -1,0 +1,15 @@
+import pardos;
+
+PARDOS df = pardos.read_csv("dataframe_aggregation.csv");
+
+show("--- sum x ---");
+show(df.sum("x"));
+
+show("--- sum y ---");
+show(df.sum("y"));
+
+show("--- mean x ---");
+show(df.mean("x"));
+
+show("--- agg count: x ---");
+show(df.agg("x", "count"));

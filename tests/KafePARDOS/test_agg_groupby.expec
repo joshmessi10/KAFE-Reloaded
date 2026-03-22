@@ -1,0 +1,8 @@
+--- value_counts: evento ---
+"cols: ['value', 'count'], rows: [['Reunión', 1], ['Lanzamiento', 1], ['Entrega', 1], ['Capacitación', 1], ['Conferencia', 1]]"
+--- agg sum: id ---
+15
+--- agg mean: id ---
+3.0
+--- agg count: id ---
+5
