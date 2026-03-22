@@ -1,0 +1,17 @@
+import pardos;
+
+-- Test rename() method
+PARDOS df = pardos.read_csv("column_manipulation_test.csv");
+
+show("Original DataFrame:");
+show(df);
+
+-- Rename 'name' to 'nombre'
+PARDOS df2 = df.rename("name", "nombre");
+show("After renaming 'name' to 'nombre':");
+show(df2);
+
+-- Rename 'age' to 'edad'
+PARDOS df3 = df2.rename("age", "edad");
+show("After renaming 'age' to 'edad':");
+show(df3);

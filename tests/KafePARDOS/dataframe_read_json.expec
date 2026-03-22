@@ -1,0 +1,6 @@
+"cols: ['id', 'name', 'score'], rows: [[1, 'Alice', 95], [2, 'Bob', 87], [3, 'Carol', 92]]"
+[3, 3]
+"cols: ['id', 'name', 'score'], rows: [[1, 'Alice', 95], [2, 'Bob', 87]]"
+['Alice', 'Bob', 'Carol']
+[['id', 'INT'], ['name', 'STR'], ['score', 'INT']]
+[['Rows', 3], ['Columns', 3], ['Column_Names', 'id, name, score'], ['Dtypes', 'id:INT, name:STR, score:INT']]
