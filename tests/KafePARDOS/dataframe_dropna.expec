@@ -1,0 +1,6 @@
+Original DataFrame:
+"cols: ['id', 'name', 'age', 'score'], rows: [[1, 'Alice', 25, 95], [2, 'Bob', 30, nan], [3, 'Carol', 28, 88], [4, 'David', nan, 92], [5, 'Eve', 35, 85]]"
+[5, 4]
+After dropping rows with NaN:
+"cols: ['id', 'name', 'age', 'score'], rows: [[1, 'Alice', 25, 95], [3, 'Carol', 28, 88], [5, 'Eve', 35, 85]]"
+[3, 4]

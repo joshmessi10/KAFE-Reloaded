@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "pandas Docs": {
+      "command": "npx",
+      "args": ["mcp-remote", "https://gitmcp.io/pandas-dev/pandas"],
+      "env": {},
+      "disabled": false,
+      "autoApprove": [
+        "fetch_pandas_documentation",
+        "search_pandas_documentation",
+        "search_pandas_code",
+        "fetch_generic_url_content"
+      ]
+    }
+  }
+}

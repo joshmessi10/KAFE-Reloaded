@@ -1,4 +1,5 @@
 import os
+import json
 from errores import raiseFileNotFound
 from global_utils import check_sig
 from .utils import inferir_tipo
@@ -42,6 +43,44 @@ def read_csv(path):
     return DataFrame(header, data)
 
 
+@check_sig([1], [cadena_t])
+def read_json(path):
+    """
+    Read JSON file and return a DataFrame.
+    Supports 'records' orient: [{"col1": val1, "col2": val2}, ...]
+    """
+    import globals
+
+    if os.path.isfile(path):
+        real_path = path
+    else:
+        candidate = os.path.join(globals.current_dir, path)
+        if os.path.isfile(candidate):
+            real_path = candidate
+        else:
+            raiseFileNotFound(path, globals.current_dir)
+
+    with open(real_path, encoding="utf-8") as f:
+        json_data = json.load(f)
+
+    # Handle empty data
+    if not json_data:
+        return DataFrame([], [])
+
+    # Support records format: list of dicts
+    if isinstance(json_data, list) and len(json_data) > 0:
+        if isinstance(json_data[0], dict):
+            # Extract column names from first record
+            columns = list(json_data[0].keys())
+            data = []
+            for record in json_data:
+                row = [inferir_tipo(str(record.get(col, ""))) for col in columns]
+                data.append(row)
+            return DataFrame(columns, data)
+
+    raise Exception(
+        "pardos: read_json: Unsupported JSON format. Expected list of records."
+    )
 @check_sig([2], [pardos_t], [pardos_t])
 def concat(df1, df2):
     return df1.concat(df2)
