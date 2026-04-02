@@ -8,7 +8,7 @@ class LinearRegression:
 
     @check_sig([3], vector_numeros_t, vector_numeros_t, is_method=True)
     def train(self, x, y):
-        # Simple Linear Regression: y = mx + b
+    
         n = len(x)
         if n == 0 or len(y) != n:
             raise Exception("LinearRegression: Input lengths must match and be > 0")
