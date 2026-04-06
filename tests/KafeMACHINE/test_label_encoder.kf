@@ -1,0 +1,27 @@
+import machine;
+
+PARDOS label_enc = machine.label_encoder();
+
+List[STR] labels = ["cat", "dog", "bird", "cat", "bird"];
+show("Original labels: ");
+show(labels);
+
+label_enc.fit(labels);
+show("Classes: ");
+show(label_enc.classes_);
+
+List[INT] encoded = label_enc.transform(labels);
+show("Encoded: ");
+show(encoded);
+
+List[STR] decoded = label_enc.inverse_transform(encoded);
+show("Decoded (from encoded): ");
+show(decoded);
+
+-- Test fit_transform
+PARDOS label_enc2 = machine.label_encoder();
+List[INT] encoded2 = label_enc2.fit_transform(["red", "green", "blue", "red"]);
+show("Encoded2: ");
+show(encoded2);
+show("Classes2: ");
+show(label_enc2.classes_);
