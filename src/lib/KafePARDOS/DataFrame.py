@@ -251,6 +251,24 @@ class DataFrame:
         elif func_name == "max":
             return max(nums)
 
+    @check_sig([1, 2], [pardos_t], [entero_t])
+    def round(self, *args):
+        """Round all floating-point numbers in the DataFrame to n decimal places."""
+        decimals = 4
+        if len(args) == 1:
+            decimals = args[0]
+        
+        rounded_data = []
+        for row in self.data:
+            new_row = []
+            for val in row:
+                if isinstance(val, float) and not math.isnan(val):
+                    new_row.append(math.math_round(val, decimals))
+                else:
+                    new_row.append(val)
+            rounded_data.append(new_row)
+        return DataFrame(self.columns, rounded_data)
+
     @check_sig([2], [pardos_t], [cadena_t])
     def query(self, query_str):
         import globals
