@@ -1,0 +1,26 @@
+import pardos;
+import machine;
+
+-- Create a sample DataFrame
+List[STR] cols = ["color", "size", "label"];
+List[List[STR]] df_data = [
+    ["red", "S", "no"],
+    ["blue", "M", "yes"],
+    ["green", "L", "yes"],
+    ["red", "M", "no"]
+];
+PARDOS df = pardos.DataFrame(cols, df_data);
+show("Original DataFrame:");
+show(df);
+
+-- One-Hot Encoding
+PARDOS ohe = machine.one_hot_encoder();
+PARDOS encoded_df = ohe.fit_transform(df, ["color"]);
+show("Encoded DataFrame (color):");
+show(encoded_df);
+
+-- One-Hot Encoding multiple columns
+PARDOS ohe2 = machine.one_hot_encoder();
+PARDOS encoded_df2 = ohe2.fit_transform(df, ["color", "size"]);
+show("Encoded DataFrame (color and size):");
+show(encoded_df2);

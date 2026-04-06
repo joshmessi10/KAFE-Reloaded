@@ -27,6 +27,9 @@ def obtener_tipo_dato(dato):
     from lib.KafePARDOS.DataFrame import DataFrame
     from lib.KafeGESHA.Gesha import Gesha
     from lib.KafeMACHINE.LinearRegression import LinearRegression
+    from lib.KafeMACHINE.LabelEncoder import LabelEncoder
+    from lib.KafeMACHINE.OneHotEncoder import OneHotEncoder
+    from lib.KafeMACHINE.PCA import PCA
     if type(dato) is list:
         return obtener_tipo_lista(dato)
     elif callable(dato):
@@ -35,8 +38,8 @@ def obtener_tipo_dato(dato):
         return nombre_tipos["gesha"]
     elif isinstance(dato, DataFrame):
         return nombre_tipos["pardos"]
-    elif isinstance(dato, LinearRegression):
-        return nombre_tipos["machine"]
+    elif isinstance(dato, (LinearRegression, LabelEncoder, OneHotEncoder, PCA)):
+        return nombre_tipos["pardos"] # WORKAROUND: Use PARDOS instead of MACHINE
     else:
         return nombre_tipos[type(dato)]
 
