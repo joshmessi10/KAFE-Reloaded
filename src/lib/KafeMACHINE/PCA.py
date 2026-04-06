@@ -149,5 +149,20 @@ class PCA:
         """
         return self.fit(data).transform(data)
 
+    def round(self, decimals=4):
+        """Round the learned components, means, and explained variance."""
+        import lib.KafeMATH.funciones as math
+        
+        if self.mean_:
+            self.mean_ = [math.math_round(x, decimals) for x in self.mean_]
+        
+        if self.explained_variance_:
+            self.explained_variance_ = [math.math_round(x, decimals) for x in self.explained_variance_]
+        
+        if self.components_:
+            self.components_ = [[math.math_round(x, decimals) for x in row] for row in self.components_]
+            
+        return self
+
     def __repr__(self):
         return f"PCA(n_components={self.n_components}, explained_variance={self.explained_variance_})"

@@ -20,6 +20,9 @@ show(df);
 PARDOS pca_model = machine.pca(2);
 pca_model.fit(df);
 
+-- Apply rounding for test stability
+pca_model.round(4);
+
 show("Means: ");
 show(pca_model.mean_);
 show("Explained Variance: ");
@@ -28,5 +31,6 @@ show("Components: ");
 show(pca_model.components_);
 
 PARDOS reduced_df = pca_model.transform(df);
+-- Rounding DataFrame for test stability
 show("Reduced 2D Data:");
-show(reduced_df);
+show(reduced_df.round(4));
