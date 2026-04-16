@@ -4,6 +4,7 @@ from .LinearRegression import LinearRegression
 from .LabelEncoder import LabelEncoder
 from .OneHotEncoder import OneHotEncoder
 from .PCA import PCA
+from .StandardScaler import StandardScaler
 
 @check_sig([0], [])
 def linear_regression():
@@ -32,3 +33,7 @@ def pca(n_components):
     Crea una instancia de PCA con n_components especificados.
     """
     return PCA(n_components)
+
+@check_sig([0], [])
+def standard_scaler():
+    return StandardScaler()
