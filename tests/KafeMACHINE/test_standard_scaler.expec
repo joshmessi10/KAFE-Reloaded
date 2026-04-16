@@ -1,0 +1,10 @@
+mean_:
+[3.0, 6.0]
+scale_:
+[1.0, 2.0]
+Transformed:
+[[-1.0, -1.0], [1.0, 1.0]]
+Inverse transformed:
+[[2.0, 4.0], [4.0, 8.0]]
+Scaled DataFrame:
+"cols: ['a', 'b'], rows: [[-1.0, -1.0], [1.0, 1.0]]"
