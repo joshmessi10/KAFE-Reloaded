@@ -31,6 +31,7 @@ def obtener_tipo_dato(dato):
     from lib.KafeMACHINE.OneHotEncoder import OneHotEncoder
     from lib.KafeMACHINE.PCA import PCA
     from lib.KafeMACHINE.StandardScaler import StandardScaler
+
     if type(dato) is list:
         return obtener_tipo_lista(dato)
     elif callable(dato):

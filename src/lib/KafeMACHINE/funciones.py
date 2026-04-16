@@ -36,4 +36,7 @@ def pca(n_components):
 
 @check_sig([0], [])
 def standard_scaler():
+    """
+    Crea una instancia de StandardScaler.
+    """
     return StandardScaler()
