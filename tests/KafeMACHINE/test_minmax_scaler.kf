@@ -1,0 +1,29 @@
+import pardos;
+import machine;
+
+-- Test data: min=[1.0,10.0], max=[5.0,30.0], scale=[0.25,0.05]
+List[List[FLOAT]] data = [[1.0, 10.0], [3.0, 20.0], [5.0, 30.0]];
+
+PARDOS scaler = machine.minmax_scaler();
+scaler.fit(data);
+show("data_min_:");
+show(scaler.data_min_);
+show("data_max_:");
+show(scaler.data_max_);
+show("scale_:");
+show(scaler.scale_);
+
+List[List[FLOAT]] transformed = scaler.transform(data);
+show("Transformed:");
+show(transformed);
+
+List[List[FLOAT]] restored = scaler.inverse_transform(transformed);
+show("Inverse transformed:");
+show(restored);
+
+-- Test fit_transform with DataFrame
+PARDOS df = pardos.DataFrame(["x", "y"], [[1.0, 10.0], [3.0, 20.0], [5.0, 30.0]]);
+PARDOS scaler2 = machine.minmax_scaler();
+PARDOS scaled_df = scaler2.fit_transform(df);
+show("Scaled DataFrame:");
+show(scaled_df);
