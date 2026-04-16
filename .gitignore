@@ -32,3 +32,6 @@ htmlcov/
 
 # OS files
 .DS_Store
+
+# Ignore docs/superpowers
+docs/superpowers/
