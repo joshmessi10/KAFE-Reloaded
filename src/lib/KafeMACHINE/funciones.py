@@ -5,6 +5,7 @@ from .LabelEncoder import LabelEncoder
 from .OneHotEncoder import OneHotEncoder
 from .PCA import PCA
 from .StandardScaler import StandardScaler
+from .MinMaxScaler import MinMaxScaler
 
 @check_sig([0], [])
 def linear_regression():
@@ -40,3 +41,10 @@ def standard_scaler():
     Crea una instancia de StandardScaler.
     """
     return StandardScaler()
+
+@check_sig([0], [])
+def minmax_scaler():
+    """
+    Crea una instancia de MinMaxScaler.
+    """
+    return MinMaxScaler()
