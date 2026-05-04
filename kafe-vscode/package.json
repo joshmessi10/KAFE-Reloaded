@@ -1,0 +1,105 @@
+{
+    "name": "kafe-neural-suite",
+    "displayName": "KAFE Neural Development Suite ☕️",
+    "description": "Professional DSL for Deep Learning, Functional Programming, and Symbolic Processing. Built for the next generation of AI developers.",
+    "version": "0.0.4",
+    "icon": "icon.png",
+    "publisher": "KAFEGROUP",
+    "main": "./extension.js",
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/joshmessi10/KAFE-Reloaded"
+    },
+    "bugs": {
+        "url": "https://github.com/joshmessi10/KAFE-Reloaded/issues"
+    },
+    "engines": {
+        "vscode": "^1.74.0"
+    },
+    "categories": [
+        "Programming Languages",
+        "Data Science",
+        "Education",
+        "Other"
+    ],
+    "keywords": [
+        "kafe",
+        "deep-learning",
+        "neural-networks",
+        "functional-programming",
+        "symbolic-processing",
+        "ai",
+        "dsl"
+    ],
+    "galleryBanner": {
+        "color": "#1e1e1e",
+        "theme": "dark"
+    },
+    "contributes": {
+        "languages": [
+            {
+                "id": "kafe",
+                "aliases": [
+                    "KAFE",
+                    "kafe",
+                    "Kafe Language"
+                ],
+                "extensions": [
+                    ".kf"
+                ],
+                "configuration": "./language-configuration.json"
+            }
+        ],
+        "commands": [
+            {
+                "command": "kafe.installDependencies",
+                "title": "KAFE: Instalar Dependencias del Sistema",
+                "category": "KAFE",
+                "icon": "$(gear)"
+            },
+            {
+                "command": "kafe.runFile",
+                "title": "KAFE: Ejecutar Código (Run)",
+                "category": "KAFE",
+                "icon": "$(play)"
+            }
+        ],
+        "keybindings": [
+            {
+                "command": "kafe.runFile",
+                "key": "ctrl+f5",
+                "mac": "cmd+f5",
+                "when": "editorLangId == kafe"
+            }
+        ],
+        "menus": {
+            "editor/title": [
+                {
+                    "when": "editorLangId == kafe",
+                    "command": "kafe.runFile",
+                    "group": "navigation"
+                }
+            ],
+            "commandPalette": [
+                {
+                    "command": "kafe.installDependencies",
+                    "when": "editorLangId == kafe"
+                }
+            ]
+        },
+        "grammars": [
+            {
+                "language": "kafe",
+                "scopeName": "source.kafe",
+                "path": "./syntaxes/kafe.tmLanguage.json"
+            }
+        ],
+        "snippets": [
+            {
+                "language": "kafe",
+                "path": "./snippets/kafe.json"
+            }
+        ]
+    }
+}

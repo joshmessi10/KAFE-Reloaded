@@ -1,0 +1,41 @@
+{
+    "Drip Function": {
+        "prefix": "drip",
+        "body": [
+            "drip ${1:functionName}(${2:params}) => ${3:ReturnType}:",
+            "\t$0",
+            ";"
+        ],
+        "description": "Declare a function"
+    },
+    "If Statement": {
+        "prefix": "if",
+        "body": [
+            "if (${1:condition}) :",
+            "\t$0",
+            ";"
+        ],
+        "description": "If statement"
+    },
+    "Show": {
+        "prefix": "show",
+        "body": [
+            "show($1);"
+        ],
+        "description": "Print to console"
+    },
+    "MATH sqrt": {
+        "prefix": "MATH.sqrt",
+        "body": [
+            "MATH.sqrt($1)"
+        ],
+        "description": "Square root"
+    },
+    "NUMK array": {
+        "prefix": "NUMK.array",
+        "body": [
+            "NUMK.array([$1])"
+        ],
+        "description": "Create an array"
+    }
+}
