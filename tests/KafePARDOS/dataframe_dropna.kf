@@ -1,0 +1,14 @@
+import pardos;
+
+-- Test dropna() method
+PARDOS df = pardos.read_csv("column_manipulation_test.csv");
+
+show("Original DataFrame:");
+show(df);
+show(df.shape());
+
+-- Drop rows with NaN values
+PARDOS df2 = df.dropna();
+show("After dropping rows with NaN:");
+show(df2);
+show(df2.shape());

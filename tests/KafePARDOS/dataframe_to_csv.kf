@@ -1,0 +1,14 @@
+import pardos;
+
+-- Read CSV file
+PARDOS df = pardos.read_csv("dataframe_export.csv");
+
+-- Export to new CSV
+df.to_csv("output_test.csv");
+
+-- Read it back to verify
+PARDOS df2 = pardos.read_csv("output_test.csv");
+
+show(df2);
+show(df2.shape());
+show(df2.dtypes());

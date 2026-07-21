@@ -1,4 +1,6 @@
 import lib.KafeMATH.funciones as math
+import json
+import os
 from global_utils import check_sig
 from TypeUtils import (
     pardos_t,
@@ -167,6 +169,200 @@ class DataFrame:
         return DataFrame(cols, filas)
 
     @check_sig([2], [pardos_t], [cadena_t])
+    def to_csv(self, path):
+        """
+        Export DataFrame to CSV file.
+        """
+        import globals
+
+        # Resolve path relative to current directory
+        if os.path.isabs(path):
+            real_path = path
+        else:
+            real_path = os.path.join(globals.current_dir, path)
+
+        with open(real_path, "w", encoding="utf-8") as f:
+            # Write header
+            f.write(",".join(self.columns) + "\n")
+
+            # Write data rows
+            for row in self.data:
+                row_str = []
+                for val in row:
+                    if isinstance(val, float) and math.isnan(val):
+                        row_str.append("")
+                    else:
+                        row_str.append(str(val))
+                f.write(",".join(row_str) + "\n")
+
+    @check_sig([2], [pardos_t], [cadena_t])
+    def to_json(self, path):
+        """
+        Export DataFrame to JSON file in 'records' orient.
+        Format: [{"col1": val1, "col2": val2}, ...]
+        """
+        import globals
+
+        # Resolve path relative to current directory
+        if os.path.isabs(path):
+            real_path = path
+        else:
+            real_path = os.path.join(globals.current_dir, path)
+
+        # Build records format
+        records = []
+        for row in self.data:
+            record = {}
+            for i, col_name in enumerate(self.columns):
+                val = row[i]
+                # Handle NaN values
+                if isinstance(val, float) and math.isnan(val):
+                    record[col_name] = None
+                else:
+                    record[col_name] = val
+            records.append(record)
+
+        with open(real_path, "w", encoding="utf-8") as f:
+            json.dump(records, f, indent=2, ensure_ascii=False)
+
+    @check_sig([3], [pardos_t], [cadena_t], [cadena_t])
+    def rename(self, old_name, new_name):
+        """
+        Rename a column.
+        Returns a new DataFrame with the renamed column.
+        """
+        if old_name not in self.columns:
+            raise Exception(f"pardos: Column '{old_name}' doesn't exist")
+
+        if new_name in self.columns:
+            raise Exception(f"pardos: Column '{new_name}' already exists")
+
+        # Create new column list with renamed column
+        new_columns = [new_name if col == old_name else col for col in self.columns]
+
+        # Return new DataFrame with same data but renamed columns
+        return DataFrame(new_columns, self.data)
+
+    @check_sig([2], [pardos_t], [cadena_t])
+    def drop(self, column_name):
+        """
+        Drop a column from the DataFrame.
+        Returns a new DataFrame without the specified column.
+        """
+        if column_name not in self.columns:
+            raise Exception(f"pardos: Column '{column_name}' doesn't exist")
+
+        # Find the index of the column to drop
+        col_idx = self.columns.index(column_name)
+
+        # Create new column list without the dropped column
+        new_columns = [col for col in self.columns if col != column_name]
+
+        # Create new data without the dropped column
+        new_data = []
+        for row in self.data:
+            new_row = [row[i] for i in range(len(row)) if i != col_idx]
+            new_data.append(new_row)
+
+        return DataFrame(new_columns, new_data)
+
+    @check_sig([2], [pardos_t], [entero_t, flotante_t, cadena_t])
+    def fillna(self, value):
+        """
+        Fill NaN values with a specified value.
+        Returns a new DataFrame with NaN values replaced.
+        """
+        new_data = []
+        for row in self.data:
+            new_row = []
+            for val in row:
+                if isinstance(val, float) and math.isnan(val):
+                    new_row.append(value)
+                else:
+                    new_row.append(val)
+            new_data.append(new_row)
+
+        return DataFrame(self.columns, new_data)
+
+    @check_sig([1], [pardos_t])
+    def dropna(self):
+        """
+        Drop rows that contain any NaN values.
+        Returns a new DataFrame without rows containing NaN.
+        """
+        new_data = []
+        for row in self.data:
+            has_nan = False
+            for val in row:
+                if isinstance(val, float) and math.isnan(val):
+                    has_nan = True
+                    break
+            if not has_nan:
+                new_data.append(row)
+
+        return DataFrame(self.columns, new_data)
+
+    @check_sig([1], [pardos_t])
+    def ffill(self):
+        """
+        Forward fill - propagate last valid observation forward to fill NaN values.
+        Fills down each column (row-wise propagation).
+        Returns a new DataFrame with NaN values filled using forward fill.
+        """
+        new_data = []
+
+        # Process column by column
+        for col_idx in range(len(self.columns)):
+            last_valid = None
+            for row_idx in range(len(self.data)):
+                val = self.data[row_idx][col_idx]
+                if isinstance(val, float) and math.isnan(val):
+                    # Use last valid value if available
+                    if last_valid is not None:
+                        if row_idx >= len(new_data):
+                            new_data.append([None] * len(self.columns))
+                        new_data[row_idx][col_idx] = last_valid
+                    else:
+                        # Keep NaN if no previous valid value
+                        if row_idx >= len(new_data):
+                            new_data.append([None] * len(self.columns))
+                        new_data[row_idx][col_idx] = val
+                else:
+                    if row_idx >= len(new_data):
+                        new_data.append([None] * len(self.columns))
+                    new_data[row_idx][col_idx] = val
+                    last_valid = val
+
+        return DataFrame(self.columns, new_data)
+
+    @check_sig([1], [pardos_t])
+    def bfill(self):
+        """
+        Backward fill - propagate next valid observation backward to fill NaN values.
+        Fills up each column (reverse row-wise propagation).
+        Returns a new DataFrame with NaN values filled using backward fill.
+        """
+        # Initialize new_data with same structure
+        new_data = [[None] * len(self.columns) for _ in range(len(self.data))]
+
+        # Process column by column
+        for col_idx in range(len(self.columns)):
+            next_valid = None
+            # Iterate backwards through rows
+            for row_idx in range(len(self.data) - 1, -1, -1):
+                val = self.data[row_idx][col_idx]
+                if isinstance(val, float) and math.isnan(val):
+                    # Use next valid value if available
+                    if next_valid is not None:
+                        new_data[row_idx][col_idx] = next_valid
+                    else:
+                        # Keep NaN if no next valid value
+                        new_data[row_idx][col_idx] = val
+                else:
+                    new_data[row_idx][col_idx] = val
+                    next_valid = val
+
+        return DataFrame(self.columns, new_data)
     def value_counts(self, column_name):
         """Count occurrences of each unique value in a column."""
         if column_name not in self.columns:
@@ -182,7 +378,7 @@ class DataFrame:
         # Sort by count descending (same default as pandas)
         sorted_items = sorted(counts.items(), key=lambda x: -x[1])
         result_cols = ["value", "count"]
-        result_rows = [[str(k), v] for k, v in sorted_items]
+        result_rows = [[k, v] for k, v in sorted_items]
         return DataFrame(result_cols, result_rows)
 
     @check_sig([2], [pardos_t], [cadena_t])
@@ -339,3 +535,105 @@ class DataFrame:
                 visitor.pop_scope()
 
         return DataFrame(self.columns, filtered_data)
+
+    @check_sig([2], [pardos_t], [pardos_t])
+    def concat(self, other):
+        """Concatenate two DataFrames vertically."""
+        if self.columns != other.columns:
+            if sorted(self.columns) == sorted(other.columns):
+                # Reorder other's data to match self.columns
+                other_sorted_data = []
+                for row in other.data:
+                    new_row = [row[other.columns.index(col)] for col in self.columns]
+                    other_sorted_data.append(new_row)
+                return DataFrame(self.columns, self.data + other_sorted_data)
+            else:
+                raise Exception("pardos: concat: Columns do not match")
+        return DataFrame(self.columns, self.data + other.data)
+
+    @check_sig([3, 4], [pardos_t], [pardos_t], [cadena_t], [cadena_t])
+    def merge(self, other, on, how='inner'):
+        """Merge two DataFrames on a common column."""
+        if on not in self.columns or on not in other.columns:
+            raise Exception(f"pardos: merge: Column '{on}' not found in both DataFrames")
+        
+        idx_self = self.columns.index(on)
+        idx_other = other.columns.index(on)
+        
+        # Build hash map for the right side
+        right_map = {}
+        for row in other.data:
+            key = row[idx_other]
+            if key not in right_map:
+                right_map[key] = []
+            right_map[key].append(row)
+            
+        new_cols = list(self.columns)
+        other_cols_no_on = [c for c in other.columns if c != on]
+        new_cols.extend(other_cols_no_on)
+        
+        new_data = []
+        for row_left in self.data:
+            key = row_left[idx_self]
+            if key in right_map:
+                for row_right in right_map[key]:
+                    combined = list(row_left)
+                    combined.extend([row_right[other.columns.index(c)] for c in other_cols_no_on])
+                    new_data.append(combined)
+            elif how == 'left':
+                combined = list(row_left)
+                combined.extend([None] * len(other_cols_no_on))
+                new_data.append(combined)
+                
+        return DataFrame(new_cols, new_data)
+
+    @check_sig([2], [pardos_t], [cadena_t])
+    def groupby(self, column_name):
+        """Group the DataFrame by a column."""
+        if column_name not in self.columns:
+            raise Exception(f"pardos: groupby: Column '{column_name}' not found")
+        return GroupBy(self, column_name)
+
+
+class GroupBy:
+    def __init__(self, df, column):
+        self.df = df
+        self.column = column
+        self.idx = df.columns.index(column)
+        self.groups = {}
+        for row in df.data:
+            key = row[self.idx]
+            if key not in self.groups:
+                self.groups[key] = []
+            self.groups[key].append(row)
+
+    def _aggregate(self, func_name):
+        res_cols = [self.column, func_name]
+        res_data = []
+        for key in sorted(self.groups.keys(), key=lambda x: str(x)):
+            # Special case: 'count' should reflect the number of rows in each group,
+            # regardless of column types.
+            if func_name == 'count':
+                group_size = len(self.groups[key])
+                res_data.append([key, group_size])
+                continue
+
+            temp_df = DataFrame(self.df.columns, self.groups[key])
+            # Filter out non-numeric columns for aggregation, except the grouping column
+            numeric_cols = [c for c, t in temp_df.dtypes() if t in (entero_t, flotante_t)]
+
+            # If no numeric columns to aggregate, we can still fall back to any column
+            col_to_agg = numeric_cols[0] if numeric_cols else (self.df.columns[0] if self.df.columns else None)
+            if col_to_agg:
+                agg_val = temp_df.agg(col_to_agg, func_name)
+                res_data.append([key, agg_val])
+        return DataFrame(res_cols, res_data)
+
+    def mean(self):
+        return self._aggregate('mean')
+
+    def sum(self):
+        return self._aggregate('sum')
+
+    def count(self):
+        return self._aggregate('count')

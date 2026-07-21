@@ -1,0 +1,6 @@
+Original DataFrame:
+"cols: ['id', 'name', 'age', 'score'], rows: [[1, 'Alice', 25, 95], [2, 'Bob', 30, nan], [3, 'Carol', 28, 88], [4, 'David', nan, 92], [5, 'Eve', 35, 85]]"
+After filling NaN with 0:
+"cols: ['id', 'name', 'age', 'score'], rows: [[1, 'Alice', 25, 95], [2, 'Bob', 30, 0], [3, 'Carol', 28, 88], [4, 'David', 0, 92], [5, 'Eve', 35, 85]]"
+After filling NaN with -1:
+"cols: ['id', 'name', 'age', 'score'], rows: [[1, 'Alice', 25, 95], [2, 'Bob', 30, -1], [3, 'Carol', 28, 88], [4, 'David', -1, 92], [5, 'Eve', 35, 85]]"
