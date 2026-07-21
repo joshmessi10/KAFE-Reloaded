@@ -1,0 +1,12 @@
+Original labels: 
+['cat', 'dog', 'bird', 'cat', 'bird']
+Classes: 
+['bird', 'cat', 'dog']
+Encoded: 
+[1, 2, 0, 1, 0]
+Decoded (from encoded): 
+['cat', 'dog', 'bird', 'cat', 'bird']
+Encoded2: 
+[2, 1, 0, 2]
+Classes2: 
+['blue', 'green', 'red']

@@ -1,0 +1,54 @@
+-- ============================================
+-- Red Neuronal con GeshaDeep
+-- Clasificación binaria: problema AND
+-- ============================================
+
+import geshaDeep;
+
+show("=== Red Neuronal: Clasificación AND ===");
+
+-- Datos de entrenamiento
+List[List[INT]] x_train = [[0,0], [0,1], [1,0], [1,1]];
+List[INT] y_train = [0, 0, 0, 1];
+
+-- Crear modelo binario
+GESHA model = geshaDeep.binary();
+
+-- Crear capa densa con 1 neurona, sigmoid, 2 inputs
+GESHA layer = geshaDeep.create_dense(1, "sigmoid", [2], 0.0, 42);
+model.add(layer);
+
+-- Compilar modelo
+model.compile("sgd", "binary_crossentropy", ["accuracy"]);
+
+-- Entrenar
+show("Entrenando...");
+model.fit(x_train, y_train, 1000, 1, [], []);
+
+-- Evaluar
+show("\nResultados:");
+for (p in x_train):
+    FLOAT prob = model.predict_proba(p);
+    INT lbl = model.predict_label(p);
+    show(str(p) + " → prob=" + str(prob) + ", clase=" + str(lbl));
+;
+
+-- ============================================
+-- Regresión con GeshaDeep
+-- ============================================
+show("\n=== Red Neuronal: Regresión ===");
+
+-- Datos: y = 2x
+List[List[FLOAT]] X = [[1.0], [2.0], [3.0], [4.0]];
+List[FLOAT] Y = [2.0, 4.0, 6.0, 8.0];
+
+GESHA reg_model = geshaDeep.regression();
+GESHA reg_layer = geshaDeep.create_dense(1, "linear", [1], 0.0, 42);
+reg_model.add(reg_layer);
+
+reg_model.compile("sgd", "mse", []);
+reg_model.fit(X, Y, 50, 1, [], []);
+
+List[FLOAT] pred = reg_model.predict([5.0]);
+show("Predicción para x=5.0: " + str(pred[0]));
+show("Esperado: ~10.0");
