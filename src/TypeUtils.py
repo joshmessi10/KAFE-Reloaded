@@ -40,6 +40,8 @@ def obtener_tipo_dato(dato):
         return nombre_tipos["pardos"]
     elif isinstance(dato, (LinearRegression, LabelEncoder, OneHotEncoder, PCA)):
         return nombre_tipos["pardos"] # WORKAROUND: Use PARDOS instead of MACHINE
+    elif dato is None:
+        return nombre_tipos["void"]
     else:
         return nombre_tipos[type(dato)]
 
