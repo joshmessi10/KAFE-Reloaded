@@ -1,0 +1,115 @@
+site_name: KAFE — Documentación del Lenguaje
+site_description: Documentación técnica del lenguaje KAFE Deep Learning Language
+site_url: https://joshmessi10.github.io/KAFE-Reloaded/
+repo_url: https://github.com/joshmessi10/KAFE-Reloaded
+repo_name: KAFE-Reloaded
+
+theme:
+  name: material
+  language: es
+  # logo: assets/logo.png
+  # favicon: assets/favicon.ico
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: blue grey
+      accent: amber
+      toggle:
+        icon: material/brightness-7
+        name: Cambiar a modo oscuro
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: blue grey
+      accent: amber
+      toggle:
+        icon: material/brightness-4
+        name: Cambiar a modo claro
+  features:
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - navigation.indexes
+    - search.highlight
+    - search.suggest
+    - content.code.copy
+    - content.code.annotate
+    - content.tabs.link
+    - toc.follow
+
+nav:
+  - Inicio: index.md
+  - Guía de Inicio:
+      - Instalación: guia-inicio/instalacion.md
+      - Primer Programa: guia-inicio/primer-programa.md
+      - Ejemplos Básicos: guia-inicio/ejemplos-basicos.md
+  - Lenguaje:
+      - Estructura Léxica: lenguaje/estructura-lexica.md
+      - Sistema de Tipos: lenguaje/sistema-tipos.md
+      - Operadores y Expresiones: lenguaje/operadores.md
+      - Estructuras de Control: lenguaje/estructuras-control.md
+      - Funciones: lenguaje/funciones.md
+      - Listas: lenguaje/listas.md
+      - Importaciones: lenguaje/importaciones.md
+  - Bibliotecas:
+      - NUMK (Álgebra Lineal): bibliotecas/numk.md
+      - MATH (Matemáticas): bibliotecas/math.md
+      - PLOT (Visualización): bibliotecas/plot.md
+      - FILES (Archivos): bibliotecas/files.md
+      - GeshaDeep (Deep Learning): bibliotecas/gesha.md
+      - PARDOS (DataFrames): bibliotecas/pardos.md
+      - MACHINE (ML Utilities): bibliotecas/machine.md
+  - Especificación:
+      - Gramática Formal (EBNF): especificacion/gramatica-ebnf.md
+      - Semántica Operacional: especificacion/semantica-operacional.md
+      - Análisis Léxico, Sintáctico y Semántico: especificacion/analisis-lexico-sintactico-semantico.md
+      - Precedencia de Operadores: especificacion/precedencia-operadores.md
+  - Manejo de Errores:
+      - Tipos de Error: errores/tipos-error.md
+      - Errores Léxicos: errores/errores-lexicos.md
+      - Errores Sintácticos: errores/errores-sintacticos.md
+      - Errores Semánticos: errores/errores-semanticos.md
+      - Referencia de Errores: errores/referencia-errores.md
+  - Ejemplos:
+      - Hello World: ejemplos/hola-mundo.kf
+      - Fibonacci Curri: ejemplos/fibo-curri.kf
+      - Merge Sort: ejemplos/merge-sort.kf
+      - Regresión Lineal: ejemplos/regresion-lineal.kf
+      - Red Neuronal: ejemplos/red-neuronal.kf
+  - Acerca de:
+      - Créditos: about/creditos.md
+      - Licencia: about/licencia.md
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.arithmatex:
+      generic: true
+  - tables
+  - attr_list
+  - md_in_html
+  - def_list
+  - toc:
+      permalink: true
+
+extra_javascript:
+  - https://unpkg.com/katex/dist/katex.min.js
+  - https://unpkg.com/katex/dist/contrib/auto-render.min.js
+
+extra_css:
+  - https://unpkg.com/katex/dist/katex.min.css
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/joshmessi10/KAFE-Reloaded
+
+plugins:
+  - search
