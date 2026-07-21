@@ -1,4 +1,4 @@
-nombre_tipos = { int:"INT", float:"FLOAT", str:"STR", bool:"BOOL", list:"List", "void": "VOID", "func": "FUNC",  "gesha": "GESHA", "pardos": "PARDOS" }
+nombre_tipos = { int:"INT", float:"FLOAT", str:"STR", bool:"BOOL", list:"List", "void": "VOID", "func": "FUNC",  "gesha": "GESHA", "pardos": "PARDOS", "machine": "MACHINE" }
 
 def obtener_tipo_dentro_lista(lista):
     tipo_lista = obtener_tipo_lista(lista)
@@ -26,6 +26,10 @@ def obtener_tipo_lista(lista):
 def obtener_tipo_dato(dato):
     from lib.KafePARDOS.DataFrame import DataFrame
     from lib.KafeGESHA.Gesha import Gesha
+    from lib.KafeMACHINE.LinearRegression import LinearRegression
+    from lib.KafeMACHINE.LabelEncoder import LabelEncoder
+    from lib.KafeMACHINE.OneHotEncoder import OneHotEncoder
+    from lib.KafeMACHINE.PCA import PCA
     if type(dato) is list:
         return obtener_tipo_lista(dato)
     elif callable(dato):
@@ -34,8 +38,10 @@ def obtener_tipo_dato(dato):
         return nombre_tipos["gesha"]
     elif isinstance(dato, DataFrame) or "GroupBy" in str(type(dato)):
         return nombre_tipos["pardos"]
+    elif isinstance(dato, (LinearRegression, LabelEncoder, OneHotEncoder, PCA)):
+        return nombre_tipos["pardos"] # WORKAROUND: Use PARDOS instead of MACHINE
     elif dato is None:
-        return "VOID"
+        return nombre_tipos["void"]
     else:
         return nombre_tipos[type(dato)]
 
@@ -51,6 +57,7 @@ cadena_t              = nombre_tipos[str]
 lista_t               = nombre_tipos[list]
 gesha_t               = nombre_tipos["gesha"]
 pardos_t              = nombre_tipos["pardos"]
+machine_t             = nombre_tipos["machine"]
 void_t                = nombre_tipos['void']
 funcion_t             = nombre_tipos["func"]
 lista_cualquiera_t    = [construir_tipo_lista(i) for i in range(1, 100)]

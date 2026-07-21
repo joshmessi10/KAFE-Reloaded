@@ -182,6 +182,7 @@ typeDecl
     | STRING_TYPE
     | GESHA_TYPE
     | PARDOS_TYPE
+    | MACHINE_TYPE
     | LIST LBRACK typeDecl RBRACK
     | functionParam
     ;
