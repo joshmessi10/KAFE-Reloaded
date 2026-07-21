@@ -1,0 +1,9 @@
+Original DataFrame:
+"cols: ['id', 'name', 'age', 'score'], rows: [[1, 'Alice', 25, 95], [2, 'Bob', 30, nan], [3, 'Carol', 28, 88], [4, 'David', nan, 92], [5, 'Eve', 35, 85]]"
+[5, 4]
+After dropping 'score':
+"cols: ['id', 'name', 'age'], rows: [[1, 'Alice', 25], [2, 'Bob', 30], [3, 'Carol', 28], [4, 'David', nan], [5, 'Eve', 35]]"
+[5, 3]
+After dropping 'age':
+"cols: ['id', 'name'], rows: [[1, 'Alice'], [2, 'Bob'], [3, 'Carol'], [4, 'David'], [5, 'Eve']]"
+[5, 2]

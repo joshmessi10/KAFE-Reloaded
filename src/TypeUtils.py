@@ -36,7 +36,7 @@ def obtener_tipo_dato(dato):
         return nombre_tipos["func"]
     elif isinstance(dato, Gesha):
         return nombre_tipos["gesha"]
-    elif isinstance(dato, DataFrame):
+    elif isinstance(dato, DataFrame) or "GroupBy" in str(type(dato)):
         return nombre_tipos["pardos"]
     elif isinstance(dato, (LinearRegression, LabelEncoder, OneHotEncoder, PCA)):
         return nombre_tipos["pardos"] # WORKAROUND: Use PARDOS instead of MACHINE

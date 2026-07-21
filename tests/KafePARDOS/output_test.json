@@ -1,0 +1,27 @@
+[
+  {
+    "id": 1,
+    "nombre": "Ana",
+    "puntaje": 85
+  },
+  {
+    "id": 2,
+    "nombre": "Luis",
+    "puntaje": 90
+  },
+  {
+    "id": 3,
+    "nombre": "María",
+    "puntaje": 78
+  },
+  {
+    "id": 4,
+    "nombre": "Pedro",
+    "puntaje": 92
+  },
+  {
+    "id": 5,
+    "nombre": "Lucía",
+    "puntaje": 88
+  }
+]
