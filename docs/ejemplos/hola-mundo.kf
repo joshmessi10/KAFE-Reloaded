@@ -1,0 +1,20 @@
+-- ============================================
+-- Hola Mundo - Programa básico en KAFE
+-- ============================================
+
+-- Imprimir texto
+show("¡Hola, KAFE!");
+
+-- Imprimir números
+show(42);
+show(3.14);
+
+-- Imprimir booleanos
+show(True);
+
+-- Imprimir listas
+show([1, 2, 3]);
+
+-- Variables
+STR nombre = "Mundo";
+show("Hola, " + nombre + "!");
