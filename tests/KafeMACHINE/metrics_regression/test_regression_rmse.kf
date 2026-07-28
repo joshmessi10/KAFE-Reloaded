@@ -1,0 +1,6 @@
+import machine;
+
+List[INT] y_true = [1, 3];
+List[INT] y_pred = [2, 3];
+FLOAT rmse = machine.root_mean_squared_error(y_true, y_pred);
+show(rmse);

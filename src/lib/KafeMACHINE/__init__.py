@@ -7,3 +7,4 @@ from .StandardScaler import StandardScaler
 from .MinMaxScaler import MinMaxScaler
 from .SimpleImputer import SimpleImputer
 from .LogisticRegression import LogisticRegression
+from .KNN import KNN

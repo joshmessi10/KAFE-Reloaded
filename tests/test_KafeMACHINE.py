@@ -3,9 +3,32 @@ import sys
 import pytest
 from utils import obtener_parametros, get_programs, get_invalid_programs, get_kafe_path, get_src_dir
 
+SUBDIRS = [
+    "linear_models",
+    "neighbors",
+    "preprocessing",
+    "metrics_classification",
+    "metrics_regression",
+]
+
+
+def _all_programs():
+    paths = []
+    for d in SUBDIRS:
+        paths.extend(get_programs(f"../tests/KafeMACHINE/{d}"))
+    return paths
+
+
+def _all_invalid_programs():
+    paths = []
+    for d in SUBDIRS:
+        paths.extend(get_invalid_programs(f"../tests/KafeMACHINE/{d}"))
+    return paths
+
+
 @pytest.mark.parametrize(
     "programa, entrada, salida_esperada",
-    list(obtener_parametros(get_programs("../tests/KafeMACHINE"))),
+    list(obtener_parametros(_all_programs())),
 )
 def test_valid_programs(programa, entrada, salida_esperada):
     result = subprocess.run(
@@ -22,7 +45,7 @@ def test_valid_programs(programa, entrada, salida_esperada):
 
 @pytest.mark.parametrize(
     "programa, entrada, salida_esperada",
-    list(obtener_parametros(get_invalid_programs("../tests/KafeMACHINE"))),
+    list(obtener_parametros(_all_invalid_programs())),
 )
 def test_invalid_programs(programa, entrada, salida_esperada):
     result = subprocess.run(

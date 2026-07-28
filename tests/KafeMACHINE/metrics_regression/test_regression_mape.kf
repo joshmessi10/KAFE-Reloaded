@@ -1,0 +1,6 @@
+import machine;
+
+List[INT] y_true = [1, 3];
+List[INT] y_pred = [2, 3];
+FLOAT mape = machine.mean_absolute_percentage_error(y_true, y_pred);
+show(mape);

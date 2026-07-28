@@ -1,0 +1,11 @@
+import machine;
+
+List[List[FLOAT]] X = [[1.0, 1.0], [2.0, 2.0], [10.0, 10.0], [11.0, 11.0]];
+List[INT] y = [0, 0, 1, 1];
+
+MACHINE model = machine.knn(3);
+model.fit(X, y);
+
+List[List[FLOAT]] probs = model.predict_proba([[1.0, 1.0], [10.0, 10.0]]);
+show("Probabilities:");
+show(probs);
