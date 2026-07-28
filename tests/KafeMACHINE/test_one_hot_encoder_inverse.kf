@@ -1,0 +1,15 @@
+import pardos;
+import machine;
+
+List[STR] cols = ["color", "size"];
+List[List[STR]] data = [["red", "S"], ["blue", "M"], ["green", "L"]];
+PARDOS df = pardos.DataFrame(cols, data);
+
+MACHINE ohe = machine.one_hot_encoder();
+PARDOS encoded = ohe.fit_transform(df, ["color"]);
+show("Encoded:");
+show(encoded);
+
+show("Columns:");
+List[STR] cats = ohe.columns_;
+show(cats);

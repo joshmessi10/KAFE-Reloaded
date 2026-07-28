@@ -26,13 +26,7 @@ def obtener_tipo_lista(lista):
 def obtener_tipo_dato(dato):
     from lib.KafePARDOS.DataFrame import DataFrame
     from lib.KafeGESHA.Gesha import Gesha
-    from lib.KafeMACHINE.LinearRegression import LinearRegression
-    from lib.KafeMACHINE.LabelEncoder import LabelEncoder
-    from lib.KafeMACHINE.OneHotEncoder import OneHotEncoder
-    from lib.KafeMACHINE.PCA import PCA
-    from lib.KafeMACHINE.StandardScaler import StandardScaler
-    from lib.KafeMACHINE.MinMaxScaler import MinMaxScaler
-    from lib.KafeMACHINE.SimpleImputer import SimpleImputer
+    from lib.KafeMACHINE.BaseMachine import BaseMachine
 
     if type(dato) is list:
         return obtener_tipo_lista(dato)
@@ -42,9 +36,8 @@ def obtener_tipo_dato(dato):
         return nombre_tipos["gesha"]
     elif isinstance(dato, DataFrame) or "GroupBy" in str(type(dato)):
         return nombre_tipos["pardos"]
-    elif isinstance(dato, (LinearRegression, LabelEncoder, OneHotEncoder, PCA,
-                            StandardScaler, MinMaxScaler, SimpleImputer)):
-        return nombre_tipos["pardos"] # WORKAROUND: Use PARDOS instead of MACHINE
+    elif isinstance(dato, BaseMachine):
+        return nombre_tipos["machine"]
     elif dato is None:
         return nombre_tipos["void"]
     else:

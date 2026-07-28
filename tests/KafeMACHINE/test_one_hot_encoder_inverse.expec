@@ -1,0 +1,4 @@
+Encoded:
+"cols: ['size', 'color_blue', 'color_green', 'color_red'], rows: [['S', 0, 0, 1], ['M', 1, 0, 0], ['L', 0, 1, 0]]"
+Columns:
+['color']

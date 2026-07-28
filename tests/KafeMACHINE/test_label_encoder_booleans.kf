@@ -1,0 +1,12 @@
+import machine;
+
+MACHINE le = machine.label_encoder();
+
+List[BOOL] labels = [True, False, True, False, True];
+le.fit(labels);
+show("Classes:");
+show(le.classes_);
+
+List[INT] encoded = le.fit_transform(labels);
+show("Encoded:");
+show(encoded);

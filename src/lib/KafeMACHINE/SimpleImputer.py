@@ -2,6 +2,7 @@ import math
 from global_utils import check_sig
 from TypeUtils import pardos_t, matriz_cualquiera_t
 from lib.KafePARDOS.DataFrame import DataFrame
+from .BaseMachine import BaseMachine
 
 
 def _is_missing(v):
@@ -13,7 +14,7 @@ def _is_missing(v):
         return False
 
 
-class SimpleImputer:
+class SimpleImputer(BaseMachine):
     def __init__(self, strategy, fill_value=None):
         valid = ("mean", "median", "most_frequent", "constant")
         if strategy not in valid:
@@ -40,7 +41,7 @@ class SimpleImputer:
             for v in non_null:
                 counts[v] = counts.get(v, 0) + 1
             return max(counts, key=lambda k: counts[k])
-        else:  # constant
+        else:
             return self.fill_value
 
     @check_sig([2], [pardos_t, matriz_cualquiera_t], is_method=True)
@@ -78,7 +79,6 @@ class SimpleImputer:
 
         return DataFrame(cols, result) if is_df else result
 
-    @check_sig([2], [pardos_t, matriz_cualquiera_t], is_method=True)
     def fit_transform(self, data):
         return self.fit(data).transform(data)
 

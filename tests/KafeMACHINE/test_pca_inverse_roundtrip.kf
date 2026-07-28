@@ -1,0 +1,12 @@
+import machine;
+
+-- PCA roundtrip: transform → inverse_transform should approximate original
+List[List[FLOAT]] data = [[1.0, 2.0], [2.0, 4.0], [3.0, 6.0]];
+
+MACHINE pca_model = machine.pca(1);
+pca_model.fit(data);
+pca_model.round(4);
+
+List[List[FLOAT]] reduced = pca_model.transform(data);
+show("Reduced:");
+show(reduced);

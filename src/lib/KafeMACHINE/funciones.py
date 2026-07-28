@@ -1,5 +1,5 @@
 from global_utils import check_sig
-from TypeUtils import entero_t, cadena_t, numeros_t
+from TypeUtils import entero_t, cadena_t, numeros_t, flotante_t
 from .LinearRegression import LinearRegression
 from .LabelEncoder import LabelEncoder
 from .OneHotEncoder import OneHotEncoder
@@ -7,6 +7,7 @@ from .PCA import PCA
 from .StandardScaler import StandardScaler
 from .MinMaxScaler import MinMaxScaler
 from .SimpleImputer import SimpleImputer
+from .LogisticRegression import LogisticRegression
 
 @check_sig([0], [])
 def linear_regression():
@@ -67,3 +68,11 @@ def simple_imputer_constant(fill_value):
     Crea una instancia de SimpleImputer con estrategia constante.
     """
     return SimpleImputer("constant", fill_value)
+
+
+@check_sig({0: [], 2: [[flotante_t], [entero_t]]})
+def logistic_regression(learning_rate=0.01, max_iter=1000):
+    """
+    Crea una instancia de Regresión Logística.
+    """
+    return LogisticRegression(learning_rate, max_iter)

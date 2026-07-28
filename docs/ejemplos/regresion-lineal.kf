@@ -13,16 +13,15 @@ MACHINE lr = machine.linear_regression();
 List[FLOAT] x = [1.0, 2.0, 3.0, 4.0, 5.0];
 List[FLOAT] y = [2.1, 4.0, 5.8, 8.1, 10.0];
 
-lr.train(x, y);
+lr.fit(x, y);
 
-show("Pendiente (m): " + str(lr.slope));
-show("Intercepto (b): " + str(lr.intercept));
+show("Pendiente (m): " + str(lr.slope_));
+show("Intercepto (b): " + str(lr.intercept_));
 
 -- Predicciones
+List[FLOAT] preds = lr.predict([6.0, 10.0, 0.0]);
 show("\nPredicciones:");
-show("x=6 → y=" + str(lr.predict(6)));
-show("x=10 → y=" + str(lr.predict(10)));
-show("x=0 → y=" + str(lr.predict(0)));
+show(preds);
 
 -- ============================================
 -- LabelEncoder
