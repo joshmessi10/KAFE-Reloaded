@@ -10,9 +10,6 @@ lr.fit(X, y);
 
 show("coef_:");
 show(lr.coef_);
-show("intercept_:");
-show(lr.intercept_);
-
 List[INT] preds = lr.predict([-3.0, -1.0, 1.0, 3.0]);
 show("Predictions:");
 show(preds);

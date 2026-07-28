@@ -1,7 +1,5 @@
 coef_:
 [3.167344992305873]
-intercept_:
--6.775721476948168e-17
 Predictions:
 [0, 0, 1, 1]
 Probabilities:
