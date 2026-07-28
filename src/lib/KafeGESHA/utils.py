@@ -13,7 +13,7 @@ def check_regularization(value):
         return 0.0
     try:
         val = float(value)
-    except:
+    except (ValueError, TypeError):
         raise ValueError("El parámetro de regularización debe ser numérico o None.")
     if val < 0:
         raise ValueError("El parámetro de regularización no puede ser negativo.")

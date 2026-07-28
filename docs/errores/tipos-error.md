@@ -78,7 +78,7 @@ KAFE distingue entre:
 try:
     main()
 except Exception as e:
-    if ".error.kf" in sys.argv[1]:
+    if sys.argv[1].endswith(".error.kf"):
         print(error_msg, file=sys.stderr)
         sys.exit(1)
     else:

@@ -76,8 +76,5 @@ class SimpleImputer(BaseMachine):
 
         return DataFrame(cols, result) if is_df else result
 
-    def fit_transform(self, data):
-        return self.fit(data).transform(data)
-
     def __repr__(self):
         return f"SimpleImputer(strategy='{self.strategy}', statistics={self.statistics_})"

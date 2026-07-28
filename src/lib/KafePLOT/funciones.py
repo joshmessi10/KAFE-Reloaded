@@ -16,53 +16,53 @@ import lib.KafePLOT.utils as utils
 @check_sig([0], [])
 def figure():
 
-    utils.resetear_variables()
-    utils._figura_activa = True
+    utils.reset_variables()
+    utils._figure_active = True
 
 
 @check_sig([1], [cadena_t])
 def legend(valor):
-    utils.leyenda_pastel = valor
+    utils.pie_legend = valor
 
 
 @check_sig([1], [booleano_t])
 def barValues(valor):
-    utils.mostrar_valores_barras = valor
+    utils.show_bar_values = valor
 
 
 @check_sig([1], [cadena_t])
 def xlabel(x_label):
-    utils.eje_x_label = x_label
+    utils.x_label = x_label
 
 
 @check_sig([1], [cadena_t])
 def ylabel(y_label):
-    utils.eje_y_label = y_label
+    utils.y_label = y_label
 
 
 @check_sig([1], [cadena_t])
 def title(title):
-    utils.titulo_grafico = title
+    utils.chart_title = title
 
 
 @check_sig([1], [booleano_t])
 def grid(valor):
-    utils.mostrar_grid = valor
+    utils.show_grid = valor
 
 
 @check_sig([1], [cadena_t])
 def color(valor):
-    utils.color_linea = valor
+    utils.line_color = valor
 
 
 @check_sig([1], [cadena_t])
 def pointColor(valor):
-    utils.color_puntos = valor
+    utils.point_color = valor
 
 
 @check_sig([1], [entero_t])
 def pointSize(valor):
-    utils.tamaño_punto = valor
+    utils.point_size = valor
 
 
 @check_sig(
@@ -181,21 +181,21 @@ def graph(*args):
             raise Exception("graph: style must be 'line', 'point' or 'both'")
 
     auto_show = False
-    if not utils._figura_activa:
-        utils.resetear_variables()
-        utils._figura_activa = True
+    if not utils._figure_active:
+        utils.reset_variables()
+        utils._figure_active = True
         auto_show = True
 
     serie_info = {
         "xs": xs[:],
         "ys": ys[:],
-        "color_linea": utils.color_linea,
-        "color_puntos": utils.color_puntos,
-        "tamaño_punto": utils.tamaño_punto,
+        "line_color": utils.line_color,
+        "point_color": utils.point_color,
+        "point_size": utils.point_size,
         "draw_line": (style in ("line", "both")),
         "draw_point": (style in ("point", "both")),
     }
-    utils._series_acumuladas.append(serie_info)
+    utils._accumulated_series.append(serie_info)
 
     if auto_show:
         render()
@@ -204,7 +204,7 @@ def graph(*args):
 @check_sig([0], [])
 def render():
 
-    if not utils._figura_activa or len(utils._series_acumuladas) == 0:
+    if not utils._figure_active or len(utils._accumulated_series) == 0:
         raise Exception(
             "render: No active figure or graph() was not called before"
         )
@@ -215,8 +215,8 @@ def render():
     plot_width = total_width - legend_space
     height = total_height
 
-    todas_x = [x for serie in utils._series_acumuladas for x in serie["xs"]]
-    todas_y = [y for serie in utils._series_acumuladas for y in serie["ys"]]
+    todas_x = [x for serie in utils._accumulated_series for x in serie["xs"]]
+    todas_y = [y for serie in utils._accumulated_series for y in serie["ys"]]
     max_x, min_x = max(todas_x), min(todas_x)
     max_y, min_y = max(todas_y), min(todas_y)
     rango_x = max_x - min_x + 1e-5
@@ -235,7 +235,7 @@ def render():
     contenido = f'<svg width="{total_width}" height="{total_height}" xmlns="http://www.w3.org/2000/svg">\n'
     contenido += f'  <rect x="0" y="0" width="{total_width}" height="{total_height}" fill="white"/>\n'
 
-    if utils.mostrar_grid:
+    if utils.show_grid:
 
         for i in range(6):
             valor_y = min_y + i * (max_y - min_y) / 5
@@ -254,12 +254,12 @@ def render():
                 f'stroke="#ddd" stroke-width="1"/>\n'
             )
 
-    for serie in utils._series_acumuladas:
+    for serie in utils._accumulated_series:
         xs = serie["xs"]
         ys = serie["ys"]
-        clr_linea = serie["color_linea"]
-        clr_puntos = serie["color_puntos"]
-        tam = serie["tamaño_punto"]
+        clr_linea = serie["line_color"]
+        clr_puntos = serie["point_color"]
+        tam = serie["point_size"]
         draw_line = serie["draw_line"]
         draw_point = serie["draw_point"]
 
@@ -304,33 +304,33 @@ def render():
             f'font-size="10" text-anchor="middle">{round(xval, 1)}</text>\n'
         )
 
-    if utils.titulo_grafico:
+    if utils.chart_title:
         contenido += (
             f'  <text x="{total_width // 2}" y="20" '
             f'font-size="14" text-anchor="middle" font-weight="bold">'
-            f"{utils.titulo_grafico}</text>\n"
+            f"{utils.chart_title}</text>\n"
         )
 
-    if utils.eje_x_label:
+    if utils.x_label:
         x_center_plot = padding + (plot_width - 2 * padding) // 2
         contenido += (
             f'  <text x="{x_center_plot}" y="{height - 5}" '
-            f'font-size="12" text-anchor="middle">{utils.eje_x_label}</text>\n'
+            f'font-size="12" text-anchor="middle">{utils.x_label}</text>\n'
         )
 
-    if utils.eje_y_label:
+    if utils.y_label:
         contenido += (
             f'  <g transform="translate(20,{height // 2}) rotate(-90)">'
-            f'<text font-size="12" text-anchor="middle">{utils.eje_y_label}</text></g>\n'
+            f'<text font-size="12" text-anchor="middle">{utils.y_label}</text></g>\n'
         )
 
-    if utils.leyenda_pastel:
+    if utils.pie_legend:
 
         leyenda_x = plot_width + 20
         leyenda_y = 30
         lineas = [
             linea.strip()
-            for linea in utils.leyenda_pastel.split(";")
+            for linea in utils.pie_legend.split(";")
             if linea.strip() != ""
         ]
         alto_recuadro = 20 * len(lineas) + 40
@@ -372,8 +372,8 @@ def render():
 
     contenido += "</svg>\n"
 
-    utils.guardar_svg(contenido)
-    utils.resetear_variables()
+    utils.save_svg(contenido)
+    utils.reset_variables()
 
 
 @check_sig([2], [construir_tipo_lista(1, str)], vector_numeros_t)
@@ -405,20 +405,20 @@ def bar(etiquetas, valores):
         y = height - padding - h
         svg += f'<rect x="{x}" y="{y}" width="{bar_width - 5}" height="{h}" fill="steelblue" />\n'
         svg += f'<text x="{x + bar_width // 2}" y="{height - padding + 15}" font-size="10" text-anchor="middle">{etq}</text>\n'
-        if utils.mostrar_valores_barras:
+        if utils.show_bar_values:
             svg += f'<text x="{x + bar_width // 2}" y="{y - 5}" font-size="10" text-anchor="middle">{val}</text>\n'
 
-    if utils.titulo_grafico:
-        svg += f'<text x="{width // 2}" y="20" font-size="14" font-weight="bold" text-anchor="middle">{utils.titulo_grafico}</text>\n'
-    if utils.eje_y_label:
-        svg += f'<g transform="translate(20,{height // 2}) rotate(-90)"><text font-size="12" text-anchor="middle">{utils.eje_y_label}</text></g>\n'
+    if utils.chart_title:
+        svg += f'<text x="{width // 2}" y="20" font-size="14" font-weight="bold" text-anchor="middle">{utils.chart_title}</text>\n'
+    if utils.y_label:
+        svg += f'<g transform="translate(20,{height // 2}) rotate(-90)"><text font-size="12" text-anchor="middle">{utils.y_label}</text></g>\n'
 
     svg += f'<line x1="{padding}" y1="{height - padding}" x2="{width - padding}" y2="{height - padding}" stroke="black" stroke-width="1" />\n'
     svg += f'<line x1="{padding}" y1="{padding}" x2="{padding}" y2="{height - padding}" stroke="black" stroke-width="1"/>\n'
 
     svg += "</svg>"
-    utils.guardar_svg(svg)
-    utils.resetear_variables()
+    utils.save_svg(svg)
+    utils.reset_variables()
 
 
 @check_sig([2], [construir_tipo_lista(1, str)], vector_numeros_t)
@@ -477,7 +477,7 @@ def pie(etiquetas, valores):
 
         start_angle = end_angle
 
-    if utils.leyenda_pastel:
+    if utils.pie_legend:
         leyenda_x = width - 170
         leyenda_y = 40
         alto_recuadro = 20 * len(etiquetas) + 60
@@ -493,5 +493,5 @@ def pie(etiquetas, valores):
             svg += f'<text x="{leyenda_x + 15}" y="{y_offset}" font-size="10">{etq}</text>\n'
 
     svg += "</svg>\n"
-    utils.guardar_svg(svg)
-    utils.resetear_variables()
+    utils.save_svg(svg)
+    utils.reset_variables()

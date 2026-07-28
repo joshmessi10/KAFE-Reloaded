@@ -88,10 +88,6 @@ def raiseModuleNotFound(module_name, path):
     message = f"Module file for '{module_name}' not found. Tried: {path}"
     raise FileNotFoundError(message)
 
-def raiseRuntimeError(place, exception):
-    message = f"Error in {place} block: {str(exception)}"
-    raise RuntimeError(message)
-
 def raiseFunctionCantReturnVoid():
     message = f"Function declared {void_t} must not return a value"
     raise TypeError(message)
@@ -103,10 +99,6 @@ def raiseLibraryNotImported():
 def raiseVariableIsNotObject():
     message = "variable is not of type object"
     raise Exception(message)
-
-def raiseFileAlreadyExists(nombre, ruta):
-    message = f"File '{nombre}' already exists at {ruta}"
-    raise FileExistsError(message)
 
 def raiseFileNotFound(nombre, ruta):
     message = f"File '{nombre}' not found at {ruta}"

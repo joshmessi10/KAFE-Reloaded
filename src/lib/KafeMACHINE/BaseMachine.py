@@ -23,6 +23,9 @@ class BaseMachine:
             f"'{type(self).__name__}' does not support predict()"
         )
 
+    def fit_transform(self, X):
+        return self.fit(X).transform(X)
+
     def transform(self, X):
         raise NotImplementedError(
             f"'{type(self).__name__}' does not support transform()"
