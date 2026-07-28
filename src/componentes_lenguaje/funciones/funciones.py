@@ -242,21 +242,11 @@ def functionCall(self, ctx):
     if name not in self.variables:
         raiseFunctionNotDefined(name)
     func = self.variables[name][1]
-    children = list(ctx.getChildren())
-    i = 0
-    while i < len(children):
-        if children[i].getText() == "(":
-            if i + 1 < len(children) and isinstance(
-                children[i + 1], Kafe_GrammarParser.ArgListContext
-            ):
-                args = [self.visit(a) for a in children[i + 1].arg()]
-                func = func(*args)
-                i += 3
-            else:
-                func = func()
-                i += 2
-        else:
-            i += 1
+    for arg_list_ctx in ctx.argList():
+        args = [self.visit(a) for a in arg_list_ctx.arg()]
+        func = func(*args)
+    for _ in range(len(ctx.LPAREN()) - len(ctx.argList())):
+        func = func()
     return func
 
 

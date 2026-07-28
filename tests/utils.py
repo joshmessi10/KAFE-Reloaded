@@ -17,7 +17,7 @@ def get_programs(dir):
         dir = os.path.join(os.path.dirname(__file__), dir[len("../tests/") :])
     archivos = []
     for filename in os.listdir(dir):
-        if filename.endswith(".kf") and not (".error" in filename):
+        if filename.endswith(".kf") and not filename.endswith(".error.kf"):
             base = filename[:-3]
             archivos.append(os.path.join(dir, base))
 

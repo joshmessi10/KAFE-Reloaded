@@ -158,7 +158,7 @@ def powerExpr(self, ctx):
     return result
 
 
-def unaryExpresion(self, ctx):
+def unaryExpression(self, ctx):
     op = ctx.getChild(0).getText()
     value = self.visit(ctx.unaryExpr())
     if op == "-":

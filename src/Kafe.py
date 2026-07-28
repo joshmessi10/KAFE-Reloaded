@@ -1,5 +1,4 @@
 import sys
-import os
 import pathlib
 from antlr4 import InputStream, CommonTokenStream
 from antlr4.error.ErrorListener import ErrorListener
@@ -57,8 +56,6 @@ def main():
 
     visitor = EvalVisitorPrimitivo()
 
-    visitor.current_dir = filepath.parent
-
     input_stream = InputStream(contenido)
     lexer = Kafe_GrammarLexer(input_stream)
     lexer.removeErrorListeners()
@@ -83,7 +80,7 @@ if __name__ == "__main__":
 
         # Check if this is a ".error.kf" file (invalid program test)
         # These should exit with code 1 and print to stderr
-        if len(sys.argv) >= 2 and ".error.kf" in sys.argv[1]:
+        if len(sys.argv) >= 2 and sys.argv[1].endswith(".error.kf"):
             print(error_msg, file=sys.stderr)
             sys.exit(1)
         else:

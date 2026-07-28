@@ -28,9 +28,6 @@ class LabelEncoder(BaseMachine):
             result.append(self._label_to_index[item])
         return result
 
-    def fit_transform(self, data):
-        return self.fit(data).transform(data)
-
     @check_sig([2], vector_numeros_t, is_method=True)
     def inverse_transform(self, data):
         self._check_fitted("inverse_transform")

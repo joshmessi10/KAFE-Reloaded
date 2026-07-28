@@ -128,9 +128,6 @@ class PCA(BaseMachine):
             return DataFrame(out_cols, transformed_data)
         return transformed_data
 
-    def fit_transform(self, data):
-        return self.fit(data).transform(data)
-
     @check_sig([2], [pardos_t] + matriz_numeros_t, is_method=True)
     def inverse_transform(self, data):
         self._check_fitted("inverse_transform")
