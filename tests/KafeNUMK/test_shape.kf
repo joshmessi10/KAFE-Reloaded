@@ -1,0 +1,6 @@
+import numk;
+
+List[List[INT]] m2d_a = [[1, 2, 3]];
+List[List[INT]] m2d_b = [[1, 2], [3, 4]];
+show(numk.shape(m2d_a));
+show(numk.shape(m2d_b));
