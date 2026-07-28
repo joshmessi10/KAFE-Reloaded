@@ -1,0 +1,6 @@
+import machine;
+
+List[INT] y_true = [1, 3];
+List[INT] y_pred = [2, 3];
+FLOAT r2 = machine.r2_score(y_true, y_pred);
+show(r2);

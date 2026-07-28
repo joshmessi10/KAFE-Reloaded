@@ -1,0 +1,20 @@
+import machine;
+
+List[INT] y_true = [1, 2, 3];
+List[INT] y_pred = [1, 2, 3];
+FLOAT mse = machine.mean_squared_error(y_true, y_pred);
+FLOAT mae = machine.mean_absolute_error(y_true, y_pred);
+FLOAT rmse = machine.root_mean_squared_error(y_true, y_pred);
+FLOAT r2 = machine.r2_score(y_true, y_pred);
+FLOAT me = machine.max_error(y_true, y_pred);
+FLOAT mdae = machine.median_absolute_error(y_true, y_pred);
+FLOAT mape = machine.mean_absolute_percentage_error(y_true, y_pred);
+FLOAT ev = machine.explained_variance_score(y_true, y_pred);
+show(mse);
+show(mae);
+show(rmse);
+show(r2);
+show(me);
+show(mdae);
+show(mape);
+show(ev);

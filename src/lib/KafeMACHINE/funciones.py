@@ -8,6 +8,14 @@ from .StandardScaler import StandardScaler
 from .MinMaxScaler import MinMaxScaler
 from .SimpleImputer import SimpleImputer
 from .LogisticRegression import LogisticRegression
+from .KNN import KNN
+from .metrics import (
+    accuracy_score, precision_score, recall_score, f1_score,
+    confusion_matrix, classification_report,
+    mean_squared_error, mean_absolute_error, root_mean_squared_error,
+    r2_score, max_error, median_absolute_error,
+    mean_absolute_percentage_error, explained_variance_score,
+)
 
 @check_sig([0], [])
 def linear_regression():
@@ -76,3 +84,11 @@ def logistic_regression(learning_rate=0.01, max_iter=1000):
     Crea una instancia de Regresión Logística.
     """
     return LogisticRegression(learning_rate, max_iter)
+
+
+@check_sig({0: [], 1: [[entero_t]]})
+def knn(k=3):
+    """
+    Crea una instancia de K-Nearest Neighbors.
+    """
+    return KNN(k)

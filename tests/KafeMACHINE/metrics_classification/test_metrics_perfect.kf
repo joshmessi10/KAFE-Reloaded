@@ -1,0 +1,12 @@
+import machine;
+
+List[INT] y_true = [1, 0, 1, 0, 1];
+List[INT] y_pred = [1, 0, 1, 0, 1];
+FLOAT acc = machine.accuracy_score(y_true, y_pred);
+FLOAT prec = machine.precision_score(y_true, y_pred);
+FLOAT rec = machine.recall_score(y_true, y_pred);
+FLOAT f1 = machine.f1_score(y_true, y_pred);
+show(acc);
+show(prec);
+show(rec);
+show(f1);
