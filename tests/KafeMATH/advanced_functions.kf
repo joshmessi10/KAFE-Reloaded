@@ -42,3 +42,10 @@ show(math.fsum(vals));
 -- Special functions
 show(math.erf(0));
 show(math.erfc(0));
+
+-- Float epsilon / spacing
+show(math.ulp(1.0));
+
+-- Gamma
+show(math.gamma(5));
+show(math.lgamma(5));
