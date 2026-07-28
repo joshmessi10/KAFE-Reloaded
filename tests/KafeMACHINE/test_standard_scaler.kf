@@ -1,0 +1,27 @@
+import pardos;
+import machine;
+
+-- Test data: mean=[3.0, 6.0], scale=[1.0, 2.0] (population std, ddof=0)
+List[List[FLOAT]] data = [[2.0, 4.0], [4.0, 8.0]];
+
+PARDOS scaler = machine.standard_scaler();
+scaler.fit(data);
+show("mean_:");
+show(scaler.mean_);
+show("scale_:");
+show(scaler.scale_);
+
+List[List[FLOAT]] transformed = scaler.transform(data);
+show("Transformed:");
+show(transformed);
+
+List[List[FLOAT]] restored = scaler.inverse_transform(transformed);
+show("Inverse transformed:");
+show(restored);
+
+-- Test fit_transform with DataFrame
+PARDOS df = pardos.DataFrame(["a", "b"], [[2.0, 4.0], [4.0, 8.0]]);
+PARDOS scaler2 = machine.standard_scaler();
+PARDOS scaled_df = scaler2.fit_transform(df);
+show("Scaled DataFrame:");
+show(scaled_df);
