@@ -1,0 +1,16 @@
+import pardos;
+
+PARDOS df = pardos.read_csv("groupby_data.csv");
+
+show("--- GroupBy Mean ---");
+PARDOS g = df.groupby("category");
+PARDOS m = g.mean();
+show(m);
+
+show("--- GroupBy Sum ---");
+PARDOS s = g.sum();
+show(s);
+
+show("--- GroupBy Count ---");
+PARDOS c = g.count();
+show(c);

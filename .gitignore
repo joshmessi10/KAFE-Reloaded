@@ -35,3 +35,5 @@ htmlcov/
 
 # Ignore docs/superpowers
 docs/superpowers/
+# MkDocs generated site
+site/

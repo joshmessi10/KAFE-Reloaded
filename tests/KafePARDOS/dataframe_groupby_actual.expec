@@ -1,0 +1,6 @@
+--- GroupBy Mean ---
+"cols: ['category', 'mean'], rows: [['A', 30.0], ['B', 30.0]]"
+--- GroupBy Sum ---
+"cols: ['category', 'sum'], rows: [['A', 90], ['B', 60]]"
+--- GroupBy Count ---
+"cols: ['category', 'count'], rows: [['A', 3], ['B', 2]]"

@@ -1,0 +1,4 @@
+Original DataFrame:
+"cols: ['id', 'name', 'age', 'score'], rows: [[1, 'Alice', 25, 95], [2, 'Bob', 30, nan], [3, 'Carol', 28, 88], [4, 'David', nan, 92], [5, 'Eve', 35, 85]]"
+After forward fill:
+"cols: ['id', 'name', 'age', 'score'], rows: [[1, 'Alice', 25, 95], [2, 'Bob', 30, 95], [3, 'Carol', 28, 88], [4, 'David', 28, 92], [5, 'Eve', 35, 85]]"

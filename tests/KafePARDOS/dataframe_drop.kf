@@ -1,0 +1,20 @@
+import pardos;
+
+-- Test drop() method
+PARDOS df = pardos.read_csv("column_manipulation_test.csv");
+
+show("Original DataFrame:");
+show(df);
+show(df.shape());
+
+-- Drop 'score' column
+PARDOS df2 = df.drop("score");
+show("After dropping 'score':");
+show(df2);
+show(df2.shape());
+
+-- Drop 'age' column
+PARDOS df3 = df2.drop("age");
+show("After dropping 'age':");
+show(df3);
+show(df3.shape());
