@@ -233,3 +233,31 @@ Esto te dará acceso a todas las herramientas necesarias. Los archivos del parse
 Una vez que tengas todo instalado, puedes seguir el siguiente video donde se explica de forma visual y clara cómo usar **KAFE** desde tu terminal, ejecutar pruebas, y trabajar de manera más sencilla y eficiente con el lenguaje.
 
 🔗 [Ver el video tutorial](https://youtu.be/AKCPBTu_CYE)
+
+---
+
+## 📚 Documentación Técnica
+
+La documentación completa del lenguaje está disponible como sitio web:
+
+🔗 **[Documentación de KAFE](https://joshmessi10.github.io/KAFE-Reloaded/)**
+
+Incluye:
+
+- **Guía de Inicio**: Instalación, primeros pasos y ejemplos básicos
+- **Referencia del Lenguaje**: Tipos, operadores, funciones, control de flujo
+- **Bibliotecas**: NUMK, MATH, PLOT, FILES, GeshaDeep, PARDOS, MACHINE
+- **Especificación**: Gramática formal EBNF, semántica operacional
+- **Manejo de Errores**: Referencia completa de todos los errores
+- **Ejemplos**: Programas de ejemplo progresivos
+
+### Contribuir a la Documentación
+
+La documentación está construida con [MkDocs Material](https://squidfunnel.github.io/mkdocs-material/). Para desarrollar localmente:
+
+```bash
+pip install mkdocs mkdocs-material pymdown-extensions
+mkdocs serve
+```
+
+El sitio estará disponible en `http://127.0.0.1:8000`.
