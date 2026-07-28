@@ -19,9 +19,54 @@ Estudiantes de ciencias de la computacion E inteligencia artificial de la Univer
 - 🧮 Librería `MATH` Libreria de utilidades matematicas
 - 📊 Librería `FILES` Libreria para manejo de archivos
 - 🧠 Librería `PARDOS` Libreria para manejo de archivos CSV
+- 🤖 Librería `MACHINE` Modelos de Machine Learning y métricas de evaluación
 - ⚙️ Construido con ANTLR + Python
 - 🖥️ Aplicativo WEB (Compilador en linea)
 - 🔁 TESTS Automatizados
+
+---
+
+## 🤖 Machine Learning (MACHINE)
+
+La librería `MACHINE` provee modelos de ML con API estilo scikit-learn y métricas de evaluación.
+
+### Modelos
+
+| Modelo | Fábrica | Descripción |
+|--------|---------|-------------|
+| **LinearRegression** | `machine.linear_regression()` | Regresión lineal (ecuación normal, `coef_`, `intercept_`, `score()`) |
+| **LogisticRegression** | `machine.logistic_regression(lr, iter)` | Regresión logística (`predict()`, `predict_proba()`, `score()`) |
+| **KNN** | `machine.knn(k)` | K-Nearest Neighbors (`predict()`, `predict_proba()`, `score()`) |
+| **StandardScaler** | `machine.standard_scaler()` | Estandarización Z-score (`transform()`, `inverse_transform()`) |
+| **MinMaxScaler** | `machine.minmax_scaler()` | Escalado a [0,1] (`transform()`, `inverse_transform()`) |
+| **SimpleImputer** | `machine.simple_imputer(strategy)` | Imputación de valores faltantes (mean/median/most_frequent/constant) |
+| **LabelEncoder** | `machine.label_encoder()` | Codificación ordinal de etiquetas |
+| **OneHotEncoder** | `machine.one_hot_encoder()` | Codificación one-hot para DataFrames |
+| **PCA** | `machine.pca(n)` | Análisis de Componentes Principales |
+
+### Métricas de Clasificación
+
+```kafe
+FLOAT acc = machine.accuracy_score(y_true, y_pred);
+FLOAT prec = machine.precision_score(y_true, y_pred);
+FLOAT rec = machine.recall_score(y_true, y_pred);
+FLOAT f1 = machine.f1_score(y_true, y_pred);
+List[List[INT]] cm = machine.confusion_matrix(y_true, y_pred);
+STR report = machine.classification_report(y_true, y_pred);
+```
+
+### Métricas de Regresión
+
+```kafe
+FLOAT mse  = machine.mean_squared_error(y_true, y_pred);
+FLOAT mae  = machine.mean_absolute_error(y_true, y_pred);
+FLOAT rmse = machine.root_mean_squared_error(y_true, y_pred);
+FLOAT r2   = machine.r2_score(y_true, y_pred);
+FLOAT me   = machine.max_error(y_true, y_pred);
+FLOAT mdae = machine.median_absolute_error(y_true, y_pred);
+FLOAT mape = machine.mean_absolute_percentage_error(y_true, y_pred);
+FLOAT ev   = machine.explained_variance_score(y_true, y_pred);
+```
 
 ---
 
