@@ -6,7 +6,7 @@ show("Original data:");
 show(df);
 
 -- strategy="mean"
-PARDOS imp_mean = machine.simple_imputer("mean");
+MACHINE imp_mean = machine.simple_imputer("mean");
 imp_mean.fit(df);
 show("Statistics (mean):");
 show(imp_mean.statistics_);
@@ -15,19 +15,19 @@ show("Imputed (mean):");
 show(df_mean);
 
 -- strategy="median"
-PARDOS imp_median = machine.simple_imputer("median");
+MACHINE imp_median = machine.simple_imputer("median");
 PARDOS df_median = imp_median.fit_transform(df);
 show("Imputed (median):");
 show(df_median);
 
 -- strategy="most_frequent"
-PARDOS imp_freq = machine.simple_imputer("most_frequent");
+MACHINE imp_freq = machine.simple_imputer("most_frequent");
 PARDOS df_freq = imp_freq.fit_transform(df);
 show("Imputed (most_frequent):");
 show(df_freq);
 
 -- strategy="constant"
-PARDOS imp_const = machine.simple_imputer_constant(0.0);
+MACHINE imp_const = machine.simple_imputer_constant(0.0);
 PARDOS df_const = imp_const.fit_transform(df);
 show("Imputed (constant 0.0):");
 show(df_const);

@@ -1,0 +1,15 @@
+import machine;
+
+-- StandardScaler with single feature
+List[List[FLOAT]] data = [[10.0], [20.0], [30.0]];
+
+MACHINE scaler = machine.standard_scaler();
+scaler.fit(data);
+show("mean_:");
+show(scaler.mean_);
+show("scale_:");
+show(scaler.scale_);
+
+List[List[FLOAT]] transformed = scaler.transform(data);
+show("Transformed:");
+show(transformed);

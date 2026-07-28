@@ -1,37 +1,43 @@
 from global_utils import check_sig
-from TypeUtils import machine_t, vector_numeros_t, flotante_t, entero_t
+from TypeUtils import machine_t, vector_numeros_t
+from .BaseMachine import BaseMachine
 
 
-class LinearRegression:
+class LinearRegression(BaseMachine):
     def __init__(self):
-        self.slope = 0.0
-        self.intercept = 0.0
+        super().__init__()
+        self.slope_ = 0.0
+        self.intercept_ = 0.0
 
     @check_sig([3], vector_numeros_t, vector_numeros_t, is_method=True)
-    def train(self, x, y):
-
-        n = len(x)
+    def fit(self, X, y):
+        n = len(X)
         if n == 0 or len(y) != n:
             raise Exception("LinearRegression: Input lengths must match and be > 0")
 
-        sum_x = sum(x)
+        sum_x = sum(X)
         sum_y = sum(y)
-        sum_xy = sum(xi * yi for xi, yi in zip(x, y))
-        sum_x2 = sum(xi**2 for xi in x)
+        sum_xy = sum(xi * yi for xi, yi in zip(X, y))
+        sum_x2 = sum(xi**2 for xi in X)
 
         denominator = n * sum_x2 - sum_x**2
         if denominator == 0:
-            self.slope = 0.0
-            self.intercept = sum_y / n
+            self.slope_ = 0.0
+            self.intercept_ = sum_y / n
         else:
-            self.slope = (n * sum_xy - sum_x * sum_y) / denominator
-            self.intercept = (sum_y - self.slope * sum_x) / n
+            self.slope_ = (n * sum_xy - sum_x * sum_y) / denominator
+            self.intercept_ = (sum_y - self.slope_ * sum_x) / n
 
-    @check_sig([2], [flotante_t, entero_t], is_method=True)
-    def predict(self, val):
-        return self.slope * val + self.intercept
+        self._is_fitted = True
+        return self
+
+    @check_sig([2], vector_numeros_t, is_method=True)
+    def predict(self, X):
+        if not self._is_fitted:
+            raise Exception("LinearRegression: Must call fit before predict")
+        return [self.slope_ * val + self.intercept_ for val in X]
 
     def __repr__(self):
         return (
-            f"LinearRegression(slope={self.slope:.4f}, intercept={self.intercept:.4f})"
+            f"LinearRegression(slope={self.slope_:.4f}, intercept={self.intercept_:.4f})"
         )

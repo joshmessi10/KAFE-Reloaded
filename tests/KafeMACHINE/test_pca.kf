@@ -17,7 +17,7 @@ show("Original 3D Data:");
 show(df);
 
 -- PCA - Reducing to 2 dimensions
-PARDOS pca_model = machine.pca(2);
+MACHINE pca_model = machine.pca(2);
 pca_model.fit(df);
 
 -- Apply rounding for test stability

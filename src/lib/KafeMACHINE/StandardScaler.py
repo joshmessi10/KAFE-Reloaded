@@ -2,9 +2,10 @@ import math
 from global_utils import check_sig
 from TypeUtils import pardos_t, matriz_numeros_t
 from lib.KafePARDOS.DataFrame import DataFrame
+from .BaseMachine import BaseMachine
 
 
-class StandardScaler:
+class StandardScaler(BaseMachine):
     def __init__(self):
         self.mean_ = []
         self.scale_ = []
@@ -54,7 +55,6 @@ class StandardScaler:
 
         return DataFrame(cols, result) if is_df else result
 
-    @check_sig([2], [pardos_t] + matriz_numeros_t, is_method=True)
     def fit_transform(self, data):
         return self.fit(data).transform(data)
 
