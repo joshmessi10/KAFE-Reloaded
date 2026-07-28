@@ -12,7 +12,6 @@ def ifElseExpr(self, ctx):
         try:
             self.visit(ctx.block(0))
         except ReturnValue as rv:
-            self.pop_scope()
             raise rv
         finally:
             self.pop_scope()
@@ -27,7 +26,6 @@ def ifElseExpr(self, ctx):
                 try:
                     self.visit(elif_branch.block())
                 except ReturnValue as rv:
-                    self.pop_scope()
                     raise rv
                 finally:
                     self.pop_scope()
@@ -38,7 +36,6 @@ def ifElseExpr(self, ctx):
         try:
             self.visit(ctx.block(len(ctx.block()) - 1))
         except ReturnValue as rv:
-            self.pop_scope()
             raise rv
         finally:
             self.pop_scope()

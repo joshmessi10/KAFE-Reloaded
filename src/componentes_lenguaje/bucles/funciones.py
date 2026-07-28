@@ -19,7 +19,6 @@ def whileLoop(self, ctx):
         try:
             self.visit(ctx.block())
         except ReturnValue as ret:
-            self.pop_scope()
             raise ret
         finally:
             self.pop_scope()
@@ -51,7 +50,6 @@ def forLoop(self, ctx):
         try:
             self.visit(ctx.block())
         except ReturnValue as ret:
-            self.pop_scope()
             raise ret
         finally:
             self.pop_scope()

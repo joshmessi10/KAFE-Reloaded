@@ -66,7 +66,7 @@ def simple_imputer(strategy):
     Crea una instancia de SimpleImputer con la estrategia especificada.
     """
     if strategy == "constant":
-        raise Exception("machine.simple_imputer: use machine.simple_imputer_constant(fill_value) for constant strategy")
+        raise Exception("simple_imputer: use machine.simple_imputer_constant(fill_value) for constant strategy")
     return SimpleImputer(strategy)
 
 

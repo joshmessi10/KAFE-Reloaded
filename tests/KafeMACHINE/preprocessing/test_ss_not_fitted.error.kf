@@ -1,0 +1,5 @@
+import machine;
+
+List[List[FLOAT]] X = [[1.0, 2.0], [3.0, 4.0]];
+MACHINE ss = machine.standard_scaler();
+ss.transform(X);

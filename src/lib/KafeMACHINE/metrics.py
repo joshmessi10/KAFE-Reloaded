@@ -4,22 +4,23 @@ from global_utils import check_sig
 from TypeUtils import vector_numeros_t
 
 
+def _validate_inputs(func_name, y_true, y_pred):
+    if len(y_true) != len(y_pred):
+        raise Exception(f"{func_name}: y_true and y_pred must have same length")
+    if len(y_true) == 0:
+        raise Exception(f"{func_name}: Input lists cannot be empty")
+
+
 @check_sig([2], vector_numeros_t, vector_numeros_t)
 def accuracy_score(y_true, y_pred):
-    if len(y_true) != len(y_pred):
-        raise Exception("metrics: accuracy_score: y_true and y_pred must have same length")
-    if len(y_true) == 0:
-        raise Exception("metrics: accuracy_score: Input lists cannot be empty")
+    _validate_inputs("accuracy_score", y_true, y_pred)
     correct = sum(1 for t, p in zip(y_true, y_pred) if t == p)
     return correct / len(y_true)
 
 
 @check_sig([2], vector_numeros_t, vector_numeros_t)
 def precision_score(y_true, y_pred):
-    if len(y_true) != len(y_pred):
-        raise Exception("metrics: precision_score: y_true and y_pred must have same length")
-    if len(y_true) == 0:
-        raise Exception("metrics: precision_score: Input lists cannot be empty")
+    _validate_inputs("precision_score", y_true, y_pred)
     tp = sum(1 for t, p in zip(y_true, y_pred) if t == 1 and p == 1)
     fp = sum(1 for t, p in zip(y_true, y_pred) if t != 1 and p == 1)
     if tp + fp == 0:
@@ -29,10 +30,7 @@ def precision_score(y_true, y_pred):
 
 @check_sig([2], vector_numeros_t, vector_numeros_t)
 def recall_score(y_true, y_pred):
-    if len(y_true) != len(y_pred):
-        raise Exception("metrics: recall_score: y_true and y_pred must have same length")
-    if len(y_true) == 0:
-        raise Exception("metrics: recall_score: Input lists cannot be empty")
+    _validate_inputs("recall_score", y_true, y_pred)
     tp = sum(1 for t, p in zip(y_true, y_pred) if t == 1 and p == 1)
     fn = sum(1 for t, p in zip(y_true, y_pred) if t == 1 and p != 1)
     if tp + fn == 0:
@@ -42,10 +40,7 @@ def recall_score(y_true, y_pred):
 
 @check_sig([2], vector_numeros_t, vector_numeros_t)
 def f1_score(y_true, y_pred):
-    if len(y_true) != len(y_pred):
-        raise Exception("metrics: f1_score: y_true and y_pred must have same length")
-    if len(y_true) == 0:
-        raise Exception("metrics: f1_score: Input lists cannot be empty")
+    _validate_inputs("f1_score", y_true, y_pred)
     p = precision_score(y_true, y_pred)
     r = recall_score(y_true, y_pred)
     if p + r == 0:
@@ -55,10 +50,7 @@ def f1_score(y_true, y_pred):
 
 @check_sig([2], vector_numeros_t, vector_numeros_t)
 def confusion_matrix(y_true, y_pred):
-    if len(y_true) != len(y_pred):
-        raise Exception("metrics: confusion_matrix: y_true and y_pred must have same length")
-    if len(y_true) == 0:
-        raise Exception("metrics: confusion_matrix: Input lists cannot be empty")
+    _validate_inputs("confusion_matrix", y_true, y_pred)
     classes = sorted(set(y_true))
     class_to_idx = {c: i for i, c in enumerate(classes)}
     n = len(classes)
@@ -70,10 +62,7 @@ def confusion_matrix(y_true, y_pred):
 
 @check_sig([2], vector_numeros_t, vector_numeros_t)
 def classification_report(y_true, y_pred):
-    if len(y_true) != len(y_pred):
-        raise Exception("metrics: classification_report: y_true and y_pred must have same length")
-    if len(y_true) == 0:
-        raise Exception("metrics: classification_report: Input lists cannot be empty")
+    _validate_inputs("classification_report", y_true, y_pred)
     classes = sorted(set(y_true))
     lines = []
     lines.append(f"{'':>8} {'precision':>10} {'recall':>8} {'f1-score':>9} {'support':>8}")
@@ -110,38 +99,26 @@ def classification_report(y_true, y_pred):
 
 @check_sig([2], vector_numeros_t, vector_numeros_t)
 def mean_squared_error(y_true, y_pred):
-    if len(y_true) != len(y_pred):
-        raise Exception("metrics: mean_squared_error: y_true and y_pred must have same length")
-    if len(y_true) == 0:
-        raise Exception("metrics: mean_squared_error: Input lists cannot be empty")
+    _validate_inputs("mean_squared_error", y_true, y_pred)
     return sum((t - p) ** 2 for t, p in zip(y_true, y_pred)) / len(y_true)
 
 
 @check_sig([2], vector_numeros_t, vector_numeros_t)
 def mean_absolute_error(y_true, y_pred):
-    if len(y_true) != len(y_pred):
-        raise Exception("metrics: mean_absolute_error: y_true and y_pred must have same length")
-    if len(y_true) == 0:
-        raise Exception("metrics: mean_absolute_error: Input lists cannot be empty")
+    _validate_inputs("mean_absolute_error", y_true, y_pred)
     return sum(abs(t - p) for t, p in zip(y_true, y_pred)) / len(y_true)
 
 
 @check_sig([2], vector_numeros_t, vector_numeros_t)
 def root_mean_squared_error(y_true, y_pred):
-    if len(y_true) != len(y_pred):
-        raise Exception("metrics: root_mean_squared_error: y_true and y_pred must have same length")
-    if len(y_true) == 0:
-        raise Exception("metrics: root_mean_squared_error: Input lists cannot be empty")
+    _validate_inputs("root_mean_squared_error", y_true, y_pred)
     mse = sum((t - p) ** 2 for t, p in zip(y_true, y_pred)) / len(y_true)
     return math.sqrt(mse)
 
 
 @check_sig([2], vector_numeros_t, vector_numeros_t)
 def r2_score(y_true, y_pred):
-    if len(y_true) != len(y_pred):
-        raise Exception("metrics: r2_score: y_true and y_pred must have same length")
-    if len(y_true) == 0:
-        raise Exception("metrics: r2_score: Input lists cannot be empty")
+    _validate_inputs("r2_score", y_true, y_pred)
     y_mean = sum(y_true) / len(y_true)
     ss_res = sum((t - p) ** 2 for t, p in zip(y_true, y_pred))
     ss_tot = sum((t - y_mean) ** 2 for t in y_true)
@@ -152,19 +129,13 @@ def r2_score(y_true, y_pred):
 
 @check_sig([2], vector_numeros_t, vector_numeros_t)
 def max_error(y_true, y_pred):
-    if len(y_true) != len(y_pred):
-        raise Exception("metrics: max_error: y_true and y_pred must have same length")
-    if len(y_true) == 0:
-        raise Exception("metrics: max_error: Input lists cannot be empty")
+    _validate_inputs("max_error", y_true, y_pred)
     return float(max(abs(t - p) for t, p in zip(y_true, y_pred)))
 
 
 @check_sig([2], vector_numeros_t, vector_numeros_t)
 def median_absolute_error(y_true, y_pred):
-    if len(y_true) != len(y_pred):
-        raise Exception("metrics: median_absolute_error: y_true and y_pred must have same length")
-    if len(y_true) == 0:
-        raise Exception("metrics: median_absolute_error: Input lists cannot be empty")
+    _validate_inputs("median_absolute_error", y_true, y_pred)
     abs_errors = sorted(abs(t - p) for t, p in zip(y_true, y_pred))
     n = len(abs_errors)
     if n % 2 == 1:
@@ -174,22 +145,16 @@ def median_absolute_error(y_true, y_pred):
 
 @check_sig([2], vector_numeros_t, vector_numeros_t)
 def mean_absolute_percentage_error(y_true, y_pred):
-    if len(y_true) != len(y_pred):
-        raise Exception("metrics: mean_absolute_percentage_error: y_true and y_pred must have same length")
-    if len(y_true) == 0:
-        raise Exception("metrics: mean_absolute_percentage_error: Input lists cannot be empty")
+    _validate_inputs("mean_absolute_percentage_error", y_true, y_pred)
     for t in y_true:
         if t == 0:
-            raise Exception("metrics: mean_absolute_percentage_error: y_true contains zero, MAPE is undefined")
+            raise Exception("mean_absolute_percentage_error: y_true contains zero, MAPE is undefined")
     return 100.0 / len(y_true) * sum(abs(t - p) / abs(t) for t, p in zip(y_true, y_pred))
 
 
 @check_sig([2], vector_numeros_t, vector_numeros_t)
 def explained_variance_score(y_true, y_pred):
-    if len(y_true) != len(y_pred):
-        raise Exception("metrics: explained_variance_score: y_true and y_pred must have same length")
-    if len(y_true) == 0:
-        raise Exception("metrics: explained_variance_score: Input lists cannot be empty")
+    _validate_inputs("explained_variance_score", y_true, y_pred)
     y_mean = sum(y_true) / len(y_true)
     err_mean = sum(t - p for t, p in zip(y_true, y_pred)) / len(y_true)
     var_y = sum((t - y_mean) ** 2 for t in y_true) / len(y_true)

@@ -1,0 +1,4 @@
+import machine;
+
+MACHINE ss = machine.standard_scaler();
+ss.fit([]);

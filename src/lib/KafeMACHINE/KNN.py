@@ -42,8 +42,7 @@ class KNN(BaseMachine):
 
     @check_sig([2], vector_numeros_t + matriz_numeros_t, is_method=True)
     def predict(self, X):
-        if not self._is_fitted:
-            raise Exception("KNN: Must call fit before predict")
+        self._check_fitted("predict")
         if not X:
             return []
         if not isinstance(X[0], (list, tuple)):
@@ -64,8 +63,7 @@ class KNN(BaseMachine):
 
     @check_sig([2], vector_numeros_t + matriz_numeros_t, is_method=True)
     def predict_proba(self, X):
-        if not self._is_fitted:
-            raise Exception("KNN: Must call fit before predict_proba")
+        self._check_fitted("predict_proba")
         if not X:
             return []
         if not isinstance(X[0], (list, tuple)):
@@ -88,6 +86,7 @@ class KNN(BaseMachine):
 
     @check_sig([3], vector_numeros_t + matriz_numeros_t, vector_numeros_t + [entero_t], is_method=True)
     def score(self, X, y):
+        self._check_fitted("score")
         preds = self.predict(X)
         correct = sum(1 for p, t in zip(preds, y) if p == t)
         return correct / len(X) if len(X) > 0 else 0.0
