@@ -1,1 +1,1 @@
-Exception: plot: render: No hay ninguna figura activa o no se llamó a graph() antes.
+Exception: plot: render: No active figure or graph() was not called before

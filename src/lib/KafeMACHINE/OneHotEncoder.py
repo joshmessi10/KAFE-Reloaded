@@ -6,6 +6,7 @@ from .BaseMachine import BaseMachine
 
 class OneHotEncoder(BaseMachine):
     def __init__(self):
+        super().__init__()
         self.categories_ = {}
         self.columns_ = []
 
@@ -22,12 +23,12 @@ class OneHotEncoder(BaseMachine):
             unique_cats = sorted(list(set(str(v) for v in col_data if v is not None)))
             self.categories_[col] = unique_cats
 
+        self._is_fitted = True
         return self
 
     @check_sig([2], [pardos_t], is_method=True)
     def transform(self, df):
-        if not self.categories_:
-            raise Exception("OneHotEncoder: Must call fit before transform")
+        self._check_fitted("transform")
 
         new_columns = []
         for col in df.columns:
@@ -61,8 +62,7 @@ class OneHotEncoder(BaseMachine):
         return self.fit(df, columns).transform(df)
 
     def inverse_transform(self, df):
-        if not self.categories_:
-            raise Exception("OneHotEncoder: Must call fit before inverse_transform")
+        self._check_fitted("inverse_transform")
 
         original_columns = [c for c in df.columns if c not in self.columns_]
         for col in self.columns_:

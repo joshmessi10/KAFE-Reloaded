@@ -16,6 +16,7 @@ def _is_missing(v):
 
 class SimpleImputer(BaseMachine):
     def __init__(self, strategy, fill_value=None):
+        super().__init__()
         valid = ("mean", "median", "most_frequent", "constant")
         if strategy not in valid:
             raise Exception(f"SimpleImputer: strategy must be one of {valid}")
@@ -57,17 +58,13 @@ class SimpleImputer(BaseMachine):
             self._compute_statistic([row[j] for row in matrix])
             for j in range(n_features)
         ]
+        self._is_fitted = True
         return self
 
     @check_sig([2], [pardos_t, matriz_cualquiera_t], is_method=True)
     def transform(self, data):
-        if not self.statistics_:
-            raise Exception("SimpleImputer: Must call fit before transform")
-
-        if isinstance(data, DataFrame):
-            matrix, cols, is_df = data.data, data.columns, True
-        else:
-            matrix, cols, is_df = data, [], False
+        self._check_fitted("transform")
+        matrix, cols, is_df = self._unwrap_data(data)
 
         if len(matrix[0]) != len(self.statistics_):
             raise Exception("SimpleImputer: Input dimension does not match fitted model")

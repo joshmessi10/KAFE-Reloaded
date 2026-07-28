@@ -143,7 +143,7 @@ def graph(*args):
 
                 style = estilo_raw.lower()
                 if style not in ("line", "point", "both"):
-                    raise Exception("graph: style debe ser 'line', 'point' o 'both'.")
+                    raise Exception("graph: style must be 'line', 'point' or 'both'")
             else:
                 raise Exception(
                     "graph: si se pasan dos argumentos, el primero debe ser una lista de pares [[x,y],…] "
@@ -159,7 +159,7 @@ def graph(*args):
             if tipo_ys not in vector_numeros_t:
                 raiseFunctionIncorrectArgumentType("graph", ys, tipo_ys)
             if len(xs) != len(ys):
-                raise Exception("graph: Listas x e y deben tener el mismo largo.")
+                raise Exception("graph: x and y lists must have the same length")
             style = "both"
 
     else:
@@ -172,13 +172,13 @@ def graph(*args):
         if tipo_ys not in vector_numeros_t:
             raiseFunctionIncorrectArgumentType("graph", ys, tipo_ys)
         if len(xs) != len(ys):
-            raise Exception("graph: Listas x e y deben tener el mismo largo.")
+            raise Exception("graph: x and y lists must have the same length")
 
         if not isinstance(estilo_raw, str):
-            raise Exception("graph: style debe ser una cadena literal.")
+            raise Exception("graph: style must be a literal string")
         style = estilo_raw.lower()
         if style not in ("line", "point", "both"):
-            raise Exception("graph: style debe ser 'line', 'point' o 'both'.")
+            raise Exception("graph: style must be 'line', 'point' or 'both'")
 
     auto_show = False
     if not utils._figura_activa:
@@ -206,7 +206,7 @@ def render():
 
     if not utils._figura_activa or len(utils._series_acumuladas) == 0:
         raise Exception(
-            "render: No hay ninguna figura activa o no se llamó a graph() antes."
+            "render: No active figure or graph() was not called before"
         )
 
     total_width = 700

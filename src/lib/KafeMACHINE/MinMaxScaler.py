@@ -6,6 +6,7 @@ from .BaseMachine import BaseMachine
 
 class MinMaxScaler(BaseMachine):
     def __init__(self):
+        super().__init__()
         self.data_min_ = []
         self.data_max_ = []
         self.scale_ = []
@@ -26,17 +27,13 @@ class MinMaxScaler(BaseMachine):
             else 1.0 / (self.data_max_[j] - self.data_min_[j])
             for j in range(n_features)
         ]
+        self._is_fitted = True
         return self
 
     @check_sig([2], [pardos_t] + matriz_numeros_t, is_method=True)
     def transform(self, data):
-        if not self.data_min_:
-            raise Exception("MinMaxScaler: Must call fit before transform")
-
-        if isinstance(data, DataFrame):
-            matrix, cols, is_df = data.data, data.columns, True
-        else:
-            matrix, cols, is_df = data, [], False
+        self._check_fitted("transform")
+        matrix, cols, is_df = self._unwrap_data(data)
 
         if len(matrix[0]) != len(self.data_min_):
             raise Exception("MinMaxScaler: Input dimension does not match fitted model")
@@ -56,13 +53,8 @@ class MinMaxScaler(BaseMachine):
 
     @check_sig([2], [pardos_t] + matriz_numeros_t, is_method=True)
     def inverse_transform(self, data):
-        if not self.data_min_:
-            raise Exception("MinMaxScaler: Must call fit before inverse_transform")
-
-        if isinstance(data, DataFrame):
-            matrix, cols, is_df = data.data, data.columns, True
-        else:
-            matrix, cols, is_df = data, [], False
+        self._check_fitted("inverse_transform")
+        matrix, cols, is_df = self._unwrap_data(data)
 
         if len(matrix[0]) != len(self.data_min_):
             raise Exception("MinMaxScaler: Input dimension does not match fitted model")

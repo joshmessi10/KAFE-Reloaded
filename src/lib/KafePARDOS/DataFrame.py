@@ -21,7 +21,7 @@ class DataFrame:
     def __init__(self, columns, data):
         for row in data:
             if len(row) != len(columns):
-                raise Exception(f"Inconsistent dimensions")
+                raise Exception(f"pardos: Inconsistent dimensions")
 
         self.columns = columns
         self.data = data
@@ -58,10 +58,12 @@ class DataFrame:
     @check_sig([2], [pardos_t], [cadena_t])
     def col(self, column_name):
         if column_name not in self.columns:
-            raise Exception(f"Column '{column_name}' doesn't exist")
+            raise Exception(f"pardos: Column '{column_name}' doesn't exist")
         idx = self.columns.index(column_name)
 
         raw = [row[idx] for row in self.data]
+
+
 
         dtypes_rows = self.dtypes()
 
@@ -366,7 +368,7 @@ class DataFrame:
     def value_counts(self, column_name):
         """Count occurrences of each unique value in a column."""
         if column_name not in self.columns:
-            raise Exception(f"Column '{column_name}' doesn't exist")
+            raise Exception(f"pardos: Column '{column_name}' doesn't exist")
         idx = self.columns.index(column_name)
         counts = {}
         for row in self.data:
@@ -394,8 +396,10 @@ class DataFrame:
             and not (isinstance(row[idx], float) and math.isnan(row[idx]))
         ]
         if not nums:
-            raise Exception(f"Column '{column_name}' has no numeric values")
+            raise Exception(f"pardos: Column '{column_name}' has no numeric values")
         return builtins_sum(nums) / len(nums)
+
+
 
     @check_sig([2], [pardos_t], [cadena_t])
     def sum(self, column_name):
@@ -410,8 +414,10 @@ class DataFrame:
             and not (isinstance(row[idx], float) and math.isnan(row[idx]))
         ]
         if not nums:
-            raise Exception(f"Column '{column_name}' has no numeric values")
+            raise Exception(f"pardos: Column '{column_name}' has no numeric values")
         return builtins_sum(nums)
+
+
 
     @check_sig([3], [pardos_t], [cadena_t], [cadena_t])
     def agg(self, column_name, func_name):
@@ -431,13 +437,13 @@ class DataFrame:
         supported = ["sum", "mean", "min", "max", "count"]
         if func_name not in supported:
             raise Exception(
-                f"Unsupported aggregation '{func_name}'. "
+                f"pardos: Unsupported aggregation '{func_name}'. "
                 f"Supported: {supported}"
             )
         if func_name == "count":
             return len(nums)
         if not nums:
-            raise Exception(f"Column '{column_name}' has no numeric values")
+            raise Exception(f"pardos: Column '{column_name}' has no numeric values")
         if func_name == "sum":
             return builtins_sum(nums)
         elif func_name == "mean":
@@ -470,7 +476,7 @@ class DataFrame:
         import globals
         visitor = globals.current_visitor
         if visitor is None:
-            raise Exception("Pardos: No active interpreter visitor found")
+            raise Exception("pardos: No active interpreter visitor found")
 
         # Lazy import to avoid crashes if antlr4 is missing in some environments
         try:
@@ -478,7 +484,7 @@ class DataFrame:
             from Kafe_GrammarLexer import Kafe_GrammarLexer
             from Kafe_GrammarParser import Kafe_GrammarParser
         except ImportError:
-            raise Exception("Pardos: antlr4-python3-runtime is not installed")
+            raise Exception("pardos: antlr4-python3-runtime is not installed")
 
         # Parse the query string as an expression
         input_stream = InputStream(query_str)

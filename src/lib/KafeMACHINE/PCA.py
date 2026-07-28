@@ -7,37 +7,16 @@ from .BaseMachine import BaseMachine
 
 class PCA(BaseMachine):
     def __init__(self, n_components):
+        super().__init__()
+        if n_components <= 0:
+            raise Exception("PCA: n_components must be positive")
         self.n_components = n_components
         self.components_ = []
         self.mean_ = []
         self.explained_variance_ = []
 
-    @check_sig([2], [pardos_t] + matriz_numeros_t, is_method=True)
-    def fit(self, data):
-        if isinstance(data, DataFrame):
-            matrix = data.data
-        else:
-            matrix = data
-
-        if not matrix or not matrix[0]:
-            raise Exception("PCA: Empty input data")
-
-        n_samples = len(matrix)
-        n_features = len(matrix[0])
-
-        # 1. Mean Centering
-        self.mean_ = [sum(row[j] for row in matrix) / n_samples for j in range(n_features)]
-        centered_matrix = [[matrix[i][j] - self.mean_[j] for j in range(n_features)] for i in range(n_samples)]
-
-        # 2. Covariance Matrix: C = (X^T * X) / (n - 1)
-        cov_matrix = [[0.0 for _ in range(n_features)] for _ in range(n_features)]
-        for i in range(n_features):
-            for j in range(i, n_features):
-                val = sum(centered_matrix[k][i] * centered_matrix[k][j] for k in range(n_samples)) / (n_samples - 1)
-                cov_matrix[i][j] = val
-                cov_matrix[j][i] = val
-
-        # 3. Jacobi Eigenvalue Algorithm
+    @staticmethod
+    def _jacobi_eigenvalues(cov_matrix, n_features):
         eigenvectors = [[1.0 if i == j else 0.0 for j in range(n_features)] for i in range(n_features)]
 
         max_iterations = 100
@@ -84,28 +63,50 @@ class PCA(BaseMachine):
                 eigenvectors[i][p] = v_ip - s * (v_iq + tau * v_ip)
                 eigenvectors[i][q] = v_iq + s * (v_ip - tau * v_iq)
 
-        # 4. Extract eigenvalues and eigenvectors, then sort
         eigenvalues = [cov_matrix[i][i] for i in range(n_features)]
-
         components = [[eigenvectors[i][j] for i in range(n_features)] for j in range(n_features)]
+        return eigenvalues, components
 
+    @check_sig([2], [pardos_t] + matriz_numeros_t, is_method=True)
+    def fit(self, data):
+        if isinstance(data, DataFrame):
+            matrix = data.data
+        else:
+            matrix = data
+
+        if not matrix or not matrix[0]:
+            raise Exception("PCA: Empty input data")
+
+        n_samples = len(matrix)
+        n_features = len(matrix[0])
+
+        # 1. Mean Centering
+        self.mean_ = [sum(row[j] for row in matrix) / n_samples for j in range(n_features)]
+        centered_matrix = [[matrix[i][j] - self.mean_[j] for j in range(n_features)] for i in range(n_samples)]
+
+        # 2. Covariance Matrix: C = (X^T * X) / (n - 1)
+        cov_matrix = [[0.0 for _ in range(n_features)] for _ in range(n_features)]
+        for i in range(n_features):
+            for j in range(i, n_features):
+                val = sum(centered_matrix[k][i] * centered_matrix[k][j] for k in range(n_samples)) / (n_samples - 1)
+                cov_matrix[i][j] = val
+                cov_matrix[j][i] = val
+
+        # 3. Jacobi Eigenvalue Algorithm
+        eigenvalues, components = self._jacobi_eigenvalues(cov_matrix, n_features)
+
+        # 4. Sort by eigenvalue descending, keep top n_components
         sorted_indices = sorted(range(n_features), key=lambda i: eigenvalues[i], reverse=True)
         self.explained_variance_ = [eigenvalues[i] for i in sorted_indices[:self.n_components]]
         self.components_ = [components[i] for i in sorted_indices[:self.n_components]]
 
+        self._is_fitted = True
         return self
 
     @check_sig([2], [pardos_t] + matriz_numeros_t, is_method=True)
     def transform(self, data):
-        if not self.components_:
-            raise Exception("PCA: Must call fit before transform")
-
-        if isinstance(data, DataFrame):
-            matrix = data.data
-            cols = [f"PC{i+1}" for i in range(self.n_components)]
-        else:
-            matrix = data
-            cols = []
+        self._check_fitted("transform")
+        matrix, cols, is_df = self._unwrap_data(data)
 
         n_samples = len(matrix)
         n_features = len(matrix[0])
@@ -122,27 +123,20 @@ class PCA(BaseMachine):
                 projected_row.append(val)
             transformed_data.append(projected_row)
 
-        if isinstance(data, DataFrame):
-            return DataFrame(cols, transformed_data)
-        else:
-            return transformed_data
+        if is_df:
+            out_cols = [f"PC{i+1}" for i in range(self.n_components)]
+            return DataFrame(out_cols, transformed_data)
+        return transformed_data
 
     def fit_transform(self, data):
         return self.fit(data).transform(data)
 
     @check_sig([2], [pardos_t] + matriz_numeros_t, is_method=True)
     def inverse_transform(self, data):
-        if not self.components_:
-            raise Exception("PCA: Must call fit before inverse_transform")
+        self._check_fitted("inverse_transform")
+        matrix, _, is_df = self._unwrap_data(data)
 
-        if isinstance(data, DataFrame):
-            matrix = data.data
-            cols_count = len(data.columns)
-        else:
-            matrix = data
-            cols_count = len(matrix[0]) if matrix else 0
-
-        if cols_count != len(self.components_):
+        if len(matrix[0]) != len(self.components_):
             raise Exception("PCA: Input dimension does not match fitted model (n_components)")
 
         result = []
@@ -154,11 +148,10 @@ class PCA(BaseMachine):
             original = [original[j] + self.mean_[j] for j in range(len(self.mean_))]
             result.append(original)
 
-        if isinstance(data, DataFrame):
+        if is_df:
             cols = [f"original_dim_{j+1}" for j in range(len(self.mean_))]
             return DataFrame(cols, result)
-        else:
-            return result
+        return result
 
     def round(self, decimals=4):
         import lib.KafeMATH.funciones as math

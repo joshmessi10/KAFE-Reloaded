@@ -1,0 +1,3 @@
+import machine;
+
+MACHINE pca_model = machine.pca(-1);

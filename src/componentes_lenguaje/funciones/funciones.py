@@ -310,7 +310,7 @@ def showStmt(self, ctx):
         and hasattr(val, "collected")
         and len(val.collected) < val.total
     ):
-        raiseWrongNumberOfArgs(val.name, val.total, len(val.collected))
+        raiseWrongNumberOfArgs(getattr(val, '_name', '<lambda>'), val.total, len(val.collected))
     print(val)
 
 

@@ -5,6 +5,7 @@ from .BaseMachine import BaseMachine
 
 class LabelEncoder(BaseMachine):
     def __init__(self):
+        super().__init__()
         self.classes_ = []
         self._label_to_index = {}
 
@@ -13,12 +14,12 @@ class LabelEncoder(BaseMachine):
         unique_labels = sorted(list(set(data)))
         self.classes_ = unique_labels
         self._label_to_index = {label: i for i, label in enumerate(unique_labels)}
+        self._is_fitted = True
         return self
 
     @check_sig([2], lista_cualquiera_t, is_method=True)
     def transform(self, data):
-        if not self.classes_:
-            raise Exception("LabelEncoder: Must call fit before transform")
+        self._check_fitted("transform")
 
         result = []
         for item in data:
@@ -32,8 +33,7 @@ class LabelEncoder(BaseMachine):
 
     @check_sig([2], vector_numeros_t, is_method=True)
     def inverse_transform(self, data):
-        if not self.classes_:
-            raise Exception("LabelEncoder: Must call fit before inverse_transform")
+        self._check_fitted("inverse_transform")
 
         result = []
         for idx in data:

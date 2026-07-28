@@ -7,6 +7,7 @@ from .BaseMachine import BaseMachine
 
 class StandardScaler(BaseMachine):
     def __init__(self):
+        super().__init__()
         self.mean_ = []
         self.scale_ = []
 
@@ -30,17 +31,13 @@ class StandardScaler(BaseMachine):
             )
             for j in range(n_features)
         ]
+        self._is_fitted = True
         return self
 
     @check_sig([2], [pardos_t] + matriz_numeros_t, is_method=True)
     def transform(self, data):
-        if not self.mean_:
-            raise Exception("StandardScaler: Must call fit before transform")
-
-        if isinstance(data, DataFrame):
-            matrix, cols, is_df = data.data, data.columns, True
-        else:
-            matrix, cols, is_df = data, [], False
+        self._check_fitted("transform")
+        matrix, cols, is_df = self._unwrap_data(data)
 
         if len(matrix[0]) != len(self.mean_):
             raise Exception("StandardScaler: Input dimension does not match fitted model")
@@ -60,13 +57,8 @@ class StandardScaler(BaseMachine):
 
     @check_sig([2], [pardos_t] + matriz_numeros_t, is_method=True)
     def inverse_transform(self, data):
-        if not self.mean_:
-            raise Exception("StandardScaler: Must call fit before inverse_transform")
-
-        if isinstance(data, DataFrame):
-            matrix, cols, is_df = data.data, data.columns, True
-        else:
-            matrix, cols, is_df = data, [], False
+        self._check_fitted("inverse_transform")
+        matrix, cols, is_df = self._unwrap_data(data)
 
         if len(matrix[0]) != len(self.mean_):
             raise Exception("StandardScaler: Input dimension does not match fitted model")

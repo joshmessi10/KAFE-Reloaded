@@ -1,1 +1,1 @@
-Exception: machine: metrics: mean_absolute_percentage_error: y_true contains zero, MAPE is undefined
+Exception: machine: mean_absolute_percentage_error: y_true contains zero, MAPE is undefined

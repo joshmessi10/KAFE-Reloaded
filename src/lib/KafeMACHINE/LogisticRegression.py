@@ -14,12 +14,12 @@ class LogisticRegression(BaseMachine):
 
     @check_sig([3], vector_numeros_t + matriz_numeros_t, vector_numeros_t, is_method=True)
     def fit(self, X, y):
-        if not isinstance(X[0], (list, tuple)):
-            X = [[v] for v in X]
-
         n = len(X)
         if n == 0:
             raise Exception("LogisticRegression: Empty input data")
+
+        if not isinstance(X[0], (list, tuple)):
+            X = [[v] for v in X]
 
         m = len(X[0])
         if m == 0:
@@ -54,15 +54,13 @@ class LogisticRegression(BaseMachine):
 
     @check_sig([2], vector_numeros_t + matriz_numeros_t, is_method=True)
     def predict(self, X):
-        if not self._is_fitted:
-            raise Exception("LogisticRegression: Must call fit before predict")
+        self._check_fitted("predict")
         probs = self.predict_proba(X)
         return [0 if p[0] >= 0.5 else 1 for p in probs]
 
     @check_sig([2], vector_numeros_t + matriz_numeros_t, is_method=True)
     def predict_proba(self, X):
-        if not self._is_fitted:
-            raise Exception("LogisticRegression: Must call fit before predict_proba")
+        self._check_fitted("predict_proba")
         if not isinstance(X[0], (list, tuple)):
             X = [[v] for v in X]
 
@@ -81,6 +79,7 @@ class LogisticRegression(BaseMachine):
 
     @check_sig([3], vector_numeros_t + matriz_numeros_t, vector_numeros_t, is_method=True)
     def score(self, X, y):
+        self._check_fitted("score")
         preds = self.predict(X)
         correct = sum(1 for p, t in zip(preds, y) if p == t)
         return correct / len(X) if len(X) > 0 else 0.0

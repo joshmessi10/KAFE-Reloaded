@@ -66,8 +66,7 @@ class LinearRegression(BaseMachine):
 
     @check_sig([2], vector_numeros_t + matriz_numeros_t, is_method=True)
     def predict(self, X):
-        if not self._is_fitted:
-            raise Exception("LinearRegression: Must call fit before predict")
+        self._check_fitted("predict")
         if not X:
             return []
         if not isinstance(X[0], (list, tuple)):
@@ -81,6 +80,7 @@ class LinearRegression(BaseMachine):
 
     @check_sig([3], vector_numeros_t + matriz_numeros_t, vector_numeros_t, is_method=True)
     def score(self, X, y):
+        self._check_fitted("score")
         preds = self.predict(X)
         y_mean = sum(y) / len(y)
         ss_res = sum((yi - pi) ** 2 for yi, pi in zip(y, preds))
