@@ -17,6 +17,9 @@ class PCA(BaseMachine):
 
     @staticmethod
     def _jacobi_eigenvalues(cov_matrix, n_features):
+        if n_features == 1:
+            return [cov_matrix[0][0]], [[1.0]]
+
         eigenvectors = [[1.0 if i == j else 0.0 for j in range(n_features)] for i in range(n_features)]
 
         max_iterations = 100
@@ -154,16 +157,16 @@ class PCA(BaseMachine):
         return result
 
     def round(self, decimals=4):
-        import lib.KafeMATH.funciones as math
+        from lib.KafeMATH.funciones import math_round
 
         if self.mean_:
-            self.mean_ = [math.math_round(x, decimals) for x in self.mean_]
+            self.mean_ = [math_round(x, decimals) for x in self.mean_]
 
         if self.explained_variance_:
-            self.explained_variance_ = [math.math_round(x, decimals) for x in self.explained_variance_]
+            self.explained_variance_ = [math_round(x, decimals) for x in self.explained_variance_]
 
         if self.components_:
-            self.components_ = [[math.math_round(x, decimals) for x in row] for row in self.components_]
+            self.components_ = [[math_round(x, decimals) for x in row] for row in self.components_]
 
         return self
 

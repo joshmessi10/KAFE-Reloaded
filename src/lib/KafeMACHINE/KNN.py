@@ -21,7 +21,7 @@ class KNN(BaseMachine):
     def _euclidean_distance(self, a, b):
         return math.sqrt(sum((x - y) ** 2 for x, y in zip(a, b)))
 
-    @check_sig([3], vector_numeros_t + matriz_numeros_t, vector_numeros_t + [entero_t], is_method=True)
+    @check_sig([3], vector_numeros_t + matriz_numeros_t, vector_numeros_t, is_method=True)
     def fit(self, X, y):
         n = len(X)
         if n == 0:
@@ -60,7 +60,17 @@ class KNN(BaseMachine):
         k_nearest = distances[: self.k]
 
         k_labels = [self.y_train[i] for _, i in k_nearest]
-        return max(set(k_labels), key=k_labels.count)
+        counts = {}
+        for lbl in k_labels:
+            counts[lbl] = counts.get(lbl, 0) + 1
+        max_count = max(counts.values())
+        tied = [lbl for lbl in sorted(set(k_labels)) if counts[lbl] == max_count]
+        if len(tied) == 1:
+            return tied[0]
+        for _, i in k_nearest:
+            if self.y_train[i] in tied:
+                return self.y_train[i]
+        return tied[0]
 
     @check_sig([2], vector_numeros_t + matriz_numeros_t, is_method=True)
     def predict_proba(self, X):
@@ -85,7 +95,7 @@ class KNN(BaseMachine):
             result.append(probas)
         return result
 
-    @check_sig([3], vector_numeros_t + matriz_numeros_t, vector_numeros_t + [entero_t], is_method=True)
+    @check_sig([3], vector_numeros_t + matriz_numeros_t, vector_numeros_t, is_method=True)
     def score(self, X, y):
         self._check_fitted("score")
         preds = self.predict(X)

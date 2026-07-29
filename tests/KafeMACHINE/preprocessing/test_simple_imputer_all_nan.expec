@@ -1,2 +1,1 @@
-Statistics:
-Exception: Expected homogeneous list
+Exception: imp: SimpleImputer: Cannot compute 'mean' on column with all missing values

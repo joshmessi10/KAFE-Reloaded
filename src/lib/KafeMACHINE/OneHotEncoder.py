@@ -9,11 +9,15 @@ class OneHotEncoder(BaseMachine):
         super().__init__()
         self.categories_ = {}
         self.columns_ = []
+        self._ohe_column_map_ = {}
+        self._original_columns_ = []
 
     @check_sig([3], [pardos_t], [lista_cadenas_t], is_method=True)
     def fit(self, df, columns):
         self.columns_ = columns
         self.categories_ = {}
+        self._ohe_column_map_ = {}
+        self._original_columns_ = list(df.columns)
 
         for col in columns:
             if col not in df.columns:
@@ -22,6 +26,7 @@ class OneHotEncoder(BaseMachine):
             col_data = df.col(col)
             unique_cats = sorted(list(set(str(v) for v in col_data if v is not None)))
             self.categories_[col] = unique_cats
+            self._ohe_column_map_[col] = [f"{col}_{cat}" for cat in unique_cats]
 
         self._is_fitted = True
         return self
@@ -64,33 +69,27 @@ class OneHotEncoder(BaseMachine):
     def inverse_transform(self, df):
         self._check_fitted("inverse_transform")
 
-        original_columns = [c for c in df.columns if c not in self.columns_]
-        for col in self.columns_:
-            original_columns.append(col)
+        ohe_to_orig = {}
+        for orig_col, ohe_cols in self._ohe_column_map_.items():
+            for ohe_col in ohe_cols:
+                ohe_to_orig[ohe_col] = orig_col
+
+        all_ohe_cols = set(ohe_to_orig.keys())
 
         new_data = []
-        for row_idx in range(len(df.data)):
-            row = df.data[row_idx]
+        for row in df.data:
             new_row = []
-            col_idx = 0
-
-            while col_idx < len(df.columns):
-                col_name = df.columns[col_idx]
-                if col_name not in self.columns_:
-                    new_row.append(row[col_idx])
-                    col_idx += 1
-                elif col_name in self.categories_:
-                    cats = self.categories_[col_name]
-                    binary_vals = [row[col_idx + k] for k in range(len(cats))]
-                    decoded = cats[binary_vals.index(1)] if 1 in binary_vals else cats[0]
+            for col_name in self._original_columns_:
+                if col_name in self.columns_:
+                    ohe_group = self._ohe_column_map_[col_name]
+                    binary_vals = [row[df.columns.index(ohe)] for ohe in ohe_group]
+                    decoded = self.categories_[col_name][binary_vals.index(1)] if 1 in binary_vals else self.categories_[col_name][0]
                     new_row.append(decoded)
-                    col_idx += len(cats)
                 else:
-                    col_idx += 1
-
+                    new_row.append(row[df.columns.index(col_name)])
             new_data.append(new_row)
 
-        return DataFrame(original_columns, new_data)
+        return DataFrame(list(self._original_columns_), new_data)
 
     def __repr__(self):
         return f"OneHotEncoder(encoded_columns={self.columns_})"

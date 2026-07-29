@@ -29,7 +29,9 @@ class SimpleImputer(BaseMachine):
     def _compute_statistic(self, col_values):
         non_null = [v for v in col_values if not _is_missing(v)]
         if not non_null:
-            return self.fill_value if self.strategy == "constant" else 0
+            if self.strategy == "constant":
+                return self.fill_value
+            raise Exception(f"SimpleImputer: Cannot compute '{self.strategy}' on column with all missing values")
         if self.strategy == "mean":
             return sum(non_null) / len(non_null)
         elif self.strategy == "median":
