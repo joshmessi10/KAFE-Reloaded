@@ -146,8 +146,8 @@ def graph(*args):
                     raise Exception("graph: style must be 'line', 'point' or 'both'")
             else:
                 raise Exception(
-                    "graph: si se pasan dos argumentos, el primero debe ser una lista de pares [[x,y],…] "
-                    "y el segundo un string con el estilo ('line','point' o 'both')."
+                    "graph: when passing two arguments, the first must be a list of pairs [[x,y],...] "
+                    "and the second must be a string with the style ('line', 'point' or 'both')."
                 )
 
         else:
@@ -246,8 +246,9 @@ def render():
                 f'stroke="#ddd" stroke-width="1"/>\n'
             )
 
-        for xval in sorted(set(todas_x)):
-            x_svg = escalar_x(xval)
+        for i in range(6):
+            valor_x = min_x + i * (max_x - min_x) / 5
+            x_svg = escalar_x(valor_x)
             contenido += (
                 f'  <line x1="{x_svg}" y1="{padding}" '
                 f'x2="{x_svg}" y2="{height - padding}" '
@@ -386,7 +387,7 @@ def bar(etiquetas, valores):
     padding = 60
 
     max_val = max(valores)
-    bar_width = (width - 2 * padding) // len(valores) if len(valores) > 0 else 1
+    bar_width = max(int((width - 2 * padding) / len(valores)), 5) if len(valores) > 0 else 1
 
     svg = (
         f'<svg width="{width}" height="{height}" xmlns="http://www.w3.org/2000/svg">\n'
@@ -443,7 +444,7 @@ def pie(etiquetas, valores):
     radio = int(width * 0.3)
 
     start_angle = -180
-    colores = [
+    colors = [
         "#f4d03f",
         "#82e0aa",
         "#ec7063",
@@ -461,7 +462,7 @@ def pie(etiquetas, valores):
     )
     svg += f'<rect width="100%" height="100%" fill="white"/>\n'
 
-    for i, (_, val) in enumerate(zip(etiquetas, valores)):
+    for i, (etq, val) in enumerate(zip(etiquetas, valores)):
         angle = val / total * 360
         end_angle = start_angle + angle
 
@@ -471,7 +472,7 @@ def pie(etiquetas, valores):
         y2 = cy + radio * sin(radians(end_angle))
 
         large_arc = 1 if angle > 180 else 0
-        color_segment = colores[i % len(colores)]
+        color_segment = colors[i % len(colors)]
 
         path = f"M {cx},{cy} L {x1},{y1} A {radio},{radio} 0 {large_arc},1 {x2},{y2} Z"
         svg += f'<path d="{path}" fill="{color_segment}" stroke="white" stroke-width="1"/>\n'
@@ -495,7 +496,7 @@ def pie(etiquetas, valores):
 </text>\n"""
         for i, etq in enumerate(etiquetas):
             y_offset = leyenda_y + 30 + i * 20
-            color_segment = colores[i % len(colores)]
+            color_segment = colors[i % len(colors)]
             svg += f'<rect x="{leyenda_x}" y="{y_offset - 10}" width="10" height="10" fill="{color_segment}"/>\n'
             svg += f'<text x="{leyenda_x + 15}" y="{y_offset}" font-size="10">{etq}</text>\n'
 

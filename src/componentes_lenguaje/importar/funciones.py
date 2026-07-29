@@ -35,7 +35,7 @@ def importStmt(self, ctx):
         raiseModuleNotFound(module, tried)
 
     prev_dir = globals.current_dir
-    globals.current_dir = filename.parent
+    globals.current_dir = str(filename.parent)
 
     input_stream = FileStream(str(filename), encoding='utf-8')
     lexer        = Kafe_GrammarLexer(input_stream)
