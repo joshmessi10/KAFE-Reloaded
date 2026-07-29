@@ -1,4 +1,4 @@
-import math
+from lib.KafeMATH.funciones import exp
 from global_utils import check_sig
 from TypeUtils import vector_numeros_t, matriz_numeros_t
 from .BaseMachine import BaseMachine
@@ -38,7 +38,7 @@ class LogisticRegression(BaseMachine):
                 for row in X
             ]
             y_pred = [
-                1.0 / (1.0 + math.exp(-max(-100, min(100, zi)))) for zi in z
+                1.0 / (1.0 + exp(-max(-100, min(100, zi)))) for zi in z
             ]
 
             dw = [0.0] * m
@@ -81,7 +81,7 @@ class LogisticRegression(BaseMachine):
             if len(row) != m:
                 raise Exception(f"LogisticRegression: Expected {m} features, got {len(row)}")
             z = self.intercept_ + sum(self.coef_[j] * row[j] for j in range(m))
-            p = 1.0 / (1.0 + math.exp(-max(-100, min(100, z))))
+            p = 1.0 / (1.0 + exp(-max(-100, min(100, z))))
             res.append([1.0 - p, p])
         return res
 

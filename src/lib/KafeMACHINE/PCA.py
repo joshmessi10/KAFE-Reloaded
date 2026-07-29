@@ -1,4 +1,4 @@
-import math
+from lib.KafeMATH.funciones import sqrt, pow_, math_round
 from global_utils import check_sig
 from TypeUtils import pardos_t, entero_t, matriz_numeros_t
 from lib.KafePARDOS.DataFrame import DataFrame
@@ -38,8 +38,8 @@ class PCA(BaseMachine):
                 break
 
             phi = (cov_matrix[q][q] - cov_matrix[p][p]) / (2.0 * cov_matrix[p][q])
-            t = (1.0 if phi >= 0 else -1.0) / (abs(phi) + math.sqrt(1.0 + math.pow(phi, 2)))
-            c = 1.0 / math.sqrt(1.0 + math.pow(t, 2))
+            t = (1.0 if phi >= 0 else -1.0) / (abs(phi) + sqrt(1.0 + pow_(phi, 2)))
+            c = 1.0 / sqrt(1.0 + pow_(t, 2))
             s = t * c
             tau = s / (1.0 + c)
 
@@ -157,8 +157,6 @@ class PCA(BaseMachine):
         return result
 
     def round(self, decimals=4):
-        from lib.KafeMATH.funciones import math_round
-
         if self.mean_:
             self.mean_ = [math_round(x, decimals) for x in self.mean_]
 

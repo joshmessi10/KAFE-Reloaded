@@ -45,7 +45,9 @@ def forLoop(self, ctx):
 
     for item in iterable:
         self.push_scope()
-        self.variables[var_name] = (tipo_elemento, item)
+        from global_utils import asignar_variable
+
+        asignar_variable(self, var_name, item, tipo_elemento)
         self.mark_variable_in_scope(var_name)
         try:
             self.visit(ctx.block())

@@ -48,6 +48,7 @@ Tabla completa de todos los errores del sistema KAFE, con su tipo, categoría y 
 | Bucle infinito | `RuntimeError` | `Maximum number of iterations exceeded in while loop` |
 | Módulo no encontrado | `FileNotFoundError` | `Module file for '{nombre}' not found. Tried: {path}` |
 | Error en bloque | `RuntimeError` | `Error in {lugar} block: {excepcion}` |
+| Columna toda NaN | `Exception` | `SimpleImputer: Cannot compute '{strategy}' on column with all missing values` |
 
 ---
 

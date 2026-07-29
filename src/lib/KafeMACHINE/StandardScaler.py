@@ -1,4 +1,4 @@
-import math
+from lib.KafeMATH.funciones import sqrt
 from global_utils import check_sig
 from TypeUtils import pardos_t, matriz_numeros_t
 from lib.KafePARDOS.DataFrame import DataFrame
@@ -26,7 +26,7 @@ class StandardScaler(BaseMachine):
             for j in range(n_features)
         ]
         self.scale_ = [
-            math.sqrt(
+            sqrt(
                 sum((row[j] - self.mean_[j]) ** 2 for row in matrix) / n_samples
             )
             for j in range(n_features)

@@ -32,9 +32,9 @@ import machine;
 | Función | Firma | Descripción |
 |---------|-------|-------------|
 | `machine.accuracy_score(y_true, y_pred)` | `(List[NUM], List[NUM]) -> FLOAT` | Proporción de predicciones correctas |
-| `machine.precision_score(y_true, y_pred)` | `(List[NUM], List[NUM]) -> FLOAT` | TP / (TP + FP) |
-| `machine.recall_score(y_true, y_pred)` | `(List[NUM], List[NUM]) -> FLOAT` | TP / (TP + FN) |
-| `machine.f1_score(y_true, y_pred)` | `(List[NUM], List[NUM]) -> FLOAT` | Media armónica de precision y recall |
+| `machine.precision_score(y_true, y_pred)` | `(List[NUM], List[NUM]) -> FLOAT` | Macro-average: TP / (TP + FP) por clase |
+| `machine.recall_score(y_true, y_pred)` | `(List[NUM], List[NUM]) -> FLOAT` | Macro-average: TP / (TP + FN) por clase |
+| `machine.f1_score(y_true, y_pred)` | `(List[NUM], List[NUM]) -> FLOAT` | Media armónica de precision y recall macro-average |
 | `machine.confusion_matrix(y_true, y_pred)` | `(List[NUM], List[NUM]) -> List[List[INT]]` | Matriz de confusión N×N |
 | `machine.classification_report(y_true, y_pred)` | `(List[NUM], List[NUM]) -> STR` | Reporte textual estilo scikit-learn |
 
@@ -143,7 +143,7 @@ Implementa regresión logística binaria usando gradiente descendente.
 
 | Método | Firma | Descripción |
 |--------|-------|-------------|
-| `lr.fit(X, y)` | `(List[List[NUM]] o List[NUM], List[INT]) -> VOID` | Entrena el modelo |
+| `lr.fit(X, y)` | `(List[List[NUM]] o List[NUM], List[INT]) -> VOID` | Entrena el modelo. `y` debe contener solo 0 y 1 |
 | `lr.predict(X)` | `(List[List[NUM]] o List[NUM]) -> List[INT]` | Predice clases (0 o 1) |
 | `lr.predict_proba(X)` | `(List[List[NUM]] o List[NUM]) -> List[List[FLOAT]]` | Probabilidades [P(0), P(1)] |
 | `lr.score(X, y)` | `(List[List[NUM]] o List[NUM], List[INT]) -> FLOAT` | Calcula exactitud |
@@ -313,7 +313,7 @@ Imputa valores faltantes (representados como NaN en DataFrames) usando una estra
 
 | Método | Firma | Descripción |
 |--------|-------|-------------|
-| `imp.fit(X)` | `(PARDOS) -> VOID` | Calcula estadísticas por columna |
+| `imp.fit(X)` | `(PARDOS) -> VOID` | Calcula estadísticas por columna. Lanza error si toda una columna es NaN (excepto con estrategia `"constant"`) |
 | `imp.transform(X)` | `(PARDOS) -> PARDOS` | Imputa valores faltantes |
 | `imp.fit_transform(X)` | `(PARDOS) -> PARDOS` | Fit + transform |
 

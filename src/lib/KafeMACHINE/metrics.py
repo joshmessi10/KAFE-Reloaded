@@ -1,6 +1,5 @@
-import math
-
 from global_utils import check_sig
+from lib.KafeMATH.funciones import sqrt
 from TypeUtils import vector_numeros_t
 
 
@@ -125,7 +124,7 @@ def mean_absolute_error(y_true, y_pred):
 def root_mean_squared_error(y_true, y_pred):
     _validate_inputs("root_mean_squared_error", y_true, y_pred)
     mse = sum((t - p) ** 2 for t, p in zip(y_true, y_pred)) / len(y_true)
-    return math.sqrt(mse)
+    return sqrt(mse)
 
 
 @check_sig([2], vector_numeros_t, vector_numeros_t)

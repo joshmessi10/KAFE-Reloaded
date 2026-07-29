@@ -1,4 +1,4 @@
-import math
+from lib.KafeMATH.funciones import isnan
 from global_utils import check_sig
 from TypeUtils import pardos_t, matriz_cualquiera_t
 from lib.KafePARDOS.DataFrame import DataFrame
@@ -9,7 +9,7 @@ def _is_missing(v):
     if v is None:
         return True
     try:
-        return math.isnan(v)
+        return isnan(v)
     except (TypeError, ValueError):
         return False
 
