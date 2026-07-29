@@ -18,24 +18,36 @@ def accuracy_score(y_true, y_pred):
     return correct / len(y_true)
 
 
+def _per_class_tp_fp_fn(y_true, y_pred, cls):
+    tp = sum(1 for t, p in zip(y_true, y_pred) if t == cls and p == cls)
+    fp = sum(1 for t, p in zip(y_true, y_pred) if t != cls and p == cls)
+    fn = sum(1 for t, p in zip(y_true, y_pred) if t == cls and p != cls)
+    return tp, fp, fn
+
+
+def _precision_recall_f1_macro(y_true, y_pred):
+    classes = sorted(set(y_true))
+    precisions = []
+    recalls = []
+    for cls in classes:
+        tp, fp, fn = _per_class_tp_fp_fn(y_true, y_pred, cls)
+        precisions.append(tp / (tp + fp) if tp + fp > 0 else 0.0)
+        recalls.append(tp / (tp + fn) if tp + fn > 0 else 0.0)
+    return precisions, recalls, classes
+
+
 @check_sig([2], vector_numeros_t, vector_numeros_t)
 def precision_score(y_true, y_pred):
     _validate_inputs("precision_score", y_true, y_pred)
-    tp = sum(1 for t, p in zip(y_true, y_pred) if t == 1 and p == 1)
-    fp = sum(1 for t, p in zip(y_true, y_pred) if t != 1 and p == 1)
-    if tp + fp == 0:
-        return 0.0
-    return tp / (tp + fp)
+    precisions, _, _ = _precision_recall_f1_macro(y_true, y_pred)
+    return sum(precisions) / len(precisions)
 
 
 @check_sig([2], vector_numeros_t, vector_numeros_t)
 def recall_score(y_true, y_pred):
     _validate_inputs("recall_score", y_true, y_pred)
-    tp = sum(1 for t, p in zip(y_true, y_pred) if t == 1 and p == 1)
-    fn = sum(1 for t, p in zip(y_true, y_pred) if t == 1 and p != 1)
-    if tp + fn == 0:
-        return 0.0
-    return tp / (tp + fn)
+    _, recalls, _ = _precision_recall_f1_macro(y_true, y_pred)
+    return sum(recalls) / len(recalls)
 
 
 @check_sig([2], vector_numeros_t, vector_numeros_t)
@@ -51,7 +63,7 @@ def f1_score(y_true, y_pred):
 @check_sig([2], vector_numeros_t, vector_numeros_t)
 def confusion_matrix(y_true, y_pred):
     _validate_inputs("confusion_matrix", y_true, y_pred)
-    classes = sorted(set(y_true))
+    classes = sorted(set(y_true) | set(y_pred))
     class_to_idx = {c: i for i, c in enumerate(classes)}
     n = len(classes)
     matrix = [[0] * n for _ in range(n)]
@@ -82,7 +94,7 @@ def classification_report(y_true, y_pred):
     acc = accuracy_score(y_true, y_pred)
     total = len(y_true)
     lines.append("")
-    lines.append(f"{'accuracy':>8} {acc:>10.2f} {total:>26}")
+    lines.append(f"{'accuracy':>8} {acc:>10.2f} {total:>27}")
 
     macro_p = sum(v[0] for v in per_class.values()) / len(classes)
     macro_r = sum(v[1] for v in per_class.values()) / len(classes)

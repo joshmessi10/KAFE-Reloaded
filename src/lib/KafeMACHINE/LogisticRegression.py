@@ -28,6 +28,10 @@ class LogisticRegression(BaseMachine):
         self.coef_ = [0.0] * m
         self.intercept_ = 0.0
 
+        for yi in y:
+            if yi not in (0, 1):
+                raise Exception("LogisticRegression: y must contain only 0 and 1")
+
         for _ in range(self.max_iter):
             z = [
                 self.intercept_ + sum(self.coef_[j] * row[j] for j in range(m))
@@ -55,12 +59,16 @@ class LogisticRegression(BaseMachine):
     @check_sig([2], vector_numeros_t + matriz_numeros_t, is_method=True)
     def predict(self, X):
         self._check_fitted("predict")
+        if not X:
+            return []
         probs = self.predict_proba(X)
         return [0 if p[0] >= 0.5 else 1 for p in probs]
 
     @check_sig([2], vector_numeros_t + matriz_numeros_t, is_method=True)
     def predict_proba(self, X):
         self._check_fitted("predict_proba")
+        if not X:
+            return []
         if not isinstance(X[0], (list, tuple)):
             X = [[v] for v in X]
 
