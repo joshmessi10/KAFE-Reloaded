@@ -35,9 +35,16 @@ def reset_variables():
 
 
 def save_svg(content):
+    if not globals.ruta_programa:
+        raise Exception("save_svg: No program file path set")
     dest_folder = os.path.dirname(globals.ruta_programa)
+    if not dest_folder:
+        dest_folder = "."
     svg_name = os.path.splitext(os.path.basename(globals.ruta_programa))[0] + ".svg"
     svg_path = os.path.join(dest_folder, svg_name)
 
-    with open(svg_path, "w", encoding="utf-8") as f:
-        f.write(content)
+    try:
+        with open(svg_path, "w", encoding="utf-8") as f:
+            f.write(content)
+    except OSError as e:
+        raise Exception(f"save_svg: Could not write SVG to {svg_path}: {e}")

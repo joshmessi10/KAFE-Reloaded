@@ -7,9 +7,10 @@
   <line x1="72" y1="114" x2="428" y2="114" stroke="#ddd" stroke-width="1"/>
   <line x1="72" y1="73" x2="428" y2="73" stroke="#ddd" stroke-width="1"/>
   <line x1="72" y1="72" x2="72" y2="278" stroke="#ddd" stroke-width="1"/>
-  <line x1="160" y1="72" x2="160" y2="278" stroke="#ddd" stroke-width="1"/>
-  <line x1="249" y1="72" x2="249" y2="278" stroke="#ddd" stroke-width="1"/>
-  <line x1="338" y1="72" x2="338" y2="278" stroke="#ddd" stroke-width="1"/>
+  <line x1="143" y1="72" x2="143" y2="278" stroke="#ddd" stroke-width="1"/>
+  <line x1="214" y1="72" x2="214" y2="278" stroke="#ddd" stroke-width="1"/>
+  <line x1="285" y1="72" x2="285" y2="278" stroke="#ddd" stroke-width="1"/>
+  <line x1="356" y1="72" x2="356" y2="278" stroke="#ddd" stroke-width="1"/>
   <line x1="427" y1="72" x2="427" y2="278" stroke="#ddd" stroke-width="1"/>
   <line x1="72" y1="278" x2="160" y2="266" stroke="blue" stroke-width="2" />
   <line x1="160" y1="266" x2="249" y2="227" stroke="blue" stroke-width="2" />

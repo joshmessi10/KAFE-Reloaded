@@ -7,9 +7,10 @@
   <line x1="60" y1="107" x2="440" y2="107" stroke="#ddd" stroke-width="1"/>
   <line x1="60" y1="61" x2="440" y2="61" stroke="#ddd" stroke-width="1"/>
   <line x1="60" y1="60" x2="60" y2="290" stroke="#ddd" stroke-width="1"/>
-  <line x1="154" y1="60" x2="154" y2="290" stroke="#ddd" stroke-width="1"/>
-  <line x1="249" y1="60" x2="249" y2="290" stroke="#ddd" stroke-width="1"/>
-  <line x1="344" y1="60" x2="344" y2="290" stroke="#ddd" stroke-width="1"/>
+  <line x1="135" y1="60" x2="135" y2="290" stroke="#ddd" stroke-width="1"/>
+  <line x1="211" y1="60" x2="211" y2="290" stroke="#ddd" stroke-width="1"/>
+  <line x1="287" y1="60" x2="287" y2="290" stroke="#ddd" stroke-width="1"/>
+  <line x1="363" y1="60" x2="363" y2="290" stroke="#ddd" stroke-width="1"/>
   <line x1="439" y1="60" x2="439" y2="290" stroke="#ddd" stroke-width="1"/>
   <circle cx="60" cy="254" r="5" fill="blue"/>
   <circle cx="154" cy="194" r="5" fill="blue"/>
