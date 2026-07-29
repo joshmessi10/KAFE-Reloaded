@@ -98,7 +98,7 @@ Epoch 97/100 — Loss 0.557940 — val_accuracy 0.5000
 Epoch 98/100 — Loss 0.557513 — val_accuracy 0.5000
 Epoch 99/100 — Loss 0.557093 — val_accuracy 0.5000
 Epoch 100/100 — Loss 0.556678 — val_accuracy 0.5000
-Probabilidades: [0.28845354873688384, 0.7115464512631161]
+Probabilidades: [0.28845354873688395, 0.7115464512631161]
 *** Resumen (tipo: classification) ***
  Capa 1: Dense(units=4, activation=relu, L2=0.0)
  Capa 2: Dense(units=2, activation=softmax, L2=0.0)

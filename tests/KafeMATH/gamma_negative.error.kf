@@ -1,0 +1,4 @@
+import math;
+
+-- gamma with negative integer should raise domain error
+show(math.gamma(-3));

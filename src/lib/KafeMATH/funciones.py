@@ -15,12 +15,7 @@ nan = float('nan')
 
 @check_sig([1], numeros_t)
 def exp(x):
-    term = 1.0
-    sum_ = 1.0
-    for n in range(1, 50):
-        term *= x / n
-        sum_ += term
-    return sum_
+    return _math.exp(x)
 
 @check_sig([1, 2], numeros_t, numeros_t)
 def log(*args):
@@ -54,7 +49,13 @@ def pow_(x, y):
 def sqrt(x):
     if x < 0:
         raiseDomainError('sqrt')
-    guess = x if x != 0 else 1.0
+    if x == 0:
+        return 0.0
+    if isinf(x):
+        return inf
+    if isnan(x):
+        return nan
+    guess = x
     for _ in range(30):
         guess = (guess + x / guess) / 2
     return guess
@@ -211,6 +212,10 @@ def trunc(x):
 def fmod(x, y):
     if y == 0:
         raiseDomainError('fmod')
+    if isinf(x):
+        return nan
+    if isinf(y):
+        return x
     return x - y * trunc(x / y)
 
 @check_sig([2], numeros_t, numeros_t)
@@ -303,6 +308,8 @@ def exp2(x):
 
 @check_sig([1], numeros_t)
 def cbrt(x):
+    if x < 0:
+        return -((-x) ** (1/3))
     return x ** (1/3)
 
 @check_sig([1], numeros_t)
@@ -311,8 +318,12 @@ def expm1(x):
 
 @check_sig([1], numeros_t)
 def log2(x):
+    if x <= 0:
+        raiseDomainError('log2')
     xi = float(x)
-    if xi > 0 and int(xi) == xi:
+    if isinf(xi) or isnan(xi):
+        return _math.log2(xi)
+    if int(xi) == xi:
         v = int(xi)
         n = 0
         while v % 2 == 0 and v > 0:
@@ -324,8 +335,12 @@ def log2(x):
 
 @check_sig([1], numeros_t)
 def log10(x):
+    if x <= 0:
+        raiseDomainError('log10')
     xi = float(x)
-    if xi > 0 and int(xi) == xi:
+    if isinf(xi) or isnan(xi):
+        return _math.log10(xi)
+    if int(xi) == xi:
         v = int(xi)
         n = 0
         while v % 10 == 0 and v > 0:
@@ -351,6 +366,8 @@ def sum_range(*args):
         for x in a:
             total += x
         return total
+    if int(a) > int(b):
+        a, b = b, a
     total = 0
     for i in range(int(a), int(b) + 1):
         total += i
@@ -370,6 +387,8 @@ def prod_range(*args):
         for x in a:
             result *= x
         return result
+    if int(a) > int(b):
+        a, b = b, a
     result = 1
     for i in range(int(a), int(b) + 1):
         result *= i
@@ -429,24 +448,20 @@ def sumprod(p, q):
 
 @check_sig([1], numeros_t)
 def erf(x):
-    coef = 2 / pow_(pi, 0.5)
-    term = x
-    sum_ = term
-    for n in range(1, 50):
-        term *= -1 * x * x / n
-        sum_ += term / (2 * n + 1)
-    return coef * sum_
+    return _math.erf(x)
 
 @check_sig([1], numeros_t)
 def erfc(x):
-    return 1 - erf(x)
+    return _math.erfc(x)
 
 @check_sig([1], numeros_t)
 def gamma(x):
     xi = float(x)
-    if xi == int(xi) and xi > 0:
-        return factorial(int(xi) - 1)
-    raise ValueError("gamma(x) only implemented for positive integers")
+    if xi == int(xi):
+        if xi > 0:
+            return factorial(int(xi) - 1)
+        raiseDomainError('gamma')
+    raise ValueError("gamma: Function only defined for positive integers")
 
 @check_sig([1], numeros_t)
 def lgamma(x):
