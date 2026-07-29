@@ -1,3 +1,4 @@
+import copy
 import math
 from global_utils import check_sig
 from TypeUtils import vector_numeros_t, matriz_numeros_t, entero_t
@@ -35,8 +36,8 @@ class KNN(BaseMachine):
 
         self._validate_k(n)
 
-        self.X_train = X
-        self.y_train = y
+        self.X_train = copy.deepcopy(X)
+        self.y_train = copy.deepcopy(y)
         self._is_fitted = True
         return self
 

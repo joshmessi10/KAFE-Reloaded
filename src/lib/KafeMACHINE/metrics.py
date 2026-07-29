@@ -123,7 +123,7 @@ def r2_score(y_true, y_pred):
     ss_res = sum((t - p) ** 2 for t, p in zip(y_true, y_pred))
     ss_tot = sum((t - y_mean) ** 2 for t in y_true)
     if ss_tot == 0:
-        return 0.0
+        return 1.0 if ss_res == 0 else 0.0
     return 1.0 - ss_res / ss_tot
 
 

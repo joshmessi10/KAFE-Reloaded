@@ -83,7 +83,10 @@ class DataFrame:
 
         elif tipo_col == entero_t:
             for v in raw:
-                result_rows.append(int(v))
+                if isinstance(v, float) and math.isnan(v):
+                    result_rows.append(0)
+                else:
+                    result_rows.append(int(v))
 
         elif tipo_col == flotante_t:
             for v in raw:
@@ -531,6 +534,7 @@ class DataFrame:
                     
                     from global_utils import asignar_variable
                     asignar_variable(visitor, col_name, val, tipo)
+                    visitor.mark_variable_in_scope(col_name)
                 
                 # Evaluate expression
                 result = visitor.visit(tree)

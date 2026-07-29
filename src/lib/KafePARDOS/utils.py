@@ -1,4 +1,10 @@
 def inferir_tipo(celda):
+    if celda is None:
+        return None
+    if isinstance(celda, bool):
+        return celda
+    if isinstance(celda, (int, float)):
+        return celda
     if celda == "":
         return float("nan")
     try:
