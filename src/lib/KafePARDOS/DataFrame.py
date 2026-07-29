@@ -23,8 +23,8 @@ class DataFrame:
             if len(row) != len(columns):
                 raise Exception(f"pardos: Inconsistent dimensions")
 
-        self.columns = columns
-        self.data = data
+        self.columns = list(columns)
+        self.data = [list(row) for row in data]
 
     def __repr__(self):
         contenido = f"cols: {self.columns}, rows: {self.data}"
@@ -111,7 +111,9 @@ class DataFrame:
                 and row[j] is not None
             ]
             tipo_col = cadena_t
-            if len(vals) > 0 and all(isinstance(v, int) for v in vals):
+            if len(vals) > 0 and all(isinstance(v, bool) for v in vals):
+                tipo_col = booleano_t
+            elif len(vals) > 0 and all(isinstance(v, int) for v in vals):
                 tipo_col = entero_t
             elif len(vals) > 0 and all(isinstance(v, (int, float)) for v in vals):
                 tipo_col = flotante_t
@@ -153,6 +155,7 @@ class DataFrame:
                     and not (isinstance(row[idx], float) and math.isnan(row[idx]))
                 ]
                 if not nums:
+                    filas.append([col_name, "0", "nan", "nan", "nan", "nan"])
                     continue
                 count = len(nums)
                 mean = sum(nums) / count
@@ -239,8 +242,11 @@ class DataFrame:
         if old_name not in self.columns:
             raise Exception(f"pardos: Column '{old_name}' doesn't exist")
 
-        if new_name in self.columns:
-            raise Exception(f"pardos: Column '{new_name}' already exists")
+        if self.columns.count(old_name) > 1:
+            raise Exception(f"pardos: rename: Column '{old_name}' appears more than once")
+
+        if new_name in [c for i, c in enumerate(self.columns) if c != old_name]:
+            raise Exception(f"pardos: rename: Column '{new_name}' already exists")
 
         # Create new column list with renamed column
         new_columns = [new_name if col == old_name else col for col in self.columns]
@@ -378,7 +384,10 @@ class DataFrame:
             val = row[idx]
             if isinstance(val, float) and math.isnan(val):
                 continue
-            key = str(val) if not isinstance(val, (int, float, str, bool)) else val
+            if isinstance(val, (int, float, str, bool)):
+                key = val
+            else:
+                key = repr(val) if not isinstance(val, (type(None),)) else val
             counts[key] = counts.get(key, 0) + 1
         # Sort by count descending (same default as pandas)
         sorted_items = sorted(counts.items(), key=lambda x: -x[1])
@@ -570,13 +579,14 @@ class DataFrame:
         idx_self = self.columns.index(on)
         idx_other = other.columns.index(on)
         
-        # Build hash map for the right side
+        # Build hash map for the right side (use repr for unhashable/NaN keys)
         right_map = {}
         for row in other.data:
             key = row[idx_other]
-            if key not in right_map:
-                right_map[key] = []
-            right_map[key].append(row)
+            map_key = repr(key) if (isinstance(key, float) and math.isnan(key)) or not isinstance(key, (str, int, float, bool, type(None))) else key
+            if map_key not in right_map:
+                right_map[map_key] = []
+            right_map[map_key].append(row)
             
         new_cols = list(self.columns)
         other_cols_no_on = [c for c in other.columns if c != on]
@@ -585,8 +595,9 @@ class DataFrame:
         new_data = []
         for row_left in self.data:
             key = row_left[idx_self]
-            if key in right_map:
-                for row_right in right_map[key]:
+            map_key = repr(key) if (isinstance(key, float) and math.isnan(key)) or not isinstance(key, (str, int, float, bool, type(None))) else key
+            if map_key in right_map:
+                for row_right in right_map[map_key]:
                     combined = list(row_left)
                     combined.extend([row_right[other.columns.index(c)] for c in other_cols_no_on])
                     new_data.append(combined)
@@ -632,9 +643,8 @@ class GroupBy:
             # Filter out non-numeric columns for aggregation, except the grouping column
             numeric_cols = [c for c, t in temp_df.dtypes() if t in (entero_t, flotante_t)]
 
-            # If no numeric columns to aggregate, we can still fall back to any column
-            col_to_agg = numeric_cols[0] if numeric_cols else (self.df.columns[0] if self.df.columns else None)
-            if col_to_agg:
+            if numeric_cols:
+                col_to_agg = numeric_cols[0]
                 agg_val = temp_df.agg(col_to_agg, func_name)
                 res_data.append([key, agg_val])
         return DataFrame(res_cols, res_data)
