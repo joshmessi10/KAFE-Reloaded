@@ -80,6 +80,9 @@ class PCA(BaseMachine):
         n_samples = len(matrix)
         n_features = len(matrix[0])
 
+        if n_samples == 1:
+            raise Exception("PCA: Need at least 2 samples to compute covariance")
+
         # 1. Mean Centering
         self.mean_ = [sum(row[j] for row in matrix) / n_samples for j in range(n_features)]
         centered_matrix = [[matrix[i][j] - self.mean_[j] for j in range(n_features)] for i in range(n_samples)]

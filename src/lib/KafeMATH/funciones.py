@@ -1,3 +1,4 @@
+import math as _math
 from .errores import raiseDomainError, raiseNonEqualLength
 from TypeUtils import vector_numeros_t, numeros_t, entero_t
 from global_utils import check_sig
@@ -29,21 +30,11 @@ def log(*args):
     if len(args) == 2:
         base = args[1]
 
-    if base is None and x == e:
-        return 1.0
     if x <= 0:
         raiseDomainError('log')
-    y = (x - 1) / (x + 1)
-    y2 = y * y
-    term = y
-    ln = 0.0
-    for n in range(1, 200, 2):
-        ln += term / n
-        term *= y2
-    ln *= 2
     if base is None:
-        return ln
-    return ln / log(base)
+        return _math.log(x)
+    return _math.log(x, base)
 
 
 @check_sig([2], numeros_t, numeros_t)

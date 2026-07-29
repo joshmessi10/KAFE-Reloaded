@@ -74,7 +74,7 @@ def read_json(path):
             columns = list(json_data[0].keys())
             data = []
             for record in json_data:
-                row = [inferir_tipo(str(record.get(col, ""))) for col in columns]
+                row = [inferir_tipo(record.get(col, "")) for col in columns]
                 data.append(row)
             return DataFrame(columns, data)
 

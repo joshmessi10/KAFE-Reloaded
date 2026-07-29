@@ -386,12 +386,19 @@ def bar(etiquetas, valores):
     padding = 60
 
     max_val = max(valores)
-    bar_width = (width - 2 * padding) // len(valores)
+    bar_width = (width - 2 * padding) // len(valores) if len(valores) > 0 else 1
 
     svg = (
         f'<svg width="{width}" height="{height}" xmlns="http://www.w3.org/2000/svg">\n'
     )
     svg += f'<rect width="100%" height="100%" fill="white"/>\n'
+
+    if max_val == 0:
+        svg += f'<text x="{width // 2}" y="{height // 2}" font-size="14" text-anchor="middle">All values are zero</text>\n'
+        svg += "</svg>"
+        utils.save_svg(svg)
+        utils.reset_variables()
+        return
 
     for i in range(6):
         val = round(max_val * i / 5)

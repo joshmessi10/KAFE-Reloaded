@@ -296,11 +296,11 @@ def rangeExpr(*args):
 def showStmt(self, ctx):
     val = self.visit(ctx.expr())
     if (
-        hasattr(val, "total")
+        hasattr(val, "_total")
         and hasattr(val, "collected")
-        and len(val.collected) < val.total
+        and len(val.collected) < val._total
     ):
-        raiseWrongNumberOfArgs(getattr(val, '_name', '<lambda>'), val.total, len(val.collected))
+        raiseWrongNumberOfArgs(getattr(val, '_name', '<lambda>'), val._total, len(val.collected))
     print(val)
 
 
