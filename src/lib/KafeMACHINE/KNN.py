@@ -1,5 +1,5 @@
 import copy
-import math
+from lib.KafeMATH.funciones import sqrt
 from global_utils import check_sig
 from TypeUtils import vector_numeros_t, matriz_numeros_t, entero_t
 from .BaseMachine import BaseMachine
@@ -19,7 +19,7 @@ class KNN(BaseMachine):
             raise Exception("KNN: k cannot be greater than number of training samples")
 
     def _euclidean_distance(self, a, b):
-        return math.sqrt(sum((x - y) ** 2 for x, y in zip(a, b)))
+        return sqrt(sum((x - y) ** 2 for x, y in zip(a, b)))
 
     @check_sig([3], vector_numeros_t + matriz_numeros_t, vector_numeros_t, is_method=True)
     def fit(self, X, y):

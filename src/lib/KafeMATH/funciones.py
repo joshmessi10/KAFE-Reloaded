@@ -34,6 +34,13 @@ def log(*args):
 
 @check_sig([2], numeros_t, numeros_t)
 def pow_(x, y):
+    if x == 0:
+        if y > 0:
+            return 0.0
+        elif y == 0:
+            return 1.0
+        else:
+            raiseDomainError('pow')
     if x < 0:
         if float(y).is_integer():
             n = int(y)
@@ -183,7 +190,7 @@ def perm(n, k):
         result *= i
     return result
 
-@check_sig([i for i in range(100)], *[[entero_t] for _ in range(100)])
+@check_sig([i for i in range(1, 100)], *[[entero_t] for _ in range(100)])
 def gcd(*ints):
     result = abs(int(ints[0]))
     for x in ints[1:]:
@@ -193,7 +200,7 @@ def gcd(*ints):
         result = abs(a)
     return result
 
-@check_sig([i for i in range(100)], *[[entero_t] for _ in range(100)])
+@check_sig([i for i in range(1, 100)], *[[entero_t] for _ in range(100)])
 def lcm(*ints):
     def _lcm(a, b):
         return abs(a * b) // gcd(a, b)
@@ -420,20 +427,6 @@ def hypot(*coords):
     for x in coords:
         s += x * x
     return sqrt(s)
-
-@check_sig([1, 2], vector_numeros_t, entero_t)
-def prod(*args):
-    iterable = args[0]
-
-    if len(args) == 2:
-        start = args[1]
-    else:
-        start = 1
-
-    result = start
-    for x in iterable:
-        result *= x
-    return result
 
 @check_sig([2], vector_numeros_t, vector_numeros_t)
 def sumprod(p, q):

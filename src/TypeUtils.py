@@ -2,7 +2,9 @@ nombre_tipos = { int:"INT", float:"FLOAT", str:"STR", bool:"BOOL", list:"List", 
 
 def obtener_tipo_dentro_lista(lista):
     tipo_lista = obtener_tipo_lista(lista)
-    return tipo_lista.replace("List[", "").replace(']', "")
+    if tipo_lista.startswith("List[") and tipo_lista.endswith("]"):
+        return tipo_lista[5:-1]
+    return tipo_lista
 
 def construir_tipo_lista(anidamiento, tipo=None):
     tipo_construido = "List["
