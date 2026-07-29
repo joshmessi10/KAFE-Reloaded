@@ -18,5 +18,5 @@ Epoch 17/20 — Loss (soft k-means): 0.643858
 Epoch 18/20 — Loss (soft k-means): 0.644535
 Epoch 19/20 — Loss (soft k-means): 0.645145
 Epoch 20/20 — Loss (soft k-means): 0.645698
-Cluster probabilities: [0.47312663819802425, 0.5268733618019757]
+Cluster probabilities: [0.4731266381980243, 0.5268733618019757]
 Assigned cluster: 1
