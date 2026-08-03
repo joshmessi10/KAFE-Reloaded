@@ -7,7 +7,7 @@ Reusable format for reconstructing project state (see `.opencode/knowledge/engin
 1. **Knowledge** — `.opencode/knowledge/`: <what KAFE is and how processes run>
 2. **Memory** — `.opencode/memory/`: <current state, active work, debt, issues>
 3. **History** — `.opencode/history/`: <recent significant events with dates>
-4. **Progress** — `.opencode/progress/`: <roadmap, backlog, milestones, current tracking>
+4. **Progress** — `.opencode/progress/`: <roadmap, backlog, milestones, current tracking, session-log (recent closed sessions)>
 
 ## Report
 

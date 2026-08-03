@@ -2,6 +2,12 @@
 
 Repository-wide conventions agents must follow.
 
+## Quality Principles
+
+- **Homogeneity:** the repository should look like itself everywhere. Predictable naming, quoting, imports, and error handling reduce agent error; deviations require documented justification.
+- **Documented requirements only:** conventions here and in `verifications.md`/`architecture.md` are the sole judge for reviews. If it is not documented, it is not a requirement — reviewers must not invent criteria.
+- **Demonstrate, do not assert:** verification is proof by executable test or run, never by assertion (see `.opencode/knowledge/verifications.md` — Quality Standards).
+
 ## Repository Conventions
 
 - Docs and code comments are largely in Spanish.

@@ -79,3 +79,16 @@ When applicable:
 - Definition of Done verified.
 - `.opencode/history/` updated for significant changes.
 - `docs/` and `.opencode/knowledge/` reflect the change.
+
+## Quality Standards
+
+The standards in this document, `conventions.md`, and `architecture.md` are the **sole judge** for reviews: if a requirement is not documented here, it is not a requirement. The Reviewer (`/dod`) evaluates against these files only.
+
+- **Verification is demonstration, not assertion.** The agent does not say "it works" — it proves it with an executable test, a run of the suite, or a benchmark. No feature is marked `done` on assertion alone.
+- **Anti-patterns (do not do):**
+  - ❌ "I added the command, it should work" with no executable test.
+  - ❌ A test that only checks "does not raise" — it must assert a concrete result.
+  - ❌ `mock` of the filesystem — use real `tempfile.TemporaryDirectory()` fixtures.
+  - ❌ Marking a task `done` with a red suite or a failing `/init`.
+  - ❌ Uncommitted generated files, debug `print()`, or context-less TODOs.
+- **Extreme homogeneity:** the repository must look like itself everywhere — naming, quoting, import order, error handling follow `conventions.md`; reviewers reject deviations without documented justification.
