@@ -18,6 +18,7 @@ Purpose: add a new built-in library to KAFE that is importable by name and dispa
 4. Register it in `self.libraries` with the lowercase KAFE import name (`{"xxx": [module, False]}`).
 5. Add fixtures under `tests/KafeXXX/` and a `tests/test_KafeXXX.py` parameterized via `obtener_parametros(get_programs(...))`.
 6. Add an example `.kf` program under `docs/` if applicable.
+7. Reviewer runs `/dod` before the task is declared complete.
 
 ## Outputs
 

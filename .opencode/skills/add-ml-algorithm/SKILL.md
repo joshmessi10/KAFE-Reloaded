@@ -19,6 +19,8 @@ Purpose: add a new ML algorithm to KafeMACHINE, implemented from scratch inside 
 4. Add the factory function to `src/lib/KafeMACHINE/funciones.py`.
 5. Add fixtures under `tests/KafeMACHINE/<category>/` and wire a parameterized test in `tests/test_KafeMACHINE.py`.
 6. Add an example `.kf` program under `docs/` if applicable.
+7. Tester runs `/benchmark` and registers the record in `.opencode/benchmarks/benchmark-index.md`.
+8. Reviewer runs `/dod` before the task is declared complete.
 
 ## Outputs
 

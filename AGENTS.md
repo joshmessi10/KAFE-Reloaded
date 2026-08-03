@@ -48,7 +48,7 @@ Project knowledge is stored in the knowledge layer. Consult it before making dec
 | `.opencode/adr/` | Engineering decisions (template: `.opencode/adr/template.md`) |
 | `.opencode/benchmarks/` | Performance benchmarks: `template.md`, `benchmark-index.md`, per-benchmark records |
 | `.opencode/skills/` | Reusable engineering workflows (`impact-analysis`, `add-ml-algorithm`, `add-dl-layer`, `modify-grammar`, `create-library`, `create-rfc`, `create-adr`, `release-checklist`) |
-| `.opencode/commands/` | Custom project commands (`/init`, `/resume`, `/impact`, `/rfc`, `/adr`, `/benchmark`) |
+| `.opencode/commands/` | Custom project commands (`/init`, `/resume`, `/impact`, `/rfc`, `/adr`, `/benchmark`, `/dod`) |
 | `.opencode/templates/` | Reusable project templates: `impact-analysis.md`, `dod-checklist.md`, `benchmark-template.md`, `session-recovery.md` |
 
 Consult information in this order before deciding: `.opencode/knowledge/` → `.opencode/memory/` → `.opencode/history/` → `.opencode/progress/`. Do not invent architecture, APIs, or conventions if they are already documented.
@@ -109,6 +109,8 @@ Responsible for:
 - Consistency
 - Maintainability
 
+Runs `/dod` before a task is declared complete.
+
 ## Historian
 
 Responsible for:
@@ -124,6 +126,8 @@ Responsible for:
 - Validation
 - Tests
 - Benchmarks
+
+Runs `/benchmark` for ML/DL components and performance changes.
 
 # Automatic Actions
 

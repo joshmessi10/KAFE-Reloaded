@@ -19,6 +19,8 @@ Purpose: add a new DL layer or component to KafeGESHA, implemented from scratch 
 4. Add the factory/function to `src/lib/KafeGESHA/funciones.py`.
 5. Add fixtures under `tests/KafeGESHA/` and wire a parameterized test in `tests/test_KafeGESHA.py`.
 6. Add an example `.kf` program under `docs/` if applicable.
+7. Tester runs `/benchmark` and registers the record in `.opencode/benchmarks/benchmark-index.md`.
+8. Reviewer runs `/dod` before the task is declared complete.
 
 ## Outputs
 
