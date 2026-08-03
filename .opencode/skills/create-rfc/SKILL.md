@@ -16,6 +16,7 @@ Purpose: create an RFC record to document and approve a major capability before 
 2. Copy `.opencode/rfc/template.md` → `.opencode/rfc/RFC-0000-short-title.md` (next sequential number).
 3. Fill in all sections: Problem Statement, Motivation, Proposed Solution, Alternatives Considered, Impact Analysis, Risks, Migration Strategy, Success Criteria.
 4. Link related work in `.opencode/progress/` and any draft ADRs.
+5. Reviewer runs `/dod` to verify the record is complete before it is considered approved.
 
 ## Outputs
 

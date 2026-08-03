@@ -16,6 +16,7 @@ Purpose: create an ADR record to capture an important engineering decision durab
 2. Copy `.opencode/adr/template.md` → `.opencode/adr/ADR-0000-short-title.md` (next sequential number).
 3. Fill in all sections: Status, Context, Decision, Rationale, Consequences, Alternatives Considered, Related RFCs.
 4. If the decision follows from an RFC, link it under Related RFCs.
+5. Reviewer runs `/dod` to verify the record is complete before it is considered final.
 
 ## Outputs
 

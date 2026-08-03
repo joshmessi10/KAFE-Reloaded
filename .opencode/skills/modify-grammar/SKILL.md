@@ -21,6 +21,7 @@ Purpose: modify KAFE grammar safely: regenerate the parser, keep the spec in syn
    # or: java -jar antlr-4.13.2-complete.jar -no-listener -visitor -Dlanguage=Python3 Kafe_Grammar.g4
    ```
 5. Add fixture pairs under `tests/` covering the new syntax (valid `.kf` + `.expec`, invalid `.error.kf` + `.error.expec`).
+6. Reviewer runs `/dod` before the task is declared complete.
 
 ## Outputs
 

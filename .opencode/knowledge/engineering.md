@@ -50,7 +50,8 @@ Use the `.opencode/templates/session-recovery.md` format; run via `/resume`.
 ## Benchmark Process
 
 - Benchmark generation is mandatory for ML algorithms, DL components, and performance optimizations.
-- Use the template at `.opencode/benchmarks/template.md`; register each record in `.opencode/benchmarks/benchmark-index.md`. Run via `/benchmark`.
+- Use the template at `.opencode/benchmarks/template.md`; register each record in `.opencode/benchmarks/benchmark-index.md`.
+- The **Tester** role runs `/benchmark`, which measures real runtime/memory and fills the record. No CI hook is required.
 - New ML/DL components also require documentation, tests, and examples.
 
 ## Educational Response Standards
@@ -68,4 +69,4 @@ Use the `.opencode/templates/session-recovery.md` format; run via `/resume`.
 - Update `.opencode/history/` with a record after significant changes (template: `.opencode/history/template.md`).
 - Update `.opencode/progress/` when the roadmap, backlog, milestones, or current work change (never in AGENTS.md).
 - Create/update `.opencode/knowledge/concepts/` records when a new concept is introduced (template: `.opencode/knowledge/concepts/concept-template.md`).
-- Verify the Definition of Done before declaring a task complete (checklist: `.opencode/templates/dod-checklist.md`).
+- Verify the Definition of Done before declaring a task complete: the **Reviewer** role runs `/dod` against the checklist at `.opencode/templates/dod-checklist.md`.

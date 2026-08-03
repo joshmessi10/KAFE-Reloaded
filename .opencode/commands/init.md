@@ -47,7 +47,7 @@ Validate the KAFE Engineering System. Do the checks below, then report the statu
    - `.opencode/benchmarks/template.md`
    - `.opencode/benchmarks/benchmark-index.md`
 9. Skills: `.opencode/skills/` with at least the documented skills (each a directory with `SKILL.md`)
-10. Commands: `.opencode/commands/{init,resume,impact,rfc,adr,benchmark}.md`
+10. Commands: `.opencode/commands/{init,resume,impact,rfc,adr,benchmark,dod}.md`
 11. Templates:
     - `.opencode/templates/impact-analysis.md`
     - `.opencode/templates/dod-checklist.md`

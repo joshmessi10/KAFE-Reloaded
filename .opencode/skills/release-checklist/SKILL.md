@@ -17,7 +17,7 @@ Purpose: verify KAFE is ready for a release and record the release decision.
 4. Confirm `.opencode/history/` has records for all significant changes since the last release.
 5. Confirm RFC/ADR records exist for all significant decisions.
 6. Confirm benchmarks in `.opencode/benchmarks/benchmark-index.md` are current.
-7. Run the Definition of Done checklist (`.opencode/templates/dod-checklist.md`) for all completed work.
+7. Run the Definition of Done check (`/dod`) for all completed work.
 8. Create the release tag/notes summarizing changes.
 
 ## Outputs
