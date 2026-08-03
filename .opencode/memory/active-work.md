@@ -6,13 +6,13 @@ Template for tracking the active feature. Update whenever the current step chang
 
 <!-- The feature or task currently being worked on. -->
 
-Engineering system completion (`.opencode/` operational files) — completed.
+Session lifecycle implementation (bitácora `session-log.md` + `/close` command + quality framing) — completed.
 
 ## Current Step
 
 <!-- The step being executed right now. -->
 
-Architecture alignment validation (Step 12) — passed.
+All changes implemented and memory/history updated. Remaining: final validation (full test suite + reference grep).
 
 ## Next Step
 

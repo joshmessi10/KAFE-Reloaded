@@ -47,12 +47,39 @@ Session recovery should produce:
 
 Use the `.opencode/templates/session-recovery.md` format; run via `/resume`.
 
+## Session Closure Process
+
+End-of-session lifecycle (run via `/close`). Closing a session means:
+
+1. **Hard gate**: run `/init` — it must end green (full suite `pytest tests/ -q` + progress consistency). If red, do not close: fix or record the session as `blocked` in `current.md`.
+2. Update `.opencode/memory/` (`current-state`, `active-work`, `technical-debt`, `known-issues`, `context` as needed).
+3. Update `.opencode/progress/` (`roadmap`, `backlog`, `milestones`) only if priorities changed.
+4. Append a session entry to `.opencode/progress/session-log.md` (append-only bitácora).
+5. Write a `.opencode/history/YYYY/` record if the session produced a significant change.
+6. Reset `.opencode/progress/current.md` to its template (empty values, clean scratchpad).
+7. Verify repository hygiene: no temp files, no debug `print()`, no context-less TODOs.
+
+The session log is the lightweight per-session record; `.opencode/history/` holds structured records for significant events.
+
 ## Benchmark Process
 
 - Benchmark generation is mandatory for ML algorithms, DL components, and performance optimizations.
 - Use the template at `.opencode/benchmarks/template.md`; register each record in `.opencode/benchmarks/benchmark-index.md`.
 - The **Tester** role runs `/benchmark`, which measures real runtime/memory and fills the record. No CI hook is required.
 - New ML/DL components also require documentation, tests, and examples.
+
+## Subagent Coordination Process (Anti-Telephone Rule)
+
+When work is delegated to subagents (the Architect, Builder, Reviewer, Historian, and Tester roles implemented as opencode subagents), coordinate to prevent interpretation drift ("broken telephone"):
+
+- Subagents must write their results to files (e.g., `progress/impl-<feature>.md`, `progress/review-<feature>.md`) and return **only a file reference** in chat, never the content.
+- Instruction template for a delegated task:
+
+  > "Investigate <topic>. Write your findings to <file>. Your reply must be only: `done -> <file>` or `blocked -> <reason>`."
+
+- The orchestrating agent (Engineering Lead) reads the report from disk when needed and never bases decisions on a chat summary.
+- Reviewers write verdicts to a file and reply with a single line (`APPROVED -> <file>` / `CHANGES_REQUESTED -> <file>`).
+- In single-agent sessions the rule does not apply; the agent uses skills (`.opencode/skills/`) and commands (`.opencode/commands/`) directly.
 
 ## Educational Response Standards
 
@@ -68,5 +95,6 @@ Use the `.opencode/templates/session-recovery.md` format; run via `/resume`.
 - Update `.opencode/memory/` at the end of each session: `current-state.md`, `active-work.md`, `technical-debt.md`, `known-issues.md`.
 - Update `.opencode/history/` with a record after significant changes (template: `.opencode/history/template.md`).
 - Update `.opencode/progress/` when the roadmap, backlog, milestones, or current work change (never in AGENTS.md).
+- Append `.opencode/progress/session-log.md` at the end of each session (see Session Closure Process; run via `/close`).
 - Create/update `.opencode/knowledge/concepts/` records when a new concept is introduced (template: `.opencode/knowledge/concepts/concept-template.md`).
 - Verify the Definition of Done before declaring a task complete: the **Reviewer** role runs `/dod` against the checklist at `.opencode/templates/dod-checklist.md`.

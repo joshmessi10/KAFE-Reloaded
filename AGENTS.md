@@ -2,6 +2,20 @@
 
 Engineering constitution for the KAFE engineering system. This file defines what KAFE is and the rules agents must follow. **OPENCODE.md is the primary entry point** (operating manual); the persistent engineering system (knowledge, memory, history, planning, RFC/ADR, benchmarks, skills, commands) lives under `.opencode/`.
 
+# How to Use This Document
+
+AGENTS.md is both the **constitution** (non-negotiable rules) and a **navigation map**. Use progressive disclosure: read the section you need when you need it — do not treat it as a bible to consume end-to-end. Process detail lives in `.opencode/knowledge/engineering.md`; reusable workflows live in `.opencode/skills/`.
+
+Read before deciding, in this order: `.opencode/knowledge/` → `.opencode/memory/` → `.opencode/history/` → `.opencode/progress/`.
+
+| If you are… | Read |
+|---|---|
+| Resuming a session | Session Recovery → `/resume` |
+| Closing a session | Session Closure Process → `/close` |
+| Adding an ML algorithm or DL component | Impact Analysis + `.opencode/knowledge/ml-library.md` / `dl-library.md` → `/impact` |
+| Changing grammar or tokens | Impact Analysis + `.opencode/skills/modify-grammar/` |
+| Releasing or tagging | Definition of Done → `/dod` + `.opencode/skills/release-checklist/` |
+
 # Mission
 
 KAFE is a DSL focused on education, machine learning, and deep learning.
@@ -43,12 +57,12 @@ Project knowledge is stored in the knowledge layer. Consult it before making dec
 | `.opencode/knowledge/concepts/` | Concept records (template: `.opencode/knowledge/concepts/concept-template.md`) |
 | `.opencode/memory/` | Session-to-session context: `current-state.md`, `active-work.md`, `technical-debt.md`, `known-issues.md`, `context.md` |
 | `.opencode/history/` | Significant project events by year (`template.md`, `YYYY/` records) |
-| `.opencode/progress/` | Planning: `roadmap.md`, `backlog.md`, `milestones.md`, `current.md` |
+| `.opencode/progress/` | Planning: `roadmap.md`, `backlog.md`, `milestones.md`, `current.md`, `session-log.md` |
 | `.opencode/rfc/` | Proposals (template: `.opencode/rfc/template.md`) |
 | `.opencode/adr/` | Engineering decisions (template: `.opencode/adr/template.md`) |
 | `.opencode/benchmarks/` | Performance benchmarks: `template.md`, `benchmark-index.md`, per-benchmark records |
 | `.opencode/skills/` | Reusable engineering workflows (`impact-analysis`, `add-ml-algorithm`, `add-dl-layer`, `modify-grammar`, `create-library`, `create-rfc`, `create-adr`, `release-checklist`) |
-| `.opencode/commands/` | Custom project commands (`/init`, `/resume`, `/impact`, `/rfc`, `/adr`, `/benchmark`, `/dod`) |
+| `.opencode/commands/` | Custom project commands (`/init`, `/resume`, `/impact`, `/rfc`, `/adr`, `/benchmark`, `/dod`, `/close`) |
 | `.opencode/templates/` | Reusable project templates: `impact-analysis.md`, `dod-checklist.md`, `benchmark-template.md`, `session-recovery.md` |
 
 Consult information in this order before deciding: `.opencode/knowledge/` → `.opencode/memory/` → `.opencode/history/` → `.opencode/progress/`. Do not invent architecture, APIs, or conventions if they are already documented.
@@ -69,6 +83,7 @@ Progress (`.opencode/progress/`):
 - `backlog.md` — prioritized task list.
 - `milestones.md` — major project milestones.
 - `current.md` — current work tracking (feature, status, current/next step, blockers, related RFCs/ADRs).
+- `session-log.md` — append-only bitácora of closed sessions (written by `/close`).
 
 # Impact Analysis
 

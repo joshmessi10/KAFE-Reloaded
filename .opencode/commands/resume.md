@@ -7,7 +7,7 @@ Reconstruct the current KAFE project state. Read the engineering system in this 
 1. `.opencode/knowledge/` — how KAFE works and how engineering processes run (skim `architecture.md`, `conventions.md`, `verifications.md`, `engineering.md`, `libraries.md`, `ml-library.md`, `dl-library.md`).
 2. `.opencode/memory/` — session-to-session context (`current-state.md`, `active-work.md`, `technical-debt.md`, `known-issues.md`, `context.md`).
 3. `.opencode/history/` — recent significant project events (most recent records first).
-4. `.opencode/progress/` — `roadmap.md`, `backlog.md`, `milestones.md`, and `current.md` for active priorities.
+4. `.opencode/progress/` — `roadmap.md`, `backlog.md`, `milestones.md`, `current.md`, and `session-log.md` (recent closed sessions) for active priorities.
 
 Do not propose changes yet; first report state.
 

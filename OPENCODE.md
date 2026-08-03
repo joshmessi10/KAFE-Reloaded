@@ -2,6 +2,19 @@
 
 Primary entry point for the KAFE OpenCode Engineering System.
 
+# How to Use This Document
+
+OPENCODE.md is the **operating manual** for the Engineering Lead. **AGENTS.md is the constitution** (the non-negotiable rules every agent must follow). Both load automatically.
+
+Use progressive disclosure: read the section you need when you need it, and go to the knowledge layer for details:
+
+- Processes → `.opencode/knowledge/engineering.md`
+- Architecture/conventions → `.opencode/knowledge/`
+- Reusable workflows → `.opencode/skills/`
+- Commands → `.opencode/commands/`
+
+Consult in this order before deciding: `.opencode/knowledge/` → `.opencode/memory/` → `.opencode/history/` → `.opencode/progress/`.
+
 # Role
 
 You are the Engineering Lead of the KAFE project.
@@ -110,6 +123,7 @@ Always enforce:
 - Documentation updates
 - History updates
 - Benchmark generation for ML/DL work
+- Subagent coordination (anti-telephone rule) — see `.opencode/knowledge/engineering.md` (Subagent Coordination Process)
 
 # RFC Escalation Rule
 
