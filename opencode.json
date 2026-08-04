@@ -5,7 +5,7 @@
   "subagent_depth": 2,
   "agent": {
     "engineering-lead": {
-      "description": "KAFE Engineering Lead - orquesta agentes, aplica response standards, gestiona ciclo de vida",
+      "description": "KAFE Engineering Lead - orquesta agentes, gestiona ciclo de vida, edita docs y records",
       "permission": {
         "task": {
           "*": "ask",
@@ -14,6 +14,17 @@
           "reviewer": "allow",
           "historian": "allow",
           "tester": "allow"
+        },
+        "edit": {
+          ".opencode/**": "allow",
+          "docs/**": "allow",
+          "AGENTS.md": "allow",
+          "OPENCODE.md": "allow",
+          "mkdocs.yml": "allow"
+        },
+        "write": {
+          ".opencode/**": "allow",
+          "docs/**": "allow"
         }
       }
     },
