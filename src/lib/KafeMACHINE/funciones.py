@@ -9,6 +9,7 @@ from .MinMaxScaler import MinMaxScaler
 from .SimpleImputer import SimpleImputer
 from .LogisticRegression import LogisticRegression
 from .KNN import KNN
+from .DecisionTree import DecisionTreeClassifier
 from .metrics import (
     accuracy_score, precision_score, recall_score, f1_score,
     confusion_matrix, classification_report,
@@ -92,3 +93,16 @@ def knn(k=3):
     Crea una instancia de K-Nearest Neighbors.
     """
     return KNN(k)
+
+
+@check_sig({0: [], 1: [[cadena_t]], 2: [[cadena_t], [entero_t]], 3: [[cadena_t], [entero_t], [entero_t]], 4: [[cadena_t], [entero_t], [entero_t], [entero_t]]})
+def decision_tree_classifier(criterion="gini", max_depth=0, min_samples_split=2, min_samples_leaf=1):
+    """
+    Crea una instancia de DecisionTreeClassifier.
+
+    criterion: 'gini' o 'entropy'
+    max_depth: profundidad máxima del árbol (0 = ilimitada)
+    min_samples_split: mínimo de muestras para dividir un nodo
+    min_samples_leaf: mínimo de muestras en una hoja
+    """
+    return DecisionTreeClassifier(criterion, max_depth, min_samples_split, min_samples_leaf)

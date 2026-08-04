@@ -6,6 +6,7 @@ from utils import obtener_parametros, get_programs, get_invalid_programs, get_ka
 SUBDIRS = [
     "linear_models",
     "neighbors",
+    "tree_models",
     "preprocessing",
     "metrics_classification",
     "metrics_regression",

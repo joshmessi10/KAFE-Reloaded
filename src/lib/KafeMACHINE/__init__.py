@@ -8,3 +8,4 @@ from .MinMaxScaler import MinMaxScaler
 from .SimpleImputer import SimpleImputer
 from .LogisticRegression import LogisticRegression
 from .KNN import KNN
+from .DecisionTree import DecisionTreeClassifier

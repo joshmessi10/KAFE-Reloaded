@@ -14,11 +14,13 @@ Engineering system simplified (2026-08-03): the proposal-record layer was remove
 
 Command set completed (2026-08-03): 8 commands — `/init`, `/resume`, `/open-work`, `/impact`, `/adr`, `/benchmark`, `/dod`, `/close`. `.opencode/commands/README.md` documents them with a Mandatory Invocation matrix. Enforcement closed: `/open-work` (new), `/impact` mandatory in `create-library`, `/dod` gate for the active work item before `/close`, `/init` + `/resume` explicit at session start, `/benchmark` referenced in the benchmarks README.
 
+DecisionTreeClassifier added to KafeMACHINE (2026-08-04). Factory function `machine.decision_tree_classifier()` registered. 7 test fixtures, concept record, benchmark baseline, and example created.
+
 ## Current Milestone
 
 <!-- The milestone currently being worked on. -->
 
-Engineering system completion — done. Next focus returns to KafeMACHINE development.
+KafeMACHINE machine learning library — ◐ In progress. Decision Tree is complete.
 
 ## Current Priorities
 
