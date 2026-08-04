@@ -5,6 +5,21 @@ description: Use before a KAFE release or tag. Verifies the full test suite, par
 
 Purpose: verify KAFE is ready for a release and record the release decision.
 
+## Agent Ownership
+
+| Step | Agent | Action |
+|------|-------|--------|
+| 1 | Builder | Regenerate parser, verify no generated files staged |
+| 2 | Tester | Run full test suite `pytest tests/` |
+| 3 | Builder | Verify documentation `mkdocs build` |
+| 4-5 | Historian / Architect | Confirm history records and ADRs exist |
+| 6 | Tester | Confirm benchmarks are current |
+| 7 | Reviewer | Run `/dod` for all completed work |
+| 8 | Lead | Create release tag/notes |
+| Validation | Historian | Create history record for release |
+
+The Lead orchestrates this checklist, delegating each step to the responsible agent.
+
 ## Inputs
 
 - Release version/tag being prepared.

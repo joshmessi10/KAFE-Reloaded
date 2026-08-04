@@ -5,6 +5,18 @@ description: Use when adding a new built-in library to KAFE (src/lib/KafeXXX). M
 
 Purpose: add a new built-in library to KAFE that is importable by name and dispatched through the standard library mechanism.
 
+## Agent Ownership
+
+| Step | Agent | Action |
+|------|-------|--------|
+| 1 | Architect | Run `/impact` — Impact Analysis |
+| 2-7 | Builder | Implement library, registration, fixtures, docs |
+| 8 | Reviewer | Run `/dod` — Definition of Done |
+| Validation | Tester | Run pytest, validate import mechanism |
+| Validation | Historian | Create history record, update knowledge |
+
+The Lead orchestrates this workflow, delegating each step to the responsible agent.
+
 ## Inputs
 
 - Library name and KAFE `import` key (lowercase).

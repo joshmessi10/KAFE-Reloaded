@@ -5,6 +5,16 @@ description: Use when adding ML algorithms, adding DL components, modifying publ
 
 Run a KAFE Impact Analysis before implementing a significant change. Impact Analysis is mandatory for: ML algorithms, DL components, public API changes, core interpreter refactors, and grammar rule changes (AGENTS.md — Impact Analysis).
 
+## Agent Ownership
+
+| Step | Agent | Action |
+|------|-------|--------|
+| 1-5 | Architect | Analyze current implementation, identify affected modules, assess risks |
+| 6 | Architect | Produce implementation plan |
+| Coordination | Lead | Orchestrate the workflow, delegate to Architect |
+
+The Lead invokes this skill via `/impact` and delegates to the Architect. The Architect writes the impact report to `progress/impact-<feature>.md`.
+
 ## Steps
 
 1. **Understand the current implementation** — read the relevant `src/` modules and the matching `.opencode/knowledge/` document (`architecture.md`, `ml-library.md`, `dl-library.md`, `libraries.md`, `language-spec.md`).
