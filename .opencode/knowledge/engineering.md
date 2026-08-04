@@ -14,17 +14,10 @@ Perform Impact Analysis before significant changes. It is **mandatory** before:
 
 Output of an impact analysis: affected modules, risks, and an implementation plan. Use the template at `.opencode/templates/impact-analysis.md`; run via `/impact`.
 
-## RFC Process
-
-- Create an RFC automatically when: a major module is introduced, multiple subsystems are modified, or a significant capability is added.
-- Also create an RFC if uncertainty exists about architecture, public APIs, or long-term maintainability (OPENCODE.md — RFC Escalation Rule).
-- RFC generation should be automatic and must not require explicit user requests; the engineering system decides when an RFC is necessary.
-- Template: `.opencode/rfc/template.md` (Problem Statement, Motivation, Proposed Solution, Alternatives Considered, Impact Analysis, Risks, Migration Strategy, Success Criteria). Records live in `.opencode/rfc/`. Run via `/rfc`.
-
 ## ADR Process
 
 - Create an ADR automatically when: architecture changes, public APIs change, or important engineering decisions are made.
-- Template: `.opencode/adr/template.md` (Status, Context, Decision, Rationale, Consequences, Alternatives Considered, Related RFCs). Records live in `.opencode/adr/`. Run via `/adr`.
+- Template: `.opencode/adr/template.md` (Status, Context, Decision, Rationale, Consequences, Alternatives Considered). Records live in `.opencode/adr/`. Run via `/adr`.
 
 ## Session Recovery Process
 
@@ -47,17 +40,20 @@ Session recovery should produce:
 
 Use the `.opencode/templates/session-recovery.md` format; run via `/resume`.
 
+Opening work is the start-of-work counterpart of the closure process: run `/open-work` (`.opencode/commands/open-work.md`) after `/resume` when a new work item begins. It selects the item from the backlog/roadmap and initializes `current.md` and `active-work.md`; if the item is significant (ML/DL, public API, grammar, core refactor, new library), `/impact` must run before implementation.
+
 ## Session Closure Process
 
 End-of-session lifecycle (run via `/close`). Closing a session means:
 
 1. **Hard gate**: run `/init` — it must end green (full suite `pytest tests/ -q` + progress consistency). If red, do not close: fix or record the session as `blocked` in `current.md`.
-2. Update `.opencode/memory/` (`current-state`, `active-work`, `technical-debt`, `known-issues`, `context` as needed).
-3. Update `.opencode/progress/` (`roadmap`, `backlog`, `milestones`) only if priorities changed.
-4. Append a session entry to `.opencode/progress/session-log.md` (append-only bitácora).
-5. Write a `.opencode/history/YYYY/` record if the session produced a significant change.
-6. Reset `.opencode/progress/current.md` to its template (empty values, clean scratchpad).
-7. Verify repository hygiene: no temp files, no debug `print()`, no context-less TODOs.
+2. **Definition of Done gate**: run `/dod` for the session's active work item if it is complete. If `/dod` fails, do not close; if no work item has `/dod` scope this session, record `/dod` as not applicable in the close summary.
+3. Update `.opencode/memory/` (`current-state`, `active-work`, `technical-debt`, `known-issues`, `context` as needed).
+4. Update `.opencode/progress/` (`roadmap`, `backlog`, `milestones`) only if priorities changed.
+5. Append a session entry to `.opencode/progress/session-log.md` (append-only bitácora).
+6. Write a `.opencode/history/YYYY/` record if the session produced a significant change.
+7. Reset `.opencode/progress/current.md` to its template (empty values, clean scratchpad).
+8. Verify repository hygiene: no temp files, no debug `print()`, no context-less TODOs.
 
 The session log is the lightweight per-session record; `.opencode/history/` holds structured records for significant events.
 

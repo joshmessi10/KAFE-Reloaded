@@ -36,4 +36,4 @@ Save as `.opencode/benchmarks/benchmark-<component>.md` and register it in `benc
 
 ## Related
 
-- Related tests, RFC/ADR records, docs, or knowledge concepts.
+- Related tests, ADR records, docs, or knowledge concepts.

@@ -62,4 +62,4 @@ Repository-wide conventions agents must follow.
 ## Engineering Conventions
 
 - Follow the Engineering Workflow and Definition of Done (AGENTS.md).
-- `.opencode/knowledge/engineering.md` is the source of truth for engineering procedures (Impact Analysis, RFC/ADR, Session Recovery, benchmarks, educational responses, documentation updates).
+- `.opencode/knowledge/engineering.md` is the source of truth for engineering procedures (Impact Analysis, ADR, Session Recovery, benchmarks, educational responses, documentation updates).

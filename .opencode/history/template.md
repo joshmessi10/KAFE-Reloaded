@@ -10,6 +10,5 @@ Save as `.opencode/history/YYYY/YYYY-MM-DD-short-description.md` (records are gr
 - **Summary**: <what changed>
 - **Reason**: <why>
 - **Impacted Modules**: <src/, docs/, tests/, .opencode/ paths>
-- **Related RFCs**: <rfc/... or none>
 - **Related ADRs**: <adr/... or none>
 - **Validation Performed**: <tests run, benchmarks, review, verification>

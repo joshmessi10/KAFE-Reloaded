@@ -10,7 +10,6 @@ Verify each item before declaring a task complete (see AGENTS.md — Definition 
 
 When applicable:
 
-- [ ] RFC exists
 - [ ] ADR exists
 - [ ] Benchmarks exist
 - [ ] Examples exist

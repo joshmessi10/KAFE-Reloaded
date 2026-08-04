@@ -40,4 +40,4 @@ Why this concept exists and why it was introduced into KAFE.
 
 ## References
 
-- Reference materials: docs, RFCs, ADRs, papers, or external resources that informed the concept.
+- Reference materials: docs, ADRs, papers, or external resources that informed the concept.

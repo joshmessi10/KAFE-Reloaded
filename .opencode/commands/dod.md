@@ -1,5 +1,5 @@
 ---
-description: Verify the Definition of Done for the current task: checks implementation, validation, tests, documentation, history, and applicable RFC/ADR/benchmarks/examples, then reports a ✓/✗ checklist. The Reviewer role runs this command.
+description: Verify the Definition of Done for the current task: checks implementation, validation, tests, documentation, history, and applicable ADR/benchmarks/examples, then reports a ✓/✗ checklist. The Reviewer role runs this command.
 ---
 
 Verify the Definition of Done for the current task. The **Reviewer** role runs this command before a task is declared complete (see AGENTS.md — Definition of Done).
@@ -14,7 +14,6 @@ Verify the Definition of Done for the current task. The **Reviewer** role runs t
    - **Documentation updated** — `docs/` and `.opencode/knowledge/` reflect the change.
    - **History updated** — a record exists under `.opencode/history/`.
 3. Check the applicable items:
-   - **RFC exists** — if the change is a major capability.
    - **ADR exists** — if architecture or public APIs changed.
    - **Benchmarks exist** — for ML/DL components or performance work.
    - **Examples exist** — when applicable.

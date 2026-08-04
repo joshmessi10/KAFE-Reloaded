@@ -16,9 +16,8 @@ Reusable project templates for the KAFE engineering system. This directory index
 | Template | Location |
 |----------|----------|
 | Concept record | `.opencode/knowledge/concepts/concept-template.md` |
-| RFC | `.opencode/rfc/template.md` |
 | ADR | `.opencode/adr/template.md` |
 | History record | `.opencode/history/template.md` |
 | Benchmark record | `.opencode/benchmarks/template.md` |
 
-Use the matching template when creating a new concept, RFC, ADR, history record, or benchmark. Keep `.opencode/templates/benchmark-template.md` in sync with `.opencode/benchmarks/template.md`.
+Use the matching template when creating a new concept, ADR, history record, or benchmark. Keep `.opencode/templates/benchmark-template.md` in sync with `.opencode/benchmarks/template.md`.
