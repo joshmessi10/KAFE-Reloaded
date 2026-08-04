@@ -7,12 +7,12 @@ Generate an ADR record.
 ## Process
 
 1. Confirm the trigger: architecture changes, public APIs change, or an important engineering decision is made (AGENTS.md — Automatic Actions).
-2. Determine the next sequential number under `.opencode/adr/` (e.g., `ADR-0001-...`).
-3. Copy `.opencode/adr/template.md` to `.opencode/adr/ADR-0000-short-title.md`.
+2. Read `.opencode/adr/decisions.md` to find the next sequential ADR number.
+3. Add a new section to `.opencode/adr/decisions.md` using the ADR template format.
 4. Fill all sections: Status, Context, Decision, Rationale, Consequences, Alternatives Considered.
 5. Update `.opencode/progress/current.md` (Related ADRs field).
 
 ## Output
 
-- A new ADR record under `.opencode/adr/`.
+- A new ADR section in `.opencode/adr/decisions.md`.
 - A summary of the decision in the response.

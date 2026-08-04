@@ -1,6 +1,6 @@
 # Benchmark Template
 
-Reusable benchmark structure for ML algorithms, DL components, and performance optimizations. The canonical record template lives at `.opencode/benchmarks/template.md`; keep this copy in sync. Save records as `.opencode/benchmarks/benchmark-<component>.md` and register them in `benchmark-index.md`.
+Reusable benchmark structure for ML algorithms, DL components, and performance optimizations. The canonical record template lives at `.opencode/benchmarks/template.md`; keep this copy in sync. Add records to `.opencode/benchmarks/records.md` (consolidated file) and update the index table.
 
 # Benchmark: <Component>
 

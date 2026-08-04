@@ -17,7 +17,7 @@ Output of an impact analysis: affected modules, risks, and an implementation pla
 ## ADR Process
 
 - Create an ADR automatically when: architecture changes, public APIs change, or important engineering decisions are made.
-- Template: `.opencode/adr/template.md` (Status, Context, Decision, Rationale, Consequences, Alternatives Considered). Records live in `.opencode/adr/`. Run via `/adr`.
+- Template: `.opencode/adr/template.md` (Status, Context, Decision, Rationale, Consequences, Alternatives Considered). Records live in `.opencode/adr/decisions.md` (consolidated file — no individual ADR files). Run via `/adr`.
 
 ## Session Recovery Process
 
@@ -51,7 +51,7 @@ End-of-session lifecycle (run via `/close`). Closing a session means:
 3. Update `.opencode/memory/` (`current-state`, `active-work`, `technical-debt`, `known-issues`, `context` as needed).
 4. Update `.opencode/progress/` (`roadmap`, `backlog`, `milestones`) only if priorities changed.
 5. Append a session entry to `.opencode/progress/session-log.md` (append-only bitácora).
-6. Write a `.opencode/history/YYYY/` record if the session produced a significant change.
+6. Write a `.opencode/history/YYYY/YYYY-MM.md` record if the session produced a significant change (append to monthly file).
 7. Reset `.opencode/progress/current.md` to its template (empty values, clean scratchpad).
 8. Verify repository hygiene: no temp files, no debug `print()`, no context-less TODOs.
 
@@ -60,7 +60,7 @@ The session log is the lightweight per-session record; `.opencode/history/` hold
 ## Benchmark Process
 
 - Benchmark generation is mandatory for ML algorithms, DL components, and performance optimizations.
-- Use the template at `.opencode/benchmarks/template.md`; register each record in `.opencode/benchmarks/benchmark-index.md`.
+- Use the template at `.opencode/benchmarks/template.md`; register each record in `.opencode/benchmarks/records.md` (consolidated file).
 - The **Tester** role runs `/benchmark`, which measures real runtime/memory and fills the record. No CI hook is required.
 - New ML/DL components also require documentation, tests, and examples.
 
@@ -89,7 +89,7 @@ When work is delegated to subagents (the Architect, Builder, Reviewer, Historian
 - Update `docs/` (MkDocs site) when language or library behavior changes; keep `docs/especificacion/` grammar documents in sync with grammar changes.
 - Update `.opencode/knowledge/` when architecture, conventions, specs, or procedures change.
 - Update `.opencode/memory/` at the end of each session: `current-state.md`, `active-work.md`, `technical-debt.md`, `known-issues.md`.
-- Update `.opencode/history/` with a record after significant changes (template: `.opencode/history/template.md`).
+- Update `.opencode/history/` with a record after significant changes (append to monthly file `YYYY/YYYY-MM.md`; template: `.opencode/history/template.md`).
 - Update `.opencode/progress/` when the roadmap, backlog, milestones, or current work change (never in AGENTS.md).
 - Append `.opencode/progress/session-log.md` at the end of each session (see Session Closure Process; run via `/close`).
 - Create/update `.opencode/knowledge/concepts/` records when a new concept is introduced (template: `.opencode/knowledge/concepts/concept-template.md`).

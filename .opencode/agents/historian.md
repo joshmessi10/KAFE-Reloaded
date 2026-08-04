@@ -15,10 +15,10 @@ Eres el Historiador de KAFE. Tu trabajo es mantener la memoria del proyecto actu
 1. Lee `.opencode/knowledge/`, `.opencode/memory/`, `.opencode/history/`.
 2. Lee `progress/current.md` y `progress/session-log.md` para saber qué cambió.
 3. Para cada cambio significativo:
-   - Crea `.opencode/history/YYYY/MM-DD-<topic>.md` usando el template
+   - Append `.opencode/history/YYYY/YYYY-MM.md` usando el template (formato mensual consolidado)
    - Actualiza `.opencode/knowledge/` si cambió arquitectura o convenciones
    - Actualiza `.opencode/memory/` si cambió el estado operativo
-4. Si se tomó una decisión de ingeniería: crea ADR en `.opencode/adr/ADR-<N>-<topic>.md`.
+4. Si se tomó una decisión de ingeniería: agrega ADR a `.opencode/adr/decisions.md` (formato consolidado).
 5. Si se introdujo un concepto nuevo: crea `.opencode/knowledge/concepts/<concept>.md`.
 
 ## Responsabilidades

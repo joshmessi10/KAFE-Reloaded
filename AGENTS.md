@@ -61,10 +61,10 @@ Project knowledge is stored in the knowledge layer. Consult it before making dec
 | `.opencode/knowledge/` | How KAFE works: `architecture.md`, `conventions.md`, `verifications.md`, `language-spec.md`, `ml-library.md`, `dl-library.md`, `libraries.md`, `engineering.md` |
 | `.opencode/knowledge/concepts/` | Concept records (template: `.opencode/knowledge/concepts/concept-template.md`) |
 | `.opencode/memory/` | Session-to-session context: `current-state.md`, `active-work.md`, `technical-debt.md`, `known-issues.md`, `context.md` |
-| `.opencode/history/` | Significant project events by year (`template.md`, `YYYY/` records) |
-| `.opencode/progress/` | Planning: `roadmap.md`, `backlog.md`, `milestones.md`, `current.md`, `session-log.md` |
-| `.opencode/adr/` | Engineering decisions (template: `.opencode/adr/template.md`) |
-| `.opencode/benchmarks/` | Performance benchmarks: `template.md`, `benchmark-index.md`, per-benchmark records |
+| `.opencode/history/` | Significant project events by year (consolidated monthly: `YYYY/YYYY-MM.md`) |
+| `.opencode/progress/` | Planning: `roadmap.md`, `backlog.md`, `milestones.md`, `current.md`, `session-log.md`, `session-commands.md` |
+| `.opencode/adr/` | Engineering decisions (consolidated: `decisions.md`, template: `.opencode/adr/template.md`) |
+| `.opencode/benchmarks/` | Performance benchmarks (consolidated: `records.md`, template: `.opencode/benchmarks/template.md`) |
 | `.opencode/skills/` | Reusable engineering workflows (`impact-analysis`, `add-ml-algorithm`, `add-dl-layer`, `modify-grammar`, `create-library`, `create-adr`, `release-checklist`) |
 | `.opencode/commands/` | Custom project commands (`/init`, `/resume`, `/open-work`, `/impact`, `/adr`, `/benchmark`, `/dod`, `/close`) |
 | `.opencode/templates/` | Reusable project templates: `impact-analysis.md`, `dod-checklist.md`, `benchmark-template.md`, `session-recovery.md` |

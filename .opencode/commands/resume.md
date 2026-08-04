@@ -4,6 +4,7 @@ description: Reconstruct the complete KAFE project state: reads knowledge, memor
 
 Reconstruct the current KAFE project state. Read the engineering system in this order:
 
+0. **Reset session state**: Reset `.opencode/progress/session-commands.md` to its template (clear all entries, keep only the header and rules). This marks the start of a new session.
 1. `.opencode/knowledge/` — how KAFE works and how engineering processes run (skim `architecture.md`, `conventions.md`, `verifications.md`, `engineering.md`, `libraries.md`, `ml-library.md`, `dl-library.md`).
 2. `.opencode/memory/` — session-to-session context (`current-state.md`, `active-work.md`, `technical-debt.md`, `known-issues.md`, `context.md`).
 3. `.opencode/history/` — recent significant project events (most recent records first).
@@ -12,6 +13,8 @@ Reconstruct the current KAFE project state. Read the engineering system in this 
 Do not propose changes yet; first report state.
 
 ## Output
+
+After reconstructing state, update `.opencode/progress/session-commands.md`: append a row with `/resume`, current timestamp, `completed`, and a brief note that state was reconstructed.
 
 Produce the complete project status report:
 

@@ -23,13 +23,14 @@ The Lead orchestrates this workflow, delegating to the Architect for creation an
 ## Workflow
 
 1. Confirm the decision is significant (architecture, public API, or important engineering decision).
-2. Copy `.opencode/adr/template.md` → `.opencode/adr/ADR-0000-short-title.md` (next sequential number).
-3. Fill in all sections: Status, Context, Decision, Rationale, Consequences, Alternatives Considered.
-4. Reviewer runs `/dod` to verify the record is complete before it is considered final.
+2. Read `.opencode/adr/decisions.md` to find the next sequential ADR number.
+3. Add a new section to `.opencode/adr/decisions.md` using the ADR template format.
+4. Fill in all sections: Status, Context, Decision, Rationale, Consequences, Alternatives Considered.
+5. Reviewer runs `/dod` to verify the record is complete before it is considered final.
 
 ## Outputs
 
-- A completed ADR record under `.opencode/adr/`.
+- A new ADR section in `.opencode/adr/decisions.md`.
 
 ## Required Documentation Updates
 

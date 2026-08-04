@@ -24,7 +24,7 @@ Close the current session. This is the end-of-session lifecycle (see `.opencode/
    - `roadmap.md`, `backlog.md`, `milestones.md` — only if priorities or plans changed.
    - Never store roadmap changes in AGENTS.md.
 5. Append a session entry to `.opencode/progress/session-log.md` using its format (date, feature, status, summary, tests, validation, significant history records, next step). Append at the end; never edit earlier entries.
-6. If the session produced a **significant** change (major module, public API, grammar, ML/DL component, architecture, or engineering system change), write a structured record in `.opencode/history/YYYY/` using `.opencode/history/template.md`.
+6. If the session produced a **significant** change (major module, public API, grammar, ML/DL component, architecture, or engineering system change), append a structured record to `.opencode/history/YYYY/YYYY-MM.md` using `.opencode/history/template.md`.
 7. Reset `.opencode/progress/current.md` to its template: keep the header and table structure, empty the field values, clear the `## Notes` scratchpad.
 8. Verify repository hygiene:
    - No stray temporary files (`*.tmp`, debug output, `test_output.txt`-style artifacts).

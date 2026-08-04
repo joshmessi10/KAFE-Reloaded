@@ -7,17 +7,18 @@ Benchmark an ML algorithm, DL component, or performance optimization. The **Test
 ## Process
 
 1. Confirm the trigger: an ML algorithm, DL component, or performance optimization is being added or changed.
-2. Copy `.opencode/benchmarks/template.md` to `.opencode/benchmarks/benchmark-<component>.md`.
+2. Read `.opencode/benchmarks/template.md` for the record format.
 3. Fill the header: Date, Component, Category, Purpose.
 4. Run the benchmark and measure real values:
    - Execute the component on a representative workload (a `.kf` program or a Python harness) and record **runtime** and **memory**.
    - Record the **dataset**, **hardware**, and **environment** used (reproducibility).
    - If a baseline exists, record **comparison results** vs the previous run/version.
 5. Fill in Results and Conclusions with the measured values.
-6. Register the record in `.opencode/benchmarks/benchmark-index.md`.
+6. Add the completed record to `.opencode/benchmarks/records.md` (consolidated file).
+7. Update the index table in `records.md` with the new benchmark entry.
 
 ## Output
 
-- A completed benchmark record under `.opencode/benchmarks/` with real measurements.
-- A row in `.opencode/benchmarks/benchmark-index.md`.
+- A completed benchmark section in `.opencode/benchmarks/records.md` with real measurements.
+- An updated index table in `records.md`.
 - A note in `.opencode/memory/technical-debt.md` or a history record if a regression is found.
