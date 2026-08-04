@@ -9,7 +9,7 @@ Active project planning. Do not move this content into AGENTS.md (see AGENTS.md 
 - ✔ Preprocessing
 - ☐ KNN
 - ☐ SVM
-- ☐ Decision Tree
+- ✔ Decision Tree
 - ☐ Random Forest
 
 ## Deep Learning

@@ -33,3 +33,14 @@ Format for each entry:
 - **Validation**: Full suite green; reference grep across AGENTS.md/OPENCODE.md/`.opencode/`.
 - **Significant history records**: `.opencode/history/2026/2026-08-03-harness-adoption.md`, `.opencode/history/2026/2026-08-03-session-lifecycle.md`
 - **Next step**: Return to KafeMACHINE development (KNN, SVM, trees)
+
+---
+## Session: 2026-08-04 — DecisionTreeClassifier Implementation
+
+- **Feature**: DecisionTreeClassifier added to KafeMACHINE
+- **Status**: done
+- **Summary**: Implemented DecisionTreeClassifier from scratch with Gini/Entropy criteria, max_depth, min_samples_split, min_samples_leaf parameters. Added factory function, 7 test fixtures, concept record, benchmark baseline, and example file. Full test suite passes (322/322).
+- **Tests**: 322 passed, 0 failed
+- **Validation**: All fixtures pass, documentation updated, history recorded
+- **History Records**: DecisionTreeClassifier added to KafeMACHINE (2026-08-08)
+- **Next Step**: Continue KafeMACHINE development per roadmap (KNN, SVM, Random Forest)

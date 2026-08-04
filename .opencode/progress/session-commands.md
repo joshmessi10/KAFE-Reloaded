@@ -6,7 +6,8 @@ This file tracks which commands have been executed in the current session. Each 
 
 | Command | Timestamp | Status | Details |
 |---------|-----------|--------|---------|
-| | | | |
+| `/resume` | 2026-08-04 | completed | State reconstructed from knowledge/memory/history/progress layers |
+| `/close` | 2026-08-04 | completed | Session closed: DecisionTreeClassifier implemented |
 
 ## Rules
 
