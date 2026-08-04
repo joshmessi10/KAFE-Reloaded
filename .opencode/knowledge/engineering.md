@@ -60,9 +60,16 @@ The session log is the lightweight per-session record; `.opencode/history/` hold
 ## Benchmark Process
 
 - Benchmark generation is mandatory for ML algorithms, DL components, and performance optimizations.
+- Each benchmark MUST include **at least 5 test scenarios** that are reliable and sensible:
+  1. **Small Dataset** (10-50 samples, 2-3 features) — Verifies basic functionality
+  2. **Medium Dataset** (100-500 samples, 5-10 features) — Verifies performance characteristics
+  3. **Edge Cases** (empty input, single sample, single feature, all-same values) — Verifies robustness
+  4. **Multi-class/Multi-feature** (3+ classes, 10+ features) — Verifies scalability
+  5. **Stress Test** (1000+ samples or extreme parameters) — Verifies performance limits
 - Use the template at `.opencode/benchmarks/template.md`; register each record in `.opencode/benchmarks/records.md` (consolidated file).
 - The **Tester** role runs `/benchmark`, which measures real runtime/memory and fills the record. No CI hook is required.
 - New ML/DL components also require documentation, tests, and examples.
+- **Documentation must be updated** for every implementation (see Documentation Update Process).
 
 ## Subagent Coordination Process (Anti-Telephone Rule)
 
@@ -79,18 +86,48 @@ When work is delegated to subagents (the Architect, Builder, Reviewer, Historian
 
 ## Educational Response Standards
 
-- For significant tasks, always respond with: Theory, Analysis, Impact, Plan, Implementation, Validation, Documentation, Next Steps.
-- Never respond with only "Done", "Fixed", "Completed".
-- For algorithms, models, optimizers, metrics, layers, and other ML/DL components, include **both** an engineering explanation and a theoretical explanation.
-- Theoretical explanations should cover: what the concept is, why it exists, how it works, advantages and limitations, and its relationship with the KAFE implementation.
+For significant tasks, respond with this enriched structure:
+
+1. **Theory** — Concepto matemático: qué es, por qué existe, fundamento matemático (fórmulas en LaTeX cuando aplique), complejidad computacional, ventajas, limitaciones, relación con la implementación KAFE.
+2. **Analysis** — Estado actual del código, qué existe, qué falta.
+3. **Impact** — Módulos afectados, riesgos, compatibilidad.
+4. **Plan** — Plan paso a paso con pasos de verificación.
+5. **Implementation** — Cambios realizados, estructura de código, decisiones de diseño.
+6. **Validation** — Tests ejecutados, resultados, edge cases cubiertos.
+7. **Documentation** — Archivos actualizados, concept records creados, ejemplos agregados.
+8. **Next Steps** — Trabajo pendiente, mejoras futuras.
+
+### Concept Record Requirements
+
+Every ML/DL concept record MUST include:
+
+- **Mathematical Foundation**: Fórmulas, análisis de complejidad, sketch de prueba cuando aplique.
+- **Step-by-Step Algorithm**: Cómo funciona el algoritmo paso a paso, no solo qué hace.
+- **Advantages & Limitations**: Cuándo usar, cuándo no usar.
+- **Relationship with KAFE**: Cómo la teoría se mapea a la implementación.
+- **References**: Papers, libros, fuentes autoritativas.
+
+Never respond with only "Done", "Fixed", "Completed".
 
 ## Documentation Update Process
 
-- Update `docs/` (MkDocs site) when language or library behavior changes; keep `docs/especificacion/` grammar documents in sync with grammar changes.
-- Update `.opencode/knowledge/` when architecture, conventions, specs, or procedures change.
-- Update `.opencode/memory/` at the end of each session: `current-state.md`, `active-work.md`, `technical-debt.md`, `known-issues.md`.
-- Update `.opencode/history/` with a record after significant changes (append to monthly file `YYYY/YYYY-MM.md`; template: `.opencode/history/template.md`).
-- Update `.opencode/progress/` when the roadmap, backlog, milestones, or current work change (never in AGENTS.md).
-- Append `.opencode/progress/session-log.md` at the end of each session (see Session Closure Process; run via `/close`).
-- Create/update `.opencode/knowledge/concepts/` records when a new concept is introduced (template: `.opencode/knowledge/concepts/concept-template.md`).
-- Verify the Definition of Done before declaring a task complete: the **Reviewer** role runs `/dod` against the checklist at `.opencode/templates/dod-checklist.md`.
+After implementing ANY ML/DL component, these updates are **mandatory** (not optional):
+
+1. Update `docs/bibliotecas/machine.md` (or `gesha.md`) with the new component section.
+2. Create/enrich concept record in `.opencode/knowledge/concepts/<name>.md`.
+3. Update `.opencode/knowledge/ml-library.md` (Structure, Public API, Tests).
+4. Update `.opencode/history/YYYY/YYYY-MM.md` with the addition.
+5. Verify that all documentation reflects the current state of the code.
+
+### Context Saving Verification
+
+After each implementation, verify ALL of these exist:
+
+- [ ] `.opencode/knowledge/concepts/<name>.md` — concept record enriquecido
+- [ ] `.opencode/history/YYYY/YYYY-MM.md` — history record
+- [ ] `tests/KafeMACHINE/<category>/` — 7+ fixtures (5 valid + 2 error)
+- [ ] `.opencode/benchmarks/records.md` — benchmark con 5 escenarios
+- [ ] `docs/bibliotecas/` — documentación actualizada
+- [ ] `.opencode/progress/roadmap.md` — refleja completado
+
+If any of these is missing, the task is NOT complete.

@@ -195,11 +195,14 @@ A task is not complete unless:
 - Documentation updated.
 - History updated.
 
-When applicable:
+When applicable (ML/DL components):
 
-- Benchmark exists.
-- ADR exists.
+- Benchmark exists with **5 test scenarios** and real measurements.
+- Enriched concept record exists (mathematical foundation, step-by-step algorithm, advantages/limitations, references).
+- ADR exists (if architecture/API changed).
 - Examples exist.
+- **Context saving verified** — all required files exist.
+- Roadmap updated.
 
 # Response Standards
 
@@ -207,14 +210,14 @@ Never respond with only: "Done", "Fixed", "Completed".
 
 For significant tasks always provide:
 
-1. **Theory** — underlying concept: what it is, why it exists, how it works, advantages/limitations, relationship with the KAFE implementation.
-2. **Analysis** — current state.
-3. **Impact** — affected modules and risks.
-4. **Plan** — proposed implementation.
-5. **Implementation** — changes performed.
-6. **Validation** — tests and verification.
-7. **Documentation** — files updated.
-8. **Next Steps** — remaining work.
+1. **Theory** — Concepto matemático: qué es, por qué existe, fundamento matemático (fórmulas en LaTeX cuando aplique), complejidad computacional, ventajas, limitaciones, relación con la implementación KAFE.
+2. **Analysis** — Estado actual del código, qué existe, qué falta.
+3. **Impact** — Módulos afectados, riesgos, compatibilidad.
+4. **Plan** — Plan paso a paso con pasos de verificación.
+5. **Implementation** — Cambios realizados, estructura de código, decisiones de diseño.
+6. **Validation** — Tests ejecutados, resultados, edge cases cubiertos.
+7. **Documentation** — Archivos actualizados, concept records creados, ejemplos agregados.
+8. **Next Steps** — Trabajo pendiente, mejoras futuras.
 
 Standards: `.opencode/knowledge/engineering.md` (Educational Response Standards).
 

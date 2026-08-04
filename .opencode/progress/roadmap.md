@@ -31,17 +31,17 @@ Active project planning. Do not move this content into AGENTS.md (see AGENTS.md 
 - ✔ MkDocs theme — Black/White/Yellow palette (2026-08-04)
 - ✔ Knowledge concepts — All ML algorithms documented (2026-08-04)
 - ✔ Benchmarks — Full suite characterization (2026-08-04)
-- ☐ DecisionTreeClassifier — MkDocs documentation section
-- ☐ enrichir-conceptos-teoricos — Lead theoretical responses
-- ☐ verify-context-saving — Verify development context is saved for all implementations
+- ☐ Harness Engineering — Actualizar reglas (5 benchmarks, conceptos enriquecidos, verificación de contexto)
+- ☐ Engineering Lead Permissions — Permisos edit/write para docs y records
 
-## Review Tasks (Historical)
+## Review Tasks (Historical) — Pendientes de Revisión Full
 
-Revisión de implementaciones existentes (documentar como si se hubieran desarrollado desde cero el 28 de julio):
+Cada implementación debe pasar por el flujo completo del harness engineering:
+Impact Analysis → Implementación → 5 Benchmarks → Concepto Enriquecido → Docs → History → DoD
 
-- ✔ Revisión de BaseMachine — guardado en history/2026-07.md
-- ✔ Revisión de LinearRegression — guardado en history/2026-07.md
-- ✔ Revisión de LogisticRegression — guardado en history/2026-07.md
-- ✔ Revisión de KNN — guardado en history/2026-07.md
-- ✔ Revisión de Métricas de Clasificación — guardado en history/2026-07.md
-- ✔ Revisión de Métricas de Regresión — guardado en history/2026-07.md
+- ☐ Revisión de BaseMachine — fit/transform/score, concepto enriquecido, 5 benchmarks, history 28 julio
+- ☐ Revisión de LinearRegression — OLS normal equation, concepto enriquecido, 5 benchmarks, history 28 julio
+- ☐ Revisión de LogisticRegression — gradient descent + sigmoid, concepto enriquecido, 5 benchmarks, history 28 julio
+- ☐ Revisión de KNN — Euclidean distance, concepto enriquecido, 5 benchmarks, history 28 julio
+- ☐ Revisión de Métricas de Clasificación — accuracy/precision/recall/F1, concepto enriquecido, 5 benchmarks, history 28 julio
+- ☐ Revisión de Métricas de Regresión — MSE/MAE/R², concepto enriquecido, 5 benchmarks, history 28 julio

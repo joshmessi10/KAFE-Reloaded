@@ -26,10 +26,13 @@ scikit-learn-style ML models and evaluation metrics, implemented from scratch in
 
 ## Rules
 
-- New ML algorithms require: documentation, tests, examples, and benchmarks.
+- New ML algorithms require: documentation, tests, examples, benchmarks (5 scenarios), and enriched concept record.
 - Impact Analysis is mandatory before adding ML algorithms.
 - Do not import external ML implementations (no sklearn, TensorFlow, PyTorch) — teach via KAFE's own implementation.
-- Benchmark generation is mandatory for ML algorithms (see `.opencode/knowledge/engineering.md` — Benchmark Process).
+- Benchmark generation is mandatory for ML algorithms with 5 test scenarios (see `.opencode/knowledge/engineering.md` — Benchmark Process).
+- Concept records must be enriched: mathematical foundation, step-by-step algorithm, advantages/limitations, references.
+- Documentation must be updated for every implementation (see `.opencode/knowledge/engineering.md` — Documentation Update Process).
+- Context saving must be verified before declaring a task complete.
 
 ## KafeMACHINE Priorities
 

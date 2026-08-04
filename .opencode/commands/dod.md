@@ -1,5 +1,5 @@
 ---
-description: Verify the Definition of Done for the current task: checks implementation, validation, tests, documentation, history, and applicable ADR/benchmarks/examples, then reports a ✓/✗ checklist. The Reviewer role runs this command.
+description: Verify the Definition of Done for the current task: checks implementation, validation, tests, documentation, history, enriched concept records, 5 benchmark scenarios, and context saving. The Reviewer role runs this command.
 ---
 
 Verify the Definition of Done for the current task. The **Reviewer** role runs this command before a task is declared complete (see AGENTS.md — Definition of Done).
@@ -13,10 +13,18 @@ Verify the Definition of Done for the current task. The **Reviewer** role runs t
    - **Tests passed** — the relevant suite passes (`pytest tests/`).
    - **Documentation updated** — `docs/` and `.opencode/knowledge/` reflect the change.
    - **History updated** — a record exists under `.opencode/history/`.
-3. Check the applicable items:
+3. Check the applicable items (ML/DL components):
    - **ADR exists** — if architecture or public APIs changed.
-   - **Benchmarks exist** — for ML/DL components or performance work.
-   - **Examples exist** — when applicable.
+   - **Benchmarks exist with 5 scenarios** — verify `.opencode/benchmarks/records.md` has 5 test scenarios for this component.
+   - **Enriched concept record** — verify `.opencode/knowledge/concepts/<name>.md` has: mathematical foundation, step-by-step algorithm, advantages (3+), limitations (2+), when to use/NOT to use, references.
+   - **Examples exist** — `.kf` files under `docs/ejemplos/`.
+4. **Context saving verification** (ML/DL components):
+   - [ ] `.opencode/knowledge/concepts/<name>.md` exists and is enriched
+   - [ ] `.opencode/history/YYYY/YYYY-MM.md` has record
+   - [ ] `tests/KafeMACHINE/<category>/` has 7+ fixtures (5 valid + 2 error)
+   - [ ] `.opencode/benchmarks/records.md` has 5 scenarios
+   - [ ] `docs/bibliotecas/machine.md` is updated
+   - [ ] `.opencode/progress/roadmap.md` is updated
 
 ## Output
 
