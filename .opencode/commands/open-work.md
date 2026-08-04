@@ -4,6 +4,10 @@ description: Begin tracking a new work item: confirm no other item is in progres
 
 Open a new work item. This is the start-of-work lifecycle step (the counterpart of `/close`, which resets `current.md`). Run it when a new feature or task begins, right after `/resume`.
 
+## Hard Gate
+
+**Verify `/resume` was executed in this session.** Read `.opencode/progress/session-commands.md`. If `/resume` is not listed as `passed` or `completed`, **abort** with: "Cannot open work: `/resume` has not been run in this session. Run `/resume` first."
+
 ## Process
 
 1. Confirm the trigger: a new work item is starting.
@@ -18,7 +22,8 @@ Open a new work item. This is the start-of-work lifecycle step (the counterpart 
    - `Related ADRs` — ADRs relevant to the item (or "None").
 5. Update `.opencode/memory/active-work.md` with the active feature, current step, next step, and expected outcome.
 6. If the item was pulled from `.opencode/progress/backlog.md`, mark it in progress there.
-7. If the item is significant (ML algorithm, DL component, public API, grammar, core interpreter refactor, new library), note that `/impact` must run before implementation.
+7. If the item is significant (ML algorithm, DL component, public API, grammar, core interpreter refactor, new library), **require** `/impact` before implementation (not advisory).
+8. Update `.opencode/progress/session-commands.md`: append a row with `/open-work`, current timestamp, `completed`, and the feature name.
 
 ## Output
 

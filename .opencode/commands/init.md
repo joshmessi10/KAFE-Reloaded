@@ -16,6 +16,7 @@ Validate the KAFE Engineering System. Do the checks below, then report the statu
    - `.opencode/skills/`
    - `.opencode/commands/`
    - `.opencode/templates/`
+   - `.opencode/agents/`
 2. Knowledge layer:
    - `.opencode/knowledge/architecture.md`
    - `.opencode/knowledge/conventions.md`
@@ -34,17 +35,18 @@ Validate the KAFE Engineering System. Do the checks below, then report the statu
    - `.opencode/memory/context.md`
 4. History layer:
    - `.opencode/history/template.md`
-   - At least one year directory (`.opencode/history/YYYY/`)
+   - At least one monthly file (`.opencode/history/YYYY/YYYY-MM.md`)
 5. Progress layer:
    - `.opencode/progress/roadmap.md`
    - `.opencode/progress/backlog.md`
    - `.opencode/progress/milestones.md`
    - `.opencode/progress/current.md`
    - `.opencode/progress/session-log.md`
-6. ADR system: `.opencode/adr/template.md`
+   - `.opencode/progress/session-commands.md`
+6. ADR system: `.opencode/adr/decisions.md` (consolidated) and `.opencode/adr/template.md`
 7. Benchmark system:
+   - `.opencode/benchmarks/records.md` (consolidated)
    - `.opencode/benchmarks/template.md`
-   - `.opencode/benchmarks/benchmark-index.md`
 8. Skills: `.opencode/skills/` with at least the documented skills (each a directory with `SKILL.md`)
 9. Commands: `.opencode/commands/{init,resume,open-work,impact,adr,benchmark,dod,close}.md`
 10. Templates:
@@ -52,6 +54,7 @@ Validate the KAFE Engineering System. Do the checks below, then report the statu
     - `.opencode/templates/dod-checklist.md`
     - `.opencode/templates/benchmark-template.md`
     - `.opencode/templates/session-recovery.md`
+11. Agents: `.opencode/agents/` with `engineering-lead.md`, `architect.md`, `builder.md`, `reviewer.md`, `historian.md`, `tester.md`
 11. Progress consistency:
     - `.opencode/progress/current.md` contains all required fields: `Feature`, `Status`, `Current step`, `Next step`, `Blockers`, `Related ADRs`.
     - `Status` in `current.md` is one of: `planned`, `in_progress`, `done`, `blocked`.

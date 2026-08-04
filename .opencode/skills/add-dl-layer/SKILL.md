@@ -31,7 +31,7 @@ The Lead orchestrates this workflow, delegating each step to the responsible age
 4. Add the factory/function to `src/lib/KafeGESHA/funciones.py`.
 5. Add fixtures under `tests/KafeGESHA/` and wire a parameterized test in `tests/test_KafeGESHA.py`.
 6. Add an example `.kf` program under `docs/` if applicable.
-7. Tester runs `/benchmark` and registers the record in `.opencode/benchmarks/benchmark-index.md`.
+7. Tester runs `/benchmark` and adds the record to `.opencode/benchmarks/records.md`.
 8. Reviewer runs `/dod` before the task is declared complete.
 
 ## Outputs
@@ -50,5 +50,5 @@ The Lead orchestrates this workflow, delegating each step to the responsible age
 
 - `pytest tests/test_KafeGESHA.py` passes.
 - Full suite `pytest tests/` passes.
-- Benchmark registered in `.opencode/benchmarks/benchmark-index.md`.
+- Benchmark registered in `.opencode/benchmarks/records.md`.
 - History record for the addition.

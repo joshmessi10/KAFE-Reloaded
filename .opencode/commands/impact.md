@@ -4,6 +4,10 @@ description: Execute the KAFE Impact Analysis workflow: identify affected module
 
 Execute the KAFE Impact Analysis workflow. It is mandatory before adding ML algorithms, adding DL components, modifying public APIs, refactoring core interpreter components, or modifying grammar rules (AGENTS.md — Impact Analysis).
 
+## Hard Gate
+
+**Verify `/open-work` was executed in this session.** Read `.opencode/progress/session-commands.md`. If `/open-work` is not listed as `completed`, **abort** with: "Cannot run impact analysis: `/open-work` has not been run in this session. Run `/open-work` first."
+
 ## Process
 
 1. Read the relevant `.opencode/knowledge/` documents (`architecture.md`, `ml-library.md`, `dl-library.md`, `libraries.md`, `language-spec.md`).
