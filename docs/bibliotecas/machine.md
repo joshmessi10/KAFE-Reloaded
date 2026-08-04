@@ -224,6 +224,83 @@ show(acc);  -- 1.0
 
 ---
 
+## DecisionTreeClassifier
+
+Implementa un árbol de decisión para clasificación usando recursión y criterios de impureza (Gini o Entropy).
+
+### Concepto Teórico
+
+Un **árbol de decisión** particiona recursivamente el espacio de características aprendiendo reglas de decisión simples. En cada nodo interno, selecciona la característica y umbral que mejor divide los datos según un criterio de pureza.
+
+**Criterios de Impureza**:
+
+| Criterio | Fórmula | Descripción |
+|----------|---------|-------------|
+| Gini | $1 - \sum(p_i^2)$ | Impureza de Gini (0 = puro, máximo = $1 - 1/n_{clases}$) |
+| Entropy | $-\sum(p_i \cdot \log_2(p_i))$ | Entropía información (0 = puro, máximo = $\log_2(n_{clases})$) |
+
+**Gain Information**: $\text{Gain} = \text{Impurity}_{parent} - \sum \frac{n_{child}}{n_{parent}} \cdot \text{Impurity}_{child}$
+
+### Métodos
+
+| Método | Firma | Descripción |
+|--------|-------|-------------|
+| `dt.fit(X, y)` | `(List[List[NUM]], List[INT]) -> VOID` | Construye el árbol de decisión |
+| `dt.predict(X)` | `(List[List[NUM]]) -> List[INT]` | Predice clases traversando el árbol |
+| `dt.score(X, y)` | `(List[List[NUM]], List[INT]) -> FLOAT` | Calcula exactitud |
+
+### Parámetros del Constructor
+
+```kafe
+-- criterion: "gini" (default) o "entropy"
+-- max_depth: profundidad máxima (0 = ilimitada)
+-- min_samples_split: mínimo de muestras para dividir (default: 2)
+-- min_samples_leaf: mínimo de muestras en hoja (default: 1)
+MACHINE model = machine.decision_tree_classifier("gini", 0, 2, 1);
+```
+
+### Propiedades
+
+| Propiedad | Tipo | Descripción |
+|-----------|------|-------------|
+| `dt.tree_` | `Dict` | Estructura del árbol (nodos internos y hojas) |
+| `dt.classes_` | `List[INT]` | Clases únicas vistas durante fit |
+| `dt.n_features_` | `INT` | Número de features |
+
+### Ejemplo
+
+```kafe
+import machine;
+
+List[List[FLOAT]] X = [[1.0, 2.0], [2.0, 3.0], [3.0, 3.0],
+                        [6.0, 5.0], [7.0, 7.0], [8.0, 6.0]];
+List[INT] y = [0, 0, 0, 1, 1, 1];
+
+-- Modelo con Gini (default)
+MACHINE model = machine.decision_tree_classifier();
+model.fit(X, y);
+
+List[INT] preds = model.predict([[1.0, 2.0], [7.0, 7.0], [4.0, 4.0]]);
+show(preds);  -- [0, 1, 0]
+
+FLOAT acc = model.score(X, y);
+show(acc);  -- 1.0
+
+-- Modelo con Entropy y profundidad limitada
+MACHINE model2 = machine.decision_tree_classifier("entropy", 2);
+model2.fit(X, y);
+show(model2.predict([[1.0, 2.0], [7.0, 7.0]]));  -- [0, 1]
+```
+
+### Algoritmo Interno
+
+1. **Selección de-split**: Para cada feature y threshold posible, calcula Information Gain
+2. **Construcción recursiva**: Dividir datos según mejor split, repetir en subárboles
+3. **Criterios de parada**: max_depth alcanzado, min_samples_split no satisfecho, nodo puro
+4. **Predicción**: Traversar el árbol desde raíz hasta hoja
+
+---
+
 ## StandardScaler
 
 Estandariza características eliminando la media y escalando a varianza unitaria (Z-score): $z = (x - \mu) / \sigma$.
