@@ -1,5 +1,5 @@
 ---
-description: Validate the KAFE engineering system: checks required directories, knowledge, memory, history, progress, RFC/ADR/benchmark structure, skills, commands, and templates, then prints a readiness report with missing files, invalid files, and recommendations.
+description: Validate the KAFE engineering system: checks required directories, knowledge, memory, history, progress, ADR/benchmark structure, skills, commands, and templates, then prints a readiness report with missing files, invalid files, and recommendations.
 ---
 
 Validate the KAFE Engineering System. Do the checks below, then report the status.
@@ -11,7 +11,6 @@ Validate the KAFE Engineering System. Do the checks below, then report the statu
    - `.opencode/memory/`
    - `.opencode/history/`
    - `.opencode/progress/`
-   - `.opencode/rfc/`
    - `.opencode/adr/`
    - `.opencode/benchmarks/`
    - `.opencode/skills/`
@@ -42,25 +41,24 @@ Validate the KAFE Engineering System. Do the checks below, then report the statu
    - `.opencode/progress/milestones.md`
    - `.opencode/progress/current.md`
    - `.opencode/progress/session-log.md`
-6. RFC system: `.opencode/rfc/template.md`
-7. ADR system: `.opencode/adr/template.md`
-8. Benchmark system:
+6. ADR system: `.opencode/adr/template.md`
+7. Benchmark system:
    - `.opencode/benchmarks/template.md`
    - `.opencode/benchmarks/benchmark-index.md`
-9. Skills: `.opencode/skills/` with at least the documented skills (each a directory with `SKILL.md`)
-10. Commands: `.opencode/commands/{init,resume,impact,rfc,adr,benchmark,dod,close}.md`
-11. Templates:
+8. Skills: `.opencode/skills/` with at least the documented skills (each a directory with `SKILL.md`)
+9. Commands: `.opencode/commands/{init,resume,open-work,impact,adr,benchmark,dod,close}.md`
+10. Templates:
     - `.opencode/templates/impact-analysis.md`
     - `.opencode/templates/dod-checklist.md`
     - `.opencode/templates/benchmark-template.md`
     - `.opencode/templates/session-recovery.md`
-12. Progress consistency:
-    - `.opencode/progress/current.md` contains all required fields: `Feature`, `Status`, `Current step`, `Next step`, `Blockers`, `Related RFCs`, `Related ADRs`.
+11. Progress consistency:
+    - `.opencode/progress/current.md` contains all required fields: `Feature`, `Status`, `Current step`, `Next step`, `Blockers`, `Related ADRs`.
     - `Status` in `current.md` is one of: `planned`, `in_progress`, `done`, `blocked`.
     - At most one active work item is in progress: the single `current.md` must not claim `in_progress` while `.opencode/memory/active-work.md` describes a different or completed feature.
     - `roadmap.md`, `backlog.md`, and `milestones.md` contain their documented sections (not empty templates).
     - `.opencode/progress/session-log.md` exists, is append-only (contains the `## ` session entries), and if `current.md` has `Status: done` it ends with a session entry (the session was properly closed).
-13. Test suite: run `pytest tests/ -q` from the repository root (mirrors CI in `.github/workflows/tests.yml`). Report the test count and any failures.
+12. Test suite: run `pytest tests/ -q` from the repository root (mirrors CI in `.github/workflows/tests.yml`). Report the test count and any failures.
 
 ## Output
 
@@ -75,7 +73,6 @@ History Layer        ✓
 Progress Layer       ✓
 Progress Consistency ✓
 
-RFC Status           ✓
 ADR Status           ✓
 Benchmarks           ✓
 Templates            ✓
@@ -89,7 +86,7 @@ Below the report, list:
 
 - **Missing files**: every required path that does not exist, one per line.
 - **Invalid files**: files that exist but are empty or structurally invalid (e.g., a template without its required sections), with the reason.
-- **Progress issues**: any consistency problem found in check 12 (missing `current.md` fields, invalid `Status`, conflicting active work, empty roadmap/backlog/milestones sections).
+- **Progress issues**: any consistency problem found in check 11 (missing `current.md` fields, invalid `Status`, conflicting active work, empty roadmap/backlog/milestones sections).
 - **Test results**: the `pytest tests/ -q` summary — number of tests passed/failed, and the first few failure names if any.
 - **Recommendations**: concrete next actions to close the gaps.
 

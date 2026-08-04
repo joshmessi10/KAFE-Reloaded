@@ -35,4 +35,4 @@ Reusable benchmark structure for ML algorithms, DL components, and performance o
 
 ## Related
 
-- Related tests, RFC/ADR records, docs, or knowledge concepts.
+- Related tests, ADR records, docs, or knowledge concepts.

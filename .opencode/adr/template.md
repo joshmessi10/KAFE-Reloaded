@@ -26,7 +26,3 @@ What changes as a result, including trade-offs and follow-up work.
 ## Alternatives Considered
 
 What other options were evaluated and why they were rejected.
-
-## Related RFCs
-
-- RFCs that proposed or constrain this decision, or none.

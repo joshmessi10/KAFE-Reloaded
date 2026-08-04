@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Engineering constitution for the KAFE engineering system. This file defines what KAFE is and the rules agents must follow. **OPENCODE.md is the primary entry point** (operating manual); the persistent engineering system (knowledge, memory, history, planning, RFC/ADR, benchmarks, skills, commands) lives under `.opencode/`.
+Engineering constitution for the KAFE engineering system. This file defines what KAFE is and the rules agents must follow. **OPENCODE.md is the primary entry point** (operating manual); the persistent engineering system (knowledge, memory, history, planning, ADR, benchmarks, skills, commands) lives under `.opencode/`.
 
 # How to Use This Document
 
@@ -10,10 +10,15 @@ Read before deciding, in this order: `.opencode/knowledge/` → `.opencode/memor
 
 | If you are… | Read |
 |---|---|
+| Starting a session | `/init` (validate the system) + Session Recovery → `/resume` |
 | Resuming a session | Session Recovery → `/resume` |
+| Opening a new work item | `/open-work` (+ `/impact` if the item is significant) |
 | Closing a session | Session Closure Process → `/close` |
 | Adding an ML algorithm or DL component | Impact Analysis + `.opencode/knowledge/ml-library.md` / `dl-library.md` → `/impact` |
+| Changing public APIs or refactoring the core interpreter | Impact Analysis → `/impact` |
+| Adding a new library | Impact Analysis → `/impact` + `.opencode/skills/create-library/` |
 | Changing grammar or tokens | Impact Analysis + `.opencode/skills/modify-grammar/` |
+| Completing a task | Definition of Done → `/dod` |
 | Releasing or tagging | Definition of Done → `/dod` + `.opencode/skills/release-checklist/` |
 
 # Mission
@@ -58,11 +63,10 @@ Project knowledge is stored in the knowledge layer. Consult it before making dec
 | `.opencode/memory/` | Session-to-session context: `current-state.md`, `active-work.md`, `technical-debt.md`, `known-issues.md`, `context.md` |
 | `.opencode/history/` | Significant project events by year (`template.md`, `YYYY/` records) |
 | `.opencode/progress/` | Planning: `roadmap.md`, `backlog.md`, `milestones.md`, `current.md`, `session-log.md` |
-| `.opencode/rfc/` | Proposals (template: `.opencode/rfc/template.md`) |
 | `.opencode/adr/` | Engineering decisions (template: `.opencode/adr/template.md`) |
 | `.opencode/benchmarks/` | Performance benchmarks: `template.md`, `benchmark-index.md`, per-benchmark records |
-| `.opencode/skills/` | Reusable engineering workflows (`impact-analysis`, `add-ml-algorithm`, `add-dl-layer`, `modify-grammar`, `create-library`, `create-rfc`, `create-adr`, `release-checklist`) |
-| `.opencode/commands/` | Custom project commands (`/init`, `/resume`, `/impact`, `/rfc`, `/adr`, `/benchmark`, `/dod`, `/close`) |
+| `.opencode/skills/` | Reusable engineering workflows (`impact-analysis`, `add-ml-algorithm`, `add-dl-layer`, `modify-grammar`, `create-library`, `create-adr`, `release-checklist`) |
+| `.opencode/commands/` | Custom project commands (`/init`, `/resume`, `/open-work`, `/impact`, `/adr`, `/benchmark`, `/dod`, `/close`) |
 | `.opencode/templates/` | Reusable project templates: `impact-analysis.md`, `dod-checklist.md`, `benchmark-template.md`, `session-recovery.md` |
 
 Consult information in this order before deciding: `.opencode/knowledge/` → `.opencode/memory/` → `.opencode/history/` → `.opencode/progress/`. Do not invent architecture, APIs, or conventions if they are already documented.
@@ -82,7 +86,7 @@ Progress (`.opencode/progress/`):
 - `roadmap.md` — long-term roadmap.
 - `backlog.md` — prioritized task list.
 - `milestones.md` — major project milestones.
-- `current.md` — current work tracking (feature, status, current/next step, blockers, related RFCs/ADRs).
+- `current.md` — current work tracking (feature, status, current/next step, blockers, related ADRs).
 - `session-log.md` — append-only bitácora of closed sessions (written by `/close`).
 
 # Impact Analysis
@@ -105,7 +109,6 @@ Responsible for:
 
 - System design
 - Impact analysis
-- RFC generation
 - ADR generation
 
 ## Builder
@@ -146,12 +149,6 @@ Runs `/benchmark` for ML/DL components and performance changes.
 
 # Automatic Actions
 
-Automatically create an RFC when:
-
-- A major module is introduced.
-- Multiple subsystems are modified.
-- A significant capability is added.
-
 Automatically create an ADR when:
 
 - Architecture changes.
@@ -166,11 +163,11 @@ Automatically create benchmarks when:
 
 Automatically update project history after significant changes.
 
-RFC and ADR generation should be automatic and should not require explicit user requests.
+ADR generation should be automatic and should not require explicit user requests.
 
 The engineering system is responsible for determining when these artifacts are necessary.
 
-Templates: `.opencode/rfc/template.md`, `.opencode/adr/template.md`. Processes: `.opencode/knowledge/engineering.md`.
+Template: `.opencode/adr/template.md`. Processes: `.opencode/knowledge/engineering.md`.
 
 # Project Memory Responsibilities
 
@@ -188,10 +185,6 @@ When a significant engineering decision is made:
 
 - Create or update ADR records.
 
-When a major capability is introduced:
-
-- Create or update RFC records.
-
 # Definition of Done
 
 A task is not complete unless:
@@ -205,7 +198,6 @@ A task is not complete unless:
 When applicable:
 
 - Benchmark exists.
-- RFC exists.
 - ADR exists.
 - Examples exist.
 
@@ -300,8 +292,7 @@ Engineering decisions and documentation are authoritative in this order:
 
 1. **ADRs** — `.opencode/adr/` (architectural decisions and public API changes).
 2. **Knowledge Layer** — `.opencode/knowledge/` (architecture, conventions, language spec, libraries).
-3. **RFCs** — `.opencode/rfc/` (approved major-capability proposals).
-4. **History** — `.opencode/history/` (significant project events).
-5. **Progress** — `.opencode/progress/` (roadmap, backlog, milestones, and current work).
+3. **History** — `.opencode/history/` (significant project events).
+4. **Progress** — `.opencode/progress/` (roadmap, backlog, milestones, and current work).
 
 When documents conflict, the higher-precedence source wins.

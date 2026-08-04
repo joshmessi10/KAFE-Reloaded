@@ -22,7 +22,6 @@ description: One sentence: what it does AND when to trigger it.
 | `add-dl-layer/` | Add a new DL layer/component to KafeGESHA from scratch, with fixtures, docs, and benchmarks |
 | `modify-grammar/` | Change grammar rules/tokens, regenerate the parser, and keep the spec and fixtures in sync |
 | `create-library/` | Add a new built-in library (`src/lib/KafeXXX`) and register it in `self.libraries` |
-| `create-rfc/` | Create an RFC record for a major capability or architectural uncertainty |
 | `create-adr/` | Create an ADR record for an important engineering decision |
 | `release-checklist/` | Verify release readiness: tests, parser, docs, history, benchmarks, Definition of Done |
 

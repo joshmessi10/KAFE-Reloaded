@@ -12,13 +12,14 @@ Purpose: add a new built-in library to KAFE that is importable by name and dispa
 
 ## Workflow
 
-1. Read `.opencode/knowledge/libraries.md` and mirror an existing library's structure.
-2. Create `src/lib/KafeXXX/funciones.py` (plain Python functions; stateful models as classes with `fit()`/`predict()`/`score()`).
-3. Import the module in `src/EvalVisitorPrimitivo.py` near the other `import lib.Kafe*` lines.
-4. Register it in `self.libraries` with the lowercase KAFE import name (`{"xxx": [module, False]}`).
-5. Add fixtures under `tests/KafeXXX/` and a `tests/test_KafeXXX.py` parameterized via `obtener_parametros(get_programs(...))`.
-6. Add an example `.kf` program under `docs/` if applicable.
-7. Reviewer runs `/dod` before the task is declared complete.
+1. Run Impact Analysis first (`/impact`) — mandatory before adding a new library (new public API + library dispatch).
+2. Read `.opencode/knowledge/libraries.md` and mirror an existing library's structure.
+3. Create `src/lib/KafeXXX/funciones.py` (plain Python functions; stateful models as classes with `fit()`/`predict()`/`score()`).
+4. Import the module in `src/EvalVisitorPrimitivo.py` near the other `import lib.Kafe*` lines.
+5. Register it in `self.libraries` with the lowercase KAFE import name (`{"xxx": [module, False]}`).
+6. Add fixtures under `tests/KafeXXX/` and a `tests/test_KafeXXX.py` parameterized via `obtener_parametros(get_programs(...))`.
+7. Add an example `.kf` program under `docs/` if applicable.
+8. Reviewer runs `/dod` before the task is declared complete.
 
 ## Outputs
 

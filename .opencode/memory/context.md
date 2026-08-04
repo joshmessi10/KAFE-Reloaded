@@ -1,6 +1,6 @@
 # Project Context
 
-Template. Project-wide context, assumptions, and engineering notes. This file is stable; move durable decisions to `.opencode/history/` or RFC/ADR records.
+Template. Project-wide context, assumptions, and engineering notes. This file is stable; move durable decisions to `.opencode/history/` or ADR records.
 
 ## Project Context
 
@@ -18,5 +18,5 @@ KAFE is an educational DSL focused on Machine Learning and Deep Learning, implem
 
 - KafeMACHINE (ML) and KafeGESHA (DL) are implemented from scratch inside KAFE.
 - `self.libraries` uses lowercase import keys: `numk`, `math`, `files`, `plot`, `geshaDeep`, `pardos`, `machine`.
-- Source of Truth precedence: ADRs > Knowledge Layer > RFCs > History > Progress (see AGENTS.md — Source of Truth).
+- Source of Truth precedence: ADRs > Knowledge Layer > History > Progress (see AGENTS.md — Source of Truth).
 - Test fixtures: `<name>.kf` + `<name>.expec` (expected stdout), optional `<name>.in`, invalid `<name>.error.kf` + `<name>.error.expec`.

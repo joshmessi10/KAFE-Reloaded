@@ -17,5 +17,5 @@ Consult `.opencode/memory/` second when resuming work (after `.opencode/knowledg
 ## Rules
 
 - Files here are short-lived context; update them when work moves.
-- Durable decisions belong in `.opencode/history/` records, RFC/ADR records, and `.opencode/knowledge/`.
+- Durable decisions belong in `.opencode/history/` records, ADR records, and `.opencode/knowledge/`.
 - Each file is a template: keep the section structure, replace the placeholder values.

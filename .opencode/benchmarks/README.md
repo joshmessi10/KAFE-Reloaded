@@ -19,6 +19,8 @@ Benchmark generation is mandatory for ML algorithms, DL components, and performa
 
 ## Adding a Benchmark
 
+Run via `/benchmark` (the Tester role) after adding an ML algorithm, DL component, or performance optimization:
+
 1. Copy `.opencode/benchmarks/template.md` → `benchmark-<component>.md`.
 2. Run the benchmark, record results (runtime, memory, dataset, hardware, comparison).
 3. Add a row to `.opencode/benchmarks/benchmark-index.md`.

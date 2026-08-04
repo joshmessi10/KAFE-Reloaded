@@ -1,5 +1,5 @@
 ---
-description: Reconstruct the complete KAFE project state: reads knowledge, memory, history and progress, then reports architecture state, active/pending work, roadmap status, current milestone, blockers, technical debt, ML/DL priorities, RFCs, ADRs, and recommended next steps.
+description: Reconstruct the complete KAFE project state: reads knowledge, memory, history and progress, then reports architecture state, active/pending work, roadmap status, current milestone, blockers, technical debt, ML/DL priorities, ADRs, and recommended next steps.
 ---
 
 Reconstruct the current KAFE project state. Read the engineering system in this order:
@@ -25,7 +25,6 @@ Produce the complete project status report:
 - **Technical debt** — known debt and its cost (from `.opencode/memory/technical-debt.md`).
 - **ML/DL priorities** — current development focus (from `.opencode/knowledge/ml-library.md` — KafeMACHINE Priorities).
 - **Recent history** — the most relevant history records with dates.
-- **Relevant RFCs** — open/proposed RFCs related to active work (list `.opencode/rfc/`).
 - **Relevant ADRs** — decisions that constrain the active work (list `.opencode/adr/`).
 - **Recommended next steps** — a prioritized proposal for continuing work, consistent with `.opencode/progress/roadmap.md` priorities.
 

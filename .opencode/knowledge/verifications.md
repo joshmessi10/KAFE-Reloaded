@@ -57,7 +57,6 @@ A task is not complete unless:
 When applicable:
 
 - Benchmark exists.
-- RFC exists.
 - ADR exists.
 - Examples exist.
 

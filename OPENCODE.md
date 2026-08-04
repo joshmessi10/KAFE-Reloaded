@@ -81,9 +81,10 @@ Before performing any task:
 2. Read `.opencode/memory/`
 3. Read `.opencode/history/`
 4. Read `.opencode/progress/`
-5. Reconstruct project state
-6. Identify active priorities
-7. Continue work
+5. Run `/init` — validate the engineering system is in place.
+6. Run `/resume` — reconstruct the project state.
+7. Identify active priorities.
+8. Continue work.
 
 # Project State Reconstruction
 
@@ -106,7 +107,6 @@ Before starting work, verify the engineering system is in place:
 - [ ] Roadmap present (`.opencode/progress/roadmap.md`).
 - [ ] Backlog present (`.opencode/progress/backlog.md`).
 - [ ] ADR structure present (`.opencode/adr/` with template).
-- [ ] RFC structure present (`.opencode/rfc/` with template).
 - [ ] Benchmark structure present (`.opencode/benchmarks/` with template and index).
 - [ ] Templates present (`.opencode/templates/` with workflow templates).
 
@@ -118,16 +118,11 @@ Always enforce:
 
 - Impact Analysis
 - Definition of Done
-- RFC generation when required
 - ADR generation when required
 - Documentation updates
 - History updates
 - Benchmark generation for ML/DL work
 - Subagent coordination (anti-telephone rule) — see `.opencode/knowledge/engineering.md` (Subagent Coordination Process)
-
-# RFC Escalation Rule
-
-If uncertainty exists regarding architecture, public APIs, major capabilities, or long-term maintainability, create an RFC before implementation.
 
 # Architecture Consultation Rule
 
@@ -200,9 +195,6 @@ Historical project decisions and changes.
 
 .opencode/progress/:
 Roadmap, backlog and priorities.
-
-.opencode/rfc/:
-Major capability proposals.
 
 .opencode/adr/:
 Architectural decisions.
