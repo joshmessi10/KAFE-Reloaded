@@ -1,31 +1,32 @@
-# ADR-0002: Roles Documented, Deferred as OpenCode Subagents
+# ADR-0002: Roles como Subagentes OpenCode
 
-- **Status**: accepted
+- **Status**: superseded by ADR-0005
+- **Superseded**: 2026-08-04
+- **Replaced by**: ADR-0005-agent-system-implementation
 
 ## Context
 
-AGENTS.md defines five engineering roles — Architect, Builder, Reviewer, Historian, and Tester — as responsibilities agents must respect. None of them is implemented as an opencode agent or subagent: `opencode.json` has no `agent` key, `.opencode/agent/` does not exist, and no global agent config defines them. A single agent (the Engineering Lead) currently performs every role, guided by commands and skills that represent each responsibility.
+AGENTS.md define cinco roles de ingeniería — Architect, Builder, Reviewer, Historian, y Tester — como responsabilidades que los agentes deben respetar. Originalmente fueron diferidos como subagentes porque el volumen de trabajo no justificaba la sobrecarga de orquestación.
 
-## Decision
+## Decision (Original — 2026-08-03)
 
-Keep the five roles as documented responsibilities now, and defer their implementation as opencode subagents to a later phase. When they are implemented:
+Mantener los cinco roles como responsabilidades documentadas y diferir su implementación como subagentes OpenCode a una fase posterior.
 
-- Use the anti-telephone rule (`.opencode/knowledge/engineering.md` — Subagent Coordination Process): subagents write results to files and reply only with file references.
-- Apply the complexity escalation table (trivial → 1 implementer; medium → +1 reviewer; complex → 2-3 explorers → implementer → reviewer).
+## Decision (Actualizada — 2026-08-04)
 
-## Rationale
+Los cinco roles ahora están implementados como subagentes OpenCode en `.opencode/agents/`:
 
-- Avoids premature engineering: the current single-agent volume of work does not justify the orchestration overhead yet.
-- Documents the intended end state without blocking current work.
-- Keeps the responsibilities stable so that the future agent implementation does not change the process, only the executor.
+- `architect.md` — diseño de sistema, impact analysis, ADR generation
+- `builder.md` — implementación, refactoring, feature development
+- `reviewer.md` — quality gates, Definition of Done
+- `historian.md` — history/knowledge/memory updates
+- `tester.md` — validation, tests, benchmarks
+
+El Engineering Lead (`engineering-lead.md`) orquesta a los subagentes via Task tool.
 
 ## Consequences
 
-- Responsibilities do not change: `/impact` (Architect), skills `add-ml-algorithm`/`add-dl-layer`/`modify-grammar`/`create-library` (Builder), `/dod` (Reviewer), memory/history/bitácora (Historian), `/benchmark` (Tester).
-- Follow-up: the subagent implementation must be proposed via impact analysis and recorded as an ADR before implementation.
-- Follow-up: the anti-telephone rule and escalation table are already documented and ready to apply.
-
-## Alternatives Considered
-
-- Implement the agents now — rejected: premature complexity, no workflow volume yet to justify orchestration.
-- Remove the roles — rejected: loses the responsibility model that guides `/dod`, `/benchmark`, and the skills.
+- El sistema ahora tiene 6 agentes: 1 primary (Lead) + 5 subagents
+- Los subagentes siguen el protocolo anti-telephone (`.opencode/knowledge/engineering.md`)
+- Cada skill tiene Agent Ownership documentado
+- `opencode.json` configura `default_agent: "engineering-lead"` y `subagent_depth: 2`

@@ -5,6 +5,16 @@ description: Use when architecture changes, public APIs change, or important eng
 
 Purpose: create an ADR record to capture an important engineering decision durably.
 
+## Agent Ownership
+
+| Step | Agent | Action |
+|------|-------|--------|
+| 1-3 | Architect | Create ADR record |
+| 4 | Reviewer | Run `/dod` to verify completeness |
+| Validation | Historian | Update history and knowledge records |
+
+The Lead orchestrates this workflow, delegating to the Architect for creation and the Reviewer for validation.
+
 ## Inputs
 
 - The decision made and the context that led to it.

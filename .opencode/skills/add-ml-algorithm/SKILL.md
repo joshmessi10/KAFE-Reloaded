@@ -5,6 +5,18 @@ description: Use when adding a new machine learning algorithm to KafeMACHINE in 
 
 Purpose: add a new ML algorithm to KafeMACHINE, implemented from scratch inside KAFE, fully validated and documented.
 
+## Agent Ownership
+
+| Step | Agent | Action |
+|------|-------|--------|
+| 1 | Architect | Run `/impact` — Impact Analysis |
+| 2-6 | Builder | Implement model, factory, fixtures, docs |
+| 7 | Tester | Run `/benchmark`, register record |
+| 8 | Reviewer | Run `/dod` — Definition of Done |
+| Validation | Historian | Create history record, update knowledge |
+
+The Lead orchestrates this workflow, delegating each step to the responsible agent.
+
 ## Inputs
 
 - Algorithm name and reference (paper/notes).

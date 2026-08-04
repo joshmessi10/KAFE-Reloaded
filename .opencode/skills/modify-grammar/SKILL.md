@@ -5,6 +5,18 @@ description: Use when changing KAFE grammar rules or tokens in Kafe_Grammar.g4 /
 
 Purpose: modify KAFE grammar safely: regenerate the parser, keep the spec in sync, and add validation.
 
+## Agent Ownership
+
+| Step | Agent | Action |
+|------|-------|--------|
+| 1 | Architect | Run `/impact` — Impact Analysis |
+| 2-5 | Builder | Edit grammar, regenerate parser, add fixtures |
+| 6 | Reviewer | Run `/dod` — Definition of Done |
+| Validation | Tester | Run pytest, verify parser regeneration |
+| Validation | Historian | Create history record, update language-spec |
+
+The Lead orchestrates this workflow, delegating each step to the responsible agent.
+
 ## Inputs
 
 - Grammar change description (new rule, token, keyword, or type).
