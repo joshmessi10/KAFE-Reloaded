@@ -12,15 +12,15 @@ theme:
   palette:
     - media: "(prefers-color-scheme: light)"
       scheme: default
-      primary: blue grey
-      accent: amber
+      primary: black
+      accent: yellow
       toggle:
         icon: material/brightness-7
         name: Cambiar a modo oscuro
     - media: "(prefers-color-scheme: dark)"
       scheme: slate
-      primary: blue grey
-      accent: amber
+      primary: black
+      accent: yellow
       toggle:
         icon: material/brightness-4
         name: Cambiar a modo claro
@@ -75,6 +75,7 @@ nav:
       - Merge Sort: ejemplos/merge-sort.kf
       - Regresión Lineal: ejemplos/regresion-lineal.kf
       - Red Neuronal: ejemplos/red-neuronal.kf
+      - Decision Tree: ejemplos/decision-tree.kf
   - Acerca de:
       - Créditos: about/creditos.md
       - Licencia: about/licencia.md
@@ -105,6 +106,7 @@ extra_javascript:
 
 extra_css:
   - https://unpkg.com/katex/dist/katex.min.css
+  - assets/css/custom.css
 
 extra:
   social:
