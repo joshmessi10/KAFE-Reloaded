@@ -1,6 +1,6 @@
 from global_utils import check_sig
 from TypeUtils import machine_t, lista_cualquiera_t, vector_numeros_t
-from .BaseMachine import BaseMachine
+from ..BaseMachine import BaseMachine
 
 
 class LabelEncoder(BaseMachine):

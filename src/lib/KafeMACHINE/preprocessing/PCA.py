@@ -2,7 +2,7 @@ from lib.KafeMATH.funciones import sqrt, pow_, math_round
 from global_utils import check_sig
 from TypeUtils import pardos_t, entero_t, matriz_numeros_t
 from lib.KafePARDOS.DataFrame import DataFrame
-from .BaseMachine import BaseMachine
+from ..BaseMachine import BaseMachine
 
 
 class PCA(BaseMachine):
@@ -86,11 +86,9 @@ class PCA(BaseMachine):
         if n_samples == 1:
             raise Exception("PCA: Need at least 2 samples to compute covariance")
 
-        # 1. Mean Centering
         self.mean_ = [sum(row[j] for row in matrix) / n_samples for j in range(n_features)]
         centered_matrix = [[matrix[i][j] - self.mean_[j] for j in range(n_features)] for i in range(n_samples)]
 
-        # 2. Covariance Matrix: C = (X^T * X) / (n - 1)
         cov_matrix = [[0.0 for _ in range(n_features)] for _ in range(n_features)]
         for i in range(n_features):
             for j in range(i, n_features):
@@ -98,10 +96,8 @@ class PCA(BaseMachine):
                 cov_matrix[i][j] = val
                 cov_matrix[j][i] = val
 
-        # 3. Jacobi Eigenvalue Algorithm
         eigenvalues, components = self._jacobi_eigenvalues(cov_matrix, n_features)
 
-        # 4. Sort by eigenvalue descending, keep top n_components
         sorted_indices = sorted(range(n_features), key=lambda i: eigenvalues[i], reverse=True)
         self.explained_variance_ = [eigenvalues[i] for i in sorted_indices[:self.n_components]]
         self.components_ = [components[i] for i in sorted_indices[:self.n_components]]

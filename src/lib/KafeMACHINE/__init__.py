@@ -1,11 +1,14 @@
 from .BaseMachine import BaseMachine
 from .LinearRegression import LinearRegression
-from .LabelEncoder import LabelEncoder
-from .OneHotEncoder import OneHotEncoder
-from .PCA import PCA
-from .StandardScaler import StandardScaler
-from .MinMaxScaler import MinMaxScaler
-from .SimpleImputer import SimpleImputer
 from .LogisticRegression import LogisticRegression
 from .KNN import KNN
 from .DecisionTree import DecisionTreeClassifier
+from .preprocessing import (
+    StandardScaler,
+    MinMaxScaler,
+    LabelEncoder,
+    OneHotEncoder,
+    OrdinalEncoder,
+    SimpleImputer,
+    PCA,
+)

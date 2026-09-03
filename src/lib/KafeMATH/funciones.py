@@ -1,4 +1,3 @@
-import math as _math
 from .errores import raiseDomainError, raiseNonEqualLength
 from TypeUtils import vector_numeros_t, numeros_t, entero_t
 from global_utils import check_sig
@@ -15,10 +14,43 @@ nan = float('nan')
 
 @check_sig([1], numeros_t)
 def exp(x):
-    return _math.exp(x)
+    """Calcula e^x usando series de Taylor con reducción de argumento."""
+    if x == 0:
+        return 1.0
+    if isinf(x):
+        return x if x > 0 else 0.0
+    if isnan(x):
+        return x
+
+    negative = False
+    if x < 0:
+        negative = True
+        x = -x
+
+    # Reduce: e^x = (e^(x/2^k))^(2^k)
+    # Reduce until x/2^k <= 1.0 to minimize squaring error
+    k = 0
+    reduced = x
+    while reduced > 1.0:
+        reduced /= 2.0
+        k += 1
+
+    # Taylor series with more iterations for precision
+    term = 1.0
+    result = 1.0
+    for n in range(1, 50):
+        term *= reduced / n
+        result += term
+
+    # Square k times
+    for _ in range(k):
+        result *= result
+
+    return 1.0 / result if negative else result
 
 @check_sig([1, 2], numeros_t, numeros_t)
 def log(*args):
+    """Calcula ln(x) usando reducción de argumento y serie de Taylor."""
     x = args[0]
 
     base = None
@@ -27,9 +59,61 @@ def log(*args):
 
     if x <= 0:
         raiseDomainError('log')
+
+    if base is not None:
+        if base <= 0 or base == 1:
+            raiseDomainError('log')
+
+    if x == 1:
+        return 0.0
+    if isinf(x):
+        return x
+    if isnan(x):
+        return x
+
+    # Argument reduction: ln(x) = ln(2^k * m) = k*ln(2) + ln(m)
+    k = 0
+    m = float(x)
+    while m >= 2.0:
+        m /= 2.0
+        k += 1
+    while m < 1.0:
+        m *= 2.0
+        k -= 1
+
+    ln2 = 0.6931471805599453
+
+    t = m - 1.0
+    result = 0.0
+    term = t
+    for n in range(1, 100):
+        result += term / n
+        term *= -t
+
+    ln_x = k * ln2 + result
+
     if base is None:
-        return _math.log(x)
-    return _math.log(x, base)
+        return ln_x
+
+    # log_base(x) = ln(x) / ln(base)
+    k_b = 0
+    m_b = float(base)
+    while m_b >= 2.0:
+        m_b /= 2.0
+        k_b += 1
+    while m_b < 1.0:
+        m_b *= 2.0
+        k_b -= 1
+
+    t_b = m_b - 1.0
+    result_b = 0.0
+    term_b = t_b
+    for n in range(1, 100):
+        result_b += term_b / n
+        term_b *= -t_b
+
+    ln_base = k_b * ln2 + result_b
+    return ln_x / ln_base
 
 
 @check_sig([2], numeros_t, numeros_t)
@@ -329,7 +413,9 @@ def log2(x):
         raiseDomainError('log2')
     xi = float(x)
     if isinf(xi) or isnan(xi):
-        return _math.log2(xi)
+        if isinf(xi):
+            return xi if xi > 0 else nan
+        return xi
     if int(xi) == xi:
         v = int(xi)
         n = 0
@@ -346,7 +432,9 @@ def log10(x):
         raiseDomainError('log10')
     xi = float(x)
     if isinf(xi) or isnan(xi):
-        return _math.log10(xi)
+        if isinf(xi):
+            return xi if xi > 0 else nan
+        return xi
     if int(xi) == xi:
         v = int(xi)
         n = 0
@@ -441,11 +529,35 @@ def sumprod(p, q):
 
 @check_sig([1], numeros_t)
 def erf(x):
-    return _math.erf(x)
+    """Calcula la función de error usando serie de Taylor.
+    erf(x) = (2/sqrt(pi)) * sum((-1)^n * x^(2n+1) / (n! * (2n+1)), n=0..inf)
+    """
+    if x == 0:
+        return 0.0
+    if isinf(x):
+        return 1.0 if x > 0 else -1.0
+    if isnan(x):
+        return x
+
+    sign = 1 if x > 0 else -1
+    x = abs(x)
+
+    if x > 6:
+        return sign * 1.0
+
+    two_over_sqrt_pi = 1.1283791670955126
+    term = x
+    result = term
+    for n in range(1, 50):
+        term *= -x * x / n
+        result += term / (2 * n + 1)
+
+    return sign * two_over_sqrt_pi * result
 
 @check_sig([1], numeros_t)
 def erfc(x):
-    return _math.erfc(x)
+    """Calcula la función de error complementaria: erfc(x) = 1 - erf(x)."""
+    return 1.0 - erf(x)
 
 @check_sig([1], numeros_t)
 def gamma(x):
