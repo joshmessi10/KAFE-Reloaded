@@ -23,6 +23,7 @@ import machine;
 | `machine.simple_imputer_constant(v)` | `(NUM) -> MACHINE` | Crea un imputador con estrategia constante |
 | `machine.label_encoder()` | `() -> MACHINE` | Crea un codificador de etiquetas |
 | `machine.one_hot_encoder()` | `() -> MACHINE` | Crea un codificador one-hot |
+| `machine.ordinal_encoder()` | `() -> MACHINE` | Crea un codificador ordinal (enteros ordenados) |
 | `machine.pca(n)` | `(INT) -> MACHINE` | Crea modelo PCA con n componentes |
 
 ---
@@ -498,6 +499,60 @@ show(encoded);
 MACHINE ohe2 = machine.one_hot_encoder();
 PARDOS encoded2 = ohe2.fit_transform(df, ["color", "size"]);
 show(encoded2);
+```
+
+---
+
+## OrdinalEncoder
+
+Codifica columnas categóricas de un DataFrame a valores enteros ordinales según orden alfabético de las categorías.
+
+### Métodos
+
+| Método | Firma | Descripción |
+|--------|-------|-------------|
+| `oe.fit(df, columns)` | `(PARDOS, List[STR]) -> MACHINE` | Aprende las categorías únicas ordenadas de las columnas especificadas |
+| `oe.transform(df)` | `(PARDOS) -> PARDOS` | Transforma las columnas categóricas a valores ordinales enteros |
+| `oe.fit_transform(df, columns)` | `(PARDOS, List[STR]) -> PARDOS` | Fit + transform en un paso |
+| `oe.inverse_transform(df)` | `(PARDOS) -> PARDOS` | Convierte valores ordinales de vuelta a categorías originales |
+
+### Propiedades
+
+| Propiedad | Tipo | Descripción |
+|-----------|------|-------------|
+| `oe.categories_` | `Dict` | Diccionario de columnas a listas de categorías ordenadas |
+| `oe.columns_` | `List[STR]` | Nombres de las columnas codificadas |
+
+### Ejemplo
+
+```kafe
+import pardos;
+import machine;
+
+List[STR] cols = ["color", "size"];
+List[List[STR]] data = [
+    ["red", "S"],
+    ["blue", "M"],
+    ["green", "L"],
+    ["red", "M"]
+];
+PARDOS df = pardos.DataFrame(cols, data);
+
+-- Ordinal Encoding de una columna
+MACHINE oe = machine.ordinal_encoder();
+PARDOS encoded = oe.fit_transform(df, ["color"]);
+show(encoded);
+-- Columnas: color, size
+-- Filas: [[2, S], [0, M], [1, L], [2, M]]
+-- Categorías ordenadas alfabéticamente: blue=0, green=1, red=2
+
+-- Múltiples columnas
+MACHINE oe2 = machine.ordinal_encoder();
+PARDOS encoded2 = oe2.fit_transform(df, ["color", "size"]);
+
+-- Revertir la codificación
+PARDOS decoded = oe2.inverse_transform(encoded2);
+show(decoded);
 ```
 
 ---

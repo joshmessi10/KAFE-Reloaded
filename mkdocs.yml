@@ -115,3 +115,9 @@ extra:
 
 plugins:
   - search
+
+validation:
+  not_in_nav:
+    action: info
+    exclude:
+      - PLAN.md
