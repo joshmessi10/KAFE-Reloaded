@@ -2,29 +2,25 @@
 
 | Field | Value |
 |-------|-------|
-| Feature | KafeMATH refactor: inline _impl wrappers into public functions |
+| Feature | Update README.md to reflect current KafeMACHINE capabilities |
 | Status | done |
-| Current step | All 20 KafeMATH tests pass after refactoring. |
+| Current step | Edited README.md: added DecisionTree model row, added OrdinalEncoder to preprocessing/encoder list. Verified table consistency with source and docs. |
 | Next step | None |
 | Blockers | None |
 | Related ADRs | |
 
 ## Implementation Summary
 
-Refactored `src/lib/KafeMATH/funciones.py` to remove private `_impl` wrapper functions and inline their logic directly into the public API functions.
+Updated the primary repository README.md to accurately reflect current KafeMACHINE capabilities:
 
-### Functions removed
-- `_exp_impl(x)` — Taylor series logic now inlined into `exp(x)`
-- `_log_impl(x)` — argument reduction + alternating series logic now inlined into `log(*args)`
-- `_log_base_impl(x, base)` — base conversion logic now inlined into `log(*args)`
-- `_erf_impl(x)` — Taylor series logic now inlined into `erf(x)`
-- `_erfc_impl(x)` — complement logic now inlined into `erfc(x)` as `1.0 - erf(x)`
+### Changes made
+- Added **DecisionTreeClassifier** row to MACHINE models table with factory `machine.decision_tree_classifier(criterion, max_depth, min_samples_split, min_samples_leaf)` and description.
+- Added **OrdinalEncoder** row to MACHINE models table alongside LabelEncoder and OneHotEncoder, with factory `machine.ordinal_encoder()` and description.
+- Verified consistency with `src/lib/KafeMACHINE/funciones.py` and `docs/bibliotecas/machine.md`.
+- Preserved existing Spanish style and did not remove unrelated sections.
 
-### Key design decisions
-- `log(*args)` duplicates the ln computation code for the two-arg case (log_base) to avoid introducing a new module-level helper
-- The duplicate `x <= 0` guard was removed from the inlined `_log_impl` body; only the public function's guard remains
-- `erfc(x)` now calls the public `erf(x)` directly (not a private helper)
-- All `@check_sig` decorators and docstrings preserved
+### Files modified
+- `README.md` (MACHINE models table updated)
 
-### Test Results
-- KafeMATH: **20/20 passed**
+### Verification
+- Re‑read edited sections to confirm correct markdown formatting and content alignment.

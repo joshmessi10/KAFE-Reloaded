@@ -37,11 +37,13 @@ La librería `MACHINE` provee modelos de ML con API estilo scikit-learn y métri
 | **LinearRegression** | `machine.linear_regression()` | Regresión lineal (ecuación normal, `coef_`, `intercept_`, `score()`) |
 | **LogisticRegression** | `machine.logistic_regression(lr, iter)` | Regresión logística (`predict()`, `predict_proba()`, `score()`) |
 | **KNN** | `machine.knn(k)` | K-Nearest Neighbors (`predict()`, `predict_proba()`, `score()`) |
+| **DecisionTreeClassifier** | `machine.decision_tree_classifier(criterion, max_depth, min_samples_split, min_samples_leaf)` | Árbol de decisión para clasificación (criterio Gini/Entropy, `fit()`, `predict()`, `score()`) |
 | **StandardScaler** | `machine.standard_scaler()` | Estandarización Z-score (`transform()`, `inverse_transform()`) |
 | **MinMaxScaler** | `machine.minmax_scaler()` | Escalado a [0,1] (`transform()`, `inverse_transform()`) |
 | **SimpleImputer** | `machine.simple_imputer(strategy)` | Imputación de valores faltantes (mean/median/most_frequent/constant) |
 | **LabelEncoder** | `machine.label_encoder()` | Codificación ordinal de etiquetas |
 | **OneHotEncoder** | `machine.one_hot_encoder()` | Codificación one-hot para DataFrames |
+| **OrdinalEncoder** | `machine.ordinal_encoder()` | Codificación ordinal de características categóricas según un orden especificado |
 | **PCA** | `machine.pca(n)` | Análisis de Componentes Principales |
 
 ### Métricas de Clasificación
