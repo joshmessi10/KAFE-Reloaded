@@ -2,7 +2,7 @@ from lib.KafeMATH.funciones import isnan
 from global_utils import check_sig
 from TypeUtils import pardos_t, matriz_cualquiera_t
 from lib.KafePARDOS.DataFrame import DataFrame
-from .BaseMachine import BaseMachine
+from ..BaseMachine import BaseMachine
 
 
 def _is_missing(v):

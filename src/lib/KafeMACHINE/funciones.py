@@ -1,12 +1,13 @@
 from global_utils import check_sig
 from TypeUtils import entero_t, cadena_t, numeros_t, flotante_t
 from .LinearRegression import LinearRegression
-from .LabelEncoder import LabelEncoder
-from .OneHotEncoder import OneHotEncoder
-from .PCA import PCA
-from .StandardScaler import StandardScaler
-from .MinMaxScaler import MinMaxScaler
-from .SimpleImputer import SimpleImputer
+from .preprocessing.LabelEncoder import LabelEncoder
+from .preprocessing.OneHotEncoder import OneHotEncoder
+from .preprocessing.OrdinalEncoder import OrdinalEncoder
+from .preprocessing.PCA import PCA
+from .preprocessing.StandardScaler import StandardScaler
+from .preprocessing.MinMaxScaler import MinMaxScaler
+from .preprocessing.SimpleImputer import SimpleImputer
 from .LogisticRegression import LogisticRegression
 from .KNN import KNN
 from .DecisionTree import DecisionTreeClassifier
@@ -38,6 +39,14 @@ def one_hot_encoder():
     Crea una instancia de OneHotEncoder.
     """
     return OneHotEncoder()
+
+@check_sig([0], [])
+def ordinal_encoder():
+    """
+    Crea una instancia de OrdinalEncoder.
+    Codifica características categóricas a enteros según un orden especificado.
+    """
+    return OrdinalEncoder()
 
 @check_sig([1], [entero_t])
 def pca(n_components):

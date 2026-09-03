@@ -1,13 +1,13 @@
 Epoch 1/100 — Loss 0.758535 — val_accuracy 0.0000
-Epoch 2/100 — Loss 0.751027 — val_accuracy 0.0000
-Epoch 3/100 — Loss 0.743819 — val_accuracy 0.0000
-Epoch 4/100 — Loss 0.736899 — val_accuracy 0.0000
+Epoch 2/100 — Loss 0.750894 — val_accuracy 0.0000
+Epoch 3/100 — Loss 0.743779 — val_accuracy 0.0000
+Epoch 4/100 — Loss 0.736637 — val_accuracy 0.0000
 Epoch 5/100 — Loss 0.730255 — val_accuracy 0.0000
-Epoch 6/100 — Loss 0.723877 — val_accuracy 0.0000
-Epoch 7/100 — Loss 0.717753 — val_accuracy 0.0000
-Epoch 8/100 — Loss 0.711873 — val_accuracy 0.0000
-Epoch 9/100 — Loss 0.706226 — val_accuracy 0.0000
-Epoch 10/100 — Loss 0.700804 — val_accuracy 0.5000
+Epoch 6/100 — Loss 0.723874 — val_accuracy 0.0000
+Epoch 7/100 — Loss 0.717710 — val_accuracy 0.0000
+Epoch 8/100 — Loss 0.711381 — val_accuracy 0.0000
+Epoch 9/100 — Loss 0.706177 — val_accuracy 0.0000
+Epoch 10/100 — Loss 0.700329 — val_accuracy 0.5000
 Epoch 11/100 — Loss 0.695595 — val_accuracy 0.5000
 Epoch 12/100 — Loss 0.690592 — val_accuracy 0.5000
 Epoch 13/100 — Loss 0.685786 — val_accuracy 0.5000
@@ -98,7 +98,7 @@ Epoch 97/100 — Loss 0.557940 — val_accuracy 0.5000
 Epoch 98/100 — Loss 0.557513 — val_accuracy 0.5000
 Epoch 99/100 — Loss 0.557093 — val_accuracy 0.5000
 Epoch 100/100 — Loss 0.556678 — val_accuracy 0.5000
-Probabilidades: [0.28845354873688395, 0.7115464512631161]
+Probabilidades: [0.28845354873688384, 0.7115464512631161]
 *** Resumen (tipo: classification) ***
  Capa 1: Dense(units=4, activation=relu, L2=0.0)
  Capa 2: Dense(units=2, activation=softmax, L2=0.0)

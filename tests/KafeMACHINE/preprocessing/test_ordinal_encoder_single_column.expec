@@ -1,0 +1,2 @@
+Single column encoding:
+"cols: ['grade'], rows: [[0], [1], [2], [0], [1]]"

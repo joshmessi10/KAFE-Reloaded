@@ -1,7 +1,7 @@
 from global_utils import check_sig
 from TypeUtils import pardos_t, lista_cadenas_t
 from lib.KafePARDOS.DataFrame import DataFrame
-from .BaseMachine import BaseMachine
+from ..BaseMachine import BaseMachine
 
 
 class OneHotEncoder(BaseMachine):
