@@ -44,8 +44,9 @@ show(fibonacci(7));  -- 13
 
 ## Información del Proyecto
 
-- **Versión**: v1.0.0
+- **Versión**: v2.0.0
 - **Licencia**: GPL-3.0
 - **Repositorio**: [GitHub](https://github.com/joshmessi10/KAFE-Reloaded)
-- **Autores**: Andrés Felipe Sindicue, Luis Felipe Valencia, Emanuel Felipe Molina, Karen Yireth Castañeda
+- **Autores**: Josh Sebastián López Murcia, Franklin Julián González Pérez, Karen Yireth Castañeda
+- **Coautores**: Andrés Felipe Sindicue, Luis Felipe Valencia, Emanuel Felipe Molina
 - **Asesor**: Joaquín Sánchez — Universidad Sergio Arboleda
