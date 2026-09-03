@@ -1,0 +1,168 @@
+/* KAFE Custom Theme — Black / White / Yellow Palette */
+
+:root {
+  --md-primary-fg-color: #1a1a1a;
+  --md-primary-fg-color--light: #2d2d2d;
+  --md-primary-fg-color--dark: #0d0d0d;
+  --md-accent-fg-color: #f5c518;
+  --md-accent-fg-color--transparent: rgba(245, 197, 24, 0.1);
+  --md-default-bg-color: #ffffff;
+  --md-default-fg-color: #1a1a1a;
+  --md-typeset-color: #1a1a1a;
+}
+
+[data-md-color-scheme="slate"] {
+  --md-default-bg-color: #1a1a1a;
+  --md-default-fg-color: #e0e0e0;
+  --md-typeset-color: #e0e0e0;
+  --md-accent-fg-color: #f5c518;
+  --md-accent-fg-color--transparent: rgba(245, 197, 24, 0.15);
+}
+
+/* Header */
+.md-header {
+  background-color: #0d0d0d;
+}
+
+/* Navigation */
+.md-nav__link {
+  color: #e0e0e0;
+}
+
+.md-nav__link:hover {
+  color: #f5c518;
+}
+
+.md-nav__item--active > .md-nav__link {
+  color: #f5c518;
+  font-weight: 600;
+}
+
+/* Tabs */
+.md-tabs {
+  background-color: #1a1a1a;
+}
+
+.md-tabs__link {
+  color: #cccccc;
+}
+
+.md-tabs__link:hover,
+.md-tabs__link--active {
+  color: #f5c518;
+}
+
+/* Content */
+.md-content {
+  background-color: #ffffff;
+}
+
+[data-md-color-scheme="slate"] .md-content {
+  background-color: #1a1a1a;
+}
+
+/* Code blocks */
+.md-typeset code {
+  background-color: #f5f5f5;
+  color: #1a1a1a;
+  border-left: 4px solid #f5c518;
+}
+
+[data-md-color-scheme="slate"] .md-typeset code {
+  background-color: #2d2d2d;
+  color: #e0e0e0;
+  border-left: 4px solid #f5c518;
+}
+
+/* Admonitions */
+.md-typeset .admonition,
+.md-typeset details {
+  border-left-color: #f5c518;
+  background-color: #fffde7;
+}
+
+[data-md-color-scheme="slate"] .md-typeset .admonition,
+[data-md-color-scheme="slate"] .md-typeset details {
+  background-color: #2d2d00;
+}
+
+/* Tables */
+.md-typeset table:not([class]) {
+  border: 1px solid #e0e0e0;
+}
+
+.md-typeset table:not([class]) th {
+  background-color: #1a1a1a;
+  color: #f5c518;
+  font-weight: 600;
+}
+
+[data-md-color-scheme="slate"] .md-typeset table:not([class]) th {
+  background-color: #f5c518;
+  color: #1a1a1a;
+}
+
+/* Links */
+.md-typeset a {
+  color: #c8a000;
+}
+
+.md-typeset a:hover {
+  color: #f5c518;
+}
+
+/* Footer */
+.md-footer {
+  background-color: #0d0d0d;
+  color: #999999;
+}
+
+.md-footer a {
+  color: #f5c518;
+}
+
+/* Search */
+.md-search__input {
+  background-color: #2d2d2d;
+}
+
+/* Sidebar */
+.md-sidebar--primary {
+  background-color: #1a1a1a;
+}
+
+/* Code copy button */
+.md-clipboard:focus,
+.md-clipboard:hover {
+  color: #f5c518;
+}
+
+/* Tabs content */
+.md-typeset .tabbed-labels {
+  border-bottom: 2px solid #f5c518;
+}
+
+.md-typeset .tabbed-content {
+  border: 1px solid #e0e0e0;
+}
+
+/* Highlight active sections */
+.md-typeset h1 {
+  border-bottom: 3px solid #f5c518;
+  padding-bottom: 0.3em;
+}
+
+.md-typeset h2 {
+  border-bottom: 1px solid #f5c518;
+  padding-bottom: 0.2em;
+}
+
+/* KAFE brand accent */
+.md-typeset blockquote {
+  border-left: 4px solid #f5c518;
+  background-color: #fffde7;
+}
+
+[data-md-color-scheme="slate"] .md-typeset blockquote {
+  background-color: #2d2d00;
+}
