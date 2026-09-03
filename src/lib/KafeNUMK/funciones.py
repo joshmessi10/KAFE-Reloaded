@@ -22,6 +22,9 @@ def mul(matriz1, matriz2):
     if not es_uniforme(matriz1) or not es_uniforme(matriz2):
         raiseNonUniformMatrix('mul')
 
+    if not matriz1 or not matriz2:
+        return []
+
     if len(matriz1) != 0 and len(matriz1[0]) != len(matriz2):
         raise Exception("mul: Matrices are not compatible for multiplication")
 
@@ -41,6 +44,9 @@ def mul(matriz1, matriz2):
 def inv(matriz):
     if not es_uniforme(matriz):
         raiseNonUniformMatrix('inv')
+
+    if not matriz or not matriz[0]:
+        raise Exception("inv: Matrix is empty")
 
     if len(matriz) != 0 and len(matriz) != len(matriz[0]):
         raise Exception("inv: Matrix is not square")
@@ -90,6 +96,9 @@ def dot(vec1, vec2):
 def dot_matrix(m1, m2):
     if not es_uniforme(m1) or not es_uniforme(m2):
         raiseNonUniformMatrix('dot')
+
+    if not m1 or not m2:
+        return []
 
     if len(m1[0]) != len(m2):
         raiseDifferentDimension('dot_matrix')

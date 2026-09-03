@@ -1,0 +1,10 @@
+import pardos;
+import machine;
+
+-- One column all NaN → statistics should handle it
+PARDOS df = pardos.read_csv("test_imputer_all_nan.csv");
+
+MACHINE imp = machine.simple_imputer("mean");
+imp.fit(df);
+show("Statistics:");
+show(imp.statistics_);

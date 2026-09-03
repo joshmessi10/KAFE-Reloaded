@@ -1,0 +1,13 @@
+import machine;
+
+-- Reduce 2D data to 1D
+List[List[FLOAT]] data = [[1.0, 1.0], [2.0, 2.0], [3.0, 3.0], [4.0, 4.0]];
+
+MACHINE pca_model = machine.pca(1);
+pca_model.fit(data);
+pca_model.round(4);
+
+show("Explained variance:");
+show(pca_model.explained_variance_);
+show("Components:");
+show(pca_model.components_);

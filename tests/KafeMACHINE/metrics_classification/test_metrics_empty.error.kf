@@ -1,0 +1,5 @@
+import machine;
+
+List[INT] empty = [];
+FLOAT acc = machine.accuracy_score(empty, empty);
+show(acc);

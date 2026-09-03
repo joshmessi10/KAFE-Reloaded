@@ -1,0 +1,12 @@
+import pardos;
+import machine;
+
+-- SimpleImputer with CSV (since KAFE has no null literal)
+PARDOS df = pardos.read_csv("test_imputer_list.csv");
+show("Original:");
+show(df);
+
+MACHINE imp = machine.simple_imputer("mean");
+PARDOS imputed = imp.fit_transform(df);
+show("Imputed:");
+show(imputed);

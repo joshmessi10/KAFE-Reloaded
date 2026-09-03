@@ -1,0 +1,28 @@
+import machine;
+
+-- Decision Tree Classifier: Ejemplo básico
+-- Clasificación binaria con 2 características
+
+List[List[FLOAT]] X = [[1.0, 2.0], [2.0, 3.0], [3.0, 3.0],
+                        [6.0, 5.0], [7.0, 7.0], [8.0, 6.0]];
+List[INT] y = [0, 0, 0, 1, 1, 1];
+
+-- Crear modelo con criterion gini (default)
+MACHINE model = machine.decision_tree_classifier();
+model.fit(X, y);
+
+-- Predecir
+List[INT] preds = model.predict([[1.0, 2.0], [7.0, 7.0], [4.0, 4.0]]);
+show("Predicciones:");
+show(preds);
+
+-- Exactitud
+FLOAT acc = model.score(X, y);
+show("Exactitud:");
+show(acc);
+
+-- Con entropy y max_depth limitado
+MACHINE model2 = machine.decision_tree_classifier("entropy", 2);
+model2.fit(X, y);
+show("Predicciones (entropy, depth=2):");
+show(model2.predict([[1.0, 2.0], [7.0, 7.0]]));

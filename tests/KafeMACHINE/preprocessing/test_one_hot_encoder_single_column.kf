@@ -1,0 +1,12 @@
+import pardos;
+import machine;
+
+-- Single column encoding
+List[STR] cols = ["category"];
+List[List[STR]] data = [["a"], ["b"], ["a"], ["c"]];
+PARDOS df = pardos.DataFrame(cols, data);
+
+MACHINE ohe = machine.one_hot_encoder();
+PARDOS encoded = ohe.fit_transform(df, ["category"]);
+show("Encoded:");
+show(encoded);

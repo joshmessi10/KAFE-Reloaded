@@ -16,7 +16,7 @@ from componentes_lenguaje.base.funciones import (
     multiplicativeExpr,
     powerExpr,
     relationalExpr,
-    unaryExpresion,
+    unaryExpression,
     varDecl,
 )
 from componentes_lenguaje.bucles.funciones import forLoop, whileLoop
@@ -178,7 +178,7 @@ class EvalVisitorPrimitivo(Kafe_GrammarVisitor):
         return powerExpr(self, ctx)
 
     def visitUnaryExpresion(self, ctx):
-        return unaryExpresion(self, ctx)
+        return unaryExpression(self, ctx)
 
     def visitParenExpr(self, ctx):
         return self.visitChildren(ctx.expr())
@@ -192,12 +192,7 @@ class EvalVisitorPrimitivo(Kafe_GrammarVisitor):
     def visitFloatLiteral(self, ctx):
         return float(ctx.getText())
 
-    def visitStringLiteral(self, ctx):
-        return ctx.getText()[1:-1]
 
-    def visitIntLiteral(self, ctx): return int(ctx.getText())
-
-    def visitFloatLiteral(self, ctx): return float(ctx.getText())
 
     def visitInterpretEscapes(self, raw):
         escapes = {'n':'\n','t':'\t','r':'\r','\\':'\\','"':'"',"'" : "'"}
@@ -267,7 +262,7 @@ class EvalVisitorPrimitivo(Kafe_GrammarVisitor):
             else:
                 raiseVariableNotDefined(object_name)
         except Exception as e:
-            raise Exception(f"{object_name}: {str(e)}")
+            raise Exception(f"{object_name}: {str(e)}") from e
 
     def visitObjectConstant(self, ctx):
         object_name = ctx.ID(0).getText()

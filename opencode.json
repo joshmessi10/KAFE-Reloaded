@@ -1,0 +1,47 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "instructions": ["OPENCODE.md", "AGENTS.md"],
+  "default_agent": "engineering-lead",
+  "subagent_depth": 2,
+  "agent": {
+    "engineering-lead": {
+      "description": "KAFE Engineering Lead - orquesta agentes, gestiona ciclo de vida, edita docs y records",
+      "permission": {
+        "task": {
+          "*": "ask",
+          "architect": "allow",
+          "builder": "allow",
+          "reviewer": "allow",
+          "historian": "allow",
+          "tester": "allow"
+        },
+        "edit": {
+          ".opencode/**": "allow",
+          "docs/**": "allow",
+          "AGENTS.md": "allow",
+          "OPENCODE.md": "allow",
+          "mkdocs.yml": "allow"
+        },
+        "write": {
+          ".opencode/**": "allow",
+          "docs/**": "allow"
+        }
+      }
+    },
+    "architect": {
+      "description": "System design, impact analysis, ADR generation"
+    },
+    "builder": {
+      "description": "Implementation, refactoring, feature development"
+    },
+    "reviewer": {
+      "description": "Quality gates, Definition of Done verification"
+    },
+    "historian": {
+      "description": "History, knowledge, and memory layer updates"
+    },
+    "tester": {
+      "description": "Validation, tests, benchmarks for ML/DL components"
+    }
+  }
+}

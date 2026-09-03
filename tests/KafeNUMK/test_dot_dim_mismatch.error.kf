@@ -1,0 +1,6 @@
+-- Error dot product with different lengths
+import numk;
+
+List[INT] v1 = [1, 2, 3];
+List[INT] v2 = [4, 5];
+show(numk.dot(v1, v2));

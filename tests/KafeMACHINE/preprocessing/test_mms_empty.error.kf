@@ -1,0 +1,4 @@
+import machine;
+
+MACHINE mms = machine.minmax_scaler();
+mms.fit([]);

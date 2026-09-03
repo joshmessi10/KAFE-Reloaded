@@ -1,0 +1,1 @@
+Exception: ord_enc: OrdinalEncoder: Column 'missing_column' not found in DataFrame

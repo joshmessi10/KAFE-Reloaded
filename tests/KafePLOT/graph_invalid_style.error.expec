@@ -1,1 +1,1 @@
-Exception: plot: graph: style debe ser 'line', 'point' o 'both'.
+Exception: plot: graph: style must be 'line', 'point' or 'both'

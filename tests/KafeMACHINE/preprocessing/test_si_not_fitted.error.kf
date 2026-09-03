@@ -1,0 +1,9 @@
+import machine;
+import pardos;
+
+List[STR] cols = ["A", "B"];
+List[List[FLOAT]] data = [[1.0, 2.0], [3.0, 4.0]];
+PARDOS df = pardos.DataFrame(cols, data);
+
+MACHINE imp = machine.simple_imputer("mean");
+imp.transform(df);

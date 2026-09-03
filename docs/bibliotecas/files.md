@@ -17,7 +17,6 @@ import files;
 | `files.create` | `(STR) -> VOID` | Crea un archivo vacío |
 | `files.write` | `(STR, STR) -> VOID` | Sobrescribe contenido |
 | `files.read` | `(STR) -> STR` | Lee contenido completo |
-| `files.append` | `(STR, STR) -> VOID` | Agrega contenido al final |
 | `files.delete` | `(STR) -> VOID` | Elimina el archivo |
 
 ---
@@ -32,9 +31,6 @@ files.create("notas.txt");
 
 -- Escribir contenido
 files.write("notas.txt", "Primera línea");
-
--- Agregar contenido
-files.append("notas.txt", "\nSegunda línea");
 
 -- Leer contenido
 STR contenido = files.read("notas.txt");

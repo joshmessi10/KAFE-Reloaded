@@ -1,0 +1,4 @@
+import machine;
+
+MACHINE lr = machine.linear_regression();
+lr.fit([[]], [1.0]);

@@ -1,0 +1,19 @@
+import machine;
+
+-- Binary classification with 1 feature (linearly separable)
+-- Negative values → class 0, Positive values → class 1
+List[FLOAT] X = [-5.0, -4.0, -3.0, -2.0, 2.0, 3.0, 4.0, 5.0];
+List[INT] y = [0, 0, 0, 0, 1, 1, 1, 1];
+
+MACHINE lr = machine.logistic_regression(0.1, 5000);
+lr.fit(X, y);
+
+show("coef_:");
+show(lr.coef_);
+List[INT] preds = lr.predict([-3.0, -1.0, 1.0, 3.0]);
+show("Predictions:");
+show(preds);
+
+List[List[FLOAT]] probs = lr.predict_proba([-3.0, 0.0, 3.0]);
+show("Probabilities:");
+show(probs);

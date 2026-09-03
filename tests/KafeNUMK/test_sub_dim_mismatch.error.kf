@@ -1,0 +1,6 @@
+-- Error subtracting matrices with different dimensions
+import numk;
+
+List[List[INT]] A = [[1, 2], [3, 4]];
+List[List[INT]] B = [[1, 2, 3], [4, 5, 6]];
+show(numk.sub(A, B));

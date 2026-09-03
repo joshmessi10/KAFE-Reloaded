@@ -1,0 +1,14 @@
+import machine;
+
+-- StandardScaler with raw 2D list (not PARDOS)
+-- Data: mean=[2.0, 5.0], scale=[1.0, 2.0]
+List[List[FLOAT]] data = [[1.0, 3.0], [2.0, 5.0], [3.0, 7.0]];
+
+MACHINE scaler = machine.standard_scaler();
+List[List[FLOAT]] transformed = scaler.fit_transform(data);
+show("Transformed:");
+show(transformed);
+
+List[List[FLOAT]] restored = scaler.inverse_transform(transformed);
+show("Inverse:");
+show(restored);
