@@ -1,0 +1,5 @@
+import machine;
+
+MACHINE model = machine.decision_tree_classifier();
+model.fit([], []);
+show("done");

@@ -1,0 +1,15 @@
+import machine;
+
+-- All values identical → variance = 0
+List[List[FLOAT]] data = [[5.0, 5.0], [5.0, 5.0], [5.0, 5.0]];
+
+MACHINE scaler = machine.standard_scaler();
+scaler.fit(data);
+show("mean_:");
+show(scaler.mean_);
+show("scale_:");
+show(scaler.scale_);
+
+List[List[FLOAT]] transformed = scaler.transform(data);
+show("Transformed:");
+show(transformed);

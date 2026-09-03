@@ -21,7 +21,7 @@ class Gesha(ABC):
         self.layers.append(layer)
 
     @check_sig([1, 2, 3, 4], [cadena_t, void_t], [cadena_t, void_t], [lista_cadenas_t, void_t], is_method=True)
-    def compile(self, optimizer=None, loss=None, metrics=[]):
+    def compile(self, optimizer=None, loss=None, metrics=None):
         pass
 
     @check_sig([2], vector_numeros_t, is_method=True)

@@ -48,6 +48,16 @@ cd src && make test prueba=KafeMACHINE                    # via Makefile
 
 **Test structure**: each category in `tests/` has `.kf` programs paired with `.expec` (expected stdout) and optional `.in` (stdin). Invalid-program tests use `.error.kf` + `.error.expec`. The `tests/utils.py` helpers discover and parameterize these files for pytest.
 
+**KafeMACHINE tests** are organized into 5 subdirectories under `tests/KafeMACHINE/`:
+
+| Directory | Covers |
+|-----------|--------|
+| `linear_models/` | LinearRegression, LogisticRegression |
+| `neighbors/` | KNN |
+| `preprocessing/` | StandardScaler, MinMaxScaler, SimpleImputer, LabelEncoder, OneHotEncoder, PCA |
+| `metrics_classification/` | accuracy, precision, recall, f1, confusion_matrix, classification_report |
+| `metrics_regression/` | MSE, MAE, RMSE, R², max_error, median_AE, MAPE, explained_variance |
+
 ## Architecture
 
 ### Execution flow
@@ -92,7 +102,7 @@ Modular implementations called by the visitor:
 | `KafePLOT` | Matplotlib-style visualization |
 | `KafePARDOS` | DataFrames and CSV (Pandas-style) |
 | `KafeFILES` | File I/O |
-| `KafeMACHINE` | ML models: LinearRegression, LabelEncoder, OneHotEncoder, PCA |
+| `KafeMACHINE` | ML models: LinearRegression, LogisticRegression, KNN, StandardScaler, MinMaxScaler, SimpleImputer, LabelEncoder, OneHotEncoder, PCA; plus classification and regression metrics |
 
 ### KAFE language keywords
 

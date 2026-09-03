@@ -21,15 +21,16 @@ def read_csv(path):
             raiseFileNotFound(path, globals.current_dir)
 
     with open(real_path, encoding="utf-8") as f:
-        lineas = [l.rstrip("\n") for l in f if l.strip() != ""]
+        lineas = [l.rstrip("\r\n") for l in f]
+    while lineas and lineas[-1] == "":
+        lineas.pop()
     if len(lineas) == 0:
         return DataFrame([], [])
 
     header_line = lineas[0]
-    if ";" in header_line and header_line.count(";") >= header_line.count(","):
-        delim = ";"
-    else:
-        delim = ","
+    semicolons = sum(l.count(";") for l in lineas)
+    commas = sum(l.count(",") for l in lineas)
+    delim = ";" if semicolons >= commas else ","
 
     header = [h.strip() for h in header_line.split(delim)]
     data = []
@@ -74,7 +75,7 @@ def read_json(path):
             columns = list(json_data[0].keys())
             data = []
             for record in json_data:
-                row = [inferir_tipo(str(record.get(col, ""))) for col in columns]
+                row = [inferir_tipo(record.get(col, "")) for col in columns]
                 data.append(row)
             return DataFrame(columns, data)
 

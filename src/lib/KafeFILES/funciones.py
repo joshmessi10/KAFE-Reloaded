@@ -21,7 +21,7 @@ def read(filename):
     try:
         with open(filename, "r", encoding="utf-8") as f:
             contenido = f.read()
-        return contenido.rstrip("\n")
+        return contenido
     except FileNotFoundError:
         raise Exception(f"read: File {os.path.basename(filename)} doesn't exist")
 
@@ -30,9 +30,9 @@ def read(filename):
 def write(filename, content):
     filename = os.path.join(globals.current_dir, filename)
     try:
-        with open(filename, "a", encoding="utf-8") as f:
+        with open(filename, "w", encoding="utf-8") as f:
             f.write(content + "\n")
-    except Exception as e:
+    except OSError as e:
         raise Exception(f"write: Error writing on {os.path.basename(filename)}: {e}")
 
 

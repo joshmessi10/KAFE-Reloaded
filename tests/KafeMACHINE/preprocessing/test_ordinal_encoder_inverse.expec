@@ -1,0 +1,4 @@
+Encoded:
+"cols: ['priority'], rows: [[1], [0], [2], [1]]"
+Decoded:
+"cols: ['priority'], rows: [['low'], ['high'], ['medium'], ['low']]"

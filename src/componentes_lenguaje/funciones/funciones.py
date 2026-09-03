@@ -242,21 +242,11 @@ def functionCall(self, ctx):
     if name not in self.variables:
         raiseFunctionNotDefined(name)
     func = self.variables[name][1]
-    children = list(ctx.getChildren())
-    i = 0
-    while i < len(children):
-        if children[i].getText() == "(":
-            if i + 1 < len(children) and isinstance(
-                children[i + 1], Kafe_GrammarParser.ArgListContext
-            ):
-                args = [self.visit(a) for a in children[i + 1].arg()]
-                func = func(*args)
-                i += 3
-            else:
-                func = func()
-                i += 2
-        else:
-            i += 1
+    for arg_list_ctx in ctx.argList():
+        args = [self.visit(a) for a in arg_list_ctx.arg()]
+        func = func(*args)
+    for _ in range(len(ctx.LPAREN()) - len(ctx.argList())):
+        func = func()
     return func
 
 
@@ -282,35 +272,22 @@ def visitLenCall(lista):
 
 @check_sig([1, 2, 3], [entero_t], [entero_t], [entero_t], func_nombre="range")
 def rangeExpr(*args):
-    start = None
-    stop = None
-    step = None
-
-    stop = args[0]
-
-    if len(args) >= 2:
-        start = args[0]
-        stop = args[1]
-
-    if len(args) == 3:
-        step = args[2]
-
     if len(args) == 1:
-        return list(range(stop))
+        return list(range(args[0]))
     elif len(args) == 2:
-        return list(range(start, stop))
+        return list(range(args[0], args[1]))
     else:
-        return list(range(start, stop, step))
+        return list(range(args[0], args[1], args[2]))
 
 
 def showStmt(self, ctx):
     val = self.visit(ctx.expr())
     if (
-        hasattr(val, "total")
+        hasattr(val, "_total")
         and hasattr(val, "collected")
-        and len(val.collected) < val.total
+        and len(val.collected) < val._total
     ):
-        raiseWrongNumberOfArgs(val.name, val.total, len(val.collected))
+        raiseWrongNumberOfArgs(getattr(val, '_name', '<lambda>'), val._total, len(val.collected))
     print(val)
 
 

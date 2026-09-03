@@ -88,10 +88,6 @@ def raiseModuleNotFound(module_name, path):
     message = f"Module file for '{module_name}' not found. Tried: {path}"
     raise FileNotFoundError(message)
 
-def raiseRuntimeError(place, exception):
-    message = f"Error in {place} block: {str(exception)}"
-    raise RuntimeError(message)
-
 def raiseFunctionCantReturnVoid():
     message = f"Function declared {void_t} must not return a value"
     raise TypeError(message)
@@ -104,10 +100,6 @@ def raiseVariableIsNotObject():
     message = "variable is not of type object"
     raise Exception(message)
 
-def raiseFileAlreadyExists(nombre, ruta):
-    message = f"File '{nombre}' already exists at {ruta}"
-    raise FileExistsError(message)
-
 def raiseFileNotFound(nombre, ruta):
     message = f"File '{nombre}' not found at {ruta}"
     raise FileNotFoundError(message)
@@ -119,9 +111,9 @@ def raiseSignatureMismatch(expected_signature, obtained_signature, origin=""):
     raise TypeError(message)
 
 def raiseScientificNotationError(line, column, msg):
-    print(f"Scientific Notation Error [Line {line}, Column {column}]: {msg}")
-    import sys
-    sys.exit(1)
+    raise Exception(
+        f"Scientific Notation Error [Line {line}, Column {column}]: {msg}"
+    )
 
 def raiseInvalidEscape(escape_char):
     message = f"Invalid escape sequence: \\{escape_char}"

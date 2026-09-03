@@ -86,6 +86,8 @@ def logicExpr(self, ctx):
     result = self.visit(ctx.equalityExpr(0))
     for i in range(1, len(ctx.equalityExpr())):
         op = ctx.getChild(2 * i - 1).getText()
+        if (op == "&&" and not result) or (op == "||" and result):
+            continue
         right = self.visit(ctx.equalityExpr(i))
         if op == "&&":
             result = result and right
@@ -149,13 +151,14 @@ def multiplicativeExpr(self, ctx):
 
 
 def powerExpr(self, ctx):
-    base = self.visit(ctx.unaryExpr(0))
-    for i in range(1, len(ctx.unaryExpr())):
-        base **= self.visit(ctx.unaryExpr(i))
-    return base
+    exprs = [self.visit(ctx.unaryExpr(i)) for i in range(len(ctx.unaryExpr()))]
+    result = exprs[-1]
+    for i in range(len(exprs) - 2, -1, -1):
+        result = exprs[i] ** result
+    return result
 
 
-def unaryExpresion(self, ctx):
+def unaryExpression(self, ctx):
     op = ctx.getChild(0).getText()
     value = self.visit(ctx.unaryExpr())
     if op == "-":

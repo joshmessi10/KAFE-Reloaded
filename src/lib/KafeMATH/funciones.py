@@ -14,40 +14,117 @@ nan = float('nan')
 
 @check_sig([1], numeros_t)
 def exp(x):
+    """Calcula e^x usando series de Taylor con reducción de argumento."""
+    if x == 0:
+        return 1.0
+    if isinf(x):
+        return x if x > 0 else 0.0
+    if isnan(x):
+        return x
+
+    negative = False
+    if x < 0:
+        negative = True
+        x = -x
+
+    # Reduce: e^x = (e^(x/2^k))^(2^k)
+    # Reduce until x/2^k <= 1.0 to minimize squaring error
+    k = 0
+    reduced = x
+    while reduced > 1.0:
+        reduced /= 2.0
+        k += 1
+
+    # Taylor series with more iterations for precision
     term = 1.0
-    sum_ = 1.0
+    result = 1.0
     for n in range(1, 50):
-        term *= x / n
-        sum_ += term
-    return sum_
+        term *= reduced / n
+        result += term
+
+    # Square k times
+    for _ in range(k):
+        result *= result
+
+    return 1.0 / result if negative else result
 
 @check_sig([1, 2], numeros_t, numeros_t)
 def log(*args):
+    """Calcula ln(x) usando reducción de argumento y serie de Taylor."""
     x = args[0]
 
     base = None
     if len(args) == 2:
         base = args[1]
 
-    if base is None and x == e:
-        return 1.0
     if x <= 0:
         raiseDomainError('log')
-    y = (x - 1) / (x + 1)
-    y2 = y * y
-    term = y
-    ln = 0.0
-    for n in range(1, 200, 2):
-        ln += term / n
-        term *= y2
-    ln *= 2
+
+    if base is not None:
+        if base <= 0 or base == 1:
+            raiseDomainError('log')
+
+    if x == 1:
+        return 0.0
+    if isinf(x):
+        return x
+    if isnan(x):
+        return x
+
+    # Argument reduction: ln(x) = ln(2^k * m) = k*ln(2) + ln(m)
+    k = 0
+    m = float(x)
+    while m >= 2.0:
+        m /= 2.0
+        k += 1
+    while m < 1.0:
+        m *= 2.0
+        k -= 1
+
+    ln2 = 0.6931471805599453
+
+    t = m - 1.0
+    result = 0.0
+    term = t
+    for n in range(1, 100):
+        result += term / n
+        term *= -t
+
+    ln_x = k * ln2 + result
+
     if base is None:
-        return ln
-    return ln / log(base)
+        return ln_x
+
+    # log_base(x) = ln(x) / ln(base)
+    k_b = 0
+    m_b = float(base)
+    while m_b >= 2.0:
+        m_b /= 2.0
+        k_b += 1
+    while m_b < 1.0:
+        m_b *= 2.0
+        k_b -= 1
+
+    t_b = m_b - 1.0
+    result_b = 0.0
+    term_b = t_b
+    for n in range(1, 100):
+        result_b += term_b / n
+        term_b *= -t_b
+
+    ln_base = k_b * ln2 + result_b
+    return ln_x / ln_base
 
 
 @check_sig([2], numeros_t, numeros_t)
 def pow_(x, y):
+    if x == 0:
+        if y > 0:
+            return 0.0
+        elif y == 0:
+            return 1.0
+        else:
+            raiseDomainError('pow')
     if x < 0:
         if float(y).is_integer():
             n = int(y)
@@ -63,7 +140,13 @@ def pow_(x, y):
 def sqrt(x):
     if x < 0:
         raiseDomainError('sqrt')
-    guess = x if x != 0 else 1.0
+    if x == 0:
+        return 0.0
+    if isinf(x):
+        return inf
+    if isnan(x):
+        return nan
+    guess = x
     for _ in range(30):
         guess = (guess + x / guess) / 2
     return guess
@@ -191,7 +274,7 @@ def perm(n, k):
         result *= i
     return result
 
-@check_sig([i for i in range(100)], *[[entero_t] for _ in range(100)])
+@check_sig([i for i in range(1, 100)], *[[entero_t] for _ in range(100)])
 def gcd(*ints):
     result = abs(int(ints[0]))
     for x in ints[1:]:
@@ -201,7 +284,7 @@ def gcd(*ints):
         result = abs(a)
     return result
 
-@check_sig([i for i in range(100)], *[[entero_t] for _ in range(100)])
+@check_sig([i for i in range(1, 100)], *[[entero_t] for _ in range(100)])
 def lcm(*ints):
     def _lcm(a, b):
         return abs(a * b) // gcd(a, b)
@@ -220,6 +303,10 @@ def trunc(x):
 def fmod(x, y):
     if y == 0:
         raiseDomainError('fmod')
+    if isinf(x):
+        return nan
+    if isinf(y):
+        return x
     return x - y * trunc(x / y)
 
 @check_sig([2], numeros_t, numeros_t)
@@ -312,6 +399,8 @@ def exp2(x):
 
 @check_sig([1], numeros_t)
 def cbrt(x):
+    if x < 0:
+        return -((-x) ** (1/3))
     return x ** (1/3)
 
 @check_sig([1], numeros_t)
@@ -320,8 +409,14 @@ def expm1(x):
 
 @check_sig([1], numeros_t)
 def log2(x):
+    if x <= 0:
+        raiseDomainError('log2')
     xi = float(x)
-    if xi > 0 and int(xi) == xi:
+    if isinf(xi) or isnan(xi):
+        if isinf(xi):
+            return xi if xi > 0 else nan
+        return xi
+    if int(xi) == xi:
         v = int(xi)
         n = 0
         while v % 2 == 0 and v > 0:
@@ -333,8 +428,14 @@ def log2(x):
 
 @check_sig([1], numeros_t)
 def log10(x):
+    if x <= 0:
+        raiseDomainError('log10')
     xi = float(x)
-    if xi > 0 and int(xi) == xi:
+    if isinf(xi) or isnan(xi):
+        if isinf(xi):
+            return xi if xi > 0 else nan
+        return xi
+    if int(xi) == xi:
         v = int(xi)
         n = 0
         while v % 10 == 0 and v > 0:
@@ -360,6 +461,8 @@ def sum_range(*args):
         for x in a:
             total += x
         return total
+    if int(a) > int(b):
+        a, b = b, a
     total = 0
     for i in range(int(a), int(b) + 1):
         total += i
@@ -379,6 +482,8 @@ def prod_range(*args):
         for x in a:
             result *= x
         return result
+    if int(a) > int(b):
+        a, b = b, a
     result = 1
     for i in range(int(a), int(b) + 1):
         result *= i
@@ -411,20 +516,6 @@ def hypot(*coords):
         s += x * x
     return sqrt(s)
 
-@check_sig([1, 2], vector_numeros_t, entero_t)
-def prod(*args):
-    iterable = args[0]
-
-    if len(args) == 2:
-        start = args[1]
-    else:
-        start = 1
-
-    result = start
-    for x in iterable:
-        result *= x
-    return result
-
 @check_sig([2], vector_numeros_t, vector_numeros_t)
 def sumprod(p, q):
     if len(p) != len(q):
@@ -438,24 +529,44 @@ def sumprod(p, q):
 
 @check_sig([1], numeros_t)
 def erf(x):
-    coef = 2 / pow_(pi, 0.5)
+    """Calcula la función de error usando serie de Taylor.
+    erf(x) = (2/sqrt(pi)) * sum((-1)^n * x^(2n+1) / (n! * (2n+1)), n=0..inf)
+    """
+    if x == 0:
+        return 0.0
+    if isinf(x):
+        return 1.0 if x > 0 else -1.0
+    if isnan(x):
+        return x
+
+    sign = 1 if x > 0 else -1
+    x = abs(x)
+
+    if x > 6:
+        return sign * 1.0
+
+    two_over_sqrt_pi = 1.1283791670955126
     term = x
-    sum_ = term
+    result = term
     for n in range(1, 50):
-        term *= -1 * x * x / n
-        sum_ += term / (2 * n + 1)
-    return coef * sum_
+        term *= -x * x / n
+        result += term / (2 * n + 1)
+
+    return sign * two_over_sqrt_pi * result
 
 @check_sig([1], numeros_t)
 def erfc(x):
-    return 1 - erf(x)
+    """Calcula la función de error complementaria: erfc(x) = 1 - erf(x)."""
+    return 1.0 - erf(x)
 
 @check_sig([1], numeros_t)
 def gamma(x):
     xi = float(x)
-    if xi == int(xi) and xi > 0:
-        return factorial(int(xi) - 1)
-    raise ValueError("gamma(x) only implemented for positive integers")
+    if xi == int(xi):
+        if xi > 0:
+            return factorial(int(xi) - 1)
+        raiseDomainError('gamma')
+    raise ValueError("gamma: Function only defined for positive integers")
 
 @check_sig([1], numeros_t)
 def lgamma(x):

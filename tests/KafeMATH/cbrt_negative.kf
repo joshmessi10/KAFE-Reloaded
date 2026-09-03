@@ -1,0 +1,7 @@
+import math;
+
+-- cbrt of negative numbers should work (not return complex)
+show(math.cbrt(-8));
+show(math.cbrt(-27));
+show(math.cbrt(0));
+show(math.cbrt(8));

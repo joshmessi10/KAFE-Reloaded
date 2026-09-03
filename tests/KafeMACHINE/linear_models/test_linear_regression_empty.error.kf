@@ -1,0 +1,7 @@
+import machine;
+
+List[List[FLOAT]] X = [];
+List[FLOAT] y = [];
+
+MACHINE lr = machine.linear_regression();
+lr.fit(X, y);

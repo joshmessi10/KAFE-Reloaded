@@ -1,43 +1,50 @@
 import os
 import globals
 
-eje_x_label = ""
-eje_y_label = ""
-titulo_grafico = ""
-mostrar_grid = False
-color_linea = "blue"
-color_puntos = "red"
-tamaño_punto = 3
-mostrar_valores_barras = False
-leyenda_pastel = None
+x_label = ""
+y_label = ""
+chart_title = ""
+show_grid = False
+line_color = "blue"
+point_color = "red"
+point_size = 3
+show_bar_values = False
+pie_legend = None
 
-_figura_activa = False
-_series_acumuladas = []
-
-
-def resetear_variables():
-    global eje_x_label, eje_y_label, titulo_grafico, mostrar_valores_barras
-    global mostrar_grid, color_puntos, color_linea, tamaño_punto, leyenda_pastel
-    global _figura_activa, _series_acumuladas
-
-    eje_x_label = ""
-    eje_y_label = ""
-    titulo_grafico = ""
-    mostrar_grid = False
-    color_linea = "blue"
-    color_puntos = "red"
-    tamaño_punto = 3
-    mostrar_valores_barras = False
-    leyenda_pastel = None
-
-    _figura_activa = False
-    _series_acumuladas = []
+_figure_active = False
+_accumulated_series = []
 
 
-def guardar_svg(contenido):
-    carpeta_destino = os.path.dirname(globals.ruta_programa)
-    nombre_svg = os.path.splitext(os.path.basename(globals.ruta_programa))[0] + ".svg"
-    ruta_svg = os.path.join(carpeta_destino, nombre_svg)
+def reset_variables():
+    global x_label, y_label, chart_title, show_bar_values
+    global show_grid, point_color, line_color, point_size, pie_legend
+    global _figure_active, _accumulated_series
 
-    with open(ruta_svg, "w", encoding="utf-8") as f:
-        f.write(contenido)
+    x_label = ""
+    y_label = ""
+    chart_title = ""
+    show_grid = False
+    line_color = "blue"
+    point_color = "red"
+    point_size = 3
+    show_bar_values = False
+    pie_legend = None
+
+    _figure_active = False
+    _accumulated_series = []
+
+
+def save_svg(content):
+    if not globals.ruta_programa:
+        raise Exception("save_svg: No program file path set")
+    dest_folder = os.path.dirname(globals.ruta_programa)
+    if not dest_folder:
+        dest_folder = "."
+    svg_name = os.path.splitext(os.path.basename(globals.ruta_programa))[0] + ".svg"
+    svg_path = os.path.join(dest_folder, svg_name)
+
+    try:
+        with open(svg_path, "w", encoding="utf-8") as f:
+            f.write(content)
+    except OSError as e:
+        raise Exception(f"save_svg: Could not write SVG to {svg_path}: {e}")

@@ -1,0 +1,4 @@
+import math;
+
+-- gamma(0) should raise domain error
+show(math.gamma(0));

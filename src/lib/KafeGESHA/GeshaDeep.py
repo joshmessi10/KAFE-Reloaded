@@ -40,7 +40,7 @@ class GeshaDeep(Gesha):
         elif loss == "sparse_categorical_crossentropy":
             self._loss_fn = SparseCategoricalCrossEntropy()
         else:
-            raise ValueError(f"Loss '{loss}' no reconocido.")
+            raise ValueError(f"Gesha: Loss '{loss}' not recognized")
 
         if optimizer == "sgd":
             self._optimizer_obj = SGD(lr=0.01)
@@ -51,7 +51,7 @@ class GeshaDeep(Gesha):
         elif optimizer == "adamw":
             self._optimizer_obj = AdamW(lr=0.001)
         else:
-            raise ValueError(f"Optimizer '{optimizer}' no reconocido.")
+            raise ValueError(f"Gesha: Optimizer '{optimizer}' not recognized")
 
         self._metrics = metrics or []
         if self._model_type == "clustering" and len(self.layers) < 2:
@@ -62,7 +62,7 @@ class GeshaDeep(Gesha):
     @check_sig([2], [flotante_t, entero_t], is_method=True)
     def set_lr(self, new_lr: float):
         if not self._optimizer_obj:
-            raise AttributeError("compile() debe llamarse antes de set_lr().")
+            raise AttributeError("Gesha: compile() must be called before set_lr()")
         self._optimizer_obj.lr = new_lr
 
     @check_sig([2], vector_numeros_t, is_method=True)
@@ -179,7 +179,7 @@ class GeshaDeep(Gesha):
                 print(msg)
             return
 
-        raise ValueError("Tipo de modelo no soportado en fit().")
+        raise ValueError("Gesha: Model type not supported in fit()")
 
     def summary(self):
         print(f"*** Resumen (tipo: {self._model_type}) ***")
@@ -227,7 +227,7 @@ class GeshaDeep(Gesha):
             print(f"MSE promedio: {mse:.6f}")
             return mse
 
-        raise ValueError("Tipo de modelo no soportado en evaluate().")
+        raise ValueError("Gesha: Model type not supported in evaluate()")
 
     @check_sig([2], vector_numeros_t, is_method=True)
     def predict_proba(self, x):
@@ -239,7 +239,7 @@ class GeshaDeep(Gesha):
     @check_sig([2], vector_numeros_t, is_method=True)
     def predict_label(self, x):
         if self._model_type == "regression":
-            raise ValueError("predict_label() no aplica a modelos de regresión.")
+            raise ValueError("Gesha: predict_label() does not apply to regression models")
         if self._model_type == "binary":
             return 1 if self.predict_proba(x) >= 0.5 else 0
         return self.predict_proba(x).index(max(self.predict_proba(x)))

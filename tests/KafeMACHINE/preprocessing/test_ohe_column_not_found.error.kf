@@ -1,0 +1,9 @@
+import machine;
+import pardos;
+
+List[STR] cols = ["color", "size"];
+List[List[STR]] data = [["red", "S"], ["blue", "M"]];
+PARDOS df = pardos.DataFrame(cols, data);
+
+MACHINE ohe = machine.one_hot_encoder();
+ohe.fit(df, ["color", "shape"]);

@@ -1,0 +1,4 @@
+import math;
+
+-- log2 with x = 0 should raise domain error
+show(math.log2(0));

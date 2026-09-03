@@ -8,4 +8,4 @@ Epoch 7/10 — Loss 0.234296
 Epoch 8/10 — Loss 0.145573
 Epoch 9/10 — Loss 0.102773
 Epoch 10/10 — Loss 0.082023
-Exception: model: predict_label() no aplica a modelos de regresión.
+Exception: model: Gesha: predict_label() does not apply to regression models

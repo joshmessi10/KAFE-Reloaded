@@ -1,0 +1,9 @@
+import machine;
+
+-- Data without NaN → should be unchanged
+List[List[FLOAT]] data = [[1.0, 2.0], [3.0, 4.0], [5.0, 6.0]];
+
+MACHINE imp = machine.simple_imputer("mean");
+List[List[FLOAT]] imputed = imp.fit_transform(data);
+show("Imputed:");
+show(imputed);

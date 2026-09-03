@@ -78,8 +78,8 @@ show(math.tau);  -- 6.283185307179586
 
 | Función | Descripción |
 |---------|-------------|
-| `math.gcd(a, b)` | Máximo común divisor |
-| `math.lcm(a, b)` | Mínimo común múltiplo |
+| `math.gcd(a, b, ...)` | Máximo común divisor (1 o más enteros) |
+| `math.lcm(a, b, ...)` | Mínimo común múltiplo (1 o más enteros) |
 
 ### Precisión Flotante
 
@@ -112,7 +112,7 @@ show(math.tau);  -- 6.283185307179586
 | Función | Descripción |
 |---------|-------------|
 | `math.erf(x)` | Función de error |
-| `math.gamma(x)` | Función gamma |
+| `math.gamma(x)` | Función gamma (solo enteros positivos) |
 
 ---
 

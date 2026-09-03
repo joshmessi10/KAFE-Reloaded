@@ -1,0 +1,6 @@
+-- Error dot_matrix with incompatible inner dimensions
+import numk;
+
+List[List[INT]] A = [[1, 2, 3], [4, 5, 6]];
+List[List[INT]] B = [[1, 2], [3, 4]];
+show(numk.dot_matrix(A, B));

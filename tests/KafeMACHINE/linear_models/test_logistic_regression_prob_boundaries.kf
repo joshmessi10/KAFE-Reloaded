@@ -1,0 +1,13 @@
+import machine;
+
+-- Test probability extremes (near 0 and near 1)
+-- Very wide separation → sigmoid outputs should be very close to 0 or 1
+List[FLOAT] X = [-20.0, -15.0, -10.0, 10.0, 15.0, 20.0];
+List[INT] y = [0, 0, 0, 1, 1, 1];
+
+MACHINE lr = machine.logistic_regression(0.1, 5000);
+lr.fit(X, y);
+
+List[List[FLOAT]] probs = lr.predict_proba([-20.0, 0.0, 20.0]);
+show("Probabilities:");
+show(probs);
