@@ -2,12 +2,19 @@
 
 ## Autores
 
-KAFE fue creado por cuatro estudiantes de Ciencias de la Computación e Inteligencia Artificial de la **Universidad Sergio Arboleda** (Colombia):
+KAFE fue mejorado y profundizado por estudiantes de Ciencias de la Computación e Inteligencia Artificial de la **Universidad Sergio Arboleda** (Colombia):
+
+- **Josh Sebastián López Murcia**
+- **Franklin Julián González Pérez**
+- **Karen Yireth Castañeda Castro**
+
+En función del la creación original de KAFE realizada por estudiantes de Ciencias de la Computación e Inteligencia Artificial de la **Universidad Sergio Arboleda** (Colombia):
 
 - **Andrés Felipe Sindicue Alvarado**
 - **Luis Felipe Valencia Ramírez**
 - **Emanuel Felipe Molina Triana**
 - **Karen Yireth Castañeda Castro**
+
 
 ## Asesor
 
@@ -19,6 +26,6 @@ A la comunidad académica de la Universidad Sergio Arboleda por su apoyo en el d
 
 ---
 
-**Versión**: v1.0.0  
+**Versión**: v2.0.0  
 **Año**: 2025  
 **Licencia**: GPL-3.0
