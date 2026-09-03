@@ -9,7 +9,7 @@ Active project planning. Do not move this content into AGENTS.md (see AGENTS.md 
 - ✔ KNN (2026-07-28)
 - ✔ Decision Tree (2026-08-04)
 - ✔ Metrics — Classification & Regression (2026-07-28)
-- ✔ Preprocessing — StandardScaler, MinMaxScaler, SimpleImputer, LabelEncoder, OneHotEncoder (2026-07-28)
+- ✔ Preprocessing — StandardScaler, MinMaxScaler, SimpleImputer, LabelEncoder, OneHotEncoder, OrdinalEncoder (2026-09-02)
 - ✔ BaseMachine — Base class for all models (2026-07-28)
 - ☐ SVM
 - ☐ Random Forest
