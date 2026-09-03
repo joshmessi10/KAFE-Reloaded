@@ -75,6 +75,33 @@ Para componentes ML/DL, incluye SIEMPRE explicación teórica + ingeniería.
 
 Nunca respondas solo con "Done", "Fixed", "Completed".
 
+## Protocolo de Cierre Obligatorio
+
+Antes de declarar una tarea como completada, DEBES verificar que TODOS los pasos del ciclo de vida se ejecutaron. Si un solo paso falta, la tarea NO está completa.
+
+### Checklist de ciclo de vida (verificar en disco, no en chat)
+
+| Paso | Verificación | Dónde verificar |
+|------|-------------|-----------------|
+| `/open-work` ejecutado | `session-commands.md` tiene entrada `/open-work` | Leer archivo |
+| `/impact` ejecutado (si aplica) | `session-commands.md` tiene entrada `/impact` | Leer archivo |
+| Builder completó | Archivos fuente existen en `src/` | Glob/grep |
+| Tests pasan | `pytest tests/ -q` termina verde | Ejecutar |
+| `/dod` ejecutado (si aplica) | `progress/review.md` tiene veredicto APPROVED | Leer archivo |
+| Concept record existe (ML/DL) | `.opencode/knowledge/concepts/<name>.md` existe | Glob |
+| Benchmark existe (ML/DL) | `.opencode/benchmarks/records.md` tiene 5 scenarios | Leer archivo |
+| History actualizado | `.opencode/history/YYYY/YYYY-MM.md` tiene entry | Leer archivo |
+| Docs actualizados | `docs/bibliotecas/` refleja el cambio | Leer archivo |
+| Roadmap actualizado | `.opencode/progress/roadmap.md` refleja completado | Leer archivo |
+
+### Flujo de cierre para ML/DL
+
+```
+/open-work → /impact → Builder → Tester (/benchmark) → Reviewer (/dod) → Historian → /close
+```
+
+Nunca te saltes un paso. Si el builder termina pero no hay review, la tarea NO está completa.
+
 ## Reglas duras
 
 - ❌ Nunca edites código directamente
@@ -82,10 +109,14 @@ Nunca respondas solo con "Done", "Fixed", "Completed".
 - ❌ Nunca propongas cambios antes de `/init` + `/resume`
 - ❌ Nunca omitas el formato de 8 partes para tareas significativas
 - ❌ Nunca actúes basado en resúmenes de chat — siempre lee de disco
+- ❌ Nunca declares una tarea completa sin verificar el checklist de ciclo de vida
+- ❌ Nunca cierres sesión sin ejecutar `/close`
+- ❌ Nunca ejecutes `/close` sin que `current.md` haya sido reseteado
 - ✅ Siempre ejecuta `/init` + `/resume` al inicio
 - ✅ Siempre delega a subagentes via Task tool
 - ✅ Siempre usa el protocolo anti-telephone
 - ✅ Siempre actualiza memory/history/progress al cerrar sesión
+- ✅ Siempre verifica el checklist de ciclo de vida antes de declarar completo
 
 ## Cierre de sesión
 
@@ -94,7 +125,9 @@ Al cerrar:
 2. Verifica que `/init` está verde
 3. Verifica que `/dod` pasa si hay trabajo completado
 4. Actualiza memory, history, progress
-5. Resetea `progress/current.md`
+5. Resetea `progress/current.md` al template
+6. Verifica que `session-commands.md` tiene todas las entradas del ciclo
+7. Verifica que `current.md` está vacío (template) después del reset
 
 ## Comunicación
 
