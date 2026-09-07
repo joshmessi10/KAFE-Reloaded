@@ -6,11 +6,11 @@ from lib.KafeGESHA.LossFunction import (
     SparseCategoricalCrossEntropy,
 )
 from lib.KafeGESHA.Optimizer import SGD, RMSprop, Adam, AdamW
-from lib.KafeMATH.funciones import log
+from lib.KafeMATH.funciones import log, exp
 from global_utils import check_sig
 from TypeUtils import (
-    cadena_t, flotante_t, entero_t, vector_numeros_t, 
-    matriz_numeros_t, gesha_t, void_t, lista_cadenas_t
+    cadena_t, flotante_t, entero_t, booleano_t, vector_numeros_t, 
+    matriz_numeros_t, gesha_t, void_t, lista_cadenas_t, pardos_t
 )
 
 class GeshaDeep(Gesha):
@@ -90,29 +90,63 @@ class GeshaDeep(Gesha):
                 err = layer.backward(err, learning_rate=self._optimizer_obj.lr)
 
         if self._model_type == "clustering":
-            alpha = 0.5  # grado de “suavizado”
-
             for epoch in range(1, epochs + 1):
                 total = 0.0
+                n_features = len(x_train[0])
 
-                for i in range(0, n_samples, batch_size):
-                    for xi in x_train[i : min(i + batch_size, n_samples)]:
+                # Forward pass para todos los puntos
+                all_outputs = [_forward(xi) for xi in x_train]
+                k = len(all_outputs[0])
 
-                        z = _forward(xi)
+                # Calcular centros como medias ponderadas por asignaciones suaves
+                centers = [[0.0] * n_features for _ in range(k)]
+                weights = [0.0] * k
+                for z, xi in zip(all_outputs, x_train):
+                    for c in range(k):
+                        w = z[c]
+                        weights[c] += w
+                        for f in range(n_features):
+                            centers[c][f] += w * xi[f]
+                for c in range(k):
+                    if weights[c] > 1e-8:
+                        for f in range(n_features):
+                            centers[c][f] /= weights[c]
 
-                        k_hat = z.index(max(z))
+                # Para cada punto, generar objetivo basado en distancias a centros
+                # Objetivo suave: puntos más cerca de un centro → mayor peso en ese centro
+                for idx in range(n_samples):
+                    xi = x_train[idx]
+                    z = all_outputs[idx]
 
-                        total += -log(z[k_hat] + 1e-8)
+                    # Calcular distancias a cada centro
+                    dist_sq = [0.0] * k
+                    for c in range(k):
+                        for f in range(n_features):
+                            dist_sq[c] += (xi[f] - centers[c][f]) ** 2
 
-                        k = len(z)
-                        target = [ (1.0 - alpha) / (k - 1) ] * k
-                        target[k_hat] = alpha
+                    # Objetivo: proporcional inversa a la distancia
+                    raw = [0.0] * k
+                    for c in range(k):
+                        raw[c] = 1.0 / (dist_sq[c] + 1e-6)
+                    s = sum(raw)
+                    target = [raw[c] / s for c in range(k)]
 
-                        delta = [ z[j] - target[j] for j in range(k) ]
+                    # Pérdida: MSE entre z y target
+                    sample_loss = 0.0
+                    grad_z = [0.0] * k
+                    for c in range(k):
+                        diff = z[c] - target[c]
+                        sample_loss += diff * diff
+                        grad_z[c] = 2.0 * diff / k
+                    total += sample_loss
 
-                        _backward(delta)
+                    # Propagar a través del softmax
+                    weighted_sum = sum(grad_z[c] * z[c] for c in range(k))
+                    grad_logit = [z[c] * (grad_z[c] - weighted_sum) for c in range(k)]
 
-                print(f"Epoch {epoch}/{epochs} — Loss (soft k-means): {total / n_samples:.6f}")
+                    _backward(grad_logit)
+
+                print(f"Epoch {epoch}/{epochs} — Loss (clustering): {total / n_samples:.6f}")
             return
         if self._model_type == "classification":
             for epoch in range(1, epochs + 1):
@@ -181,6 +215,44 @@ class GeshaDeep(Gesha):
 
         raise ValueError("Gesha: Model type not supported in fit()")
 
+    @check_sig([2, 3, 4, 5, 6, 7], [pardos_t], [lista_cadenas_t, void_t], [entero_t], [entero_t], matriz_numeros_t + [void_t], matriz_numeros_t + vector_numeros_t + [void_t], is_method=True)
+    def fit_from_df(self, df, y_columns=None, epochs=1, batch_size=1, x_val=None, y_val=None):
+        """
+        Entrena el modelo a partir de un DataFrame de PARDOS.
+
+        Para clustering: df contiene solo columnas de características, y_columns es None.
+        Para clasificación/binaria: df contiene características + columna(s) de etiqueta.
+        Para regresión: df contiene características + columna de objetivo.
+
+        y_columns: nombre(s) de columna(s) para el objetivo, o None para clustering.
+        """
+        from lib.KafeGESHA.utils import df_to_matrix
+
+        matrix = df_to_matrix(df)
+
+        if y_columns is None or (isinstance(y_columns, list) and len(y_columns) == 0):
+            self.fit(matrix, [], epochs, batch_size, x_val, y_val)
+        elif isinstance(y_columns, list) and len(y_columns) == 1:
+            col_name = y_columns[0]
+            dtypes = df.dtypes()
+            col_idx = df.columns.index(col_name)
+            y_data = df.col(col_name)
+
+            _, tipo = dtypes[col_idx]
+            if tipo in (entero_t, booleano_t):
+                y_list = [int(v) for v in y_data]
+                self.fit(matrix, y_list, epochs, batch_size, x_val, y_val)
+            else:
+                y_list = [float(v) for v in y_data]
+                self.fit(matrix, y_list, epochs, batch_size, x_val, y_val)
+        else:
+            y_matrix = []
+            for col_name in y_columns:
+                y_matrix.append(df.col(col_name))
+            n_rows = len(df.data)
+            y_list = [[y_matrix[c][r] for c in range(len(y_columns))] for r in range(n_rows)]
+            self.fit(matrix, y_list, epochs, batch_size, x_val, y_val)
+
     def summary(self):
         print(f"*** Resumen (tipo: {self._model_type}) ***")
         for i, layer in enumerate(self.layers, 1):
@@ -195,11 +267,30 @@ class GeshaDeep(Gesha):
     @check_sig([3], matriz_numeros_t, matriz_numeros_t + vector_numeros_t, is_method=True)
     def evaluate(self, x_test, y_test):
         if self._model_type == "clustering":
-            avg = sum(
-                -log(self.predict(xi)[self.predict(xi).index(max(self.predict(xi)))] + 1e-8)
-                for xi in x_test
-            ) / len(x_test)
-            print(f"Soft k-means loss (eval): {avg:.6f}")
+            n_features = len(x_test[0])
+            all_outputs = [self.predict(xi) for xi in x_test]
+            k = len(all_outputs[0])
+
+            centers = [[0.0] * n_features for _ in range(k)]
+            weights = [0.0] * k
+            for z, xi in zip(all_outputs, x_test):
+                for c in range(k):
+                    w = z[c]
+                    weights[c] += w
+                    for f in range(n_features):
+                        centers[c][f] += w * xi[f]
+            for c in range(k):
+                if weights[c] > 1e-8:
+                    for f in range(n_features):
+                        centers[c][f] /= weights[c]
+
+            total = 0.0
+            for z, xi in zip(all_outputs, x_test):
+                for c in range(k):
+                    dist_sq = sum((xi[f] - centers[c][f]) ** 2 for f in range(n_features))
+                    total += z[c] * dist_sq
+            avg = total / len(x_test)
+            print(f"Clustering loss (eval): {avg:.6f}")
             return avg
 
         if self._model_type == "binary":
