@@ -1,0 +1,19 @@
+import geshaDeep;
+import pardos;
+
+-- Create a DataFrame with numeric data
+PARDOS df = pardos.read_csv("../tests/data/clustering_sample.csv");
+
+-- Train clustering model from DataFrame
+GESHA model = geshaDeep.clustering();
+GESHA layer1 = geshaDeep.create_dense(4, "relu", [2], 0.0, 42);
+GESHA layer2 = geshaDeep.create_dense(2, "softmax", [], 0.0, 42);
+model.add(layer1);
+model.add(layer2);
+
+model.compile("adam", "mse", []);
+geshaDeep.fit_from_df(model, df, [], 20, 1);
+
+-- Predict
+List[FLOAT] probs = model.predict([1.0, 1.0]);
+show("Cluster probabilities: " + str(probs));

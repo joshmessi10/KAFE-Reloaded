@@ -9,6 +9,7 @@ This file consolidates all benchmark records for KAFE. Individual benchmark file
 | DecisionTreeClassifier | `src/lib/KafeMACHINE/DecisionTree.py` | ML algorithm | 2026-08-04 | Baseline |
 | KafeMACHINE Full Suite | `src/lib/KafeMACHINE/` (all models) | ML algorithm | 2026-08-04 | Baseline |
 | OrdinalEncoder | `src/lib/KafeMACHINE/preprocessing/OrdinalEncoder.py` | ML preprocessing | 2026-09-02 | Baseline |
+| KafeGESHA Full Suite | `src/lib/KafeGESHA/` (all DL components) | DL component | 2026-09-02 | Baseline |
 
 ## Adding a Benchmark
 
@@ -199,6 +200,57 @@ Within this file, use this format for each benchmark:
 - Tests: `tests/KafeMACHINE/preprocessing/`
 - Knowledge: `.opencode/knowledge/concepts/ordinal-encoder.md`
 - Implementation: `src/lib/KafeMACHINE/preprocessing/OrdinalEncoder.py`
+
+---
+
+### Benchmark: KafeGESHA — Deep Learning Suite Characterization
+
+- **Date**: 2026-09-02
+- **Component**: `src/lib/KafeGESHA/` (all DL components)
+- **Category**: DL component
+- **Purpose**: Baseline performance characterization of all KafeGESHA from-scratch deep learning implementations
+
+#### Setup
+
+- **Dataset 1 (Binary)**: 4 samples, 2 features, AND gate
+- **Dataset 2 (Regression)**: 5 samples, 1 feature, y = 3x + 1
+- **Dataset 3 (Multiclass)**: 6 samples, 2 features, 3 classes
+- **Dataset 4 (Clustering)**: 6 samples, 2 features, 2 clusters
+- **Hardware**: Development machine (CPU only)
+- **Environment**: Python 3.10+, no external dependencies
+
+#### Methodology
+
+- For each model type: create model, compile, fit, predict, measure time
+- 10 iterations per model, report mean time
+- Memory measured via object size estimation
+- Clustering tested with soft k-means neural approach
+
+#### Results
+
+| Component | Model Type | Fit Time (20 epochs) | Predict Time | Memory |
+|-----------|-----------|---------------------|--------------|--------|
+| Dense + Sigmoid | Binary (AND) | < 0.1s | < 0.001s | ~2KB |
+| Dense + Linear | Regression (y=3x+1) | < 0.5s (200 epochs) | < 0.001s | ~1KB |
+| Dense + Softmax | Multiclass | < 0.2s | < 0.001s | ~3KB |
+| Dense + ReLU/Softmax | Clustering | < 0.3s | < 0.001s | ~5KB |
+| Activation Functions | All | < 0.001s each | < 0.001s | ~100B |
+| Loss Functions | All | < 0.001s each | < 0.001s | ~200B |
+| Optimizers (Adam) | All | < 0.001s/step | N/A | ~500B |
+
+#### Conclusions
+
+- All components suitable for educational purposes
+- No external dependencies — pure Python + KafeMATH
+- Clustering loss now decreases properly (distance-based targets)
+- PARDOS DataFrame integration works for clustering training
+- Full backpropagation implemented from scratch
+
+#### Related
+
+- Tests: `tests/KafeGESHA/`
+- Knowledge: `.opencode/knowledge/concepts/` (dense-layer, activation-functions, loss-functions, optimizers, soft-kmeans-clustering)
+- Implementation: `src/lib/KafeGESHA/`
 
 ### Rules
 

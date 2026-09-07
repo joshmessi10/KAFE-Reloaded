@@ -1,5 +1,5 @@
 from global_utils import check_sig
-from TypeUtils import entero_t, cadena_t, flotante_t, gesha_t, vector_numeros_t, lista_cadenas_t, void_t
+from TypeUtils import entero_t, cadena_t, flotante_t, gesha_t, pardos_t, vector_numeros_t, matriz_numeros_t, lista_cadenas_t, void_t
 from lib.KafeGESHA.GeshaDeep import GeshaDeep
 from lib.KafeGESHA.Dense import Dense
 
@@ -40,11 +40,12 @@ def categorical():
 
 @check_sig([4], [gesha_t], [cadena_t], [cadena_t], [lista_cadenas_t])
 def compile(model, optimizer, loss, metrics):
-    if getattr(model, "_model_type", None) == "clustering" and len(model.layers) < 2:
-        model.compile(optimizer=optimizer, loss=loss, metrics=metrics)
-    else:
-        model.compile(optimizer=optimizer, loss=loss, metrics=metrics)
+    model.compile(optimizer=optimizer, loss=loss, metrics=metrics)
 
 @check_sig([2], [gesha_t], [flotante_t, entero_t])
 def set_lr(model, new_lr):
     model.set_lr(new_lr)
+
+@check_sig([3, 4, 5, 6, 7], [gesha_t], [pardos_t], [lista_cadenas_t, void_t], [entero_t], [entero_t], matriz_numeros_t + [void_t], matriz_numeros_t + vector_numeros_t + [void_t])
+def fit_from_df(model, df, y_columns=None, epochs=1, batch_size=1, x_val=None, y_val=None):
+    model.fit_from_df(df, y_columns, epochs, batch_size, x_val, y_val)
