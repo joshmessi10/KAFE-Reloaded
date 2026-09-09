@@ -27,7 +27,7 @@ def obtener_tipo_lista(lista):
 
 def obtener_tipo_dato(dato):
     from lib.KafePARDOS.DataFrame import DataFrame
-    from lib.KafeGESHA.Gesha import Gesha
+    from lib.KafeGESHA.core.model import Gesha
     from lib.KafeMACHINE.BaseMachine import BaseMachine
 
     if type(dato) is list:

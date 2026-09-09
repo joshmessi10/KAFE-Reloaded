@@ -1,6 +1,12 @@
-from lib.KafeGESHA.ActivationFunction import Sigmoide, ReLU, Tanh, Identidad, Escalonada, Softmax
+"""Cargador de funciones de activación."""
+from lib.KafeGESHA.activations.sigmoid import Sigmoide
+from lib.KafeGESHA.activations.relu import ReLU
+from lib.KafeGESHA.activations.tanh import Tanh
+from lib.KafeGESHA.activations.step import Identidad, Escalonada
+from lib.KafeGESHA.activations.softmax import Softmax
 from global_utils import check_sig
 from TypeUtils import cadena_t, void_t
+
 
 class ActivationFunctionLoader:
     @staticmethod

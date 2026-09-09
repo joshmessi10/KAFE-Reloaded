@@ -1,0 +1,1 @@
+"""Funciones de activación de KafeGESHA."""
