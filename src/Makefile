@@ -7,10 +7,10 @@ clean:
 test:
 	if [ -z "$(prueba)" ]; then \
 		for i in $(wildcard ../tests/test_*.py); do \
-			python3 -m pytest $$i; \
+			python -m pytest $$i; \
 		done; \
 	else \
 		for i in $(wildcard ../tests/test_$(prueba).py); do \
-			python3 -m pytest $$i; \
+			python -m pytest $$i; \
 		done; \
 	fi

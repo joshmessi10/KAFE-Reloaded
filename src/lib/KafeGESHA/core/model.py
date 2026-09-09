@@ -1,17 +1,61 @@
+"""Modelos base y principales para KafeGESHA."""
 import warnings
-from lib.KafeGESHA.Gesha import Gesha
-from lib.KafeGESHA.LossFunction import (
-    MeanSquaredError, MeanAbsoluteError,
-    BinaryCrossEntropy, CategoricalCrossEntropy,
-    SparseCategoricalCrossEntropy,
-)
-from lib.KafeGESHA.Optimizer import SGD, RMSprop, Adam, AdamW
-from lib.KafeMATH.funciones import log, exp
+from abc import ABC
 from global_utils import check_sig
 from TypeUtils import (
-    cadena_t, flotante_t, entero_t, booleano_t, vector_numeros_t, 
-    matriz_numeros_t, gesha_t, void_t, lista_cadenas_t, pardos_t
+    gesha_t, vector_numeros_t, matriz_numeros_t, 
+    entero_t, cadena_t, lista_cadenas_t, void_t, booleano_t, flotante_t, pardos_t
 )
+from lib.KafeGESHA.losses.loss import LossFunction
+from lib.KafeGESHA.losses.mse import MeanSquaredError, MeanAbsoluteError
+from lib.KafeGESHA.losses.binary_crossentropy import BinaryCrossEntropy
+from lib.KafeGESHA.losses.categorical_crossentropy import CategoricalCrossEntropy, SparseCategoricalCrossEntropy
+from lib.KafeGESHA.optimizers.optimizer import Optimizer
+from lib.KafeGESHA.optimizers.sgd import SGD, RMSprop
+from lib.KafeGESHA.optimizers.adam import Adam, AdamW
+from lib.KafeMATH.funciones import log, exp
+
+
+class Gesha(ABC):
+    def __init__(self):
+        self.layers = []
+        self.loss = None
+        self.loss_name = None
+        self.optimizer = None
+        self.metrics = []
+
+    @check_sig([2], [gesha_t], is_method=True)
+    def add(self, layer):
+        if self.layers and hasattr(layer, "input_shape") and not layer.input_shape:
+            prev_output = self.layers[-1].units
+            layer.input_shape = (prev_output,)
+        self.layers.append(layer)
+
+    @check_sig([1, 2, 3, 4], [cadena_t, void_t], [cadena_t, void_t], [lista_cadenas_t, void_t], is_method=True)
+    def compile(self, optimizer=None, loss=None, metrics=None):
+        pass
+
+    @check_sig([2], vector_numeros_t, is_method=True)
+    def predict(self, x):
+        for layer in self.layers:
+            x = layer.forward(x)
+        return x
+
+    @check_sig([3, 4, 5], matriz_numeros_t, matriz_numeros_t + vector_numeros_t, [entero_t], [entero_t], is_method=True)
+    def fit(self, x_train, y_train, epochs=1, batch_size=1):
+        pass
+
+    def summary(self):
+        print("Model Summary:")
+        for i, layer in enumerate(self.layers):
+            print(f"Layer {i+1}: {layer.__class__.__name__}, "
+                  f"Input: {getattr(layer, 'input_shape', None)}, "
+                  f"Output: {getattr(layer, 'units', None)}")
+
+    @check_sig([3], matriz_numeros_t, matriz_numeros_t + vector_numeros_t, is_method=True)
+    def evaluate(self, x_test, y_test):
+        pass
+
 
 class GeshaDeep(Gesha):
     def __init__(self, model_type: str = "classification"):
@@ -226,7 +270,7 @@ class GeshaDeep(Gesha):
 
         y_columns: nombre(s) de columna(s) para el objetivo, o None para clustering.
         """
-        from lib.KafeGESHA.utils import df_to_matrix
+        from lib.KafeGESHA.layers.utils import df_to_matrix
 
         matrix = df_to_matrix(df)
 

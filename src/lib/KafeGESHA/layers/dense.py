@@ -1,9 +1,11 @@
+"""Capa Dense (totalmente conectada)."""
 import random
-from lib.KafeGESHA.Gesha import Gesha
-from lib.KafeGESHA.utils import check_regularization
-from lib.KafeGESHA.ActivationFunctionLoader import ActivationFunctionLoader
+from lib.KafeGESHA.core.model import Gesha
+from lib.KafeGESHA.layers.utils import check_regularization
+from lib.KafeGESHA.activations.ActivationFunctionLoader import ActivationFunctionLoader
 from global_utils import check_sig
 from TypeUtils import entero_t, vector_numeros_t, flotante_t, void_t
+
 
 class Dense(Gesha):
     def __init__(
