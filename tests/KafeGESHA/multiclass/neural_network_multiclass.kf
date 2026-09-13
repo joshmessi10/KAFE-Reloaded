@@ -1,4 +1,5 @@
 import geshaDeep;
+import math;
 import plot;
 
 
@@ -60,7 +61,10 @@ List[INT] indices = [0,1,2,3,4,5];
 for (i in indices):
     List[FLOAT] punto = datos[i];
     List[FLOAT] probs = modelo.predict(punto);
-    show(probs);  -- imprimo probabilidades para ver evolución
+    -- Imprimo las probabilidades redondeadas: los ultimos bits del float
+    -- dependen de la version de Python (sum() cambio en 3.12), asi que la
+    -- salida completa se redondea para que la prueba sea reproducible.
+    show([math.round(probs[0], 12), math.round(probs[1], 12)]);
 
     FLOAT p0 = probs[0];
     FLOAT p1 = probs[1];
