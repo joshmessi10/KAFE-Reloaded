@@ -270,6 +270,10 @@ Examples:
 - Do not use sklearn implementations of algorithms that are being implemented inside KAFE.
 - Do not use TensorFlow or PyTorch implementations of layers that are being implemented inside KAFE.
 
+# Key Constraints
+
+- **Simplicity principles (always follow):** Simplicity is a state of being uncluttered and clear, often representing the final result of excellent design. Simplification is the active process of reducing complexity to reach simplicity. They transform overwhelming noise into elegant, accessible solutions.
+
 # Language Policy
 
 **All repository content is written in English** — code, identifiers, comments, docstrings, user-facing strings, file names, directory names, and documentation.

@@ -6,6 +6,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 KAFE is a Domain-Specific Language (DSL) for teaching Deep Learning through functional programming. `.kf` files are KAFE source files. The interpreter is written in Python using ANTLR 4 and the Visitor pattern.
 
+## Key Constraints
+
+- **Simplicity principles (always follow):** Simplicity is a state of being uncluttered and clear, often representing the final result of excellent design. Simplification is the active process of reducing complexity to reach simplicity. They transform overwhelming noise into elegant, accessible solutions.
+
 ## Language Policy
 
 **All repository content is written in English** — code, identifiers, comments, docstrings, user-facing strings, file names, directory names, and documentation.
