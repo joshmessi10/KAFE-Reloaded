@@ -6,6 +6,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 KAFE is a Domain-Specific Language (DSL) for teaching Deep Learning through functional programming. `.kf` files are KAFE source files. The interpreter is written in Python using ANTLR 4 and the Visitor pattern.
 
+## Language Policy
+
+**All repository content is written in English** — code, identifiers, comments, docstrings, user-facing strings, file names, directory names, and documentation.
+
+The repository is mid-migration from Spanish, so Spanish still remains in places. **Do not add new Spanish.** When you edit a file that still contains Spanish, translate what you touch.
+
+`codespell` is an English spell *checker*, not a language detector — it flags only a small fraction of Spanish (given four plainly Spanish lines it reports one word) and must not be treated as the enforcement mechanism.
+
 ## Setup
 
 Requires **Java JDK 11+** (for ANTLR) and **Python 3.10+**.

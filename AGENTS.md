@@ -270,6 +270,14 @@ Examples:
 - Do not use sklearn implementations of algorithms that are being implemented inside KAFE.
 - Do not use TensorFlow or PyTorch implementations of layers that are being implemented inside KAFE.
 
+# Language Policy
+
+**All repository content is written in English** — code, identifiers, comments, docstrings, user-facing strings, file names, directory names, and documentation.
+
+The repository is mid-migration from Spanish, so Spanish still remains in places. **Do not add new Spanish.** When you edit a file that still contains Spanish, translate what you touch.
+
+`codespell` is an English spell *checker*, not a language detector — it flags only a small fraction of Spanish (given four plainly Spanish lines it reports one word) and must not be treated as the enforcement mechanism.
+
 # Educational Response Requirement
 
 KAFE is an educational project.
