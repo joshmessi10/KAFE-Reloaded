@@ -1,56 +1,56 @@
-Epoch 1/50 — Loss 4.02%
-Epoch 2/50 — Loss 3.98%
-Epoch 3/50 — Loss 3.94%
-Epoch 4/50 — Loss 3.90%
-Epoch 5/50 — Loss 3.86%
-Epoch 6/50 — Loss 3.82%
-Epoch 7/50 — Loss 3.78%
-Epoch 8/50 — Loss 3.74%
-Epoch 9/50 — Loss 3.70%
-Epoch 10/50 — Loss 3.66%
-Epoch 11/50 — Loss 3.62%
-Epoch 12/50 — Loss 3.58%
-Epoch 13/50 — Loss 3.54%
-Epoch 14/50 — Loss 3.51%
-Epoch 15/50 — Loss 3.47%
-Epoch 16/50 — Loss 3.44%
-Epoch 17/50 — Loss 3.40%
-Epoch 18/50 — Loss 3.37%
-Epoch 19/50 — Loss 3.33%
-Epoch 20/50 — Loss 3.30%
-Epoch 21/50 — Loss 3.27%
-Epoch 22/50 — Loss 3.24%
-Epoch 23/50 — Loss 3.21%
-Epoch 24/50 — Loss 3.18%
-Epoch 25/50 — Loss 3.15%
-Epoch 26/50 — Loss 3.12%
-Epoch 27/50 — Loss 3.09%
-Epoch 28/50 — Loss 3.07%
-Epoch 29/50 — Loss 3.04%
-Epoch 30/50 — Loss 3.01%
-Epoch 31/50 — Loss 2.99%
-Epoch 32/50 — Loss 2.96%
-Epoch 33/50 — Loss 2.94%
-Epoch 34/50 — Loss 2.91%
-Epoch 35/50 — Loss 2.89%
-Epoch 36/50 — Loss 2.87%
-Epoch 37/50 — Loss 2.84%
-Epoch 38/50 — Loss 2.82%
-Epoch 39/50 — Loss 2.80%
-Epoch 40/50 — Loss 2.78%
-Epoch 41/50 — Loss 2.76%
-Epoch 42/50 — Loss 2.74%
-Epoch 43/50 — Loss 2.72%
-Epoch 44/50 — Loss 2.70%
-Epoch 45/50 — Loss 2.68%
-Epoch 46/50 — Loss 2.66%
-Epoch 47/50 — Loss 2.64%
-Epoch 48/50 — Loss 2.62%
-Epoch 49/50 — Loss 2.60%
-Epoch 50/50 — Loss 2.59%
-[0.520295901528, 0.479704098472]
-[0.5258627795, 0.4741372205]
-[0.573896662623, 0.426103337377]
-[0.607701759048, 0.392298240952]
-[0.518547766696, 0.481452233304]
-[0.622294815537, 0.377705184463]
+Epoch 1/50 — Loss 0.32%
+Epoch 2/50 — Loss 0.32%
+Epoch 3/50 — Loss 0.32%
+Epoch 4/50 — Loss 0.32%
+Epoch 5/50 — Loss 0.32%
+Epoch 6/50 — Loss 0.31%
+Epoch 7/50 — Loss 0.31%
+Epoch 8/50 — Loss 0.31%
+Epoch 9/50 — Loss 0.31%
+Epoch 10/50 — Loss 0.31%
+Epoch 11/50 — Loss 0.31%
+Epoch 12/50 — Loss 0.30%
+Epoch 13/50 — Loss 0.30%
+Epoch 14/50 — Loss 0.30%
+Epoch 15/50 — Loss 0.30%
+Epoch 16/50 — Loss 0.30%
+Epoch 17/50 — Loss 0.30%
+Epoch 18/50 — Loss 0.30%
+Epoch 19/50 — Loss 0.29%
+Epoch 20/50 — Loss 0.29%
+Epoch 21/50 — Loss 0.29%
+Epoch 22/50 — Loss 0.29%
+Epoch 23/50 — Loss 0.29%
+Epoch 24/50 — Loss 0.28%
+Epoch 25/50 — Loss 0.28%
+Epoch 26/50 — Loss 0.28%
+Epoch 27/50 — Loss 0.28%
+Epoch 28/50 — Loss 0.27%
+Epoch 29/50 — Loss 0.27%
+Epoch 30/50 — Loss 0.27%
+Epoch 31/50 — Loss 0.27%
+Epoch 32/50 — Loss 0.27%
+Epoch 33/50 — Loss 0.26%
+Epoch 34/50 — Loss 0.26%
+Epoch 35/50 — Loss 0.26%
+Epoch 36/50 — Loss 0.26%
+Epoch 37/50 — Loss 0.26%
+Epoch 38/50 — Loss 0.25%
+Epoch 39/50 — Loss 0.25%
+Epoch 40/50 — Loss 0.25%
+Epoch 41/50 — Loss 0.25%
+Epoch 42/50 — Loss 0.25%
+Epoch 43/50 — Loss 0.24%
+Epoch 44/50 — Loss 0.24%
+Epoch 45/50 — Loss 0.24%
+Epoch 46/50 — Loss 0.24%
+Epoch 47/50 — Loss 0.24%
+Epoch 48/50 — Loss 0.23%
+Epoch 49/50 — Loss 0.23%
+Epoch 50/50 — Loss 0.23%
+[0.504783212924, 0.495216787076]
+[0.506804581914, 0.493195418086]
+[0.523739097977, 0.476260902023]
+[0.545145347371, 0.454854652629]
+[0.505695464931, 0.494304535069]
+[0.545823619015, 0.454176380985]
