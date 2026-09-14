@@ -11,6 +11,7 @@ from .preprocessing.SimpleImputer import SimpleImputer
 from .LogisticRegression import LogisticRegression
 from .KNN import KNN
 from .DecisionTree import DecisionTreeClassifier
+from .KMeans import KMeans
 from .metrics import (
     accuracy_score, precision_score, recall_score, f1_score,
     confusion_matrix, classification_report,
@@ -115,3 +116,15 @@ def decision_tree_classifier(criterion="gini", max_depth=0, min_samples_split=2,
     min_samples_leaf: mínimo de muestras en una hoja
     """
     return DecisionTreeClassifier(criterion, max_depth, min_samples_split, min_samples_leaf)
+
+
+@check_sig({0: [], 1: [[entero_t]], 2: [[entero_t], [entero_t]], 3: [[entero_t], [entero_t], [entero_t]]})
+def kmeans(n_clusters=3, max_iter=100, random_state=0):
+    """
+    Crea una instancia de K-Means clustering.
+
+    n_clusters: número de clusters (k)
+    max_iter: máximo de iteraciones
+    random_state: semilla para reproducibilidad (0 = aleatorio)
+    """
+    return KMeans(n_clusters, max_iter, random_state)
