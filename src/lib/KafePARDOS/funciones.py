@@ -122,6 +122,15 @@ def to_matrix(df):
     return matrix
 
 
+@check_sig([1], [pardos_t])
+def df_to_matrix(df):
+    """
+    Alias de to_matrix en KafePARDOS. Convierte un DataFrame a matriz.
+    """
+    return to_matrix(df)
+
+
+
 @check_sig([1], lista_cualquiera_t)
 def flatten(matriz):
     """

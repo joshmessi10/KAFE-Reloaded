@@ -5,7 +5,7 @@ import pardos;
 PARDOS df = pardos.read_csv("../tests/data/clustering_sample.csv");
 
 -- Convertir DataFrame a matriz de entrenamiento
-List[List[FLOAT]] X_train = geshaDeep.df_to_matrix(df);
+List[List[FLOAT]] X_train = pardos.to_matrix(df);
 
 -- Entrenar modelo (modo no supervisado: y=[])
 GESHA layer1 = geshaDeep.create_dense(4, "relu",    [2], 0.0, 42);

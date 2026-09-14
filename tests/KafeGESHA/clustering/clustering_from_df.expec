@@ -1,1 +1,21 @@
-Exception: geshaDeep: Function 'df_to_matrix' not defined
+Epoch 1/20 — Loss 0.057126
+Epoch 2/20 — Loss 0.057017
+Epoch 3/20 — Loss 0.056907
+Epoch 4/20 — Loss 0.056798
+Epoch 5/20 — Loss 0.056688
+Epoch 6/20 — Loss 0.056578
+Epoch 7/20 — Loss 0.056468
+Epoch 8/20 — Loss 0.056358
+Epoch 9/20 — Loss 0.056247
+Epoch 10/20 — Loss 0.056137
+Epoch 11/20 — Loss 0.056026
+Epoch 12/20 — Loss 0.055915
+Epoch 13/20 — Loss 0.055804
+Epoch 14/20 — Loss 0.055692
+Epoch 15/20 — Loss 0.055581
+Epoch 16/20 — Loss 0.055469
+Epoch 17/20 — Loss 0.055358
+Epoch 18/20 — Loss 0.055246
+Epoch 19/20 — Loss 0.055134
+Epoch 20/20 — Loss 0.055021
+Cluster probabilities: [0.5584395684857217, 0.44156043151427826]
