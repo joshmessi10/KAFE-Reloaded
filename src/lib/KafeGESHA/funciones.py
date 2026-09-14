@@ -3,6 +3,7 @@ from global_utils import check_sig
 from TypeUtils import entero_t, cadena_t, flotante_t, gesha_t, pardos_t, vector_numeros_t, matriz_numeros_t, lista_cadenas_t, lista_cualquiera_t, void_t
 from lib.KafeGESHA.core.model import GeshaDeep
 from lib.KafeGESHA.layers.dense import Dense
+from lib.KafeNUMK import funciones as numk
 
 
 @check_sig([4, 5], [entero_t], [cadena_t, void_t], vector_numeros_t + [void_t], [flotante_t, entero_t], [entero_t, void_t])
@@ -62,21 +63,21 @@ def fit_from_df(model, df, y_columns=None, epochs=1, batch_size=1, x_val=None, y
 
 @check_sig([1], vector_numeros_t)
 def tensor_zeros(shape):
-    """Crea un tensor de ceros con la forma dada."""
+    """Crea un tensor de ceros con la forma dada. Delega a Numk."""
     from lib.KafeGESHA.core.tensor import tensor_zeros as _tz
     return _tz(shape)
 
 
 @check_sig([1], vector_numeros_t)
 def tensor_ones(shape):
-    """Crea un tensor de unos con la forma dada."""
+    """Crea un tensor de unos con la forma dada. Delega a Numk."""
     from lib.KafeGESHA.core.tensor import tensor_ones as _to
     return _to(shape)
 
 
 @check_sig([1], vector_numeros_t)
 def tensor_random(shape):
-    """Crea un tensor con valores aleatorios."""
+    """Crea un tensor con valores aleatorios. Delega a Numk."""
     from lib.KafeGESHA.core.tensor import tensor_random as _tr
     return _tr(shape)
 
