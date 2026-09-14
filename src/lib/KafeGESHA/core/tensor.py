@@ -1,10 +1,22 @@
-"""Representación de tensores N-dimensionales para KafeGESHA."""
+"""Representación de tensores N-dimensionales para KafeGESHA.
+
+Tensor es un wrapper sobre las listas Python que Numk opera.
+Añade semántica de Deep Learning: validación de regularidad, metadata de forma.
+"""
+from lib.KafeNUMK import funciones as numk
 
 
 class Tensor:
     """
-    Representación de tensor N-dimensional como listas anidadas.
-    Soporta任意 cantidad de dimensiones con validación de regularidad.
+    Tensor N-dimensional para Deep Learning.
+    
+    Almacena datos como listas Python anidadas (la representación nativa de Numk).
+    Numk opera sobre estos datos directamente.
+    
+    Propiedades:
+        data: lista Python N-D (operada por Numk)
+        shape: tupla de dimensiones (calculada por numk.shape)
+        ndim: número de dimensiones
     """
 
     def __init__(self, data):
@@ -15,21 +27,11 @@ class Tensor:
             data: Estructura anidada de listas (1D, 2D, 3D, ...)
 
         Raises:
-            ValueError: Si el tensor es irregular (sublistas de distinta longitud)
+            ValueError: Si el tensor es irregular
         """
         self.data = data
-        self.shape = Tensor._compute_shape(data)
+        self.shape = numk.shape(data)
         self._validate_regular()
-
-    @staticmethod
-    def _compute_shape(data):
-        """Calcula la forma del tensor recursivamente."""
-        if not data:
-            return (0,)
-        if not isinstance(data[0], list):
-            return (len(data),)
-        inner_shape = Tensor._compute_shape(data[0])
-        return (len(data),) + inner_shape
 
     def _validate_regular(self):
         """Valida que el tensor sea regular (rectangular)."""
@@ -75,30 +77,16 @@ class Tensor:
         return f"Tensor(shape={self.shape}, data={self.data})"
 
 
-def _create_nd(fill_value, shape):
-    """Crea una estructura ND anidada con el valor dado."""
-    if len(shape) == 1:
-        return [fill_value for _ in range(shape[0])]
-    return [_create_nd(fill_value, shape[1:]) for _ in range(shape[0])]
-
-
 def tensor_zeros(shape):
-    """Crea un tensor de ceros con la forma dada."""
-    return Tensor(_create_nd(0.0, shape))
+    """Crea un tensor de ceros con la forma dada usando Numk."""
+    return Tensor(numk.zeros_nd(shape))
 
 
 def tensor_ones(shape):
-    """Crea un tensor de unos con la forma dada."""
-    return Tensor(_create_nd(1.0, shape))
+    """Crea un tensor de unos con la forma dada usando Numk."""
+    return Tensor(numk.ones(shape))
 
 
 def tensor_random(shape, low=-0.5, high=0.5):
-    """Crea un tensor con valores aleatorios en el rango [low, high]."""
-    import random
-
-    def _random_nd(shape):
-        if len(shape) == 1:
-            return [random.uniform(low, high) for _ in range(shape[0])]
-        return [_random_nd(shape[1:]) for _ in range(shape[0])]
-
-    return Tensor(_random_nd(shape))
+    """Crea un tensor con valores aleatorios usando Numk."""
+    return Tensor(numk.random_tensor(shape, low, high))

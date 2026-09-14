@@ -1,0 +1,4 @@
+import numk;
+
+show(numk.ones([3]));
+show(numk.ones([2, 3]));

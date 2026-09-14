@@ -1,0 +1,5 @@
+import numk;
+
+List[List[INT]] m = [[1, 2], [3, 4]];
+show(numk.max_axis(m, 0));
+show(numk.max_axis(m, 1));
