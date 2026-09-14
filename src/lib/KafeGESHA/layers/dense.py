@@ -1,13 +1,26 @@
 """Capa Dense (totalmente conectada)."""
 import random
-from lib.KafeGESHA.core.model import Gesha
+from lib.KafeGESHA.layers.layer import Layer
 from lib.KafeGESHA.layers.utils import check_regularization
 from lib.KafeGESHA.activations.ActivationFunctionLoader import ActivationFunctionLoader
 from global_utils import check_sig
 from TypeUtils import entero_t, vector_numeros_t, flotante_t, void_t
 
 
-class Dense(Gesha):
+class Dense(Layer):
+    """Capa totalmente conectada (fully-connected).
+
+    Implementa la transformación afín: z = Wx + b, seguida de una
+    función de activación opcional.
+
+    Args:
+        units: Número de neuronas de salida.
+        activation: Nombre de la función de activación (str) o None para lineal.
+        input_shape: Tupla con la forma de la entrada (opcional, se infiere en el primer forward).
+        regularization_lambda: Coeficiente de regularización L2.
+        seed: Semilla para reproducibilidad de la inicialización de pesos.
+    """
+
     def __init__(
         self,
         units,
@@ -40,11 +53,13 @@ class Dense(Gesha):
 
     @check_sig([2], [entero_t], is_method=True)
     def build(self, input_dim):
+        """Inicializa pesos y sesgos dado el número de entradas."""
         self.weights = self._random_matrix(input_dim, self.units)
         self.bias = self._zeros_vector(self.units)
 
     @check_sig([2], vector_numeros_t, is_method=True)
     def forward(self, x):
+        """Propagación hacia adelante: z = Wx + b, salida = activation(z)."""
         self.last_input = x[:]
         if self.weights is None:
             self.build(len(x))
@@ -62,6 +77,10 @@ class Dense(Gesha):
 
     @check_sig([3, 4], vector_numeros_t + [flotante_t], [flotante_t], [flotante_t, void_t], is_method=True)
     def backward(self, output_error, learning_rate, regularization_lambda=None):
+        """Propagación hacia atrás con actualización de pesos (SGD inline).
+
+        Devuelve el gradiente propagado hacia la capa anterior.
+        """
         if not isinstance(output_error, list):
             output_error = [output_error]
 
@@ -99,8 +118,18 @@ class Dense(Gesha):
             for i in range(input_dim)
         ]
 
+    def parameters(self):
+        """Devuelve lista plana de todos los parámetros entrenables [W, b]."""
+        if self.weights is None:
+            return []
+        params = []
+        for row in self.weights:
+            params.extend(row)
+        params.extend(self.bias)
+        return params
+
     def summary(self):
         act = self.activation_name or "linear"
         reg = f"L2={self.regularization_lambda}" if self.regularization_lambda > 0 else "-"
         sd  = f", seed={self.seed}" if self.seed is not None else ""
-        print(f"Dense(units={self.units}, act={act}, {reg}{sd})")
+        print(f"Dense(units={self.units}, act={act}, reg={reg}{sd})")

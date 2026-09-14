@@ -21,20 +21,23 @@ def obtener_tipo_lista(lista):
         if type(lista[0]) is list:
             tipo += obtener_tipo_lista(lista[0])
         else:
-            tipo += nombre_tipos[type(lista[0])]
+            tipo += obtener_tipo_dato(lista[0])
     tipo += ']'
     return tipo
 
 def obtener_tipo_dato(dato):
     from lib.KafePARDOS.DataFrame import DataFrame
     from lib.KafeGESHA.core.model import Gesha
+    from lib.KafeGESHA.layers.layer import Layer
+    from lib.KafeGESHA.core.node import Node
+    from lib.KafeGESHA.layers.input_layer import Input
     from lib.KafeMACHINE.BaseMachine import BaseMachine
 
     if type(dato) is list:
         return obtener_tipo_lista(dato)
     elif callable(dato):
         return nombre_tipos["func"]
-    elif isinstance(dato, Gesha):
+    elif isinstance(dato, (Gesha, Layer, Node, Input)):
         return nombre_tipos["gesha"]
     elif isinstance(dato, DataFrame) or "GroupBy" in str(type(dato)):
         return nombre_tipos["pardos"]

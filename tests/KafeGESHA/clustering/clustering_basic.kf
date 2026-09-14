@@ -1,6 +1,6 @@
 import geshaDeep;
 
--- Simple clustering test
+-- Simple clustering test (modo no supervisado: y=None)
 List[List[FLOAT]] X_train = [
     [1.0, 1.0],
     [1.5, 2.0],
@@ -10,11 +10,9 @@ List[List[FLOAT]] X_train = [
     [9.0, 11.0]
 ];
 
-GESHA model = geshaDeep.clustering();
-GESHA layer1 = geshaDeep.create_dense(4, "relu", [2], 0.0, 42);
-GESHA layer2 = geshaDeep.create_dense(2, "softmax", [], 0.0, 42);
-model.add(layer1);
-model.add(layer2);
+GESHA layer1 = geshaDeep.create_dense(4, "relu",    [2], 0.0, 42);
+GESHA layer2 = geshaDeep.create_dense(2, "softmax", [],  0.0, 42);
+GESHA model  = geshaDeep.sequential([layer1, layer2]);
 
 model.compile("sgd", "categorical_crossentropy", []);
 model.fit(X_train, [], 20, 1, [], []);
