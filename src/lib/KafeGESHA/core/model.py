@@ -185,6 +185,7 @@ class Model(ABC):
 
         for epoch in range(1, epochs + 1):
             total_loss = 0.0
+            correct = 0
 
             for i in range(0, n_samples, batch_size):
                 end = min(i + batch_size, n_samples)
@@ -201,11 +202,21 @@ class Model(ABC):
                     else:
                         yi = by[j]
                         loss_val, grad = self._compute_loss_and_grad(out, yi)
+                        if self._metrics:
+                            pred_lbl = self.predict_label(xi)
+                            true_lbl = yi if isinstance(yi, int) else (yi.index(max(yi)) if isinstance(yi, list) and len(yi) > 1 else (1 if yi[0] >= 0.5 else 0))
+                            if pred_lbl == true_lbl:
+                                correct += 1
 
                     total_loss += loss_val
                     self.backward(grad)
 
-            msg = f"Epoch {epoch}/{epochs} — Loss {total_loss / n_samples:.6f}"
+            loss_pct = (total_loss / n_samples) * 100.0
+            msg = f"Epoch {epoch}/{epochs} — Loss {loss_pct:.2f}%"
+
+            if self._metrics and not is_unsupervised:
+                acc_pct = (correct / n_samples) * 100.0
+                msg += f" — Accuracy {acc_pct:.2f}%"
 
             if has_val:
                 msg += self._validation_message(x_val, y_val)
@@ -250,14 +261,14 @@ class Model(ABC):
 
     @check_sig([3], matriz_numeros_t, matriz_numeros_t + vector_numeros_t, is_method=True)
     def evaluate(self, x_test, y_test):
-        """Calcula la loss promedio sobre un conjunto de datos.
+        """Calcula la loss promedio sobre un conjunto de datos expresada en porcentaje.
 
         Args:
             x_test: Matriz de entrada.
             y_test: Etiquetas/objetivos.
 
         Returns:
-            Loss promedio (float).
+            Loss promedio en porcentaje (float).
         """
         self._set_training(False)
         total_loss = 0.0
@@ -266,9 +277,9 @@ class Model(ABC):
             out = self.forward(xi)
             loss_val, _ = self._compute_loss_and_grad(out, yi)
             total_loss += loss_val
-        avg = total_loss / n
-        print(f"Loss: {avg:.6f}")
-        return avg
+        avg_pct = (total_loss / n) * 100.0
+        print(f"Loss: {avg_pct:.2f}%")
+        return avg_pct
 
     # ------------------------------------------------------------------
     # Utilidades públicas
@@ -376,14 +387,15 @@ class Model(ABC):
         return loss_val, grad_logit
 
     def _validation_message(self, x_val, y_val):
-        """Genera el mensaje de validación calculando la loss sobre x_val/y_val."""
+        """Genera el mensaje de validación calculando la loss en porcentaje."""
         total = 0.0
         n = len(x_val)
         for xi, yi in zip(x_val, y_val):
             out = self.forward(xi)
             loss_val, _ = self._compute_loss_and_grad(out, yi)
             total += loss_val
-        return f" — val_loss {total / n:.6f}"
+        val_pct = (total / n) * 100.0
+        return f" — val_loss {val_pct:.2f}%"
 
     def _set_training(self, mode):
         """Propaga el modo entrenamiento/evaluación a todas las capas."""
