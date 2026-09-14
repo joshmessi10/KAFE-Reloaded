@@ -12,21 +12,14 @@ List[List[FLOAT]] datos = [
     [9.0, 11.0]
 ];
 
-List[INT] y_dummy = [];
-
-
-GESHA modelo = geshaDeep.clustering();
-
 
 GESHA capa1 = geshaDeep.create_dense(
-    8,         -- 4 neuronas en primera capa oculta
+    8,
     "relu",
-    [2],       -- entrada 2D
+    [2],
     0.0,
-    12         -- semilla distinta
+    12
 );
-modelo.add(capa1);
-
 
 GESHA capa1b = geshaDeep.create_dense(
     4,
@@ -35,21 +28,19 @@ GESHA capa1b = geshaDeep.create_dense(
     0.0,
     99
 );
-modelo.add(capa1b);
-
 
 GESHA capa2 = geshaDeep.create_dense(
     2, "softmax", [], 0.0, 42
 );
-modelo.add(capa2);
 
+GESHA modelo = geshaDeep.sequential([capa1, capa1b, capa2]);
 
 geshaDeep.compile(modelo, "adam", "categorical_crossentropy", []);
 
 geshaDeep.set_lr(modelo, 0.0005);
 
-
-modelo.fit(datos, y_dummy, 50, 2);
+-- Modo no supervisado: y=[]
+modelo.fit(datos, [], 50, 2);
 
 
 List[FLOAT] X0 = [];
@@ -61,9 +52,6 @@ List[INT] indices = [0,1,2,3,4,5];
 for (i in indices):
     List[FLOAT] punto = datos[i];
     List[FLOAT] probs = modelo.predict(punto);
-    -- Imprimo las probabilidades redondeadas: los ultimos bits del float
-    -- dependen de la version de Python (sum() cambio en 3.12), asi que la
-    -- salida completa se redondea para que la prueba sea reproducible.
     show([math.round(probs[0], 12), math.round(probs[1], 12)]);
 
     FLOAT p0 = probs[0];
@@ -163,7 +151,7 @@ for (i in range(0, len(CX))):
 
 
 plot.figure();
-plot.title("Clustering k-means (k=2) ― GeshaDeep (2 capas de 4 → 4, lr=0.0005)");
+plot.title("Clustering k-means (k=2) — GeshaDeep Sequential");
 plot.xlabel("X");
 plot.ylabel("Y");
 plot.grid(True);

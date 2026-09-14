@@ -1,7 +1,6 @@
--- classification_predict.kf
 import geshaDeep;
 
--- OR lógico:  class0=[1,0], class1=[0,1]
+-- OR lógico: class0=[1,0], class1=[0,1]
 List[List[INT]] x_train = [
     [0,0],
     [0,1],
@@ -9,8 +8,8 @@ List[List[INT]] x_train = [
     [1,1]
 ];
 List[List[INT]] y_train = [
-    [1,0],   -- 0 OR 0 = 0  → class0
-    [0,1],   -- 0 OR 1 = 1  → class1
+    [1,0],   -- 0 OR 0 = 0 → class0
+    [0,1],   -- 0 OR 1 = 1 → class1
     [0,1],   -- 1 OR 0 = 1
     [0,1]    -- 1 OR 1 = 1
 ];
@@ -19,11 +18,9 @@ List[List[INT]] y_train = [
 List[List[INT]] x_val = [[0,0],[1,1]];
 List[List[INT]] y_val = [[1,0],[0,1]];
 
-GESHA model = geshaDeep.categorical();
-GESHA h  = geshaDeep.create_dense(4, "relu",  [2], 0.0, 42);
+GESHA h   = geshaDeep.create_dense(4, "relu",    [2], 0.0, 42);
 GESHA out = geshaDeep.create_dense(2, "softmax", [4], 0.0, 42);
-model.add(h);
-model.add(out);
+GESHA model = geshaDeep.sequential([h, out]);
 
 model.compile("sgd", "categorical_crossentropy", ["accuracy"]);
 model.fit(x_train, y_train, 100, 2, x_val, y_val);

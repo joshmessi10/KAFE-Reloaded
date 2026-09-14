@@ -4,7 +4,7 @@ from errores import raiseFileNotFound
 from global_utils import check_sig
 from .utils import inferir_tipo
 from .DataFrame import DataFrame
-from TypeUtils import cadena_t, pardos_t
+from TypeUtils import cadena_t, pardos_t, lista_cualquiera_t
 
 
 @check_sig([1], [cadena_t])
@@ -90,3 +90,49 @@ def concat(df1, df2):
 @check_sig([3, 4], [pardos_t], [pardos_t], [cadena_t], [cadena_t])
 def merge(df1, df2, on, how='inner'):
     return df1.merge(df2, on, how)
+
+
+@check_sig([1], [pardos_t])
+def to_matrix(df):
+    """
+    Convierte un DataFrame de PARDOS a una matriz (lista de listas de floats).
+    Solo se incluyen columnas numéricas (entero y flotante).
+    """
+    from TypeUtils import entero_t, flotante_t
+    dtypes = df.dtypes()
+    numeric_indices = []
+    for i, (col_name, tipo) in enumerate(dtypes):
+        if tipo in (entero_t, flotante_t):
+            numeric_indices.append(i)
+
+    if not numeric_indices:
+        raise ValueError("pardos: No se encontraron columnas numéricas en el DataFrame")
+
+    matrix = []
+    for row in df.data:
+        numeric_row = []
+        for idx in numeric_indices:
+            val = row[idx]
+            if isinstance(val, float) and val != val:
+                numeric_row.append(0.0)
+            else:
+                numeric_row.append(float(val))
+        matrix.append(numeric_row)
+
+    return matrix
+
+
+@check_sig([1], lista_cualquiera_t)
+def flatten(matriz):
+    """
+    Convierte una lista anidada (por ejemplo, una matriz) a un arreglo 1D (lista plana).
+    """
+    def _flatten(nested):
+        res = []
+        for elem in nested:
+            if isinstance(elem, list):
+                res.extend(_flatten(elem))
+            else:
+                res.append(elem)
+        return res
+    return _flatten(matriz)

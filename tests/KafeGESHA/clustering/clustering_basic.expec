@@ -1,22 +1,22 @@
-Epoch 1/20 — Loss (clustering): 0.243006
-Epoch 2/20 — Loss (clustering): 0.204262
-Epoch 3/20 — Loss (clustering): 0.167153
-Epoch 4/20 — Loss (clustering): 0.133779
-Epoch 5/20 — Loss (clustering): 0.105357
-Epoch 6/20 — Loss (clustering): 0.082159
-Epoch 7/20 — Loss (clustering): 0.063790
-Epoch 8/20 — Loss (clustering): 0.049531
-Epoch 9/20 — Loss (clustering): 0.038597
-Epoch 10/20 — Loss (clustering): 0.030269
-Epoch 11/20 — Loss (clustering): 0.023945
-Epoch 12/20 — Loss (clustering): 0.019143
-Epoch 13/20 — Loss (clustering): 0.015492
-Epoch 14/20 — Loss (clustering): 0.012708
-Epoch 15/20 — Loss (clustering): 0.010576
-Epoch 16/20 — Loss (clustering): 0.008935
-Epoch 17/20 — Loss (clustering): 0.007666
-Epoch 18/20 — Loss (clustering): 0.006679
-Epoch 19/20 — Loss (clustering): 0.005906
-Epoch 20/20 — Loss (clustering): 0.005297
-Cluster probabilities: [0.48375021329080786, 0.5162497867091922]
-Assigned cluster: 1
+Epoch 1/20 — Loss 0.056892
+Epoch 2/20 — Loss 0.055787
+Epoch 3/20 — Loss 0.054666
+Epoch 4/20 — Loss 0.053529
+Epoch 5/20 — Loss 0.052380
+Epoch 6/20 — Loss 0.051218
+Epoch 7/20 — Loss 0.050047
+Epoch 8/20 — Loss 0.048868
+Epoch 9/20 — Loss 0.047683
+Epoch 10/20 — Loss 0.046495
+Epoch 11/20 — Loss 0.045307
+Epoch 12/20 — Loss 0.044120
+Epoch 13/20 — Loss 0.042939
+Epoch 14/20 — Loss 0.041766
+Epoch 15/20 — Loss 0.040603
+Epoch 16/20 — Loss 0.039455
+Epoch 17/20 — Loss 0.038323
+Epoch 18/20 — Loss 0.037211
+Epoch 19/20 — Loss 0.036123
+Epoch 20/20 — Loss 0.035059
+Cluster probabilities: [0.5615042922873952, 0.4384957077126048]
+Assigned cluster: 0

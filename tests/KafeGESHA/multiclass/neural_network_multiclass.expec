@@ -1,56 +1,56 @@
-Epoch 1/50 — Loss (clustering): 0.003216
-Epoch 2/50 — Loss (clustering): 0.003135
-Epoch 3/50 — Loss (clustering): 0.003056
-Epoch 4/50 — Loss (clustering): 0.002980
-Epoch 5/50 — Loss (clustering): 0.002904
-Epoch 6/50 — Loss (clustering): 0.002831
-Epoch 7/50 — Loss (clustering): 0.002759
-Epoch 8/50 — Loss (clustering): 0.002688
-Epoch 9/50 — Loss (clustering): 0.002620
-Epoch 10/50 — Loss (clustering): 0.002553
-Epoch 11/50 — Loss (clustering): 0.002487
-Epoch 12/50 — Loss (clustering): 0.002423
-Epoch 13/50 — Loss (clustering): 0.002361
-Epoch 14/50 — Loss (clustering): 0.002300
-Epoch 15/50 — Loss (clustering): 0.002240
-Epoch 16/50 — Loss (clustering): 0.002182
-Epoch 17/50 — Loss (clustering): 0.002126
-Epoch 18/50 — Loss (clustering): 0.002070
-Epoch 19/50 — Loss (clustering): 0.002016
-Epoch 20/50 — Loss (clustering): 0.001964
-Epoch 21/50 — Loss (clustering): 0.001912
-Epoch 22/50 — Loss (clustering): 0.001862
-Epoch 23/50 — Loss (clustering): 0.001813
-Epoch 24/50 — Loss (clustering): 0.001765
-Epoch 25/50 — Loss (clustering): 0.001718
-Epoch 26/50 — Loss (clustering): 0.001673
-Epoch 27/50 — Loss (clustering): 0.001628
-Epoch 28/50 — Loss (clustering): 0.001585
-Epoch 29/50 — Loss (clustering): 0.001543
-Epoch 30/50 — Loss (clustering): 0.001501
-Epoch 31/50 — Loss (clustering): 0.001461
-Epoch 32/50 — Loss (clustering): 0.001422
-Epoch 33/50 — Loss (clustering): 0.001404
-Epoch 34/50 — Loss (clustering): 0.001396
-Epoch 35/50 — Loss (clustering): 0.001389
-Epoch 36/50 — Loss (clustering): 0.001381
-Epoch 37/50 — Loss (clustering): 0.001374
-Epoch 38/50 — Loss (clustering): 0.001366
-Epoch 39/50 — Loss (clustering): 0.001359
-Epoch 40/50 — Loss (clustering): 0.001351
-Epoch 41/50 — Loss (clustering): 0.001344
-Epoch 42/50 — Loss (clustering): 0.001337
-Epoch 43/50 — Loss (clustering): 0.001329
-Epoch 44/50 — Loss (clustering): 0.001322
-Epoch 45/50 — Loss (clustering): 0.001315
-Epoch 46/50 — Loss (clustering): 0.001308
-Epoch 47/50 — Loss (clustering): 0.001301
-Epoch 48/50 — Loss (clustering): 0.001294
-Epoch 49/50 — Loss (clustering): 0.001287
-Epoch 50/50 — Loss (clustering): 0.001280
-[0.504351175043, 0.495648824957]
-[0.504936713326, 0.495063286674]
-[0.521427452082, 0.478572547918]
-[0.535146202118, 0.464853797882]
-[0.504889274958, 0.495110725042]
-[0.533582698749, 0.466417301251]
+Epoch 1/50 — Loss 0.040201
+Epoch 2/50 — Loss 0.039779
+Epoch 3/50 — Loss 0.039367
+Epoch 4/50 — Loss 0.038964
+Epoch 5/50 — Loss 0.038569
+Epoch 6/50 — Loss 0.038183
+Epoch 7/50 — Loss 0.037804
+Epoch 8/50 — Loss 0.037390
+Epoch 9/50 — Loss 0.036982
+Epoch 10/50 — Loss 0.036582
+Epoch 11/50 — Loss 0.036190
+Epoch 12/50 — Loss 0.035807
+Epoch 13/50 — Loss 0.035432
+Epoch 14/50 — Loss 0.035065
+Epoch 15/50 — Loss 0.034706
+Epoch 16/50 — Loss 0.034355
+Epoch 17/50 — Loss 0.034010
+Epoch 18/50 — Loss 0.033673
+Epoch 19/50 — Loss 0.033344
+Epoch 20/50 — Loss 0.033021
+Epoch 21/50 — Loss 0.032704
+Epoch 22/50 — Loss 0.032395
+Epoch 23/50 — Loss 0.032091
+Epoch 24/50 — Loss 0.031794
+Epoch 25/50 — Loss 0.031503
+Epoch 26/50 — Loss 0.031218
+Epoch 27/50 — Loss 0.030939
+Epoch 28/50 — Loss 0.030666
+Epoch 29/50 — Loss 0.030398
+Epoch 30/50 — Loss 0.030136
+Epoch 31/50 — Loss 0.029878
+Epoch 32/50 — Loss 0.029626
+Epoch 33/50 — Loss 0.029379
+Epoch 34/50 — Loss 0.029137
+Epoch 35/50 — Loss 0.028900
+Epoch 36/50 — Loss 0.028668
+Epoch 37/50 — Loss 0.028440
+Epoch 38/50 — Loss 0.028217
+Epoch 39/50 — Loss 0.027998
+Epoch 40/50 — Loss 0.027783
+Epoch 41/50 — Loss 0.027573
+Epoch 42/50 — Loss 0.027366
+Epoch 43/50 — Loss 0.027164
+Epoch 44/50 — Loss 0.026965
+Epoch 45/50 — Loss 0.026771
+Epoch 46/50 — Loss 0.026580
+Epoch 47/50 — Loss 0.026393
+Epoch 48/50 — Loss 0.026209
+Epoch 49/50 — Loss 0.026029
+Epoch 50/50 — Loss 0.025852
+[0.520295901528, 0.479704098472]
+[0.5258627795, 0.4741372205]
+[0.573896662623, 0.426103337377]
+[0.607701759048, 0.392298240952]
+[0.518547766696, 0.481452233304]
+[0.622294815537, 0.377705184463]
