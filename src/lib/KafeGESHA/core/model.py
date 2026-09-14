@@ -187,6 +187,21 @@ class Model(ABC):
             total_loss = 0.0
             correct = 0
 
+            # En modo no supervisado, calcular centroides mu_k como medias ponderadas suaves (Soft K-Means)
+            centroids = None
+            if is_unsupervised:
+                z_all = [self.forward(xi) for xi in x_train]
+                k_num = len(z_all[0])
+                d_feat = len(x_train[0])
+                weights = [sum(z_all[idx][c] for idx in range(n_samples)) for c in range(k_num)]
+                centroids = []
+                for c in range(k_num):
+                    if weights[c] > 1e-6:
+                        mu_c = [sum(z_all[idx][c] * x_train[idx][f] for idx in range(n_samples)) / weights[c] for f in range(d_feat)]
+                    else:
+                        mu_c = [0.0] * d_feat
+                    centroids.append(mu_c)
+
             for i in range(0, n_samples, batch_size):
                 end = min(i + batch_size, n_samples)
                 bx = x_train[i:end]
@@ -197,8 +212,8 @@ class Model(ABC):
                     out = self.forward(xi)
 
                     if is_unsupervised:
-                        # Modo no supervisado: la loss genera sus propios targets
-                        loss_val, grad = self._unsupervised_loss_and_grad(xi, out)
+                        # Modo no supervisado: Soft K-Means basado en centroides
+                        loss_val, grad = self._unsupervised_loss_and_grad(xi, out, centroids)
                     else:
                         yi = by[j]
                         loss_val, grad = self._compute_loss_and_grad(out, yi)
@@ -336,53 +351,43 @@ class Model(ABC):
 
         return loss_val, grad
 
-    def _unsupervised_loss_and_grad(self, xi, out):
-        """Loss y gradiente para modo no supervisado (clustering soft k-means).
+    def _unsupervised_loss_and_grad(self, xi, out, centroids=None):
+        """Loss y gradiente para modo no supervisado (Soft K-Means Neural Clustering).
 
-        Genera targets suaves basados en la distancia de xi a los centros
-        calculados desde las asignaciones actuales.
-
-        El modelo de clustering usa softmax como capa final, produciendo
-        probabilidades de pertenencia. Los targets se generan como la
-        inversa normalizada de las distancias al centroide ponderado.
+        Calcula el target suave t_ik basado en la distancia de xi a los centroides mu_k:
+            d_ik = sum_f (xi_f - mu_kf)^2
+            r_ik = 1 / (d_ik + eps)
+            t_ik = r_ik / sum_j r_ij
 
         Args:
-            xi: Ejemplo de entrada (vector de features).
-            out: Salida actual del modelo (probabilidades de cluster).
+            xi: Ejemplo de entrada.
+            out: Salida actual (probabilidades softmax).
+            centroids: Lista de centroides de cluster mu_k.
 
         Returns:
             (loss_val: float, grad_logit: list)
         """
-        # Necesitamos todos los outputs para calcular los centros.
-        # Esta función se llama ejemplo por ejemplo, por lo que los centros
-        # se calculan de forma aproximada (single-sample update).
-        # Para un clustering más preciso, el caller puede pasar un ciclo
-        # de dos pasadas. Aquí implementamos la versión online (simple).
         k = len(out)
-        n_features = len(xi)
+        eps = 1e-6
+        p = [max(eps, min(1.0 - eps, v)) for v in out]
 
-        # Pseudo-target: probabilidades inversamente proporcionales a la
-        # distancia al centroide actual (0 si no hay info previa, se usa xi mismo)
-        # Generamos un target uniforme como fallback que fuerza la red a decidir
-        # por sí sola. Un loss MSE entre out y un target inferido desde distancias
-        # ya calculadas externamente (desde el caller) es el patrón correcto.
-        # Por simplicidad online, usamos out como target de referencia para la
-        # dirección y aplicamos una perturbación hacia el centroide más cercano.
+        if centroids and len(centroids) == k:
+            dists = [sum((xi[f] - centroids[c][f]) ** 2 for f in range(len(xi))) for c in range(k)]
+            raw = [1.0 / (d + eps) for d in dists]
+            s_raw = sum(raw) + eps
+            target = [r / s_raw for r in raw]
+        else:
+            p_sq = [v ** 2 for v in p]
+            s_sq = sum(p_sq) + eps
+            target = [v / s_sq for v in p_sq]
 
-        # Target: distribución categórica basada en distancias inversas a xi mismo
-        # (en ausencia de centros externos, el punto más cercano a sí mismo
-        #  gana con distancia 0, pero eso degeneraría → usamos ruido suave)
-        raw = [1.0 / (i + 1 + 1e-6) for i in range(k)]
-        s = sum(raw)
-        target = [r / s for r in raw]
+        # MSE entre asignaciones out (p) y targets t
+        loss_val = sum((p[c] - target[c]) ** 2 for c in range(k))
+        grad_z = [2.0 * (p[c] - target[c]) / k for c in range(k)]
 
-        # MSE entre out y target
-        loss_val = sum((out[c] - target[c]) ** 2 for c in range(k))
-        grad_z = [2.0 * (out[c] - target[c]) / k for c in range(k)]
-
-        # Gradiente a través del softmax (Jacobiano simplificado: dL/dz_i)
-        weighted = sum(grad_z[c] * out[c] for c in range(k))
-        grad_logit = [out[c] * (grad_z[c] - weighted) for c in range(k)]
+        # Gradiente a través de Softmax
+        weighted = sum(grad_z[c] * p[c] for c in range(k))
+        grad_logit = [p[c] * (grad_z[c] - weighted) for c in range(k)]
 
         return loss_val, grad_logit
 
