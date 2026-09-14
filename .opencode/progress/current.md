@@ -2,26 +2,27 @@
 
 | Field | Value |
 |-------|-------|
-| Feature | Reorganización completa de KafeGESHA con separación de archivos |
+| Feature | Expose tensor functions in geshaDeep API + fixture tests |
 | Status | done |
-| Current step | Verificación completada |
+| Current step | Tests passing (344 passed) |
 | Next step | N/A |
 | Blockers | N/A |
 | Related ADRs | N/A |
 
 ## Notes
 
-- Reorganización completa de KafeGESHA con separación en archivos individuales
-- **activations/**: ActivationFunction.py → activation.py, sigmoid.py, relu.py, tanh.py, softmax.py, step.py
-- **losses/**: LossFunction.py → loss.py, mse.py, binary_crossentropy.py, categorical_crossentropy.py
-- **optimizers/**: Optimizer.py → optimizer.py, sgd.py, adam.py
-- **core/**: Gesha.py + GeshaDeep.py → model.py + tensor.py (nuevo) + parameter.py (nuevo)
-- **layers/**: Dense.py → dense.py + layer.py (nuevo) + dropout.py (nuevo) + flatten.py (nuevo)
-- **models/**: (nuevo) sequential.py + functional.py
-- **training/**: (nuevo) trainer.py + forward.py + backward.py + metrics.py
-- `funciones.py` se mantuvo en raíz (intérprete lo importa así)
-- `ActivationFunctionLoader.py` actualizado para importar de nuevos archivos
-- `componentes_lenguaje/base/funciones.py` y `TypeUtils.py` actualizados para importar de core.model
-- `__pycache__/` eliminado
-- 329 tests pasaron exitosamente (13 de KafeGESHA + 316 del resto)
-- Dense mantiene herencia de Gesha (requerido por sistema de tipos en TypeUtils.py)
+- **Funciones expuestas en `funciones.py`**:
+  - `tensor_zeros(shape)` — crea tensor de ceros con forma dada
+  - `tensor_ones(shape)` — crea tensor de unos con forma dada
+  - `tensor_random(shape)` — crea tensor con valores aleatorios
+  - `tensor(data)` — crea tensor desde datos anidados
+- **Tipos**: `shape` acepta `vector_numeros_t` (List[INT] o List[FLOAT]); `data` acepta `lista_cualquiera_t`
+- **Limitación conocida**: El tipo `Tensor` no está registrado en el sistema de tipos de KAFE, por lo que no se puede asignar a variables tipadas. Se usa inline con `show()` o como expresión descartada.
+- **Fixtures creados** (5 pares .kf/.expec):
+  - `test_tensor_create` — crea tensor desde datos
+  - `test_tensor_zeros` — tensor de ceros
+  - `test_tensor_ones` — tensor de unos
+  - `test_tensor_nd` — tensor 3D
+  - `test_tensor_random` — verifica ejecución exitosa
+- **test_tensor.py** reescrito con patrón subprocess, filtrando solo `test_tensor_*.kf`
+- **344 tests pasaron exitosamente** (5 nuevos + 339 existentes)

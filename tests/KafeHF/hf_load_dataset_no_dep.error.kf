@@ -1,0 +1,3 @@
+import huggingface;
+PARDOS df = huggingface.load_dataset("squad");
+show(df);

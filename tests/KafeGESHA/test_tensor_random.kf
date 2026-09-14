@@ -1,0 +1,4 @@
+import geshaDeep;
+
+geshaDeep.tensor_random([2, 2]);
+show("tensor_random executed");

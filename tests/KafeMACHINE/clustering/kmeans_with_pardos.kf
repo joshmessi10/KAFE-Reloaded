@@ -1,0 +1,26 @@
+import pardos;
+import machine;
+
+PARDOS df = pardos.read_csv("clustering_data.csv");
+List[FLOAT] x1 = df.col("x1");
+List[FLOAT] x2 = df.col("x2");
+
+List[List[FLOAT]] X = [];
+for (i in range(0, len(x1))):
+    List[FLOAT] row = [x1[i], x2[i]];
+    append(X, row);
+;
+
+MACHINE model = machine.kmeans(3, 100, 42);
+model.fit(X);
+
+List[INT] labels = model.labels();
+show("Labels:");
+show(labels);
+
+List[List[FLOAT]] centers = model.cluster_centers();
+show("Centers:");
+show(centers);
+
+show("Shape:");
+show(df.shape());

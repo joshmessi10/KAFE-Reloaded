@@ -3,34 +3,10 @@ import sys
 import pytest
 from utils import obtener_parametros, get_programs, get_invalid_programs, get_kafe_path, get_src_dir
 
-SUBDIRS = [
-    "linear_models",
-    "neighbors",
-    "tree_models",
-    "preprocessing",
-    "metrics_classification",
-    "metrics_regression",
-    "clustering",
-]
-
-
-def _all_programs():
-    paths = []
-    for d in SUBDIRS:
-        paths.extend(get_programs(f"../tests/KafeMACHINE/{d}"))
-    return paths
-
-
-def _all_invalid_programs():
-    paths = []
-    for d in SUBDIRS:
-        paths.extend(get_invalid_programs(f"../tests/KafeMACHINE/{d}"))
-    return paths
-
 
 @pytest.mark.parametrize(
     "programa, entrada, salida_esperada",
-    list(obtener_parametros(_all_programs())),
+    list(obtener_parametros(get_programs("../tests/KafeHF"))),
 )
 def test_valid_programs(programa, entrada, salida_esperada):
     result = subprocess.run(
@@ -47,7 +23,7 @@ def test_valid_programs(programa, entrada, salida_esperada):
 
 @pytest.mark.parametrize(
     "programa, entrada, salida_esperada",
-    list(obtener_parametros(_all_invalid_programs())),
+    list(obtener_parametros(get_invalid_programs("../tests/KafeHF"))),
 )
 def test_invalid_programs(programa, entrada, salida_esperada):
     result = subprocess.run(
@@ -61,4 +37,4 @@ def test_invalid_programs(programa, entrada, salida_esperada):
     assert result.returncode == 1, f"Zero exit for {programa}"
     assert (
         result.stderr.splitlines()[-1] + "\n" == salida_esperada
-    ), f"Incorrect error output for {programa}"
+    ), f"Incorrect output for {programa}"
