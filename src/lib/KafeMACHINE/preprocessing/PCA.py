@@ -72,16 +72,19 @@ class PCA(BaseMachine):
 
     @check_sig([2], [pardos_t] + matriz_numeros_t, is_method=True)
     def fit(self, data):
-        if isinstance(data, DataFrame):
-            matrix = data.data
-        else:
-            matrix = data
+        matrix, cols, is_df = self._unwrap_data(data)
 
         if not matrix or not matrix[0]:
             raise Exception("PCA: Empty input data")
 
         n_samples = len(matrix)
         n_features = len(matrix[0])
+
+        if self.n_components > n_features:
+            raise Exception(
+                f"PCA: n_components ({self.n_components}) cannot exceed "
+                f"n_features ({n_features})"
+            )
 
         if n_samples == 1:
             raise Exception("PCA: Need at least 2 samples to compute covariance")
@@ -104,6 +107,9 @@ class PCA(BaseMachine):
 
         self._is_fitted = True
         return self
+
+    def fit_transform(self, data):
+        return self.fit(data).transform(data)
 
     @check_sig([2], [pardos_t] + matriz_numeros_t, is_method=True)
     def transform(self, data):

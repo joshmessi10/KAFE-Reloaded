@@ -28,6 +28,12 @@ class SimpleImputer(BaseMachine):
 
     def _compute_statistic(self, col_values):
         non_null = [v for v in col_values if not _is_missing(v)]
+        if self.strategy in ("mean", "median") and non_null:
+            non_numeric = [v for v in non_null if not isinstance(v, (int, float))]
+            if non_numeric:
+                raise Exception(
+                    f"SimpleImputer: strategy '{self.strategy}' requires numeric data"
+                )
         if not non_null:
             if self.strategy == "constant":
                 return self.fill_value
@@ -49,12 +55,12 @@ class SimpleImputer(BaseMachine):
 
     @check_sig([2], [pardos_t, matriz_cualquiera_t], is_method=True)
     def fit(self, data):
-        if isinstance(data, DataFrame):
-            matrix = data.data
-            n_features = len(data.columns)
-        else:
-            matrix = data
-            n_features = len(matrix[0]) if matrix else 0
+        matrix, cols, is_df = self._unwrap_data(data)
+
+        if not matrix or not matrix[0]:
+            raise Exception("SimpleImputer: Empty input data")
+
+        n_features = len(matrix[0])
 
         self.statistics_ = [
             self._compute_statistic([row[j] for row in matrix])
@@ -62,6 +68,9 @@ class SimpleImputer(BaseMachine):
         ]
         self._is_fitted = True
         return self
+
+    def fit_transform(self, data):
+        return self.fit(data).transform(data)
 
     @check_sig([2], [pardos_t, matriz_cualquiera_t], is_method=True)
     def transform(self, data):

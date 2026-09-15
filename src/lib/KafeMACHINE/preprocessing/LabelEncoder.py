@@ -17,6 +17,9 @@ class LabelEncoder(BaseMachine):
         self._is_fitted = True
         return self
 
+    def fit_transform(self, data):
+        return self.fit(data).transform(data)
+
     @check_sig([2], lista_cualquiera_t, is_method=True)
     def transform(self, data):
         self._check_fitted("transform")

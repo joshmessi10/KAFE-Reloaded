@@ -1,5 +1,6 @@
 from global_utils import check_sig
-from TypeUtils import vector_numeros_t, matriz_numeros_t
+from TypeUtils import vector_numeros_t, matriz_numeros_t, pardos_t
+from .metrics import r2_score
 from .BaseMachine import BaseMachine
 
 
@@ -31,24 +32,18 @@ class LinearRegression(BaseMachine):
 
         return [aug[i][n] for i in range(n)]
 
-    @check_sig([3], vector_numeros_t + matriz_numeros_t, vector_numeros_t, is_method=True)
+    @check_sig([3], [pardos_t] + vector_numeros_t + matriz_numeros_t, vector_numeros_t, is_method=True)
     def fit(self, X, y):
-        n = len(X)
-        if n == 0:
-            raise Exception("LinearRegression: Empty input data")
+        matrix, cols, is_df = self._unwrap_data(X)
+        matrix = self._validate_matrix_shape(matrix)
 
-        if not isinstance(X[0], (list, tuple)):
-            X = [[v] for v in X]
-
-        m = len(X[0])
-        if m == 0:
-            raise Exception("LinearRegression: Empty feature vector")
-
+        n = len(matrix)
         if len(y) != n:
             raise Exception("LinearRegression: X and y must have the same number of samples")
 
-        X_design = [[1.0] + row for row in X]
+        X_design = [[1.0] + row for row in matrix]
         y_vals = list(y)
+        m = len(matrix[0])
 
         Xt = list(zip(*X_design))
         XtX = [
@@ -73,21 +68,26 @@ class LinearRegression(BaseMachine):
             X = [[v] for v in X]
 
         m = len(self.coef_)
+        for i, row in enumerate(X):
+            if len(row) != m:
+                raise Exception(
+                    f"LinearRegression: Expected {m} features, got {len(row)} at sample {i}"
+                )
         return [
             self.intercept_ + sum(self.coef_[j] * row[j] for j in range(m))
             for row in X
         ]
 
-    @check_sig([3], vector_numeros_t + matriz_numeros_t, vector_numeros_t, is_method=True)
-    def score(self, X, y):
+    def score(self, X, y, metric=None):
+        """Score using R² (default) or a custom metric.
+
+        Default metric: r2_score
+        """
         self._check_fitted("score")
         preds = self.predict(X)
-        y_mean = sum(y) / len(y)
-        ss_res = sum((yi - pi) ** 2 for yi, pi in zip(y, preds))
-        ss_tot = sum((yi - y_mean) ** 2 for yi in y)
-        if ss_tot == 0:
-            return 1.0 if ss_res == 0 else 0.0
-        return 1.0 - ss_res / ss_tot
+        if metric is None:
+            return r2_score(y, preds)
+        return metric(y, preds)
 
     def __repr__(self):
         return f"LinearRegression(coef={self.coef_}, intercept={self.intercept_:.4f})"

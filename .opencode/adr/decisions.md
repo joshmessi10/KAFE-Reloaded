@@ -186,3 +186,137 @@ Implement hard enforcement via session-scoped command log:
 - Command sequence is enforced, not just documented
 - Reviewer can verify command sequence was followed
 - Session state is explicitly tracked
+
+---
+
+## ADR-0007: BaseMachine Architectural Review — Unified Contract
+
+- **Status**: accepted
+- **Date**: 2026-09-14
+
+### Context
+
+KafeMACHINE's `BaseMachine` serves as the common abstraction for all ML models and preprocessing transformers. An architectural review identified multiple inconsistencies:
+
+1. **`fit()` signature inconsistency**: Supervised models use `fit(X, y)`, unsupervised use `fit(X)`, transformers use `fit(data)`, and OneHotEncoder/OrdinalEncoder use `fit(df, columns)`. No child class calls `super().fit()`.
+2. **DataFrame support inconsistency**: Only some transformers use `_unwrap_data()`. Models never use it. Some transformers extract DataFrame data manually in `fit()`.
+3. **Dimension validation duplication**: Each class validates matrix shapes independently. KMeans rejects 1D data while all supervised models convert it.
+4. **`score()` metric duplication**: LinearRegression.score() reimplements r2_score; LogisticRegression, KNN, and DecisionTreeClassifier all reimplement accuracy_score from `metrics.py`.
+5. **`fit_transform()` broken for encoders**: BaseMachine.fit_transform(X) calls self.fit(X), but OneHotEncoder.fit requires two arguments.
+6. **`predict_proba()` not in BaseMachine**: Only LogisticRegression and KNN have it.
+
+### Decision
+
+Adopt the following architectural decisions:
+
+#### 1. Flexible `fit()` Contract (Alternative B)
+`BaseMachine.fit()` defines no implementation beyond setting `_is_fitted`. Each category defines its own signature:
+- Supervised models: `fit(X, y)`
+- Unsupervised models: `fit(X)`
+- Transformers: `fit(data)` — may accept DataFrame or matrix
+- Encoders: `fit(df, columns)` — DataFrame-specific
+
+The contract is **semantic** (documented), not syntactic (enforced by signature).
+
+#### 2. Centralized `_is_fitted` in BaseMachine
+`BaseMachine.fit()` sets `self._is_fitted = True` and returns `self`. Child classes call `super().fit()` at the end of their fit logic, or set `_is_fitted` directly if they override fit completely.
+
+#### 3. DataFrame Support Where It Makes Sense
+- **Transformers**: Must support DataFrame via `_unwrap_data()`
+- **Supervised models**: `fit(X, y)` may accept X as DataFrame (extract via `_unwrap_data`)
+- **KMeans**: May accept DataFrame
+- **LabelEncoder**: Operates on 1D data; DataFrame does not apply directly
+- No forced support where it doesn't make sense.
+
+#### 4. Rename boolean to `is_dataframe`
+`_unwrap_data()` already returns `(matrix, columns, is_dataframe)`. The name is explicit. Document the return tuple clearly.
+
+#### 5. Centralized Dimension Validation
+Add `_validate_matrix_shape(X, expected_features=None)` to BaseMachine:
+- Converts 1D to 2D
+- Validates all rows have same length
+- Optionally validates number of features
+- Each class uses this + its own specific rules
+
+#### 6. `score()` with Optional Metric Parameter
+- `score(X, y, metric=None)` — accepts an optional metric function
+- Each model defines a `_default_metric` used when `metric=None`:
+  - LinearRegression → `r2_score`
+  - LogisticRegression → `accuracy_score`
+  - KNN → `accuracy_score`
+  - DecisionTreeClassifier → `accuracy_score`
+- Users can pass any metric function: `model.score(X, y, metric=f1_score)`
+- All metrics come from `metrics.py` — no duplication
+
+#### 7. Remove `fit_transform()` from BaseMachine
+Each transformer that needs fit_transform implements it with its own signature. No common default because `fit` has different signatures across categories.
+
+#### 8. `predict_proba()` Not in BaseMachine
+Only probabilistic classifiers (LogisticRegression, KNN) implement it. It is not part of the general contract.
+
+### Rationale
+
+- Respects the reality of the domain: models and transformers have different contracts
+- Centralizes common logic (fitted state, dimension validation) without forcing uniformity
+- Eliminates metric duplication
+- Removes broken `fit_transform()` default
+- Keeps the codebase clean and educational
+
+### Consequences
+
+- All child classes must be updated to use centralized validation and metrics
+- `_unwrap_data()` must be used consistently in transformers' `fit()` methods
+- Tests must verify the new validation behavior
+- Documentation must reflect the flexible contract
+- History and knowledge layers must be updated
+
+#### 9. PCA `n_components` Validation in `fit()`
+Validate `n_components <= n_features` in `fit()` when `n_features` is known. Raises a clear error instead of failing later in `transform()` with a cryptic message.
+
+#### 10. OneHotEncoder `handle_unknown` Parameter
+- New parameter: `handle_unknown="error"` (default)
+- `handle_unknown="error"` → raises exception on unseen categories in `transform()`
+- `handle_unknown="ignore"` → returns all-zeros row for unseen categories
+- User must explicitly choose to ignore unknown categories
+
+#### 11. OneHotEncoder `inverse_transform` Strict Validation
+- Raises exception if no active category found (all zeros)
+- Raises exception if multiple active categories found (data corruption)
+- No silent fallback to first category — invalid input must fail explicitly
+
+#### 12. SimpleImputer Type Validation for `mean`/`median`
+- In `_compute_statistic()`, validate that values are numeric when strategy is `mean` or `median`
+- Raises clear error: "strategy 'mean' requires numeric data"
+- Prevents confusing `TypeError` from `sum()` on non-numeric data
+
+#### 13. Preprocessing Dimension Validation Decision
+- Preprocessors do NOT use `_validate_matrix_shape()` in `fit()` — it is redundant
+- Each transformer validates dimensions in `transform()` against learned state (`self.mean_`, `self.data_min_`, etc.)
+- This is sufficient: `fit()` learns dimensions from data, `transform()` validates against learned dimensions
+- `_validate_matrix_shape()` is primarily for models where fit/predict are separate operations
+
+#### 14. Dimension Validation in predict()
+All models validate feature dimensions in `predict()` against the fitted state:
+- LinearRegression: validates `len(row) == len(self.coef_)`
+- LogisticRegression: validates via `predict_proba()` which checks `len(row) == len(self.coef_)`
+- KNN: validates `len(row) == len(self.X_train[0])`
+- DecisionTreeClassifier: validates `len(row) == self.n_features_`
+- KMeans: validates `len(row) == len(self.cluster_centers_[0])`
+
+Prevents silent truncation from `zip()` and `IndexError` from feature index access.
+
+#### 15. X and y Length Validation in fit()
+All supervised models validate `len(X) == len(y)` in `fit()`:
+- LinearRegression: already validated
+- LogisticRegression: added validation
+- KNN: added validation
+- DecisionTreeClassifier: added validation
+
+Produces clear error message instead of cryptic IndexError during training.
+
+#### 16. LogisticRegression Hyperparameter Validation
+Validate hyperparameters in `__init__()`:
+- `learning_rate > 0` — zero or negative values prevent convergence
+- `max_iter > 0` — zero or negative values prevent training
+
+Fails fast at construction time instead of silently producing a broken model.

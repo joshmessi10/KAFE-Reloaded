@@ -1,6 +1,7 @@
 from lib.KafeMATH.funciones import log
 from global_utils import check_sig
-from TypeUtils import vector_numeros_t, matriz_numeros_t
+from TypeUtils import vector_numeros_t, matriz_numeros_t, pardos_t
+from .metrics import accuracy_score
 from .BaseMachine import BaseMachine
 
 
@@ -143,22 +144,19 @@ class DecisionTreeClassifier(BaseMachine):
             "right": right_subtree,
         }
 
-    @check_sig([3], vector_numeros_t + matriz_numeros_t, vector_numeros_t, is_method=True)
+    @check_sig([3], [pardos_t] + vector_numeros_t + matriz_numeros_t, vector_numeros_t, is_method=True)
     def fit(self, X, y):
-        n = len(X)
-        if n == 0:
-            raise Exception("DecisionTreeClassifier: Empty input data")
+        matrix, cols, is_df = self._unwrap_data(X)
+        matrix = self._validate_matrix_shape(matrix)
 
-        if not isinstance(X[0], (list, tuple)):
-            X = [[v] for v in X]
+        n = len(matrix)
+        if len(y) != n:
+            raise Exception("DecisionTreeClassifier: X and y must have the same number of samples")
 
-        m = len(X[0])
-        if m == 0:
-            raise Exception("DecisionTreeClassifier: Empty feature vector")
-
+        m = len(matrix[0])
         self.n_features_ = m
         self.classes_ = sorted(set(y))
-        self.tree_ = self._build_tree(X, y, 0)
+        self.tree_ = self._build_tree(matrix, y, 0)
         self._is_fitted = True
         return self
 
@@ -176,14 +174,25 @@ class DecisionTreeClassifier(BaseMachine):
             return []
         if not isinstance(X[0], (list, tuple)):
             X = [[v] for v in X]
+
+        m = self.n_features_
+        for i, row in enumerate(X):
+            if len(row) != m:
+                raise Exception(
+                    f"DecisionTreeClassifier: Expected {m} features, got {len(row)} at sample {i}"
+                )
         return [self._predict_one(x, self.tree_) for x in X]
 
-    @check_sig([3], vector_numeros_t + matriz_numeros_t, vector_numeros_t, is_method=True)
-    def score(self, X, y):
+    def score(self, X, y, metric=None):
+        """Score using accuracy (default) or a custom metric.
+
+        Default metric: accuracy_score
+        """
         self._check_fitted("score")
         preds = self.predict(X)
-        correct = sum(1 for p, t in zip(preds, y) if p == t)
-        return correct / len(X) if len(X) > 0 else 0.0
+        if metric is None:
+            return accuracy_score(y, preds)
+        return metric(y, preds)
 
     def __repr__(self):
         return (

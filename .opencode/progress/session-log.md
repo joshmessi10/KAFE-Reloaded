@@ -56,3 +56,15 @@ Format for each entry:
 - **Validation**: Clustering loss verified DECREASING in both `clustering_basic.kf` (0.243→0.005) and `clustering_from_df.kf` (0.243→0.173)
 - **Significant history records**: `.opencode/knowledge/concepts/dense-layer.md`, `activation-functions.md`, `loss-functions.md`, `optimizers.md`, `soft-kmeans-clustering.md`
 - **Next step**: Continue KafeMACHINE development (SVM, Random Forest) or KafeGESHA enhancements (Conv2D, LSTM, Transformer)
+
+---
+
+## Session: 2026-09-14 — BaseMachine Architectural Review
+
+- **Feature**: BaseMachine Architectural Review — Unified Contract
+- **Status**: completed
+- **Commands executed**: /init, /resume, /open-work, /impact
+- **ADR created**: ADR-0007
+- **Files modified**: BaseMachine.py, LinearRegression.py, LogisticRegression.py, KNN.py, DecisionTree.py, KMeans.py, StandardScaler.py, MinMaxScaler.py, PCA.py, SimpleImputer.py, LabelEncoder.py
+- **Tests**: 344 passed, 0 failed
+- **Key decisions**: Flexible fit() contract, centralized _validate_matrix_shape(), score() reuses metrics.py, fit_transform() removed from base
