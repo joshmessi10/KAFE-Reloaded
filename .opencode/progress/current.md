@@ -2,27 +2,18 @@
 
 | Field | Value |
 |-------|-------|
-| Feature | Expose tensor functions in geshaDeep API + fixture tests |
+| Feature | score() optional metric support |
 | Status | done |
-| Current step | Tests passing (344 passed) |
-| Next step | N/A |
-| Blockers | N/A |
-| Related ADRs | N/A |
+| Current step | All 344 tests passing |
+| Next step | — |
+| Blockers | None |
+| Related ADRs | — |
 
 ## Notes
+- BaseMachine.score() added with metric=None param, raises NotImplementedError
+- LinearRegression.score() default r2_score, supports custom metric
+- LogisticRegression.score() default accuracy_score, supports custom metric
+- KNN.score() default accuracy_score, supports custom metric
+- DecisionTree.score() default accuracy_score, supports custom metric
+- All @check_sig decorators removed from score() to allow optional metric param
 
-- **Funciones expuestas en `funciones.py`**:
-  - `tensor_zeros(shape)` — crea tensor de ceros con forma dada
-  - `tensor_ones(shape)` — crea tensor de unos con forma dada
-  - `tensor_random(shape)` — crea tensor con valores aleatorios
-  - `tensor(data)` — crea tensor desde datos anidados
-- **Tipos**: `shape` acepta `vector_numeros_t` (List[INT] o List[FLOAT]); `data` acepta `lista_cualquiera_t`
-- **Limitación conocida**: El tipo `Tensor` no está registrado en el sistema de tipos de KAFE, por lo que no se puede asignar a variables tipadas. Se usa inline con `show()` o como expresión descartada.
-- **Fixtures creados** (5 pares .kf/.expec):
-  - `test_tensor_create` — crea tensor desde datos
-  - `test_tensor_zeros` — tensor de ceros
-  - `test_tensor_ones` — tensor de unos
-  - `test_tensor_nd` — tensor 3D
-  - `test_tensor_random` — verifica ejecución exitosa
-- **test_tensor.py** reescrito con patrón subprocess, filtrando solo `test_tensor_*.kf`
-- **344 tests pasaron exitosamente** (5 nuevos + 339 existentes)

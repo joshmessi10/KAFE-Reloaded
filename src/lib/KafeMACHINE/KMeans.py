@@ -1,6 +1,6 @@
 import random
 from global_utils import check_sig
-from TypeUtils import matriz_numeros_t, entero_t
+from TypeUtils import matriz_numeros_t, entero_t, pardos_t
 from .BaseMachine import BaseMachine
 
 
@@ -135,7 +135,7 @@ class KMeans(BaseMachine):
 
         return new_centroids
 
-    @check_sig([2], matriz_numeros_t, is_method=True)
+    @check_sig([2], [pardos_t] + matriz_numeros_t, is_method=True)
     def fit(self, X):
         """
         Ajusta el modelo K-Means a los datos X.
@@ -147,23 +147,20 @@ class KMeans(BaseMachine):
                b. Recalcular centroides como promedio (M)
             3. Calcular inercia final
         """
-        if not isinstance(X[0], (list, tuple)):
-            raise Exception("KMeans: X must be a 2D matrix")
+        matrix, cols, is_df = self._unwrap_data(X)
+        matrix = self._validate_matrix_shape(matrix)
 
-        n_samples = len(X)
-        if n_samples == 0:
-            raise Exception("KMeans: Empty input data")
-
+        n_samples = len(matrix)
         if self.n_clusters > n_samples:
             raise Exception(
                 "KMeans: n_clusters cannot be greater than number of samples"
             )
 
-        self.cluster_centers_ = self._init_centroids_kmeans_pp(X)
+        self.cluster_centers_ = self._init_centroids_kmeans_pp(matrix)
 
         for _ in range(self.max_iter):
-            self.labels_ = self._assign_clusters(X, self.cluster_centers_)
-            new_centroids = self._update_centroids(X, self.labels_)
+            self.labels_ = self._assign_clusters(matrix, self.cluster_centers_)
+            new_centroids = self._update_centroids(matrix, self.labels_)
 
             converged = True
             for old, new in zip(self.cluster_centers_, new_centroids):
@@ -178,7 +175,7 @@ class KMeans(BaseMachine):
 
         self.inertia_ = sum(
             self._euclidean_distance_sq(
-                X[i], self.cluster_centers_[self.labels_[i]]
+                matrix[i], self.cluster_centers_[self.labels_[i]]
             )
             for i in range(n_samples)
         )
@@ -194,6 +191,13 @@ class KMeans(BaseMachine):
             return []
         if not isinstance(X[0], (list, tuple)):
             X = [[v] for v in X]
+
+        m = len(self.cluster_centers_[0])
+        for i, row in enumerate(X):
+            if len(row) != m:
+                raise Exception(
+                    f"KMeans: Expected {m} features, got {len(row)} at sample {i}"
+                )
         return self._assign_clusters(X, self.cluster_centers_)
 
     def labels(self):

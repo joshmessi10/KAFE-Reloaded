@@ -1,7 +1,8 @@
 import copy
 from lib.KafeMATH.funciones import sqrt
 from global_utils import check_sig
-from TypeUtils import vector_numeros_t, matriz_numeros_t, entero_t
+from TypeUtils import vector_numeros_t, matriz_numeros_t, entero_t, pardos_t
+from .metrics import accuracy_score
 from .BaseMachine import BaseMachine
 
 
@@ -21,22 +22,17 @@ class KNN(BaseMachine):
     def _euclidean_distance(self, a, b):
         return sqrt(sum((x - y) ** 2 for x, y in zip(a, b)))
 
-    @check_sig([3], vector_numeros_t + matriz_numeros_t, vector_numeros_t, is_method=True)
+    @check_sig([3], [pardos_t] + vector_numeros_t + matriz_numeros_t, vector_numeros_t, is_method=True)
     def fit(self, X, y):
-        n = len(X)
-        if n == 0:
-            raise Exception("KNN: Empty input data")
+        matrix, cols, is_df = self._unwrap_data(X)
+        matrix = self._validate_matrix_shape(matrix)
 
-        if not isinstance(X[0], (list, tuple)):
-            X = [[v] for v in X]
-
-        m = len(X[0])
-        if m == 0:
-            raise Exception("KNN: Empty feature vector")
-
+        n = len(matrix)
+        if len(y) != n:
+            raise Exception("KNN: X and y must have the same number of samples")
         self._validate_k(n)
 
-        self.X_train = copy.deepcopy(X)
+        self.X_train = copy.deepcopy(matrix)
         self.y_train = copy.deepcopy(y)
         self._is_fitted = True
         return self
@@ -49,6 +45,12 @@ class KNN(BaseMachine):
         if not isinstance(X[0], (list, tuple)):
             X = [[v] for v in X]
 
+        m = len(self.X_train[0])
+        for i, row in enumerate(X):
+            if len(row) != m:
+                raise Exception(
+                    f"KNN: Expected {m} features, got {len(row)} at sample {i}"
+                )
         return [self._predict_one(x) for x in X]
 
     def _predict_one(self, x):
@@ -80,6 +82,13 @@ class KNN(BaseMachine):
         if not isinstance(X[0], (list, tuple)):
             X = [[v] for v in X]
 
+        m = len(self.X_train[0])
+        for i, row in enumerate(X):
+            if len(row) != m:
+                raise Exception(
+                    f"KNN: Expected {m} features, got {len(row)} at sample {i}"
+                )
+
         classes = sorted(set(self.y_train))
         result = []
         for x in X:
@@ -95,12 +104,16 @@ class KNN(BaseMachine):
             result.append(probas)
         return result
 
-    @check_sig([3], vector_numeros_t + matriz_numeros_t, vector_numeros_t, is_method=True)
-    def score(self, X, y):
+    def score(self, X, y, metric=None):
+        """Score using accuracy (default) or a custom metric.
+
+        Default metric: accuracy_score
+        """
         self._check_fitted("score")
         preds = self.predict(X)
-        correct = sum(1 for p, t in zip(preds, y) if p == t)
-        return correct / len(X) if len(X) > 0 else 0.0
+        if metric is None:
+            return accuracy_score(y, preds)
+        return metric(y, preds)
 
     def __repr__(self):
         return f"KNN(k={self.k})"

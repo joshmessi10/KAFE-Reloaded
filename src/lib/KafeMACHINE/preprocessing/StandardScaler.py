@@ -13,7 +13,7 @@ class StandardScaler(BaseMachine):
 
     @check_sig([2], [pardos_t] + matriz_numeros_t, is_method=True)
     def fit(self, data):
-        matrix = data.data if isinstance(data, DataFrame) else data
+        matrix, cols, is_df = self._unwrap_data(data)
 
         if not matrix or not matrix[0]:
             raise Exception("StandardScaler: Empty input data")
@@ -33,6 +33,9 @@ class StandardScaler(BaseMachine):
         ]
         self._is_fitted = True
         return self
+
+    def fit_transform(self, data):
+        return self.fit(data).transform(data)
 
     @check_sig([2], [pardos_t] + matriz_numeros_t, is_method=True)
     def transform(self, data):
