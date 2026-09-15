@@ -302,6 +302,69 @@ show(model2.predict([[1.0, 2.0], [7.0, 7.0]]));  -- [0, 1]
 
 ---
 
+## GaussianNB (Naive Bayes)
+
+Implementa un clasificador Naive Bayes Gaussiano basado en el teorema de Bayes con la suposición de independencia condicional entre características.
+
+### Fundamento Teórico
+
+Naive Bayes clasifica calculando la probabilidad posterior de cada clase:
+
+$$P(y|X) \propto P(y) \cdot \prod_{i=1}^{n} P(x_i|y)$$
+
+Cada $P(x_i|y)$ se modela como una distribución Gaussiana:
+
+$$P(x_i|y=c) = \frac{1}{\sqrt{2\pi\sigma_{c,i}^2}} \exp\left(-\frac{(x_i - \mu_{c,i})^2}{2\sigma_{c,i}^2}\right)$$
+
+### Métodos
+
+| Método | Firma | Descripción |
+|--------|-------|-------------|
+| `nb.fit(X, y)` | `(List[List[NUM]] o List[NUM], List[INT]) -> VOID` | Entrena el clasificador |
+| `nb.predict(X)` | `(List[List[NUM]] o List[NUM]) -> List[INT]` | Predice clases |
+| `nb.predict_proba(X)` | `(List[List[NUM]] o List[NUM]) -> List[List[FLOAT]]` | Probabilidades por clase |
+| `nb.score(X, y)` | `(List[List[NUM]] o List[NUM], List[INT]) -> FLOAT` | Calcula exactitud |
+
+### Propiedades
+
+| Propiedad | Tipo | Descripción |
+|-----------|------|-------------|
+| `nb.classes_` | `List[INT]` | Clases únicas vistas durante fit |
+| `nb.class_prior_` | `List[FLOAT]` | Probabilidad a priori de cada clase |
+| `nb.theta_` | `List[List[FLOAT]]` | Media de cada feature por clase |
+| `nb.var_` | `List[List[FLOAT]]` | Varianza de cada feature por clase |
+| `nb.n_features_in_` | `INT` | Número de features |
+
+### Ejemplo
+
+```kafe
+import machine;
+
+List[List[FLOAT]] X = [[1.0, 2.0], [2.0, 3.0], [3.0, 3.0],
+                        [6.0, 5.0], [7.0, 7.0], [8.0, 6.0]];
+List[INT] y = [0, 0, 0, 1, 1, 1];
+
+MACHINE nb = machine.gaussian_nb();
+nb.fit(X, y);
+
+List[INT] preds = nb.predict([[2.0, 2.0], [7.0, 7.0], [4.0, 4.0]]);
+show(preds);  -- [0, 1, 0]
+
+FLOAT acc = nb.score(X, y);
+show(acc);  -- 1.0
+
+List[List[FLOAT]] probs = nb.predict_proba([[2.0, 2.0], [7.0, 7.0]]);
+show(probs);  -- [[~0.9, ~0.1], [~0.1, ~0.9]]
+```
+
+### Algoritmo Interno
+
+1. **Entrenamiento**: Calcula media, varianza y prior para cada clase
+2. **Predicción**: Calcula log-posterior para cada clase usando Bayes
+3. **Decisión**: Retorna la clase con mayor log-posterior
+
+---
+
 ## StandardScaler
 
 Estandariza características eliminando la media y escalando a varianza unitaria (Z-score): $z = (x - \mu) / \sigma$.

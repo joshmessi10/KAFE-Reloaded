@@ -11,6 +11,7 @@ from .preprocessing.SimpleImputer import SimpleImputer
 from .LogisticRegression import LogisticRegression
 from .KNN import KNN
 from .DecisionTree import DecisionTreeClassifier
+from .GaussianNB import GaussianNB
 from .KMeans import KMeans
 from .metrics import (
     accuracy_score, precision_score, recall_score, f1_score,
@@ -128,3 +129,11 @@ def kmeans(n_clusters=3, max_iter=100, random_state=0):
     random_state: semilla para reproducibilidad (0 = aleatorio)
     """
     return KMeans(n_clusters, max_iter, random_state)
+
+
+@check_sig([0], [])
+def gaussian_nb():
+    """
+    Crea una instancia de Gaussian Naive Bayes.
+    """
+    return GaussianNB()

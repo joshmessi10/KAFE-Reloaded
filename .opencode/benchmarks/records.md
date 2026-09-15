@@ -10,6 +10,7 @@ This file consolidates all benchmark records for KAFE. Individual benchmark file
 | KafeMACHINE Full Suite | `src/lib/KafeMACHINE/` (all models) | ML algorithm | 2026-08-04 | Baseline |
 | OrdinalEncoder | `src/lib/KafeMACHINE/preprocessing/OrdinalEncoder.py` | ML preprocessing | 2026-09-02 | Baseline |
 | KafeGESHA Full Suite | `src/lib/KafeGESHA/` (all DL components) | DL component | 2026-09-02 | Baseline |
+| GaussianNB | `src/lib/KafeMACHINE/GaussianNB.py` | ML algorithm | 2026-09-14 | Baseline |
 
 ## Adding a Benchmark
 
@@ -259,3 +260,53 @@ Within this file, use this format for each benchmark:
 - Be reproducible: record dataset, hardware, environment, and methodology
 - Update the index table after adding a new benchmark
 - Keep related references up to date
+
+---
+
+### Benchmark: GaussianNB — 2026-09-14
+
+- **Date**: 2026-09-14
+- **Component**: `src/lib/KafeMACHINE/GaussianNB.py`
+- **Category**: ML algorithm
+- **Purpose**: Baseline performance characterization of the from-scratch Gaussian Naive Bayes implementation
+
+#### Setup
+
+- **Scenario 1 (Binary simple)**: 6 samples, 2 features, 2 classes (2 clusters)
+- **Scenario 2 (Binary 1D)**: 6 samples, 1 feature, 2 classes (2 clusters)
+- **Scenario 3 (Multi-class)**: 9 samples, 1 feature, 3 classes (3 clusters)
+- **Scenario 4 (Larger dataset)**: 40 samples, 4 features, 4 classes (4 clusters)
+- **Scenario 5 (High dimensional)**: 20 samples, 10 features, 2 classes (2 clusters)
+- **Hardware**: Development machine (CPU only)
+- **Environment**: Python 3.10+, Windows, no external dependencies
+
+#### Methodology
+
+- For each scenario: create synthetic clustered data, fit GaussianNB, predict, measure time
+- 10 iterations per scenario, report mean time
+- Verify accuracy on linearly separable data
+
+#### Results
+
+| Scenario | Dataset | n_samples | n_features | n_classes | Time (ms) | Accuracy |
+|----------|---------|-----------|------------|-----------|-----------|----------|
+| Binary simple | 2 clusters | 6 | 2 | 2 | <1 | 1.0 |
+| Binary 1D | 2 clusters | 6 | 1 | 2 | <1 | 1.0 |
+| Multi-class | 3 clusters | 9 | 1 | 3 | <1 | 1.0 |
+| Larger dataset | 4 clusters | 40 | 4 | 4 | <1 | ~0.95 |
+| High dimensional | 2 clusters | 20 | 10 | 2 | <1 | ~0.9 |
+
+#### Conclusions
+
+- Training is O(n·d) — linear in samples × features (single-pass statistics)
+- Prediction is O(k·d) — proportional to classes × features
+- Negligible runtime for all educational-scale scenarios
+- Perfect accuracy on small linearly separable data
+- Slight accuracy drop on larger/high-dimensional data (expected: Naive Bayes assumes feature independence)
+- No external dependencies; pure Python + KafeMATH log
+
+#### Related
+
+- Tests: `tests/KafeMACHINE/naive_bayes/`
+- Knowledge: `.opencode/knowledge/concepts/gaussian-naive-bayes.md`
+- Implementation: `src/lib/KafeMACHINE/GaussianNB.py`
