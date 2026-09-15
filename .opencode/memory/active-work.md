@@ -1,20 +1,22 @@
 # Active Work
 
-Template for tracking the active feature. Update whenever the current step changes.
+## Current Feature
 
-## Active Feature
+BaseMachine Architectural Review — Unified Contract
 
-<!-- The feature or task currently being worked on. -->
+## Status
 
-## Current Step
+completed
 
-<!-- The step being executed right now. -->
+## What Was Done
 
-## Next Step
+- Refactored BaseMachine.py with new contract
+- Updated all 5 model classes (LinearRegression, LogisticRegression, KNN, DecisionTree, KMeans)
+- Updated all 7 preprocessing classes (StandardScaler, MinMaxScaler, PCA, SimpleImputer, LabelEncoder, OneHotEncoder, OrdinalEncoder)
+- Created ADR-0007
+- All 344 tests passing
 
-<!-- The next step to execute after the current one. -->
+## Next Steps
 
-## Expected Outcome
-
-<!-- What success looks like. -->
-
+- Continue with individual model reviews (one by one as user requested)
+- Consider adding new algorithms using the new architectural foundation

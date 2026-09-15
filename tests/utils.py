@@ -12,28 +12,28 @@ def get_src_dir():
 
 
 def get_programs(dir):
-    # Resolve path relative to the tests directory
+    """Obtiene programas .kf validos recursivamente (excluye .error.kf)."""
     if dir.startswith("../tests/"):
-        dir = os.path.join(os.path.dirname(__file__), dir[len("../tests/") :])
+        dir = os.path.join(os.path.dirname(__file__), dir[len("../tests/"):])
     archivos = []
-    for filename in os.listdir(dir):
-        if filename.endswith(".kf") and not filename.endswith(".error.kf"):
-            base = filename[:-3]
-            archivos.append(os.path.join(dir, base))
-
+    for root, dirs, files in os.walk(dir):
+        for filename in files:
+            if filename.endswith(".kf") and not filename.endswith(".error.kf"):
+                base = filename[:-3]
+                archivos.append(os.path.join(root, base))
     return archivos
 
 
 def get_invalid_programs(dir):
-    # Resolve path relative to the tests directory
+    """Obtiene programas .error.kf recursivamente."""
     if dir.startswith("../tests/"):
-        dir = os.path.join(os.path.dirname(__file__), dir[len("../tests/") :])
+        dir = os.path.join(os.path.dirname(__file__), dir[len("../tests/"):])
     archivos = []
-    for filename in os.listdir(dir):
-        if filename.endswith(".error.kf"):
-            base = filename[:-3]
-            archivos.append(os.path.join(dir, base))
-
+    for root, dirs, files in os.walk(dir):
+        for filename in files:
+            if filename.endswith(".error.kf"):
+                base = filename[:-3]
+                archivos.append(os.path.join(root, base))
     return archivos
 
 

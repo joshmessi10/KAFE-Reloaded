@@ -1,0 +1,3 @@
+import geshaDeep;
+
+show(geshaDeep.tensor_ones([3]));

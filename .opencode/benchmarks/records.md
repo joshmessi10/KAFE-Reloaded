@@ -9,6 +9,8 @@ This file consolidates all benchmark records for KAFE. Individual benchmark file
 | DecisionTreeClassifier | `src/lib/KafeMACHINE/DecisionTree.py` | ML algorithm | 2026-08-04 | Baseline |
 | KafeMACHINE Full Suite | `src/lib/KafeMACHINE/` (all models) | ML algorithm | 2026-08-04 | Baseline |
 | OrdinalEncoder | `src/lib/KafeMACHINE/preprocessing/OrdinalEncoder.py` | ML preprocessing | 2026-09-02 | Baseline |
+| KafeGESHA Full Suite | `src/lib/KafeGESHA/` (all DL components) | DL component | 2026-09-02 | Baseline |
+| GaussianNB | `src/lib/KafeMACHINE/GaussianNB.py` | ML algorithm | 2026-09-14 | Baseline |
 
 ## Adding a Benchmark
 
@@ -200,6 +202,57 @@ Within this file, use this format for each benchmark:
 - Knowledge: `.opencode/knowledge/concepts/ordinal-encoder.md`
 - Implementation: `src/lib/KafeMACHINE/preprocessing/OrdinalEncoder.py`
 
+---
+
+### Benchmark: KafeGESHA — Deep Learning Suite Characterization
+
+- **Date**: 2026-09-02
+- **Component**: `src/lib/KafeGESHA/` (all DL components)
+- **Category**: DL component
+- **Purpose**: Baseline performance characterization of all KafeGESHA from-scratch deep learning implementations
+
+#### Setup
+
+- **Dataset 1 (Binary)**: 4 samples, 2 features, AND gate
+- **Dataset 2 (Regression)**: 5 samples, 1 feature, y = 3x + 1
+- **Dataset 3 (Multiclass)**: 6 samples, 2 features, 3 classes
+- **Dataset 4 (Clustering)**: 6 samples, 2 features, 2 clusters
+- **Hardware**: Development machine (CPU only)
+- **Environment**: Python 3.10+, no external dependencies
+
+#### Methodology
+
+- For each model type: create model, compile, fit, predict, measure time
+- 10 iterations per model, report mean time
+- Memory measured via object size estimation
+- Clustering tested with soft k-means neural approach
+
+#### Results
+
+| Component | Model Type | Fit Time (20 epochs) | Predict Time | Memory |
+|-----------|-----------|---------------------|--------------|--------|
+| Dense + Sigmoid | Binary (AND) | < 0.1s | < 0.001s | ~2KB |
+| Dense + Linear | Regression (y=3x+1) | < 0.5s (200 epochs) | < 0.001s | ~1KB |
+| Dense + Softmax | Multiclass | < 0.2s | < 0.001s | ~3KB |
+| Dense + ReLU/Softmax | Clustering | < 0.3s | < 0.001s | ~5KB |
+| Activation Functions | All | < 0.001s each | < 0.001s | ~100B |
+| Loss Functions | All | < 0.001s each | < 0.001s | ~200B |
+| Optimizers (Adam) | All | < 0.001s/step | N/A | ~500B |
+
+#### Conclusions
+
+- All components suitable for educational purposes
+- No external dependencies — pure Python + KafeMATH
+- Clustering loss now decreases properly (distance-based targets)
+- PARDOS DataFrame integration works for clustering training
+- Full backpropagation implemented from scratch
+
+#### Related
+
+- Tests: `tests/KafeGESHA/`
+- Knowledge: `.opencode/knowledge/concepts/` (dense-layer, activation-functions, loss-functions, optimizers, soft-kmeans-clustering)
+- Implementation: `src/lib/KafeGESHA/`
+
 ### Rules
 
 - Each benchmark targets one component under `src/lib/`
@@ -207,3 +260,53 @@ Within this file, use this format for each benchmark:
 - Be reproducible: record dataset, hardware, environment, and methodology
 - Update the index table after adding a new benchmark
 - Keep related references up to date
+
+---
+
+### Benchmark: GaussianNB — 2026-09-14
+
+- **Date**: 2026-09-14
+- **Component**: `src/lib/KafeMACHINE/GaussianNB.py`
+- **Category**: ML algorithm
+- **Purpose**: Baseline performance characterization of the from-scratch Gaussian Naive Bayes implementation
+
+#### Setup
+
+- **Scenario 1 (Binary simple)**: 6 samples, 2 features, 2 classes (2 clusters)
+- **Scenario 2 (Binary 1D)**: 6 samples, 1 feature, 2 classes (2 clusters)
+- **Scenario 3 (Multi-class)**: 9 samples, 1 feature, 3 classes (3 clusters)
+- **Scenario 4 (Larger dataset)**: 40 samples, 4 features, 4 classes (4 clusters)
+- **Scenario 5 (High dimensional)**: 20 samples, 10 features, 2 classes (2 clusters)
+- **Hardware**: Development machine (CPU only)
+- **Environment**: Python 3.10+, Windows, no external dependencies
+
+#### Methodology
+
+- For each scenario: create synthetic clustered data, fit GaussianNB, predict, measure time
+- 10 iterations per scenario, report mean time
+- Verify accuracy on linearly separable data
+
+#### Results
+
+| Scenario | Dataset | n_samples | n_features | n_classes | Time (ms) | Accuracy |
+|----------|---------|-----------|------------|-----------|-----------|----------|
+| Binary simple | 2 clusters | 6 | 2 | 2 | <1 | 1.0 |
+| Binary 1D | 2 clusters | 6 | 1 | 2 | <1 | 1.0 |
+| Multi-class | 3 clusters | 9 | 1 | 3 | <1 | 1.0 |
+| Larger dataset | 4 clusters | 40 | 4 | 4 | <1 | ~0.95 |
+| High dimensional | 2 clusters | 20 | 10 | 2 | <1 | ~0.9 |
+
+#### Conclusions
+
+- Training is O(n·d) — linear in samples × features (single-pass statistics)
+- Prediction is O(k·d) — proportional to classes × features
+- Negligible runtime for all educational-scale scenarios
+- Perfect accuracy on small linearly separable data
+- Slight accuracy drop on larger/high-dimensional data (expected: Naive Bayes assumes feature independence)
+- No external dependencies; pure Python + KafeMATH log
+
+#### Related
+
+- Tests: `tests/KafeMACHINE/naive_bayes/`
+- Knowledge: `.opencode/knowledge/concepts/gaussian-naive-bayes.md`
+- Implementation: `src/lib/KafeMACHINE/GaussianNB.py`
