@@ -1,0 +1,8 @@
+import machine;
+
+List[List[FLOAT]] X = [[1.0, 2.0], [2.0, 3.0]];
+List[INT] y = [0];
+
+MACHINE rf = machine.random_forest_classifier();
+rf.fit(X, y);
+show("done");

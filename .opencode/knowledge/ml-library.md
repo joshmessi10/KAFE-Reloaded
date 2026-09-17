@@ -8,20 +8,26 @@ scikit-learn-style ML models and evaluation metrics, implemented from scratch in
 
 - `src/lib/KafeMACHINE/funciones.py` — public factory functions (the `machine` API).
 - `src/lib/KafeMACHINE/BaseMachine.py` — base model class shared by models.
-- Models: `LinearRegression.py`, `LogisticRegression.py`, `KNN.py`, `PCA.py`, `DecisionTree.py`, `GaussianNB.py`.
-- Preprocessing: `StandardScaler.py`, `MinMaxScaler.py`, `SimpleImputer.py`, `LabelEncoder.py`, `OneHotEncoder.py`.
+- Models: `LinearRegression.py`, `LogisticRegression.py`, `KNN.py`, `PCA.py`, `DecisionTree.py`, `RandomForest.py` (RandomForestClassifier + RandomForestRegressor), `GaussianNB.py`, `DBSCAN.py`, `RidgeRegression.py`, `LassoRegression.py`, `SVR.py`.
+- Preprocessing: `StandardScaler.py`, `MinMaxScaler.py`, `SimpleImputer.py`, `LabelEncoder.py`, `OneHotEncoder.py`, `OrdinalEncoder.py`, `PCA.py`.
 - Metrics: `metrics.py`.
 
 ## Public API (factories)
 
 - `machine.linear_regression()`
+- `machine.ridge_regression(alpha, fit_intercept, max_iter)`
+- `machine.lasso_regression(alpha, fit_intercept, max_iter)`
+- `machine.svr(C, epsilon, kernel)`
 - `machine.logistic_regression(lr, iter)`
 - `machine.knn(k)`
 - `machine.decision_tree_classifier(criterion, max_depth, min_samples_split, min_samples_leaf)`
+- `machine.random_forest_classifier(n_estimators, max_depth, min_samples_split, min_samples_leaf)`
+- `machine.random_forest_regressor(n_estimators, max_depth, min_samples_split, min_samples_leaf)`
 - `machine.gaussian_nb()`
 - `machine.standard_scaler()` / `machine.minmax_scaler()` / `machine.simple_imputer(strategy)`
 - `machine.label_encoder()` / `machine.one_hot_encoder()`
 - `machine.pca(n)`
+- `machine.dbscan(eps, min_samples)`
 - Classification metrics: `accuracy_score`, `precision_score`, `recall_score`, `f1_score`, `confusion_matrix`, `classification_report`.
 - Regression metrics: `mean_squared_error`, `mean_absolute_error`, `root_mean_squared_error`, `r2_score`, `max_error`, `median_absolute_error`, `mean_absolute_percentage_error`, `explained_variance_score`.
 

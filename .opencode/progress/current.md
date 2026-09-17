@@ -2,25 +2,20 @@
 
 | Field | Value |
 |-------|-------|
-| Feature | GaussianNB - Gaussian Naive Bayes classifier |
+| Feature | Support Vector Regression (SVR) |
 | Status | done |
-| Current step | All 360 tests passing |
+| Current step | All 397 tests passing |
 | Next step | — |
 | Blockers | None |
 | Related ADRs | — |
 
 ## Notes
-- GaussianNB implemented in src/lib/KafeMACHINE/GaussianNB.py
-- Factory function gaussian_nb() added to funciones.py
-- Registered in __init__.py
-- 6 test fixtures in tests/KafeMACHINE/naive_bayes/:
-  - test_gnb_basic: 2D binary classification + score
-  - test_gnb_1d: 1D binary classification
-  - test_gnb_predict_proba: probability predictions
-  - test_gnb_multiclass: 3-class classification
-  - test_gnb_empty.error: empty input error
-  - test_gnb_single_class.error: single class error
-- Uses KafeMATH functions (log, exp, sqrt, pow_) — no direct math imports
-- Follows BaseMachine pattern (fit/predict/predict_proba/score)
-- All 360 tests passing
-
+- Implemented Support Vector Regression (SVR) from scratch in `src/lib/KafeMACHINE/SVR.py`
+- SVR class extends BaseMachine with `fit()`, `predict()`, `score()` methods
+- Supports linear, RBF, and polynomial kernels
+- Linear kernel: Coordinate Descent optimization with epsilon-insensitive loss
+- Kernel (RBF/poly): Simplified SMO-like coordinate descent on dual variables
+- Factory function `machine.svr(C, epsilon, kernel)` in funciones.py
+- Methods: fit(), predict(), score()
+- 8 tests added: svr_linear_basic, svr_linear_multifeature, svr_rbf_basic, svr_epsilon_high, svr_c_regularization, svr_error_empty, svr_error_c_negative, svr_error_mismatch
+- Previous feature: Ridge y Lasso Regression (389 tests)

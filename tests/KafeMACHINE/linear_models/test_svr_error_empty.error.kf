@@ -1,0 +1,6 @@
+import machine;
+
+MACHINE svr_model = machine.svr();
+List[List[FLOAT]] X = [];
+List[FLOAT] y = [];
+svr_model.fit(X, y);

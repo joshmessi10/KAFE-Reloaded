@@ -1,0 +1,4 @@
+import machine;
+
+MACHINE rf = machine.random_forest_classifier(-1);
+show("done");

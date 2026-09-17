@@ -1,0 +1,10 @@
+import machine;
+
+List[List[FLOAT]] X = [[1.0], [2.0], [3.0], [4.0], [5.0]];
+List[FLOAT] y = [1.0, 4.0, 9.0, 16.0, 25.0];
+
+MACHINE svr_model = machine.svr(10.0, 0.5, "rbf");
+svr_model.fit(X, y);
+
+List[FLOAT] preds = svr_model.predict([[2.5], [4.5]]);
+show(preds);

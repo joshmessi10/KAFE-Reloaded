@@ -1,0 +1,9 @@
+import machine;
+
+List[List[FLOAT]] X = [[1.0, 1.0], [10.0, 10.0], [20.0, 20.0]];
+
+MACHINE db = machine.dbscan(0.5, 2);
+db.fit(X);
+
+show(db.labels());
+show(db.n_clusters());
