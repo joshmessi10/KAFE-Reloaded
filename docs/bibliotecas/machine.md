@@ -15,6 +15,8 @@ import machine;
 | Función | Firma | Descripción |
 |---------|-------|-------------|
 | `machine.linear_regression()` | `() -> MACHINE` | Crea un modelo de regresión lineal |
+| `machine.ridge_regression(alpha, fit_intercept, max_iter)` | `(FLOAT, BOOL, INT) -> MACHINE` | Crea un modelo Ridge (regularización L2) |
+| `machine.lasso_regression(alpha, fit_intercept, max_iter)` | `(FLOAT, BOOL, INT) -> MACHINE` | Crea un modelo Lasso (regularización L1) |
 | `machine.logistic_regression(lr, iter)` | `(FLOAT, INT) -> MACHINE` | Crea un modelo de regresión logística |
 | `machine.knn(k)` | `(INT) -> MACHINE` | Crea un clasificador KNN |
 | `machine.standard_scaler()` | `() -> MACHINE` | Crea un estandarizador Z-score |
@@ -25,6 +27,9 @@ import machine;
 | `machine.one_hot_encoder()` | `() -> MACHINE` | Crea un codificador one-hot |
 | `machine.ordinal_encoder()` | `() -> MACHINE` | Crea un codificador ordinal (enteros ordenados) |
 | `machine.pca(n)` | `(INT) -> MACHINE` | Crea modelo PCA con n componentes |
+| `machine.dbscan(eps, min_samples)` | `(FLOAT, INT) -> MACHINE` | Crea un modelo de clustering DBSCAN |
+| `machine.gaussian_nb()` | `() -> MACHINE` | Crea un clasificador Naive Bayes Gaussiano |
+| `machine.random_forest_classifier(n_est, depth, split, leaf)` | `(INT, INT, INT, INT) -> MACHINE` | Crea un clasificador Random Forest |
 
 ---
 
@@ -133,6 +138,206 @@ show(preds);           -- ~[11.96, 13.94]
 FLOAT r2 = lr.score(x, y);
 show(r2);              -- ~0.997
 ```
+
+---
+
+## RidgeRegression
+
+Implementa regresión lineal con regularización L2 — penaliza coeficientes grandes para reducir overfitting.
+
+### Fundamento Teórico
+
+Ridge minimiza: $||y - X\theta||^2 + \alpha||\theta||^2$
+
+El término $\alpha||\theta||^2$ penaliza coeficientes grandes sin eliminarlos completamente.
+
+**Solución cerrada**: $\theta = (X^T X + \alpha I)^{-1} X^T y$
+
+### Métodos
+
+| Método | Firma | Descripción |
+|--------|-------|-------------|
+| `ridge.fit(X, y)` | `(List[List[NUM]] o List[NUM], List[NUM]) -> VOID` | Entrena el modelo |
+| `ridge.predict(X)` | `(List[List[NUM]] o List[NUM]) -> List[NUM]` | Predice valores |
+| `ridge.score(X, y)` | `(List[List[NUM]] o List[NUM], List[NUM]) -> FLOAT` | Calcula R² |
+
+### Parámetros del Constructor
+
+```kafe
+-- alpha=1.0, fit_intercept=true, max_iter=1000
+MACHINE ridge = machine.ridge_regression(1.0, true, 1000);
+```
+
+### Propiedades
+
+| Propiedad | Tipo | Descripción |
+|-----------|------|-------------|
+| `ridge.coef_` | `List[FLOAT]` | Coeficientes del modelo |
+| `ridge.intercept_` | `FLOAT` | Intercepto |
+
+### Ejemplo
+
+```kafe
+import machine;
+
+List[List[FLOAT]] X = [[1.0], [2.0], [3.0], [4.0], [5.0]];
+List[FLOAT] y = [2.0, 4.0, 5.0, 4.0, 5.0];
+
+MACHINE ridge = machine.ridge_regression(1.0);
+ridge.fit(X, y);
+
+List[FLOAT] preds = ridge.predict([[1.5], [3.0], [5.5]]);
+show(preds);
+
+FLOAT r2 = ridge.score(X, y);
+show(r2);
+```
+
+### Comparación con LinearRegression
+
+| Aspecto | LinearRegression | RidgeRegression |
+|---------|------------------|-----------------|
+| Regularización | Ninguna | L2 |
+| Overfitting | Susceptible | Reducido |
+| Coeficientes | Pueden ser grandes | Penalizados |
+| Colineales | Inestable | Estable |
+
+---
+
+## LassoRegression
+
+Implementa regresión lineal con regularización L1 — puede eliminar features completamente (selección de features).
+
+### Fundamento Teórico
+
+Lasso minimiza: $||y - X\theta||^2 + \alpha||\theta||_1$
+
+El término $\alpha||\theta||_1$ puede poner coeficientes en 0 exacto, eliminando features irrelevantes.
+
+**Algoritmo**: Coordinate Descent con soft-thresholding (no hay solución cerrada).
+
+### Métodos
+
+| Método | Firma | Descripción |
+|--------|-------|-------------|
+| `lasso.fit(X, y)` | `(List[List[NUM]] o List[NUM], List[NUM]) -> VOID` | Entrena el modelo |
+| `lasso.predict(X)` | `(List[List[NUM]] o List[NUM]) -> List[NUM]` | Predice valores |
+| `lasso.score(X, y)` | `(List[List[NUM]] o List[NUM], List[NUM]) -> FLOAT` | Calcula R² |
+
+### Parámetros del Constructor
+
+```kafe
+-- alpha=1.0, fit_intercept=true, max_iter=1000
+MACHINE lasso = machine.lasso_regression(1.0, true, 1000);
+```
+
+### Propiedades
+
+| Propiedad | Tipo | Descripción |
+|-----------|------|-------------|
+| `lasso.coef_` | `List[FLOAT]` | Coeficientes (algunos pueden ser 0) |
+| `lasso.intercept_` | `FLOAT` | Intercepto |
+
+### Ejemplo
+
+```kafe
+import machine;
+
+List[List[FLOAT]] X = [[1.0, 0.0], [2.0, 0.0], [3.0, 0.0], [4.0, 0.0], [5.0, 0.0]];
+List[FLOAT] y = [2.0, 4.0, 6.0, 8.0, 10.0];
+
+MACHINE lasso = machine.lasso_regression(0.5);
+lasso.fit(X, y);
+
+-- Lasso puede haber eliminado la segunda feature (coef = 0)
+List[FLOAT] preds = lasso.predict([[1.5, 0.0], [3.0, 0.0]]);
+show(preds);
+```
+
+### Selección de Features
+
+Lasso puede poner coeficientes en 0, eliminando features:
+
+```kafe
+-- Alpha alto → más coeficientes en 0
+MACHINE lasso = machine.lasso_regression(1.0);
+-- Alpha bajo → menos coeficientes en 0
+MACHINE lasso = machine.lasso_regression(0.1);
+```
+
+---
+
+## SVR (Support Vector Regression)
+
+Implementa regresión usando Support Vector Machines con función de pérdida epsilon-insensitive.
+
+### Fundamento Teórico
+
+SVR encuentra un hiperplano que ajusta los datos dentro de un tubo de radio ε. Solo los puntos fuera del tubo (support vectors) contribuyen al modelo.
+
+**Pérdida epsilon-insensitive**: $L_\epsilon(y, f(x)) = \max(0, |y - f(x)| - \epsilon)$
+
+**Kernels disponibles**:
+- `linear`: $K(x_i, x_j) = x_i \cdot x_j$
+- `rbf`: $K(x_i, x_j) = \exp(-\gamma ||x_i - x_j||^2)$
+- `poly`: $K(x_i, x_j) = (x_i \cdot x_j + 1)^d$
+
+### Métodos
+
+| Método | Firma | Descripción |
+|--------|-------|-------------|
+| `svr.fit(X, y)` | `(List[List[NUM]] o List[NUM], List[NUM]) -> VOID` | Entrena el modelo |
+| `svr.predict(X)` | `(List[List[NUM]] o List[NUM]) -> List[NUM]` | Predice valores |
+| `svr.score(X, y)` | `(List[List[NUM]] o List[NUM], List[NUM]) -> FLOAT` | Calcula R² |
+
+### Parámetros del Constructor
+
+```kafe
+-- C=1.0, epsilon=0.1, kernel="linear"
+MACHINE svr_model = machine.svr(1.0, 0.1, "linear");
+```
+
+| Parámetro | Tipo | Default | Descripción |
+|-----------|------|---------|-------------|
+| `C` | FLOAT | 1.0 | Regularización (mayor = menos regularización) |
+| `epsilon` | FLOAT | 0.1 | Ancho del tubo epsilon-insensitive |
+| `kernel` | STRING | "linear" | Tipo de kernel: "linear", "rbf", "poly" |
+
+### Propiedades
+
+| Propiedad | Tipo | Descripción |
+|-----------|------|-------------|
+| `svr.coef_` | `List[FLOAT]` | Coeficientes (solo kernel lineal) |
+| `svr.intercept_` | `FLOAT` | Intercepto |
+| `svr.support_vectors_` | `List[List[FLOAT]]` | Vectores de soporte |
+| `svr.n_support_` | `INT` | Número de vectores de soporte |
+
+### Ejemplo
+
+```kafe
+import machine;
+
+List[List[FLOAT]] X = [[1.0], [2.0], [3.0], [4.0], [5.0]];
+List[FLOAT] y = [2.0, 4.0, 5.0, 4.0, 5.0];
+
+MACHINE svr_model = machine.svr(1.0, 0.1, "linear");
+svr_model.fit(X, y);
+
+List[FLOAT] preds = svr_model.predict([[1.5], [3.0], [5.5]]);
+show(preds);
+
+FLOAT r2 = svr_model.score(X, y);
+show(r2);
+```
+
+### Comparación con LinearRegression
+
+| Aspecto | LinearRegression | SVR |
+|---------|------------------|-----|
+| Pérdida | Squared error | Epsilon-insensitive |
+| Outliers | Sensible | Robusto |
+| Support vectors | No | Sí |
+| Kernel | No | Sí (linear, rbf, poly) |
 
 ---
 
@@ -362,6 +567,222 @@ show(probs);  -- [[~0.9, ~0.1], [~0.1, ~0.9]]
 1. **Entrenamiento**: Calcula media, varianza y prior para cada clase
 2. **Predicción**: Calcula log-posterior para cada clase usando Bayes
 3. **Decisión**: Retorna la clase con mayor log-posterior
+
+---
+
+## RandomForestClassifier
+
+Implementa un clasificador Random Forest — ensamble de árboles de decisión que combina bagging con selección aleatoria de características.
+
+### Fundamento Teórico
+
+Random Forest entrena múltiples árboles de decisión en muestras bootstrap con subconjuntos aleatorios de características, agregando predicciones por votación mayoritaria.
+
+**Muestreo Bootstrap**: Cada árbol se entrena en una muestra aleatoria del dataset original con reemplazo (~63% de los datos).
+
+**Selección Aleatoria**: En cada split, solo se consideran $\sqrt{d}$ características (donde $d$ es el total).
+
+**Votación Mayoritaria**: La predicción final es la clase más votada por todos los árboles.
+
+### Métodos
+
+| Método | Firma | Descripción |
+|--------|-------|-------------|
+| `rf.fit(X, y)` | `(List[List[NUM]] o List[NUM], List[INT]) -> VOID` | Entrena el ensamble |
+| `rf.predict(X)` | `(List[List[NUM]] o List[NUM]) -> List[INT]` | Predice por votación mayoritaria |
+| `rf.score(X, y)` | `(List[List[NUM]] o List[NUM], List[INT]) -> FLOAT` | Calcula exactitud |
+
+### Parámetros del Constructor
+
+```kafe
+-- n_estimators=10, max_depth=0 (ilimitada), min_samples_split=2, min_samples_leaf=1
+MACHINE rf = machine.random_forest_classifier(10, 0, 2, 1);
+```
+
+### Propiedades
+
+| Propiedad | Tipo | Descripción |
+|-----------|------|-------------|
+| `rf.trees_` | `List[Dict]` | Lista de árboles entrenados |
+| `rf.classes_` | `List[INT]` | Clases únicas vistas durante fit |
+| `rf.n_features_` | `INT` | Número de features |
+
+### Ejemplo
+
+```kafe
+import machine;
+
+List[List[FLOAT]] X = [[1.0, 2.0], [2.0, 3.0], [3.0, 3.0],
+                        [6.0, 5.0], [7.0, 7.0], [8.0, 6.0]];
+List[INT] y = [0, 0, 0, 1, 1, 1];
+
+MACHINE rf = machine.random_forest_classifier(10, 0, 2, 1);
+rf.fit(X, y);
+
+List[INT] preds = rf.predict([[2.0, 2.0], [7.0, 7.0], [4.0, 4.0]]);
+show(preds);  -- [0, 1, 0]
+
+FLOAT acc = rf.score(X, y);
+show(acc);  -- 1.0
+```
+
+### Algoritmo Interno
+
+1. **Bootstrap**: Para cada árbol, crear muestra con reemplazo
+2. **Construcción**: Árbol con selección aleatoria de features en cada split
+3. **Predicción**: Votación mayoritaria de todos los árboles
+
+---
+
+## RandomForestRegressor
+
+Implementa un regresor Random Forest — ensamble de árboles de regresión que combina bagging con selección aleatoria de características.
+
+### Fundamento Teórico
+
+Random Forest Regressor entrena múltiples árboles de regresión en muestras bootstrap con subconjuntos aleatorios de características, agregando predicciones por promedio.
+
+**Criterio de Split**: Reducción de varianza (variance reduction) — busca el split que más reduce la varianza del target en los hijos.
+
+**Agregación**: Predicción final = promedio de predicciones de todos los árboles.
+
+### Métodos
+
+| Método | Firma | Descripción |
+|--------|-------|-------------|
+| `rf.fit(X, y)` | `(List[List[NUM]] o List[NUM], List[NUM]) -> VOID` | Entrena el ensamble |
+| `rf.predict(X)` | `(List[List[NUM]] o List[NUM]) -> List[NUM]` | Predice por promedio |
+| `rf.score(X, y)` | `(List[List[NUM]] o List[NUM], List[NUM]) -> FLOAT` | Calcula R² |
+
+### Parámetros del Constructor
+
+```kafe
+-- n_estimators=10, max_depth=0 (ilimitada), min_samples_split=2, min_samples_leaf=1
+MACHINE rf = machine.random_forest_regressor(10, 0, 2, 1);
+```
+
+### Propiedades
+
+| Propiedad | Tipo | Descripción |
+|-----------|------|-------------|
+| `rf.trees_` | `List[Dict]` | Lista de árboles entrenados |
+| `rf.n_features_` | `INT` | Número de features |
+
+### Ejemplo
+
+```kafe
+import machine;
+
+List[List[FLOAT]] X = [[1.0], [2.0], [3.0], [4.0], [5.0]];
+List[FLOAT] y = [2.0, 4.0, 6.0, 8.0, 10.0];
+
+MACHINE rf = machine.random_forest_regressor(10, 0, 2, 1);
+rf.fit(X, y);
+
+List[FLOAT] preds = rf.predict([[1.5], [3.0], [5.5]]);
+show(preds);  -- ~[3.0, 6.0, 11.0]
+
+FLOAT r2 = rf.score(X, y);
+show(r2);  -- 1.0
+```
+
+### Algoritmo Interno
+
+1. **Bootstrap**: Para cada árbol, crear muestra con reemplazo
+2. **Construcción**: Árbol con selección aleatoria de features, splits por varianza
+3. **Predicción**: Promedio de todos los árboles
+
+---
+
+## DBSCAN (Density-Based Spatial Clustering)
+
+Implementa un algoritmo de clustering basado en densidad que agrupa puntos densamente empaquetados y marca los atípicos como ruido. A diferencia de KMeans, DBSCAN puede encontrar clusters de forma arbitraria y no requiere especificar el número de clusters.
+
+### Fundamento Teórico
+
+DBSCAN se basa en el concepto de **alcanzabilidad por densidad**:
+
+| Concepto | Definición |
+|----------|------------|
+| **Punto central (Core Point)** | Un punto con al menos `min_samples` puntos dentro de la distancia `eps` (incluyéndose a sí mismo) |
+| **Alcanzabilidad directa por densidad** | El punto `q` es directamente alcanzable desde `p` si `q` está dentro de distancia `eps` de `p` y `p` es un punto central |
+| **Alcanzabilidad por densidad** | Existe una cadena `p1, ..., pn` donde cada uno es directamente alcanzable desde el anterior |
+| **Conectividad por densidad** | Dos puntos están densamente conectados si existe un punto `o` desde el cual ambos son alcanzables por densidad |
+
+**Cluster**: Un conjunto maximal de puntos densamente conectados.
+
+**Ruido**: Puntos que no pertenecen a ningún cluster (etiqueta `-1`).
+
+### Métodos
+
+| Método | Firma | Descripción |
+|--------|-------|-------------|
+| `db.fit(X)` | `(List[List[NUM]]) -> VOID` | Realiza el clustering DBSCAN |
+| `db.fit_predict(X)` | `(List[List[NUM]]) -> List[INT]` | Ajusta y devuelve etiquetas de cluster |
+| `db.labels()` | `() -> List[INT]` | Devuelve etiquetas de cluster después de fit |
+| `db.n_clusters()` | `() -> INT` | Devuelve número de clusters encontrados |
+| `db.core_sample_indices()` | `() -> List[INT]` | Devuelve índices de puntos centrales |
+
+### Parámetros del Constructor
+
+```kafe
+-- eps: distancia máxima entre puntos para ser vecinos (default: 0.5)
+-- min_samples: mínimo de puntos para formar región densa (default: 5)
+MACHINE db = machine.dbscan(1.0, 2);
+```
+
+### Propiedades
+
+| Propiedad | Tipo | Descripción |
+|-----------|------|-------------|
+| `db.labels_` | `List[INT]` | Etiquetas de cluster (-1 = ruido) |
+| `db.n_clusters_` | `INT` | Número de clusters encontrados |
+| `db.core_sample_indices_` | `List[INT]` | Índices de puntos centrales |
+
+### Ejemplo
+
+```kafe
+import machine;
+
+List[List[FLOAT]] X = [[1.0, 1.0], [1.5, 1.5], [2.0, 2.0],
+                        [8.0, 8.0], [8.5, 8.5], [9.0, 9.0],
+                        [50.0, 50.0]];
+
+MACHINE db = machine.dbscan(1.0, 2);
+db.fit(X);
+
+show(db.labels());       -- [1, 1, 1, 2, 2, 2, -1]
+show(db.n_clusters());   -- 2
+
+-- Usando fit_predict
+List[INT] labels = db.fit_predict(X);
+show(labels);            -- [1, 1, 1, 2, 2, 2, -1]
+```
+
+### Algoritmo Interno
+
+1. **Consultar región**: Para cada punto, encontrar todos los puntos dentro de distancia `eps`
+2. **Identificar puntos centrales**: Puntos con al menos `min_samples` vecinos
+3. **Expandir clusters**: Desde cada punto central no visitado, expandir el cluster conectando puntos densamente alcanzables
+4. **Marcar ruido**: Puntos que no son centrales y no son alcanzables desde ningún punto central
+
+### Complejidad
+
+- **Tiempo**: $O(n^2)$ en el peor caso (consultas de región para todos los puntos)
+- **Espacio**: $O(n)$ para almacenar etiquetas y vecinos
+
+### Ventajas
+
+- No requiere especificar el número de clusters
+- Encuentra clusters de forma arbitraria
+- Identifica ruido (outliers)
+- No asume distribución esférica de los datos
+
+### Limitaciones
+
+- Difícil manejo de clusters con densidades variables
+- Sensible a la elección de `eps` y `min_samples`
+- Complejidad cuadrática en el peor caso
 
 ---
 

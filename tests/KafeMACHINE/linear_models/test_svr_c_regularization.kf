@@ -1,0 +1,15 @@
+import machine;
+
+List[List[FLOAT]] X = [[1.0], [2.0], [3.0], [4.0], [5.0]];
+List[FLOAT] y = [2.0, 4.0, 5.0, 4.0, 5.0];
+
+MACHINE svr_high_c = machine.svr(100.0, 0.1, "linear");
+svr_high_c.fit(X, y);
+
+MACHINE svr_low_c = machine.svr(0.1, 0.1, "linear");
+svr_low_c.fit(X, y);
+
+List[FLOAT] preds_high = svr_high_c.predict([[3.0]]);
+List[FLOAT] preds_low = svr_low_c.predict([[3.0]]);
+show(preds_high);
+show(preds_low);

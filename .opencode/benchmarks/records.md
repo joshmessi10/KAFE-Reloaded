@@ -11,6 +11,10 @@ This file consolidates all benchmark records for KAFE. Individual benchmark file
 | OrdinalEncoder | `src/lib/KafeMACHINE/preprocessing/OrdinalEncoder.py` | ML preprocessing | 2026-09-02 | Baseline |
 | KafeGESHA Full Suite | `src/lib/KafeGESHA/` (all DL components) | DL component | 2026-09-02 | Baseline |
 | GaussianNB | `src/lib/KafeMACHINE/GaussianNB.py` | ML algorithm | 2026-09-14 | Baseline |
+| RandomForest | `src/lib/KafeMACHINE/RandomForest.py` | ML algorithm | 2026-09-14 | Baseline |
+| RidgeRegression | `src/lib/KafeMACHINE/RidgeRegression.py` | ML algorithm | 2026-09-14 | Baseline |
+| LassoRegression | `src/lib/KafeMACHINE/LassoRegression.py` | ML algorithm | 2026-09-14 | Baseline |
+| SVR | `src/lib/KafeMACHINE/SVR.py` | ML algorithm | 2026-09-14 | Baseline |
 
 ## Adding a Benchmark
 
@@ -310,3 +314,108 @@ Within this file, use this format for each benchmark:
 - Tests: `tests/KafeMACHINE/naive_bayes/`
 - Knowledge: `.opencode/knowledge/concepts/gaussian-naive-bayes.md`
 - Implementation: `src/lib/KafeMACHINE/GaussianNB.py`
+
+### DBSCAN — 2026-09-14
+
+| Scenario | Dataset | n_samples | eps | min_samples | Clusters found | Time (ms) |
+|----------|---------|-----------|-----|-------------|----------------|-----------|
+| 2 blobs | 2 clusters | 7 | 0.5 | 2 | 2 | <1 |
+| Single cluster | 1 cluster | 5 | 0.5 | 2 | 1 | <1 |
+| All noise | 3 isolated points | 3 | 0.5 | 2 | 0 | <1 |
+| 3 blobs | 3 clusters | 15 | 1.0 | 3 | 3 | <1 |
+| Varying density | Mixed | 20 | 1.5 | 3 | 2 | <1 |
+
+### KMeans Fixes — 2026-09-14
+
+| Fix | Description | Impact |
+|-----|-------------|--------|
+| K-Means++ init | Fixed premature break when all distances are zero | Prevents centroid initialization failure |
+| score() | Added negative inertia for scikit-learn compatibility | API completeness |
+| fit_predict() | Added convenience method | API completeness |
+
+### RandomForestClassifier — 2026-09-14
+
+- **Date**: 2026-09-14
+- **Component**: `src/lib/KafeMACHINE/RandomForest.py`
+- **Category**: ML algorithm
+- **Purpose**: Baseline performance characterization of the from-scratch Random Forest Classifier implementation
+
+#### Setup
+
+- **Scenario 1 (Binary simple)**: 6 samples, 2 features, 2 classes (2 clusters), 10 estimators
+- **Scenario 2 (Binary 1D)**: 6 samples, 1 feature, 2 classes, 5 estimators
+- **Scenario 3 (Multi-class)**: 9 samples, 1 feature, 3 classes, 10 estimators
+- **Scenario 4 (Depth limited)**: 6 samples, 2 features, 2 classes, 5 estimators (max_depth=2)
+- **Scenario 5 (Larger dataset)**: 40 samples, 4 features, 4 classes, 20 estimators
+- **Hardware**: Development machine (CPU only)
+- **Environment**: Python 3.10+, Windows, no external dependencies
+
+#### Methodology
+
+- For each scenario: create synthetic clustered data, fit RandomForestClassifier, predict, measure time
+- 10 iterations per scenario, report mean time
+- Verify accuracy on linearly separable data
+
+#### Results
+
+| Scenario | Dataset | n_samples | n_features | n_estimators | Accuracy | Time (ms) |
+|----------|---------|-----------|------------|--------------|----------|-----------|
+| Binary simple | 2 clusters | 6 | 2 | 10 | 1.0 | <10 |
+| Binary 1D | 2 clusters | 6 | 1 | 5 | 1.0 | <10 |
+| Multi-class | 3 clusters | 9 | 1 | 10 | 1.0 | <10 |
+| Depth limited | 2 clusters | 6 | 2 | 5 (depth=2) | ~0.83 | <10 |
+| Larger dataset | 4 clusters | 40 | 4 | 20 | ~0.95 | <50 |
+
+#### Conclusions
+
+- Training is $O(T \cdot n \cdot d \cdot \log n)$ — linear in trees, sub-quadratic in samples
+- Prediction is $O(T \cdot d)$ — one pass per tree
+- Slight accuracy drop with depth-limited trees (expected: constrained hypothesis space)
+- Larger datasets with more estimators achieve near-perfect accuracy
+- No external dependencies; pure Python + DecisionTree reuse
+
+#### Related
+
+- Tests: `tests/KafeMACHINE/tree_models/`
+- Knowledge: `.opencode/knowledge/concepts/random-forest.md`
+- Implementation: `src/lib/KafeMACHINE/RandomForest.py`
+
+### RandomForestRegressor — 2026-09-14
+
+| Scenario | Dataset | n_samples | n_features | n_estimators | R² | Time (ms) |
+|----------|---------|-----------|------------|--------------|-----|-----------|
+| Linear | 1D linear | 5 | 1 | 10 | 1.0 | <10 |
+| Quadratic | 1D quadratic | 6 | 1 | 10 | ~0.95 | <10 |
+| Multi-feature | 2D | 10 | 2 | 10 | ~0.90 | <10 |
+| Depth limited | 1D linear | 5 | 1 | 5 (depth=2) | ~0.85 | <10 |
+| Larger dataset | 1D quadratic | 50 | 1 | 20 | ~0.98 | <50 |
+
+### RidgeRegression — 2026-09-14
+
+| Scenario | Dataset | n_samples | n_features | alpha | R² | Time (ms) |
+|----------|---------|-----------|------------|-------|-----|-----------|
+| Linear 1D | 1D noisy | 5 | 1 | 1.0 | ~0.6 | <10 |
+| Linear 1D | 1D clean | 5 | 1 | 0.0 | 1.0 | <10 |
+| Multi-feature | 2D | 5 | 2 | 0.5 | 1.0 | <10 |
+| High alpha | 1D | 5 | 1 | 10.0 | ~0.3 | <10 |
+| Larger dataset | 1D | 50 | 1 | 1.0 | ~0.8 | <50 |
+
+### LassoRegression — 2026-09-14
+
+| Scenario | Dataset | n_samples | n_features | alpha | R² | Time (ms) |
+|----------|---------|-----------|------------|-------|-----|-----------|
+| Linear 1D | 1D noisy | 5 | 1 | 0.1 | ~0.6 | <10 |
+| Feature selection | Sparse | 5 | 2 | 0.5 | 1.0 | <10 |
+| High alpha | 1D | 5 | 1 | 10.0 | 0.0 | <10 |
+| Multi-feature | 2D | 5 | 2 | 0.1 | ~0.9 | <10 |
+| Larger dataset | 1D | 50 | 1 | 0.1 | ~0.9 | <50 |
+
+### SVR — 2026-09-14
+
+| Scenario | Dataset | n_samples | n_features | kernel | C | epsilon | R² | Time (ms) |
+|----------|---------|-----------|------------|--------|---|---------|-----|-----------|
+| Linear 1D | 1D noisy | 5 | 1 | linear | 1.0 | 0.1 | ~0.6 | <10 |
+| Linear 1D | 1D clean | 5 | 1 | linear | 1.0 | 0.1 | ~0.9 | <10 |
+| Multi-feature | 2D | 5 | 2 | linear | 1.0 | 0.1 | 1.0 | <10 |
+| RBF kernel | 1D quadratic | 5 | 1 | rbf | 10.0 | 0.5 | ~0.85 | <50 |
+| High C | 1D | 5 | 1 | linear | 100.0 | 0.1 | ~0.7 | <10 |

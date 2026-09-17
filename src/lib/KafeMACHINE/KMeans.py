@@ -84,7 +84,11 @@ class KMeans(BaseMachine):
 
             total = sum(distances_sq)
             if total == 0:
-                break
+                # All remaining points are identical to existing centroids
+                # Pick a random point to avoid duplicate centroids
+                idx = rng.randint(0, n_samples - 1)
+                centroids.append(list(X[idx]))
+                continue
 
             probs = [d / total for d in distances_sq]
 
@@ -183,6 +187,11 @@ class KMeans(BaseMachine):
         self._is_fitted = True
         return self
 
+    def fit_predict(self, X):
+        """Ajusta el modelo y devuelve las etiquetas de cluster."""
+        self.fit(X)
+        return self.labels_
+
     @check_sig([2], matriz_numeros_t, is_method=True)
     def predict(self, X):
         """Asigna cada punto de X al cluster más cercano."""
@@ -214,6 +223,24 @@ class KMeans(BaseMachine):
         """Devuelve la inercia después de fit."""
         self._check_fitted("inertia")
         return self.inertia_
+
+    def score(self, X):
+        """Retorna la inercia negativa (compatibilidad con API scikit-learn).
+
+        Menor (más negativo) es mejor.
+        """
+        self._check_fitted("score")
+        if not X:
+            return 0.0
+        if not isinstance(X[0], (list, tuple)):
+            X = [[v] for v in X]
+
+        labels = self._assign_clusters(X, self.cluster_centers_)
+        inertia = sum(
+            self._euclidean_distance_sq(X[i], self.cluster_centers_[labels[i]])
+            for i in range(len(X))
+        )
+        return -inertia
 
     def __repr__(self):
         return f"KMeans(n_clusters={self.n_clusters}, max_iter={self.max_iter})"

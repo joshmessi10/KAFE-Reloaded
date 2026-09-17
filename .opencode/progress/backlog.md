@@ -4,12 +4,20 @@ Candidate items not yet on the roadmap. Add items here during Impact Analysis an
 
 ## Machine Learning
 
-- (none yet)
+- Gradient Boosting (ensemble method, combines weak learners sequentially)
+- SVM (Support Vector Machine, kernel methods)
 
 ## Deep Learning
 
-- (none yet)
+- Conv2D (convolutional layers for image processing)
+- LSTM (recurrent layers for sequence modeling)
+- Transformer (attention-based architecture)
 
 ## Language / Core
 
-- (none yet)
+- Vectorization (batch operations for performance)
+- Parallel execution (multi-threading support)
+
+## Documentation
+
+- Review tasks for legacy implementations (BaseMachine, LinearRegression, LogisticRegression, KNN, Metrics)

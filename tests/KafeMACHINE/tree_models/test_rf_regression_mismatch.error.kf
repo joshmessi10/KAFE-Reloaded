@@ -1,0 +1,7 @@
+import machine;
+
+List[List[FLOAT]] X = [[1.0], [2.0]];
+List[FLOAT] y = [1.0];
+
+MACHINE rf = machine.random_forest_regressor();
+rf.fit(X, y);

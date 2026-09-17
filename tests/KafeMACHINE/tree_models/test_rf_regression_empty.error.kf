@@ -1,0 +1,5 @@
+import machine;
+
+MACHINE rf = machine.random_forest_regressor();
+rf.fit([], []);
+show("done");
