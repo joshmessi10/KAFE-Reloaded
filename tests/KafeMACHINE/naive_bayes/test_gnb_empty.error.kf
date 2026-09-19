@@ -1,0 +1,6 @@
+import machine;
+
+MACHINE nb = machine.gaussian_nb();
+List[List[FLOAT]] X = [];
+List[INT] y = [];
+nb.fit(X, y);

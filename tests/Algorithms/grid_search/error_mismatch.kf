@@ -1,0 +1,8 @@
+import machine;
+
+List[List[FLOAT]] X = [[1.0], [2.0]];
+List[FLOAT] y = [1.0];
+
+MACHINE grid = machine.grid_search_cv(5, "accuracy", 42);
+MACHINE knn_model = machine.knn(3);
+grid.fit(knn_model, X, y);

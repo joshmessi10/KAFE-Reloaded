@@ -10,6 +10,9 @@ SUBDIRS = [
     "preprocessing",
     "metrics_classification",
     "metrics_regression",
+    "clustering",
+    "naive_bayes",
+    "model_selection",
 ]
 
 
