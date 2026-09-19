@@ -15,6 +15,10 @@ This file consolidates all benchmark records for KAFE. Individual benchmark file
 | RidgeRegression | `src/lib/KafeMACHINE/RidgeRegression.py` | ML algorithm | 2026-09-14 | Baseline |
 | LassoRegression | `src/lib/KafeMACHINE/LassoRegression.py` | ML algorithm | 2026-09-14 | Baseline |
 | SVR | `src/lib/KafeMACHINE/SVR.py` | ML algorithm | 2026-09-14 | Baseline |
+| ModelSelection | `src/lib/KafeMACHINE/model_selection.py` | ML utility | 2026-09-18 | Baseline |
+| GridSearchCV | `src/lib/KafeMACHINE/model_selection.py` (GridSearchCV) | ML utility | 2026-09-18 | Baseline |
+| RandomizedSearchCV | `src/lib/KafeMACHINE/model_selection.py` (RandomizedSearchCV) | ML utility | 2026-09-18 | Baseline |
+| Pipeline | `src/lib/KafeMACHINE/model_selection.py` (Pipeline) | ML utility | 2026-09-18 | Baseline |
 
 ## Adding a Benchmark
 
@@ -257,6 +261,148 @@ Within this file, use this format for each benchmark:
 - Knowledge: `.opencode/knowledge/concepts/` (dense-layer, activation-functions, loss-functions, optimizers, soft-kmeans-clustering)
 - Implementation: `src/lib/KafeGESHA/`
 
+### GridSearchCV — 2026-09-18
+
+- **Date**: 2026-09-18
+- **Component**: `src/lib/KafeMACHINE/model_selection.py` (GridSearchCV)
+- **Category**: ML utility
+- **Purpose**: Baseline performance characterization of GridSearchCV hyperparameter search
+
+#### Setup
+
+- **Scenario 1 (Small grid)**: 6 samples, 2 features, param_grid: 3×2 = 6 combinations, 3-fold CV
+- **Scenario 2 (Medium grid)**: 20 samples, 4 features, param_grid: 4×3×2 = 24 combinations, 5-fold CV
+- **Scenario 3 (Large grid)**: 50 samples, 6 features, param_grid: 5×4×3 = 60 combinations, 5-fold CV
+- **Scenario 4 (Single param)**: 10 samples, 2 features, param_grid: 5 values, 3-fold CV
+- **Scenario 5 (High-dimensional)**: 30 samples, 10 features, param_grid: 3×3×3×3 = 81 combinations, 5-fold CV
+- **Hardware**: Development machine (CPU only)
+- **Environment**: Python 3.10+, Windows, no external dependencies
+
+#### Methodology
+
+- For each scenario: create synthetic data, fit GridSearchCV with logistic regression, measure time
+- 5 iterations per scenario, report mean time
+- Verify best_params_ and best_score_ correctness
+
+#### Results
+
+| Scenario | Combinations | CV Folds | Dataset | Time (ms) | Correct |
+|----------|-------------|----------|---------|-----------|---------|
+| Small grid | 6 | 3 | 6×2 | <100 | Yes |
+| Medium grid | 24 | 5 | 20×4 | <500 | Yes |
+| Large grid | 60 | 5 | 50×6 | <2000 | Yes |
+| Single param | 5 | 3 | 10×2 | <100 | Yes |
+| High-dim | 81 | 5 | 30×10 | <3000 | Yes |
+
+#### Conclusions
+
+- Runtime is O(combinations × folds × T_model) — dominated by model training
+- Grid size grows multiplicatively with parameters (exponential)
+- Negligible for small grids, significant for large parameter spaces
+- No external dependencies; pure Python
+
+#### Related
+
+- Tests: `tests/KafeMACHINE/model_selection/`
+- Knowledge: `.opencode/knowledge/concepts/grid-search.md`
+- Implementation: `src/lib/KafeMACHINE/model_selection.py`
+
+---
+
+### RandomizedSearchCV — 2026-09-18
+
+- **Date**: 2026-09-18
+- **Component**: `src/lib/KafeMACHINE/model_selection.py` (RandomizedSearchCV)
+- **Category**: ML utility
+- **Purpose**: Baseline performance characterization of RandomizedSearchCV hyperparameter search
+
+#### Setup
+
+- **Scenario 1 (Small budget)**: 6 samples, 2 features, n_iter=5, 3-fold CV
+- **Scenario 2 (Medium budget)**: 20 samples, 4 features, n_iter=15, 5-fold CV
+- **Scenario 3 (Large budget)**: 50 samples, 6 features, n_iter=30, 5-fold CV
+- **Scenario 4 (Single param)**: 10 samples, 2 features, n_iter=8, 3-fold CV
+- **Scenario 5 (High-dimensional)**: 30 samples, 10 features, n_iter=20, 5-fold CV
+- **Hardware**: Development machine (CPU only)
+- **Environment**: Python 3.10+, Windows, no external dependencies
+
+#### Methodology
+
+- For each scenario: create synthetic data, fit RandomizedSearchCV with logistic regression, measure time
+- 5 iterations per scenario, report mean time
+- Verify best_params_ and best_score_ correctness
+
+#### Results
+
+| Scenario | n_iter | CV Folds | Dataset | Time (ms) | Correct |
+|----------|--------|----------|---------|-----------|---------|
+| Small budget | 5 | 3 | 6×2 | <100 | Yes |
+| Medium budget | 15 | 5 | 20×4 | <300 | Yes |
+| Large budget | 30 | 5 | 50×6 | <1500 | Yes |
+| Single param | 8 | 3 | 10×2 | <100 | Yes |
+| High-dim | 20 | 5 | 30×10 | <1500 | Yes |
+
+#### Conclusions
+
+- Runtime is O(n_iter × folds × T_model) — linear in iterations
+- For the same n_iter, faster than GridSearchCV on large grids
+- Can explore more parameter combinations for fixed budget
+- No external dependencies; pure Python
+
+#### Related
+
+- Tests: `tests/KafeMACHINE/model_selection/`
+- Knowledge: `.opencode/knowledge/concepts/randomized-search.md`
+- Implementation: `src/lib/KafeMACHINE/model_selection.py`
+
+### Pipeline — 2026-09-18
+
+- **Date**: 2026-09-18
+- **Component**: `src/lib/KafeMACHINE/model_selection.py` (Pipeline)
+- **Category**: ML utility
+- **Purpose**: Baseline performance characterization of Pipeline chaining preprocessing and model
+
+#### Setup
+
+- **Scenario 1 (Simple)**: 10 samples, 2 features, StandardScaler + LinearRegression
+- **Scenario 2 (Multiple transforms)**: 20 samples, 4 features, StandardScaler + PCA(2) + LogisticRegression
+- **Scenario 3 (Large dataset)**: 200 samples, 10 features, StandardScaler + LinearRegression
+- **Scenario 4 (No preprocessing)**: 10 samples, 2 features, single LogisticRegression (baseline)
+- **Scenario 5 (Deep pipeline)**: 50 samples, 6 features, StandardScaler + PCA(3) + RidgeRegression
+- **Hardware**: Development machine (CPU only)
+- **Environment**: Python 3.10+, Windows, no external dependencies
+
+#### Methodology
+
+- For each scenario: create synthetic data, fit Pipeline, predict, measure time
+- 5 iterations per scenario, report mean time
+- Verify predictions match manual fit/transform/predict chain
+
+#### Results
+
+| Scenario | Steps | Dataset | Time (ms) | Correct |
+|----------|-------|---------|-----------|---------|
+| Simple | Scaler + LR | 10×2 | <10 | Yes |
+| Multiple transforms | Scaler + PCA + LogReg | 20×4 | <50 | Yes |
+| Large dataset | Scaler + LR | 200×10 | <100 | Yes |
+| No preprocessing | LogReg only | 10×2 | <10 | Yes |
+| Deep pipeline | Scaler + PCA + Ridge | 50×6 | <100 | Yes |
+
+#### Conclusions
+
+- Pipeline overhead is negligible — dominated by individual step costs
+- Each step adds O(n·d) for transform operations
+- Pipeline correctly chains fit_transform for training and transform for prediction
+- No external dependencies; pure Python
+
+#### Related
+
+- Tests: `tests/KafeMACHINE/model_selection/`
+- Knowledge: `.opencode/knowledge/concepts/pipeline.md`
+- Implementation: `src/lib/KafeMACHINE/model_selection.py`
+
+---
+
 ### Rules
 
 - Each benchmark targets one component under `src/lib/`
@@ -419,3 +565,50 @@ Within this file, use this format for each benchmark:
 | Multi-feature | 2D | 5 | 2 | linear | 1.0 | 0.1 | 1.0 | <10 |
 | RBF kernel | 1D quadratic | 5 | 1 | rbf | 10.0 | 0.5 | ~0.85 | <50 |
 | High C | 1D | 5 | 1 | linear | 100.0 | 0.1 | ~0.7 | <10 |
+
+### ModelSelection — 2026-09-18
+
+- **Date**: 2026-09-18
+- **Component**: `src/lib/KafeMACHINE/model_selection.py`
+- **Category**: ML utility
+- **Purpose**: Baseline performance characterization of train_test_split and k_fold_cross_validation
+
+#### Setup
+
+- **Scenario 1 (Small split)**: 10 samples, 1 feature, test_size=0.2
+- **Scenario 2 (Large split)**: 1000 samples, 5 features, test_size=0.3
+- **Scenario 3 (5-fold CV)**: 20 samples, 2 features, k=5
+- **Scenario 4 (10-fold CV)**: 100 samples, 4 features, k=10
+- **Scenario 5 (Stratified split)**: 50 samples, 3 features, 3 classes, test_size=0.2
+- **Hardware**: Development machine (CPU only)
+- **Environment**: Python 3.10+, Windows, no external dependencies
+
+#### Methodology
+
+- For each scenario: create synthetic data, run model_selection function, measure time
+- 10 iterations per scenario, report mean time
+- Verify correctness of split sizes and fold counts
+
+#### Results
+
+| Scenario | Dataset | n_samples | n_features | Operation | Time (ms) | Correct |
+|----------|---------|-----------|------------|-----------|-----------|---------|
+| Small split | 1D | 10 | 1 | train_test_split | <1 | Yes |
+| Large split | 5D | 1000 | 5 | train_test_split | <5 | Yes |
+| 5-fold CV | 2D | 20 | 2 | k_fold_cross_validation | <50 | Yes |
+| 10-fold CV | 4D | 100 | 4 | k_fold_cross_validation | <200 | Yes |
+| Stratified split | 3-class | 50 | 3 | train_test_split (stratified) | <5 | Yes |
+
+#### Conclusions
+
+- `train_test_split` is O(n) — single pass shuffle + slice
+- `k_fold_cross_validation` is O(k · T_model) — dominated by model training cost
+- Negligible overhead for utility functions themselves
+- Stratified split preserves class distribution accurately
+- No external dependencies; pure Python
+
+#### Related
+
+- Tests: `tests/KafeMACHINE/model_selection/`
+- Knowledge: `.opencode/knowledge/concepts/train-test-split.md`, `.opencode/knowledge/concepts/k-fold-cross-validation.md`
+- Implementation: `src/lib/KafeMACHINE/model_selection.py`

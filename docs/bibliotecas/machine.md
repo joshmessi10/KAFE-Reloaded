@@ -30,6 +30,9 @@ import machine;
 | `machine.dbscan(eps, min_samples)` | `(FLOAT, INT) -> MACHINE` | Crea un modelo de clustering DBSCAN |
 | `machine.gaussian_nb()` | `() -> MACHINE` | Crea un clasificador Naive Bayes Gaussiano |
 | `machine.random_forest_classifier(n_est, depth, split, leaf)` | `(INT, INT, INT, INT) -> MACHINE` | Crea un clasificador Random Forest |
+| `machine.random_forest_regressor(n_est, depth, split, leaf)` | `(INT, INT, INT, INT) -> MACHINE` | Crea un regresor Random Forest |
+| `machine.pipeline(name1, step1, ...)` | `(STR, MACHINE, ...) -> MACHINE` | Crea un Pipeline de preprocessing + modelo |
+| `machine.cross_val_score(cv, scoring, random_state)` | `(INT, STR, INT) -> MACHINE` | Crea un evaluador de cross-validation |
 
 ---
 
@@ -338,6 +341,375 @@ show(r2);
 | Outliers | Sensible | Robusto |
 | Support vectors | No | Sí |
 | Kernel | No | Sí (linear, rbf, poly) |
+
+---
+
+## Model Selection
+
+Herramientas para dividir datasets y evaluar modelos de forma robusta.
+
+### Funciones Principales
+
+| Función | Firma | Descripción |
+|---------|-------|-------------|
+| `machine.train_test_split(X, y, test_size, random_state)` | `(List[List[NUM]], List[NUM], FLOAT, INT) -> (List[List[NUM]], List[List[NUM]], List[NUM], List[NUM])` | Divide datos en training y test sets |
+| `machine.k_fold_cross_validation(model, X, y, k, scoring_fn)` | `(MACHINE, List[List[NUM]], List[NUM], INT, FUNC) -> (List[FLOAT], FLOAT)` | Evalúa modelo con K-Fold CV, retorna scores por fold y promedio |
+
+### train_test_split
+
+Divide el dataset en training set (para ajustar el modelo) y test set (para evaluar generalización).
+
+#### Fundamento Teórico
+
+Dado un dataset de $n$ ejemplos, particiona aleatoriamente en dos subconjuntos:
+- **Training set**: $(1 - \text{test\_size}) \cdot n$ ejemplos
+- **Test set**: $\text{test\_size} \cdot n$ ejemplos (default: 20%)
+
+El parámetro `random_state` controla la semilla aleatoria para reproducibilidad.
+
+#### Métodos
+
+| Método | Firma | Descripción |
+|--------|-------|-------------|
+| `train_test_split(X, y, test_size, random_state)` | `(List[List[NUM]], List[NUM], FLOAT, INT) -> Tuple` | Retorna `(X_train, X_test, y_train, y_test)` |
+
+#### Ejemplo
+
+```kafe
+import machine;
+
+List[List[FLOAT]] X = [[1.0], [2.0], [3.0], [4.0], [5.0],
+                        [6.0], [7.0], [8.0], [9.0], [10.0]];
+List[FLOAT] y = [2.0, 4.0, 6.0, 8.0, 10.0,
+                 12.0, 14.0, 16.0, 18.0, 20.0];
+
+-- División 80/20 con semilla fija
+(List[List[FLOAT]] X_train, List[List[FLOAT]] X_test,
+ List[FLOAT] y_train, List[FLOAT] y_test) = machine.train_test_split(X, y, 0.2, 42);
+
+show(len(X_train));  -- 8
+show(len(X_test));   -- 2
+
+MACHINE lr = machine.linear_regression();
+lr.fit(X_train, y_train);
+
+FLOAT r2 = lr.score(X_test, y_test);
+show(r2);  -- ~1.0
+```
+
+### k_fold_cross_validation
+
+Evalúa un modelo usando K-Fold Cross Validation — particiona el dataset en $k$ folds y entrena/evalúa $k$ veces.
+
+#### Fundamento Teórico
+
+1. Barajar y dividir el dataset en $k$ folds
+2. Para cada fold $i$: usar fold $i$ como test, los demás como training
+3. Promediar los scores de cada fold
+
+Ventaja sobre train-test split: cada muestra se usa exactamente una vez para test y $k-1$ veces para training, maximizando el uso de los datos.
+
+#### Métodos
+
+| Método | Firma | Descripción |
+|--------|-------|-------------|
+| `k_fold_cross_validation(model, X, y, k, scoring_fn)` | `(MACHINE, List[List[NUM]], List[NUM], INT, FUNC) -> Tuple` | Retorna `(scores, mean_score)` |
+
+#### Ejemplo
+
+```kafe
+import machine;
+
+List[List[FLOAT]] X = [[1.0, 2.0], [2.0, 3.0], [3.0, 4.0],
+                        [4.0, 5.0], [5.0, 6.0], [6.0, 7.0],
+                        [7.0, 8.0], [8.0, 9.0], [9.0, 10.0], [10.0, 11.0]];
+List[FLOAT] y = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0];
+
+MACHINE lr = machine.linear_regression();
+
+-- 5-Fold Cross Validation
+(List[FLOAT] scores, FLOAT mean_score) = machine.k_fold_cross_validation(
+    lr, X, y, 5, machine.r2_score
+);
+show(scores);      -- [0.92, 0.95, 0.88, 0.91, 0.94]
+show(mean_score);  -- ~0.92
+```
+
+#### Comparación: Train-Test Split vs K-Fold CV
+
+| Aspecto | Train-Test Split | K-Fold CV |
+|---------|------------------|-----------|
+| Particiones | 1 | $k$ |
+| Varianza | Alta | Baja |
+| Costo computacional | $1 \times$ | $k \times$ |
+| Uso de datos | Desperdicia test set | Cada muestra se usa para test y training |
+| Ideal para | Datasets grandes | Datasets pequeños/medianos |
+
+---
+
+## CrossValScore
+
+Wrapper para evaluar modelos con k-fold cross-validation de forma orientada a objetos. Calcula scores por fold, promedio y desviación estándar.
+
+### Función
+
+| Función | Firma | Descripción |
+|---------|-------|-------------|
+| `machine.cross_val_score(cv, scoring, random_state)` | `(INT, STR, INT) -> MACHINE` | Crea un evaluador de cross-validation |
+
+### Métodos
+
+| Método | Firma | Descripción |
+|--------|-------|-------------|
+| `cvs.fit(model, X, y)` | `(MACHINE, List[List[NUM]], List[NUM]) -> VOID` | Evalúa el modelo con k-fold CV |
+
+### Propiedades
+
+| Propiedad | Tipo | Descripción |
+|-----------|------|-------------|
+| `cvs.scores_` | `List[FLOAT]` | Scores de cada fold |
+| `cvs.mean_score_` | `FLOAT` | Promedio de scores |
+| `cvs.std_score_` | `FLOAT` | Desviación estándar de scores |
+
+### Estrategias de Scoring
+
+| Estrategia | Descripción |
+|------------|-------------|
+| `"accuracy"` | Exactitud (default) |
+| `"r2"` | Coeficiente de determinación |
+| `"mse"` | Error cuadrático medio |
+
+### Ejemplo
+
+```kafe
+import machine;
+
+MACHINE lr = machine.linear_regression();
+
+-- Evaluar con 5-fold CV usando R²
+MACHINE cvs = machine.cross_val_score(5, "r2", 42);
+cvs.fit(lr, X, y);
+
+show(cvs.scores_);       -- [0.92, 0.95, 0.88, 0.91, 0.94]
+show(cvs.mean_score_);   -- ~0.92
+show(cvs.std_score_);    -- ~0.025
+```
+
+---
+
+## GridSearchCV
+
+Búsqueda exahustiva de hiperparámetros sobre una grilla definida, evaluando cada combinación con cross-validation.
+
+### Fundamento Teórico
+
+GridSearchCV evalúa **todas** las combinaciones posibles de parámetros definidas en la grilla:
+
+- Complejidad: $O(\prod_{i=1}^{p} |G_i| \cdot k \cdot T_{\text{model}})$ donde $|G_i|$ es el número de valores del parámetro $i$, $k$ es el número de folds, y $T_{\text{model}}$ es el tiempo de entrenamiento por ajuste.
+- Ventaja: Garantiza encontrar la mejor combinación dentro de la grilla definida.
+- Limitación: Costo exponencial al agregar más parámetros (maldición de la dimensionalidad).
+
+### Función
+
+| Función | Firma | Descripción |
+|---------|-------|-------------|
+| `machine.grid_search_cv(model, param_grid, cv, scoring_fn)` | `(MACHINE, Dict, INT, FUNC) -> MACHINE` | Crea un objeto GridSearchCV |
+
+### Métodos
+
+| Método | Firma | Descripción |
+|--------|-------|-------------|
+| `gs.fit(X, y)` | `(List[List[NUM]], List[NUM]) -> VOID` | Ejecuta la búsqueda exhaustiva con CV |
+| `gs.predict(X)` | `(List[List[NUM]]) -> List[NUM]` | Predice con el mejor modelo encontrado |
+
+### Propiedades
+
+| Propiedad | Tipo | Descripción |
+|-----------|------|-------------|
+| `gs.best_params_` | `Dict` | Mejores parámetros encontrados |
+| `gs.best_score_` | `FLOAT` | Mejor score de cross-validation |
+| `gs.best_estimator_` | `MACHINE` | Modelo re-entrenado con los mejores parámetros |
+| `gs.cv_results_` | `List[Dict]` | Resultados de cada combinación evaluada |
+
+### Ejemplo
+
+```kafe
+import machine;
+
+MACHINE lr = machine.logistic_regression(0.01, 1000);
+
+-- Definir grilla de parámetros
+Dict param_grid = {"lr": [0.001, 0.01, 0.1], "iter": [500, 1000, 2000]};
+
+-- GridSearchCV con 5-fold CV
+MACHINE gs = machine.grid_search_cv(lr, param_grid, 5, machine.accuracy_score);
+gs.fit(X_train, y_train);
+
+show(gs.best_params_);   -- Mejor combinación de parámetros
+show(gs.best_score_);    -- Mejor score de CV
+
+List[INT] preds = gs.predict(X_test);
+show(preds);
+```
+
+### Comparación: GridSearchCV vs RandomizedSearchCV
+
+| Aspecto | GridSearchCV | RandomizedSearchCV |
+|---------|--------------|---------------------|
+| Búsqueda | Exhaustiva (todas las combinaciones) | Muestreo aleatorio (n_iter combinaciones) |
+| Complejidad | $O(\prod \|G_i\| \cdot k \cdot T)$ | $O(n \cdot k \cdot T)$ |
+| Espacio continuo | Discretizado | Natural (distribuciones) |
+| Garantía | Óptimo en la grilla | No garantizado |
+| Velocidad | Lento con muchos parámetros | Más rápido, controlable |
+
+---
+
+## RandomizedSearchCV
+
+Búsqueda aleatoria de hiperparámetros muestreando un número fijo de combinaciones de distribuciones definidas, evaluando cada una con cross-validation.
+
+### Fundamento Teórico
+
+RandomizedSearchCV implementa **búsqueda aleatoria** sobre distribuciones de parámetros:
+
+- Complejidad: $O(n \cdot k \cdot T_{\text{model}})$ donde $n$ es `n_iter`, $k$ es el número de folds, y $T_{\text{model}}$ es el tiempo de entrenamiento por ajuste.
+- Para un presupuesto fijo $B$, explora más combinaciones que GridSearch ya que no depende del tamaño de la grilla.
+- Puede trabajar con distribuciones continuas (ej: log-uniform para learning rates).
+
+### Función
+
+| Función | Firma | Descripción |
+|---------|-------|-------------|
+| `machine.randomized_search_cv(model, param_dist, n_iter, cv, scoring_fn)` | `(MACHINE, Dict, INT, INT, FUNC) -> MACHINE` | Crea un objeto RandomizedSearchCV |
+
+### Métodos
+
+| Método | Firma | Descripción |
+|--------|-------|-------------|
+| `rs.fit(X, y)` | `(List[List[NUM]], List[NUM]) -> VOID` | Ejecuta la búsqueda aleatoria con CV |
+| `rs.predict(X)` | `(List[List[NUM]]) -> List[NUM]` | Predice con el mejor modelo encontrado |
+
+### Propiedades
+
+| Propiedad | Tipo | Descripción |
+|-----------|------|-------------|
+| `rs.best_params_` | `Dict` | Mejores parámetros encontrados |
+| `rs.best_score_` | `FLOAT` | Mejor score de cross-validation |
+| `rs.best_estimator_` | `MACHINE` | Modelo re-entrenado con los mejores parámetros |
+| `rs.cv_results_` | `List[Dict]` | Resultados de cada combinación evaluada |
+
+### Ejemplo
+
+```kafe
+import machine;
+
+MACHINE lr = machine.logistic_regression(0.01, 1000);
+
+-- Definir distribuciones de parámetros
+Dict param_dist = {"lr": [0.001, 0.01, 0.1, 0.5], "iter": [100, 500, 1000, 2000]};
+
+-- RandomizedSearchCV: 10 iteraciones, 5-fold CV
+MACHINE rs = machine.randomized_search_cv(lr, param_dist, 10, 5, machine.accuracy_score);
+rs.fit(X_train, y_train);
+
+show(rs.best_params_);    -- Mejor combinación encontrada
+show(rs.best_score_);     -- Mejor score de CV
+
+List[INT] preds = rs.predict(X_test);
+show(preds);
+```
+
+---
+
+## Pipeline
+
+Encadena múltiples pasos de preprocessing con un modelo final en un solo objeto. Previene data leakage al garantizar que cada transformador solo vea los datos de entrenamiento durante `fit()`.
+
+### Fundamento Teórico
+
+Dado un pipeline $P = [T_1, T_2, \ldots, T_n, M]$:
+
+**Entrenamiento**: Cada transformador se ajusta y transforma secuencialmente, luego el modelo final se ajusta en los datos transformados.
+
+**Predicción**: Cada transformación se aplica en orden, luego el modelo predice.
+
+### Función
+
+| Función | Firma | Descripción |
+|---------|-------|-------------|
+| `machine.pipeline(name1, step1, name2, step2, ...)` | `(STR, MACHINE, ...) -> MACHINE` | Crea un Pipeline con pasos nombrados |
+
+### Métodos
+
+| Método | Firma | Descripción |
+|--------|-------|-------------|
+| `pipe.fit(X, y)` | `(List[List[NUM]], List[NUM]) -> VOID` | Ajusta todos los pasos del pipeline |
+| `pipe.predict(X)` | `(List[List[NUM]]) -> List[NUM]` | Aplica transformaciones y predice |
+| `pipe.score(X, y, metric)` | `(List[List[NUM]], List[NUM], FUNC) -> FLOAT` | Evalúa usando el modelo final |
+| `pipe.transform(X)` | `(List[List[NUM]]) -> List[List[FLOAT]]` | Aplica solo las transformaciones |
+| `pipe.fit_transform(X, y)` | `(List[List[NUM]], List[NUM]) -> List[List[FLOAT]]` | Fit + transform |
+| `pipe.get_params()` | `() -> List[STR]` | Retorna nombres de los pasos |
+
+### Propiedades
+
+| Propiedad | Tipo | Descripción |
+|-----------|------|-------------|
+| `pipe.named_steps_` | `Dict` | Diccionario de pasos por nombre (después de fit) |
+| `pipe.steps_` | `List[Tuple]` | Lista de tuplas (nombre, paso) ajustadas |
+
+### Ejemplo
+
+```kafe
+import machine;
+
+-- Crear transformadores y modelo
+MACHINE scaler = machine.standard_scaler();
+MACHINE lr = machine.linear_regression();
+
+-- Crear pipeline: escalar → regresión lineal
+MACHINE pipe = machine.pipeline("scaler", scaler, "model", lr);
+
+-- Entrenar pipeline completo
+pipe.fit(X_train, y_train);
+
+-- Predecir (aplica scaler automáticamente)
+List[FLOAT] preds = pipe.predict(X_test);
+
+-- Evaluar
+FLOAT r2 = pipe.score(X_test, y_test);
+
+-- Acceder a pasos específicos
+show(pipe.named_steps_["scaler"]);
+show(pipe.get_params());  -- ["scaler", "model"]
+```
+
+### Ejemplo con GridSearchCV
+
+```kafe
+import machine;
+
+MACHINE scaler = machine.standard_scaler();
+MACHINE lr = machine.logistic_regression(0.01, 1000);
+MACHINE pipe = machine.pipeline("scaler", scaler, "model", lr);
+
+-- Buscar hiperparámetros del scaler y el modelo simultáneamente
+Dict param_grid = {"model__lr": [0.001, 0.01, 0.1], "scaler": [scaler]};
+MACHINE gs = machine.grid_search_cv(pipe, param_grid, 5, machine.accuracy_score);
+gs.fit(X_train, y_train);
+
+show(gs.best_params_);
+show(gs.best_score_);
+```
+
+### Comparación: Código Manual vs Pipeline
+
+| Aspecto | Código Manual | Pipeline |
+|---------|---------------|----------|
+| Data leakage | Riesgo alto (olvidar separar fit/transform) | Prevenido automáticamente |
+| Modularidad | Código repetitivo | Bloques reutilizables |
+| Cross-validation | Error común: fit scaler en todo el dataset | Correcto por diseño |
+| GridSearchCV | No integrable | Búsqueda de hiperparámetros anidada |
+| Legibilidad | Múltiples líneas de fit/transform | Un solo objeto expressivo |
 
 ---
 

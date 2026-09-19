@@ -10,6 +10,7 @@ from .RandomForest import RandomForestClassifier, RandomForestRegressor
 from .RidgeRegression import RidgeRegression
 from .LassoRegression import LassoRegression
 from .SVR import SVR
+from .model_selection import train_test_split, k_fold, CrossValScore, GridSearchCV, RandomizedSearchCV, Pipeline
 from .preprocessing import (
     StandardScaler,
     MinMaxScaler,
