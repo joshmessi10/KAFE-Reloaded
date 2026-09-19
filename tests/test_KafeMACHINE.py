@@ -12,6 +12,7 @@ SUBDIRS = [
     "metrics_regression",
     "clustering",
     "naive_bayes",
+    "model_selection",
 ]
 
 

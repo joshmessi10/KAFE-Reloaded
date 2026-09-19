@@ -1,0 +1,16 @@
+import machine;
+
+List[List[FLOAT]] X = [[1.0], [2.0], [3.0], [4.0], [5.0], [6.0], [7.0], [8.0], [9.0], [10.0]];
+List[FLOAT] y = [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0];
+
+-- Test different n_iter values
+MACHINE search1 = machine.randomized_search_cv(3, 3, "accuracy", 42);
+MACHINE knn1 = machine.knn(3);
+search1.fit(knn1, X, y);
+
+MACHINE search2 = machine.randomized_search_cv(10, 3, "accuracy", 42);
+MACHINE knn2 = machine.knn(3);
+search2.fit(knn2, X, y);
+
+show(len(search1.cv_results_));
+show(len(search2.cv_results_));

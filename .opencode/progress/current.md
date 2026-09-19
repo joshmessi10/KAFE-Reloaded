@@ -2,20 +2,21 @@
 
 | Field | Value |
 |-------|-------|
-| Feature | Support Vector Regression (SVR) |
+| Feature | Pipeline |
 | Status | done |
-| Current step | All 397 tests passing |
+| Current step | 5 pipeline tests passing (415 passed, 9 pre-existing failures) |
 | Next step | — |
 | Blockers | None |
 | Related ADRs | — |
 
 ## Notes
-- Implemented Support Vector Regression (SVR) from scratch in `src/lib/KafeMACHINE/SVR.py`
-- SVR class extends BaseMachine with `fit()`, `predict()`, `score()` methods
-- Supports linear, RBF, and polynomial kernels
-- Linear kernel: Coordinate Descent optimization with epsilon-insensitive loss
-- Kernel (RBF/poly): Simplified SMO-like coordinate descent on dual variables
-- Factory function `machine.svr(C, epsilon, kernel)` in funciones.py
-- Methods: fit(), predict(), score()
-- 8 tests added: svr_linear_basic, svr_linear_multifeature, svr_rbf_basic, svr_epsilon_high, svr_c_regularization, svr_error_empty, svr_error_c_negative, svr_error_mismatch
-- Previous feature: Ridge y Lasso Regression (389 tests)
+- Implemented Pipeline desde scratch en `src/lib/KafeMACHINE/model_selection.py`
+- Pipeline encadena transformaciones de preprocessing con un modelo final
+- Extiende BaseMachine para compatibilidad con el tipo MACHINE de KAFE
+- API: `machine.pipeline("name1", step1, "name2", step2, ...)` con pares alternados nombre/paso
+- Esto se debió a que la homogeneidad de listas de KAFE no permite listas con tipos Python mezclados (StandardScaler vs LinearRegression)
+- Métodos: fit(X, y), predict(X), score(X, y), transform(X), fit_transform(X, y), get_params()
+- Factory function sin check_sig por argumentos variables
+- 5 tests: pipeline_basic, pipeline_transform, pipeline_three_steps, pipeline_get_params, pipeline_regression_score
+- 2 error fixtures: error_empty.error.kf, error_not_fitted.error.kf
+- Previous feature: GridSearchCV y RandomizedSearchCV

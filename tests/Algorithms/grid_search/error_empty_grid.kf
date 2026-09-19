@@ -1,0 +1,5 @@
+import machine;
+
+MACHINE grid = machine.grid_search_cv(5, "accuracy", 42);
+MACHINE knn_model = machine.knn(3);
+grid.fit(knn_model, [], []);

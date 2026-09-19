@@ -1,85 +1,112 @@
-# Random Forest Regressor
+# RandomForestRegressor
+
+## Name
+
+RandomForestRegressor
+
+## Category
+
+ML algorithm — ensemble regression
+
+## Description
+
+RandomForestRegressor es un ensamble de árboles de regresión que combina bagging con selección aleatoria de características. Agrega predicciones por promedio, reduciendo overfitting de árboles individuales.
 
 ## Mathematical Foundation
 
-Random Forest Regressor es un método de **ensemble learning** para regresión que construye múltiples árboles de regresión y agrega sus predicciones por promedio.
+**Muestreo Bootstrap**: Cada árbol se entrena en una muestra aleatoria del dataset original con reemplazo (~63% de los datos únicos).
 
-### Key Concepts
+**Selección Aleatoria**: En cada split, solo se consideran $\sqrt{d}$ características.
 
-**Bootstrap Sampling**: Cada árbol se entrena en una muestra aleatoria del dataset original con reemplazo (~63% de los datos).
+**Criterio de Split**: Reducción de varianza — busca el split que más reduce la varianza del target en los hijos.
 
-**Random Feature Selection**: En cada split, solo se consideran $\sqrt{d}$ características aleatorias (donde $d$ es el total de features).
+**Agregación**: Predicción final = promedio de predicciones de todos los árboles:
 
-**Averaging**: La predicción final es el promedio de las predicciones de todos los árboles.
+$$\hat{y} = \frac{1}{T} \sum_{t=1}^T \hat{y}_t$$
 
-### Algorithm
+- **Time Complexity**: $O(T \cdot n \cdot d \cdot \log n)$ para entrenamiento, $O(T \cdot d)$ para predicción
+- **Space Complexity**: $O(T \cdot \text{nodos})$ para almacenar los árboles
 
-**Training (fit)**:
-1. Para cada árbol $t = 1, \ldots, T$:
-   a. Crear muestra bootstrap $D_t$ del conjunto de entrenamiento $D$
-   b. Construir árbol $T_t$ sobre $D_t$:
-      - En cada nodo, seleccionar $m$ features aleatorios
-      - Encontrar mejor split usando **variance reduction**
-      - Dividir en hijos izquierdo y derecho
-      - Repetir hasta criterio de parada
+## Step-by-Step Algorithm
 
-**Prediction (predict)**:
-1. Para cada árbol, obtener predicción $\hat{y}_t(x)$
-2. Retornar promedio: $\hat{y}(x) = \frac{1}{T} \sum_{t=1}^{T} \hat{y}_t(x)$
+1. Para cada árbol $t$ en $1, \ldots, T$:
+   a. Crear muestra bootstrap del dataset
+   b. Construir árbol de regresión con selección aleatoria de features
+   c. Cada nodo: calcular varianza del target, buscar mejor split por reducción de varianza
+2. Para predicción: promediar predicciones de todos los árboles
 
-### Variance Reduction
+## Motivation
 
-El criterio de split para regresión es la **reducción de varianza**:
-
-$$\text{gain} = \text{Var}(y) - \left(\frac{n_L}{n}\text{Var}(y_L) + \frac{n_R}{n}\text{Var}(y_R)\right)$$
-
-Donde:
-- $\text{Var}(y) = \frac{1}{n}\sum_{i=1}^{n}(y_i - \bar{y})^2$
-- $n_L, n_R$ = número de muestras en hijos izquierdo y derecho
-
-## Complexity
-
-| Operation | Time Complexity | Space Complexity |
-|-----------|----------------|-----------------|
-| Training | $O(T \cdot n \cdot d \cdot \log n)$ | $O(T \cdot n)$ |
-| Prediction | $O(T \cdot d)$ | $O(T)$ |
+Random Forest Reduce el overfitting de árboles individuales mediante bagging y selección aleatoria. Es uno de los algoritmos más utilizados por su robustez y facilidad de uso.
 
 ## Advantages
 
-1. **Reduce overfitting** — ensemble generaliza mejor que árbol individual
-2. **Captura relaciones no lineales** — árboles pueden modelar cualquier función
-3. **No requiere escalado** — modelos basados en árboles son invariantes a escala
-4. **Robusto a outliers** — promedio suaviza valores extremos
-5. **Feature importance** — puede medir importancia por uso en splits
+- Reduce overfitting vs árbol individual
+- Maneja features numéricas y categóricas
+- No requiere escalado de features
+- Estimación de importancia de features
+- Robusto a outliers
 
 ## Limitations
 
-1. **Menos interpretable** — ensamble es más difícil de interpretar que árbol individual
-2. **Entrenamiento lento** — debe entrenar múltiples árboles
-3. **Extapolación** — no puede predecir valores fuera del rango visto en entrenamiento
-4. **Memoria intensivo** — almacena múltiples árboles
+- Menos interpretable que un árbol único
+- Más lento de entrenar que un árbol individual
+- Puede overfittear con muy pocos datos
+- No extrapolá más allá del rango visto en entrenamiento
 
 ## When to Use
 
-- Relaciones no lineales entre features y target
-- Datos con muchos features
-- Necesidad de alta precisión sin mucho tuning
-- Features de diferentes escalas
+- Regresión con datos tabulares
+- Cuando se necesita robustez y generalización
+- Features mixtas (numéricas + categóricas)
 
 ## When NOT to Use
 
-- Interpretabilidad es crítica
-- Datos con tendencia temporal (extrapolación)
-- Datasets muy grandes (entrenamiento es lento)
+- Cuando la interpretabilidad es crítica
+- Series de tiempo con tendencia (no extrapolá)
+- Datos muy pequeños (< 50 muestras)
+
+## Dependencies
+
+- DecisionTree (reutilizado para cada árbol)
+- BaseMachine
+
+## Related Concepts
+
+- random-forest (classifier)
+- decision-tree
+- lasso-regression
 
 ## Relationship with KAFE
 
-KAFE implementa RandomForestRegressor desde scratch:
-- Usa **variance reduction** como criterio de split (vs Gini para classifier)
-- Predicción por **promedio** (vs votación mayoritaria para classifier)
-- Hereda de BaseMachine con interfaz fit/predict/score estándar
+En KAFE, RandomForestRegressor se implementa en `RandomForest.py` junto con el Classifier. El factory `machine.random_forest_regressor(n_estimators, max_depth, min_samples_split, min_samples_leaf)` crea una instancia.
+
+## Usage Examples
+
+```kafe
+import machine;
+
+MACHINE rf = machine.random_forest_regressor(10, 0, 2, 1);
+rf.fit(X, y);
+
+List[FLOAT] preds = rf.predict([[1.5], [3.0], [5.5]]);
+FLOAT r2 = rf.score(X, y);
+```
+
+## Implementation Location
+
+- `src/lib/KafeMACHINE/RandomForest.py` — class `RandomForestRegressor`
+
+## Public API
+
+- `machine.random_forest_regressor(n_estimators, max_depth, min_samples_split, min_samples_leaf)` — crea RandomForestRegressor
+- `rf.fit(X, y)` — entrena el ensamble
+- `rf.predict(X)` — predice por promedio
+- `rf.score(X, y)` — calcula R²
+- `rf.trees_` — lista de árboles entrenados
+- `rf.n_features_` — número de features
 
 ## References
 
-- Breiman, L. (2001). Random Forests. *Machine Learning*, 45(1), 5-32.
-- Hastie, T., Tibshirani, R., & Friedman, J. (2009). *The Elements of Statistical Learning*. Springer.
+- Breiman, L. (2001). Random Forests. Machine Learning, 45(1), 5-32.
+- scikit-learn RandomForestRegressor: https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestRegressor.html

@@ -1,0 +1,3 @@
+import machine;
+
+MACHINE search = machine.randomized_search_cv(0, 5, "accuracy", 42);

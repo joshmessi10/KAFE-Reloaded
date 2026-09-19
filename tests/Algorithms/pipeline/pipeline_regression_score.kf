@@ -1,0 +1,13 @@
+import machine;
+
+MACHINE scaler = machine.standard_scaler();
+MACHINE ridge = machine.ridge_regression(1.0);
+
+MACHINE pipe = machine.pipeline("scaler", scaler, "model", ridge);
+
+List[List[FLOAT]] X = [[1.0], [2.0], [3.0], [4.0], [5.0]];
+List[FLOAT] y = [2.0, 4.0, 5.0, 4.0, 5.0];
+pipe.fit(X, y);
+
+FLOAT score = pipe.score(X, y);
+show(score);

@@ -25,6 +25,7 @@ KafeGESHA deep learning library — ◐ In Progress. Dense, activations, optimiz
 3. Gradient Boosting implementation.
 4. Legacy review tasks (BaseMachine, LinearRegression, LogisticRegression, KNN, Metrics).
 5. Performance optimization (vectorization, parallel execution).
+6. Model Selection — ✔ Completed (train_test_split, k_fold, CrossValScore, GridSearchCV, RandomizedSearchCV, Pipeline).
 
 ## Current Blockers
 

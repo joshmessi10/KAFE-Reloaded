@@ -23,6 +23,15 @@ Active project planning. Do not move this content into AGENTS.md (see AGENTS.md 
 - ☐ SVM (classification)
 - ☐ Gradient Boosting
 
+## Model Selection
+
+- ✔ train_test_split (2026-09-14)
+- ✔ k-fold Cross Validation (2026-09-14)
+- ✔ CrossValScore wrapper (2026-09-14)
+- ✔ GridSearchCV (2026-09-18)
+- ✔ RandomizedSearchCV (2026-09-18)
+- ✔ Pipeline (2026-09-18)
+
 ## Deep Learning
 
 - ☐ Dense

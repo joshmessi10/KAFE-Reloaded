@@ -1,5 +1,5 @@
 from global_utils import check_sig
-from TypeUtils import entero_t, cadena_t, numeros_t, flotante_t, booleano_t
+from TypeUtils import entero_t, cadena_t, numeros_t, flotante_t, booleano_t, matriz_numeros_t, vector_numeros_t, lista_cualquiera_t
 from .LinearRegression import LinearRegression
 from .preprocessing.LabelEncoder import LabelEncoder
 from .preprocessing.OneHotEncoder import OneHotEncoder
@@ -18,6 +18,7 @@ from .RandomForest import RandomForestClassifier, RandomForestRegressor
 from .RidgeRegression import RidgeRegression
 from .LassoRegression import LassoRegression
 from .SVR import SVR
+from .model_selection import CrossValScore, GridSearchCV, RandomizedSearchCV, Pipeline
 from .metrics import (
     accuracy_score, precision_score, recall_score, f1_score,
     confusion_matrix, classification_report,
@@ -215,3 +216,101 @@ def svr(C=1.0, epsilon=0.1, kernel='linear'):
     kernel: tipo de kernel 'linear', 'rbf', o 'poly' (default: 'linear')
     """
     return SVR(C, epsilon, kernel)
+
+
+@check_sig({
+    2: [matriz_numeros_t, vector_numeros_t],
+    3: [matriz_numeros_t, vector_numeros_t, flotante_t],
+    4: [matriz_numeros_t, vector_numeros_t, flotante_t, entero_t],
+    5: [matriz_numeros_t, vector_numeros_t, flotante_t, entero_t, booleano_t]
+})
+def train_test_split(X, y, test_size=0.2, random_state=0, shuffle=True):
+    """
+    Divide datos en conjuntos de entrenamiento y prueba.
+
+    X: matriz de features
+    y: vector objetivo
+    test_size: proporción para test (0.0 - 1.0, default: 0.2)
+    random_state: semilla para reproducibilidad (default: 0)
+    shuffle: si se barajan los datos (default: true)
+    """
+    from .model_selection import train_test_split as _tts
+    return _tts(X, y, test_size, random_state, shuffle)
+
+
+@check_sig({
+    1: [entero_t],
+    2: [entero_t, entero_t],
+    3: [entero_t, entero_t, booleano_t],
+    4: [entero_t, entero_t, booleano_t, entero_t]
+})
+def k_fold(n_samples, n_splits=5, shuffle=False, random_state=0):
+    """
+    Genera índices para k-fold cross validation.
+
+    n_samples: número total de muestras
+    n_splits: número de folds (default: 5)
+    shuffle: si se barajan los datos (default: false)
+    random_state: semilla para reproducibilidad (default: 0)
+    """
+    from .model_selection import k_fold as _kf
+    return _kf(n_samples, n_splits, shuffle, random_state)
+
+
+@check_sig({
+    0: [],
+    1: [entero_t],
+    2: [entero_t, cadena_t],
+    3: [entero_t, cadena_t, entero_t]
+})
+def cross_val_score(cv=5, scoring='accuracy', random_state=0):
+    """
+    Crea una instancia de CrossValScore para evaluar modelos con k-fold CV.
+
+    cv: número de folds (default: 5)
+    scoring: función de scoring 'accuracy', 'r2', o 'mse' (default: 'accuracy')
+    random_state: semilla para reproducibilidad (default: 0)
+    """
+    return CrossValScore(cv, scoring, random_state)
+
+
+@check_sig({0: [], 1: [[entero_t]], 2: [[entero_t], [cadena_t]], 3: [[entero_t], [cadena_t], [entero_t]]})
+def grid_search_cv(cv=5, scoring='accuracy', random_state=0):
+    """
+    Crea una instancia de GridSearchCV para búsqueda exahustiva de hiperparámetros.
+
+    cv: número de folds para cross validation (default: 5)
+    scoring: métrica de evaluación 'accuracy', 'r2', o 'mse' (default: 'accuracy')
+    random_state: semilla para reproducibilidad (default: 0)
+    """
+    return GridSearchCV({}, cv, scoring, random_state)
+
+
+@check_sig({0: [], 1: [[entero_t]], 2: [[entero_t], [entero_t]], 3: [[entero_t], [entero_t], [cadena_t]], 4: [[entero_t], [entero_t], [cadena_t], [entero_t]]})
+def randomized_search_cv(n_iter=10, cv=5, scoring='accuracy', random_state=0):
+    """
+    Crea una instancia de RandomizedSearchCV para búsqueda aleatoria de hiperparámetros.
+
+    n_iter: número de combinaciones a muestrear (default: 10)
+    cv: número de folds para cross validation (default: 5)
+    scoring: métrica de evaluación 'accuracy', 'r2', o 'mse' (default: 'accuracy')
+    random_state: semilla para reproducibilidad (default: 0)
+    """
+    return RandomizedSearchCV({}, n_iter, cv, scoring, random_state)
+
+
+def pipeline(*args):
+    """
+    Crea una instancia de Pipeline para encadenar preprocessing y modelos.
+
+    Acepta pares alternados de nombre y paso:
+        machine.pipeline("scaler", scaler, "model", lr)
+    """
+    if len(args) < 2:
+        raise Exception("pipeline: requires at least one name-step pair")
+    if len(args) % 2 != 0:
+        raise Exception("pipeline: requires an even number of arguments (name, step pairs)")
+
+    names = [args[i] for i in range(0, len(args), 2)]
+    steps = [args[i] for i in range(1, len(args), 2)]
+    return Pipeline(names, steps)

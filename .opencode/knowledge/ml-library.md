@@ -10,6 +10,9 @@ scikit-learn-style ML models and evaluation metrics, implemented from scratch in
 - `src/lib/KafeMACHINE/BaseMachine.py` — base model class shared by models.
 - Models: `LinearRegression.py`, `LogisticRegression.py`, `KNN.py`, `PCA.py`, `DecisionTree.py`, `RandomForest.py` (RandomForestClassifier + RandomForestRegressor), `GaussianNB.py`, `DBSCAN.py`, `RidgeRegression.py`, `LassoRegression.py`, `SVR.py`.
 - Preprocessing: `StandardScaler.py`, `MinMaxScaler.py`, `SimpleImputer.py`, `LabelEncoder.py`, `OneHotEncoder.py`, `OrdinalEncoder.py`, `PCA.py`.
+- Model Selection: `model_selection.py` — `train_test_split`, `k_fold_cross_validation`, `CrossValScore`, `grid_search_cv`, `randomized_search_cv`, `Pipeline` (GridSearchCV + RandomizedSearchCV + Pipeline).
+- Hyperparameter Search: GridSearchCV and RandomizedSearchCV in `model_selection.py`.
+- Pipeline: `Pipeline` class in `model_selection.py` — chains preprocessing steps with a model.
 - Metrics: `metrics.py`.
 
 ## Public API (factories)
@@ -25,9 +28,12 @@ scikit-learn-style ML models and evaluation metrics, implemented from scratch in
 - `machine.random_forest_regressor(n_estimators, max_depth, min_samples_split, min_samples_leaf)`
 - `machine.gaussian_nb()`
 - `machine.standard_scaler()` / `machine.minmax_scaler()` / `machine.simple_imputer(strategy)`
-- `machine.label_encoder()` / `machine.one_hot_encoder()`
+- `machine.label_encoder()` / `machine.one_hot_encoder()` / `machine.ordinal_encoder()`
 - `machine.pca(n)`
 - `machine.dbscan(eps, min_samples)`
+- Model selection: `machine.train_test_split(X, y, test_size, random_state)`, `machine.k_fold_cross_validation(model, X, y, k, scoring_fn)`, `machine.cross_val_score(cv, scoring, random_state)`
+- Hyperparameter search: `machine.grid_search_cv(model, param_grid, cv, scoring_fn)`, `machine.randomized_search_cv(model, param_dist, n_iter, cv, scoring_fn)`
+- Pipeline: `machine.pipeline(name1, step1, name2, step2, ...)`
 - Classification metrics: `accuracy_score`, `precision_score`, `recall_score`, `f1_score`, `confusion_matrix`, `classification_report`.
 - Regression metrics: `mean_squared_error`, `mean_absolute_error`, `root_mean_squared_error`, `r2_score`, `max_error`, `median_absolute_error`, `mean_absolute_percentage_error`, `explained_variance_score`.
 
