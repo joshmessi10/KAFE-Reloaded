@@ -10,6 +10,8 @@ from .RandomForest import RandomForestClassifier, RandomForestRegressor
 from .RidgeRegression import RidgeRegression
 from .LassoRegression import LassoRegression
 from .SVR import SVR
+from .SVM import SVM
+from .ElasticNet import ElasticNet
 from .model_selection import train_test_split, k_fold, CrossValScore, GridSearchCV, RandomizedSearchCV, Pipeline
 from .preprocessing import (
     StandardScaler,
@@ -19,4 +21,5 @@ from .preprocessing import (
     OrdinalEncoder,
     SimpleImputer,
     PCA,
+    PolynomialFeatures,
 )

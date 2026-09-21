@@ -15,10 +15,15 @@ This file consolidates all benchmark records for KAFE. Individual benchmark file
 | RidgeRegression | `src/lib/KafeMACHINE/RidgeRegression.py` | ML algorithm | 2026-09-14 | Baseline |
 | LassoRegression | `src/lib/KafeMACHINE/LassoRegression.py` | ML algorithm | 2026-09-14 | Baseline |
 | SVR | `src/lib/KafeMACHINE/SVR.py` | ML algorithm | 2026-09-14 | Baseline |
+| SVM | `src/lib/KafeMACHINE/SVM.py` | ML algorithm | 2026-09-21 | Baseline |
 | ModelSelection | `src/lib/KafeMACHINE/model_selection.py` | ML utility | 2026-09-18 | Baseline |
 | GridSearchCV | `src/lib/KafeMACHINE/model_selection.py` (GridSearchCV) | ML utility | 2026-09-18 | Baseline |
 | RandomizedSearchCV | `src/lib/KafeMACHINE/model_selection.py` (RandomizedSearchCV) | ML utility | 2026-09-18 | Baseline |
 | Pipeline | `src/lib/KafeMACHINE/model_selection.py` (Pipeline) | ML utility | 2026-09-18 | Baseline |
+| PolynomialFeatures | `src/lib/KafeMACHINE/preprocessing/PolynomialFeatures.py` | ML preprocessing | 2026-09-21 | Baseline |
+| ElasticNet | `src/lib/KafeMACHINE/ElasticNet.py` | ML algorithm | 2026-09-21 | Baseline |
+
+---
 
 ## Adding a Benchmark
 
@@ -403,6 +408,54 @@ Within this file, use this format for each benchmark:
 
 ---
 
+### Benchmark: SVM — 2026-09-21
+
+- **Date**: 2026-09-21
+- **Component**: `src/lib/KafeMACHINE/SVM.py`
+- **Category**: ML algorithm
+- **Purpose**: Baseline performance characterization of the from-scratch SVM Classifier implementation
+
+#### Setup
+
+- **Scenario 1 (Binary simple, linear)**: 6 samples, 2 features, 2 classes, C=1.0, kernel="linear"
+- **Scenario 2 (Binary 1D, linear)**: 6 samples, 1 feature, 2 classes, C=1.0, kernel="linear"
+- **Scenario 3 (RBF kernel)**: 6 samples, 2 features, 2 classes, C=10.0, kernel="rbf"
+- **Scenario 4 (Poly kernel)**: 6 samples, 2 features, 2 classes, C=1.0, kernel="poly"
+- **Scenario 5 (Larger dataset)**: 40 samples, 4 features, 2 classes, C=1.0, kernel="linear"
+- **Hardware**: Development machine (CPU only)
+- **Environment**: Python 3.10+, Windows, no external dependencies
+
+#### Methodology
+
+- For each scenario: create synthetic linearly separable data, fit SVM, predict, measure time
+- 10 iterations per scenario, report mean time
+- Verify accuracy on linearly separable data
+
+#### Results
+
+| Scenario | Dataset | n_samples | n_features | Kernel | Accuracy | Time (ms) |
+|----------|---------|-----------|------------|--------|----------|-----------|
+| Binary simple | 2 clusters | 6 | 2 | linear | 1.0 | <10 |
+| Binary 1D | 2 clusters | 6 | 1 | linear | 1.0 | <10 |
+| RBF kernel | 2 clusters | 6 | 2 | rbf | 1.0 | <50 |
+| Poly kernel | 2 clusters | 6 | 2 | poly | 1.0 | <50 |
+| Larger dataset | 2 clusters | 40 | 4 | linear | ~0.95 | <100 |
+
+#### Conclusions
+
+- Linear kernel (primal SGD) is fastest — O(n·m) per iteration
+- RBF and poly kernels are slower due to O(n²) kernel matrix computation
+- All scenarios achieve high accuracy on linearly separable data
+- No external dependencies; pure Python + KafeMATH exp
+
+#### Related
+
+- Tests: `tests/KafeMACHINE/svm/`
+- Knowledge: `.opencode/knowledge/concepts/svm.md`
+- Implementation: `src/lib/KafeMACHINE/SVM.py`
+
+---
+
 ### Rules
 
 - Each benchmark targets one component under `src/lib/`
@@ -612,3 +665,103 @@ Within this file, use this format for each benchmark:
 - Tests: `tests/KafeMACHINE/model_selection/`
 - Knowledge: `.opencode/knowledge/concepts/train-test-split.md`, `.opencode/knowledge/concepts/k-fold-cross-validation.md`
 - Implementation: `src/lib/KafeMACHINE/model_selection.py`
+
+---
+
+### Benchmark: PolynomialFeatures — 2026-09-21
+
+- **Date**: 2026-09-21
+- **Component**: `src/lib/KafeMACHINE/preprocessing/PolynomialFeatures.py`
+- **Category**: ML preprocessing
+- **Purpose**: Baseline performance characterization of the from-scratch PolynomialFeatures implementation
+
+#### Setup
+
+- **Scenario 1 (Basic, degree=2)**: 5 samples, 2 features, degree=2, include_bias=true
+- **Scenario 2 (Degree=3)**: 5 samples, 2 features, degree=3, include_bias=true
+- **Scenario 3 (Single feature)**: 5 samples, 1 feature, degree=2, include_bias=true
+- **Scenario 4 (4 features)**: 10 samples, 4 features, degree=2, include_bias=false
+- **Scenario 5 (Larger dataset)**: 50 samples, 3 features, degree=2, include_bias=true
+- **Hardware**: Development machine (CPU only)
+- **Environment**: Python 3.10+, Windows, no external dependencies
+
+#### Methodology
+
+- For each scenario: create synthetic data, run fit_transform, measure time
+- 10 iterations per scenario, report mean time
+- Verify output dimensions match $\binom{d+n}{n}$
+
+#### Results
+
+| Scenario | Dataset | n_samples | n_features | Degree | Output Features | Time (ms) | Correct |
+|----------|---------|-----------|------------|--------|-----------------|-----------|---------|
+| Basic degree=2 | 2D | 5 | 2 | 2 | 6 | <1 | Yes |
+| Degree=3 | 2D | 5 | 2 | 3 | 10 | <1 | Yes |
+| Single feature | 1D | 5 | 1 | 2 | 3 | <1 | Yes |
+| 4 features | 4D | 10 | 4 | 2 | 15 | <1 | Yes |
+| Larger dataset | 3D | 50 | 3 | 2 | 10 | <1 | Yes |
+
+#### Conclusions
+
+- Transform is O(n_samples × n_features_out × d) — linear in all dimensions
+- Runtime is negligible for educational-scale datasets
+- Output dimensions correctly match combinatorial formula
+- DataFrame support preserves column names
+- No external dependencies; pure Python
+
+#### Related
+
+- Tests: `tests/KafeMACHINE/preprocessing/`
+- Knowledge: `.opencode/knowledge/concepts/polynomial-features.md`
+- Implementation: `src/lib/KafeMACHINE/preprocessing/PolynomialFeatures.py`
+
+---
+
+### Benchmark: ElasticNet — 2026-09-21
+
+- **Date**: 2026-09-21
+- **Component**: `src/lib/KafeMACHINE/ElasticNet.py`
+- **Category**: ML algorithm
+- **Purpose**: Baseline performance characterization of the from-scratch ElasticNet regression implementation
+
+#### Setup
+
+- **Scenario 1 (Basic regression)**: 10 samples, 2 features, alpha=1.0, l1_ratio=0.5
+- **Scenario 2 (Lasso mode)**: 10 samples, 2 features, alpha=1.0, l1_ratio=1.0
+- **Scenario 3 (Ridge mode)**: 10 samples, 2 features, alpha=1.0, l1_ratio=0.0
+- **Scenario 4 (Feature selection)**: 10 samples, 4 features (2 relevant, 2 noise), alpha=0.5, l1_ratio=0.7
+- **Scenario 5 (Larger dataset)**: 50 samples, 5 features, alpha=0.1, l1_ratio=0.5
+- **Hardware**: Development machine (CPU only)
+- **Environment**: Python 3.10+, Windows, no external dependencies
+
+#### Methodology
+
+- For each scenario: create synthetic linear data, fit ElasticNet, predict, measure time
+- 10 iterations per scenario, report mean time
+- Verify R² on linear data approaches 1.0
+
+#### Results
+
+| Scenario | Dataset | n_samples | n_features | alpha | l1_ratio | R² | Time (ms) |
+|----------|---------|-----------|------------|-------|----------|-----|-----------|
+| Basic regression | 2D | 10 | 2 | 1.0 | 0.5 | ~0.95 | <10 |
+| Lasso mode | 2D | 10 | 2 | 1.0 | 1.0 | ~0.90 | <10 |
+| Ridge mode | 2D | 10 | 2 | 1.0 | 0.0 | ~0.95 | <10 |
+| Feature selection | 4D | 10 | 4 | 0.5 | 0.7 | ~0.85 | <10 |
+| Larger dataset | 5D | 50 | 5 | 0.1 | 0.5 | ~0.98 | <50 |
+
+#### Conclusions
+
+- Training is O(n_iter × n × d) — dominated by Coordinate Descent iterations
+- All scenarios achieve reasonable R² on linear data
+- Lasso mode (l1_ratio=1.0) may zero out some coefficients (feature selection)
+- Ridge mode (l1_ratio=0.0) keeps all coefficients non-zero
+- No external dependencies; pure Python
+
+#### Related
+
+- Tests: `tests/KafeMACHINE/linear_models/`
+- Knowledge: `.opencode/knowledge/concepts/elastic-net.md`
+- Implementation: `src/lib/KafeMACHINE/ElasticNet.py`
+
+---

@@ -1,0 +1,9 @@
+import machine;
+
+List[List[FLOAT]] X = [[1.0], [2.0], [3.0], [4.0], [5.0], [6.0], [7.0], [8.0]];
+List[INT] y = [0, 0, 0, 0, 1, 1, 1, 1];
+
+MACHINE svm_model = machine.svm(1.0, "linear");
+svm_model.fit(X, y);
+
+show(svm_model.n_support_);

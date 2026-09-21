@@ -8,8 +8,8 @@ scikit-learn-style ML models and evaluation metrics, implemented from scratch in
 
 - `src/lib/KafeMACHINE/funciones.py` — public factory functions (the `machine` API).
 - `src/lib/KafeMACHINE/BaseMachine.py` — base model class shared by models.
-- Models: `LinearRegression.py`, `LogisticRegression.py`, `KNN.py`, `PCA.py`, `DecisionTree.py`, `RandomForest.py` (RandomForestClassifier + RandomForestRegressor), `GaussianNB.py`, `DBSCAN.py`, `RidgeRegression.py`, `LassoRegression.py`, `SVR.py`.
-- Preprocessing: `StandardScaler.py`, `MinMaxScaler.py`, `SimpleImputer.py`, `LabelEncoder.py`, `OneHotEncoder.py`, `OrdinalEncoder.py`, `PCA.py`.
+- Models: `LinearRegression.py`, `LogisticRegression.py`, `KNN.py`, `PCA.py`, `DecisionTree.py`, `RandomForest.py` (RandomForestClassifier + RandomForestRegressor), `GaussianNB.py`, `DBSCAN.py`, `RidgeRegression.py`, `LassoRegression.py`, `SVR.py`, `SVM.py`, `ElasticNet.py`.
+- Preprocessing: `StandardScaler.py`, `MinMaxScaler.py`, `SimpleImputer.py`, `LabelEncoder.py`, `OneHotEncoder.py`, `OrdinalEncoder.py`, `PCA.py`, `PolynomialFeatures.py`.
 - Model Selection: `model_selection.py` — `train_test_split`, `k_fold_cross_validation`, `CrossValScore`, `grid_search_cv`, `randomized_search_cv`, `Pipeline` (GridSearchCV + RandomizedSearchCV + Pipeline).
 - Hyperparameter Search: GridSearchCV and RandomizedSearchCV in `model_selection.py`.
 - Pipeline: `Pipeline` class in `model_selection.py` — chains preprocessing steps with a model.
@@ -20,7 +20,9 @@ scikit-learn-style ML models and evaluation metrics, implemented from scratch in
 - `machine.linear_regression()`
 - `machine.ridge_regression(alpha, fit_intercept, max_iter)`
 - `machine.lasso_regression(alpha, fit_intercept, max_iter)`
+- `machine.elastic_net(alpha, l1_ratio, fit_intercept, max_iter)`
 - `machine.svr(C, epsilon, kernel)`
+- `machine.svm(C, kernel, max_iter)`
 - `machine.logistic_regression(lr, iter)`
 - `machine.knn(k)`
 - `machine.decision_tree_classifier(criterion, max_depth, min_samples_split, min_samples_leaf)`
@@ -29,6 +31,7 @@ scikit-learn-style ML models and evaluation metrics, implemented from scratch in
 - `machine.gaussian_nb()`
 - `machine.standard_scaler()` / `machine.minmax_scaler()` / `machine.simple_imputer(strategy)`
 - `machine.label_encoder()` / `machine.one_hot_encoder()` / `machine.ordinal_encoder()`
+- `machine.polynomial_features(degree, include_bias)`
 - `machine.pca(n)`
 - `machine.dbscan(eps, min_samples)`
 - Model selection: `machine.train_test_split(X, y, test_size, random_state)`, `machine.k_fold_cross_validation(model, X, y, k, scoring_fn)`, `machine.cross_val_score(cv, scoring, random_state)`

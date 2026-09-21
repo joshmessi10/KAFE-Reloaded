@@ -1,0 +1,7 @@
+import machine;
+
+List[List[FLOAT]] X = [[1.0, 2.0], [3.0, 4.0]];
+MACHINE poly = machine.polynomial_features(2, True);
+List[List[FLOAT]] result = poly.fit_transform(X);
+show(result);
+show(len(result[0]));
