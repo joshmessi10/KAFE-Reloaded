@@ -8,6 +8,7 @@ from .preprocessing.PCA import PCA
 from .preprocessing.StandardScaler import StandardScaler
 from .preprocessing.MinMaxScaler import MinMaxScaler
 from .preprocessing.SimpleImputer import SimpleImputer
+from .preprocessing.PolynomialFeatures import PolynomialFeatures
 from .LogisticRegression import LogisticRegression
 from .KNN import KNN
 from .DecisionTree import DecisionTreeClassifier
@@ -18,6 +19,8 @@ from .RandomForest import RandomForestClassifier, RandomForestRegressor
 from .RidgeRegression import RidgeRegression
 from .LassoRegression import LassoRegression
 from .SVR import SVR
+from .SVM import SVM
+from .ElasticNet import ElasticNet
 from .model_selection import CrossValScore, GridSearchCV, RandomizedSearchCV, Pipeline
 from .metrics import (
     accuracy_score, precision_score, recall_score, f1_score,
@@ -218,6 +221,18 @@ def svr(C=1.0, epsilon=0.1, kernel='linear'):
     return SVR(C, epsilon, kernel)
 
 
+@check_sig({0: [], 1: [[flotante_t]], 2: [[flotante_t], [cadena_t]], 3: [[flotante_t], [cadena_t], [entero_t]]})
+def svm(C=1.0, kernel='linear', max_iter=1000):
+    """
+    Crea una instancia de Support Vector Machine Classifier.
+
+    C: parámetro de regularización (default: 1.0)
+    kernel: tipo de kernel 'linear', 'rbf', o 'poly' (default: 'linear')
+    max_iter: máximo de iteraciones (default: 1000)
+    """
+    return SVM(C, kernel, max_iter=max_iter)
+
+
 @check_sig({
     2: [matriz_numeros_t, vector_numeros_t],
     3: [matriz_numeros_t, vector_numeros_t, flotante_t],
@@ -314,3 +329,27 @@ def pipeline(*args):
     names = [args[i] for i in range(0, len(args), 2)]
     steps = [args[i] for i in range(1, len(args), 2)]
     return Pipeline(names, steps)
+
+
+@check_sig({0: [], 1: [[entero_t]], 2: [[entero_t], [booleano_t]]})
+def polynomial_features(degree=2, include_bias=True):
+    """
+    Crea una instancia de PolynomialFeatures.
+
+    degree: grado máximo del polinomio (default: 2)
+    include_bias: si se incluye término de sesgo (default: true)
+    """
+    return PolynomialFeatures(degree, include_bias)
+
+
+@check_sig({0: [], 1: [[flotante_t]], 2: [[flotante_t], [flotante_t]], 3: [[flotante_t], [flotante_t], [booleano_t]], 4: [[flotante_t], [flotante_t], [booleano_t], [entero_t]]})
+def elastic_net(alpha=1.0, l1_ratio=0.5, fit_intercept=True, max_iter=1000):
+    """
+    Crea una instancia de Elastic Net Regression.
+
+    alpha: fuerza de regularización (default: 1.0)
+    l1_ratio: proporción L1 vs L2 (default: 0.5)
+    fit_intercept: si se ajusta intercepto (default: true)
+    max_iter: máximo de iteraciones (default: 1000)
+    """
+    return ElasticNet(alpha, l1_ratio, fit_intercept, max_iter)

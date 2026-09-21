@@ -13,6 +13,7 @@ SUBDIRS = [
     "clustering",
     "naive_bayes",
     "model_selection",
+    "svm",
 ]
 
 

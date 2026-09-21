@@ -1,0 +1,10 @@
+import machine;
+
+List[List[FLOAT]] X = [[1.0, 1.0], [1.0, 2.0], [2.0, 1.0], [2.0, 2.0], [3.0, 3.0], [3.0, 4.0], [4.0, 3.0], [4.0, 4.0]];
+List[INT] y = [0, 0, 0, 0, 1, 1, 1, 1];
+
+MACHINE svm_model = machine.svm(10.0, "rbf");
+svm_model.fit(X, y);
+
+List[INT] preds = svm_model.predict([[1.5, 1.5], [3.5, 3.5]]);
+show(preds);

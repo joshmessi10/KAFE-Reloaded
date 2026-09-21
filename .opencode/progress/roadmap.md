@@ -9,6 +9,7 @@ Active project planning. Do not move this content into AGENTS.md (see AGENTS.md 
 - ✔ KNN (2026-07-28)
 - ✔ Decision Tree (2026-08-04)
 - ✔ Preprocessing — StandardScaler, MinMaxScaler, SimpleImputer, LabelEncoder, OneHotEncoder, OrdinalEncoder, PCA (2026-09-02)
+- ✔ Preprocessing — PolynomialFeatures (2026-09-21)
 - ✔ KMeans (2026-09-12)
 - ✔ Gaussian Naive Bayes (2026-09-12)
 - ✔ DBSCAN (2026-09-14)
@@ -16,11 +17,12 @@ Active project planning. Do not move this content into AGENTS.md (see AGENTS.md 
 - ✔ Random Forest Regressor (2026-09-14)
 - ✔ Ridge Regression (2026-09-14)
 - ✔ Lasso Regression (2026-09-14)
+- ✔ ElasticNet (2026-09-21)
 - ✔ SVR (2026-09-14)
 - ✔ KMeans — fixes: K-Means++ edge case, score(), fit_predict() (2026-09-14)
 - ✔ Metrics — Classification & Regression (2026-07-28)
 - ✔ BaseMachine — Unified contract: flexible fit, _unwrap_data, _validate_matrix_shape (2026-09-14)
-- ☐ SVM (classification)
+- ✔ SVM (classification) (2026-09-21)
 - ☐ Gradient Boosting
 
 ## Model Selection

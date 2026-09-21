@@ -31,6 +31,8 @@ import machine;
 | `machine.gaussian_nb()` | `() -> MACHINE` | Crea un clasificador Naive Bayes Gaussiano |
 | `machine.random_forest_classifier(n_est, depth, split, leaf)` | `(INT, INT, INT, INT) -> MACHINE` | Crea un clasificador Random Forest |
 | `machine.random_forest_regressor(n_est, depth, split, leaf)` | `(INT, INT, INT, INT) -> MACHINE` | Crea un regresor Random Forest |
+| `machine.polynomial_features(degree, include_bias)` | `(INT, BOOL) -> MACHINE` | Crea features polinomiales hasta un grado especificado |
+| `machine.elastic_net(alpha, l1_ratio, fit_intercept, max_iter)` | `(FLOAT, FLOAT, BOOL, INT) -> MACHINE` | Crea un modelo ElasticNet (regularización L1+L2) |
 | `machine.pipeline(name1, step1, ...)` | `(STR, MACHINE, ...) -> MACHINE` | Crea un Pipeline de preprocessing + modelo |
 | `machine.cross_val_score(cv, scoring, random_state)` | `(INT, STR, INT) -> MACHINE` | Crea un evaluador de cross-validation |
 
@@ -270,6 +272,88 @@ MACHINE lasso = machine.lasso_regression(0.1);
 
 ---
 
+## ElasticNet
+
+Implementa regresión lineal con regularización combinada L1 + L2 — combina las ventajas de Ridge (manejo de correlaciones) y Lasso (selección de features).
+
+### Fundamento Teórico
+
+ElasticNet minimiza: $\frac{1}{2n}||y - X\theta||^2 + \alpha \cdot l1\_ratio \cdot ||\theta||_1 + \alpha \cdot (1 - l1\_ratio) \cdot ||\theta||^2$
+
+Donde:
+- $\alpha$ es la fuerza total de regularización
+- $l1\_ratio$ controla la proporción L1 vs L2 (0=Ridge puro, 1=Lasso puro)
+
+**Algoritmo**: Coordinate Descent con soft-thresholding (no hay solución cerrada).
+
+### Métodos
+
+| Método | Firma | Descripción |
+|--------|-------|-------------|
+| `en.fit(X, y)` | `(List[List[NUM]] o List[NUM], List[NUM]) -> VOID` | Entrena el modelo |
+| `en.predict(X)` | `(List[List[NUM]] o List[NUM]) -> List[NUM]` | Predice valores |
+| `en.score(X, y)` | `(List[List[NUM]] o List[NUM], List[NUM]) -> FLOAT` | Calcula R² |
+
+### Parámetros del Constructor
+
+```kafe
+-- alpha=1.0, l1_ratio=0.5, fit_intercept=true, max_iter=1000
+MACHINE en = machine.elastic_net(1.0, 0.5, true, 1000);
+```
+
+| Parámetro | Tipo | Default | Descripción |
+|-----------|------|---------|-------------|
+| `alpha` | FLOAT | 1.0 | Fuerza de regularización |
+| `l1_ratio` | FLOAT | 0.5 | Proporción L1 vs L2 (0=Ridge, 1=Lasso) |
+| `fit_intercept` | BOOL | true | Si se ajusta intercepto |
+| `max_iter` | INT | 1000 | Máximo de iteraciones |
+
+### Propiedades
+
+| Propiedad | Tipo | Descripción |
+|-----------|------|-------------|
+| `en.coef_` | `List[FLOAT]` | Coeficientes (algunos pueden ser 0) |
+| `en.intercept_` | `FLOAT` | Intercepto |
+
+### Ejemplo
+
+```kafe
+import machine;
+
+List[List[FLOAT]] X = [[1.0, 2.0], [3.0, 4.0], [5.0, 6.0], [7.0, 8.0]];
+List[FLOAT] y = [2.0, 4.0, 6.0, 8.0];
+
+MACHINE en = machine.elastic_net(1.0, 0.5);
+en.fit(X, y);
+
+show(en.coef_);      -- Coeficientes (algunos pueden ser 0)
+show(en.intercept_); -- Intercepto
+
+List[FLOAT] preds = en.predict([[2.0, 3.0], [6.0, 7.0]]);
+show(preds);
+
+FLOAT r2 = en.score(X, y);
+show(r2);
+```
+
+### Comparación: Ridge vs Lasso vs ElasticNet
+
+| Aspecto | Ridge (L2) | Lasso (L1) | ElasticNet (L1+L2) |
+|---------|-----------|------------|---------------------|
+| Selección de features | No | Sí | Sí |
+| Manejo de correlaciones | Sí | Inestable | Sí |
+| Número de parámetros | 1 ($\alpha$) | 1 ($\alpha$) | 2 ($\alpha$, $l1\_ratio$) |
+| Sparsity | No | Sí | Sí (controlable) |
+| Grupos de features | No | No | Sí |
+
+### Cuándo Usar
+
+- Muchas features con sospecha de irrelevantes: ElasticNet con $l1\_ratio$ alto
+- Features correlacionadas (ej: one-hot encoding): ElasticNet con $l1\_ratio$ bajo
+- Balance entre selección y estabilidad: ElasticNet con $l1\_ratio$ intermedio
+
+---
+
 ## SVR (Support Vector Regression)
 
 Implementa regresión usando Support Vector Machines con función de pérdida epsilon-insensitive.
@@ -341,6 +425,88 @@ show(r2);
 | Outliers | Sensible | Robusto |
 | Support vectors | No | Sí |
 | Kernel | No | Sí (linear, rbf, poly) |
+
+---
+
+## SVM (Support Vector Machine Classifier)
+
+Implementa un clasificador SVM para clasificación binaria que encuentra el hiperplano de máximo margen que separa las clases.
+
+### Fundamento Teórico
+
+SVM busca el hiperplano $w \cdot x + b = 0$ que maximice el margen entre clases usando **hinge loss**:
+
+$$J(w) = \frac{1}{2}||w||^2 + C \sum_{i=1}^{n} \max(0, 1 - y_i \cdot f(x_i))$$
+
+**Kernels disponibles**:
+- `linear`: $K(x_i, x_j) = x_i \cdot x_j$ — SGD primal con hinge loss + L2
+- `rbf`: $K(x_i, x_j) = \exp(-\gamma ||x_i - x_j||^2)$ — SMO simplificado dual
+- `poly`: $K(x_i, x_j) = (x_i \cdot x_j + 1)^d$ — SMO simplificado dual
+
+### Métodos
+
+| Método | Firma | Descripción |
+|--------|-------|-------------|
+| `svm.fit(X, y)` | `(List[List[NUM]] o List[NUM], List[INT]) -> VOID` | Entrena el clasificador. `y` contiene etiquetas binarias |
+| `svm.predict(X)` | `(List[List[NUM]] o List[NUM]) -> List[INT]` | Predice clases (0 o 1) |
+| `svm.predict_proba(X)` | `(List[List[NUM]] o List[NUM]) -> List[List[FLOAT]]` | Probabilidades [P(0), P(1)] via sigmoid |
+| `svm.score(X, y)` | `(List[List[NUM]] o List[NUM], List[INT]) -> FLOAT` | Calcula exactitud (default) o métrica personalizada |
+
+### Parámetros del Constructor
+
+```kafe
+-- C=1.0, kernel="linear", max_iter=1000 (valores por defecto)
+MACHINE svm_model = machine.svm(1.0, "linear", 1000);
+```
+
+| Parámetro | Tipo | Default | Descripción |
+|-----------|------|---------|-------------|
+| `C` | FLOAT | 1.0 | Regularización (mayor = menos regularización) |
+| `kernel` | STRING | "linear" | Tipo de kernel: "linear", "rbf", "poly" |
+| `max_iter` | INT | 1000 | Máximo de iteraciones de entrenamiento |
+
+### Propiedades
+
+| Propiedad | Tipo | Descripción |
+|-----------|------|-------------|
+| `svm.coef_` | `List[FLOAT]` | Coeficientes del modelo (solo kernel lineal) |
+| `svm.intercept_` | `FLOAT` | Intercepto del modelo |
+| `svm.support_vectors_` | `List[List[FLOAT]]` | Vectores de soporte |
+| `svm.support_vector_labels_` | `List[INT]` | Etiquetas de los vectores de soporte |
+| `svm.n_support_` | `INT` | Número de vectores de soporte |
+| `svm.classes_` | `List[INT]` | Clases únicas |
+
+### Ejemplo
+
+```kafe
+import machine;
+
+List[List[FLOAT]] X = [[1.0, 2.0], [2.0, 3.0], [3.0, 3.0],
+                        [6.0, 5.0], [7.0, 7.0], [8.0, 6.0]];
+List[INT] y = [0, 0, 0, 1, 1, 1];
+
+MACHINE svm_model = machine.svm(1.0, "linear", 1000);
+svm_model.fit(X, y);
+
+List[INT] preds = svm_model.predict([[2.0, 2.0], [7.0, 7.0], [4.0, 4.0]]);
+show(preds);  -- [0, 1, 0]
+
+List[List[FLOAT]] probs = svm_model.predict_proba([[2.0, 2.0], [7.0, 7.0]]);
+show(probs);  -- [[~0.9, ~0.1], [~0.1, ~0.9]]
+
+FLOAT acc = svm_model.score(X, y);
+show(acc);  -- 1.0
+```
+
+### Comparación con LogisticRegression
+
+| Aspecto | SVM | LogisticRegression |
+|---------|-----|-------------------|
+| Pérdida | Hinge loss | Log loss |
+| Margen | Maximiza margen | Maximiza verosimilitud |
+| Support vectors | Sí (solo puntos del margen) | No (usa todos los datos) |
+| Kernel trick | Sí (linear, rbf, poly) | No |
+| Probabilidades | Sigmoid post-hoc | nativa (softmax) |
 
 ---
 
@@ -1471,3 +1637,89 @@ PCA utiliza el **algoritmo de Jacobi** para calcular valores y vectores propios:
 2. **Matriz de covarianza**: $C = (X^T \cdot X) / (n - 1)$
 3. **Jacobi**: Iteraciones para diagonalizar la matriz de covarianza
 4. **Ordenamiento**: Componentes ordenados por varianza explicada (mayor a menor)
+
+---
+
+## PolynomialFeatures
+
+Genera features polinomiales hasta un grado especificado, permitiendo que modelos lineales capturen relaciones no lineales.
+
+### Fundamento Teórico
+
+Para $d$ features y grado $n$, genera todas las combinaciones de potencias $p_1 + p_2 + \cdots + p_d \leq n$:
+
+$$[x_1, x_2] \xrightarrow{\text{degree}=2} [1, x_1, x_2, x_1^2, x_1 x_2, x_2^2]$$
+
+Número de features de salida (con bias): $\binom{d+n}{n} = \frac{(d+n)!}{d! \cdot n!}$
+
+**Ejemplo** con degree=2 y 2 features:
+
+| Feature | Potencias | Valor |
+|---------|-----------|-------|
+| 1 (bias) | $(0,0)$ | $1$ |
+| x0 | $(1,0)$ | $x_1$ |
+| x1 | $(0,1)$ | $x_2$ |
+| x0² | $(2,0)$ | $x_1^2$ |
+| x0*x1 | $(1,1)$ | $x_1 \cdot x_2$ |
+| x1² | $(0,2)$ | $x_2^2$ |
+
+### Métodos
+
+| Método | Firma | Descripción |
+|--------|-------|-------------|
+| `pf.fit(data)` | `(List[List[NUM]] o PARDOS) -> MACHINE` | Ajusta PolynomialFeatures (calcula dimensiones) |
+| `pf.transform(data)` | `(List[List[NUM]] o PARDOS) -> List[List[FLOAT]]` | Transforma features a polinomiales |
+| `pf.fit_transform(data)` | `(List[List[NUM]] o PARDOS) -> List[List[FLOAT]]` | Fit + transform |
+
+### Parámetros del Constructor
+
+```kafe
+-- degree=2, include_bias=true (valores por defecto)
+MACHINE pf = machine.polynomial_features(2, true);
+```
+
+| Parámetro | Tipo | Default | Descripción |
+|-----------|------|---------|-------------|
+| `degree` | INT | 2 | Grado máximo del polinomio |
+| `include_bias` | BOOL | true | Si se incluye columna de sesgo (1s) |
+
+### Propiedades
+
+| Propiedad | Tipo | Descripción |
+|-----------|------|-------------|
+| `pf.n_features_in_` | `INT` | Número de features de entrada |
+| `pf.n_features_out_` | `INT` | Número de features de salida |
+
+### Ejemplo
+
+```kafe
+import machine;
+
+List[List[FLOAT]] X = [[1.0, 2.0], [3.0, 4.0], [5.0, 6.0]];
+
+MACHINE pf = machine.polynomial_features(2, true);
+List[List[FLOAT]] X_poly = pf.fit_transform(X);
+
+show(pf.n_features_in_);   -- 2
+show(pf.n_features_out_);  -- 6 (1 bias + 2 originales + 3 polinomiales)
+
+-- Combinar con regresión lineal para capturar no linealidad
+MACHINE lr = machine.linear_regression();
+lr.fit(X_poly, y);
+```
+
+### Comparación con Modelo Lineal Simple
+
+| Aspecto | Linear Regression | PolynomialFeatures + Linear Regression |
+|---------|-------------------|----------------------------------------|
+| Relaciones capturadas | Solo lineales | Lineales + polinomiales |
+| Número de features | $d$ | $\binom{d+n}{n}$ |
+| Overfitting | Bajo | Posible si degree es alto |
+| Escalado requerido | Opcional | Recomendado |
+
+### Limitaciones
+
+- **Maldición de dimensionalidad**: Features crecen exponencialmente con el grado
+- **Overfitting**: Alto grado puede memorizar ruido
+- **No invertible**: inverse_transform no está implementado
+- **Multicolinealidad**: Features polinomiales son altamente correlacionadas
