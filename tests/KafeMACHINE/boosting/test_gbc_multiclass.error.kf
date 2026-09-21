@@ -1,0 +1,7 @@
+import machine;
+
+List[List[FLOAT]] X = [[1.0, 2.0], [2.0, 3.0], [3.0, 4.0], [4.0, 5.0], [5.0, 6.0]];
+List[INT] y = [0, 1, 2, 0, 1];
+
+MACHINE gbc = machine.gradient_boosting_classifier(10, 0.1, 2);
+gbc.fit(X, y);

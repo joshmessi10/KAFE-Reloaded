@@ -1,0 +1,7 @@
+import machine;
+
+List[List[FLOAT]] X = [];
+List[FLOAT] y = [];
+
+MACHINE gbr = machine.gradient_boosting_regressor(10, 0.1, 2);
+gbr.fit(X, y);

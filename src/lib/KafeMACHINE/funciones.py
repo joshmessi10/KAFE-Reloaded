@@ -24,6 +24,8 @@ from .SVR import SVR
 from .SVM import SVM
 from .ElasticNet import ElasticNet
 from .AgglomerativeClustering import AgglomerativeClustering
+from .AdaBoost import AdaBoostClassifier
+from .GradientBoosting import GradientBoostingClassifier, GradientBoostingRegressor
 from .model_selection import CrossValScore, GridSearchCV, RandomizedSearchCV, Pipeline
 from .metrics import (
     accuracy_score, precision_score, recall_score, f1_score,
@@ -368,6 +370,42 @@ def agglomerative_clustering(n_clusters=2, linkage='ward'):
     linkage: criterio de enlace 'single', 'complete', 'average', o 'ward' (default: 'ward')
     """
     return AgglomerativeClustering(n_clusters, linkage)
+
+
+@check_sig({0: [], 1: [[entero_t]], 2: [[entero_t], [flotante_t]], 3: [[entero_t], [flotante_t], [entero_t]]})
+def ada_boost_classifier(n_estimators=50, learning_rate=1.0, random_state=0):
+    """
+    Crea una instancia de AdaBoost Classifier.
+
+    n_estimators: número de weak classifiers (default: 50)
+    learning_rate: tasa de aprendizaje (default: 1.0)
+    random_state: semilla para reproducibilidad (default: 0)
+    """
+    return AdaBoostClassifier(n_estimators, learning_rate, random_state)
+
+
+@check_sig({0: [], 1: [[entero_t]], 2: [[entero_t], [flotante_t]], 3: [[entero_t], [flotante_t], [entero_t]]})
+def gradient_boosting_classifier(n_estimators=100, learning_rate=0.1, max_depth=3):
+    """
+    Crea una instancia de Gradient Boosting Classifier.
+
+    n_estimators: número de árboles (default: 100)
+    learning_rate: tasa de aprendizaje (default: 0.1)
+    max_depth: profundidad máxima por árbol (default: 3)
+    """
+    return GradientBoostingClassifier(n_estimators, learning_rate, max_depth)
+
+
+@check_sig({0: [], 1: [[entero_t]], 2: [[entero_t], [flotante_t]], 3: [[entero_t], [flotante_t], [entero_t]]})
+def gradient_boosting_regressor(n_estimators=100, learning_rate=0.1, max_depth=3):
+    """
+    Crea una instancia de Gradient Boosting Regressor.
+
+    n_estimators: número de árboles (default: 100)
+    learning_rate: tasa de aprendizaje (default: 0.1)
+    max_depth: profundidad máxima por árbol (default: 3)
+    """
+    return GradientBoostingRegressor(n_estimators, learning_rate, max_depth)
 
 
 @check_sig({0: [], 1: [[flotante_t, entero_t]]})

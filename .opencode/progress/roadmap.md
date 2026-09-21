@@ -24,7 +24,8 @@ Active project planning. Do not move this content into AGENTS.md (see AGENTS.md 
 - ✔ BaseMachine — Unified contract: flexible fit, _unwrap_data, _validate_matrix_shape (2026-09-14)
 - ✔ SVM (classification) (2026-09-21)
 - ✔ AgglomerativeClustering (2026-09-21)
-- ☐ Gradient Boosting
+- ✔ AdaBoostClassifier (2026-09-21)
+- ✔ Gradient Boosting (2026-09-21)
 
 ## Model Selection
 

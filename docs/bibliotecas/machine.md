@@ -1465,6 +1465,274 @@ show(labels);           -- [0, 0, 0, 1, 1, 1]
 
 ---
 
+## AdaBoostClassifier (Adaptive Boosting)
+
+Implementa un clasificador AdaBoost — algoritmo de ensemble learning que combina múltiples weak classifiers (decision stumps) de forma secuencial, enfatizando los errores del clasificador anterior.
+
+### Fundamento Teórico
+
+AdaBoost entrena $T$ weak classifiers secuencialmente. En cada iteración:
+1. Asigna pesos a las muestras (inicialmente uniformes)
+2. Entrena un decision stump con esos pesos
+3. Calcula el peso del stump ($\alpha_t$) según su error
+4. Actualiza los pesos de las muestras: incrementa los pesos de los errores
+
+**Predicción final**: Votación ponderada de todos los weak classifiers.
+
+$$H(x) = \text{sign}\left(\sum_{t=1}^{T} \alpha_t \cdot h_t(x)\right)$$
+
+### Métodos
+
+| Método | Firma | Descripción |
+|--------|-------|-------------|
+| `ab.fit(X, y)` | `(List[List[NUM]], List[INT]) -> VOID` | Entrena el ensamble de weak classifiers |
+| `ab.predict(X)` | `(List[List[NUM]]) -> List[INT]` | Predice por votación ponderada |
+| `ab.score(X, y)` | `(List[List[NUM]], List[INT]) -> FLOAT` | Calcula exactitud |
+
+### Parámetros del Constructor
+
+```kafe
+-- n_estimators=50, learning_rate=1.0 (valores por defecto)
+MACHINE ab = machine.ada_boost_classifier(50, 1.0);
+```
+
+| Parámetro | Tipo | Default | Descripción |
+|-----------|------|---------|-------------|
+| `n_estimators` | INT | 50 | Número de weak classifiers (decision stumps) |
+| `learning_rate` | FLOAT | 1.0 | Factor de escala para la contribución de cada stump |
+
+### Propiedades
+
+| Propiedad | Tipo | Descripción |
+|-----------|------|-------------|
+| `ab.estimators_` | `List[Dict]` | Lista de weak classifiers entrenados |
+| `ab.estimator_weights_` | `List[FLOAT]` | Peso $\alpha_t$ de cada weak classifier |
+| `ab.estimator_errors_` | `List[FLOAT]` | Error de cada weak classifier |
+| `ab.classes_` | `List[INT]` | Clases únicas |
+
+### Ejemplo
+
+```kafe
+import machine;
+
+List[List[FLOAT]] X = [[1.0, 2.0], [2.0, 3.0], [3.0, 3.0],
+                        [6.0, 5.0], [7.0, 7.0], [8.0, 6.0]];
+List[INT] y = [0, 0, 0, 1, 1, 1];
+
+MACHINE ab = machine.ada_boost_classifier(10, 1.0);
+ab.fit(X, y);
+
+List[INT] preds = ab.predict([[2.0, 2.0], [7.0, 7.0], [4.0, 4.0]]);
+show(preds);  -- [0, 1, 0]
+
+FLOAT acc = ab.score(X, y);
+show(acc);  -- 1.0
+```
+
+### Algoritmo Interno
+
+1. **Inicialización**: Pesos uniformes $w_i = 1/n$
+2. **Por cada iteración**:
+   - Entrenar decision stump con pesos actuales
+   - Calcular error ponderado $\epsilon_t$
+   - Calcular peso del stump $\alpha_t = 0.5 \cdot \ln((1 - \epsilon_t) / \epsilon_t)$
+   - Actualizar pesos de muestras
+3. **Predicción**: Votación ponderada de todos los stumps
+
+### Comparación con RandomForestClassifier
+
+| Aspecto | AdaBoostClassifier | RandomForestClassifier |
+|---------|-------------------|----------------------|
+| Tipo de ensemble | Boosting (secuencial) | Bagging (paralelo) |
+| Weak learner | Decision stump (profundidad 1) | Árbol completo (profundidad variable) |
+| Ponderación | Pondera weak learners por rendimiento | Votación igualitaria |
+| Paralelización | No (secuencial) | Sí (independientes) |
+| Overfitting | Controlado por learning_rate | Controlado por max_depth |
+
+---
+
+## GradientBoostingClassifier
+
+Implementa un clasificador Gradient Boosting — ensemble de árboles de decisión construidos secuencialmente, donde cada árbol corrige los errores del anterior usando gradient descent sobre la función de pérdida log-loss.
+
+### Fundamento Teórico
+
+Gradient Boosting construye $T$ árboles secuencialmente. En cada iteración:
+1. Calcula los pseudo-residuos (gradiente negativo de la pérdida log-loss)
+2. Entrena un árbol de regresión para predecir esos residuos
+3. Actualiza el modelo sumando la predicción del árbol ponderada por learning_rate
+
+**Función de Pérdida** (log-loss / deviance):
+
+$$\mathcal{L}(y, F) = -y \cdot \log(p) - (1-y) \cdot \log(1-p)$$
+
+**Predicción final**: Aplicar sigmoide a la suma de predicciones:
+
+$$H(x) = \sigma(F_T(x)) = \sigma\left(F_0(x) + \eta \sum_{t=1}^{T} h_t(x)\right)$$
+
+### Métodos
+
+| Método | Firma | Descripción |
+|--------|-------|-------------|
+| `gbc.fit(X, y)` | `(List[List[NUM]], List[INT]) -> VOID` | Entrena el ensamble de árboles |
+| `gbc.predict(X)` | `(List[List[NUM]]) -> List[INT]` | Predice clases (0 o 1) |
+| `gbc.score(X, y)` | `(List[List[NUM]], List[INT]) -> FLOAT` | Calcula exactitud |
+
+### Parámetros del Constructor
+
+```kafe
+-- n_estimators=100, learning_rate=0.1, max_depth=3 (valores por defecto)
+MACHINE gbc = machine.gradient_boosting_classifier(100, 0.1, 3);
+```
+
+| Parámetro | Tipo | Default | Descripción |
+|-----------|------|---------|-------------|
+| `n_estimators` | INT | 100 | Número de árboles en el ensamble |
+| `learning_rate` | FLOAT | 0.1 | Tasa de aprendizaje (shrinkage) |
+| `max_depth` | INT | 3 | Profundidad máxima de cada árbol |
+
+### Propiedades
+
+| Propiedad | Tipo | Descripción |
+|-----------|------|-------------|
+| `gbc.estimators_` | `List[Dict]` | Lista de árboles entrenados |
+| `gbc.initial_prediction_` | `FLOAT` | Predicción inicial (log-odds) |
+| `gbc.classes_` | `List[INT]` | Clases únicas |
+
+### Ejemplo
+
+```kafe
+import machine;
+
+List[List[FLOAT]] X = [[1.0, 2.0], [2.0, 3.0], [3.0, 3.0],
+                        [6.0, 5.0], [7.0, 7.0], [8.0, 6.0]];
+List[INT] y = [0, 0, 0, 1, 1, 1];
+
+MACHINE gbc = machine.gradient_boosting_classifier(10, 0.1, 3);
+gbc.fit(X, y);
+
+List[INT] preds = gbc.predict([[2.0, 2.0], [7.0, 7.0], [4.0, 4.0]]);
+show(preds);  -- [0, 1, 0]
+
+FLOAT acc = gbc.score(X, y);
+show(acc);  -- 1.0
+```
+
+### Algoritmo Interno
+
+1. **Inicialización**: $F_0 = 0.5 \cdot \ln((1-p)/p)$
+2. **Por cada iteración**:
+   - Calcular probabilidades con sigmoide
+   - Calcular pseudo-residuos: $r_i = y_i - p_i$
+   - Entrenar árbol de regresión sobre residuos
+   - Actualizar: $F_t = F_{t-1} + \eta \cdot h_t$
+3. **Predicción**: Clase = sigmoide($F_T$) >= 0.5
+
+### Comparación con RandomForestClassifier
+
+| Aspecto | GradientBoostingClassifier | RandomForestClassifier |
+|---------|---------------------------|----------------------|
+| Tipo de ensemble | Boosting (secuencial) | Bagging (paralelo) |
+| Weak learner | Árbol profundo (residuos) | Árbol (bootstrap) |
+| Dirección | Corrige errores previos | Independientes |
+| Paralelización | No (secuencial) | Sí (independientes) |
+| Overfitting | Más susceptible | Menos susceptible |
+
+### Comparación con AdaBoostClassifier
+
+| Aspecto | GradientBoostingClassifier | AdaBoostClassifier |
+|---------|---------------------------|-------------------|
+| Optimización | Gradient descent sobre pérdida | Ponderación de muestras |
+| Weak learner | Árbol de regresión (profundidad variable) | Decision stump (profundidad 1) |
+| Pérdida | Log-loss (cualquier función diferenciable) | Exponencial |
+| Flexibilidad | Más flexible (cualquier pérdida) | Menos flexible |
+
+---
+
+## GradientBoostingRegressor
+
+Implementa un regresor Gradient Boosting — ensemble de árboles de regresión construidos secuencialmente, donde cada árbol corrige los errores del anterior usando gradient descent sobre el error cuadrático medio.
+
+### Fundamento Teórico
+
+Gradient Boosting Regressor construye $T$ árboles secuencialmente para minimizar MSE:
+
+1. **Inicializar**: $F_0(x) = \bar{y}$
+2. **En cada iteración**:
+   - Calcular residuos: $r_i = y_i - F_{t-1}(x_i)$
+   - Entrenar árbol $h_t$ para predecir residuos
+   - Actualizar: $F_t = F_{t-1} + \eta \cdot h_t$
+
+**Función de Pérdida** (MSE):
+
+$$\mathcal{L}(y, F) = \frac{1}{2}(y - F)^2$$
+
+### Métodos
+
+| Método | Firma | Descripción |
+|--------|-------|-------------|
+| `gbr.fit(X, y)` | `(List[List[NUM]], List[NUM]) -> VOID` | Entrena el ensamble de árboles |
+| `gbr.predict(X)` | `(List[List[NUM]]) -> List[NUM]` | Predice valores |
+| `gbr.score(X, y)` | `(List[List[NUM]], List[NUM]) -> FLOAT` | Calcula R² |
+
+### Parámetros del Constructor
+
+```kafe
+-- n_estimators=100, learning_rate=0.1, max_depth=3 (valores por defecto)
+MACHINE gbr = machine.gradient_boosting_regressor(100, 0.1, 3);
+```
+
+| Parámetro | Tipo | Default | Descripción |
+|-----------|------|---------|-------------|
+| `n_estimators` | INT | 100 | Número de árboles en el ensamble |
+| `learning_rate` | FLOAT | 0.1 | Tasa de aprendizaje (shrinkage) |
+| `max_depth` | INT | 3 | Profundidad máxima de cada árbol |
+
+### Propiedades
+
+| Propiedad | Tipo | Descripción |
+|-----------|------|-------------|
+| `gbr.estimators_` | `List[Dict]` | Lista de árboles entrenados |
+| `gbr.initial_prediction_` | `FLOAT` | Predicción inicial (media de y) |
+
+### Ejemplo
+
+```kafe
+import machine;
+
+List[List[FLOAT]] X = [[1.0], [2.0], [3.0], [4.0], [5.0]];
+List[FLOAT] y = [2.0, 4.0, 6.0, 8.0, 10.0];
+
+MACHINE gbr = machine.gradient_boosting_regressor(10, 0.1, 3);
+gbr.fit(X, y);
+
+List[FLOAT] preds = gbr.predict([[1.5], [3.0], [5.5]]);
+show(preds);  -- ~[3.0, 6.0, 11.0]
+
+FLOAT r2 = gbr.score(X, y);
+show(r2);  -- ~1.0
+```
+
+### Algoritmo Interno
+
+1. **Inicialización**: $F_0 = \bar{y}$
+2. **Por cada iteración**:
+   - Calcular residuos: $r_i = y_i - F_{t-1}(x_i)$
+   - Entrenar árbol de regresión sobre residuos
+   - Actualizar: $F_t = F_{t-1} + \eta \cdot h_t$
+3. **Predicción**: $H(x) = F_T(x)$
+
+### Comparación con RandomForestRegressor
+
+| Aspecto | GradientBoostingRegressor | RandomForestRegressor |
+|---------|--------------------------|----------------------|
+| Tipo de ensemble | Boosting (secuencial) | Bagging (paralelo) |
+| Optimización | Gradiente descendente | Promedio de árboles |
+| Overfitting | Más susceptible | Menos susceptible |
+| Velocidad entrenamiento | Más lento | Más rápido (paralelizable) |
+
+---
+
 ## StandardScaler
 
 Estandariza características eliminando la media y escalando a varianza unitaria (Z-score): $z = (x - \mu) / \sigma$.
