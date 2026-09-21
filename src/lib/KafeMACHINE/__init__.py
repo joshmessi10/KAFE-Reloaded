@@ -12,6 +12,7 @@ from .LassoRegression import LassoRegression
 from .SVR import SVR
 from .SVM import SVM
 from .ElasticNet import ElasticNet
+from .AgglomerativeClustering import AgglomerativeClustering
 from .model_selection import train_test_split, k_fold, CrossValScore, GridSearchCV, RandomizedSearchCV, Pipeline
 from .preprocessing import (
     StandardScaler,
@@ -22,4 +23,6 @@ from .preprocessing import (
     SimpleImputer,
     PCA,
     PolynomialFeatures,
+    VarianceThreshold,
+    RecursiveFeatureElimination,
 )

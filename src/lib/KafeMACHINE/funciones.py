@@ -9,6 +9,8 @@ from .preprocessing.StandardScaler import StandardScaler
 from .preprocessing.MinMaxScaler import MinMaxScaler
 from .preprocessing.SimpleImputer import SimpleImputer
 from .preprocessing.PolynomialFeatures import PolynomialFeatures
+from .preprocessing.VarianceThreshold import VarianceThreshold
+from .preprocessing.RecursiveFeatureElimination import RecursiveFeatureElimination
 from .LogisticRegression import LogisticRegression
 from .KNN import KNN
 from .DecisionTree import DecisionTreeClassifier
@@ -21,6 +23,7 @@ from .LassoRegression import LassoRegression
 from .SVR import SVR
 from .SVM import SVM
 from .ElasticNet import ElasticNet
+from .AgglomerativeClustering import AgglomerativeClustering
 from .model_selection import CrossValScore, GridSearchCV, RandomizedSearchCV, Pipeline
 from .metrics import (
     accuracy_score, precision_score, recall_score, f1_score,
@@ -28,6 +31,7 @@ from .metrics import (
     mean_squared_error, mean_absolute_error, root_mean_squared_error,
     r2_score, max_error, median_absolute_error,
     mean_absolute_percentage_error, explained_variance_score,
+    roc_auc_score, silhouette_score,
 )
 
 @check_sig([0], [])
@@ -353,3 +357,35 @@ def elastic_net(alpha=1.0, l1_ratio=0.5, fit_intercept=True, max_iter=1000):
     max_iter: máximo de iteraciones (default: 1000)
     """
     return ElasticNet(alpha, l1_ratio, fit_intercept, max_iter)
+
+
+@check_sig({0: [], 1: [[entero_t]], 2: [[entero_t], [cadena_t]]})
+def agglomerative_clustering(n_clusters=2, linkage='ward'):
+    """
+    Crea una instancia de Agglomerative Clustering.
+
+    n_clusters: numero de clusters (default: 2)
+    linkage: criterio de enlace 'single', 'complete', 'average', o 'ward' (default: 'ward')
+    """
+    return AgglomerativeClustering(n_clusters, linkage)
+
+
+@check_sig({0: [], 1: [[flotante_t, entero_t]]})
+def variance_threshold(threshold=0.0):
+    """
+    Crea una instancia de VarianceThreshold.
+
+    threshold: umbral de varianza minimo (default: 0.0)
+    """
+    return VarianceThreshold(threshold)
+
+
+@check_sig({0: [], 1: [[entero_t]], 2: [[entero_t], [entero_t]]})
+def recursive_feature_elimination(n_features=1, max_iter=100):
+    """
+    Crea una instancia de Recursive Feature Elimination.
+
+    n_features: numero de features a seleccionar (default: 1)
+    max_iter: maximo de iteraciones (default: 100)
+    """
+    return RecursiveFeatureElimination(n_features=n_features)

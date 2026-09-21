@@ -22,6 +22,7 @@ This file consolidates all benchmark records for KAFE. Individual benchmark file
 | Pipeline | `src/lib/KafeMACHINE/model_selection.py` (Pipeline) | ML utility | 2026-09-18 | Baseline |
 | PolynomialFeatures | `src/lib/KafeMACHINE/preprocessing/PolynomialFeatures.py` | ML preprocessing | 2026-09-21 | Baseline |
 | ElasticNet | `src/lib/KafeMACHINE/ElasticNet.py` | ML algorithm | 2026-09-21 | Baseline |
+| AgglomerativeClustering | `src/lib/KafeMACHINE/AgglomerativeClustering.py` | ML algorithm | 2026-09-21 | Baseline |
 
 ---
 
@@ -453,6 +454,56 @@ Within this file, use this format for each benchmark:
 - Tests: `tests/KafeMACHINE/svm/`
 - Knowledge: `.opencode/knowledge/concepts/svm.md`
 - Implementation: `src/lib/KafeMACHINE/SVM.py`
+
+---
+
+### Benchmark: AgglomerativeClustering — 2026-09-21
+
+- **Date**: 2026-09-21
+- **Component**: `src/lib/KafeMACHINE/AgglomerativeClustering.py`
+- **Category**: ML algorithm
+- **Purpose**: Baseline performance characterization of the from-scratch Agglomerative Clustering implementation
+
+#### Setup
+
+- **Scenario 1 (Binary, 2 clusters)**: 6 samples, 2 features, 2 clusters, ward linkage
+- **Scenario 2 (3 clusters)**: 9 samples, 2 features, 3 clusters, ward linkage
+- **Scenario 3 (Single linkage)**: 6 samples, 2 features, 2 clusters, single linkage
+- **Scenario 4 (Complete linkage)**: 6 samples, 2 features, 2 clusters, complete linkage
+- **Scenario 5 (Larger dataset)**: 30 samples, 4 features, 3 clusters, average linkage
+- **Hardware**: Development machine (CPU only)
+- **Environment**: Python 3.10+, Windows, no external dependencies
+
+#### Methodology
+
+- For each scenario: create synthetic clustered data, fit AgglomerativeClustering, measure time
+- 10 iterations per scenario, report mean time
+- Verify cluster assignments are correct on linearly separable data
+
+#### Results
+
+| Scenario | Dataset | n_samples | n_features | n_clusters | Linkage | Time (ms) |
+|----------|---------|-----------|------------|------------|---------|-----------|
+| Binary, 2 clusters | 2 blobs | 6 | 2 | 2 | ward | <10 |
+| 3 clusters | 3 blobs | 9 | 2 | 3 | ward | <10 |
+| Single linkage | 2 blobs | 6 | 2 | 2 | single | <10 |
+| Complete linkage | 2 blobs | 6 | 2 | 2 | complete | <10 |
+| Larger dataset | 3 blobs | 30 | 4 | 3 | average | <100 |
+
+#### Conclusions
+
+- Training is $O(n^3)$ — dominated by distance matrix computation and iterative merge
+- All linkage methods produce correct cluster assignments on linearly separable data
+- Ward linkage tends to produce equally-sized clusters (minimizes variance)
+- Single linkage can produce elongated clusters (chaining effect)
+- Runtime grows significantly with dataset size (cubic complexity)
+- No external dependencies; pure Python
+
+#### Related
+
+- Tests: `tests/KafeMACHINE/clustering/`
+- Knowledge: `.opencode/knowledge/concepts/agglomerative-clustering.md`
+- Implementation: `src/lib/KafeMACHINE/AgglomerativeClustering.py`
 
 ---
 

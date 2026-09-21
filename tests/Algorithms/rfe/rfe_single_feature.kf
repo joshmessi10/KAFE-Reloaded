@@ -1,0 +1,10 @@
+import machine;
+
+List[List[FLOAT]] X = [[5.0, 2.0, 3.0], [4.0, 1.0, 6.0], [7.0, 8.0, 1.0], [10.0, 3.0, 9.0]];
+List[FLOAT] y = [1.0, 2.0, 3.0, 4.0];
+
+MACHINE rfe = machine.recursive_feature_elimination(1);
+rfe.fit(X, y);
+
+show(rfe.selected_indices_);
+show(rfe.ranking_);

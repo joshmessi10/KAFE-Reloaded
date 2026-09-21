@@ -1,0 +1,8 @@
+import machine;
+
+-- Feature 2 is constant (variance = 0)
+List[List[FLOAT]] X = [[1.0, 5.0, 3.0], [2.0, 5.0, 4.0], [3.0, 5.0, 5.0], [4.0, 5.0, 6.0]];
+MACHINE vt = machine.variance_threshold(0.0);
+List[List[FLOAT]] result = vt.fit_transform(X);
+show(result);
+show(len(result[0]));

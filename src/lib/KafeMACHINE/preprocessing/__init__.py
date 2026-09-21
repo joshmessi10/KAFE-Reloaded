@@ -6,3 +6,5 @@ from .OrdinalEncoder import OrdinalEncoder
 from .SimpleImputer import SimpleImputer
 from .PCA import PCA
 from .PolynomialFeatures import PolynomialFeatures
+from .VarianceThreshold import VarianceThreshold
+from .RecursiveFeatureElimination import RecursiveFeatureElimination

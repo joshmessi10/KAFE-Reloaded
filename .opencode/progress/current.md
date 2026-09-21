@@ -1,25 +1,21 @@
 # Current Work
 
-| Field | Value |
-|-------|-------|
-| Feature | PolynomialFeatures + ElasticNet |
-| Status | done |
-| Current step | 10 new tests passing (167 passed total, 9 pre-existing failures) |
-| Next step | — |
-| Blockers | None |
-| Related ADRs | — |
+## Feature: VarianceThreshold y RecursiveFeatureElimination
 
-## Notes
-- Implementado PolynomialFeatures desde scratch en `src/lib/KafeMACHINE/preprocessing/PolynomialFeatures.py`
-- Transformador que genera features polinomiales hasta un grado especificado
-- Algoritmo recursivo para generar combinaciones de potencias donde sum(power_i) <= degree
-- API scikit-learn: fit(), transform(), fit_transform(), inverse_transform()
-- Factory function: `machine.polynomial_features(degree, include_bias)`
-- Implementado ElasticNet desde scratch en `src/lib/KafeMACHINE/ElasticNet.py`
-- Regresión con regularización combinada L1 + L2
-- Optimización por Coordinate Descent con soft thresholding
-- API: fit(X, y), predict(X), score(X, y)
-- Factory function: `machine.elastic_net(alpha, l1_ratio, fit_intercept, max_iter)`
-- 5 tests PolynomialFeatures: degree1, degree2, no_bias, 1d, invalid_degree (error)
-- 5 tests ElasticNet: basic, multifeature, l1_ratio, empty (error), l1_ratio_error (error)
-- Previous feature: SVM Classifier
+**Status:** Implemented and verified
+
+**Changes:**
+- Created `src/lib/KafeMACHINE/preprocessing/VarianceThreshold.py` — elimina features con varianza por debajo de un umbral
+- Created `src/lib/KafeMACHINE/preprocessing/RecursiveFeatureElimination.py` — seleccion de features por eliminacion recursiva usando importancia de coeficientes
+- Updated `src/lib/KafeMACHINE/preprocessing/__init__.py` — exports de las nuevas clases
+- Updated `src/lib/KafeMACHINE/__init__.py` — exports de las nuevas clases
+- Updated `src/lib/KafeMACHINE/funciones.py` — factory functions `variance_threshold()` y `recursive_feature_elimination()`
+- Created 3 fixture tests for VarianceThreshold under `tests/KafeMACHINE/preprocessing/variance_threshold/`:
+  - `vt_remove_constant` — elimina feature constante (varianza 0)
+  - `vt_high_threshold` — umbral alto filtra feature con baja varianza
+  - `vt_keep_all` — umbral 0 conserva todas las features con varianza > 0
+- Created 2 fixture tests for RFE under `tests/Algorithms/rfe/`:
+  - `rfe_basic` — selecciona 2 de 3 features, verifica selected_indices_, support_, transform
+  - `rfe_single_feature` — selecciona 1 feature, verifica ranking_
+
+**Test results:** 5/5 new tests passed. No regressions (9 pre-existing failures in model_selection).
