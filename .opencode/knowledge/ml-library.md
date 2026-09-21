@@ -8,7 +8,7 @@ scikit-learn-style ML models and evaluation metrics, implemented from scratch in
 
 - `src/lib/KafeMACHINE/funciones.py` — public factory functions (the `machine` API).
 - `src/lib/KafeMACHINE/BaseMachine.py` — base model class shared by models.
-- Models: `LinearRegression.py`, `LogisticRegression.py`, `KNN.py`, `PCA.py`, `DecisionTree.py`, `RandomForest.py` (RandomForestClassifier + RandomForestRegressor), `GaussianNB.py`, `DBSCAN.py`, `RidgeRegression.py`, `LassoRegression.py`, `SVR.py`, `SVM.py`, `ElasticNet.py`, `AgglomerativeClustering.py`.
+- Models: `LinearRegression.py`, `LogisticRegression.py`, `KNN.py`, `PCA.py`, `DecisionTree.py`, `RandomForest.py` (RandomForestClassifier + RandomForestRegressor), `GaussianNB.py`, `DBSCAN.py`, `RidgeRegression.py`, `LassoRegression.py`, `SVR.py`, `SVM.py`, `ElasticNet.py`, `AgglomerativeClustering.py`, `AdaBoost.py`, `GradientBoosting.py` (GradientBoostingClassifier + GradientBoostingRegressor).
 - Preprocessing: `StandardScaler.py`, `MinMaxScaler.py`, `SimpleImputer.py`, `LabelEncoder.py`, `OneHotEncoder.py`, `OrdinalEncoder.py`, `PCA.py`, `PolynomialFeatures.py`, `VarianceThreshold.py`, `RecursiveFeatureElimination.py`.
 - Model Selection: `model_selection.py` — `train_test_split`, `k_fold_cross_validation`, `CrossValScore`, `grid_search_cv`, `randomized_search_cv`, `Pipeline` (GridSearchCV + RandomizedSearchCV + Pipeline).
 - Hyperparameter Search: GridSearchCV and RandomizedSearchCV in `model_selection.py`.
@@ -37,6 +37,9 @@ scikit-learn-style ML models and evaluation metrics, implemented from scratch in
 - `machine.pca(n)`
 - `machine.dbscan(eps, min_samples)`
 - `machine.agglomerative_clustering(n_clusters, linkage)`
+- `machine.ada_boost_classifier(n_estimators, learning_rate)`
+- `machine.gradient_boosting_classifier(n_estimators, learning_rate, max_depth)`
+- `machine.gradient_boosting_regressor(n_estimators, learning_rate, max_depth)`
 - Model selection: `machine.train_test_split(X, y, test_size, random_state)`, `machine.k_fold_cross_validation(model, X, y, k, scoring_fn)`, `machine.cross_val_score(cv, scoring, random_state)`
 - Hyperparameter search: `machine.grid_search_cv(model, param_grid, cv, scoring_fn)`, `machine.randomized_search_cv(model, param_dist, n_iter, cv, scoring_fn)`
 - Pipeline: `machine.pipeline(name1, step1, name2, step2, ...)`

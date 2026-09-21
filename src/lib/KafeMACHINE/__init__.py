@@ -13,6 +13,8 @@ from .SVR import SVR
 from .SVM import SVM
 from .ElasticNet import ElasticNet
 from .AgglomerativeClustering import AgglomerativeClustering
+from .AdaBoost import AdaBoostClassifier
+from .GradientBoosting import GradientBoostingClassifier, GradientBoostingRegressor
 from .model_selection import train_test_split, k_fold, CrossValScore, GridSearchCV, RandomizedSearchCV, Pipeline
 from .preprocessing import (
     StandardScaler,

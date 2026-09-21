@@ -14,6 +14,7 @@ SUBDIRS = [
     "naive_bayes",
     "model_selection",
     "svm",
+    "boosting",
 ]
 
 
