@@ -1,0 +1,3 @@
+import machine;
+
+MACHINE agg = machine.agglomerative_clustering(2, "invalid");

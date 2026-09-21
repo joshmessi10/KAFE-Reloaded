@@ -1,6 +1,6 @@
 from global_utils import check_sig
 from lib.KafeMATH.funciones import sqrt
-from TypeUtils import vector_numeros_t
+from TypeUtils import vector_numeros_t, matriz_numeros_t
 
 
 def _validate_inputs(func_name, y_true, y_pred):
@@ -173,3 +173,141 @@ def explained_variance_score(y_true, y_pred):
     if var_y == 0:
         return 0.0
     return 1.0 - var_err / var_y
+
+
+@check_sig([2], vector_numeros_t, vector_numeros_t)
+def roc_auc_score(y_true, y_score):
+    """
+    Calcula el área bajo la curva ROC (AUC-ROC).
+
+    Fundamento matemático:
+        ROC curva plottea TPR vs FPR en diferentes umbrales.
+        AUC mide la probabilidad de que un ejemplo positivo aleatorio
+        tenga un score mayor que un ejemplo negativo aleatorio.
+
+        AUC = ∫₀¹ TPR(FPR⁻¹(t)) dt
+
+        Interpretación:
+        - AUC = 1.0: clasificador perfecto
+        - AUC = 0.5: clasificador aleatorio
+        - AUC < 0.5: peor que aleatorio
+
+    Parámetros:
+        y_true: etiquetas verdaderas (0 o 1)
+        y_score: scores de probabilidad o decisión
+
+    Retorna:
+        FLOAT: área bajo la curva ROC
+    """
+    _validate_inputs("roc_auc_score", y_true, y_score)
+
+    classes = sorted(set(y_true))
+    if len(classes) != 2:
+        raise Exception("roc_auc_score: only supports binary classification")
+
+    total_pos = sum(1 for y in y_true if y == classes[1])
+    total_neg = len(y_true) - total_pos
+
+    if total_pos == 0 or total_neg == 0:
+        raise Exception("roc_auc_score: need both positive and negative samples")
+
+    # Mann-Whitney U con manejo correcto de empates
+    concordant = 0.0
+    total_pairs = total_pos * total_neg
+
+    for i in range(len(y_true)):
+        if y_true[i] != classes[1]:
+            continue
+        for j in range(len(y_true)):
+            if y_true[j] != classes[0]:
+                continue
+            if y_score[i] > y_score[j]:
+                concordant += 1.0
+            elif y_score[i] == y_score[j]:
+                concordant += 0.5
+
+    return concordant / total_pairs
+
+
+@check_sig([2], matriz_numeros_t, vector_numeros_t)
+def silhouette_score(X, labels):
+    """
+    Calcula el silhouette score para clustering.
+
+    Fundamento matemático:
+        Para cada punto i:
+            a(i) = distancia promedio de i a otros puntos en el mismo cluster
+            b(i) = distancia mínima promedio de i a puntos en el cluster más cercano
+
+            s(i) = (b(i) - a(i)) / max(a(i), b(i))
+
+        Silhouette score = promedio de s(i) para todos los puntos
+
+        Interpretación:
+        - s ≈ 1: punto bien clusterizado
+        - s ≈ 0: punto en frontera entre clusters
+        - s < 0: punto en cluster incorrecto
+
+    Parámetros:
+        X: matriz de features (List[List[NUM]])
+        labels: asignación de cluster para cada punto (List[INT])
+
+    Retorna:
+        FLOAT: silhouette score promedio (-1 a 1)
+    """
+    if not X or not labels:
+        raise Exception("silhouette_score: Empty input data")
+    if len(X) != len(labels):
+        raise Exception("silhouette_score: X and labels must have same length")
+    if len(X) < 2:
+        raise Exception("silhouette_score: Need at least 2 samples")
+
+    n = len(X)
+    n_features = len(X[0]) if X[0] else 0
+
+    unique_labels = sorted(set(labels))
+    n_clusters = len(unique_labels)
+
+    if n_clusters < 2:
+        raise Exception("silhouette_score: Need at least 2 clusters")
+
+    dist_matrix = [[0.0] * n for _ in range(n)]
+    for i in range(n):
+        for j in range(i + 1, n):
+            d = sum((X[i][k] - X[j][k]) ** 2 for k in range(n_features)) ** 0.5
+            dist_matrix[i][j] = d
+            dist_matrix[j][i] = d
+
+    silhouette_values = []
+
+    for i in range(n):
+        cluster_i = labels[i]
+
+        same_cluster = [j for j in range(n) if labels[j] == cluster_i and j != i]
+        if len(same_cluster) == 0:
+            a_i = 0.0
+        else:
+            a_i = sum(dist_matrix[i][j] for j in same_cluster) / len(same_cluster)
+
+        b_i = float('inf')
+        for other_cluster in unique_labels:
+            if other_cluster == cluster_i:
+                continue
+
+            other_points = [j for j in range(n) if labels[j] == other_cluster]
+            if len(other_points) == 0:
+                continue
+
+            avg_dist = sum(dist_matrix[i][j] for j in other_points) / len(other_points)
+            if avg_dist < b_i:
+                b_i = avg_dist
+
+        max_ab = max(a_i, b_i)
+        if max_ab == 0:
+            s_i = 0.0
+        else:
+            s_i = (b_i - a_i) / max_ab
+
+        silhouette_values.append(s_i)
+
+    return sum(silhouette_values) / len(silhouette_values)

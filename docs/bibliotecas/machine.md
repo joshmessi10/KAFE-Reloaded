@@ -48,6 +48,7 @@ import machine;
 | `machine.f1_score(y_true, y_pred)` | `(List[NUM], List[NUM]) -> FLOAT` | Media armónica de precision y recall macro-average |
 | `machine.confusion_matrix(y_true, y_pred)` | `(List[NUM], List[NUM]) -> List[List[INT]]` | Matriz de confusión N×N |
 | `machine.classification_report(y_true, y_pred)` | `(List[NUM], List[NUM]) -> STR` | Reporte textual estilo scikit-learn |
+| `machine.roc_auc_score(y_true, y_score)` | `(List[NUM], List[NUM]) -> FLOAT` | Área bajo la curva ROC (binario) |
 
 ### Ejemplo
 
@@ -68,6 +69,62 @@ show(cm);  -- [[2, 0], [1, 2]]
 STR report = machine.classification_report(y_true, y_pred);
 show(report);
 ```
+
+### ROC-AUC
+
+Evalúa la capacidad de discriminación de un clasificador binario calculando el área bajo la curva ROC (TPR vs FPR). Es **independiente del umbral**: mide qué tan bien el modelo rankea ejemplos positivos por encima de negativos.
+
+**Fundamento**: AUC = probabilidad de que un positivo aleatorio tenga score mayor que un negativo aleatorio.
+
+- AUC = 1.0: clasificador perfecto
+- AUC = 0.5: clasificador aleatorio
+- AUC < 0.5: peor que aleatorio
+
+**Solo admite clasificación binaria** (dos clases).
+
+```kafe
+import machine;
+
+List[INT] y_true = [1, 0, 1, 1, 0];
+List[FLOAT] y_score = [0.9, 0.1, 0.8, 0.7, 0.2];
+
+FLOAT auc = machine.roc_auc_score(y_true, y_score);
+show(auc);  -- 1.0
+```
+
+---
+
+## Métricas de Clustering
+
+| Función | Firma | Descripción |
+|---------|-------|-------------|
+| `machine.silhouette_score(X, labels)` | `(List[List[NUM]], List[INT]) -> FLOAT` | Silhouette Score promedio (-1 a 1) |
+
+### Ejemplo
+
+```kafe
+import machine;
+
+List[List[FLOAT]] X = [[1.0, 1.0], [1.5, 1.5], [2.0, 2.0],
+                        [8.0, 8.0], [8.5, 8.5], [9.0, 9.0]];
+List[INT] labels = [0, 0, 0, 1, 1, 1];
+
+FLOAT score = machine.silhouette_score(X, labels);
+show(score);  -- ~0.87 (clusters bien separados)
+```
+
+### Silhouette Score
+
+Mide la calidad del clustering calculando cuán similar es cada punto a su propio cluster (cohesión) comparado con otros clusters (separación). No necesita ground truth.
+
+**Fundamento**: Para cada punto $i$:
+- $a(i)$ = distancia promedio a otros puntos del mismo cluster
+- $b(i)$ = distancia mínima promedio al cluster más cercano
+- $s(i) = (b(i) - a(i)) / \max(a(i), b(i))$
+
+- $s \approx 1$: punto bien clusterizado
+- $s \approx 0$: punto en frontera entre clusters
+- $s < 0$: punto en cluster incorrecto
 
 ---
 
@@ -1324,6 +1381,90 @@ show(labels);            -- [1, 1, 1, 2, 2, 2, -1]
 
 ---
 
+## AgglomerativeClustering
+
+Implementa clustering jerárquico aglomerativo (bottom-up) que inicia cada punto como un cluster separado y merge los más cercanos iterativamente hasta alcanzar el número deseado de clusters.
+
+### Fundamento Teórico
+
+El algoritmo ejecuta $n - k$ merges sucesivos:
+
+1. Iniciar: cada punto es un cluster (n clusters)
+2. Calcular matriz de distancias entre todos los pares de clusters
+3. Encontrar los dos clusters más cercanos según el criterio de enlace
+4. Merge esos dos clusters
+5. Repetir hasta tener $k$ clusters
+
+**Criterios de enlace**:
+
+| Criterio | Fórmula | Descripción |
+|----------|---------|-------------|
+| `single` | $\min_{x \in C_i, y \in C_j} \|\|x - y\|\|$ | Distancia mínima entre puntos |
+| `complete` | $\max_{x \in C_i, y \in C_j} \|\|x - y\|\|$ | Distancia máxima entre puntos |
+| `average` | $\frac{1}{\|C_i\|\|C_j\|} \sum_{x \in C_i} \sum_{y \in C_j} \|\|x - y\|\|$ | Distancia promedio |
+| `ward` | $\frac{\|C_i\|\|C_j\|}{\|C_i\| + \|C_j\|} \|\|\mu_i - \mu_j\|\|^2$ | Minimiza varianza intra-cluster |
+
+### Métodos
+
+| Método | Firma | Descripción |
+|--------|-------|-------------|
+| `ac.fit(X)` | `(List[List[NUM]]) -> VOID` | Realiza el clustering aglomerativo |
+| `ac.fit_predict(X)` | `(List[List[NUM]]) -> List[INT]` | Ajusta y devuelve etiquetas de cluster |
+
+### Parámetros del Constructor
+
+```kafe
+-- n_clusters=2, linkage="ward" (valores por defecto)
+MACHINE ac = machine.agglomerative_clustering(2, "ward");
+```
+
+| Parámetro | Tipo | Default | Descripción |
+|-----------|------|---------|-------------|
+| `n_clusters` | INT | 2 | Número de clusters deseado |
+| `linkage` | STRING | "ward" | Criterio de enlace: "single", "complete", "average", "ward" |
+
+### Propiedades
+
+| Propiedad | Tipo | Descripción |
+|-----------|------|-------------|
+| `ac.labels_` | `List[INT]` | Etiquetas de cluster para cada punto |
+| `ac.n_clusters_` | `INT` | Número de clusters encontrados |
+| `ac.children_` | `List[List[INT]]` | Historial de merges (par de clusters mergeados) |
+| `ac.distances_` | `List[FLOAT]` | Distancia de cada merge |
+
+### Ejemplo
+
+```kafe
+import machine;
+
+List[List[FLOAT]] X = [[1.0, 1.0], [1.5, 1.5], [2.0, 2.0],
+                        [8.0, 8.0], [8.5, 8.5], [9.0, 9.0]];
+
+MACHINE ac = machine.agglomerative_clustering(2, "ward");
+ac.fit(X);
+
+show(ac.labels_);       -- [0, 0, 0, 1, 1, 1]
+show(ac.n_clusters_);   -- 2
+show(ac.distances_);    -- Distancias de cada merge
+
+-- Usando fit_predict
+List[INT] labels = ac.fit_predict(X);
+show(labels);           -- [0, 0, 0, 1, 1, 1]
+```
+
+### Comparación con DBSCAN
+
+| Aspecto | AgglomerativeClustering | DBSCAN |
+|---------|------------------------|--------|
+| Tipo | Jerárquico | Basado en densidad |
+| n_clusters requerido | Sí | No |
+| Forma de clusters | Flexible (depende de linkage) | Arbitraria |
+| Ruido | No detecta | Sí (etiqueta -1) |
+| Escalabilidad | $O(n^3)$ | $O(n^2)$ |
+| Determinístico | Sí | Sí |
+
+---
+
 ## StandardScaler
 
 Estandariza características eliminando la media y escalando a varianza unitaria (Z-score): $z = (x - \mu) / \sigma$.
@@ -1723,3 +1864,163 @@ lr.fit(X_poly, y);
 - **Overfitting**: Alto grado puede memorizar ruido
 - **No invertible**: inverse_transform no está implementado
 - **Multicolinealidad**: Features polinomiales son altamente correlacionadas
+
+---
+
+## VarianceThreshold
+
+Elimina features con varianza por debajo de un umbral. Método de selección de features no supervisado que filtra características constantes o casi constantes.
+
+### Fundamento Teórico
+
+Para cada feature $j$, calcula la varianza poblacional:
+
+$$\text{Var}(j) = \frac{1}{n} \sum_{i=1}^{n} (x_{ij} - \bar{x}_j)^2$$
+
+**Regla de selección**: Conservar feature $j$ si $\text{Var}(j) > \text{threshold}$.
+
+- Feature con varianza 0 → constante → sin información
+- Feature con baja varianza → poca capacidad discriminatoria
+- Threshold por defecto: 0.0 (elimina solo constantes)
+
+### Métodos
+
+| Método | Firma | Descripción |
+|--------|-------|-------------|
+| `vt.fit(X)` | `(List[List[NUM]]) -> VOID` | Calcula varianzas y selecciona features |
+| `vt.transform(X)` | `(List[List[NUM]]) -> List[List[FLOAT]]` | Elimina features con baja varianza |
+| `vt.fit_transform(X)` | `(List[List[NUM]]) -> List[List[FLOAT]]` | Fit + transform |
+
+### Parámetros del Constructor
+
+```kafe
+-- threshold=0.0 (valor por defecto)
+MACHINE vt = machine.variance_threshold(0.0);
+```
+
+| Parámetro | Tipo | Default | Descripción |
+|-----------|------|---------|-------------|
+| `threshold` | FLOAT | 0.0 | Umbral de varianza mínimo (no-negativo) |
+
+### Propiedades
+
+| Propiedad | Tipo | Descripción |
+|-----------|------|-------------|
+| `vt.variances_` | `List[FLOAT]` | Varianza de cada feature |
+| `vt.selected_indices_` | `List[INT]` | Índices de features seleccionadas |
+| `vt.n_features_in_` | `INT` | Número de features de entrada |
+| `vt.n_features_out_` | `INT` | Número de features de salida |
+
+### Ejemplo
+
+```kafe
+import machine;
+
+List[List[FLOAT]] X = [[1.0, 0.0, 3.0],
+                        [2.0, 0.0, 6.0],
+                        [3.0, 0.0, 9.0],
+                        [4.0, 0.0, 12.0]];
+
+-- Eliminar features constantes (threshold=0)
+MACHINE vt = machine.variance_threshold(0.0);
+List[List[FLOAT]] X_new = vt.fit_transform(X);
+show(X_new);  -- [[1.0, 3.0], [2.0, 6.0], [3.0, 9.0], [4.0, 12.0]]
+
+show(vt.variances_);       -- [1.25, 0.0, 10.125]
+show(vt.selected_indices_); -- [0, 2]
+show(vt.n_features_out_);   -- 2
+```
+
+### Comparación con Otros Métodos
+
+| Aspecto | VarianceThreshold | Lasso (L1) | RFE |
+|---------|-------------------|------------|-----|
+| Tipo | Filter (no supervisado) | Embedded (supervisado) | Wrapper (supervisado) |
+| Requiere y | No | Sí | Sí |
+| Velocidad | Muy rápido | Rápido | Lento |
+| Detecta interacciones | No | Parcialmente | Sí |
+| Costo computacional | $O(n \cdot d)$ | $O(n \cdot d \cdot iter)$ | $O(d \cdot T_{model} \cdot (d-k))$ |
+
+---
+
+## RecursiveFeatureElimination (RFE)
+
+Selecciona features por eliminación recursiva usando un modelo supervisado. Entrena un modelo repetidamente y elimina la feature menos importante en cada iteración hasta alcanzar el número deseado de features.
+
+### Fundamento Teórico
+
+RFE es un **wrapper method** que utiliza un estimador para evaluar importancia:
+
+1. Entrenar el estimador con todas las features activas
+2. Calcular importancia: $\text{importance}_j = |w_j|$ para modelos lineales
+3. Eliminar la feature con menor importancia
+4. Repetir hasta tener $k$ features
+
+**Ranking**: Features eliminadas primero reciben rank alto (menos importantes). Supervivientes reciben rank 1.
+
+- **Time Complexity**: $O(d \cdot T_{model} \cdot (d - k))$ donde $T_{model}$ es el tiempo de entrenamiento
+- **Espacio**: $O(d)$ para ranking y soporte
+
+### Métodos
+
+| Método | Firma | Descripción |
+|--------|-------|-------------|
+| `rfe.fit(X, y)` | `(List[List[NUM]], List[NUM]) -> VOID` | Entrena recursivamente y selecciona features |
+| `rfe.transform(X)` | `(List[List[NUM]]) -> List[List[FLOAT]]` | Selecciona solo las features elegidas |
+| `rfe.fit_transform(X, y)` | `(List[List[NUM]], List[NUM]) -> List[List[FLOAT]]` | Fit + transform |
+
+### Parámetros del Constructor
+
+```kafe
+-- estimator: LinearRegression (default), n_features: 1 (default)
+MACHINE rfe = machine.recursive_feature_elimination(machine.linear_regression(), 2);
+```
+
+| Parámetro | Tipo | Default | Descripción |
+|-----------|------|---------|-------------|
+| `estimator` | MACHINE | LinearRegression | Modelo con `coef_` o `feature_importances_` |
+| `n_features` | INT | 1 | Número de features a seleccionar |
+
+### Propiedades
+
+| Propiedad | Tipo | Descripción |
+|-----------|------|-------------|
+| `rfe.selected_indices_` | `List[INT]` | Índices de features seleccionadas |
+| `rfe.ranking_` | `List[INT]` | Ranking de importancia (1 = más importante) |
+| `rfe.support_` | `List[BOOL]` | Máscara booleana de features seleccionadas |
+| `rfe.n_features_in_` | `INT` | Número de features de entrada |
+
+### Ejemplo
+
+```kafe
+import machine;
+
+List[List[FLOAT]] X = [[1.0, 0.5, 3.0, 0.1],
+                        [2.0, 0.6, 6.0, 0.2],
+                        [3.0, 0.4, 9.0, 0.15],
+                        [4.0, 0.7, 12.0, 0.25],
+                        [5.0, 0.55, 15.0, 0.18]];
+List[FLOAT] y = [2.0, 4.0, 6.0, 8.0, 10.0];
+
+-- Seleccionar las 2 mejores features
+MACHINE rfe = machine.recursive_feature_elimination(machine.linear_regression(), 2);
+rfe.fit(X, y);
+
+show(rfe.ranking_);          -- [1, 3, 1, 2]
+show(rfe.selected_indices_); -- [0, 2]
+show(rfe.support_);          -- [true, false, true, false]
+
+List[List[FLOAT]] X_new = rfe.transform(X);
+show(X_new);  -- [[1.0, 3.0], [2.0, 6.0], [3.0, 9.0], [4.0, 12.0], [5.0, 15.0]]
+```
+
+### Comparación con Otros Métodos
+
+| Aspecto | RFE | VarianceThreshold | Lasso (L1) |
+|---------|-----|-------------------|------------|
+| Tipo | Wrapper | Filter | Embedded |
+| Requiere y | Sí | No | Sí |
+| Velocidad | Lento | Muy rápido | Rápido |
+| Detecta interacciones | Sí | No | Parcialmente |
+| Inestabilidad | Alta | Ninguna | Media |
+| Modelo base | Cualquier estimador | Ninguno | Lineal |

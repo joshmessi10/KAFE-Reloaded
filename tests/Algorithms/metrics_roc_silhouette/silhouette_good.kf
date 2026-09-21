@@ -1,0 +1,7 @@
+import machine;
+
+-- Two well-separated clusters
+List[List[FLOAT]] X = [[0.0, 0.0], [1.0, 0.0], [0.0, 1.0], [10.0, 10.0], [11.0, 10.0], [10.0, 11.0]];
+List[INT] labels = [0, 0, 0, 1, 1, 1];
+FLOAT score = machine.silhouette_score(X, labels);
+show(score);
