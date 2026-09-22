@@ -8,5 +8,5 @@ gmm.fit(X);
 FLOAT aic_val = gmm.aic(X);
 FLOAT bic_val = gmm.bic(X);
 
-show(aic_val);
-show(bic_val);
+show(int(aic_val * 10000000000.0 + 0.5) / 10000000000.0);
+show(int(bic_val * 10000000000.0 + 0.5) / 10000000000.0);
