@@ -1,0 +1,78 @@
+-- ============================================================
+-- Ejemplo de Clustering No Supervisado con KafeGESHA, KafePARDOS y KafePlot
+-- ============================================================
+-- Pipeline:
+-- Raw CSV Data -> Preprocesamiento KafePARDOS -> NumPy/Matriz -> KafeGESHA Model -> Graficación KafePlot
+
+import pardos;
+import geshaDeep;
+import plot;
+
+show("=== Clustering de Datos con KafeGESHA y KafePlot ===");
+
+-- 1. Preprocesamiento de Datos con KafePARDOS
+PARDOS df = pardos.read_csv("tests/data/clustering_sample.csv");
+List[List[FLOAT]] X_train = pardos.to_matrix(df);
+
+show("Datos de entrenamiento cargados desde DataFrame (" + str(len(X_train)) + " muestras):");
+for (punto in X_train):
+    show("  " + str(punto));
+;
+
+-- 2. Definición del Modelo de Red Neuronal en KafeGESHA
+GESHA layer1 = geshaDeep.create_dense(4, "relu", [2], 0.0, 42);
+GESHA layer2 = geshaDeep.create_dense(2, "softmax", [], 0.0, 42);
+GESHA model  = geshaDeep.sequential([layer1, layer2]);
+
+-- 3. Compilación y Entrenamiento No Supervisado (y = [])
+model.compile("adam", "mse", []);
+show("\nEntrenando modelo de clustering no supervisado...");
+model.fit(X_train, [], 30, 1);
+
+-- 4. Asignación de Clusters e Inferencia
+List[FLOAT] c0_x = [];
+List[FLOAT] c0_y = [];
+List[FLOAT] c1_x = [];
+List[FLOAT] c1_y = [];
+
+show("\nAsignación de Clusters:");
+for (p in X_train):
+    INT cluster_id = model.predict_label(p);
+    List[FLOAT] probs = model.predict(p);
+    show("Punto " + str(p) + " -> Cluster " + str(cluster_id) + " (Probabilidades: " + str(probs) + ")");
+
+    if (cluster_id == 0):
+        append(c0_x, p[0]);
+        append(c0_y, p[1]);
+    else:
+        append(c1_x, p[0]);
+        append(c1_y, p[1]);
+    ;
+;
+
+-- 5. Graficación de Resultados con KafePlot
+show("\nGenerando visualización gráfica con KafePlot...");
+plot.figure();
+plot.title("Clustering No Supervisado con KafeGESHA");
+plot.xlabel("Característica X1");
+plot.ylabel("Característica X2");
+plot.grid(True);
+
+-- Graficar Puntos del Cluster 0 (Color Azul)
+if (len(c0_x) > 0):
+    plot.color("blue");
+    plot.pointColor("blue");
+    plot.pointSize(7);
+    plot.graph(c0_x, c0_y, "point");
+;
+
+-- Graficar Puntos del Cluster 1 (Color Rojo)
+if (len(c1_x) > 0):
+    plot.color("red");
+    plot.pointColor("red");
+    plot.pointSize(7);
+    plot.graph(c1_x, c1_y, "point");
+;
+
+plot.render();
+show("Visualización generada correctamente en SVG.");

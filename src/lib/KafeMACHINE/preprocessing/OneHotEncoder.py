@@ -5,8 +5,11 @@ from ..BaseMachine import BaseMachine
 
 
 class OneHotEncoder(BaseMachine):
-    def __init__(self):
+    def __init__(self, handle_unknown="error"):
         super().__init__()
+        if handle_unknown not in ("error", "ignore"):
+            raise Exception("OneHotEncoder: handle_unknown must be 'error' or 'ignore'")
+        self.handle_unknown = handle_unknown
         self.categories_ = {}
         self.columns_ = []
         self._ohe_column_map_ = {}
@@ -56,6 +59,11 @@ class OneHotEncoder(BaseMachine):
             for col_name in self.columns_:
                 col_idx = df.columns.index(col_name)
                 val = str(row[col_idx])
+                if self.handle_unknown == "error" and val not in self.categories_[col_name]:
+                    raise Exception(
+                        f"OneHotEncoder: Unseen category '{val}' in column '{col_name}'. "
+                        f"Use handle_unknown='ignore' to ignore unknown categories."
+                    )
                 for cat in self.categories_[col_name]:
                     new_row.append(1 if val == cat else 0)
 
@@ -83,7 +91,15 @@ class OneHotEncoder(BaseMachine):
                 if col_name in self.columns_:
                     ohe_group = self._ohe_column_map_[col_name]
                     binary_vals = [row[df.columns.index(ohe)] for ohe in ohe_group]
-                    decoded = self.categories_[col_name][binary_vals.index(1)] if 1 in binary_vals else self.categories_[col_name][0]
+                    if 1 not in binary_vals:
+                        raise Exception(
+                            f"OneHotEncoder: No active category found for column '{col_name}' in inverse_transform"
+                        )
+                    if binary_vals.count(1) > 1:
+                        raise Exception(
+                            f"OneHotEncoder: Multiple active categories found for column '{col_name}' in inverse_transform"
+                        )
+                    decoded = self.categories_[col_name][binary_vals.index(1)]
                     new_row.append(decoded)
                 else:
                     new_row.append(row[df.columns.index(col_name)])

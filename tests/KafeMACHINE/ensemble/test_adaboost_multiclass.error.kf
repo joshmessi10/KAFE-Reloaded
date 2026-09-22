@@ -1,0 +1,8 @@
+import machine;
+
+List[List[FLOAT]] X = [[1.0], [2.0], [3.0], [4.0]];
+List[INT] y = [0, 1, 2, 3];
+
+MACHINE ab = machine.ada_boost_classifier();
+ab.fit(X, y);
+show("done");

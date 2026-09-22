@@ -1,0 +1,10 @@
+import machine;
+
+-- All indices should appear exactly once in test sets
+List[INT] all_test = [];
+
+for (fold in machine.k_fold(10, 5, False, 0)):
+    all_test = all_test + fold[1];
+;
+
+show(len(all_test));

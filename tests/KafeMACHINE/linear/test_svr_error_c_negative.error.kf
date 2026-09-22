@@ -1,0 +1,3 @@
+import machine;
+
+MACHINE svr_model = machine.svr(-1.0, 0.1, "linear");

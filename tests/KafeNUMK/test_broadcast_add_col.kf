@@ -1,0 +1,5 @@
+import numk;
+
+List[List[FLOAT]] a = [[1.0, 2.0], [3.0, 4.0]];
+List[List[FLOAT]] b = [[10.0], [20.0]];
+show(numk.broadcast_add(a, b));

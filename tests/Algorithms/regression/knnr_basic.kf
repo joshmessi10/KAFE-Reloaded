@@ -1,0 +1,13 @@
+import machine;
+
+List[List[FLOAT]] X = [[1.0], [2.0], [3.0], [4.0], [5.0]];
+List[FLOAT] y = [2.0, 4.0, 5.0, 4.0, 5.0];
+
+MACHINE knnr = machine.knn_regressor(3);
+knnr.fit(X, y);
+
+List[FLOAT] preds = knnr.predict([[1.5], [3.0], [5.5]]);
+show(preds);
+
+FLOAT r2 = knnr.score(X, y);
+show(int(r2 * 10000000000.0 + 0.5) / 10000000000.0);
