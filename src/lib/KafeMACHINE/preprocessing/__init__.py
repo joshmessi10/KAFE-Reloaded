@@ -8,3 +8,4 @@ from .PCA import PCA
 from .PolynomialFeatures import PolynomialFeatures
 from .VarianceThreshold import VarianceThreshold
 from .RecursiveFeatureElimination import RecursiveFeatureElimination
+from .RobustScaler import RobustScaler

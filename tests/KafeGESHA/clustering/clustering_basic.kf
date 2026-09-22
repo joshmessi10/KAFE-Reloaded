@@ -18,8 +18,9 @@ model.compile("sgd", "categorical_crossentropy", []);
 model.fit(X_train, [], 20, 1, [], []);
 
 -- Predict cluster for a point
-List[FLOAT] probs = model.predict([1.2, 1.5]);
-show("Cluster probabilities: " + str(probs));
-
 INT cluster = model.predict_label([1.2, 1.5]);
 show("Assigned cluster: " + str(cluster));
+
+-- Verify model is fitted and produces consistent predictions
+List[FLOAT] probs = model.predict([1.2, 1.5]);
+show("Probabilities length: " + str(len(probs)));

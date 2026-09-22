@@ -19,6 +19,7 @@ import machine;
 | `machine.lasso_regression(alpha, fit_intercept, max_iter)` | `(FLOAT, BOOL, INT) -> MACHINE` | Crea un modelo Lasso (regularización L1) |
 | `machine.logistic_regression(lr, iter)` | `(FLOAT, INT) -> MACHINE` | Crea un modelo de regresión logística |
 | `machine.knn(k)` | `(INT) -> MACHINE` | Crea un clasificador KNN |
+| `machine.knn_regressor(k)` | `(INT) -> MACHINE` | Crea un regresor KNN |
 | `machine.standard_scaler()` | `() -> MACHINE` | Crea un estandarizador Z-score |
 | `machine.minmax_scaler()` | `() -> MACHINE` | Crea un escalador min-max |
 | `machine.simple_imputer(strategy)` | `(STR) -> MACHINE` | Crea un imputador de valores faltantes |
@@ -28,9 +29,11 @@ import machine;
 | `machine.ordinal_encoder()` | `() -> MACHINE` | Crea un codificador ordinal (enteros ordenados) |
 | `machine.pca(n)` | `(INT) -> MACHINE` | Crea modelo PCA con n componentes |
 | `machine.dbscan(eps, min_samples)` | `(FLOAT, INT) -> MACHINE` | Crea un modelo de clustering DBSCAN |
+| `machine.gaussian_mixture(n_components, max_iter, tol, random_state)` | `(INT, INT, FLOAT, INT) -> MACHINE` | Crea un modelo de mezcla de Gaussianas (GMM) |
 | `machine.gaussian_nb()` | `() -> MACHINE` | Crea un clasificador Naive Bayes Gaussiano |
 | `machine.random_forest_classifier(n_est, depth, split, leaf)` | `(INT, INT, INT, INT) -> MACHINE` | Crea un clasificador Random Forest |
 | `machine.random_forest_regressor(n_est, depth, split, leaf)` | `(INT, INT, INT, INT) -> MACHINE` | Crea un regresor Random Forest |
+| `machine.decision_tree_regressor(criterion, max_depth, min_samples_split, min_samples_leaf)` | `(STR, INT, INT, INT) -> MACHINE` | Crea un regresor Decision Tree |
 | `machine.polynomial_features(degree, include_bias)` | `(INT, BOOL) -> MACHINE` | Crea features polinomiales hasta un grado especificado |
 | `machine.elastic_net(alpha, l1_ratio, fit_intercept, max_iter)` | `(FLOAT, FLOAT, BOOL, INT) -> MACHINE` | Crea un modelo ElasticNet (regularización L1+L2) |
 | `machine.pipeline(name1, step1, ...)` | `(STR, MACHINE, ...) -> MACHINE` | Crea un Pipeline de preprocessing + modelo |
@@ -985,7 +988,7 @@ show(probs);  -- [[~1, ~0], [0.5, 0.5], [~0, ~1]]
 
 ---
 
-## KNN (K-Nearest Neighbors)
+## KNN (K-Nearest Neighbors Classifier)
 
 Clasificador basado en los k vecinos más cercanos (distancia euclídea).
 
@@ -1022,6 +1025,78 @@ show(preds);  -- [0, 1, 0]
 FLOAT acc = model.score(X_train, y_train);
 show(acc);  -- 1.0
 ```
+
+---
+
+## KNNRegressor (K-Nearest Neighbors Regressor)
+
+Regresor basado en los k vecinos más cercanos — predice el promedio de los valores de los k vecinos más cercanos.
+
+### Fundamento Teórico
+
+KNNRegressor es un modelo de **lazy learning** que no entrena un modelo explícito. Para predecir, calcula la distancia a todos los puntos de entrenamiento, selecciona los k más cercanos y promedia sus valores target.
+
+**Predicción (uniform)**:
+
+$$\hat{y} = \frac{1}{k} \sum_{i=1}^{k} y_i$$
+
+**Predicción (distance-weighted)**:
+
+$$\hat{y} = \frac{\sum_{i=1}^{k} w_i \cdot y_i}{\sum_{i=1}^{k} w_i}, \quad w_i = \frac{1}{d_i + \epsilon}$$
+
+### Métodos
+
+| Método | Firma | Descripción |
+|--------|-------|-------------|
+| `knr.fit(X, y)` | `(List[List[NUM]] o List[NUM], List[NUM]) -> VOID` | Almacena datos de entrenamiento |
+| `knr.predict(X)` | `(List[List[NUM]] o List[NUM]) -> List[NUM]` | Predice valores |
+| `knr.score(X, y)` | `(List[List[NUM]] o List[NUM], List[NUM]) -> FLOAT` | Calcula R² |
+
+### Parámetros del Constructor
+
+```kafe
+-- k=3 (valor por defecto)
+MACHINE model = machine.knn_regressor(3);
+```
+
+| Parámetro | Tipo | Default | Descripción |
+|-----------|------|---------|-------------|
+| `k` | INT | 3 | Número de vecinos a considerar |
+
+### Propiedades
+
+| Propiedad | Tipo | Descripción |
+|-----------|------|-------------|
+| `knr.k` | `INT` | Número de vecinos |
+| `knr.X_train_` | `List[List[FLOAT]]` | Datos de entrenamiento almacenados |
+| `knr.y_train_` | `List[FLOAT]` | Targets de entrenamiento almacenados |
+
+### Ejemplo
+
+```kafe
+import machine;
+
+List[List[FLOAT]] X_train = [[1.0], [2.0], [3.0], [4.0], [5.0]];
+List[FLOAT] y_train = [2.0, 4.0, 6.0, 8.0, 10.0];
+
+MACHINE knr = machine.knn_regressor(3);
+knr.fit(X_train, y_train);
+
+List[FLOAT] preds = knr.predict([[1.5], [3.0], [5.5]]);
+show(preds);  -- ~[4.0, 6.0, 10.0]
+
+FLOAT r2 = knr.score(X_train, y_train);
+show(r2);  -- ~0.95
+```
+
+### Comparación con KNN Classifier
+
+| Aspecto | KNN Classifier | KNN Regressor |
+|---------|----------------|---------------|
+| Target | Clases (discretas) | Valores continuos |
+| Predicción | Votación mayoritaria | Promedio de vecinos |
+| Métrica | Accuracy | R² |
+| Fábrica | `machine.knn(k)` | `machine.knn_regressor(k)` |
 
 ---
 
@@ -1099,6 +1174,92 @@ show(model2.predict([[1.0, 2.0], [7.0, 7.0]]));  -- [0, 1]
 2. **Construcción recursiva**: Dividir datos según mejor split, repetir en subárboles
 3. **Criterios de parada**: max_depth alcanzado, min_samples_split no satisfecho, nodo puro
 4. **Predicción**: Traversar el árbol desde raíz hasta hoja
+
+---
+
+## DecisionTreeRegressor
+
+Implementa un árbol de decisión para regresión — particiona recursivamente el espacio de features para predecir valores continuos minimizando el MSE.
+
+### Fundamento Teórico
+
+Un **árbol de decisión para regresión** particiona recursivamente el espacio de features aprendiendo reglas de decisión simples. En cada nodo interno, selecciona la feature y umbral que mejor reduce el error cuadrático medio (MSE).
+
+**MSE (Mean Squared Error)**:
+
+$$MSE = \frac{1}{n} \sum_{i=1}^{n} (y_i - \bar{y})^2$$
+
+**Reducción de MSE**: Para cada split candidato:
+
+$$\Delta MSE = MSE_{parent} - \left(\frac{n_l}{n} \cdot MSE_{left} + \frac{n_r}{n} \cdot MSE_{right}\right)$$
+
+Se selecciona el split con mayor $\Delta MSE$. Las hojas predicen la media de los valores en el nodo.
+
+### Métodos
+
+| Método | Firma | Descripción |
+|--------|-------|-------------|
+| `dtr.fit(X, y)` | `(List[List[NUM]], List[NUM]) -> VOID` | Construye el árbol de regresión |
+| `dtr.predict(X)` | `(List[List[NUM]]) -> List[NUM]` | Predice valores traversando el árbol |
+| `dtr.score(X, y)` | `(List[List[NUM]], List[NUM]) -> FLOAT` | Calcula R² |
+
+### Parámetros del Constructor
+
+```kafe
+-- criterion: "mse" (default)
+-- max_depth: profundidad máxima (0 = ilimitada)
+-- min_samples_split: mínimo de muestras para dividir (default: 2)
+-- min_samples_leaf: mínimo de muestras en hoja (default: 1)
+MACHINE model = machine.decision_tree_regressor("mse", 0, 2, 1);
+```
+
+| Parámetro | Tipo | Default | Descripción |
+|-----------|------|---------|-------------|
+| `criterion` | STRING | "mse" | Criterio de split: "mse" |
+| `max_depth` | INT | 0 | Profundidad máxima (0 = ilimitada) |
+| `min_samples_split` | INT | 2 | Mínimo de muestras para dividir un nodo |
+| `min_samples_leaf` | INT | 1 | Mínimo de muestras en una hoja |
+
+### Propiedades
+
+| Propiedad | Tipo | Descripción |
+|-----------|------|-------------|
+| `dtr.tree_` | `Dict` | Estructura del árbol (nodos internos y hojas) |
+| `dtr.n_features_` | `INT` | Número de features |
+
+### Ejemplo
+
+```kafe
+import machine;
+
+List[List[FLOAT]] X = [[1.0], [2.0], [3.0], [4.0], [5.0]];
+List[FLOAT] y = [2.0, 4.0, 5.5, 8.0, 10.0];
+
+MACHINE model = machine.decision_tree_regressor();
+model.fit(X, y);
+
+List[FLOAT] preds = model.predict([[1.5], [3.0], [5.5]]);
+show(preds);  -- ~[3.0, 5.5, 10.0]
+
+FLOAT r2 = model.score(X, y);
+show(r2);  -- ~0.98
+```
+
+### Algoritmo Interno
+
+1. **Selección de-split**: Para cada feature y threshold, calcula reducción de MSE
+2. **Construcción recursiva**: Dividir datos según mejor split, repetir en subárboles
+3. **Criterios de parada**: max_depth alcanzado, min_samples_split no satisfecho
+4. **Predicción**: Traversar árbol hasta hoja, retornar media del nodo
+
+### Comparación con DecisionTreeClassifier
+
+| Aspecto | DecisionTreeClassifier | DecisionTreeRegressor |
+|---------|------------------------|----------------------|
+| Target | Clases (discretas) | Valores continuos |
+| Criterio | Gini / Entropy | MSE |
+| Predicción | Votación mayoritaria | Media del nodo |
+| Métrica | Accuracy | R² |
 
 ---
 
@@ -1465,6 +1626,118 @@ show(labels);           -- [0, 0, 0, 1, 1, 1]
 
 ---
 
+## GaussianMixture (Mezcla de Gaussianas)
+
+Implementa un modelo de mezcla de Gaussianas (GMM) — modelo probabilístico que asume que los datos son generados por una mezcla de distribuciones Gaussianas. Usa el algoritmo EM (Expectation-Maximization) para estimar los parámetros.
+
+### Fundamento Teórico
+
+El modelo asume que cada punto fue generado por una de $K$ distribuciones Gaussianas:
+
+$$P(\mathbf{x}) = \sum_{k=1}^{K} \pi_k \cdot \mathcal{N}(\mathbf{x} | \boldsymbol{\mu}_k, \boldsymbol{\Sigma}_k)$$
+
+Donde $\pi_k$ es el peso de la componente k, $\boldsymbol{\mu}_k$ es la media, y $\boldsymbol{\Sigma}_k$ es la covarianza.
+
+**Algoritmo EM**:
+
+1. **E-step**: Calcular responsabilidades $\gamma(z_{kn})$ — probabilidad de que el punto $n$ pertenezca al componente $k$
+2. **M-step**: Actualizar parámetros usando las responsabilidades
+3. Repetir hasta convergencia
+
+**Selección de K**: Usar AIC ($2p - 2\ln(\hat{L})$) o BIC ($p\ln(n) - 2\ln(\hat{L})$) — menor es mejor.
+
+### Métodos
+
+| Método | Firma | Descripción |
+|--------|-------|-------------|
+| `gm.fit(X)` | `(List[List[NUM]]) -> VOID` | Ajusta el modelo usando EM |
+| `gm.predict(X)` | `(List[List[NUM]]) -> List[INT]` | Asigna cada punto al componente más probable |
+| `gm.predict_proba(X)` | `(List[List[NUM]]) -> List[List[FLOAT]]` | Devuelve responsabilidades (probabilidades de pertenencia) |
+| `gm.fit_predict(X)` | `(List[List[NUM]]) -> List[INT]` | Ajusta el modelo y devuelve etiquetas |
+| `gm.score(X)` | `(List[List[NUM]]) -> FLOAT` | Retorna log-verosimilitud negativa (menor es mejor) |
+| `gm.aic(X)` | `(List[List[NUM]]) -> FLOAT` | Criterio de Información de Akaike |
+| `gm.bic(X)` | `(List[List[NUM]]) -> FLOAT` | Criterio de Información Bayesiano |
+
+### Parámetros del Constructor
+
+```kafe
+-- n_components=3, max_iter=100, tol=1e-3, random_state=0 (valores por defecto)
+MACHINE gm = machine.gaussian_mixture(3, 100, 1e-3, 0);
+```
+
+| Parámetro | Tipo | Default | Descripción |
+|-----------|------|---------|-------------|
+| `n_components` | INT | 3 | Número de componentes Gaussianas |
+| `max_iter` | INT | 100 | Máximo de iteraciones EM |
+| `tol` | FLOAT | 1e-3 | Tolerancia para convergencia |
+| `random_state` | INT | 0 | Semilla para reproducibilidad (0 = aleatorio) |
+
+### Propiedades
+
+| Propiedad | Tipo | Descripción |
+|-----------|------|-------------|
+| `gm.weights_` | `List[FLOAT]` | Pesos de cada componente ($\pi_k$) |
+| `gm.means_` | `List[List[FLOAT]]` | Medias de cada componente ($\boldsymbol{\mu}_k$) |
+| `gm.covariances_` | `List[List[FLOAT]]` | Varianzas diagonales de cada componente ($\boldsymbol{\Sigma}_k$) |
+| `gm.converged_` | `BOOL` | Si el modelo convergió |
+| `gm.n_iter_` | `INT` | Número de iteraciones realizadas |
+
+### Ejemplo
+
+```kafe
+import machine;
+
+List[List[FLOAT]] X = [[1.0, 1.0], [1.5, 1.5], [2.0, 2.0],
+                        [8.0, 8.0], [8.5, 8.5], [9.0, 9.0]];
+
+MACHINE gm = machine.gaussian_mixture(2, 100, 1e-3, 42);
+gm.fit(X);
+
+show(gm.labels_);           -- [0, 0, 0, 1, 1, 1]
+show(gm.means_);            -- Medias de cada componente
+show(gm.weights_);          -- Pesos de cada componente
+
+-- Probabilidades de pertenencia
+List[List[FLOAT]] probs = gm.predict_proba(X);
+show(probs);
+
+-- Selección de número de componentes
+FLOAT aic = gm.aic(X);
+FLOAT bic = gm.bic(X);
+show(aic);
+show(bic);
+```
+
+### Comparación con K-Means
+
+| Aspecto | K-Means | GaussianMixture |
+|---------|---------|-----------------|
+| Tipo | Hard clustering | Soft clustering |
+| Forma de clusters | Esféricos | Elípticos |
+| Modelo | Distancia a centroides | Probabilístico |
+| Salida | Etiquetas | Probabilidades |
+| Complejidad | $O(T \cdot n \cdot K \cdot d)$ | $O(T \cdot n \cdot K \cdot d)$ |
+
+### Complejidad
+
+- **Tiempo**: $O(T \cdot n \cdot K \cdot d)$ por iteración EM
+- **Espacio**: $O(n \cdot K)$ para responsabilidades
+
+### Ventajas
+
+- Soft clustering: probabilidades de pertenencia, no solo asignaciones
+- Puede capturar clusters elípticos (no solo esféricos como K-Means)
+- Modelo generativo: puede generar nuevos puntos
+- AIC/BIC para selección automática del número de componentes
+
+### Limitaciones
+
+- Sensible a inicialización — puede converger a óptimos locales
+- Asume Gaussianas — datos no Gaussianos degradan rendimiento
+- Sensible a outliers — afectan las medias
+
+---
+
 ## AdaBoostClassifier (Adaptive Boosting)
 
 Implementa un clasificador AdaBoost — algoritmo de ensemble learning que combina múltiples weak classifiers (decision stumps) de forma secuencial, enfatizando los errores del clasificador anterior.
@@ -1805,6 +2078,81 @@ show(scaled);  -- [[0.0, 0.0], [0.5, 0.5], [1.0, 1.0]]
 
 ---
 
+## RobustScaler
+
+Escala características usando estadísticos robustos a outliers: mediana (Q2) para centrar, IQR (Q3 − Q1) para escalar.
+
+### Fundamento Teórico
+
+A diferencia de StandardScaler (usa media y desviación estándar) o MinMaxScaler (usa min y max), RobustScaler usa estadísticos que no se afectan por valores extremos:
+
+$$X_{scaled} = \frac{X - \text{median}}{IQR}$$
+
+Donde $\text{median} = Q2$ (percentil 50) e $IQR = Q3 - Q1$ (percentil 75 − percentil 25).
+
+### Métodos
+
+| Método | Firma | Descripción |
+|--------|-------|-------------|
+| `rs.fit(X)` | `(List[List[NUM]]) -> VOID` | Calcula mediana e IQR por feature |
+| `rs.transform(X)` | `(List[List[NUM]]) -> List[List[FLOAT]]` | Escala los datos |
+| `rs.fit_transform(X)` | `(List[List[NUM]]) -> List[List[FLOAT]]` | Fit + transform |
+| `rs.inverse_transform(X)` | `(List[List[NUM]]) -> List[List[FLOAT]]` | Revierte el escalado |
+
+### Propiedades
+
+| Propiedad | Tipo | Descripción |
+|-----------|------|-------------|
+| `rs.center_` | `List[FLOAT]` | Mediana de cada feature |
+| `rs.scale_` | `List[FLOAT]` | IQR de cada feature |
+
+### Parámetros del Constructor
+
+```kafe
+-- with_centering=1 (centra usando mediana), with_scaling=1 (escala usando IQR)
+-- quantile_low=25.0, quantile_high=75.0
+MACHINE rs = machine.robust_scaler();
+```
+
+| Parámetro | Tipo | Default | Descripción |
+|-----------|------|---------|-------------|
+| `with_centering` | INT | 1 | Si 1, centra usando mediana (0 = no centra) |
+| `with_scaling` | INT | 1 | Si 1, escala usando IQR (0 = no escala) |
+| `quantile_low` | FLOAT | 25.0 | Percentil inferior para IQR |
+| `quantile_high` | FLOAT | 75.0 | Percentil superior para IQR |
+
+### Ejemplo
+
+```kafe
+import machine;
+
+List[List[FLOAT]] data = [[1.0, 4.0], [3.0, 6.0], [5.0, 100.0]];
+
+MACHINE rs = machine.robust_scaler();
+List[List[FLOAT]] scaled = rs.fit_transform(data);
+show(rs.center_);   -- [3.0, 6.0] (medians)
+show(rs.scale_);    -- [4.0, 94.0] (IQRs)
+
+List[List[FLOAT]] restored = rs.inverse_transform(scaled);
+show(restored);  -- [[1.0, 4.0], [3.0, 6.0], [5.0, 100.0]]
+```
+
+### Comparación con otros Scalers
+
+| Scaler | Centro | Escala | Robusto a outliers |
+|--------|--------|--------|-------------------:|
+| StandardScaler | Media | Desviación estándar | No |
+| MinMaxScaler | Min | Max − Min | No |
+| **RobustScaler** | **Mediana** | **IQR** | **Sí** |
+
+### Cuándo Usar
+
+- **Outliers presentes** — principal caso de uso
+- Datos con distribución asimétrica
+- Cuando media/desviación estándar no son representativas
+
+---
+
 ## SimpleImputer
 
 Imputa valores faltantes (representados como NaN en DataFrames) usando una estrategia configurable.
@@ -2046,6 +2394,118 @@ PCA utiliza el **algoritmo de Jacobi** para calcular valores y vectores propios:
 2. **Matriz de covarianza**: $C = (X^T \cdot X) / (n - 1)$
 3. **Jacobi**: Iteraciones para diagonalizar la matriz de covarianza
 4. **Ordenamiento**: Componentes ordenados por varianza explicada (mayor a menor)
+
+---
+
+## LinearDiscriminantAnalysis (Análisis Discriminante Lineal)
+
+Implementa LDA — técnica de reducción de dimensionalidad supervisada que maximiza la separación entre clases, y también funciona como clasificador lineal.
+
+### Fundamento Teórico
+
+LDA maximiza la razón entre varianza inter-clase e intra-clase:
+
+$$J(w) = \frac{w^T S_B w}{w^T S_W w}$$
+
+Donde:
+- $S_W = \sum_{k=1}^{K} \sum_{x \in C_k} (x - \mu_k)(x - \mu_k)^T$ — scatter intra-clase
+- $S_B = \sum_{k=1}^{K} n_k (\mu_k - \mu)(\mu_k - \mu)^T$ — scatter inter-clase
+
+**Solución**: Resolver eigenproblema $S_W^{-1} S_B w = \lambda w$. Los eigenvectores con mayor eigenvalores son las direcciones óptimas.
+
+**Restricción**: $n\_components \leq K - 1$ (máximo clases - 1 componentes).
+
+### Métodos
+
+| Método | Firma | Descripción |
+|--------|-------|-------------|
+| `lda.fit(X, y)` | `(List[List[NUM]], List[INT]) -> VOID` | Ajusta LDA calculando scatter matrices y eigenvectores |
+| `lda.transform(X)` | `(List[List[NUM]]) -> List[List[FLOAT]]` | Proyecta datos al espacio de menor dimensionalidad |
+| `lda.fit_transform(X, y)` | `(List[List[NUM]], List[INT]) -> List[List[FLOAT]]` | Fit + transform en un paso |
+| `lda.predict(X)` | `(List[List[NUM]]) -> List[INT]` | Predice clases por distancia en espacio proyectado |
+| `lda.score(X, y)` | `(List[List[NUM]], List[INT]) -> FLOAT` | Calcula exactitud (default) o métrica personalizada |
+
+### Parámetros del Constructor
+
+```kafe
+-- n_components: número de componentes (default: None = min(n_classes-1, n_features))
+MACHINE lda = machine.linear_discriminant_analysis(2);
+```
+
+| Parámetro | Tipo | Default | Descripción |
+|-----------|------|---------|-------------|
+| `n_components` | INT | None | Número de componentes (máx: n_classes - 1) |
+
+### Propiedades
+
+| Propiedad | Tipo | Descripción |
+|-----------|------|-------------|
+| `lda.scalings_` | `List[List[FLOAT]]` | Eigenvectores (direcciones de proyección) |
+| `lda.explained_variance_ratio_` | `List[FLOAT]` | Proporción de varianza explicada por componente |
+| `lda.means_` | `List[List[FLOAT]]` | Media de cada feature por clase |
+| `lda.classes_` | `List[INT]` | Clases únicas |
+| `lda.prior_` | `List[FLOAT]` | Probabilidad a priori de cada clase |
+
+### Ejemplo
+
+```kafe
+import machine;
+
+List[List[FLOAT]] X = [[1.0, 2.0], [2.0, 3.0], [3.0, 3.0],
+                        [6.0, 5.0], [7.0, 7.0], [8.0, 6.0]];
+List[INT] y = [0, 0, 0, 1, 1, 1];
+
+-- Reducir de 2D a 1D
+MACHINE lda = machine.linear_discriminant_analysis(1);
+lda.fit(X, y);
+
+-- Transformar al espacio proyectado
+List[List[FLOAT]] X_proj = lda.transform(X);
+show(X_proj);
+
+-- Clasificar
+List[INT] preds = lda.predict([[2.0, 2.0], [7.0, 7.0]]);
+show(preds);  -- [0, 1]
+
+-- Evaluar
+FLOAT acc = lda.score(X, y);
+show(acc);  -- 1.0
+```
+
+### Comparación con PCA
+
+| Aspecto | PCA | LDA |
+|---------|-----|-----|
+| Objetivo | Maximizar varianza total | Maximizar separación entre clases |
+| Supervisión | No supervisado | Supervisado |
+| Información | Solo X | X y y |
+| Direcciones | Componentes de mayor varianza | Direcciones de mayor discriminación |
+| n_components | ≤ d (features) | ≤ K - 1 (clases - 1) |
+| Uso principal | Visualización, reducción de ruido | Clasificación, reducción supervisada |
+
+### Algoritmo Interno
+
+1. **Calcular medias por clase**: Media de cada feature para cada clase
+2. **Scatter intra-clase ($S_W$)**: Suma de productos externos $(x - \mu_k)(x - \mu_k)^T$
+3. **Scatter inter-clase ($S_B$)**: Suma ponderada de productos externos de medias
+4. **Invertir $S_W$**: Gauss-Jordan con pivoteo parcial
+5. **Producto $M = S_W^{-1} S_B$**: Matriz combinada
+6. **Jacobi**: Diagonalizar $M$ simetrizado para obtener eigenvalores/vectores
+7. **Ordenar**: Seleccionar eigenvectores con mayor eigenvalores
+8. **Proyectar**: $Y = X \cdot W$
+
+### Cuándo Usar
+
+- Clasificación con clases linealmente separables
+- Reducción de dimensionalidad supervisada (pre-processing)
+- Datos con distribuciones Gaussianas por clase
+- Cuando se necesita interpretabilidad de las direcciones
+
+### Cuándo NO Usar
+
+- Relaciones no-lineales (usar Kernel LDA)
+- Clases con covarianzas muy diferentes (usar QDA)
+- Datos categóricos sin transformación
 
 ---
 
