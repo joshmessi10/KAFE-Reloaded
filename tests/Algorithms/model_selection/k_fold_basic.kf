@@ -1,8 +1,7 @@
 import machine;
 
 -- 10 samples, 5 folds
-List folds = machine.k_fold(10, 5, false, 0);
-show(length(folds));
+show(len(machine.k_fold(10, 5, False, 0)));
 
 -- Each fold should have 2 test samples
-show(length(folds[0][1]));
+show(len(machine.k_fold(10, 5, False, 0)[0][1]));

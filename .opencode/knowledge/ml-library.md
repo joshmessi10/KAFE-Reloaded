@@ -8,9 +8,9 @@ scikit-learn-style ML models and evaluation metrics, implemented from scratch in
 
 - `src/lib/KafeMACHINE/funciones.py` — public factory functions (the `machine` API).
 - `src/lib/KafeMACHINE/BaseMachine.py` — base model class shared by models.
-- Models: `LinearRegression.py`, `LogisticRegression.py`, `KNN.py`, `PCA.py`, `DecisionTree.py`, `RandomForest.py` (RandomForestClassifier + RandomForestRegressor), `GaussianNB.py`, `DBSCAN.py`, `RidgeRegression.py`, `LassoRegression.py`, `SVR.py`, `SVM.py`, `ElasticNet.py`, `AgglomerativeClustering.py`, `AdaBoost.py`, `GradientBoosting.py` (GradientBoostingClassifier + GradientBoostingRegressor).
-- Preprocessing: `StandardScaler.py`, `MinMaxScaler.py`, `SimpleImputer.py`, `LabelEncoder.py`, `OneHotEncoder.py`, `OrdinalEncoder.py`, `PCA.py`, `PolynomialFeatures.py`, `VarianceThreshold.py`, `RecursiveFeatureElimination.py`.
-- Model Selection: `model_selection.py` — `train_test_split`, `k_fold_cross_validation`, `CrossValScore`, `grid_search_cv`, `randomized_search_cv`, `Pipeline` (GridSearchCV + RandomizedSearchCV + Pipeline).
+- Models: `LinearRegression.py`, `LogisticRegression.py`, `KNN.py`, `PCA.py`, `DecisionTree.py` (DecisionTreeClassifier + DecisionTreeRegressor), `RandomForest.py` (RandomForestClassifier + RandomForestRegressor), `GaussianNB.py`, `DBSCAN.py`, `RidgeRegression.py`, `LassoRegression.py`, `SVR.py`, `SVM.py`, `ElasticNet.py`, `AgglomerativeClustering.py`, `AdaBoost.py`, `GradientBoosting.py` (GradientBoostingClassifier + GradientBoostingRegressor), `GaussianMixture.py`, `LinearDiscriminantAnalysis.py`.
+- Preprocessing: `StandardScaler.py`, `MinMaxScaler.py`, `RobustScaler.py`, `SimpleImputer.py`, `LabelEncoder.py`, `OneHotEncoder.py`, `OrdinalEncoder.py`, `PCA.py`, `PolynomialFeatures.py`, `VarianceThreshold.py`, `RecursiveFeatureElimination.py`.
+- Model Selection: `model_selection.py` — `train_test_split`, `k_fold`, `CrossValScore(BaseMachine)`, `GridSearchCV`, `RandomizedSearchCV`, `Pipeline`.
 - Hyperparameter Search: GridSearchCV and RandomizedSearchCV in `model_selection.py`.
 - Pipeline: `Pipeline` class in `model_selection.py` — chains preprocessing steps with a model.
 - Metrics: `metrics.py`.
@@ -25,11 +25,13 @@ scikit-learn-style ML models and evaluation metrics, implemented from scratch in
 - `machine.svm(C, kernel, max_iter)`
 - `machine.logistic_regression(lr, iter)`
 - `machine.knn(k)`
+- `machine.knn_regressor(k)`
 - `machine.decision_tree_classifier(criterion, max_depth, min_samples_split, min_samples_leaf)`
+- `machine.decision_tree_regressor(criterion, max_depth, min_samples_split, min_samples_leaf)`
 - `machine.random_forest_classifier(n_estimators, max_depth, min_samples_split, min_samples_leaf)`
 - `machine.random_forest_regressor(n_estimators, max_depth, min_samples_split, min_samples_leaf)`
 - `machine.gaussian_nb()`
-- `machine.standard_scaler()` / `machine.minmax_scaler()` / `machine.simple_imputer(strategy)`
+- `machine.standard_scaler()` / `machine.minmax_scaler()` / `machine.robust_scaler(with_centering, with_scaling, quantile_low, quantile_high)` / `machine.simple_imputer(strategy)`
 - `machine.label_encoder()` / `machine.one_hot_encoder()` / `machine.ordinal_encoder()`
 - `machine.polynomial_features(degree, include_bias)`
 - `machine.variance_threshold(threshold)`
@@ -37,6 +39,8 @@ scikit-learn-style ML models and evaluation metrics, implemented from scratch in
 - `machine.pca(n)`
 - `machine.dbscan(eps, min_samples)`
 - `machine.agglomerative_clustering(n_clusters, linkage)`
+- `machine.linear_discriminant_analysis(n_components)`
+- `machine.gaussian_mixture(n_components, max_iter, tol, random_state)`
 - `machine.ada_boost_classifier(n_estimators, learning_rate)`
 - `machine.gradient_boosting_classifier(n_estimators, learning_rate, max_depth)`
 - `machine.gradient_boosting_regressor(n_estimators, learning_rate, max_depth)`
@@ -72,4 +76,5 @@ Unless explicitly requested otherwise, prioritize improvements in KafeMACHINE ov
 
 ## Tests
 
-- Fixtures under `tests/KafeMACHINE/{linear_models,neighbors,tree_models,naive_bayes,preprocessing,metrics_classification,metrics_regression}/`, wired in `tests/test_KafeMACHINE.py`.
+- Fixtures under `tests/KafeMACHINE/{linear,neighbors,tree,naive_bayes,preprocessing,metrics/classification,metrics/regression,clustering,model_selection,svm,ensemble}/`, wired in `tests/test_KafeMACHINE.py`.
+- Algorithm tests under `tests/Algorithms/`, wired in `tests/test_Algorithms.py`.

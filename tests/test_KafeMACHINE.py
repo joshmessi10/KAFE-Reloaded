@@ -4,17 +4,17 @@ import pytest
 from utils import obtener_parametros, get_programs, get_invalid_programs, get_kafe_path, get_src_dir
 
 SUBDIRS = [
-    "linear_models",
+    "linear",
     "neighbors",
-    "tree_models",
+    "tree",
     "preprocessing",
-    "metrics_classification",
-    "metrics_regression",
+    "metrics/classification",
+    "metrics/regression",
     "clustering",
     "naive_bayes",
     "model_selection",
     "svm",
-    "boosting",
+    "ensemble",
 ]
 
 

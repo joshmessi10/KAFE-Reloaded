@@ -1,6 +1,6 @@
 from global_utils import check_sig
 from TypeUtils import entero_t, cadena_t, numeros_t, flotante_t, booleano_t, matriz_numeros_t, vector_numeros_t, lista_cualquiera_t
-from .LinearRegression import LinearRegression
+from .linear.LinearRegression import LinearRegression
 from .preprocessing.LabelEncoder import LabelEncoder
 from .preprocessing.OneHotEncoder import OneHotEncoder
 from .preprocessing.OrdinalEncoder import OrdinalEncoder
@@ -11,22 +11,25 @@ from .preprocessing.SimpleImputer import SimpleImputer
 from .preprocessing.PolynomialFeatures import PolynomialFeatures
 from .preprocessing.VarianceThreshold import VarianceThreshold
 from .preprocessing.RecursiveFeatureElimination import RecursiveFeatureElimination
-from .LogisticRegression import LogisticRegression
-from .KNN import KNN
-from .DecisionTree import DecisionTreeClassifier
-from .GaussianNB import GaussianNB
-from .KMeans import KMeans
-from .DBSCAN import DBSCAN
-from .RandomForest import RandomForestClassifier, RandomForestRegressor
-from .RidgeRegression import RidgeRegression
-from .LassoRegression import LassoRegression
-from .SVR import SVR
-from .SVM import SVM
-from .ElasticNet import ElasticNet
-from .AgglomerativeClustering import AgglomerativeClustering
-from .AdaBoost import AdaBoostClassifier
-from .GradientBoosting import GradientBoostingClassifier, GradientBoostingRegressor
-from .model_selection import CrossValScore, GridSearchCV, RandomizedSearchCV, Pipeline
+from .preprocessing.RobustScaler import RobustScaler
+from .linear.LogisticRegression import LogisticRegression
+from .neighbors.KNN import KNN, KNNRegressor
+from .tree.DecisionTree import DecisionTreeClassifier, DecisionTreeRegressor
+from .naive_bayes.GaussianNB import GaussianNB
+from .clustering.KMeans import KMeans
+from .clustering.DBSCAN import DBSCAN
+from .tree.RandomForest import RandomForestClassifier, RandomForestRegressor
+from .linear.RidgeRegression import RidgeRegression
+from .linear.LassoRegression import LassoRegression
+from .linear.SVR import SVR
+from .svm.SVM import SVM
+from .linear.ElasticNet import ElasticNet
+from .clustering.AgglomerativeClustering import AgglomerativeClustering
+from .ensemble.AdaBoost import AdaBoostClassifier
+from .ensemble.GradientBoosting import GradientBoostingClassifier, GradientBoostingRegressor
+from .clustering.GaussianMixture import GaussianMixture
+from .discriminant.LinearDiscriminantAnalysis import LinearDiscriminantAnalysis
+from .model_selection.model_selection import CrossValScore, GridSearchCV, RandomizedSearchCV, Pipeline
 from .metrics import (
     accuracy_score, precision_score, recall_score, f1_score,
     confusion_matrix, classification_report,
@@ -255,7 +258,7 @@ def train_test_split(X, y, test_size=0.2, random_state=0, shuffle=True):
     random_state: semilla para reproducibilidad (default: 0)
     shuffle: si se barajan los datos (default: true)
     """
-    from .model_selection import train_test_split as _tts
+    from .model_selection.model_selection import train_test_split as _tts
     return _tts(X, y, test_size, random_state, shuffle)
 
 
@@ -274,7 +277,7 @@ def k_fold(n_samples, n_splits=5, shuffle=False, random_state=0):
     shuffle: si se barajan los datos (default: false)
     random_state: semilla para reproducibilidad (default: 0)
     """
-    from .model_selection import k_fold as _kf
+    from .model_selection.model_selection import k_fold as _kf
     return _kf(n_samples, n_splits, shuffle, random_state)
 
 
@@ -427,3 +430,63 @@ def recursive_feature_elimination(n_features=1, max_iter=100):
     max_iter: maximo de iteraciones (default: 100)
     """
     return RecursiveFeatureElimination(n_features=n_features)
+
+
+@check_sig({0: [], 1: [[entero_t]], 2: [[entero_t], [entero_t]], 3: [[entero_t], [entero_t], [entero_t]]})
+def robust_scaler(with_centering=1, with_scaling=1, quantile_low=25.0, quantile_high=75.0):
+    """
+    Crea una instancia de RobustScaler.
+
+    with_centering: centra usando mediana (1=sí, 0=no)
+    with_scaling: escala usando IQR (1=sí, 0=no)
+    quantile_low: percentil inferior (default: 25.0)
+    quantile_high: percentil superior (default: 75.0)
+    """
+    return RobustScaler(bool(with_centering), bool(with_scaling), (quantile_low, quantile_high))
+
+
+@check_sig({0: [], 1: [[cadena_t]], 2: [[cadena_t], [entero_t]], 3: [[cadena_t], [entero_t], [entero_t]], 4: [[cadena_t], [entero_t], [entero_t], [entero_t]]})
+def decision_tree_regressor(criterion="mse", max_depth=0, min_samples_split=2, min_samples_leaf=1):
+    """
+    Crea una instancia de Decision Tree Regressor.
+
+    criterion: criterio de splits (default: 'mse')
+    max_depth: profundidad máxima (default: 0 = sin límite)
+    min_samples_split: mínimas muestras para dividir (default: 2)
+    min_samples_leaf: mínimas muestras por hoja (default: 1)
+    """
+    return DecisionTreeRegressor(criterion, max_depth, min_samples_split, min_samples_leaf)
+
+
+@check_sig({0: [], 1: [[entero_t]], 2: [[entero_t], [cadena_t]]})
+def knn_regressor(k=5, weights="uniform"):
+    """
+    Crea una instancia de KNN Regressor.
+
+    k: número de vecinos (default: 5)
+    weights: tipo de ponderación 'uniform' o 'distance' (default: 'uniform')
+    """
+    return KNNRegressor(k, weights)
+
+
+@check_sig({0: [], 1: [[entero_t]], 2: [[entero_t], [entero_t]], 3: [[entero_t], [entero_t], [flotante_t]], 4: [[entero_t], [entero_t], [flotante_t], [entero_t]]})
+def gaussian_mixture(n_components=3, max_iter=100, tol=1e-3, random_state=0):
+    """
+    Crea una instancia de Gaussian Mixture Model.
+
+    n_components: número de componentes Gaussianas (default: 3)
+    max_iter: máximo de iteraciones EM (default: 100)
+    tol: tolerancia para convergencia (default: 1e-3)
+    random_state: semilla para reproducibilidad (default: 0)
+    """
+    return GaussianMixture(n_components, max_iter, tol, random_state)
+
+
+@check_sig({0: [], 1: [[entero_t]]})
+def linear_discriminant_analysis(n_components=None):
+    """
+    Crea una instancia de Linear Discriminant Analysis.
+
+    n_components: número de componentes (default: None = min(n_classes-1, n_features))
+    """
+    return LinearDiscriminantAnalysis(n_components)

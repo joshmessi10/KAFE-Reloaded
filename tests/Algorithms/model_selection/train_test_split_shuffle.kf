@@ -4,8 +4,5 @@ List[List[FLOAT]] X = [[1.0], [2.0], [3.0], [4.0], [5.0], [6.0], [7.0], [8.0], [
 List[FLOAT] y = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0];
 
 -- Same seed = same split
-List result1 = machine.train_test_split(X, y, 0.2, 42, true);
-List result2 = machine.train_test_split(X, y, 0.2, 42, true);
-
-show(result1[0] == result2[0]);
-show(result1[2] == result2[2]);
+show(machine.train_test_split(X, y, 0.2, 42, True)[0] == machine.train_test_split(X, y, 0.2, 42, True)[0]);
+show(machine.train_test_split(X, y, 0.2, 42, True)[2] == machine.train_test_split(X, y, 0.2, 42, True)[2]);

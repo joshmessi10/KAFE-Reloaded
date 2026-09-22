@@ -1,0 +1,13 @@
+import machine;
+
+List[List[FLOAT]] X = [[1.0, 2.0], [2.0, 3.0], [3.0, 3.0], [6.0, 7.0], [7.0, 8.0], [8.0, 7.0]];
+List[INT] y = [0, 0, 0, 1, 1, 1];
+
+MACHINE lda = machine.linear_discriminant_analysis(1);
+lda.fit(X, y);
+
+List[INT] preds = lda.predict(X);
+show(preds);
+
+FLOAT acc = lda.score(X, y);
+show(acc);

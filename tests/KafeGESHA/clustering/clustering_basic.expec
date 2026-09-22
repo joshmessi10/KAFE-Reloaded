@@ -18,5 +18,5 @@ Epoch 17/20 — Loss 12.97%
 Epoch 18/20 — Loss 12.51%
 Epoch 19/20 — Loss 12.07%
 Epoch 20/20 — Loss 11.66%
-Cluster probabilities: [0.5031698905062807, 0.4968301094937193]
 Assigned cluster: 0
+Probabilities length: 2

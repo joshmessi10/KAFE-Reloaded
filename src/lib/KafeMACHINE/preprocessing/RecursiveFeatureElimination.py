@@ -2,7 +2,7 @@ from global_utils import check_sig
 from TypeUtils import pardos_t, matriz_numeros_t, vector_numeros_t, entero_t
 from lib.KafePARDOS.DataFrame import DataFrame
 from ..BaseMachine import BaseMachine
-from ..LinearRegression import LinearRegression
+from ..linear.LinearRegression import LinearRegression
 
 
 class RecursiveFeatureElimination(BaseMachine):
