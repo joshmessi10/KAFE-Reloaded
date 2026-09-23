@@ -1,11 +1,11 @@
-from errores import raiseVariableIsNotObject, raiseFunctionNotDefined, raiseVariableNotDefined
-def esObjeto(var):
+from errors import raiseVariableIsNotObject, raiseFunctionNotDefined, raiseVariableNotDefined
+def is_object(var):
     if isinstance(var, (str, int, float, bool, type(None))):
         return False
     return True
 
 def objectFunctionCall(object_t, function_name, args):
-    if not esObjeto(object_t):
+    if not is_object(object_t):
         raiseVariableIsNotObject()
 
     func = getattr(object_t, function_name, None)
@@ -13,12 +13,12 @@ def objectFunctionCall(object_t, function_name, args):
     if func is None:
         raiseFunctionNotDefined(function_name)
 
-    resultado = func(*args)
+    result = func(*args)
 
-    return resultado
+    return result
 
 def objectConstant(object_t, constant_name):
-    if not esObjeto(object_t):
+    if not is_object(object_t):
         raiseVariableIsNotObject()
 
     const = getattr(object_t, constant_name, None)

@@ -3,14 +3,14 @@ from antlr4 import FileStream, CommonTokenStream
 from Kafe_GrammarLexer import Kafe_GrammarLexer
 from Kafe_GrammarParser import Kafe_GrammarParser
 
-from errores import raiseModuleNotFound
+from errors import raiseModuleNotFound
 import globals
 
 def importStmt(self, ctx):
     module = ctx.ID().getText()
 
-    esLibreria = self.libraries.get(module) != None
-    if esLibreria:
+    is_library = self.libraries.get(module) != None
+    if is_library:
         self.libraries[module][1] = True
         return
 

@@ -2,13 +2,13 @@ from global_utils import check_sig
 from TypeUtils import (
     cadena_t,
     booleano_t,
-    construir_tipo_lista,
+    build_list_type,
     entero_t,
-    obtener_tipo_dato,
+    get_data_type,
     vector_numeros_t,
     matriz_numeros_t,
 )
-from errores import raiseFunctionIncorrectArgumentType
+from errors import raiseFunctionIncorrectArgumentType
 from lib.KafeMATH.funciones import radians, sin, cos
 import lib.KafePLOT.utils as utils
 
@@ -79,7 +79,7 @@ def graph(*args):
     if n == 1:
         dato = args[0]
 
-        tipo_dato = obtener_tipo_dato(dato)
+        tipo_dato = get_data_type(dato)
         if tipo_dato in vector_numeros_t:
             ys = dato
             xs = list(range(len(ys)))
@@ -95,8 +95,8 @@ def graph(*args):
             for par in dato:
                 x_val, y_val = par
 
-                tipo_x = obtener_tipo_dato(x_val)
-                tipo_y = obtener_tipo_dato(y_val)
+                tipo_x = get_data_type(x_val)
+                tipo_y = get_data_type(y_val)
                 if tipo_x not in vector_numeros_t and not isinstance(
                     x_val, (int, float)
                 ):
@@ -110,7 +110,7 @@ def graph(*args):
             style = "both"
 
         else:
-            raiseFunctionIncorrectArgumentType("graph", dato, obtener_tipo_dato(dato))
+            raiseFunctionIncorrectArgumentType("graph", dato, get_data_type(dato))
 
     elif n == 2:
         primero, segundo = args
@@ -128,8 +128,8 @@ def graph(*args):
                 for par in dato:
                     x_val, y_val = par[0], par[1]
 
-                    tipo_x = obtener_tipo_dato(x_val)
-                    tipo_y = obtener_tipo_dato(y_val)
+                    tipo_x = get_data_type(x_val)
+                    tipo_y = get_data_type(y_val)
                     if tipo_x not in vector_numeros_t and not isinstance(
                         x_val, (int, float)
                     ):
@@ -152,8 +152,8 @@ def graph(*args):
 
         else:
             xs, ys = primero, segundo
-            tipo_xs = obtener_tipo_dato(xs)
-            tipo_ys = obtener_tipo_dato(ys)
+            tipo_xs = get_data_type(xs)
+            tipo_ys = get_data_type(ys)
             if tipo_xs not in vector_numeros_t:
                 raiseFunctionIncorrectArgumentType("graph", xs, tipo_xs)
             if tipo_ys not in vector_numeros_t:
@@ -165,8 +165,8 @@ def graph(*args):
     else:
         xs, ys, estilo_raw = args
 
-        tipo_xs = obtener_tipo_dato(xs)
-        tipo_ys = obtener_tipo_dato(ys)
+        tipo_xs = get_data_type(xs)
+        tipo_ys = get_data_type(ys)
         if tipo_xs not in vector_numeros_t:
             raiseFunctionIncorrectArgumentType("graph", xs, tipo_xs)
         if tipo_ys not in vector_numeros_t:
@@ -377,7 +377,7 @@ def render():
     utils.reset_variables()
 
 
-@check_sig([2], [construir_tipo_lista(1, str)], vector_numeros_t)
+@check_sig([2], [build_list_type(1, str)], vector_numeros_t)
 def bar(etiquetas, valores):
     if len(etiquetas) != len(valores):
         raise Exception("bar: labels and values must have the same length")
@@ -429,7 +429,7 @@ def bar(etiquetas, valores):
     utils.reset_variables()
 
 
-@check_sig([2], [construir_tipo_lista(1, str)], vector_numeros_t)
+@check_sig([2], [build_list_type(1, str)], vector_numeros_t)
 def pie(etiquetas, valores):
     if len(etiquetas) != len(valores):
         raise Exception("pie: labels and values must have the same length")

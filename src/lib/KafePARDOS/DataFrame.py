@@ -541,8 +541,8 @@ class DataFrame:
                     else:
                         tipo = cadena_t
                     
-                    from global_utils import asignar_variable
-                    asignar_variable(visitor, col_name, val, tipo)
+                    from global_utils import assign_variable
+                    assign_variable(visitor, col_name, val, tipo)
                     visitor.mark_variable_in_scope(col_name)
                 
                 # Evaluate expression

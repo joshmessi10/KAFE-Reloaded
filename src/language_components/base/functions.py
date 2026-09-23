@@ -1,5 +1,5 @@
 from lib.KafeGESHA.core.model import Gesha
-from errores import (
+from errors import (
     raiseVariableAlreadyDefined,
     raiseVariableNotDefined,
     raiseVoidAsVariableType,
@@ -9,7 +9,7 @@ from errores import (
     raiseTypeMismatch,
 )
 from TypeUtils import (
-    obtener_tipo_dato,
+    get_data_type,
     entero_t,
     flotante_t,
     cadena_t,
@@ -19,12 +19,12 @@ from TypeUtils import (
     gesha_t,
     pardos_t,
 )
-from global_utils import esTipoCorrecto, verificarHomogeneidad, asignar_variable
+from global_utils import is_correct_type, verify_homogeneity, assign_variable
 
 
 def varDecl(self, ctx):
-    tipo = ctx.typeDecl().getText()
-    if tipo == void_t:
+    data_type = ctx.typeDecl().getText()
+    if data_type == void_t:
         raiseVoidAsVariableType()
 
     name = ctx.ID().getText()
@@ -39,47 +39,47 @@ def varDecl(self, ctx):
         raiseVariableAlreadyDefined(name)
 
     if val is None:
-        if tipo == entero_t:
+        if data_type == entero_t:
             val = 0
-        elif tipo == flotante_t:
+        elif data_type == flotante_t:
             val = 0.0
-        elif tipo == cadena_t:
+        elif data_type == cadena_t:
             val = ""
-        elif tipo == booleano_t:
+        elif data_type == booleano_t:
             val = False
-        elif tipo == gesha_t:
+        elif data_type == gesha_t:
             val = Gesha()
-        elif tipo == pardos_t:
+        elif data_type == pardos_t:
             from lib.KafePARDOS.DataFrame import DataFrame
             val = DataFrame([], [])
-        elif tipo.startswith(lista_t):
+        elif data_type.startswith(lista_t):
             val = []
 
-    asignar_variable(self, name, val, tipo)
+    assign_variable(self, name, val, data_type)
     # Mark variable as declared in current scope
     self.mark_variable_in_scope(name)
 
 
 def assignStmt(self, ctx):
     id_text = ctx.ID().getText()
-    valor = self.visit(ctx.expr())
+    value = self.visit(ctx.expr())
 
     if id_text not in self.variables:
         raiseVariableNotDefined(id_text)
 
-    tipo = self.variables[id_text][0]
+    data_type = self.variables[id_text][0]
 
-    asignar_variable(self, id_text, valor, tipo)
+    assign_variable(self, id_text, value, data_type)
 
 
 def expr(self, ctx):
-    resultado = self.visitChildren(ctx)
+    result = self.visitChildren(ctx)
 
-    if type(resultado) == list:
-        if verificarHomogeneidad(resultado) == False:
+    if type(result) == list:
+        if verify_homogeneity(result) == False:
             raiseExpectedHomogeneousList()
 
-    return resultado
+    return result
 
 
 def logicExpr(self, ctx):
@@ -191,35 +191,35 @@ def idExpr(self, ctx):
 
 
 def indexedAssignStmt(self, ctx):
-    nombre_lista = ctx.ID().getText()
+    list_name = ctx.ID().getText()
     indexes = self.visit(ctx.indexing())
 
     for index in indexes:
         if type(index) != int:
             raiseNonIntegerIndex(index)
 
-    if nombre_lista not in self.variables:
-        raiseVariableNotDefined(nombre_lista)
+    if list_name not in self.variables:
+        raiseVariableNotDefined(list_name)
 
-    _, lista = self.variables[nombre_lista]
+    _, items = self.variables[list_name]
 
-    nuevo_valor = self.visit(ctx.expr())
+    new_value = self.visit(ctx.expr())
 
-    listaIndexada = lista
+    indexed_list = items
     for i in range(len(indexes) - 1):
         try:
-            listaIndexada = listaIndexada[indexes[i]]
+            indexed_list = indexed_list[indexes[i]]
         except IndexError:
-            raiseIndexOutOfBounds(indexes[i], len(listaIndexada))
+            raiseIndexOutOfBounds(indexes[i], len(indexed_list))
 
-    ultimo_indice = indexes[len(indexes) - 1]
+    last_index = indexes[len(indexes) - 1]
     try:
-        anterior_valor = listaIndexada[ultimo_indice]
-        tipo_anterior_valor = obtener_tipo_dato(anterior_valor)
+        previous_value = indexed_list[last_index]
+        previous_value_type = get_data_type(previous_value)
 
-        if not esTipoCorrecto(nuevo_valor, tipo_anterior_valor):
-            raiseTypeMismatch(nuevo_valor, tipo_anterior_valor)
+        if not is_correct_type(new_value, previous_value_type):
+            raiseTypeMismatch(new_value, previous_value_type)
 
-        listaIndexada[ultimo_indice] = nuevo_valor
+        indexed_list[last_index] = new_value
     except IndexError:
-        raiseIndexOutOfBounds(ultimo_indice, len(listaIndexada))
+        raiseIndexOutOfBounds(last_index, len(indexed_list))

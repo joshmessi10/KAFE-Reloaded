@@ -1,3 +1,3 @@
 current_dir = None
-ruta_programa = None
+program_path = None
 current_visitor = None

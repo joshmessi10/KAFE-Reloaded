@@ -1,14 +1,14 @@
 from Kafe_GrammarParser import Kafe_GrammarParser
 
 from TypeUtils import funcion_t, void_t, entero_t, todos_t, lista_cualquiera_t
-from errores import (
+from errors import (
     raiseFunctionAlreadyDefined,
     raiseVoidAsParameterType,
     raiseWrongNumberOfArgs,
     raiseFunctionNotDefined,
     raiseSignatureMismatch,
 )
-from global_utils import asignar_variable, check_sig
+from global_utils import assign_variable, check_sig
 from .utils import ReturnValue, check_value_type, _parse_signature
 
 
@@ -25,8 +25,8 @@ def _get_top_params(signature: str) -> list[str]:
 def functionDecl(self, ctx):
     name = ctx.ID().getText()
     if name in self.variables:
-        tipo_existente, _ = self.variables[name]
-        if tipo_existente == funcion_t:
+        existing_type, _ = self.variables[name]
+        if existing_type == funcion_t:
             raiseFunctionAlreadyDefined(name)
 
     param_lists = ctx.getTypedRuleContexts(Kafe_GrammarParser.ParamListContext)
@@ -94,16 +94,16 @@ def functionDecl(self, ctx):
                 for decl, val in zip(params_flat, new_vals):
                     expected = decl.typeDecl().getText().replace(" ", "")
 
-                    sig_obt = getattr(val, "signature", None)
-                    if sig_obt:
-                        act_p, act_r = _parse_signature(sig_obt)
+                    obtained_signature = getattr(val, "signature", None)
+                    if obtained_signature:
+                        act_p, act_r = _parse_signature(obtained_signature)
                         exp_p, exp_r = _parse_signature(expected)
                         # Allow ANY return type to match any expected return type
                         if not (
                             act_p == exp_p
                             and (act_r == exp_r or act_r == "ANY" or exp_r == "ANY")
                         ):
-                            top_act = _get_top_params(sig_obt)
+                            top_act = _get_top_params(obtained_signature)
                             top_exp = _get_top_params(expected)
                             if len(top_act) != len(top_exp):
                                 pname = decl.ID().getText()
@@ -117,7 +117,7 @@ def functionDecl(self, ctx):
 
                     pid = decl.ID().getText()
                     ptype = funcion_t if expected.startswith("FUNC") else expected
-                    asignar_variable(outer, pid, val, ptype)
+                    assign_variable(outer, pid, val, ptype)
 
                 outer.scope_stack = [{}]  # Fresh scope stack for function
                 result = None
@@ -205,16 +205,16 @@ def lambdaExpr(self, ctx):
                 for decl, val in zip(params, new_vals):
                     expected = decl.typeDecl().getText().replace(" ", "")
 
-                    sig_obt = getattr(val, "signature", None)
-                    if sig_obt:
-                        act_p, act_r = _parse_signature(sig_obt)
+                    obtained_signature = getattr(val, "signature", None)
+                    if obtained_signature:
+                        act_p, act_r = _parse_signature(obtained_signature)
                         exp_p, exp_r = _parse_signature(expected)
                         # Allow ANY return type to match any expected return type
                         if not (
                             act_p == exp_p
                             and (act_r == exp_r or act_r == "ANY" or exp_r == "ANY")
                         ):
-                            top_act = _get_top_params(sig_obt)
+                            top_act = _get_top_params(obtained_signature)
                             top_exp = _get_top_params(expected)
                             if len(top_act) != len(top_exp):
                                 pname = decl.ID().getText()
@@ -227,7 +227,7 @@ def lambdaExpr(self, ctx):
                     check_value_type(val, expected)
                     pid = decl.ID().getText()
                     ptype = funcion_t if expected.startswith("FUNC") else expected
-                    asignar_variable(outer, pid, val, ptype)
+                    assign_variable(outer, pid, val, ptype)
 
                 return outer.visit(body)
             finally:
@@ -255,19 +255,19 @@ def returnStmt(self, ctx):
 
 
 @check_sig([2], lista_cualquiera_t, todos_t, func_nombre="append")
-def visitAppendCall(lista, elem):
-    lista.append(elem)
+def visitAppendCall(items, element):
+    items.append(element)
 
 
 @check_sig([2], lista_cualquiera_t, todos_t, func_nombre="remove")
-def visitRemoveCall(lista, elem):
-    lista.remove(elem)
+def visitRemoveCall(items, element):
+    items.remove(element)
     return None
 
 
 @check_sig([1], lista_cualquiera_t, func_nombre="len")
-def visitLenCall(lista):
-    return len(lista)
+def visitLenCall(items):
+    return len(items)
 
 
 @check_sig([1, 2, 3], [entero_t], [entero_t], [entero_t], func_nombre="range")

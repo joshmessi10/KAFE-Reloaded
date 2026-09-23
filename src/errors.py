@@ -1,4 +1,4 @@
-from TypeUtils import obtener_tipo_dato, void_t
+from TypeUtils import get_data_type, void_t
 
 def raiseVoidAsVariableType():
     message = f"{void_t} cannot be used as variable type"
@@ -28,38 +28,38 @@ def raiseExpectedHomogeneousList():
     message = "Expected homogeneous list"
     raise Exception(message)
 
-def raiseNonIntegerIndex(valor):
-    tipo = obtener_tipo_dato(valor)
-    message = f"Index must be an integer, got {tipo}"
+def raiseNonIntegerIndex(value):
+    data_type = get_data_type(value)
+    message = f"Index must be an integer, got {data_type}"
     raise IndexError(message)
 
 def raiseIndexOutOfBounds(index, length):
     message = f"Index {index} out of bounds for collection of size {length}"
     raise IndexError(message)
 
-def raiseTypeMismatch(variable, tipo_definido):
-    tipo_valor = obtener_tipo_dato(variable)
-    message = f"Expected {tipo_definido}, obtained {tipo_valor}"
+def raiseTypeMismatch(variable, declared_type):
+    value_type = get_data_type(variable)
+    message = f"Expected {declared_type}, obtained {value_type}"
     raise TypeError(message)
 
-def raiseFunctionIncorrectArgumentType(function_name, valor, tipo_definido):
-    tipo_valor = obtener_tipo_dato(valor)
+def raiseFunctionIncorrectArgumentType(function_name, value, declared_type):
+    value_type = get_data_type(value)
 
-    if type(tipo_definido) == list:
-        tipos_esperados = ""
-        for i in range(len(tipo_definido) - 1):
-            tipos_esperados += tipo_definido[i] + " or "
-        tipos_esperados += tipo_definido[len(tipo_definido) - 1]
+    if type(declared_type) == list:
+        expected_types = ""
+        for i in range(len(declared_type) - 1):
+            expected_types += declared_type[i] + " or "
+        expected_types += declared_type[len(declared_type) - 1]
     else:
-        tipos_esperados = tipo_definido
+        expected_types = declared_type
 
-    message = f"Function {function_name} expects argument of type {tipos_esperados}, got type {tipo_valor}"
+    message = f"Function {function_name} expects argument of type {expected_types}, got type {value_type}"
     raise TypeError(message)
 
 def raiseConditionMustBeBoolean(place, variable):
-    tipo = obtener_tipo_dato(variable)
+    data_type = get_data_type(variable)
 
-    message = f"Condition in {place} must be boolean, got {tipo}"
+    message = f"Condition in {place} must be boolean, got {data_type}"
     raise TypeError(message)
 
 def raiseExceededIterationCount():
@@ -67,21 +67,21 @@ def raiseExceededIterationCount():
     raise RuntimeError(message)
 
 def raiseNonIterableVariable(variable):
-    tipo = obtener_tipo_dato(variable)
+    data_type = get_data_type(variable)
 
-    message = f"Variable in for must be iterable (list or string or range), got {tipo}"
+    message = f"Variable in for must be iterable (list or string or range), got {data_type}"
     raise TypeError(message)
 
 def raiseWrongNumberOfArgs(function_name, num_args, recv_args):
     if type(num_args) == list:
-        num_args_str = ""
+        arg_counts_text = ""
         for i in range(len(num_args) - 1):
-            num_args_str += str(num_args[i]) + " or "
-        num_args_str += str(num_args[len(num_args) - 1])
+            arg_counts_text += str(num_args[i]) + " or "
+        arg_counts_text += str(num_args[len(num_args) - 1])
     else:
-        num_args_str = str(num_args)
+        arg_counts_text = str(num_args)
 
-    message = f"'{function_name}' expects {num_args_str} args, got {recv_args}"
+    message = f"'{function_name}' expects {arg_counts_text} args, got {recv_args}"
     raise Exception(message)
 
 def raiseModuleNotFound(module_name, path):
@@ -100,8 +100,8 @@ def raiseVariableIsNotObject():
     message = "variable is not of type object"
     raise Exception(message)
 
-def raiseFileNotFound(nombre, ruta):
-    message = f"File '{nombre}' not found at {ruta}"
+def raiseFileNotFound(name, path):
+    message = f"File '{name}' not found at {path}"
     raise FileNotFoundError(message)
 
 def raiseSignatureMismatch(expected_signature, obtained_signature, origin=""):

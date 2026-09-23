@@ -35,12 +35,12 @@ def reset_variables():
 
 
 def save_svg(content):
-    if not globals.ruta_programa:
+    if not globals.program_path:
         raise Exception("save_svg: No program file path set")
-    dest_folder = os.path.dirname(globals.ruta_programa)
+    dest_folder = os.path.dirname(globals.program_path)
     if not dest_folder:
         dest_folder = "."
-    svg_name = os.path.splitext(os.path.basename(globals.ruta_programa))[0] + ".svg"
+    svg_name = os.path.splitext(os.path.basename(globals.program_path))[0] + ".svg"
     svg_path = os.path.join(dest_folder, svg_name)
 
     try:

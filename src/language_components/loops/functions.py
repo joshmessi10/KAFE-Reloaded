@@ -1,10 +1,10 @@
-from TypeUtils import obtener_tipo_dato, obtener_tipo_dentro_lista, cadena_t
-from errores import (
+from TypeUtils import get_data_type, get_inner_list_type, cadena_t
+from errors import (
     raiseConditionMustBeBoolean,
     raiseExceededIterationCount,
     raiseNonIterableVariable,
 )
-from componentes_lenguaje.funciones.utils import ReturnValue
+from language_components.functions.utils import ReturnValue
 
 
 def whileLoop(self, ctx):
@@ -12,8 +12,8 @@ def whileLoop(self, ctx):
 
     if not isinstance(cond, bool):
         raiseConditionMustBeBoolean("while", cond)
-    max_iteraciones = 10000
-    contador = 0
+    max_iterations = 10000
+    iteration_count = 0
     while cond:
         self.push_scope()
         try:
@@ -22,8 +22,8 @@ def whileLoop(self, ctx):
             raise ret
         finally:
             self.pop_scope()
-        contador += 1
-        if contador > max_iteraciones:
+        iteration_count += 1
+        if iteration_count > max_iterations:
             raiseExceededIterationCount()
         cond = self.visit(ctx.expr())
         if not isinstance(cond, bool):
@@ -34,20 +34,20 @@ def forLoop(self, ctx):
     var_name = ctx.ID().getText()
     iterable = self.visit(ctx.expr())
 
-    tipo_iterable = obtener_tipo_dato(iterable)
+    iterable_type = get_data_type(iterable)
 
     if type(iterable) == list:
-        tipo_elemento = obtener_tipo_dentro_lista(iterable)
-    elif tipo_iterable == cadena_t:
-        tipo_elemento = cadena_t
+        item_type = get_inner_list_type(iterable)
+    elif iterable_type == cadena_t:
+        item_type = cadena_t
     else:
         raiseNonIterableVariable(iterable)
 
     for item in iterable:
         self.push_scope()
-        from global_utils import asignar_variable
+        from global_utils import assign_variable
 
-        asignar_variable(self, var_name, item, tipo_elemento)
+        assign_variable(self, var_name, item, item_type)
         self.mark_variable_in_scope(var_name)
         try:
             self.visit(ctx.block())

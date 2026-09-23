@@ -1,6 +1,6 @@
 from TypeUtils import void_t
-from errores import raiseFunctionCantReturnVoid, raiseTypeMismatch
-from global_utils import esTipoCorrecto
+from errors import raiseFunctionCantReturnVoid, raiseTypeMismatch
+from global_utils import is_correct_type
 
 class ReturnValue(Exception):
     def __init__(self, value):
@@ -40,11 +40,11 @@ def check_value_type(value, declared_type: str):
         return
 
     if decl.startswith("FUNC"):
-        sig_obt = getattr(value, "signature", None)
-        if sig_obt is None:
+        obtained_signature = getattr(value, "signature", None)
+        if obtained_signature is None:
             raiseTypeMismatch(value, declared_type)
 
-        act_params, act_ret = _parse_signature(sig_obt)
+        act_params, act_ret = _parse_signature(obtained_signature)
         exp_params, exp_ret = _parse_signature(decl)
 
         if not (
@@ -58,5 +58,5 @@ def check_value_type(value, declared_type: str):
 
         return
 
-    if not esTipoCorrecto(value, decl):
+    if not is_correct_type(value, decl):
         raiseTypeMismatch(value, declared_type)

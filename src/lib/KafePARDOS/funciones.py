@@ -1,6 +1,6 @@
 import os
 import json
-from errores import raiseFileNotFound
+from errors import raiseFileNotFound
 from global_utils import check_sig
 from .utils import inferir_tipo
 from .DataFrame import DataFrame

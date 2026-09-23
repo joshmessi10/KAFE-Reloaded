@@ -1,25 +1,25 @@
-from errores import raiseLibraryNotImported, raiseFunctionNotDefined, raiseVariableNotDefined
+from errors import raiseLibraryNotImported, raiseFunctionNotDefined, raiseVariableNotDefined
 
-def revisarImportacion(library):
-    seImporto = library[1]
-    if not seImporto:
+def check_imported(library):
+    was_imported = library[1]
+    if not was_imported:
         raiseLibraryNotImported()
 
 
 def libraryFunctionCall(library, function_name, args):
-    revisarImportacion(library)
+    check_imported(library)
     library_module = library[0]
     func = getattr(library_module, function_name, None)
 
     if func is None:
         raiseFunctionNotDefined(function_name)
 
-    resultado = func(*args)
+    result = func(*args)
 
-    return resultado
+    return result
 
 def libraryConstant(library, constant_name):
-    revisarImportacion(library)
+    check_imported(library)
     library_module = library[0]
     const = getattr(library_module, constant_name, None)
 

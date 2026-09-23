@@ -2,35 +2,35 @@ import pardos;
 import geshaDeep;
 import plot;
 
-show("=== Clustering No Supervisado Optimizado ===");
+show("=== Optimized Unsupervised Clustering ===");
 
--- 1. Preprocesamiento con KafePARDOS
+-- 1. Preprocessing with KafePARDOS
 PARDOS df = pardos.read_csv("../tests/data/clustering_sample.csv");
 List[List[FLOAT]] X_train = pardos.to_matrix(df);
 
--- 2. Definición del Modelo Secuencial
+-- 2. Define the sequential model
 GESHA layer1 = geshaDeep.create_dense(8, "relu", [2], 0.0, 42);
 GESHA layer2 = geshaDeep.create_dense(2, "softmax", [], 0.0, 42);
 GESHA model  = geshaDeep.sequential([layer1, layer2]);
 
 model.compile("adam", "mse", []);
 
--- Aumentar la tasa de aprendizaje para acelerar la convergencia
+-- Increase the learning rate to accelerate convergence
 geshaDeep.set_lr(model, 0.01);
 
--- 3. Entrenamiento No Supervisado (100 épocas)
-show("\nEntrenando...");
+-- 3. Unsupervised training (100 epochs)
+show("\nTraining...");
 model.fit(X_train, [], 100, 1);
 
--- 4. Inferencia de Clusters
+-- 4. Cluster inference
 List[FLOAT] c0_x = []; List[FLOAT] c0_y = [];
 List[FLOAT] c1_x = []; List[FLOAT] c1_y = [];
 
-show("\nResultados por Punto:");
+show("\nResults by point:");
 for (p in X_train):
     INT cluster_id = model.predict_label(p);
     List[FLOAT] probs = model.predict(p);
-    show("Punto " + str(p) + " -> Cluster " + str(cluster_id) + " (Probabilidades: " + str(probs) + ")");
+    show("Point " + str(p) + " -> Cluster " + str(cluster_id) + " (Probabilities: " + str(probs) + ")");
 
     if (cluster_id == 0):
         append(c0_x, p[0]);
@@ -41,9 +41,9 @@ for (p in X_train):
     ;
 ;
 
--- 5. Graficación con KafePlot
+-- 5. Plot with KafePlot
 plot.figure();
-plot.title("Clustering de Datos — KafeGESHA + KafePlot");
+plot.title("Data Clustering — KafeGESHA + KafePlot");
 plot.xlabel("X1");
 plot.ylabel("X2");
 plot.grid(True);
@@ -63,4 +63,4 @@ if (len(c1_x) > 0):
 ;
 
 plot.render();
-show("Gráfico SVG generado con éxito.");
+show("SVG chart generated successfully.");

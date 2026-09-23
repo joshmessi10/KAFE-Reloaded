@@ -1,10 +1,10 @@
 from Kafe_GrammarVisitor import Kafe_GrammarVisitor
 
-from componentes_lenguaje.librerias.funciones import (
+from language_components.libraries.functions import (
     libraryFunctionCall,
     libraryConstant,
 )
-from componentes_lenguaje.base.funciones import (
+from language_components.base.functions import (
     additiveExpr,
     assignStmt,
     equalityExpr,
@@ -19,9 +19,9 @@ from componentes_lenguaje.base.funciones import (
     unaryExpression,
     varDecl,
 )
-from componentes_lenguaje.bucles.funciones import forLoop, whileLoop
-from componentes_lenguaje.condicionales.funciones import ifElseExpr
-from componentes_lenguaje.funciones.funciones import (
+from language_components.loops.functions import forLoop, whileLoop
+from language_components.conditionals.functions import ifElseExpr
+from language_components.functions.functions import (
     functionDecl,
     lambdaExpr,
     returnStmt,
@@ -33,13 +33,13 @@ from componentes_lenguaje.funciones.funciones import (
     pourStmt,
     showStmt,
 )
-from componentes_lenguaje.importar.funciones import importStmt
-from componentes_lenguaje.method_calling.funciones import (
+from language_components.imports.functions import importStmt
+from language_components.method_calling.functions import (
     objectConstant,
     objectFunctionCall,
 )
 
-from errores import raiseVariableNotDefined
+from errors import raiseVariableNotDefined
 
 import lib.KafeNUMK.funciones as numk_funcs_module
 import lib.KafeMATH.funciones as math_funcs_module
@@ -51,7 +51,7 @@ import lib.KafeMACHINE.funciones as machine_funcs_module
 import lib.KafeHF.funciones as hf_funcs_module
 
 
-class EvalVisitorPrimitivo(Kafe_GrammarVisitor):
+class InterpreterVisitor(Kafe_GrammarVisitor):
     def __init__(self):
         self.variables = {}
         self.scope_stack = [{}]  # Stack of scopes for proper variable isolation
@@ -114,23 +114,23 @@ class EvalVisitorPrimitivo(Kafe_GrammarVisitor):
         return functionCall(self, ctx)
 
     def visitAppendCall(self, ctx):
-        lista = self.visit(ctx.expr(0))
-        elem = self.visit(ctx.expr(1))
-        return visitAppendCall(lista, elem)
+        items = self.visit(ctx.expr(0))
+        element = self.visit(ctx.expr(1))
+        return visitAppendCall(items, element)
 
     def visitRemoveCall(self, ctx):
-        lista = self.visit(ctx.expr(0))
-        elem = self.visit(ctx.expr(1))
-        return visitRemoveCall(lista, elem)
+        items = self.visit(ctx.expr(0))
+        element = self.visit(ctx.expr(1))
+        return visitRemoveCall(items, element)
 
     def visitLenCall(self, ctx):
-        lista = self.visit(ctx.expr())
-        return visitLenCall(lista)
+        items = self.visit(ctx.expr())
+        return visitLenCall(items)
 
     def visitLambdaExpr(self, ctx):
         return lambdaExpr(self, ctx)
 
-    def visitLambdaExpresion(self, ctx):
+    def visitLambdaExpression(self, ctx):
         return self.visit(ctx.lambdaExpr())
 
     def visitReturnStmt(self, ctx):
@@ -143,8 +143,8 @@ class EvalVisitorPrimitivo(Kafe_GrammarVisitor):
         return pourStmt(self, ctx)
 
     def visitRangeExpr(self, ctx):
-        rango = [self.visit(expr) for expr in ctx.expr()]
-        return rangeExpr(*rango)
+        range_values = [self.visit(expr) for expr in ctx.expr()]
+        return rangeExpr(*range_values)
 
     def visitIfElseExpr(self, ctx):
         return ifElseExpr(self, ctx)
@@ -179,7 +179,7 @@ class EvalVisitorPrimitivo(Kafe_GrammarVisitor):
     def visitPowerExpr(self, ctx):
         return powerExpr(self, ctx)
 
-    def visitUnaryExpresion(self, ctx):
+    def visitUnaryExpression(self, ctx):
         return unaryExpression(self, ctx)
 
     def visitParenExpr(self, ctx):
@@ -198,22 +198,22 @@ class EvalVisitorPrimitivo(Kafe_GrammarVisitor):
 
     def visitInterpretEscapes(self, raw):
         escapes = {'n':'\n','t':'\t','r':'\r','\\':'\\','"':'"',"'" : "'"}
-        resultado = []
+        result = []
         it = iter(raw)
         for c in it:
             if c == '\\':
                 try:
                     esc = next(it)
                     if esc not in escapes:
-                        from errores import raiseInvalidEscape
+                        from errors import raiseInvalidEscape
                         raiseInvalidEscape(esc)
-                    resultado.append(escapes[esc])
+                    result.append(escapes[esc])
                 except StopIteration:
-                    from errores import raiseIncompleteEscape
+                    from errors import raiseIncompleteEscape
                     raiseIncompleteEscape()
             else:
-                resultado.append(c)
-        return ''.join(resultado)
+                result.append(c)
+        return ''.join(result)
 
     def visitStringLiteral(self, ctx):
         return self.visitInterpretEscapes(ctx.getText()[1:-1])
@@ -225,13 +225,13 @@ class EvalVisitorPrimitivo(Kafe_GrammarVisitor):
             return True
 
     def visitListLiteral(self, ctx):
-        lista = []
+        items = []
 
         for expr in ctx.expr():
-            valor = self.visit(expr)
-            lista.append(valor)
+            value = self.visit(expr)
+            items.append(value)
 
-        return lista
+        return items
 
     def visitStrCastExpr(self, ctx):
         return str(self.visit(ctx.expr()))
@@ -250,14 +250,14 @@ class EvalVisitorPrimitivo(Kafe_GrammarVisitor):
         function_name = ctx.ID(1).getText()
         args = [self.visit(e) for e in ctx.expr()]
 
-        esLibreria = self.libraries.get(object_name) != None
-        esVariable = self.variables.get(object_name) != None
+        is_library = self.libraries.get(object_name) != None
+        is_variable = self.variables.get(object_name) != None
         try:
-            if esLibreria:
+            if is_library:
                 return libraryFunctionCall(
                     self.libraries.get(object_name), function_name, args
                 )
-            elif esVariable:
+            elif is_variable:
                 return objectFunctionCall(
                     self.variables[object_name][1], function_name, args
                 )
@@ -270,11 +270,11 @@ class EvalVisitorPrimitivo(Kafe_GrammarVisitor):
         object_name = ctx.ID(0).getText()
         constant_name = ctx.ID(1).getText()
 
-        esLibreria = self.libraries.get(object_name) != None
-        esVariable = self.variables.get(object_name) != None
-        if esLibreria:
+        is_library = self.libraries.get(object_name) != None
+        is_variable = self.variables.get(object_name) != None
+        if is_library:
             return libraryConstant(self.libraries.get(object_name), constant_name)
-        elif esVariable:
+        elif is_variable:
             return objectConstant(self.variables[object_name][1], constant_name)
         else:
             raiseVariableNotDefined(object_name)

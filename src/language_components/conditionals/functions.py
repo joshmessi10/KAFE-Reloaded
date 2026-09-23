@@ -1,5 +1,5 @@
-from errores import raiseConditionMustBeBoolean
-from componentes_lenguaje.funciones.utils import ReturnValue
+from errors import raiseConditionMustBeBoolean
+from language_components.functions.utils import ReturnValue
 
 
 def ifElseExpr(self, ctx):
