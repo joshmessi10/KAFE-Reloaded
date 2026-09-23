@@ -32,7 +32,7 @@ Information Gain = parent entropy - weighted child entropy
 
 ## Dependencies
 
-- `lib.KafeMATH.funciones.log` — for entropy calculation (log base 2)
+- `lib.KafeMATH.functions.log` — for entropy calculation (log base 2)
 
 ## Related Concepts
 

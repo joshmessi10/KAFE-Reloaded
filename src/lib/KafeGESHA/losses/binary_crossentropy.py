@@ -1,13 +1,13 @@
-"""Función de pérdida Binary Cross Entropy."""
-from lib.KafeMATH.funciones import log
+"""Binary Cross Entropy loss function."""
+from lib.KafeMATH.functions import log
 from lib.KafeGESHA.losses.loss import LossFunction
 
 
 class BinaryCrossEntropy(LossFunction):
     """
     BCE robusta:
-    • Clippea las predicciones al rango (ε, 1-ε).
-    • Acepta probabilidad escalar o lista [probabilidad].
+    • Clip the predictions to the range (ε, 1-ε).
+    • Accepts scalar or list probability [probability].
     """
 
     def __init__(self, epsilon: float = 1e-8):
@@ -15,8 +15,8 @@ class BinaryCrossEntropy(LossFunction):
 
     def _as_scalar(self, yp):
         """
-        Convierte yp a escalar si es [escala].
-        Mantiene float si ya lo es.
+        Convert yp to scalar if it is [scale].
+        Maintains float if it already is.
         """
         return yp[0] if isinstance(yp, list) and len(yp) == 1 else yp
 

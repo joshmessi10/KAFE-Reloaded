@@ -1,13 +1,13 @@
-"""API pública de KafeGESHA para el intérprete KAFE.
+"""KafeGESHA public API for the KAFE interpreter.
 
-Funciones disponibles desde KAFE con `import geshaDeep`:
+Features available from KAFE with `import geshaDeep`:
 
-    Construcción de modelos:
+    Model construction:
         geshaDeep.sequential([layers])    → Sequential
         geshaDeep.functional(inputs, outputs) → Functional
-        geshaDeep.input_layer(shape)      → Input simbólico
+        geshaDeep.input_layer(shape) → Symbolic input
 
-    Construcción de capas:
+    Layer construction:
         geshaDeep.create_dense(units, activation, input_shape, reg, seed)
         geshaDeep.relu_layer()
         geshaDeep.sigmoid_layer()
@@ -15,23 +15,23 @@ Funciones disponibles desde KAFE con `import geshaDeep`:
         geshaDeep.softmax_layer()
         geshaDeep.dropout_layer(rate, seed)
         geshaDeep.flatten_layer()
-        geshaDeep.add_layer()             → capa Add para skip-connections
+        geshaDeep.add_layer() → Add layer for skip-connections
 
-    Utilidades de tensores:
+    Tensioner utilities:
         geshaDeep.tensor(data)
         geshaDeep.tensor_zeros(shape)
         geshaDeep.tensor_ones(shape)
         geshaDeep.tensor_random(shape)
 
-    Operaciones sobre el modelo:
+    Operations on the model:
         geshaDeep.compile(model, optimizer, loss, metrics)
         geshaDeep.set_lr(model, new_lr)
 
-Pipeline esperado desde KAFE:
+Expected pipeline from KAFE:
 
     import geshaDeep;
 
-    -- Datos ya preparados (el preprocesamiento está fuera)
+    -- Data already prepared (preprocessing is out)
     List[List[FLOAT]] X_train = [...];
     List[INT]         y_train = [...];
 
@@ -44,9 +44,9 @@ Pipeline esperado desde KAFE:
 """
 from global_utils import check_sig
 from TypeUtils import (
-    entero_t, cadena_t, flotante_t, gesha_t,
-    vector_numeros_t, matriz_numeros_t,
-    lista_cadenas_t, lista_cualquiera_t, void_t
+    integer_type, string_type, float_type, gesha_type,
+    numeric_vector_types, numeric_matrix_types,
+    string_list_type, any_list_types, void_t
 )
 from lib.KafeGESHA.layers.dense import Dense
 from lib.KafeGESHA.layers.dropout import Dropout
@@ -57,23 +57,23 @@ from lib.KafeGESHA.layers.activation_layers import (
 from lib.KafeGESHA.layers.input_layer import Input
 from lib.KafeGESHA.models.sequential import Sequential
 from lib.KafeGESHA.models.functional import Functional, Add
-from lib.KafeNUMK import funciones as numk
+from lib.KafeNUMK import functions as numk
 
 
 # --------------------------------------------------------------------------
 # Capas
 # --------------------------------------------------------------------------
 
-@check_sig([4, 5], [entero_t], [cadena_t, void_t], vector_numeros_t + [void_t], [flotante_t, entero_t], [entero_t, void_t])
+@check_sig([4, 5], [integer_type], [string_type, void_t], numeric_vector_types + [void_t], [float_type, integer_type], [integer_type, void_t])
 def create_dense(units, activation, input_shape, regularization_lambda, seed=None):
-    """Crea una capa Dense.
+    """Create a Dense layer.
 
     Args:
-        units: Número de neuronas.
-        activation: Función de activación ('relu', 'sigmoid', 'softmax', 'tanh', 'linear', None).
-        input_shape: Lista con la dimensión de entrada, o [] para inferencia automática.
-        regularization_lambda: Coeficiente de regularización L2 (0.0 para ninguna).
-        seed: Semilla para reproducibilidad (opcional).
+        units: Number of neurons.
+        activation: Activation function ('relu', 'sigmoid', 'softmax', 'tanh', 'linear', None).
+        input_shape: List with the input dimension, or [] for automatic inference.
+        regularization_lambda: L2 regularization coefficient (0.0 for none).
+        seed: Seed for reproducibility (optional).
     """
     shape = tuple(input_shape) if input_shape else None
     return Dense(units, activation, shape, regularization_lambda, seed=seed)
@@ -81,57 +81,57 @@ def create_dense(units, activation, input_shape, regularization_lambda, seed=Non
 
 @check_sig([0], [])
 def relu_layer():
-    """Crea una capa ReLU independiente."""
+    """Create a separate ReLU layer."""
     return ReLULayer()
 
 
 @check_sig([0], [])
 def sigmoid_layer():
-    """Crea una capa Sigmoid independiente."""
+    """Create a separate Sigmoid layer."""
     return SigmoidLayer()
 
 
 @check_sig([0], [])
 def tanh_layer():
-    """Crea una capa Tanh independiente."""
+    """Create a separate Tanh layer."""
     return TanhLayer()
 
 
 @check_sig([0], [])
 def softmax_layer():
-    """Crea una capa Softmax independiente."""
+    """Create a separate Softmax layer."""
     return SoftmaxLayer()
 
 
 @check_sig([0], [])
 def linear_layer():
-    """Crea una capa de activación lineal (identidad)."""
+    """Create a linear activation (identity) layer."""
     return LinearLayer()
 
 
-@check_sig([0, 1, 2], [flotante_t, entero_t], [entero_t, void_t])
+@check_sig([0, 1, 2], [float_type, integer_type], [integer_type, void_t])
 def dropout_layer(rate=0.5, seed=None):
-    """Crea una capa Dropout.
+    """Create a Dropout layer.
 
     Args:
-        rate: Proporción de neuronas a desactivar (0.0 a 1.0).
-        seed: Semilla para reproducibilidad.
+        rate: Proportion of neurons to deactivate (0.0 to 1.0).
+        seed: Seed for reproducibility.
     """
     return Dropout(rate=rate, seed=seed)
 
 
-@check_sig([0, 1], [vector_numeros_t, void_t])
+@check_sig([0, 1], [numeric_vector_types, void_t])
 def flatten_layer(input_shape=None):
-    """Crea una capa Flatten."""
+    """Create a Flatten layer."""
     shape = tuple(input_shape) if input_shape else None
     return Flatten(input_shape=shape)
 
 
 @check_sig([0], [])
 def add_layer():
-    """Crea una capa Add para merge de ramas (skip-connections).
+    """Create an Add layer to merge branches (skip-connections).
 
-    Uso en la API Functional:
+    Usage in Functional API:
         merged = add_layer()([branch_a, branch_b])
     """
     return Add()
@@ -141,14 +141,14 @@ def add_layer():
 # Modelos
 # --------------------------------------------------------------------------
 
-@check_sig([0, 1], lista_cualquiera_t + ["List[GESHA]", void_t])
+@check_sig([0, 1], any_list_types + ["List[GESHA]", void_t])
 def sequential(layers=None):
-    """Crea un modelo Sequential.
+    """Create a Sequential model.
 
     Args:
-        layers: Lista de capas iniciales (opcional).
+        layers: List of initial layers (optional).
 
-    Ejemplo:
+    Example:
         GESHA model = geshaDeep.sequential([
             geshaDeep.create_dense(128, "relu", [784], 0.0),
             geshaDeep.create_dense(10, "softmax", [], 0.0)
@@ -157,15 +157,15 @@ def sequential(layers=None):
     return Sequential(layers=layers)
 
 
-@check_sig([2], [gesha_t], [gesha_t])
+@check_sig([2], [gesha_type], [gesha_type])
 def functional(inputs, outputs):
-    """Crea un modelo Functional a partir de tensores simbólicos.
+    """Create a Functional model from symbolic tensors.
 
     Args:
-        inputs: Tensor simbólico de entrada (Input).
-        outputs: Nodo simbólico de salida del grafo.
+        inputs: Symbolic input tensor (Input).
+        outputs: Symbolic output node of the graph.
 
-    Ejemplo:
+    Example:
         GESHA inputs  = geshaDeep.input_layer([784]);
         GESHA x       = geshaDeep.create_dense(128, "relu", [], 0.0)(inputs);
         GESHA outputs = geshaDeep.create_dense(10, "softmax", [], 0.0)(x);
@@ -174,59 +174,59 @@ def functional(inputs, outputs):
     return Functional(inputs=inputs, outputs=outputs)
 
 
-@check_sig([1], [vector_numeros_t])
+@check_sig([1], [numeric_vector_types])
 def input_layer(shape):
-    """Crea un tensor simbólico de entrada para la API Functional.
+    """Creates an input symbolic tensor for the Functional API.
 
     Args:
-        shape: Lista con las dimensiones de entrada (e.g., [784] o [28, 28]).
+        shape: List with the input dimensions (e.g., [784] or [28, 28]).
     """
     return Input(shape=tuple(shape))
 
 
 # --------------------------------------------------------------------------
-# Operaciones sobre el modelo
+# Operations on the model
 # --------------------------------------------------------------------------
 
-@check_sig([4], [gesha_t], [cadena_t], [cadena_t], [lista_cadenas_t])
+@check_sig([4], [gesha_type], [string_type], [string_type], [string_list_type])
 def compile(model, optimizer, loss, metrics):
-    """Configura el optimizador y la función de pérdida del modelo."""
+    """Configure the optimizer and model loss function."""
     model.compile(optimizer=optimizer, loss=loss, metrics=metrics)
 
 
-@check_sig([2], [gesha_t], [flotante_t, entero_t])
+@check_sig([2], [gesha_type], [float_type, integer_type])
 def set_lr(model, new_lr):
-    """Actualiza la tasa de aprendizaje del optimizador."""
+    """Updates the learning rate of the optimizer."""
     model.set_lr(new_lr)
 
 
 # --------------------------------------------------------------------------
-# Utilidades de tensores
+# Tensor Utilities
 # --------------------------------------------------------------------------
 
-@check_sig([1], vector_numeros_t)
+@check_sig([1], numeric_vector_types)
 def tensor_zeros(shape):
-    """Crea un tensor de ceros con la forma dada. Delega a KafeNUMK."""
+    """Create a zero tensor with the given form. Delegate to KafeNUMK."""
     from lib.KafeGESHA.core.tensor import tensor_zeros as _tz
     return _tz(shape)
 
 
-@check_sig([1], vector_numeros_t)
+@check_sig([1], numeric_vector_types)
 def tensor_ones(shape):
-    """Crea un tensor de unos con la forma dada. Delega a KafeNUMK."""
+    """Create a ones tensor with the given shape. Delegate to KafeNUMK."""
     from lib.KafeGESHA.core.tensor import tensor_ones as _to
     return _to(shape)
 
 
-@check_sig([1], vector_numeros_t)
+@check_sig([1], numeric_vector_types)
 def tensor_random(shape):
-    """Crea un tensor con valores aleatorios. Delega a KafeNUMK."""
+    """Create a tensor with random values. Delegate to KafeNUMK."""
     from lib.KafeGESHA.core.tensor import tensor_random as _tr
     return _tr(shape)
 
 
-@check_sig([1], lista_cualquiera_t)
+@check_sig([1], any_list_types)
 def tensor(data):
-    """Crea un tensor desde datos. Delega a KafeNUMK."""
+    """Create a tensor from data. Delegate to KafeNUMK."""
     from lib.KafeGESHA.core.tensor import Tensor as _Tensor
     return _Tensor(data)

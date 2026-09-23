@@ -1,1 +1,1 @@
-Exception: model: Model: loss 'invalid_loss' no reconocida. Disponibles: ['mse', 'mae', 'binary_crossentropy', 'categorical_crossentropy', 'sparse_categorical_crossentropy']
+Exception: model: Model: loss 'invalid_loss' was not recognized. Available: ['mse', 'mae', 'binary_crossentropy', 'categorical_crossentropy', 'sparse_categorical_crossentropy']

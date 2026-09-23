@@ -41,14 +41,14 @@ from language_components.method_calling.functions import (
 
 from errors import raiseVariableNotDefined
 
-import lib.KafeNUMK.funciones as numk_funcs_module
-import lib.KafeMATH.funciones as math_funcs_module
-import lib.KafeFILES.funciones as files_funcs_module
-import lib.KafePLOT.funciones as plot_funcs_module
-import lib.KafeGESHA.funciones as gesha_funcs_module
-import lib.KafePARDOS.funciones as pardos_funcs_module
-import lib.KafeMACHINE.funciones as machine_funcs_module
-import lib.KafeHF.funciones as hf_funcs_module
+import lib.KafeNUMK.functions as numk_funcs_module
+import lib.KafeMATH.functions as math_funcs_module
+import lib.KafeFILES.functions as files_funcs_module
+import lib.KafePLOT.functions as plot_funcs_module
+import lib.KafeGESHA.functions as gesha_funcs_module
+import lib.KafePARDOS.functions as pardos_funcs_module
+import lib.KafeMACHINE.functions as machine_funcs_module
+import lib.KafeHF.functions as hf_funcs_module
 
 
 class InterpreterVisitor(Kafe_GrammarVisitor):

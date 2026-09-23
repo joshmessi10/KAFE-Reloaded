@@ -1,4 +1,4 @@
-nombre_tipos = { int:"INT", float:"FLOAT", str:"STR", bool:"BOOL", list:"List", "void": "VOID", "func": "FUNC",  "gesha": "GESHA", "pardos": "PARDOS", "machine": "MACHINE" }
+type_names = { int:"INT", float:"FLOAT", str:"STR", bool:"BOOL", list:"List", "void": "VOID", "func": "FUNC",  "gesha": "GESHA", "pardos": "PARDOS", "machine": "MACHINE" }
 
 def get_inner_list_type(items):
     list_type = get_list_type(items)
@@ -9,7 +9,7 @@ def get_inner_list_type(items):
 def build_list_type(nesting_level, data_type=None):
     built_type = "List["
     if nesting_level == 1:
-        built_type += nombre_tipos[data_type] if data_type != None else ""
+        built_type += type_names[data_type] if data_type != None else ""
     else:
         built_type += build_list_type(nesting_level - 1, data_type=data_type)
     built_type += "]"
@@ -36,32 +36,32 @@ def get_data_type(value):
     if type(value) is list:
         return get_list_type(value)
     elif callable(value):
-        return nombre_tipos["func"]
+        return type_names["func"]
     elif isinstance(value, (Gesha, Layer, Node, Input)):
-        return nombre_tipos["gesha"]
+        return type_names["gesha"]
     elif isinstance(value, DataFrame) or "GroupBy" in str(type(value)):
-        return nombre_tipos["pardos"]
+        return type_names["pardos"]
     elif isinstance(value, BaseMachine):
-        return nombre_tipos["machine"]
+        return type_names["machine"]
     elif value is None:
-        return nombre_tipos["void"]
+        return type_names["void"]
     else:
-        return nombre_tipos[type(value)]
+        return type_names[type(value)]
 
-vector_numeros_t      = [build_list_type(1, int), build_list_type(1, float)]
-matriz_numeros_t      = [build_list_type(2, int), build_list_type(2, float)]
-matriz_cualquiera_t   = build_list_type(2)
-lista_cadenas_t         = build_list_type(1, str)
-numeros_t             = [nombre_tipos[int], nombre_tipos[float]]
-entero_t              = nombre_tipos[int]
-flotante_t            = nombre_tipos[float]
-booleano_t            = nombre_tipos[bool]
-cadena_t              = nombre_tipos[str]
-lista_t               = nombre_tipos[list]
-gesha_t               = nombre_tipos["gesha"]
-pardos_t              = nombre_tipos["pardos"]
-machine_t             = nombre_tipos["machine"]
-void_t                = nombre_tipos['void']
-funcion_t             = nombre_tipos["func"]
-lista_cualquiera_t    = [build_list_type(i) for i in range(1, 100)]
-todos_t               = numeros_t + [cadena_t, booleano_t] + lista_cualquiera_t
+numeric_vector_types      = [build_list_type(1, int), build_list_type(1, float)]
+numeric_matrix_types      = [build_list_type(2, int), build_list_type(2, float)]
+any_matrix_type   = build_list_type(2)
+string_list_type         = build_list_type(1, str)
+number_types             = [type_names[int], type_names[float]]
+integer_type              = type_names[int]
+float_type            = type_names[float]
+boolean_type            = type_names[bool]
+string_type              = type_names[str]
+list_type               = type_names[list]
+gesha_type               = type_names["gesha"]
+pardos_type              = type_names["pardos"]
+machine_type             = type_names["machine"]
+void_t                = type_names['void']
+function_type             = type_names["func"]
+any_list_types    = [build_list_type(i) for i in range(1, 100)]
+all_types               = number_types + [string_type, boolean_type] + any_list_types

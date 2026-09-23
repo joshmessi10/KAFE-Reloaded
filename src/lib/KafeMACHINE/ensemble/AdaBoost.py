@@ -1,37 +1,37 @@
-from lib.KafeMATH.funciones import log, exp
+from lib.KafeMATH.functions import log, exp
 from global_utils import check_sig
-from TypeUtils import vector_numeros_t, matriz_numeros_t, pardos_t
+from TypeUtils import numeric_vector_types, numeric_matrix_types, pardos_type
 from ..metrics import accuracy_score
 from ..BaseMachine import BaseMachine
 
 
 class AdaBoostClassifier(BaseMachine):
     """
-    AdaBoost (Adaptive Boosting) — Ensemble de weak classifiers.
+    AdaBoost (Adaptive Boosting) — Ensemble of weak classifiers.
 
-    Combina múltiples weak classifiers (decision stumps) de forma secuencial,
-    donde cada clasificador enfatiza los errores del anterior.
+    Combine multiple weak classifiers (decision stumps) sequentially,
+    where each classifier emphasizes the errors of the previous one.
 
-    Fundamento matemático:
+    Mathematical foundation:
         1. Inicializar pesos uniformes: w_i = 1/n
-        2. Para cada iteración t:
-           a. Entrenar weak classifier h_t con pesos w_i
+        2. For each iteration t:
+           to. Train weak classifier h_t with weights w_i
            b. Calcular error: ε_t = Σ w_i * I(h_t(x_i) ≠ y_i)
-           c. Calcular peso del clasificador: α_t = 0.5 * ln((1 - ε_t) / ε_t)
+           c. Calculate classifier weight: α_t = 0.5 * ln((1 - ε_t) / ε_t)
            d. Actualizar pesos: w_i *= exp(-α_t * y_i * h_t(x_i))
            e. Normalizar pesos
-        3. Predicción final: H(x) = sign(Σ α_t * h_t(x))
+        3. Final prediction: H(x) = sign(Σ α_t * h_t(x))
 
-    Parámetros:
-        n_estimators: número de weak classifiers (default 50)
-        learning_rate: tasa de aprendizaje (default 1.0)
-        random_state: semilla para reproducibilidad (0 = aleatorio, default 0)
+    Parameters:
+        n_estimators: number of weak classifiers (default 50)
+        learning_rate: learning rate (default 1.0)
+        random_state: seed for reproducibility (0 = random, default 0)
 
-    Atributos (después de fit):
-        estimators_: lista de weak classifiers entrenados
-        estimator_weights_: pesos de cada clasificador
-        estimator_errors_: error de cada clasificador
-        classes_: clases únicas
+    Attributes (after fit):
+        estimators_: list of trained weak classifiers
+        estimator_weights_: weights of each classifier
+        estimator_errors_: error of each classifier
+        classes_: unique classes
     """
 
     def __init__(self, n_estimators=50, learning_rate=1.0, random_state=0):
@@ -51,8 +51,8 @@ class AdaBoostClassifier(BaseMachine):
 
     def _decision_stump(self, X, y, weights):
         """
-        Entrena un decision stump (árbol de profundidad 1).
-        Retorna: (feature_idx, threshold, prediction_left, prediction_right)
+        Train a decision stump (tree depth 1).
+        Returns: (feature_idx, threshold, prediction_left, prediction_right)
         """
         n_samples = len(y)
         n_features = len(X[0]) if n_samples > 0 else 0
@@ -86,12 +86,12 @@ class AdaBoostClassifier(BaseMachine):
         return best_stump, best_error
 
     def _predict_stump(self, X, stump):
-        """Predice usando un decision stump."""
+        """Predict using a decision stump."""
         feature_idx, threshold, pred_left, pred_right = stump
         return [pred_left if row[feature_idx] <= threshold else pred_right
                 for row in X]
 
-    @check_sig([3], [pardos_t] + vector_numeros_t + matriz_numeros_t, vector_numeros_t, is_method=True)
+    @check_sig([3], [pardos_type] + numeric_vector_types + numeric_matrix_types, numeric_vector_types, is_method=True)
     def fit(self, X, y):
         """Ajusta AdaBoost."""
         matrix, cols, is_df = self._unwrap_data(X)
@@ -137,9 +137,9 @@ class AdaBoostClassifier(BaseMachine):
         self._is_fitted = True
         return self
 
-    @check_sig([2], vector_numeros_t + matriz_numeros_t, is_method=True)
+    @check_sig([2], numeric_vector_types + numeric_matrix_types, is_method=True)
     def predict(self, X):
-        """Predice usando la combinación ponderada de weak classifiers."""
+        """Predict using weighted combination of weak classifiers."""
         self._check_fitted("predict")
         if not X:
             return []
@@ -163,7 +163,7 @@ class AdaBoostClassifier(BaseMachine):
         return predictions
 
     def score(self, X, y, metric=None):
-        """Evalúa usando accuracy (default) o una métrica personalizada."""
+        """Evaluate using accuracy (default) or a custom metric."""
         self._check_fitted("score")
         preds = self.predict(X)
         if metric is None:

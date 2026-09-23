@@ -20,7 +20,7 @@ The Lead invokes this skill via `/impact` and delegates to the Architect. The Ar
 1. **Understand the current implementation** — read the relevant `src/` modules and the matching `.opencode/knowledge/` document (`architecture.md`, `ml-library.md`, `dl-library.md`, `libraries.md`, `language-spec.md`).
 2. **Read relevant documentation** — check `docs/`, `.opencode/progress/roadmap.md`, and recent `.opencode/history/` records.
 3. **Identify affected modules** — trace callers: `src/EvalVisitorPrimitivo.py` dispatch, `src/componentes_lenguaje/`, and dependent libraries.
-4. **Assess risks** — type-system impact (`src/TypeUtils.py`), error handling (`src/errores.py`), test fixtures, generated parser files if grammar changes.
+4. **Assess risks** — type-system impact (`src/TypeUtils.py`), error handling (`src/errors.py`), test fixtures, generated parser files if grammar changes.
 5. **Check dependencies** — the Dependency Policy forbids new dependencies by default; verify against `.opencode/knowledge/engineering.md`.
 6. **Produce a plan** — implementation steps, validation strategy (`uv run --locked --group dev pytest tests/`), documentation and history updates.
 

@@ -201,5 +201,5 @@ Epoch 200/200 — Loss 0.00% — val_loss 0.00%
 Predicción para 6: 18.99989382372332
 === Sequential ===
   [1] Dense(units=1, act=linear, reg=-, seed=42)
-  Parámetros totales: 2
+  Total parameters: 2
 ==================

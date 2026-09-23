@@ -1,6 +1,6 @@
 from global_utils import check_sig
-from lib.KafeMATH.funciones import sqrt
-from TypeUtils import vector_numeros_t, matriz_numeros_t
+from lib.KafeMATH.functions import sqrt
+from TypeUtils import numeric_vector_types, numeric_matrix_types
 
 
 def _validate_inputs(func_name, y_true, y_pred):
@@ -10,7 +10,7 @@ def _validate_inputs(func_name, y_true, y_pred):
         raise Exception(f"{func_name}: Input lists cannot be empty")
 
 
-@check_sig([2], vector_numeros_t, vector_numeros_t)
+@check_sig([2], numeric_vector_types, numeric_vector_types)
 def accuracy_score(y_true, y_pred):
     _validate_inputs("accuracy_score", y_true, y_pred)
     correct = sum(1 for t, p in zip(y_true, y_pred) if t == p)
@@ -35,21 +35,21 @@ def _precision_recall_f1_macro(y_true, y_pred):
     return precisions, recalls, classes
 
 
-@check_sig([2], vector_numeros_t, vector_numeros_t)
+@check_sig([2], numeric_vector_types, numeric_vector_types)
 def precision_score(y_true, y_pred):
     _validate_inputs("precision_score", y_true, y_pred)
     precisions, _, _ = _precision_recall_f1_macro(y_true, y_pred)
     return sum(precisions) / len(precisions)
 
 
-@check_sig([2], vector_numeros_t, vector_numeros_t)
+@check_sig([2], numeric_vector_types, numeric_vector_types)
 def recall_score(y_true, y_pred):
     _validate_inputs("recall_score", y_true, y_pred)
     _, recalls, _ = _precision_recall_f1_macro(y_true, y_pred)
     return sum(recalls) / len(recalls)
 
 
-@check_sig([2], vector_numeros_t, vector_numeros_t)
+@check_sig([2], numeric_vector_types, numeric_vector_types)
 def f1_score(y_true, y_pred):
     _validate_inputs("f1_score", y_true, y_pred)
     p = precision_score(y_true, y_pred)
@@ -59,7 +59,7 @@ def f1_score(y_true, y_pred):
     return 2.0 * p * r / (p + r)
 
 
-@check_sig([2], vector_numeros_t, vector_numeros_t)
+@check_sig([2], numeric_vector_types, numeric_vector_types)
 def confusion_matrix(y_true, y_pred):
     _validate_inputs("confusion_matrix", y_true, y_pred)
     classes = sorted(set(y_true) | set(y_pred))
@@ -71,7 +71,7 @@ def confusion_matrix(y_true, y_pred):
     return matrix
 
 
-@check_sig([2], vector_numeros_t, vector_numeros_t)
+@check_sig([2], numeric_vector_types, numeric_vector_types)
 def classification_report(y_true, y_pred):
     _validate_inputs("classification_report", y_true, y_pred)
     classes = sorted(set(y_true))
@@ -108,26 +108,26 @@ def classification_report(y_true, y_pred):
     return "\n".join(lines)
 
 
-@check_sig([2], vector_numeros_t, vector_numeros_t)
+@check_sig([2], numeric_vector_types, numeric_vector_types)
 def mean_squared_error(y_true, y_pred):
     _validate_inputs("mean_squared_error", y_true, y_pred)
     return sum((t - p) ** 2 for t, p in zip(y_true, y_pred)) / len(y_true)
 
 
-@check_sig([2], vector_numeros_t, vector_numeros_t)
+@check_sig([2], numeric_vector_types, numeric_vector_types)
 def mean_absolute_error(y_true, y_pred):
     _validate_inputs("mean_absolute_error", y_true, y_pred)
     return sum(abs(t - p) for t, p in zip(y_true, y_pred)) / len(y_true)
 
 
-@check_sig([2], vector_numeros_t, vector_numeros_t)
+@check_sig([2], numeric_vector_types, numeric_vector_types)
 def root_mean_squared_error(y_true, y_pred):
     _validate_inputs("root_mean_squared_error", y_true, y_pred)
     mse = sum((t - p) ** 2 for t, p in zip(y_true, y_pred)) / len(y_true)
     return sqrt(mse)
 
 
-@check_sig([2], vector_numeros_t, vector_numeros_t)
+@check_sig([2], numeric_vector_types, numeric_vector_types)
 def r2_score(y_true, y_pred):
     _validate_inputs("r2_score", y_true, y_pred)
     y_mean = sum(y_true) / len(y_true)
@@ -138,13 +138,13 @@ def r2_score(y_true, y_pred):
     return 1.0 - ss_res / ss_tot
 
 
-@check_sig([2], vector_numeros_t, vector_numeros_t)
+@check_sig([2], numeric_vector_types, numeric_vector_types)
 def max_error(y_true, y_pred):
     _validate_inputs("max_error", y_true, y_pred)
     return float(max(abs(t - p) for t, p in zip(y_true, y_pred)))
 
 
-@check_sig([2], vector_numeros_t, vector_numeros_t)
+@check_sig([2], numeric_vector_types, numeric_vector_types)
 def median_absolute_error(y_true, y_pred):
     _validate_inputs("median_absolute_error", y_true, y_pred)
     abs_errors = sorted(abs(t - p) for t, p in zip(y_true, y_pred))
@@ -154,7 +154,7 @@ def median_absolute_error(y_true, y_pred):
     return (abs_errors[n // 2 - 1] + abs_errors[n // 2]) / 2.0
 
 
-@check_sig([2], vector_numeros_t, vector_numeros_t)
+@check_sig([2], numeric_vector_types, numeric_vector_types)
 def mean_absolute_percentage_error(y_true, y_pred):
     _validate_inputs("mean_absolute_percentage_error", y_true, y_pred)
     for t in y_true:
@@ -163,7 +163,7 @@ def mean_absolute_percentage_error(y_true, y_pred):
     return 100.0 / len(y_true) * sum(abs(t - p) / abs(t) for t, p in zip(y_true, y_pred))
 
 
-@check_sig([2], vector_numeros_t, vector_numeros_t)
+@check_sig([2], numeric_vector_types, numeric_vector_types)
 def explained_variance_score(y_true, y_pred):
     _validate_inputs("explained_variance_score", y_true, y_pred)
     y_mean = sum(y_true) / len(y_true)
@@ -175,29 +175,29 @@ def explained_variance_score(y_true, y_pred):
     return 1.0 - var_err / var_y
 
 
-@check_sig([2], vector_numeros_t, vector_numeros_t)
+@check_sig([2], numeric_vector_types, numeric_vector_types)
 def roc_auc_score(y_true, y_score):
     """
-    Calcula el área bajo la curva ROC (AUC-ROC).
+    Calculate the area under the ROC curve (AUC-ROC).
 
-    Fundamento matemático:
-        ROC curva plottea TPR vs FPR en diferentes umbrales.
-        AUC mide la probabilidad de que un ejemplo positivo aleatorio
-        tenga un score mayor que un ejemplo negativo aleatorio.
+    Mathematical foundation:
+        ROC curve plots TPR vs FPR at different thresholds.
+        AUC measures the probability that a random positive example
+        has a higher score than a random negative example.
 
         AUC = ∫₀¹ TPR(FPR⁻¹(t)) dt
 
-        Interpretación:
+        Interpretation:
         - AUC = 1.0: clasificador perfecto
         - AUC = 0.5: clasificador aleatorio
-        - AUC < 0.5: peor que aleatorio
+        - AUC < 0.5: worse than random
 
-    Parámetros:
-        y_true: etiquetas verdaderas (0 o 1)
-        y_score: scores de probabilidad o decisión
+    Parameters:
+        y_true: true tags (0 or 1)
+        y_score: probability or decision scores
 
-    Retorna:
-        FLOAT: área bajo la curva ROC
+    Returns:
+        FLOAT: area under the ROC curve
     """
     _validate_inputs("roc_auc_score", y_true, y_score)
 
@@ -211,7 +211,7 @@ def roc_auc_score(y_true, y_score):
     if total_pos == 0 or total_neg == 0:
         raise Exception("roc_auc_score: need both positive and negative samples")
 
-    # Mann-Whitney U con manejo correcto de empates
+    # Mann-Whitney U with correct management of ties
     concordant = 0.0
     total_pairs = total_pos * total_neg
 
@@ -229,30 +229,30 @@ def roc_auc_score(y_true, y_score):
     return concordant / total_pairs
 
 
-@check_sig([2], matriz_numeros_t, vector_numeros_t)
+@check_sig([2], numeric_matrix_types, numeric_vector_types)
 def silhouette_score(X, labels):
     """
-    Calcula el silhouette score para clustering.
+    Calculate the silhouette score for clustering.
 
-    Fundamento matemático:
-        Para cada punto i:
-            a(i) = distancia promedio de i a otros puntos en el mismo cluster
-            b(i) = distancia mínima promedio de i a puntos en el cluster más cercano
+    Mathematical foundation:
+        For each point i:
+            a(i) = average distance from i to other points in the same cluster
+            b(i) = minimum average distance from i to points in the closest cluster
 
             s(i) = (b(i) - a(i)) / max(a(i), b(i))
 
-        Silhouette score = promedio de s(i) para todos los puntos
+        Silhouette score = average of s(i) for all points
 
-        Interpretación:
+        Interpretation:
         - s ≈ 1: punto bien clusterizado
-        - s ≈ 0: punto en frontera entre clusters
-        - s < 0: punto en cluster incorrecto
+        - s ≈ 0: point on the border between clusters
+        - s < 0: point in incorrect cluster
 
-    Parámetros:
-        X: matriz de features (List[List[NUM]])
-        labels: asignación de cluster para cada punto (List[INT])
+    Parameters:
+        X: features array (List[List[NUM]])
+        labels: cluster assignment for each point (List[INT])
 
-    Retorna:
+    Returns:
         FLOAT: silhouette score promedio (-1 a 1)
     """
     if not X or not labels:

@@ -133,7 +133,7 @@ gs.fit(X_train, y_train);
 ## Implementation Location
 
 - `src/lib/KafeMACHINE/model_selection.py` — class `Pipeline(BaseMachine)` (línea 487)
-- `src/lib/KafeMACHINE/funciones.py` — factory `pipeline()` (línea 302)
+- `src/lib/KafeMACHINE/functions.py` — factory `pipeline()` (línea 302)
 
 ## Public API
 

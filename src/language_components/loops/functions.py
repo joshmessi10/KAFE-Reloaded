@@ -1,4 +1,4 @@
-from TypeUtils import get_data_type, get_inner_list_type, cadena_t
+from TypeUtils import get_data_type, get_inner_list_type, string_type
 from errors import (
     raiseConditionMustBeBoolean,
     raiseExceededIterationCount,
@@ -38,8 +38,8 @@ def forLoop(self, ctx):
 
     if type(iterable) == list:
         item_type = get_inner_list_type(iterable)
-    elif iterable_type == cadena_t:
-        item_type = cadena_t
+    elif iterable_type == string_type:
+        item_type = string_type
     else:
         raiseNonIterableVariable(iterable)
 

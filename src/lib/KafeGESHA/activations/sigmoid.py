@@ -1,9 +1,9 @@
-"""Función de activación Sigmoide."""
-from lib.KafeMATH.funciones import exp
+"""Sigmoid activation function."""
+from lib.KafeMATH.functions import exp
 from lib.KafeGESHA.activations.activation import ActivationFunction
 
 
-class Sigmoide(ActivationFunction):
+class SigmoidActivation(ActivationFunction):
     def __init__(self):
         self.last_output = None
 

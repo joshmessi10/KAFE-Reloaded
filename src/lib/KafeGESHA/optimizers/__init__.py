@@ -1,1 +1,1 @@
-"""Optimizadores de KafeGESHA."""
+"""KafeGESHA optimizers."""

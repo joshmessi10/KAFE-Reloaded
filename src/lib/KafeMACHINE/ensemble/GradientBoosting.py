@@ -1,41 +1,41 @@
 import random
-from lib.KafeMATH.funciones import log, exp
+from lib.KafeMATH.functions import log, exp
 from global_utils import check_sig
-from TypeUtils import vector_numeros_t, matriz_numeros_t, pardos_t
+from TypeUtils import numeric_vector_types, numeric_matrix_types, pardos_type
 from ..metrics import accuracy_score, r2_score
 from ..BaseMachine import BaseMachine
 
 
 class GradientBoostingClassifier(BaseMachine):
     """
-    Gradient Boosting Classifier — Ensemble de weak classifiers usando gradient descent.
+    Gradient Boosting Classifier — Ensemble of weak classifiers using gradient descent.
 
-    Construye árboles de decisión secuencialmente, donde cada árbol corrige
-    los errores del anterior usando gradient descent sobre la función de pérdida.
+    Build decision trees sequentially, where each tree corrects
+    the errors of the previous one using gradient descent on the loss function.
 
-    Fundamento matemático:
-        1. Inicializar predicción base: F_0(x) = 0.5 * ln((1-p)/p)
-        2. Para cada iteración t = 1, ..., T:
+    Mathematical foundation:
+        1. Initialize base prediction: F_0(x) = 0.5 * ln((1-p)/p)
+        2. For each iteration t = 1, ..., T:
            a. Calcular probabilidades: p_i = sigmoid(F_{t-1}(x_i))
            b. Calcular residuos: r_i = y_i - p_i
-           c. Entrenar árbol h_t para predecir residuos r_i
+           c. Train tree h_t to predict residuals r_i
            d. Actualizar: F_t(x) = F_{t-1}(x) + η * h_t(x)
-        3. Predicción final: clase = classes_[0] si sigmoid(F_T(x)) >= 0.5
+        3. Final prediction: class = classes_[0] if sigmoid(F_T(x)) >= 0.5
 
-        Para clasificación con log-loss:
-            F_0(x) = 0.5 * ln((1-p)/p), donde p = prop. clase negativa
+        For classification with log-loss:
+            F_0(x) = 0.5 * ln((1-p)/p), where p = prop. negative class
 
-    Parámetros:
-        n_estimators: número de árboles (default 100)
-        learning_rate: tasa de aprendizaje (default 0.1)
-        max_depth: profundidad máxima por árbol (default 3)
-        subsample: proporción de muestras por árbol (default 1.0)
-        random_state: semilla para reproducibilidad (0 = aleatorio, default 0)
+    Parameters:
+        n_estimators: number of trees (default 100)
+        learning_rate: learning rate (default 0.1)
+        max_depth: maximum depth per tree (default 3)
+        subsample: ratio of samples per tree (default 1.0)
+        random_state: seed for reproducibility (0 = random, default 0)
 
-    Atributos (después de fit):
-        estimators_: lista de árboles entrenados
-        initial_prediction_: predicción inicial
-        classes_: clases únicas
+    Attributes (after fit):
+        estimators_: trained tree list
+        initial_prediction_: initial prediction
+        classes_: unique classes
     """
 
     def __init__(self, n_estimators=100, learning_rate=0.1, max_depth=3,
@@ -60,7 +60,7 @@ class GradientBoostingClassifier(BaseMachine):
         self.classes_ = []
 
     def _sigmoid(self, x):
-        """Función sigmoide numéricamente estable."""
+        """Numerically stable sigmoid function."""
         if x >= 0:
             return 1.0 / (1.0 + exp(-x))
         else:
@@ -68,7 +68,7 @@ class GradientBoostingClassifier(BaseMachine):
             return ex / (1.0 + ex)
 
     def _build_tree(self, X, y, depth):
-        """Construye un árbol de regresión para predecir residuos."""
+        """Build a regression tree to predict residuals."""
         n = len(y)
 
         if depth >= self.max_depth or n < 2:
@@ -137,14 +137,14 @@ class GradientBoostingClassifier(BaseMachine):
         }
 
     def _predict_tree(self, sample, node):
-        """Predice usando un árbol."""
+        """Predict using a tree."""
         if "value" in node:
             return node["value"]
         if sample[node["feature"]] <= node["threshold"]:
             return self._predict_tree(sample, node["left"])
         return self._predict_tree(sample, node["right"])
 
-    @check_sig([3], [pardos_t] + vector_numeros_t + matriz_numeros_t, vector_numeros_t, is_method=True)
+    @check_sig([3], [pardos_type] + numeric_vector_types + numeric_matrix_types, numeric_vector_types, is_method=True)
     def fit(self, X, y):
         """Ajusta GradientBoostingClassifier."""
         matrix, cols, is_df = self._unwrap_data(X)
@@ -197,9 +197,9 @@ class GradientBoostingClassifier(BaseMachine):
         self._is_fitted = True
         return self
 
-    @check_sig([2], vector_numeros_t + matriz_numeros_t, is_method=True)
+    @check_sig([2], numeric_vector_types + numeric_matrix_types, is_method=True)
     def predict(self, X):
-        """Predice usando la combinación de árboles."""
+        """Predict using the combination of trees."""
         self._check_fitted("predict")
         if not X:
             return []
@@ -219,7 +219,7 @@ class GradientBoostingClassifier(BaseMachine):
         return predictions
 
     def score(self, X, y, metric=None):
-        """Evalúa usando accuracy (default) o una métrica personalizada."""
+        """Evaluate using accuracy (default) or a custom metric."""
         self._check_fitted("score")
         preds = self.predict(X)
         if metric is None:
@@ -235,28 +235,28 @@ class GradientBoostingClassifier(BaseMachine):
 
 class GradientBoostingRegressor(BaseMachine):
     """
-    Gradient Boosting Regressor — Ensemble de regresores usando gradient descent.
+    Gradient Boosting Regressor — Ensemble of regressors using gradient descent.
 
-    Construye árboles de regresión secuencialmente, donde cada árbol corrige
-    los errores del anterior usando gradient descent sobre la función de pérdida.
+    Build regression trees sequentially, where each tree corrects
+    the errors of the previous one using gradient descent on the loss function.
 
-    Fundamento matemático:
+    Mathematical foundation:
         1. Inicializar: F_0(x) = mean(y)
-        2. Para cada iteración t:
+        2. For each iteration t:
            a. Calcular residuos: r_i = y_i - F_{t-1}(x_i)
-           b. Entrenar árbol h_t para predecir residuos r_i
+           b. Train tree h_t to predict residuals r_i
            c. Actualizar: F_t(x) = F_{t-1}(x) + η * h_t(x)
 
-    Parámetros:
-        n_estimators: número de árboles (default 100)
-        learning_rate: tasa de aprendizaje (default 0.1)
-        max_depth: profundidad máxima por árbol (default 3)
-        subsample: proporción de muestras por árbol (default 1.0)
-        random_state: semilla para reproducibilidad (0 = aleatorio, default 0)
+    Parameters:
+        n_estimators: number of trees (default 100)
+        learning_rate: learning rate (default 0.1)
+        max_depth: maximum depth per tree (default 3)
+        subsample: ratio of samples per tree (default 1.0)
+        random_state: seed for reproducibility (0 = random, default 0)
 
-    Atributos (después de fit):
-        estimators_: lista de árboles entrenados
-        initial_prediction_: predicción inicial (media)
+    Attributes (after fit):
+        estimators_: trained tree list
+        initial_prediction_: initial prediction (mean)
     """
 
     def __init__(self, n_estimators=100, learning_rate=0.1, max_depth=3,
@@ -280,7 +280,7 @@ class GradientBoostingRegressor(BaseMachine):
         self.initial_prediction_ = 0.0
 
     def _build_tree(self, X, y, depth):
-        """Construye un árbol de regresión para predecir residuos."""
+        """Build a regression tree to predict residuals."""
         n = len(y)
 
         if depth >= self.max_depth or n < 2:
@@ -349,14 +349,14 @@ class GradientBoostingRegressor(BaseMachine):
         }
 
     def _predict_tree(self, sample, node):
-        """Predice usando un árbol."""
+        """Predict using a tree."""
         if "value" in node:
             return node["value"]
         if sample[node["feature"]] <= node["threshold"]:
             return self._predict_tree(sample, node["left"])
         return self._predict_tree(sample, node["right"])
 
-    @check_sig([3], [pardos_t] + vector_numeros_t + matriz_numeros_t, vector_numeros_t, is_method=True)
+    @check_sig([3], [pardos_type] + numeric_vector_types + numeric_matrix_types, numeric_vector_types, is_method=True)
     def fit(self, X, y):
         """Ajusta GradientBoostingRegressor."""
         matrix, cols, is_df = self._unwrap_data(X)
@@ -396,9 +396,9 @@ class GradientBoostingRegressor(BaseMachine):
         self._is_fitted = True
         return self
 
-    @check_sig([2], vector_numeros_t + matriz_numeros_t, is_method=True)
+    @check_sig([2], numeric_vector_types + numeric_matrix_types, is_method=True)
     def predict(self, X):
-        """Predice usando la combinación de árboles."""
+        """Predict using the combination of trees."""
         self._check_fitted("predict")
         if not X:
             return []
@@ -416,7 +416,7 @@ class GradientBoostingRegressor(BaseMachine):
         return predictions
 
     def score(self, X, y, metric=None):
-        """Score usando R² (default) o una métrica personalizada."""
+        """Score using R² (default) or a custom metric."""
         self._check_fitted("score")
         preds = self.predict(X)
         if metric is None:

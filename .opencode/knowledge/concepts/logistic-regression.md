@@ -41,7 +41,7 @@ Logistic Regression bridges linear models and classification. Implementing it fr
 
 ## Dependencies
 
-- `lib.KafeMATH.funciones` — `exp` for sigmoid function
+- `lib.KafeMATH.functions` — `exp` for sigmoid function
 - `BaseMachine.py` — base class
 
 ## Related Concepts

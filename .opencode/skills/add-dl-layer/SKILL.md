@@ -28,7 +28,7 @@ The Lead orchestrates this workflow, delegating each step to the responsible age
 1. Run Impact Analysis first (`/impact`) — mandatory before adding DL components.
 2. Read `.opencode/knowledge/dl-library.md` and `.opencode/knowledge/architecture.md` for conventions.
 3. Implement the layer/component (forward and backward if training is involved) in `src/lib/KafeGESHA/`.
-4. Add the factory/function to `src/lib/KafeGESHA/funciones.py`.
+4. Add the factory/function to `src/lib/KafeGESHA/functions.py`.
 5. Add **at least 7 fixtures** (5 valid + 2 error cases) under `tests/KafeGESHA/` and wire a parameterized test in `tests/test_KafeGESHA.py`.
 6. Create **enriched concept record** in `.opencode/knowledge/concepts/<name>.md` with:
    - Mathematical foundation (formulas, complexity analysis)

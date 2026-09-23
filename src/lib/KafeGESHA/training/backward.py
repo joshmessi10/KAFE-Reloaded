@@ -1,24 +1,24 @@
-"""Implementaciones de backward pass (backpropagation).
+"""Backward pass implementations (backpropagation).
 
-El backward pass ahora se delega directamente a model.backward(grad).
-Estas funciones se mantienen para compatibilidad con Trainer.
+The backward pass is now delegated directly to model.backward(grad).
+These features are maintained for compatibility with Trainer.
 """
 
 
 def backward_pass(model, error, learning_rate):
-    """Realiza un backward pass a través del modelo.
+    """Perform a backward pass through the model.
 
     Args:
-        model: Instancia de Model (Sequential o Functional).
-        error: Gradiente de la capa de salida.
-        learning_rate: Tasa de aprendizaje (ignorada si el modelo gestiona lr internamente).
+        model: Model instance (Sequential or Functional).
+        error: Output layer gradient.
+        learning_rate: Learning rate (ignored if the model handles lr internally).
 
     Returns:
-        Gradiente propagado a la entrada.
+        Gradient propagated to the input.
     """
     return model.backward(error)
 
 
 def backward_pass_with_regularization(model, error, learning_rate, regularization_lambda=0.0):
-    """Realiza un backward pass. La regularización la gestiona cada capa Dense individualmente."""
+    """Perform a backward pass. Regularization is handled by each Dense layer individually."""
     return model.backward(error)

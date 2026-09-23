@@ -166,7 +166,7 @@ La elección de la función de pérdida determina qué tan bien el modelo aprend
 
 ## Dependencies
 
-- `lib.KafeMATH.funciones` — `log()` (logaritmo natural), `math_abs()` (valor absoluto).
+- `lib.KafeMATH.functions` — `log()` (logaritmo natural), `math_abs()` (valor absoluto).
 
 ## Related Concepts
 

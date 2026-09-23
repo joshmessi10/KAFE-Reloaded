@@ -36,10 +36,10 @@ Gradient-based and distance-based algorithms (linear/logistic regression, KNN, P
 ## Dependencies
 
 - `src/lib/KafeMACHINE/BaseMachine.py` — base class providing the fit/transform contract, the `_is_fitted` guard, and `_unwrap_data` (DataFrame-aware).
-- `src/lib/KafeMATH/funciones.py` — `sqrt` used for the population standard deviation.
+- `src/lib/KafeMATH/functions.py` — `sqrt` used for the population standard deviation.
 - `src/lib/KafePARDOS/DataFrame.py` — accepts `PARDOS` DataFrames and returns scaled DataFrames preserving columns.
 - `TypeUtils.py` / `global_utils.py` — `pardos_t`, `matriz_numeros_t`, `check_sig` for signature validation.
-- `src/lib/KafeMACHINE/funciones.py` — `machine.standard_scaler()` factory.
+- `src/lib/KafeMACHINE/functions.py` — `machine.standard_scaler()` factory.
 
 ## Related Concepts
 
@@ -74,7 +74,7 @@ Guards: calling `transform`/`inverse_transform` before `fit` raises `StandardSca
 ## Implementation Location
 
 - `src/lib/KafeMACHINE/StandardScaler.py` (class `StandardScaler(BaseMachine)`).
-- Factory: `src/lib/KafeMACHINE/funciones.py` — `standard_scaler()`.
+- Factory: `src/lib/KafeMACHINE/functions.py` — `standard_scaler()`.
 - Tests: `tests/KafeMACHINE/preprocessing/test_standard_scaler{,_list,_single_feature,_zero_variance}.kf` and error fixtures `test_ss_{empty,not_fitted,dim_mismatch}.error.kf`.
 
 ## Public API

@@ -1,34 +1,34 @@
-"""Clase Trainer — encapsula el loop de entrenamiento.
+"""Trainer class — encapsulates the training loop.
 
-Trainer es una alternativa a model.fit() para usuarios que quieren
-mayor control sobre el proceso de entrenamiento (custom callbacks, etc.).
+Trainer is an alternative to model.fit() for users who want
+greater control over the training process (custom callbacks, etc.).
 """
 from lib.KafeGESHA.training.metrics import accuracy, mse
 
 
 class Trainer:
-    """Gestiona el entrenamiento de un modelo con control granular.
+    """Manage the training of a model with granular control.
 
-    Para la mayoría de los casos, model.fit() es suficiente.
-    Trainer es útil cuando se necesita acceso paso a paso al loop.
+    For most cases model.fit() is sufficient.
+    Trainer is useful when you need step-by-step access to the loop.
 
     Args:
-        model: Instancia de Model compilado.
+        model: Compiled Model instance.
     """
 
     def __init__(self, model):
         self.model = model
 
     def train_epoch(self, x_train, y_train, batch_size=1):
-        """Entrena una época completa.
+        """Train a full era.
 
         Args:
-            x_train: Matriz de entrada.
-            y_train: Etiquetas.
-            batch_size: Tamaño del mini-batch.
+            x_train: Input matrix.
+            y_train: Labels.
+            batch_size: Mini-batch size.
 
         Returns:
-            Loss promedio de la época.
+            Average loss of the time.
         """
         n_samples = len(x_train)
         total_loss = 0.0
@@ -47,14 +47,14 @@ class Trainer:
         return total_loss / n_samples
 
     def validate(self, x_val, y_val):
-        """Valida el modelo calculando la loss sobre el conjunto de validación.
+        """Validate the model by calculating the loss on the validation set.
 
         Args:
-            x_val: Datos de validación.
-            y_val: Etiquetas de validación.
+            x_val: Validation data.
+            y_val: Validation tags.
 
         Returns:
-            Loss promedio de validación.
+            Average validation loss.
         """
         total = 0.0
         n = len(x_val)

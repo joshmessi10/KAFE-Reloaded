@@ -57,7 +57,7 @@ Every listed directory move applies to **every tracked descendant**, including f
 
 ## Dispatch and public-name audit
 
-`visitObjectFunctionCall` and `visitObjectConstant` resolve `object.name` against the eight-entry library registry, then `getattr(library_module, name)` or `getattr(object_t, name)`. Thus top-level functions/constants in a registered `src/lib/Kafe*/funciones.py` and callable or readable object attributes are KAFE-visible; filename `funciones.py` is an internal Python import path. Existing exported names in these libraries are English (including `math` functions, `numk` operations, `files.create/read/write/delete`, `plot.figure/graph/render/bar/pie`, `pardos.read_csv/read_json/concat/merge`, Gesha layer/model functions, machine constructors/metrics, and Hugging Face functions). **The audit found no Spanish KAFE public callable requiring a spelling change.** Do not translate their English names to a different API.
+`visitObjectFunctionCall` and `visitObjectConstant` resolve `object.name` against the eight-entry library registry, then `getattr(library_module, name)` or `getattr(object_t, name)`. Thus top-level functions/constants in a registered `src/lib/Kafe*/functions.py` and callable or readable object attributes are KAFE-visible; the old filename `funciones.py` was an internal Python import path. Existing exported names in these libraries are English (including `math` functions, `numk` operations, `files.create/read/write/delete`, `plot.figure/graph/render/bar/pie`, `pardos.read_csv/read_json/concat/merge`, Gesha layer/model functions, machine constructors/metrics, and Hugging Face functions). **The audit found no Spanish KAFE public callable requiring a spelling change.** Do not translate their English names to a different API.
 
 `src/componentes_lenguaje/librerias/funciones.py` uses `getattr` for library function and constant dispatch; `src/componentes_lenguaje/method_calling/funciones.py` uses it for object functions and constants. Other `getattr` calls in `funciones/funciones.py`, `funciones/utils.py`, and `src/lib/KafeMACHINE/BaseMachine.py` inspect English Python attributes (`signature`, `_name`, `_is_fitted`) and are not KAFE name translations. `DataFrame.query(query_str)` calls the generated KAFE lexer/parser on a KAFE expression, injects column values into visitor scope via `asignar_variable`, and evaluates the tree. Its method name and expression grammar remain unchanged; the internal helper import changes with Task 2.
 
@@ -69,6 +69,35 @@ Spanish Python names are externally importable but not reached as KAFE built-in 
 | `es_misma_dimension` | `has_same_dimensions` | Defined in `src/lib/KafeNUMK/utils.py`; imported and called by `src/lib/KafeNUMK/funciones.py` in `add` and `sub`. It compares outer lengths and each corresponding row length. Task 3. |
 | `es_uniforme` | `is_uniform_matrix` | Defined in `src/lib/KafeNUMK/utils.py`; imported and called by `src/lib/KafeNUMK/funciones.py` in `mul`, `inv`, and `dot_matrix`. It checks equal row lengths and accepts an empty matrix. Task 3. |
 | `operar_matrices` | `apply_matrix_operation` | Defined in `src/lib/KafeNUMK/utils.py`; imported and called by `src/lib/KafeNUMK/funciones.py` in `add` and `sub` to apply the supplied operation element by element. Task 3. |
+
+### Task 3 shared type and decorator migration
+
+The following exact Python identifier moves were rescanned across `src/TypeUtils.py`, `src/global_utils.py`, `src/language_components/**`, and every `src/lib/**` file before editing. `src/TypeUtils.py` defines every type name below. Library consumers include the listed root files and all imports in their nested `KafeGESHA` and `KafeMACHINE` packages; references to these names are changed together, with no aliases. The type *values* (`INT`, `List[...]`, and others) stay unchanged.
+
+| Old Python name | New Python name | Caller surfaces found |
+|---|---|---|
+| `nombre_tipos` | `type_names` | `TypeUtils.py` only |
+| `vector_numeros_t` | `numeric_vector_types` | 31 files in `src/lib/KafeGESHA`, `KafeMACHINE`, `KafeMATH`, `KafeNUMK`, `KafePLOT` |
+| `matriz_numeros_t` | `numeric_matrix_types` | 33 files in `src/lib/KafeGESHA`, `KafeMACHINE`, `KafeNUMK`, `KafePLOT` |
+| `matriz_cualquiera_t` | `any_matrix_type` | `KafeNUMK/funciones.py`, `KafePARDOS/DataFrame.py`, `KafeMACHINE/preprocessing/SimpleImputer.py` |
+| `lista_cadenas_t` | `string_list_type` | `KafeGESHA/funciones.py`, `KafeGESHA/core/model.py`, `KafePARDOS/DataFrame.py`, `KafeMACHINE/preprocessing/OneHotEncoder.py`, `OrdinalEncoder.py` |
+| `numeros_t` | `number_types` | `TypeUtils.py` only as a complete token; 40 substring matches arise from the numeric vector/matrix names |
+| `entero_t` | `integer_type` | `global_utils.py`, `language_components/base/functions.py`, `language_components/functions/functions.py`, and 18 library files |
+| `flotante_t` | `float_type` | `global_utils.py`, `language_components/base/functions.py`, and 14 library files |
+| `booleano_t` | `boolean_type` | `global_utils.py`, `language_components/base/functions.py`, and 5 library files |
+| `cadena_t` | `string_type` | `global_utils.py`, `language_components/base/functions.py`, `language_components/loops/functions.py`, and 11 library files |
+| `lista_t` | `list_type` | `global_utils.py`, `language_components/base/functions.py` |
+| `gesha_t` | `gesha_type` | `language_components/base/functions.py` and 3 library files |
+| `pardos_t` | `pardos_type` | `language_components/base/functions.py` and 29 library files |
+| `machine_t` | `machine_type` | `KafeMACHINE/preprocessing/LabelEncoder.py` |
+| `funcion_t` | `function_type` | `global_utils.py`, `language_components/functions/functions.py` |
+| `lista_cualquiera_t` | `any_list_types` | `global_utils.py`, `language_components/functions/functions.py`, and 5 library files |
+| `todos_t` | `all_types` | `language_components/functions/functions.py` |
+| `func_nombre` | `function_name` | `global_utils.py` decorator keyword lookup; keyword callers in `language_components/functions/functions.py` and `KafePLOT/funciones.py` |
+
+`void_t` is already English and remains unchanged. The other Task 3 internal helpers map as `es_misma_dimension` → `has_same_dimensions`, `es_uniforme` → `is_uniform_matrix`, `operar_matrices` → `apply_matrix_operation`, and `inferir_tipo` → `infer_type`; `construir_tipo_lista` → `build_list_type` was completed in Task 2.
+
+Task 3 translated library diagnostics before the fixture-wide Task 4 rename. To keep Task 3's exact-stream fixture gate executable, it updated only the directly corresponding KafeGESHA expected sidecars: the valid `neural_network_xor_gate.expec` summary line and the paired `.error.expec`/`.error.stderr.expec` files for `invalid_loss`, `invalid_optimizer`, and `set_lr_before_compile`. Their programs, fixture names, exit codes, and other output were unchanged. Task 4 still owns the broader fixture content and path translation.
 
 `importStmt` first recognizes the unchanged registry keys. For user modules it searches `<current KAFE program directory>/<module>.kf`, then `<directory of imports/functions.py>/<module>.kf`, then its parent `<language_components>/<module>.kf`. Moving the module changes those latter two fallback directories; preserve this search behavior intentionally and document the resulting paths in import diagnostics. `tests/import/matematica.kf` is a user module, not a built-in library key; programs must change `import matematica` to `import math_module` when that fixture moves.
 

@@ -160,7 +160,7 @@ Las funciones de activación son la razón por la cual las redes neuronales prof
 
 ## Dependencies
 
-- `lib.KafeMATH.funciones` — `exp()` (exponencial), derivada del módulo matemático de KAFE.
+- `lib.KafeMATH.functions` — `exp()` (exponencial), derivada del módulo matemático de KAFE.
 
 ## Related Concepts
 

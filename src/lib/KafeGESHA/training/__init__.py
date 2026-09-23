@@ -1,5 +1,5 @@
-"""Lógica de entrenamiento para modelos de deep learning.
+"""Training logic for deep learning models.
 
-Funciones auxiliares que operan sobre la interfaz Model.
+Auxiliary functions that operate on the Model interface.
 """
 from lib.KafeGESHA.training.metrics import accuracy, mse

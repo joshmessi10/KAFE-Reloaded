@@ -1,5 +1,5 @@
 from global_utils import check_sig
-from TypeUtils import pardos_t, lista_cadenas_t
+from TypeUtils import pardos_type, string_list_type
 from lib.KafePARDOS.DataFrame import DataFrame
 from ..BaseMachine import BaseMachine
 
@@ -12,7 +12,7 @@ class OrdinalEncoder(BaseMachine):
         self._category_to_index_ = {}
         self._original_columns_ = []
 
-    @check_sig([3], [pardos_t], [lista_cadenas_t], is_method=True)
+    @check_sig([3], [pardos_type], [string_list_type], is_method=True)
     def fit(self, df, columns):
         """
         Fit the OrdinalEncoder on the specified columns.
@@ -38,7 +38,7 @@ class OrdinalEncoder(BaseMachine):
         self._is_fitted = True
         return self
 
-    @check_sig([2], [pardos_t], is_method=True)
+    @check_sig([2], [pardos_type], is_method=True)
     def transform(self, df):
         """
         Transform the specified columns using ordinal encoding.

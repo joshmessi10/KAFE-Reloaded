@@ -10,14 +10,14 @@ from errors import (
 )
 from TypeUtils import (
     get_data_type,
-    entero_t,
-    flotante_t,
-    cadena_t,
-    booleano_t,
-    lista_t,
+    integer_type,
+    float_type,
+    string_type,
+    boolean_type,
+    list_type,
     void_t,
-    gesha_t,
-    pardos_t,
+    gesha_type,
+    pardos_type,
 )
 from global_utils import is_correct_type, verify_homogeneity, assign_variable
 
@@ -39,20 +39,20 @@ def varDecl(self, ctx):
         raiseVariableAlreadyDefined(name)
 
     if val is None:
-        if data_type == entero_t:
+        if data_type == integer_type:
             val = 0
-        elif data_type == flotante_t:
+        elif data_type == float_type:
             val = 0.0
-        elif data_type == cadena_t:
+        elif data_type == string_type:
             val = ""
-        elif data_type == booleano_t:
+        elif data_type == boolean_type:
             val = False
-        elif data_type == gesha_t:
+        elif data_type == gesha_type:
             val = Gesha()
-        elif data_type == pardos_t:
+        elif data_type == pardos_type:
             from lib.KafePARDOS.DataFrame import DataFrame
             val = DataFrame([], [])
-        elif data_type.startswith(lista_t):
+        elif data_type.startswith(list_type):
             val = []
 
     assign_variable(self, name, val, data_type)

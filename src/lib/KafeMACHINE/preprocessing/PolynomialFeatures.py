@@ -1,29 +1,29 @@
 from global_utils import check_sig
-from TypeUtils import pardos_t, matriz_numeros_t
+from TypeUtils import pardos_type, numeric_matrix_types
 from lib.KafePARDOS.DataFrame import DataFrame
 from ..BaseMachine import BaseMachine
 
 
 class PolynomialFeatures(BaseMachine):
     """
-    Genera features polinomiales hasta un grado especificado.
+    Generates polynomial features up to a specified degree.
 
-    Transforma features [x1, x2] en:
+    Transform features [x1, x2] into:
     - degree=1: [1, x1, x2]
     - degree=2: [1, x1, x2, x1², x1*x2, x2²]
     - degree=3: [1, x1, x2, x1², x1*x2, x2², x1³, x1²*x2, x1*x2², x2³]
 
-    Fundamento matemático:
-        Para d features y grado n, genera todas las combinaciones
-        de potencias p1, p2, ..., pd donde p1 + p2 + ... + pd <= n.
+    Mathematical foundation:
+        For d features and degree n, generate all combinations
+        of powers p1, p2, ..., pd where p1 + p2 + ... + pd <= n.
 
-    Parámetros:
-        degree: grado máximo del polinomio (default 2)
-        include_bias: si se incluye el término de sesgo (columna de 1s) (default True)
+    Parameters:
+        degree: maximum degree of the polynomial (default 2)
+        include_bias: if the bias term is included (1s column) (default True)
 
-    Atributos (después de fit):
-        n_features_in_: número de features de entrada
-        n_features_out_: número de features de salida
+    Attributes (after fit):
+        n_features_in_: number of input features
+        n_features_out_: number of output features
     """
 
     def __init__(self, degree=2, include_bias=True):
@@ -37,7 +37,7 @@ class PolynomialFeatures(BaseMachine):
         self._feature_names = []
 
     def _generate_combinations(self, n_features, degree):
-        """Genera todas las combinaciones de potencias para features polinomiales."""
+        """Generates all power combinations for polynomial features."""
         if n_features == 0:
             return []
 
@@ -57,7 +57,7 @@ class PolynomialFeatures(BaseMachine):
         return combinations
 
     def _get_feature_names(self):
-        """Genera nombres de features para el output."""
+        """Generates feature names for the output."""
         names = []
         combinations = self._generate_combinations(self.n_features_in_, self.degree)
 
@@ -81,9 +81,9 @@ class PolynomialFeatures(BaseMachine):
 
         return names
 
-    @check_sig([2], [pardos_t] + matriz_numeros_t, is_method=True)
+    @check_sig([2], [pardos_type] + numeric_matrix_types, is_method=True)
     def fit(self, data):
-        """Ajusta PolynomialFeatures (calcula dimensiones de salida)."""
+        """Sets PolynomialFeatures (calculates output dimensions)."""
         matrix, cols, is_df = self._unwrap_data(data)
 
         if not matrix or not matrix[0]:
@@ -102,10 +102,10 @@ class PolynomialFeatures(BaseMachine):
         return self
 
     def fit_transform(self, data):
-        """Fit y transform en un solo paso."""
+        """Fit and transform in one step."""
         return self.fit(data).transform(data)
 
-    @check_sig([2], [pardos_t] + matriz_numeros_t, is_method=True)
+    @check_sig([2], [pardos_type] + numeric_matrix_types, is_method=True)
     def transform(self, data):
         """Transforma features a features polinomiales."""
         self._check_fitted("transform")
@@ -138,9 +138,9 @@ class PolynomialFeatures(BaseMachine):
 
         return DataFrame(self._feature_names, result) if is_df else result
 
-    @check_sig([2], [pardos_t] + matriz_numeros_t, is_method=True)
+    @check_sig([2], [pardos_type] + numeric_matrix_types, is_method=True)
     def inverse_transform(self, data):
-        """No implementado para PolynomialFeatures (transformación no es invertible)."""
+        """Not implemented for PolynomialFeatures (transformation is not invertible)."""
         raise Exception("PolynomialFeatures: inverse_transform not implemented (non-invertible)")
 
     def __repr__(self):

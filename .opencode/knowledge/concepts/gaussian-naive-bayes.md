@@ -100,7 +100,7 @@ Where:
 
 KAFE implements GaussianNB from scratch:
 
-- Uses `KafeMATH.funciones` for mathematical functions (sqrt, exp)
+- Uses `KafeMATH.functions` for mathematical functions (sqrt, exp)
 - Inherits from `BaseMachine` with standard fit/predict/score interface
 - Uses log-space computation to avoid numerical underflow
 - Supports `predict_proba()` for probability estimates

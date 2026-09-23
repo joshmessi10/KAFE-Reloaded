@@ -1,5 +1,5 @@
-from .errores import raiseDomainError, raiseNonEqualLength
-from TypeUtils import vector_numeros_t, numeros_t, entero_t
+from .errors import raiseDomainError, raiseNonEqualLength
+from TypeUtils import numeric_vector_types, number_types, integer_type
 from global_utils import check_sig
 
 
@@ -12,9 +12,9 @@ inf = float('inf')
 nan = float('nan')
 
 
-@check_sig([1], numeros_t)
+@check_sig([1], number_types)
 def exp(x):
-    """Calcula e^x usando series de Taylor con reducción de argumento."""
+    """Calculate e^x using Taylor series with argument reduction."""
     if x == 0:
         return 1.0
     if isinf(x):
@@ -48,9 +48,9 @@ def exp(x):
 
     return 1.0 / result if negative else result
 
-@check_sig([1, 2], numeros_t, numeros_t)
+@check_sig([1, 2], number_types, number_types)
 def log(*args):
-    """Calcula ln(x) usando reducción de argumento y serie de Taylor."""
+    """Calculate ln(x) using argument reduction and Taylor series."""
     x = args[0]
 
     base = None
@@ -116,7 +116,7 @@ def log(*args):
     return ln_x / ln_base
 
 
-@check_sig([2], numeros_t, numeros_t)
+@check_sig([2], number_types, number_types)
 def pow_(x, y):
     if x == 0:
         if y > 0:
@@ -136,7 +136,7 @@ def pow_(x, y):
     return exp(y * log(x))
 
 
-@check_sig([1], numeros_t)
+@check_sig([1], number_types)
 def sqrt(x):
     if x < 0:
         raiseDomainError('sqrt')
@@ -152,16 +152,16 @@ def sqrt(x):
     return guess
 
 
-@check_sig([1], numeros_t)
+@check_sig([1], number_types)
 def degrees(x):
     return x * 180.0 / pi
 
-@check_sig([1], numeros_t)
+@check_sig([1], number_types)
 def radians(x):
     return x * pi / 180.0
 
 
-@check_sig([1], numeros_t)
+@check_sig([1], number_types)
 def sin(x):
     x = x % (2 * pi)
     term = x
@@ -173,7 +173,7 @@ def sin(x):
         sign *= -1
     return sum_
 
-@check_sig([1], numeros_t)
+@check_sig([1], number_types)
 def cos(x):
     x = x % (2 * pi)
     term = 1.0
@@ -185,7 +185,7 @@ def cos(x):
         sign *= -1
     return sum_
 
-@check_sig([1], numeros_t)
+@check_sig([1], number_types)
 def tan(x):
     c = cos(x)
     if c == 0:
@@ -193,7 +193,7 @@ def tan(x):
     return sin(x) / c
 
 
-@check_sig([1], numeros_t)
+@check_sig([1], number_types)
 def asin(x):
     if x == 1:
         return pi / 2
@@ -208,7 +208,7 @@ def asin(x):
         sum_ += term
     return sum_
 
-@check_sig([1], numeros_t)
+@check_sig([1], number_types)
 def acos(x):
     if x == 1:
         return 0.0
@@ -216,7 +216,7 @@ def acos(x):
         return pi
     return pi / 2 - asin(x)
 
-@check_sig([1], numeros_t)
+@check_sig([1], number_types)
 def atan(x):
     if x == 0:
         return 0.0
@@ -232,22 +232,22 @@ def atan(x):
     return sum_
 
 
-@check_sig([1], numeros_t)
+@check_sig([1], number_types)
 def sinh(x):
     return (exp(x) - exp(-x)) / 2
 
-@check_sig([1], numeros_t)
+@check_sig([1], number_types)
 def cosh(x):
     return (exp(x) + exp(-x)) / 2
 
-@check_sig([1], numeros_t)
+@check_sig([1], number_types)
 def tanh(x):
     ex = exp(x)
     enx = exp(-x)
     return (ex - enx) / (ex + enx)
 
 
-@check_sig([1], [entero_t])
+@check_sig([1], [integer_type])
 def factorial(n):
     n = int(n)
     if n < 0:
@@ -257,14 +257,14 @@ def factorial(n):
         result *= i
     return result
 
-@check_sig([2], [entero_t], [entero_t])
+@check_sig([2], [integer_type], [integer_type])
 def comb(n, k):
     n, k = int(n), int(k)
     if k < 0 or k > n:
         return 0
     return factorial(n) // (factorial(k) * factorial(n - k))
 
-@check_sig([2], [entero_t], [entero_t])
+@check_sig([2], [integer_type], [integer_type])
 def perm(n, k):
     n, k = int(n), int(k)
     if k < 0 or k > n:
@@ -274,7 +274,7 @@ def perm(n, k):
         result *= i
     return result
 
-@check_sig([i for i in range(1, 100)], *[[entero_t] for _ in range(100)])
+@check_sig([i for i in range(1, 100)], *[[integer_type] for _ in range(100)])
 def gcd(*ints):
     result = abs(int(ints[0]))
     for x in ints[1:]:
@@ -284,7 +284,7 @@ def gcd(*ints):
         result = abs(a)
     return result
 
-@check_sig([i for i in range(1, 100)], *[[entero_t] for _ in range(100)])
+@check_sig([i for i in range(1, 100)], *[[integer_type] for _ in range(100)])
 def lcm(*ints):
     def _lcm(a, b):
         return abs(a * b) // gcd(a, b)
@@ -295,11 +295,11 @@ def lcm(*ints):
 
 
 
-@check_sig([1], numeros_t)
+@check_sig([1], number_types)
 def trunc(x):
     return int(x)
 
-@check_sig([2], numeros_t, numeros_t)
+@check_sig([2], number_types, number_types)
 def fmod(x, y):
     if y == 0:
         raiseDomainError('fmod')
@@ -309,28 +309,28 @@ def fmod(x, y):
         return x
     return x - y * trunc(x / y)
 
-@check_sig([2], numeros_t, numeros_t)
+@check_sig([2], number_types, number_types)
 def remainder(x, y):
     if y == 0:
         raiseDomainError('remainder')
     res = x - y * round(x / y)
     return round(res, 10)
 
-@check_sig([1], numeros_t)
+@check_sig([1], number_types)
 def math_abs(x):
     return x if x >= 0 else -x
 
-@check_sig([1], numeros_t)
+@check_sig([1], number_types)
 def floor(x):
     i = int(x)
     return i if x >= i else i - 1
 
-@check_sig([1], numeros_t)
+@check_sig([1], number_types)
 def ceil(x):
     i = int(x)
     return i if x <= i else i + 1
 
-@check_sig([1, 2], numeros_t, [entero_t])
+@check_sig([1, 2], number_types, [integer_type])
 def math_round(*args):
     x = args[0]
 
@@ -345,14 +345,14 @@ def math_round(*args):
         f += 1
     return f / factor
 
-@check_sig([2], numeros_t, numeros_t)
+@check_sig([2], number_types, number_types)
 def copysign(x, y):
     x, y = float(x), float(y)
     if y == 0.0 and y.hex().startswith('-'):
         return -abs(x)
     return abs(x) if y >= 0 else -abs(x)
 
-@check_sig([2, 3, 4], *[numeros_t for _ in range(4)])
+@check_sig([2, 3, 4], *[number_types for _ in range(4)])
 def isclose(*args):
     a = args[0]
     b = args[1]
@@ -373,19 +373,19 @@ def isclose(*args):
     tol  = max(rel_tol * max(abs(a), abs(b)), abs_tol)
     return diff <= tol
 
-@check_sig([1], numeros_t)
+@check_sig([1], number_types)
 def isinf(x):
     return x == inf or x == -inf
 
-@check_sig([1], numeros_t)
+@check_sig([1], number_types)
 def isnan(x):
     return x != x
 
-@check_sig([1], numeros_t)
+@check_sig([1], number_types)
 def isfinite(x):
     return not isinf(x) and not isnan(x)
 
-@check_sig([1], numeros_t)
+@check_sig([1], number_types)
 def ulp(x):
     if x == 0:
         return 2 ** -1074
@@ -393,21 +393,21 @@ def ulp(x):
     return 2 ** (exp_val - 52)
 
 
-@check_sig([1], numeros_t)
+@check_sig([1], number_types)
 def exp2(x):
     return float(2 ** x)
 
-@check_sig([1], numeros_t)
+@check_sig([1], number_types)
 def cbrt(x):
     if x < 0:
         return -((-x) ** (1/3))
     return x ** (1/3)
 
-@check_sig([1], numeros_t)
+@check_sig([1], number_types)
 def expm1(x):
     return exp(x) - 1
 
-@check_sig([1], numeros_t)
+@check_sig([1], number_types)
 def log2(x):
     if x <= 0:
         raiseDomainError('log2')
@@ -426,7 +426,7 @@ def log2(x):
             return float(n)
     return log(x, 2)
 
-@check_sig([1], numeros_t)
+@check_sig([1], number_types)
 def log10(x):
     if x <= 0:
         raiseDomainError('log10')
@@ -447,7 +447,7 @@ def log10(x):
 
 
 
-@check_sig([1, 2], [entero_t] + vector_numeros_t, [entero_t])
+@check_sig([1, 2], [integer_type] + numeric_vector_types, [integer_type])
 def sum_range(*args):
     a = args[0]
 
@@ -468,7 +468,7 @@ def sum_range(*args):
         total += i
     return total
 
-@check_sig([1, 2], [entero_t] + vector_numeros_t, [entero_t])
+@check_sig([1, 2], [integer_type] + numeric_vector_types, [integer_type])
 def prod_range(*args):
     a = args[0]
 
@@ -489,7 +489,7 @@ def prod_range(*args):
         result *= i
     return result
 
-@check_sig([2], vector_numeros_t, vector_numeros_t)
+@check_sig([2], numeric_vector_types, numeric_vector_types)
 def dist(p, q):
     if len(p) != len(q):
         raiseNonEqualLength('dist')
@@ -498,7 +498,7 @@ def dist(p, q):
         s += (a - b) ** 2
     return sqrt(s)
 
-@check_sig([1], vector_numeros_t)
+@check_sig([1], numeric_vector_types)
 def fsum(iterable):
     total = 0.0
     c = 0.0
@@ -509,14 +509,14 @@ def fsum(iterable):
         total = t
     return total
 
-@check_sig([i for i in range(100)], *[numeros_t for _ in range(100)])
+@check_sig([i for i in range(100)], *[number_types for _ in range(100)])
 def hypot(*coords):
     s = 0.0
     for x in coords:
         s += x * x
     return sqrt(s)
 
-@check_sig([2], vector_numeros_t, vector_numeros_t)
+@check_sig([2], numeric_vector_types, numeric_vector_types)
 def sumprod(p, q):
     if len(p) != len(q):
         raiseNonEqualLength('sumprod')
@@ -527,9 +527,9 @@ def sumprod(p, q):
 
 
 
-@check_sig([1], numeros_t)
+@check_sig([1], number_types)
 def erf(x):
-    """Calcula la función de error usando serie de Taylor.
+    """Calculate the error function using Taylor series.
     erf(x) = (2/sqrt(pi)) * sum((-1)^n * x^(2n+1) / (n! * (2n+1)), n=0..inf)
     """
     if x == 0:
@@ -554,12 +554,12 @@ def erf(x):
 
     return sign * two_over_sqrt_pi * result
 
-@check_sig([1], numeros_t)
+@check_sig([1], number_types)
 def erfc(x):
-    """Calcula la función de error complementaria: erfc(x) = 1 - erf(x)."""
+    """Calculate the complementary error function: erfc(x) = 1 - erf(x)."""
     return 1.0 - erf(x)
 
-@check_sig([1], numeros_t)
+@check_sig([1], number_types)
 def gamma(x):
     xi = float(x)
     if xi == int(xi):
@@ -568,7 +568,7 @@ def gamma(x):
         raiseDomainError('gamma')
     raise ValueError("gamma: Function only defined for positive integers")
 
-@check_sig([1], numeros_t)
+@check_sig([1], number_types)
 def lgamma(x):
     return log(gamma(x))
 

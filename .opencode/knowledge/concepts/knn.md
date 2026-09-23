@@ -40,7 +40,7 @@ KNN teaches the concept of instance-based learning and distance metrics. It demo
 
 ## Dependencies
 
-- `lib.KafeMATH.funciones` — `sqrt` for Euclidean distance
+- `lib.KafeMATH.functions` — `sqrt` for Euclidean distance
 - `BaseMachine.py` — base class
 
 ## Related Concepts

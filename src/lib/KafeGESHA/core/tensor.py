@@ -1,67 +1,67 @@
-"""Representación de tensores N-dimensionales para KafeGESHA.
+"""Representation of N-dimensional tensors for KafeGESHA.
 
-Tensor es un wrapper sobre las listas Python que Numk opera.
-Añade semántica de Deep Learning: validación de regularidad, metadata de forma.
+Tensor is a wrapper over the Python lists that Numk operates on.
+Adds Deep Learning semantics: regularity validation, shape metadata.
 """
-from lib.KafeNUMK import funciones as numk
+from lib.KafeNUMK import functions as numk
 
 
 class Tensor:
     """
-    Tensor N-dimensional para Deep Learning.
+    N-dimensional Tensor for Deep Learning.
     
-    Almacena datos como listas Python anidadas (la representación nativa de Numk).
-    Numk opera sobre estos datos directamente.
+    Stores data as nested Python lists (Numk's native representation).
+    Numk operates on this data directly.
     
-    Propiedades:
-        data: lista Python N-D (operada por Numk)
-        shape: tupla de dimensiones (calculada por numk.shape)
-        ndim: número de dimensiones
+    Properties:
+        data: Python N-D list (operated by Numk)
+        shape: dimensions tuple (calculated by numk.shape)
+        ndim: number of dimensions
     """
 
     def __init__(self, data):
         """
-        Inicializa un tensor con datos.
+        Initializes a tensor with data.
 
         Args:
-            data: Estructura anidada de listas (1D, 2D, 3D, ...)
+            data: Nested structure of lists (1D, 2D, 3D, ...)
 
         Raises:
-            ValueError: Si el tensor es irregular
+            ValueError: If the tensor is irregular
         """
         self.data = data
         self.shape = numk.shape(data)
         self._validate_regular()
 
     def _validate_regular(self):
-        """Valida que el tensor sea regular (rectangular)."""
+        """Validate that the tensor is regular (rectangular)."""
         self._validate_recursive(self.data, self.shape, 0)
 
     def _validate_recursive(self, data, expected_shape, depth):
-        """Valida recursivamente que todas las sublistas tengan la longitud esperada."""
+        """Recursively validates that all sublists have the expected length."""
         if depth == len(expected_shape) - 1:
             if len(data) != expected_shape[depth]:
                 raise ValueError(
-                    f"Tensor irregular: sublista en dimensión {depth} "
-                    f"tiene longitud {len(data)}, se esperaba {expected_shape[depth]}"
+                    f"Irregular tensor: sublist at dimension {depth} "
+                    f"has length {len(data)}, expected {expected_shape[depth]}"
                 )
         else:
             if len(data) != expected_shape[depth]:
                 raise ValueError(
-                    f"Tensor irregular: dimensión {depth} "
-                    f"tiene longitud {len(data)}, se esperaba {expected_shape[depth]}"
+                    f"Irregular tensor: dimension {depth} "
+                    f"has length {len(data)}, expected {expected_shape[depth]}"
                 )
             for i, sublist in enumerate(data):
                 if not isinstance(sublist, list):
                     raise ValueError(
-                        f"Tensor irregular: se esperaba sublista en dimensión {depth}, "
-                        f"se encontró {type(sublist).__name__}"
+                        f"Irregular tensor: expected a sublist at dimension {depth}, "
+                        f"found {type(sublist).__name__}"
                     )
                 self._validate_recursive(sublist, expected_shape, depth + 1)
 
     @property
     def ndim(self):
-        """Número de dimensiones del tensor."""
+        """Number of dimensions of the tensor."""
         return len(self.shape)
 
     def __len__(self):
@@ -78,15 +78,15 @@ class Tensor:
 
 
 def tensor_zeros(shape):
-    """Crea un tensor de ceros con la forma dada usando Numk."""
+    """Create a zero tensor of the given form using Numk."""
     return Tensor(numk.zeros_nd(shape))
 
 
 def tensor_ones(shape):
-    """Crea un tensor de unos con la forma dada usando Numk."""
+    """Create a ones tensor of the given shape using Numk."""
     return Tensor(numk.ones(shape))
 
 
 def tensor_random(shape, low=-0.5, high=0.5):
-    """Crea un tensor con valores aleatorios usando Numk."""
+    """Create a tensor with random values ​​using Numk."""
     return Tensor(numk.random_tensor(shape, low, high))

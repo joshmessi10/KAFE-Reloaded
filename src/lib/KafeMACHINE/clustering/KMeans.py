@@ -1,34 +1,34 @@
 import random
 from global_utils import check_sig
-from TypeUtils import matriz_numeros_t, entero_t, pardos_t
+from TypeUtils import numeric_matrix_types, integer_type, pardos_type
 from ..BaseMachine import BaseMachine
 
 
 class KMeans(BaseMachine):
     """
-    K-Means: algoritmo de clustering no supervisado.
+    K-Means: unsupervised clustering algorithm.
 
-    Agrupa n puntos en k clusters, donde cada punto pertenece al cluster
-    con el centroide más cercano. Utiliza inicialización K-Means++ para
-    mejorar la convergencia.
+    Groups n points into k clusters, where each point belongs to the cluster
+    with the nearest centroid. Uses K-Means++ initialization to
+    improve convergence.
 
-    Fundamento matemático:
-        Minimiza la inercia (within-cluster sum of squares):
+    Mathematical foundation:
+        Minimizes inertia (within-cluster sum of squares):
             J = Σ_{j=1}^{k} Σ_{x_i ∈ C_j} ||x_i - μ_j||²
-        donde μ_j es el centroide del cluster C_j.
+        where μ_j is the centroid of cluster C_j.
 
-    Complejidad: O(n · k · d · i), donde n=puntos, k=clusters,
+    Complexity: O(n · k · d · i), where n=points, k=clusters,
         d=dimensiones, i=iteraciones.
 
-    Parámetros:
-        n_clusters: número de clusters (k), default 3
-        max_iter: máximo de iteraciones, default 100
-        random_state: semilla para reproducibilidad (0 = aleatorio)
+    Parameters:
+        n_clusters: number of clusters (k), default 3
+        max_iter: maximum iterations, default 100
+        random_state: seed for reproducibility (0 = random)
 
-    Atributos (después de fit):
-        cluster_centers_: centroides de cada cluster
-        labels_: asignación de cluster para cada punto
-        inertia_: suma de cuadrados de distancias a centroides
+    Attributes (after fit):
+        cluster_centers_: centroids of each cluster
+        labels_: cluster assignment for each point
+        inertia_: sum of squares of distances to centroids
     """
 
     def __init__(self, n_clusters=3, max_iter=100, random_state=0):
@@ -54,17 +54,17 @@ class KMeans(BaseMachine):
 
     def _init_centroids_kmeans_pp(self, X):
         """
-        Inicialización K-Means++ (Arthur & Vassilvitskii, 2007).
+        K-Means++ initialization (Arthur & Vassilvitskii, 2007).
 
-        1. Selecciona el primer centroide aleatoriamente.
-        2. Para cada punto, calcula D(x)^2 = distancia al cuadrado
-           al centroide más cercano.
-        3. Selecciona el siguiente centroide con probabilidad
+        1. Select the first centroid randomly.
+        2. For each point, calculate D(x)^2 = distance squared
+           to the nearest centroid.
+        3. Select the next centroid with probability
            proporcional a D(x)^2.
-        4. Repite hasta elegir k centroides.
+        4. Repeat until you choose k centroids.
 
-        Garantiza centroides inicializados de forma dispersa,
-        reduciendo la probabilidad de convergencia a óptimos locales.
+        Ensures sparsely initialized centroids,
+        reducing the probability of convergence to local optima.
         """
         n_samples = len(X)
         rng = random.Random(self.random_state if self.random_state != 0 else None)
@@ -105,7 +105,7 @@ class KMeans(BaseMachine):
         return centroids
 
     def _assign_clusters(self, X, centroids):
-        """Asigna cada punto al centroide más cercano (paso E)."""
+        """Map each point to the nearest centroid (step E)."""
         labels = []
         for point in X:
             min_dist = float("inf")
@@ -119,7 +119,7 @@ class KMeans(BaseMachine):
         return labels
 
     def _update_centroids(self, X, labels):
-        """Recalcula centroides como promedio de puntos asignados (paso M)."""
+        """Recalculates centroids as average of assigned points (step M)."""
         k = self.n_clusters
         n_features = len(X[0])
         new_centroids = []
@@ -139,16 +139,16 @@ class KMeans(BaseMachine):
 
         return new_centroids
 
-    @check_sig([2], [pardos_t] + matriz_numeros_t, is_method=True)
+    @check_sig([2], [pardos_type] + numeric_matrix_types, is_method=True)
     def fit(self, X):
         """
-        Ajusta el modelo K-Means a los datos X.
+        Fit the K-Means model to the X data.
 
         Algoritmo:
-            1. Inicializar centroides con K-Means++
-            2. Repetir hasta convergencia o max_iter:
-               a. Asignar cada punto al centroide más cercano (E)
-               b. Recalcular centroides como promedio (M)
+            1. Initialize centroids with K-Means++
+            2. Repeat until convergence or max_iter:
+               to. Assign each point to the nearest centroid (E)
+               b. Recalculate centroids as average (M)
             3. Calcular inercia final
         """
         matrix, cols, is_df = self._unwrap_data(X)
@@ -188,13 +188,13 @@ class KMeans(BaseMachine):
         return self
 
     def fit_predict(self, X):
-        """Ajusta el modelo y devuelve las etiquetas de cluster."""
+        """Fits the model and returns the cluster labels."""
         self.fit(X)
         return self.labels_
 
-    @check_sig([2], matriz_numeros_t, is_method=True)
+    @check_sig([2], numeric_matrix_types, is_method=True)
     def predict(self, X):
-        """Asigna cada punto de X al cluster más cercano."""
+        """Assign each point of X to the closest cluster."""
         self._check_fitted("predict")
         if not X:
             return []
@@ -210,24 +210,24 @@ class KMeans(BaseMachine):
         return self._assign_clusters(X, self.cluster_centers_)
 
     def labels(self):
-        """Devuelve las etiquetas de cluster después de fit."""
+        """Returns the cluster labels after fit."""
         self._check_fitted("labels")
         return self.labels_
 
     def cluster_centers(self):
-        """Devuelve los centroides después de fit."""
+        """Returns the centroids after fit."""
         self._check_fitted("cluster_centers")
         return self.cluster_centers_
 
     def inertia(self):
-        """Devuelve la inercia después de fit."""
+        """Returns inertia after fit."""
         self._check_fitted("inertia")
         return self.inertia_
 
     def score(self, X):
-        """Retorna la inercia negativa (compatibilidad con API scikit-learn).
+        """Returns negative inertia (scikit-learn API support).
 
-        Menor (más negativo) es mejor.
+        Lower (more negative) is better.
         """
         self._check_fitted("score")
         if not X:

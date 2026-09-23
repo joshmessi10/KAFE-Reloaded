@@ -1,8 +1,8 @@
-"""Capa de entrada simbólica para la API Functional.
+"""Symbolic input layer for the Functional API.
 
-Input no es una capa de transformación; es un punto de partida simbólico
-que define la forma esperada de los datos de entrada. Produce un InputNode
-que el modelo Functional usa para arrancar el recorrido del grafo.
+Input is not a transformation layer; It is a symbolic starting point
+which defines the expected shape of the input data. Produces an InputNode
+that the Functional model uses to start the graph path.
 
 Uso:
 
@@ -16,18 +16,18 @@ from lib.KafeGESHA.core.node import InputNode
 
 
 class Input:
-    """Tensor simbólico de entrada para la API Functional.
+    """Input symbolic tensor for the Functional API.
 
-    No hereda de Layer porque no transforma datos; es solo un marcador
-    de inicio del grafo.
+    It does not inherit from Layer because it does not transform data; It's just a marker
+    start of the graph.
 
     Args:
-        shape: Tupla con la forma de la entrada (e.g., (784,) o (28, 28)).
-               Solo informativa — el entrenamiento recibe los datos ya preparados.
+        shape: Tuple with the shape of the input (e.g., (784,) or (28, 28)).
+               Informational only — training receives the data already prepared.
 
     Attributes:
-        shape: Forma de entrada.
-        node: InputNode simbólico que representa este tensor en el grafo.
+        shape: Entry form.
+        node: Symbolic InputNode that represents this tensor in the graph.
 
     Uso:
         inputs = Input(shape=(784,))

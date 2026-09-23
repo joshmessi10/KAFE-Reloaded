@@ -1,14 +1,14 @@
 from errors import raiseTypeMismatch, raiseFunctionIncorrectArgumentType, raiseWrongNumberOfArgs
-from TypeUtils import get_data_type, entero_t, flotante_t, booleano_t, cadena_t, funcion_t, lista_t, lista_cualquiera_t
+from TypeUtils import get_data_type, integer_type, float_type, boolean_type, string_type, function_type, list_type, any_list_types
 
 def is_correct_type(value, declared_type):
     value_type = get_data_type(value)
 
-    if declared_type.startswith(funcion_t):
+    if declared_type.startswith(function_type):
         declared_type = declared_type[:4]
 
-    if value_type.startswith(lista_t) and declared_type.startswith(lista_t):
-        possible_inner_types = [entero_t, flotante_t, booleano_t, cadena_t]
+    if value_type.startswith(list_type) and declared_type.startswith(list_type):
+        possible_inner_types = [integer_type, float_type, boolean_type, string_type]
 
         value_has_no_inner_type = not any(t in value_type for t in possible_inner_types)
         declared_has_no_inner_type = not any(t in declared_type for t in possible_inner_types)
@@ -18,10 +18,10 @@ def is_correct_type(value, declared_type):
         if is_empty_list:
             value_type = declared_type
         elif value_has_no_inner_type or declared_has_no_inner_type:
-            declared_type = declared_type.replace(entero_t,"").replace(flotante_t,"")
-            declared_type = declared_type.replace(cadena_t,"").replace(booleano_t,"")
-            value_type = value_type.replace(entero_t,"").replace(flotante_t,"")
-            value_type = value_type.replace(cadena_t,"").replace(booleano_t,"")
+            declared_type = declared_type.replace(integer_type,"").replace(float_type,"")
+            declared_type = declared_type.replace(string_type,"").replace(boolean_type,"")
+            value_type = value_type.replace(integer_type,"").replace(float_type,"")
+            value_type = value_type.replace(string_type,"").replace(boolean_type,"")
 
 
     if declared_type != value_type:
@@ -92,7 +92,7 @@ def check_sig(*args, **kwargs):
         allowed_arg_counts = args[0]
         fixed_type_lists = list(args[1:])
 
-    function_name = kwargs.get('func_nombre', "")
+    function_name = kwargs.get('function_name', "")
     is_method = kwargs.get('is_method', False)
 
     def decorator(original_function):
@@ -126,8 +126,8 @@ def check_sig(*args, **kwargs):
 
                 if not any(matches):
                     # Display the broad list type as "lists" in diagnostics.
-                    if set(lista_cualquiera_t).issubset(defined_types):
-                        error_types = list(set(defined_types) - set(lista_cualquiera_t))
+                    if set(any_list_types).issubset(defined_types):
+                        error_types = list(set(defined_types) - set(any_list_types))
                         error_types.append("lists")
                     else:
                         error_types = defined_types

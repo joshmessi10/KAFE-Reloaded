@@ -166,7 +166,7 @@ Sin optimizadores sofisticados, las redes neuronales profundas son extremadament
 
 ## Dependencies
 
-- `lib.KafeMATH.funciones` — `pow_()` (potencia), `sqrt()` (raíz cuadrada).
+- `lib.KafeMATH.functions` — `pow_()` (potencia), `sqrt()` (raíz cuadrada).
 
 ## Related Concepts
 

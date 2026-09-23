@@ -1,5 +1,5 @@
-"""Función de activación Softmax."""
-from lib.KafeMATH.funciones import exp
+"""Softmax activation function."""
+from lib.KafeMATH.functions import exp
 from lib.KafeGESHA.activations.activation import ActivationFunction
 
 
@@ -10,9 +10,9 @@ class Softmax(ActivationFunction):
     def activate(self, vec):
         exp_vec = [exp(x) for x in vec]
         s = sum(exp_vec)
-        salida = [v / s for v in exp_vec]
-        self.last_output = salida[:]
-        return salida
+        output = [v / s for v in exp_vec]
+        self.last_output = output[:]
+        return output
 
     def derivative(self, vec):
         s = self.activate(vec)

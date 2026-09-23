@@ -1,6 +1,6 @@
-from lib.KafeMATH.funciones import log
+from lib.KafeMATH.functions import log
 from global_utils import check_sig
-from TypeUtils import vector_numeros_t, matriz_numeros_t, pardos_t
+from TypeUtils import numeric_vector_types, numeric_matrix_types, pardos_type
 from ..metrics import accuracy_score, r2_score
 from ..BaseMachine import BaseMachine
 
@@ -144,7 +144,7 @@ class DecisionTreeClassifier(BaseMachine):
             "right": right_subtree,
         }
 
-    @check_sig([3], [pardos_t] + vector_numeros_t + matriz_numeros_t, vector_numeros_t, is_method=True)
+    @check_sig([3], [pardos_type] + numeric_vector_types + numeric_matrix_types, numeric_vector_types, is_method=True)
     def fit(self, X, y):
         matrix, cols, is_df = self._unwrap_data(X)
         matrix = self._validate_matrix_shape(matrix)
@@ -167,7 +167,7 @@ class DecisionTreeClassifier(BaseMachine):
             return self._predict_one(sample, node["left"])
         return self._predict_one(sample, node["right"])
 
-    @check_sig([2], vector_numeros_t + matriz_numeros_t, is_method=True)
+    @check_sig([2], numeric_vector_types + numeric_matrix_types, is_method=True)
     def predict(self, X):
         self._check_fitted("predict")
         if not X:
@@ -204,29 +204,29 @@ class DecisionTreeClassifier(BaseMachine):
 
 class DecisionTreeRegressor(BaseMachine):
     """
-    Decision Tree Regressor — Árbol de decisión para regresión.
+    Decision Tree Regressor — Decision tree for regression.
 
-    Construye un árbol que predice valores continuos usando MSE (Mean Squared Error)
-    como criterio de splits.
+    Build a tree that predicts continuous values ​​using MSE (Mean Squared Error)
+    as a split criterion.
 
-    Fundamento matemático:
-        1. Para cada feature y umbral, calcular:
+    Mathematical foundation:
+        1. For each feature and threshold, calculate:
            MSE = (1/n) * Σ(y_i - ȳ)²
            MSE_left = (1/n_l) * Σ(y_i - ȳ_l)²
            MSE_right = (1/n_r) * Σ(y_i - ȳ_r)²
            MSE_reduction = MSE - (n_l/n * MSE_left + n_r/n * MSE_right)
-        2. Seleccionar split con mayor reducción de MSE
-        3. Hojas predicen la media de los valores en el nodo
+        2. Select split with greater MSE reduction
+        3. Leaves predict the mean of the values ​​in the node
 
-    Parámetros:
+    Parameters:
         criterion: "mse" (default)
-        max_depth: profundidad máxima (0 = sin límite, default 0)
-        min_samples_split: mínimas muestras para dividir (default 2)
-        min_samples_leaf: mínimas muestras por hoja (default 1)
+        max_depth: maximum depth (0 = no limit, default 0)
+        min_samples_split: minimum samples to split (default 2)
+        min_samples_leaf: minimum samples per sheet (default 1)
 
-    Atributos (después de fit):
-        tree_: estructura del árbol
-        n_features_: número de features
+    Attributes (after fit):
+        tree_: tree structure
+        n_features_: number of features
     """
 
     def __init__(self, criterion="mse", max_depth=0, min_samples_split=2, min_samples_leaf=1):
@@ -241,7 +241,7 @@ class DecisionTreeRegressor(BaseMachine):
         self.n_features_ = 0
 
     def _mse(self, y):
-        """Calcula el Mean Squared Error."""
+        """Calculate the Mean Squared Error."""
         n = len(y)
         if n == 0:
             return 0.0
@@ -249,11 +249,11 @@ class DecisionTreeRegressor(BaseMachine):
         return sum((yi - mean) ** 2 for yi in y) / n
 
     def _mean(self, y):
-        """Calcula la media."""
+        """Calculate the average."""
         return sum(y) / len(y) if len(y) > 0 else 0.0
 
     def _information_gain(self, y, y_left, y_right):
-        """Calcula la reducción de MSE."""
+        """Calculate the MSE reduction."""
         n = len(y)
         parent_mse = self._mse(y)
         left_mse = self._mse(y_left) if len(y_left) > 0 else 0.0
@@ -262,7 +262,7 @@ class DecisionTreeRegressor(BaseMachine):
         return parent_mse - weighted_mse
 
     def _best_split(self, X, y):
-        """Encuentra el mejor split."""
+        """Find the best split."""
         n_samples = len(y)
         n_features = len(X[0]) if n_samples > 0 else 0
         best_gain = -1
@@ -314,7 +314,7 @@ class DecisionTreeRegressor(BaseMachine):
         return best_feature, best_threshold, best_y_left, best_y_right, best_X_left, best_X_right
 
     def _build_tree(self, X, y, depth):
-        """Construye el árbol recursivamente."""
+        """Build the tree recursively."""
         if len(y) <= 1:
             return {"value": self._mean(y)}
 
@@ -339,7 +339,7 @@ class DecisionTreeRegressor(BaseMachine):
             "right": right_subtree,
         }
 
-    @check_sig([3], [pardos_t] + vector_numeros_t + matriz_numeros_t, vector_numeros_t, is_method=True)
+    @check_sig([3], [pardos_type] + numeric_vector_types + numeric_matrix_types, numeric_vector_types, is_method=True)
     def fit(self, X, y):
         """Ajusta DecisionTreeRegressor."""
         matrix, cols, is_df = self._unwrap_data(X)
@@ -356,16 +356,16 @@ class DecisionTreeRegressor(BaseMachine):
         return self
 
     def _predict_one(self, sample, node):
-        """Predice para una sola muestra."""
+        """Predict for a single sample."""
         if "value" in node:
             return node["value"]
         if sample[node["feature"]] <= node["threshold"]:
             return self._predict_one(sample, node["left"])
         return self._predict_one(sample, node["right"])
 
-    @check_sig([2], vector_numeros_t + matriz_numeros_t, is_method=True)
+    @check_sig([2], numeric_vector_types + numeric_matrix_types, is_method=True)
     def predict(self, X):
-        """Predice valores continuos para X."""
+        """Predict continuous values ​​for X."""
         self._check_fitted("predict")
         if not X:
             return []
@@ -381,7 +381,7 @@ class DecisionTreeRegressor(BaseMachine):
         return [self._predict_one(x, self.tree_) for x in X]
 
     def score(self, X, y, metric=None):
-        """Score usando R² (default) o una métrica personalizada."""
+        """Score using R² (default) or a custom metric."""
         self._check_fitted("score")
         preds = self.predict(X)
         if metric is None:

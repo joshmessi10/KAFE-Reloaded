@@ -1,18 +1,18 @@
-"""Clase base abstracta para capas de red neuronal."""
+"""Abstract base class for neural network layers."""
 from abc import ABC, abstractmethod
 from global_utils import check_sig
-from TypeUtils import vector_numeros_t, flotante_t, void_t
+from TypeUtils import numeric_vector_types, float_type, void_t
 
 
 class Layer(ABC):
-    """Clase base para todas las capas de KafeGESHA.
+    """Base class for all KafeGESHA layers.
 
-    Contrato público:
-    - forward(x)  → propagación hacia adelante
-    - backward(error, learning_rate) → propagación hacia atrás
-    - parameters() → lista de parámetros entrenables (vacía por defecto)
-    - train() / eval() → modo entrenamiento / evaluación
-    - __call__(input_node) → graph-building para la API Functional
+    Public contract:
+    - forward(x) → forward propagation
+    - backward(error, learning_rate) → backward propagation
+    - parameters() → list of trainable parameters (empty by default)
+    - train() / eval() → training / evaluation mode
+    - __call__(input_node) → graph-building for the Functional API
     """
 
     def __init__(self):
@@ -20,41 +20,41 @@ class Layer(ABC):
         self.name = None
 
     @abstractmethod
-    @check_sig([2], vector_numeros_t, is_method=True)
+    @check_sig([2], numeric_vector_types, is_method=True)
     def forward(self, x):
-        """Propagación hacia adelante."""
+        """Forward propagation."""
         pass
 
     @abstractmethod
-    @check_sig([3, 4], vector_numeros_t + [flotante_t], [flotante_t], [flotante_t, void_t], is_method=True)
+    @check_sig([3, 4], numeric_vector_types + [float_type], [float_type], [float_type, void_t], is_method=True)
     def backward(self, output_error, learning_rate, regularization_lambda=None):
-        """Propagación hacia atrás."""
+        """Backward propagation."""
         pass
 
     def parameters(self):
-        """Devuelve lista plana de parámetros entrenables. Subcapas con pesos deben sobreescribir este método."""
+        """Returns a flat list of trainable parameters. Sublayers with weights must override this method."""
         return []
 
     def train(self):
-        """Activa el modo entrenamiento."""
+        """Activate training mode."""
         self._training = True
 
     def eval(self):
-        """Activa el modo evaluación (inferencia)."""
+        """Activates evaluation (inference) mode."""
         self._training = False
 
     def connect(self, input_node):
-        """Conecta esta capa a un nodo simbólico para la API Functional.
+        """Connect this layer to a symbolic node for the Functional API.
 
-        Nota: NO usar __call__ aquí para evitar conflicto con el sistema de
-        tipos de KAFE (callable(layer) devolvería True, clasificando la capa
-        como FUNC en lugar de GESHA).
+        Note: DO NOT use __call__ here to avoid conflict with the system
+        KAFE types (callable(layer) would return True, classifying the layer
+        as FUNC instead of GESHA).
 
         Args:
-            input_node: Input, Node o lista de Nodes.
+            input_node: Input, Node or list of Nodes.
 
         Returns:
-            Node simbólico de salida con esta capa registrada.
+            Output symbolic node with this layer registered.
         """
         from lib.KafeGESHA.core.node import Node
         inbound = input_node if isinstance(input_node, list) else [input_node]
@@ -63,5 +63,5 @@ class Layer(ABC):
         return output_node
 
     def summary(self):
-        """Imprime información de la capa."""
+        """Print layer information."""
         print(f"{self.__class__.__name__}")

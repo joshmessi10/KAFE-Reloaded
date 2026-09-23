@@ -1,5 +1,5 @@
-"""Función de activación Tangente Hiperbólica."""
-from lib.KafeMATH.funciones import exp
+"""Hyperbolic Tangent activation function."""
+from lib.KafeMATH.functions import exp
 from lib.KafeGESHA.activations.activation import ActivationFunction
 
 

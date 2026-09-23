@@ -1,6 +1,6 @@
-from lib.KafeMATH.funciones import sqrt
+from lib.KafeMATH.functions import sqrt
 from global_utils import check_sig
-from TypeUtils import pardos_t, matriz_numeros_t
+from TypeUtils import pardos_type, numeric_matrix_types
 from lib.KafePARDOS.DataFrame import DataFrame
 from ..BaseMachine import BaseMachine
 
@@ -11,7 +11,7 @@ class StandardScaler(BaseMachine):
         self.mean_ = []
         self.scale_ = []
 
-    @check_sig([2], [pardos_t] + matriz_numeros_t, is_method=True)
+    @check_sig([2], [pardos_type] + numeric_matrix_types, is_method=True)
     def fit(self, data):
         matrix, cols, is_df = self._unwrap_data(data)
 
@@ -37,7 +37,7 @@ class StandardScaler(BaseMachine):
     def fit_transform(self, data):
         return self.fit(data).transform(data)
 
-    @check_sig([2], [pardos_t] + matriz_numeros_t, is_method=True)
+    @check_sig([2], [pardos_type] + numeric_matrix_types, is_method=True)
     def transform(self, data):
         self._check_fitted("transform")
         matrix, cols, is_df = self._unwrap_data(data)
@@ -55,7 +55,7 @@ class StandardScaler(BaseMachine):
 
         return DataFrame(cols, result) if is_df else result
 
-    @check_sig([2], [pardos_t] + matriz_numeros_t, is_method=True)
+    @check_sig([2], [pardos_type] + numeric_matrix_types, is_method=True)
     def inverse_transform(self, data):
         self._check_fitted("inverse_transform")
         matrix, cols, is_df = self._unwrap_data(data)

@@ -2,12 +2,12 @@ import os
 import json
 from errors import raiseFileNotFound
 from global_utils import check_sig
-from .utils import inferir_tipo
+from .utils import infer_type
 from .DataFrame import DataFrame
-from TypeUtils import cadena_t, pardos_t, lista_cualquiera_t
+from TypeUtils import string_type, pardos_type, any_list_types
 
 
-@check_sig([1], [cadena_t])
+@check_sig([1], [string_type])
 def read_csv(path):
     import globals
 
@@ -21,30 +21,30 @@ def read_csv(path):
             raiseFileNotFound(path, globals.current_dir)
 
     with open(real_path, encoding="utf-8") as f:
-        lineas = [l.rstrip("\r\n") for l in f]
-    while lineas and lineas[-1] == "":
-        lineas.pop()
-    if len(lineas) == 0:
+        lines = [l.rstrip("\r\n") for l in f]
+    while lines and lines[-1] == "":
+        lines.pop()
+    if len(lines) == 0:
         return DataFrame([], [])
 
-    header_line = lineas[0]
-    semicolons = sum(l.count(";") for l in lineas)
-    commas = sum(l.count(",") for l in lineas)
+    header_line = lines[0]
+    semicolons = sum(l.count(";") for l in lines)
+    commas = sum(l.count(",") for l in lines)
     delim = ";" if semicolons >= commas else ","
 
     header = [h.strip() for h in header_line.split(delim)]
     data = []
-    for fila in lineas[1:]:
-        partes = [c.strip() for c in fila.split(delim)]
+    for row in lines[1:]:
+        partes = [c.strip() for c in row.split(delim)]
         if len(partes) < len(header):
             partes += [""] * (len(header) - len(partes))
-        fila_convertida = [inferir_tipo(c) for c in partes[: len(header)]]
-        data.append(fila_convertida)
+        converted_row = [infer_type(c) for c in partes[: len(header)]]
+        data.append(converted_row)
 
     return DataFrame(header, data)
 
 
-@check_sig([1], [cadena_t])
+@check_sig([1], [string_type])
 def read_json(path):
     """
     Read JSON file and return a DataFrame.
@@ -75,38 +75,38 @@ def read_json(path):
             columns = list(json_data[0].keys())
             data = []
             for record in json_data:
-                row = [inferir_tipo(record.get(col, "")) for col in columns]
+                row = [infer_type(record.get(col, "")) for col in columns]
                 data.append(row)
             return DataFrame(columns, data)
 
     raise Exception(
         "pardos: read_json: Unsupported JSON format. Expected list of records."
     )
-@check_sig([2], [pardos_t], [pardos_t])
+@check_sig([2], [pardos_type], [pardos_type])
 def concat(df1, df2):
     return df1.concat(df2)
 
 
-@check_sig([3, 4], [pardos_t], [pardos_t], [cadena_t], [cadena_t])
+@check_sig([3, 4], [pardos_type], [pardos_type], [string_type], [string_type])
 def merge(df1, df2, on, how='inner'):
     return df1.merge(df2, on, how)
 
 
-@check_sig([1], [pardos_t])
+@check_sig([1], [pardos_type])
 def to_matrix(df):
     """
-    Convierte un DataFrame de PARDOS a una matriz (lista de listas de floats).
-    Solo se incluyen columnas numéricas (entero y flotante).
+    Converts a PARDOS DataFrame to an array (list of lists of floats).
+    Only numeric columns (integer and float) are included.
     """
-    from TypeUtils import entero_t, flotante_t
+    from TypeUtils import integer_type, float_type
     dtypes = df.dtypes()
     numeric_indices = []
-    for i, (col_name, tipo) in enumerate(dtypes):
-        if tipo in (entero_t, flotante_t):
+    for i, (col_name, type_name) in enumerate(dtypes):
+        if type_name in (integer_type, float_type):
             numeric_indices.append(i)
 
     if not numeric_indices:
-        raise ValueError("pardos: No se encontraron columnas numéricas en el DataFrame")
+        raise ValueError("pardos: No numeric columns were found in the DataFrame")
 
     matrix = []
     for row in df.data:
@@ -122,19 +122,19 @@ def to_matrix(df):
     return matrix
 
 
-@check_sig([1], [pardos_t])
+@check_sig([1], [pardos_type])
 def df_to_matrix(df):
     """
-    Alias de to_matrix en KafePARDOS. Convierte un DataFrame a matriz.
+    Alias ​​of to_matrix in KafePARDOS. Converts a DataFrame to an array.
     """
     return to_matrix(df)
 
 
 
-@check_sig([1], lista_cualquiera_t)
-def flatten(matriz):
+@check_sig([1], any_list_types)
+def flatten(matrix):
     """
-    Convierte una lista anidada (por ejemplo, una matriz) a un arreglo 1D (lista plana).
+    Converts a nested list (for example, an array) to a 1D array (flat list).
     """
     def _flatten(nested):
         res = []
@@ -144,4 +144,4 @@ def flatten(matriz):
             else:
                 res.append(elem)
         return res
-    return _flatten(matriz)
+    return _flatten(matrix)

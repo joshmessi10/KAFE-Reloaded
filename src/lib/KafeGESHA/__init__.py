@@ -1,15 +1,15 @@
 """KafeGESHA — Deep Learning library for KAFE.
 
-API pública exportada:
-    Model      — clase base abstracta
-    Sequential — modelo de grafo lineal
-    Functional — modelo de grafo DAG
-    Dense      — capa totalmente conectada
-    Dropout    — regularización por dropout
+Exported public API:
+    Model — abstract base class
+    Sequential — linear graph model
+    Functional — DAG network model
+    Dense — fully connected layer
+    Dropout — dropout regularization
     Flatten    — aplanar tensores
-    Input      — entrada simbólica (API Functional)
-    Add        — merge de ramas (API Functional)
-    ReLULayer, SigmoidLayer, TanhLayer, SoftmaxLayer — activaciones como capas
+    Input — symbolic input (Functional API)
+    Add — branch merge (Functional API)
+    ReLULayer, SigmoidLayer, TanhLayer, SoftmaxLayer — activations as layers
 """
 from lib.KafeGESHA.core.model import Model, Gesha
 from lib.KafeGESHA.models.sequential import Sequential

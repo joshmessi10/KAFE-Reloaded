@@ -1,5 +1,5 @@
-"""Funciones de pérdida MSE y MAE."""
-from lib.KafeMATH.funciones import math_abs
+"""MSE and MAE loss functions."""
+from lib.KafeMATH.functions import math_abs
 from lib.KafeGESHA.losses.loss import LossFunction
 
 

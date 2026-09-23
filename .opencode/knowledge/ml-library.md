@@ -6,7 +6,7 @@ scikit-learn-style ML models and evaluation metrics, implemented from scratch in
 
 ## Structure
 
-- `src/lib/KafeMACHINE/funciones.py` — public factory functions (the `machine` API).
+- `src/lib/KafeMACHINE/functions.py` — public factory functions (the `machine` API).
 - `src/lib/KafeMACHINE/BaseMachine.py` — base model class shared by models.
 - Models: `LinearRegression.py`, `LogisticRegression.py`, `KNN.py`, `PCA.py`, `DecisionTree.py` (DecisionTreeClassifier + DecisionTreeRegressor), `RandomForest.py` (RandomForestClassifier + RandomForestRegressor), `GaussianNB.py`, `DBSCAN.py`, `RidgeRegression.py`, `LassoRegression.py`, `SVR.py`, `SVM.py`, `ElasticNet.py`, `AgglomerativeClustering.py`, `AdaBoost.py`, `GradientBoosting.py` (GradientBoostingClassifier + GradientBoostingRegressor), `GaussianMixture.py`, `LinearDiscriminantAnalysis.py`.
 - Preprocessing: `StandardScaler.py`, `MinMaxScaler.py`, `RobustScaler.py`, `SimpleImputer.py`, `LabelEncoder.py`, `OneHotEncoder.py`, `OrdinalEncoder.py`, `PCA.py`, `PolynomialFeatures.py`, `VarianceThreshold.py`, `RecursiveFeatureElimination.py`.

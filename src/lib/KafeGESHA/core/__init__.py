@@ -1,1 +1,1 @@
-"""Módulo core de KafeGESHA."""
+"""KafeGESHA core module."""

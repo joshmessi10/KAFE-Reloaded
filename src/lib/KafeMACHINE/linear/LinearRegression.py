@@ -1,5 +1,5 @@
 from global_utils import check_sig
-from TypeUtils import vector_numeros_t, matriz_numeros_t, pardos_t
+from TypeUtils import numeric_vector_types, numeric_matrix_types, pardos_type
 from ..metrics import r2_score
 from ..BaseMachine import BaseMachine
 
@@ -32,7 +32,7 @@ class LinearRegression(BaseMachine):
 
         return [aug[i][n] for i in range(n)]
 
-    @check_sig([3], [pardos_t] + vector_numeros_t + matriz_numeros_t, vector_numeros_t, is_method=True)
+    @check_sig([3], [pardos_type] + numeric_vector_types + numeric_matrix_types, numeric_vector_types, is_method=True)
     def fit(self, X, y):
         matrix, cols, is_df = self._unwrap_data(X)
         matrix = self._validate_matrix_shape(matrix)
@@ -59,7 +59,7 @@ class LinearRegression(BaseMachine):
         self._is_fitted = True
         return self
 
-    @check_sig([2], vector_numeros_t + matriz_numeros_t, is_method=True)
+    @check_sig([2], numeric_vector_types + numeric_matrix_types, is_method=True)
     def predict(self, X):
         self._check_fitted("predict")
         if not X:

@@ -467,10 +467,10 @@ KafeHF fixtures live in `tests/KafeHF/` and are collected by `tests/test_KafeHF.
 | File | Role |
 |------|------|
 | `src/Kafe_Grammar.g4` | Grammar (imports `Kafe_Lexer.g4`) — source of truth for syntax |
-| `src/EvalVisitorPrimitivo.py` | Main visitor: variable scope, dispatch to components and libraries |
+| `src/InterpreterVisitor.py` | Main visitor: variable scope, dispatch to components and libraries |
 | `src/TypeUtils.py` | Type system definitions and validation |
 | `src/global_utils.py` | Shared helpers (variable assignment, type checking) |
-| `src/errores.py` | Custom exception classes |
+| `src/errors.py` | Custom exception classes |
 | `src/globals.py` | Global state (program path, working directory) |
 
 ### Language components (`src/componentes_lenguaje/`)
@@ -509,9 +509,9 @@ Types include `INT`, `FLOAT`, `STR`, `BOOL`, `VOID`, `List[...]`, `GESHA`, `PARD
 ### Adding a new built-in library
 
 1. Perform Impact Analysis and follow `.opencode/skills/create-library/` under the root policies.
-2. Create the package `src/lib/KafeXXX/` with `__init__.py` and `funciones.py`, exposing the required library functions and any supporting classes.
-3. Import `lib.KafeXXX.funciones` in `src/EvalVisitorPrimitivo.py` and register its case-sensitive import key in `self.libraries`, following the existing `[module, False]` pattern.
-4. Reuse the generic dispatch in `src/componentes_lenguaje/librerias/funciones.py`; change it only when the library requires new dispatch behavior.
+2. Create the package `src/lib/KafeXXX/` with `__init__.py` and `functions.py`, exposing the required library functions and any supporting classes.
+3. Import `lib.KafeXXX.functions` in `src/InterpreterVisitor.py` and register its case-sensitive import key in `self.libraries`, following the existing `[module, False]` pattern.
+4. Reuse the generic dispatch in `src/language_components/libraries/functions.py`; change it only when the library requires new dispatch behavior.
 5. Add paired fixtures under `tests/KafeXXX/`, a collecting `tests/test_KafeXXX.py` module, and applicable library documentation, examples, and project records.
 
 ### Adding grammar features

@@ -1,5 +1,5 @@
-"""Funciones de pérdida Categorical Cross Entropy."""
-from lib.KafeMATH.funciones import log
+"""Categorical Cross Entropy loss functions."""
+from lib.KafeMATH.functions import log
 from lib.KafeGESHA.losses.loss import LossFunction
 
 

@@ -1,6 +1,6 @@
 from Kafe_GrammarParser import Kafe_GrammarParser
 
-from TypeUtils import funcion_t, void_t, entero_t, todos_t, lista_cualquiera_t
+from TypeUtils import function_type, void_t, integer_type, all_types, any_list_types
 from errors import (
     raiseFunctionAlreadyDefined,
     raiseVoidAsParameterType,
@@ -26,7 +26,7 @@ def functionDecl(self, ctx):
     name = ctx.ID().getText()
     if name in self.variables:
         existing_type, _ = self.variables[name]
-        if existing_type == funcion_t:
+        if existing_type == function_type:
             raiseFunctionAlreadyDefined(name)
 
     param_lists = ctx.getTypedRuleContexts(Kafe_GrammarParser.ParamListContext)
@@ -116,7 +116,7 @@ def functionDecl(self, ctx):
                     check_value_type(val, expected)
 
                     pid = decl.ID().getText()
-                    ptype = funcion_t if expected.startswith("FUNC") else expected
+                    ptype = function_type if expected.startswith("FUNC") else expected
                     assign_variable(outer, pid, val, ptype)
 
                 outer.scope_stack = [{}]  # Fresh scope stack for function
@@ -149,8 +149,8 @@ def functionDecl(self, ctx):
 
     func_obj = KafeFunction()
     if captured is not None:
-        captured[name] = (funcion_t, func_obj)
-    self.variables[name] = (funcion_t, func_obj)
+        captured[name] = (function_type, func_obj)
+    self.variables[name] = (function_type, func_obj)
 
 
 def lambdaExpr(self, ctx):
@@ -226,7 +226,7 @@ def lambdaExpr(self, ctx):
 
                     check_value_type(val, expected)
                     pid = decl.ID().getText()
-                    ptype = funcion_t if expected.startswith("FUNC") else expected
+                    ptype = function_type if expected.startswith("FUNC") else expected
                     assign_variable(outer, pid, val, ptype)
 
                 return outer.visit(body)
@@ -254,23 +254,23 @@ def returnStmt(self, ctx):
     raise ReturnValue(self.visit(ctx.expr()))
 
 
-@check_sig([2], lista_cualquiera_t, todos_t, func_nombre="append")
+@check_sig([2], any_list_types, all_types, function_name="append")
 def visitAppendCall(items, element):
     items.append(element)
 
 
-@check_sig([2], lista_cualquiera_t, todos_t, func_nombre="remove")
+@check_sig([2], any_list_types, all_types, function_name="remove")
 def visitRemoveCall(items, element):
     items.remove(element)
     return None
 
 
-@check_sig([1], lista_cualquiera_t, func_nombre="len")
+@check_sig([1], any_list_types, function_name="len")
 def visitLenCall(items):
     return len(items)
 
 
-@check_sig([1, 2, 3], [entero_t], [entero_t], [entero_t], func_nombre="range")
+@check_sig([1, 2, 3], [integer_type], [integer_type], [integer_type], function_name="range")
 def rangeExpr(*args):
     if len(args) == 1:
         return list(range(args[0]))

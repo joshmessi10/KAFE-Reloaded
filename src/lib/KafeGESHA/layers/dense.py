@@ -1,24 +1,24 @@
-"""Capa Dense (totalmente conectada)."""
+"""Dense layer (fully connected)."""
 import random
 from lib.KafeGESHA.layers.layer import Layer
 from lib.KafeGESHA.layers.utils import check_regularization
 from lib.KafeGESHA.activations.ActivationFunctionLoader import ActivationFunctionLoader
 from global_utils import check_sig
-from TypeUtils import entero_t, vector_numeros_t, flotante_t, void_t
+from TypeUtils import integer_type, numeric_vector_types, float_type, void_t
 
 
 class Dense(Layer):
-    """Capa totalmente conectada (fully-connected).
+    """Fully connected layer (fully-connected).
 
-    Implementa la transformación afín: z = Wx + b, seguida de una
-    función de activación opcional.
+    Implements the affine transformation: z = Wx + b, followed by a
+    optional activation function.
 
     Args:
-        units: Número de neuronas de salida.
-        activation: Nombre de la función de activación (str) o None para lineal.
-        input_shape: Tupla con la forma de la entrada (opcional, se infiere en el primer forward).
-        regularization_lambda: Coeficiente de regularización L2.
-        seed: Semilla para reproducibilidad de la inicialización de pesos.
+        units: Number of output neurons.
+        activation: Activation function name (str) or None for linear.
+        input_shape: Tuple with the shape of the input (optional, inferred in the first forward).
+        regularization_lambda: L2 regularization coefficient.
+        seed: Seed for reproducibility of weight initialization.
     """
 
     def __init__(
@@ -51,15 +51,15 @@ class Dense(Layer):
     def _zeros_vector(self, n):
         return [0.0 for _ in range(n)]
 
-    @check_sig([2], [entero_t], is_method=True)
+    @check_sig([2], [integer_type], is_method=True)
     def build(self, input_dim):
-        """Inicializa pesos y sesgos dado el número de entradas."""
+        """Initializes weights and biases given the number of inputs."""
         self.weights = self._random_matrix(input_dim, self.units)
         self.bias = self._zeros_vector(self.units)
 
-    @check_sig([2], vector_numeros_t, is_method=True)
+    @check_sig([2], numeric_vector_types, is_method=True)
     def forward(self, x):
-        """Propagación hacia adelante: z = Wx + b, salida = activation(z)."""
+        """Forward propagation: z = Wx + b, output = activation(z)."""
         self.last_input = x[:]
         if self.weights is None:
             self.build(len(x))
@@ -75,11 +75,11 @@ class Dense(Layer):
 
         return [self.activation.activate(v) for v in z]
 
-    @check_sig([3, 4], vector_numeros_t + [flotante_t], [flotante_t], [flotante_t, void_t], is_method=True)
+    @check_sig([3, 4], numeric_vector_types + [float_type], [float_type], [float_type, void_t], is_method=True)
     def backward(self, output_error, learning_rate, regularization_lambda=None):
-        """Propagación hacia atrás con actualización de pesos (SGD inline).
+        """Backward propagation with weight update (SGD inline).
 
-        Devuelve el gradiente propagado hacia la capa anterior.
+        Returns the gradient propagated to the previous layer.
         """
         if not isinstance(output_error, list):
             output_error = [output_error]
@@ -119,7 +119,7 @@ class Dense(Layer):
         ]
 
     def parameters(self):
-        """Devuelve lista plana de todos los parámetros entrenables [W, b]."""
+        """Returns flat list of all trainable parameters [W, b]."""
         if self.weights is None:
             return []
         params = []

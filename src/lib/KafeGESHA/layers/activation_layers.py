@@ -1,31 +1,31 @@
-"""Capas de activación independientes para uso en Sequential/Functional.
+"""Separate activation layers for use in Sequential/Functional.
 
-Estas capas envuelven las funciones de activación existentes
-para que puedan usarse como capas separadas en un grafo:
+These layers wrap existing activation functions
+so they can be used as separate layers in a graph:
 
     Sequential([Dense(128), ReLU(), Dense(10), Softmax()])
 
-La diferencia con la activación integrada en Dense es que aquí la
-activación ocupa un nodo propio en el grafo, permitiendo arquitecturas
-donde el mismo bloque de activación se comparte o se conecta de forma
-no lineal (e.g., Functional API con skip-connections).
+The difference with the integrated activation in Dense is that here the
+activation occupies its own node in the graph, allowing architectures
+where the same activation block is shared or connected
+nonlinearly (e.g., with skip connections in the Functional API).
 """
 from lib.KafeGESHA.layers.layer import Layer
 from lib.KafeGESHA.activations.relu import ReLU as _ReLU
-from lib.KafeGESHA.activations.sigmoid import Sigmoide as _Sigmoide
+from lib.KafeGESHA.activations.sigmoid import SigmoidActivation as _SigmoidActivation
 from lib.KafeGESHA.activations.tanh import Tanh as _Tanh
 from lib.KafeGESHA.activations.softmax import Softmax as _Softmax
-from lib.KafeGESHA.activations.step import Identidad as _Identidad
+from lib.KafeGESHA.activations.step import IdentityActivation as _IdentityActivation
 
 
 class ActivationLayer(Layer):
-    """Capa base para activaciones element-wise usadas como capas independientes.
+    """Base layer for element-wise activations used as independent layers.
 
-    Aplica una función de activación a cada elemento del vector de entrada.
-    El backward propaga el gradiente a través de la derivada de la activación.
+    Applies an activation function to each element of the input vector.
+    The backward propagates the gradient through the derivative of the activation.
 
     Args:
-        activation_fn: Instancia de ActivationFunction.
+        activation_fn: ActivationFunction instance.
     """
 
     def __init__(self, activation_fn):
@@ -34,12 +34,12 @@ class ActivationLayer(Layer):
         self._last_input = None
 
     def forward(self, x):
-        """Propagación hacia adelante: aplica la activación element-wise."""
+        """Forward Propagation: Applies element-wise activation."""
         self._last_input = x[:]
         return [self._fn.activate(v) for v in x]
 
     def backward(self, output_error, learning_rate, regularization_lambda=None):
-        """Propagación hacia atrás: multiplica por la derivada de la activación."""
+        """Backward propagation: multiply by the derivative of the activation."""
         if not isinstance(output_error, list):
             output_error = [output_error]
         return [
@@ -52,15 +52,15 @@ class ActivationLayer(Layer):
 
 
 class SoftmaxLayer(Layer):
-    """Capa Softmax como capa independiente.
+    """Softmax layer as independent layer.
 
-    Softmax opera sobre el vector completo (no element-wise), por lo que
-    requiere una implementación separada de backward.
+    Softmax operates on the entire vector (not element-wise), so
+    requires a separate implementation of backward.
 
-    En combinación con Categorical Cross-Entropy, el gradiente simplificado
-    es (y_pred - y_true), que ya viene pre-calculado del loss. Por ello,
-    el backward de SoftmaxLayer pasa el gradiente sin modificación cuando
-    viene de CCE (pass-through seguro para el par softmax+CCE).
+    In combination with Categorical Cross-Entropy, the simplified gradient
+    is (y_pred - y_true), which is already pre-calculated from the loss. Therefore,
+    the backward of SoftmaxLayer passes the gradient without modification when
+    comes from CCE (safe pass-through for the softmax+CCE pair).
     """
 
     def __init__(self):
@@ -69,17 +69,17 @@ class SoftmaxLayer(Layer):
         self._last_output = None
 
     def forward(self, x):
-        """Propagación hacia adelante: softmax sobre el vector completo."""
+        """Forward propagation: softmax over the full vector."""
         result = self._fn.activate(x)
         self._last_output = result[:]
         return result
 
     def backward(self, output_error, learning_rate, regularization_lambda=None):
-        """Propagación hacia atrás.
+        """Backward propagation.
 
-        Cuando se combina con CCE, el gradiente ya incorpora la simplificación
-        (∂CCE/∂softmax)(∂softmax/∂z) = y_pred - y_true. El gradiente se
-        pasa directamente sin modificación adicional.
+        When combined with CCE, the gradient already incorporates simplification
+        (∂CCE/∂softmax)(∂softmax/∂z) = y_pred - y_true. The gradient is
+        passes directly without further modification.
         """
         if not isinstance(output_error, list):
             output_error = [output_error]
@@ -93,7 +93,7 @@ class SoftmaxLayer(Layer):
 
 
 class ReLULayer(ActivationLayer):
-    """Capa ReLU independiente: f(x) = max(0, x)."""
+    """Independent ReLU layer: f(x) = max(0, x)."""
 
     def __init__(self):
         super().__init__(_ReLU())
@@ -103,17 +103,17 @@ class ReLULayer(ActivationLayer):
 
 
 class SigmoidLayer(ActivationLayer):
-    """Capa Sigmoid independiente: f(x) = 1 / (1 + e^-x)."""
+    """Independent Sigmoid layer: f(x) = 1 / (1 + e^-x)."""
 
     def __init__(self):
-        super().__init__(_Sigmoide())
+        super().__init__(_SigmoidActivation())
 
     def summary(self):
         print("Sigmoid()")
 
 
 class TanhLayer(ActivationLayer):
-    """Capa Tanh independiente: f(x) = tanh(x)."""
+    """Independent Tanh layer: f(x) = tanh(x)."""
 
     def __init__(self):
         super().__init__(_Tanh())
@@ -123,10 +123,10 @@ class TanhLayer(ActivationLayer):
 
 
 class LinearLayer(ActivationLayer):
-    """Capa de activación lineal/identidad. Pass-through."""
+    """Linear activation/identity layer. Pass-through."""
 
     def __init__(self):
-        super().__init__(_Identidad())
+        super().__init__(_IdentityActivation())
 
     def summary(self):
         print("Linear()")

@@ -1,7 +1,7 @@
 import random
-from lib.KafeMATH.funciones import log, sqrt
+from lib.KafeMATH.functions import log, sqrt
 from global_utils import check_sig
-from TypeUtils import vector_numeros_t, matriz_numeros_t, pardos_t
+from TypeUtils import numeric_vector_types, numeric_matrix_types, pardos_type
 from ..metrics import accuracy_score, r2_score
 from ..BaseMachine import BaseMachine
 
@@ -10,27 +10,27 @@ class RandomForestClassifier(BaseMachine):
     """
     Random Forest Classifier — Ensemble of decision trees.
 
-    Entrena múltiples árboles de decisión sobre muestras bootstrap con
-    subconjuntos aleatorios de features, agregando predicciones por voto mayoritario.
+    Train multiple decision trees on bootstrap samples with
+    random subsets of features, adding predictions by majority vote.
 
-    Fundamento matemático:
-        - Bootstrap: muestreo con reemplazo de n puntos del conjunto de entrenamiento
-        - Aleatorización de features: en cada split, considerar sqrt(n_features) features aleatorios
-        - Agregación: voto mayoritario entre todos los árboles
+    Mathematical foundation:
+        - Bootstrap: sampling with replacement of n points from the training set
+        - Randomization of features: in each split, consider sqrt(n_features) random features
+        - Aggregation: majority vote among all trees
 
-    Parámetros:
-        n_estimators: número de árboles (default 10)
-        max_depth: profundidad máxima por árbol (0 = sin límite, default 0)
-        min_samples_split: mínimo de muestras para dividir un nodo (default 2)
-        min_samples_leaf: mínimo de muestras en una hoja (default 1)
-        max_features: número de features a considerar en cada split
+    Parameters:
+        n_estimators: number of trees (default 10)
+        max_depth: maximum depth per tree (0 = no limit, default 0)
+        min_samples_split: minimum number of samples to split a node (default 2)
+        min_samples_leaf: minimum number of samples on a sheet (default 1)
+        max_features: number of features to consider in each split
                       (None = sqrt(n_features), default None)
-        random_state: semilla para reproducibilidad (0 = aleatorio, default 0)
+        random_state: seed for reproducibility (0 = random, default 0)
 
-    Atributos (después de fit):
-        trees_: lista de árboles entrenados
-        classes_: etiquetas de clase únicas
-        n_features_: número de features
+    Attributes (after fit):
+        trees_: trained tree list
+        classes_: unique class tags
+        n_features_: number of features
     """
 
     def __init__(self, n_estimators=10, max_depth=0, min_samples_split=2,
@@ -100,7 +100,7 @@ class RandomForestClassifier(BaseMachine):
         return parent_imp - weighted_imp
 
     def _best_split(self, X, y, feature_indices):
-        """Encuentra el mejor split considerando solo un subconjunto de features."""
+        """Find the best split considering only a subset of features."""
         n_samples = len(y)
         best_gain = -1
         best_feature = None
@@ -151,7 +151,7 @@ class RandomForestClassifier(BaseMachine):
         return best_feature, best_threshold, best_y_left, best_y_right, best_X_left, best_X_right
 
     def _build_tree(self, X, y, depth, feature_indices):
-        """Construye un árbol con subconjuntos aleatorios de features."""
+        """Build a tree with random subsets of features."""
         n_classes = len(set(y))
 
         if n_classes == 1:
@@ -188,16 +188,16 @@ class RandomForestClassifier(BaseMachine):
         return self._predict_one(sample, node["right"])
 
     def _bootstrap_sample(self, X, y, rng):
-        """Crea una muestra bootstrap (muestreo con reemplazo)."""
+        """Create a bootstrap sample (sampling with replacement)."""
         n = len(X)
         indices = [rng.randint(0, n - 1) for _ in range(n)]
         X_sample = [X[i] for i in indices]
         y_sample = [y[i] for i in indices]
         return X_sample, y_sample
 
-    @check_sig([3], [pardos_t] + vector_numeros_t + matriz_numeros_t, vector_numeros_t, is_method=True)
+    @check_sig([3], [pardos_type] + numeric_vector_types + numeric_matrix_types, numeric_vector_types, is_method=True)
     def fit(self, X, y):
-        """Ajusta el Random Forest classifier."""
+        """Adjust the Random Forest classifier."""
         matrix, cols, is_df = self._unwrap_data(X)
         matrix = self._validate_matrix_shape(matrix)
 
@@ -231,9 +231,9 @@ class RandomForestClassifier(BaseMachine):
         self._is_fitted = True
         return self
 
-    @check_sig([2], vector_numeros_t + matriz_numeros_t, is_method=True)
+    @check_sig([2], numeric_vector_types + numeric_matrix_types, is_method=True)
     def predict(self, X):
-        """Predice etiquetas de clase usando voto mayoritario."""
+        """Predict class labels using majority voting."""
         self._check_fitted("predict")
         if not X:
             return []
@@ -250,7 +250,7 @@ class RandomForestClassifier(BaseMachine):
         return [self._predict_one_sample(x) for x in X]
 
     def _predict_one_sample(self, x):
-        """Predice la clase para una sola muestra usando voto mayoritario."""
+        """Predict the class for a single sample using majority voting."""
         votes = {}
         for tree in self.trees_:
             pred = self._predict_one(x, tree)
@@ -260,7 +260,7 @@ class RandomForestClassifier(BaseMachine):
         return best_class
 
     def score(self, X, y, metric=None):
-        """Evalúa usando accuracy (default) o una métrica personalizada."""
+        """Evaluate using accuracy (default) or a custom metric."""
         self._check_fitted("score")
         preds = self.predict(X)
         if metric is None:
@@ -278,26 +278,26 @@ class RandomForestRegressor(BaseMachine):
     """
     Random Forest Regressor — Ensemble of regression trees.
 
-    Entrena múltiples árboles de regresión sobre muestras bootstrap con
-    subconjuntos aleatorios de features, agregando predicciones por promedio.
+    Train multiple regression trees on bootstrap samples with
+    random subsets of features, adding predictions by averaging.
 
-    Fundamento matemático:
-        - Bootstrap: muestreo con reemplazo de n puntos del conjunto de entrenamiento
-        - Aleatorización de features: en cada split, considerar sqrt(n_features) features aleatorios
-        - Agregación: promedio de predicciones de todos los árboles
+    Mathematical foundation:
+        - Bootstrap: sampling with replacement of n points from the training set
+        - Randomization of features: in each split, consider sqrt(n_features) random features
+        - Aggregation: average of predictions of all trees
 
-    Parámetros:
-        n_estimators: número de árboles (default 10)
-        max_depth: profundidad máxima por árbol (0 = sin límite, default 0)
-        min_samples_split: mínimo de muestras para dividir un nodo (default 2)
-        min_samples_leaf: mínimo de muestras en una hoja (default 1)
-        max_features: número de features a considerar en cada split
+    Parameters:
+        n_estimators: number of trees (default 10)
+        max_depth: maximum depth per tree (0 = no limit, default 0)
+        min_samples_split: minimum number of samples to split a node (default 2)
+        min_samples_leaf: minimum number of samples on a sheet (default 1)
+        max_features: number of features to consider in each split
                       (None = sqrt(n_features), default None)
-        random_state: semilla para reproducibilidad (0 = aleatorio, default 0)
+        random_state: seed for reproducibility (0 = random, default 0)
 
-    Atributos (después de fit):
-        trees_: lista de árboles entrenados
-        n_features_: número de features
+    Attributes (after fit):
+        trees_: trained tree list
+        n_features_: number of features
     """
 
     def __init__(self, n_estimators=10, max_depth=0, min_samples_split=2,
@@ -441,9 +441,9 @@ class RandomForestRegressor(BaseMachine):
         y_sample = [y[i] for i in indices]
         return X_sample, y_sample
 
-    @check_sig([3], [pardos_t] + vector_numeros_t + matriz_numeros_t, vector_numeros_t, is_method=True)
+    @check_sig([3], [pardos_type] + numeric_vector_types + numeric_matrix_types, numeric_vector_types, is_method=True)
     def fit(self, X, y):
-        """Ajusta el Random Forest regressor."""
+        """Adjust the Random Forest regressor."""
         matrix, cols, is_df = self._unwrap_data(X)
         matrix = self._validate_matrix_shape(matrix)
 
@@ -476,9 +476,9 @@ class RandomForestRegressor(BaseMachine):
         self._is_fitted = True
         return self
 
-    @check_sig([2], vector_numeros_t + matriz_numeros_t, is_method=True)
+    @check_sig([2], numeric_vector_types + numeric_matrix_types, is_method=True)
     def predict(self, X):
-        """Predice valores usando promedio de árboles."""
+        """Predict values ​​using tree averaging."""
         self._check_fitted("predict")
         if not X:
             return []
@@ -502,7 +502,7 @@ class RandomForestRegressor(BaseMachine):
         return self._mean(predictions)
 
     def score(self, X, y, metric=None):
-        """Evalúa usando R² (default) o una métrica personalizada."""
+        """Evaluate using R² (default) or a custom metric."""
         self._check_fitted("score")
         preds = self.predict(X)
         if metric is None:

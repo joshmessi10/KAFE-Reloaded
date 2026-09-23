@@ -1,29 +1,29 @@
 from global_utils import check_sig
-from TypeUtils import vector_numeros_t, matriz_numeros_t, pardos_t
+from TypeUtils import numeric_vector_types, numeric_matrix_types, pardos_type
 from ..metrics import r2_score
 from ..BaseMachine import BaseMachine
 
 
 class LassoRegression(BaseMachine):
     """
-    Lasso Regression — Regresión lineal regularizada con penalización L1.
+    Lasso Regression — Regularized linear regression with L1 penalty.
 
     Minimiza: ||y - Xθ||² + α||θ||₁
 
-    El término de regularización L1 (α||θ||₁) puede eliminar features
-    completamente (coeficientes = 0), actuando como selección de features.
+    The L1 regularization term (α||θ||₁) can eliminate features
+    completely (coefficients = 0), acting as feature selection.
 
-    Solución: Coordinate Descent (no hay solución cerrada para L1).
+    Solution: Coordinate Descent (there is no closed solution for L1).
 
-    Parámetros:
-        alpha: fuerza de regularización (default 1.0)
-        fit_intercept: si se ajusta intercepto (default True)
-        max_iter: máximo de iteraciones (default 1000)
-        tol: tolerancia para convergencia (default 1e-4)
+    Parameters:
+        alpha: regularization force (default 1.0)
+        fit_intercept: if intercept is set (default True)
+        max_iter: maximum iterations (default 1000)
+        tol: tolerance for convergence (default 1e-4)
 
-    Atributos (después de fit):
-        coef_: coeficientes del modelo
-        intercept_: intercepto del modelo
+    Attributes (after fit):
+        coef_: model coefficients
+        intercept_: model intercept
     """
 
     def __init__(self, alpha=1.0, fit_intercept=True, max_iter=1000, tol=1e-4):
@@ -41,7 +41,7 @@ class LassoRegression(BaseMachine):
         self.intercept_ = 0.0
 
     def _soft_threshold(self, x, threshold):
-        """Operador de umbral suave: sign(x) * max(|x| - threshold, 0)"""
+        """Soft threshold operator: sign(x) * max(|x| - threshold, 0)"""
         if x > threshold:
             return x - threshold
         elif x < -threshold:
@@ -82,9 +82,9 @@ class LassoRegression(BaseMachine):
 
         return beta
 
-    @check_sig([3], [pardos_t] + vector_numeros_t + matriz_numeros_t, vector_numeros_t, is_method=True)
+    @check_sig([3], [pardos_type] + numeric_vector_types + numeric_matrix_types, numeric_vector_types, is_method=True)
     def fit(self, X, y):
-        """Ajusta el modelo Lasso regression."""
+        """Fit the Lasso regression model."""
         matrix, cols, is_df = self._unwrap_data(X)
         matrix = self._validate_matrix_shape(matrix)
 
@@ -110,7 +110,7 @@ class LassoRegression(BaseMachine):
         self._is_fitted = True
         return self
 
-    @check_sig([2], vector_numeros_t + matriz_numeros_t, is_method=True)
+    @check_sig([2], numeric_vector_types + numeric_matrix_types, is_method=True)
     def predict(self, X):
         """Predice usando Lasso regression."""
         self._check_fitted("predict")
@@ -132,7 +132,7 @@ class LassoRegression(BaseMachine):
         ]
 
     def score(self, X, y, metric=None):
-        """Evalúa usando R² (default) o una métrica personalizada."""
+        """Evaluate using R² (default) or a custom metric."""
         self._check_fitted("score")
         preds = self.predict(X)
         if metric is None:

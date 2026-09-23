@@ -1,2 +1,2 @@
-"""KafeHF — Librería para cargar datasets desde Hugging Face Hub."""
-from lib.KafeHF.funciones import load_dataset, load_dataset_split
+"""KafeHF — Library for loading datasets from Hugging Face Hub."""
+from lib.KafeHF.functions import load_dataset, load_dataset_split

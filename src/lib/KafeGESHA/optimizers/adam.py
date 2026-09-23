@@ -1,5 +1,5 @@
 """Optimizadores Adam y AdamW."""
-from lib.KafeMATH.funciones import pow_, sqrt
+from lib.KafeMATH.functions import pow_, sqrt
 from lib.KafeGESHA.optimizers.optimizer import Optimizer
 
 

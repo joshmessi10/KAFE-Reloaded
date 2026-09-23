@@ -28,7 +28,7 @@ The Lead orchestrates this workflow, delegating each step to the responsible age
 1. Run Impact Analysis first (`/impact`) — mandatory before adding ML algorithms.
 2. Read `.opencode/knowledge/ml-library.md` and `.opencode/knowledge/architecture.md` for conventions.
 3. Implement the model as a Python class with a scikit-learn-style API (`fit()`, `predict()`, `score()`) in `src/lib/KafeMACHINE/`.
-4. Add the factory function to `src/lib/KafeMACHINE/funciones.py`.
+4. Add the factory function to `src/lib/KafeMACHINE/functions.py`.
 5. Add **at least 7 fixtures** (5 valid + 2 error cases) under `tests/KafeMACHINE/<category>/` and wire a parameterized test in `tests/test_KafeMACHINE.py`.
 6. Create **enriched concept record** in `.opencode/knowledge/concepts/<name>.md` with:
    - Mathematical foundation (formulas, complexity analysis)

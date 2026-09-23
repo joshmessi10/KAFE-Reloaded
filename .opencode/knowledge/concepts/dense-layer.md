@@ -140,7 +140,7 @@ La capa Dense es el building block esencial de las redes neuronales profundas. S
 - `lib.KafeGESHA.Gesha` — clase base para capas de red neuronal.
 - `lib.KafeGESHA.ActivationFunctionLoader` — loader para funciones de activación.
 - `lib.KafeGESHA.utils` — utilidades de regularización.
-- `lib.KafeMATH.funciones` — funciones matemáticas auxiliares.
+- `lib.KafeMATH.functions` — funciones matemáticas auxiliares.
 
 ## Related Concepts
 

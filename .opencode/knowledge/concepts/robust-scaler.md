@@ -36,7 +36,7 @@ StandardScaler and MinMaxScaler are sensitive to outliers because they use mean/
 - `src/lib/KafeMACHINE/BaseMachine.py` — base class providing the fit/transform contract, the `_is_fitted` guard, and `_unwrap_data` (DataFrame-aware).
 - `src/lib/KafePARDOS/DataFrame.py` — accepts `PARDOS` DataFrames and returns scaled DataFrames preserving columns.
 - `TypeUtils.py` / `global_utils.py` — `pardos_t`, `matriz_numeros_t`, `check_sig` for signature validation.
-- `src/lib/KafeMACHINE/funciones.py` — `machine.robust_scaler()` factory.
+- `src/lib/KafeMACHINE/functions.py` — `machine.robust_scaler()` factory.
 
 ## Related Concepts
 
@@ -115,7 +115,7 @@ Where n = samples, m = features. The log n factor comes from sorting each column
 ## Implementation Location
 
 - `src/lib/KafeMACHINE/preprocessing/RobustScaler.py` (class `RobustScaler(BaseMachine)`).
-- Factory: `src/lib/KafeMACHINE/funciones.py` — `robust_scaler()`.
+- Factory: `src/lib/KafeMACHINE/functions.py` — `robust_scaler()`.
 - Tests: `tests/KafeMACHINE/preprocessing/robust_scaler/` (4 fixtures).
 
 ## Public API
