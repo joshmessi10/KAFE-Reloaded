@@ -2,21 +2,29 @@
 
 ## Current Feature
 
-Repository rule alignment and staged migration plan
+Locked uv dependency environment and repository setup alignment
 
 ## Status
 
-Policy baseline committed locally as `845bcb3` on `docs/english-migration`. The first follow-on branch has not been created; explicit authorization for branch operations is still required.
+In progress on the user-approved local branch `build/uv-environment`. Policy baseline commits `845bcb3` and `d27df87` remain separate. Tasks 2–7 local validation are complete. The feature commit, push, and test-workflow CI remain pending. No feature commit or push has been made.
 
 ## Completed in this work line
 
-- Mirrored `AGENTS.md` and `CLAUDE.md` and aligned OpenCode procedures to the adopted repository policies.
-- Retired the repository-level Kiro configuration and steering; preserved the useful project details in canonical guidance.
-- Audited and sequenced the remaining uv, child-process evidence, English migration, and Python quality-gate deliverables.
-- Added the durable tracker at `.opencode/progress/repository-alignment.md`.
+- Integrated the policy baseline in its own local commits and created the approved feature branch from `d27df87`.
+- Added and locked the uv project, optional Hugging Face extra, Nix support, and uv-based GitHub workflows.
+- Migrated README, installation, Make, mirrored root, and OpenCode setup/testing guidance to locked uv commands.
+- Updated KafeHF's missing-dependency diagnostic and fixture; the focused Python 3.10 suite passes with `datasets` absent by default.
+- Removed the legacy `requirements.txt` manifest and updated the ADR, history, roadmap, backlog, and current-work records.
+- Fresh Python 3.10 locked dev sync, ANTLR 4.13.2 regeneration, full test suite (485 passed), locked docs build, YAML/front-matter parsing, lock integrity, whitespace, and root-file mirror checks passed.
 
 ## Next Steps
 
-- On resume, read `.opencode/progress/current.md` and `.opencode/progress/repository-alignment.md`, then verify live Git state.
-- Commits and pushes are authorized when needed. Do not create, rename, or switch branches without explicit user authorization; publication that requires creating a remote branch remains behind that gate.
-- After explicit branch authorization, start `build/uv-environment` from the baseline commit and follow the order and exit criteria in the tracker.
+- Review and stage the complete change set without Superpowers or generated artifacts, then create the scoped feature commit.
+- Push `build/uv-environment` when the approved local gates pass, then verify test CI at the pushed commit. Do not merge; the docs deployment workflow only runs on `main`.
+
+## Authorization and platform notes
+
+- The user explicitly approved creating and switching to `build/uv-environment`; commits and pushes are authorized when needed. Do not create, rename, or switch to another branch without explicit authorization.
+- Nix is unavailable on this Windows host. GNU Make is also unavailable; use the documented direct `uv run --locked --group dev pytest ...` commands on Windows.
+- The pre-existing ignored repository `.venv` was last written on 2026-09-13 and was left untouched. Current validation uses `UV_PROJECT_ENVIRONMENT` under the user temp directory.
+- The full English migration and quality-gate implementation remain separate pending work.

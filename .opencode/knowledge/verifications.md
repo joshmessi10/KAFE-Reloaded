@@ -4,13 +4,13 @@ Project-specific testing, validation, benchmarks, and Definition of Done. Apply 
 
 ## Setup
 
-The following is the **current legacy bootstrap**, pending the coordinated uv migration. `requirements.txt` currently pins `antlr4-python3-runtime==4.13.2` and pytest 9. Requires Python >= 3.10.
+The Python project uses `pyproject.toml` and the committed `uv.lock`. It requires Python >= 3.10, pins `antlr4-python3-runtime==4.13.2`, and provides pytest in the `dev` group. MkDocs dependencies are in `docs`; Hugging Face `datasets` remains opt-in through the `huggingface` extra.
 
-1. Install the current dependencies with `pip install -r requirements.txt`.
+1. Install uv using the [official instructions](https://docs.astral.sh/uv/getting-started/installation/), then run `uv sync --locked --group dev` from the repository root.
 2. On a fresh clone, generate the ignored parser outputs as described below before running any interpreter program or fixture suite.
-3. From the repository root, run a program with `python src/Kafe.py tests/Algorithms/Fibonacci.kf` or run the suite with `pytest tests/`.
+3. From the repository root, run a program with `uv run --locked python src/Kafe.py tests/Algorithms/Fibonacci.kf` or run the suite with `uv run --locked --group dev pytest tests/`.
 
-Java JDK 11+ is needed for parser generation, including fresh-clone setup. It is not needed to execute programs once compatible generated outputs exist. Do not extend the legacy pip workflow; the uv migration must also reconcile development and docs dependencies, Nix's role, optional integrations, and CI.
+Java JDK 11+ is needed for parser generation, including fresh-clone setup. It is not needed to execute programs once compatible generated outputs exist. Nix provides system tools while uv owns Python dependencies. Use `uv sync --locked --extra huggingface` only when enabling the optional integration.
 
 ## Parser Regeneration (CRITICAL)
 
@@ -26,21 +26,22 @@ java -jar /path/to/antlr-4.13.2-complete.jar -no-listener -visitor -Dlanguage=Py
 
 The jar is not in the repo; download ANTLR 4.13.2 or use the PATH `antlr` command (see README). If you skip this you'll hit `ModuleNotFoundError: No module named 'Kafe_GrammarLexer'`.
 
-Replace the jar path with its actual location. CI does this automatically: `.github/workflows/tests.yml` downloads the ANTLR jar, regenerates the parser in `src/`, then runs `pytest tests/ -v`.
+Replace the jar path with its actual location. CI does this automatically: `.github/workflows/tests.yml` downloads the ANTLR jar, regenerates the parser in `src/`, then runs `uv run --locked --python 3.10 --group dev pytest tests/ -v`.
 
 To remove the generated ANTLR outputs, run `make clean` from `src/` in the existing POSIX Make environment. The target uses the POSIX `rm` command and requires a compatible shell/toolchain; plain Windows PowerShell does not supply that environment. Regenerate the parser afterward with the commands above before running interpreter programs or fixture tests.
 
 ## Testing Strategy
 
-- Suite: `pytest tests/` from the repo root.
-- Running programs: `python src/Kafe.py <file.kf>` from the repo root; `Kafe.py` resolves paths first from cwd, then relative to `src/`.
+- Suite: `uv run --locked --group dev pytest tests/` from the repo root.
+- Running programs: `uv run --locked python src/Kafe.py <file.kf>` from the repo root; `Kafe.py` resolves paths first from cwd, then relative to `src/`.
 - Fixture tests spawn the interpreter as a subprocess with `cwd=src/` (paths from `tests/utils.py`). This is the fixture harness's execution context, not a requirement that every CLI caller use `src/`.
 - Add new fixtures by dropping files in a directory and a `tests/test_*.py` that parameterizes via `obtener_parametros(get_programs(...))`.
 - `tests/test_KafeMACHINE.py` is the authoritative fixture map. Its `SUBDIRS` currently contains 11 paths across 10 immediate directories: `linear`, `neighbors`, `tree`, `preprocessing`, `metrics/classification`, `metrics/regression`, `clustering`, `naive_bayes`, `model_selection`, `svm`, and `ensemble`. Keep new categories wired into that map.
 - Other categories mirror the same pattern: `tests/test_KafeXXX.py` + fixtures under `tests/KafeXXX/`.
 - File I/O uses the case-sensitive paths `tests/test_KafeFiles.py` and `tests/KafeFiles/`, while its implementation package is `src/lib/KafeFILES/`. Preserve this existing distinction when adding fixtures or updating references.
-- From `src/`, `make test prueba=KafeMACHINE` runs `tests/test_KafeMACHINE.py`. `src/Makefile` uses `python`; on Windows, running `pytest tests/test_KafeMACHINE.py` directly from the repository root avoids its POSIX shell dependency.
+- From `src/`, `uv run --locked --project .. --group dev make test prueba=KafeMACHINE` runs `tests/test_KafeMACHINE.py` and requires POSIX-compatible Make and shell. On Windows, run `uv run --locked --group dev pytest tests/test_KafeMACHINE.py` from the repository root.
 - Keep KafeHF's optional `datasets` integration separate from baseline dependencies and preserve deterministic coverage of its missing-dependency behavior.
+- To preview documentation locally, run `uv sync --locked --group docs --no-dev`, then `uv run --locked --group docs --no-dev mkdocs serve`.
 
 ## Validation Rules
 
@@ -77,17 +78,17 @@ Repository-wide migrations and missing gates must remain visibly PENDING. Their 
 For code tasks and other changes whose approved validation requires the application suite:
 
 1. Generate the parser if outputs are missing or the grammar changed (see Parser Regeneration above).
-2. Run the focused category: `pytest tests/test_KafeMACHINE.py` (single case via `pytest tests/test_base.py::test_valid_programs -k <name>`).
-3. Run the full suite: `pytest tests/`.
+2. Run the focused category: `uv run --locked --group dev pytest tests/test_KafeMACHINE.py` (single case via `uv run --locked --group dev pytest tests/test_base.py::test_valid_programs -k <name>`).
+3. Run the full suite: `uv run --locked --group dev pytest tests/`.
 
 ## Quality Gates
 
-- Current test gate: full test suite passes (CI regenerates the parser and runs `pytest tests/ -v` on push and relevant pull requests via `.github/workflows/tests.yml`).
+- The test workflow regenerates the parser and runs `uv run --locked --python 3.10 --group dev pytest tests/ -v` on push and relevant pull requests via `.github/workflows/tests.yml`.
 - Definition of Done verified.
 - `.opencode/history/` updated for significant changes.
 - `docs/` and `.opencode/knowledge/` reflect the change.
 
-Inspect the checked-in workflow and configuration before claiming a gate exists. The current workflows are `tests.yml` (fixture suite), `docs.yml` (MkDocs deployment), and `main.yml` (Nix lock maintenance). The root policy's coordinated uv migration, Ruff, basedpyright, codespell, dependency audit, minimum 80% owned-source coverage, warning enforcement, and suppression-comment policy check are **pending implementation**. Existing pytest success does not prove those gates. Preserve KAFE's workflow structure when implementing them.
+Inspect the checked-in workflow and configuration before claiming a gate exists. The current workflows are `tests.yml` (uv-locked fixture suite), `docs.yml` (uv-locked MkDocs deployment), and `main.yml` (Nix lock maintenance). The uv dependency migration is implemented. Ruff, basedpyright, codespell, dependency audit, minimum 80% owned-source coverage, warning enforcement, and suppression-comment policy checks remain **pending implementation**. Existing pytest success does not prove those gates. Preserve KAFE's workflow structure when implementing them.
 
 ### Child Interpreter Coverage and Diagnostics — Pending
 

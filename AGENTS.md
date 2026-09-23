@@ -276,13 +276,13 @@ Add another language only for intentional internationalization. Use a well-known
 
 Use `uv`, `pyproject.toml`, and a committed `uv.lock` as the target Python dependency-management standard. Add only packages the project actually needs. Do not add dependencies through `pip`, `requirements.txt`, Poetry, Pipenv, Conda, or another competing Python dependency manager.
 
-**Pending migration:** this checkout still uses `requirements.txt` and has no `pyproject.toml` or `uv.lock`. The existing pip bootstrap may be used only to operate this pre-migration checkout. Do not extend it or describe the future uv commands as already available.
+**Current setup:** this checkout uses `pyproject.toml` and the committed `uv.lock`. Runtime and developer dependencies are in the project and `dev` group, MkDocs tools are in the `docs` group, and Hugging Face `datasets` is in the optional `huggingface` extra. The default developer environment does not install `datasets`.
 
-The coordinated migration must cover runtime and development dependencies, developer setup, MkDocs dependencies, CI, optional integrations, and the Python environment currently supplied by `flake.nix`. Define Nix's supporting role explicitly so it does not maintain a conflicting Python dependency source. Preserve its necessary system tools, including Java and ANTLR. Update all corresponding setup and dependency instructions together.
+The coordinated setup uses uv for runtime and development dependencies, developer setup, MkDocs dependencies, CI, and optional integrations. Nix supplies Python, uv, Java, ANTLR, and other system tools without maintaining a competing Python dependency source. Keep their setup instructions consistent.
 
 Keep Hugging Face `datasets` optional for KafeHF. The baseline environment must continue to work without it, and the missing-dependency fixture must remain deterministic. An optional integration environment must not accidentally invalidate the baseline test by installing `datasets` globally or as a required development dependency.
 
-After migration, use uv for installation, dependency changes, scripts, documentation commands, and CI. If uv is absent, install it using the official instructions at https://docs.astral.sh/uv/getting-started/installation/ before using the migrated workflow. Report an installation blocker instead of falling back to another dependency manager.
+Use uv for installation, dependency changes, scripts, documentation commands, and CI. If uv is absent, install it using the official instructions at https://docs.astral.sh/uv/getting-started/installation/. Report an installation blocker instead of falling back to another dependency manager.
 
 The `dev` dependency group must contain `basedpyright`, `codespell`, `ruff`, `pytest`, and `pytest-cov`. Add `pytest-asyncio` and its appropriate loop settings only when asynchronous tests exist. Set `tool.uv.exclude-newer` to `"7 days"`. Avoid broad extras and convenience bundles unless every included capability is required.
 
@@ -319,7 +319,7 @@ Stay on the current branch when continuing the same implementation line. Otherwi
 
 ## Python quality and CI
 
-The following quality gates are required outcomes of the pending uv/quality migration, not claims that this checkout already implements them. Configure Ruff with explicit rules, run `basedpyright` on project-owned Python, use `codespell` for spelling, and run pytest with `pytest-cov`. Exclude generated ANTLR outputs from static analysis and coverage. Measure project-owned KAFE source and enforce at least 80% coverage; do not copy a coverage target for an unrelated `app` package. Configure pytest with `filterwarnings = ["error"]`.
+The following quality gates are required outcomes of the pending quality-gate migration; their tools are available in the uv `dev` group, but the gates are not yet implemented. Configure Ruff with explicit rules, run `basedpyright` on project-owned Python, use `codespell` for spelling, and run pytest with `pytest-cov`. Exclude generated ANTLR outputs from static analysis and coverage. Measure project-owned KAFE source and enforce at least 80% coverage; do not copy a coverage target for an unrelated `app` package. Configure pytest with `filterwarnings = ["error"]`.
 
 The fixture suite launches the KAFE interpreter in child Python processes. Parent-process pytest-cov and pytest warning filters alone do not prove interpreter coverage or warning enforcement. Future gates must collect and combine coverage from those children, propagate warning policy, and inspect their complete stdout, stderr, and diagnostics. Validate those mechanisms with evidence. Preserve expected KAFE errors, error fixtures, exit codes, and current CLI semantics; an expected invalid-program result is not itself a quality-gate failure. Do not discard earlier child diagnostics merely because the final expected error line matches.
 
@@ -371,13 +371,24 @@ Within those project records, the higher-precedence source wins. This order does
 
 Requires **Java JDK 11+** (for ANTLR) and **Python 3.10+**.
 
-**Dependency migration status:** this checkout still uses `requirements.txt` and has no `pyproject.toml` or `uv.lock`. For this pre-migration checkout only, its existing bootstrap is:
+Install uv using the [official instructions](https://docs.astral.sh/uv/getting-started/installation/), then install the locked developer dependencies from the repository root:
 
 ```bash
-pip install -r requirements.txt
+uv sync --locked --group dev
 ```
 
-This is a temporary compatibility path, not the dependency-management standard. Do not add dependencies or new workflows with pip. The separate uv migration must update runtime, development, documentation, Nix, optional integrations, and CI together. After that, use `uv sync --group dev` and run commands through `uv run` in the locked environment. Today, `flake.nix` supplies a separate Python environment and system tools, and the docs workflow installs its MkDocs dependencies separately; both are part of the migration scope. KafeHF's `datasets` dependency remains optional, including in the future locked configuration.
+Run project commands with `uv run --locked`. Install the optional KafeHF integration only when needed:
+
+```bash
+uv sync --locked --extra huggingface
+```
+
+Install and serve the documentation environment with:
+
+```bash
+uv sync --locked --group docs --no-dev
+uv run --locked --group docs --no-dev mkdocs serve
+```
 
 Download the ANTLR JAR once from https://www.antlr.org/download/antlr-4.13.2-complete.jar and place it in `src/`.
 
@@ -398,27 +409,29 @@ The generated files (`Kafe_GrammarLexer.py`, `Kafe_GrammarParser.py`, `Kafe_Gram
 Run these commands from the repository root after generating the parser:
 
 ```bash
-python src/Kafe.py <path-to-file.kf>
+uv run --locked python src/Kafe.py <path-to-file.kf>
 # Example:
-python src/Kafe.py tests/Algorithms/Fibonacci.kf
+uv run --locked python src/Kafe.py tests/Algorithms/Fibonacci.kf
 ```
 
 ## Tests
 
-Run pytest from the repository root; use the Makefile from `src/`:
+Run pytest from the repository root; the Makefile from `src/` requires a POSIX-compatible shell and Make:
 
 ```bash
-pytest tests/          # all tests
-pytest tests/ -v       # verbose
-pytest tests/test_base.py                                 # one category
-pytest tests/test_base.py::test_valid_programs            # specific test function
-# From src/ in a shell with make:
-make test prueba=KafeMACHINE                             # via Makefile
+uv run --locked --group dev pytest tests/          # all tests
+uv run --locked --group dev pytest tests/ -v       # verbose
+uv run --locked --group dev pytest tests/test_base.py
+uv run --locked --group dev pytest tests/test_base.py::test_valid_programs
+# From src/ in a POSIX shell with Make:
+uv run --locked --project .. --group dev make test prueba=KafeMACHINE
+# On Windows, run pytest directly from the repository root.
+uv run --locked --group dev pytest tests/test_KafeMACHINE.py
 ```
 
 **Test structure**: each category in `tests/` has `.kf` programs paired with `.expec` (expected stdout) and optional `.in` (stdin). Invalid-program tests use `.error.kf` + `.error.expec`. The `tests/utils.py` helpers discover and parameterize these files for pytest.
 
-The Makefile invokes `python -m pytest`, not `python3`; ensure `python` selects the intended environment. After the uv migration, run pytest through `uv run`; invoke the Makefile through `uv run make test prueba=KafeMACHINE` from `src/` when that route is used. The fixture runners start child interpreters with `sys.executable`, so the quality migration must account for those processes as described above.
+The Makefile invokes pytest through the locked uv project environment. Its shell loop is POSIX-specific. The fixture runners start child interpreters with `sys.executable`, so the quality migration must account for those processes as described above.
 
 **KafeMACHINE tests** have ten immediate fixture directories and eleven configured paths in `tests/test_KafeMACHINE.py`; `metrics/` contributes two paths. Consult that module when the test layout changes.
 

@@ -54,7 +54,7 @@ Opening work is the start-of-work counterpart of the closure process: run `/open
 
 End-of-session lifecycle (run via `/close`). Closing a session means:
 
-1. **Hard gate**: run `/init` — it must end green (full suite `pytest tests/ -q` + progress consistency). If red, do not close: fix or record the session as `blocked` in `current.md`.
+1. **Hard gate**: run `/init` — it must end green (full suite `uv run --locked --group dev pytest tests/ -q` + progress consistency). If red, do not close: fix or record the session as `blocked` in `current.md`.
 2. **Definition of Done gate**: run `/dod` for the session's active work item if it is complete. If `/dod` fails, do not close; if no work item has `/dod` scope this session, record `/dod` as not applicable in the close summary.
 3. Update `.opencode/memory/` (`current-state`, `active-work`, `technical-debt`, `known-issues`, `context` as needed).
 4. Update `.opencode/progress/` (`roadmap`, `backlog`, `milestones`) only if priorities changed.

@@ -7,7 +7,7 @@ permission:
   edit: deny
   bash:
     "*": deny
-    "pytest *": ask
+    "uv run *": ask
   task:
     "*": ask
     architect: allow
@@ -86,7 +86,7 @@ Antes de declarar una tarea como completada, DEBES verificar que TODOS los pasos
 | `/open-work` ejecutado | `session-commands.md` tiene entrada `/open-work` | Leer archivo |
 | `/impact` ejecutado (si aplica) | `session-commands.md` tiene entrada `/impact` | Leer archivo |
 | Builder completó | Archivos fuente existen en `src/` | Glob/grep |
-| Tests pasan | `pytest tests/ -q` termina verde | Ejecutar |
+| Tests pass | `uv run --locked --group dev pytest tests/ -q` completes successfully | Run |
 | `/dod` ejecutado (si aplica) | `progress/review.md` tiene veredicto APPROVED | Leer archivo |
 | Concept record existe (ML/DL) | `.opencode/knowledge/concepts/<name>.md` existe | Glob |
 | Benchmark existe (ML/DL) | `.opencode/benchmarks/records.md` tiene 5 scenarios | Leer archivo |

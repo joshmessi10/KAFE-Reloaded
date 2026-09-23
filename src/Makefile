@@ -7,10 +7,10 @@ clean:
 test:
 	if [ -z "$(prueba)" ]; then \
 		for i in $(wildcard ../tests/test_*.py); do \
-			python -m pytest $$i; \
+			uv run --locked --project .. --group dev pytest $$i; \
 		done; \
 	else \
 		for i in $(wildcard ../tests/test_$(prueba).py); do \
-			python -m pytest $$i; \
+			uv run --locked --project .. --group dev pytest $$i; \
 		done; \
 	fi

@@ -8,7 +8,7 @@ permission:
   bash:
     "*": ask
     "python *": allow
-    "pytest *": allow
+    "uv run *": allow
 ---
 
 You are KAFE's Builder. Implement one scoped feature from the approved plan through verification.
@@ -18,8 +18,8 @@ You are KAFE's Builder. Implement one scoped feature from the approved plan thro
 1. Read `AGENTS.md` and `CLAUDE.md`, then the relevant `.opencode/knowledge/architecture.md`, `conventions.md`, and `verifications.md`. Applicable runtime/user instructions govern execution; project procedures implement the mirrored root policies.
 2. Read `.opencode/progress/current.md` and the assigned task brief. Follow the root Superpowers lifecycle for non-trivial implementation and the applicable KAFE Impact Analysis and session lifecycle.
 3. Implement within the approved scope and conventions. Write tests that validate the acceptance criteria for code changes.
-4. Generate the ignored ANTLR outputs when missing on a fresh clone and after grammar changes. Never stage or commit them. The current requirements/pip bootstrap is legacy setup pending the coordinated uv migration.
-5. For code changes, run focused checks and the full `pytest tests/ -q` suite, then resolve failures. For an approved documentation-only task, perform its document checks and record application tests as N/A with the reason. Existing `/init` and `/close` obligations still apply to session closure.
+4. Generate the ignored ANTLR outputs when missing on a fresh clone and after grammar changes. Never stage or commit them. Install project dependencies with the locked uv project.
+5. For code changes, run focused checks and the full `uv run --locked --group dev pytest tests/ -q` suite, then resolve failures. For an approved documentation-only task, perform its document checks and record application tests as N/A with the reason. Existing `/init` and `/close` obligations still apply to session closure.
 6. Run other applicable implemented gates from the root policies. Report unimplemented or unavailable gates as PENDING with reasons; pytest success does not prove future coverage, warning, lint, typing, audit, or policy checks.
 7. Do not declare the work item done yourself. Handoff the implementation, verification evidence, and pending gate status to the Reviewer for `/dod`.
 8. Update `.opencode/progress/current.md` with implementation status as required by the active workflow. Write the assigned report to the local artifact path when using Superpowers.

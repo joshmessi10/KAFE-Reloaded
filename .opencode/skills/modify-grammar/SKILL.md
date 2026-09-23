@@ -50,5 +50,5 @@ The Lead orchestrates this workflow, delegating each step to the responsible age
 ## Validation Requirements
 
 - Parser regenerates cleanly.
-- `pytest tests/` full suite passes.
+- `uv run --locked --group dev pytest tests/` full suite passes.
 - No generated parser files staged for commit.

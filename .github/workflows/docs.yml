@@ -22,9 +22,20 @@ jobs:
         with:
           python-version: '3.10'
 
+      - name: Set up uv
+        uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+        with:
+          version: "0.11.3"
+          enable-cache: true
+          cache-dependency-glob: |
+            **/pyproject.toml
+            **/uv.lock
+
       - name: Install dependencies
-        run: |
-          pip install mkdocs mkdocs-material pymdown-extensions
+        run: uv sync --locked --python 3.10 --group docs --no-dev
 
       - name: Deploy to GitHub Pages
-        run: mkdocs gh-deploy --force
+        env:
+          # Material emits this upstream warning for MkDocs 2.0; keep suppression limited to this deployment command.
+          NO_MKDOCS_2_WARNING: "1"
+        run: uv run --locked --python 3.10 --group docs --no-dev mkdocs gh-deploy --force

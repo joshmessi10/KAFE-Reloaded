@@ -57,8 +57,8 @@ The Lead orchestrates this workflow, delegating each step to the responsible age
 
 ## Validation Requirements (All Must Pass)
 
-- [ ] `pytest tests/test_KafeMACHINE.py` passes
-- [ ] Full suite `pytest tests/` passes
+- [ ] `uv run --locked --group dev pytest tests/test_KafeMACHINE.py` passes
+- [ ] Full suite `uv run --locked --group dev pytest tests/` passes
 - [ ] Concept record exists and is **enriched** (math, algorithm, advantages, references)
 - [ ] Benchmark has **5 test scenarios** with real measurements
 - [ ] Documentation updated in `docs/bibliotecas/`

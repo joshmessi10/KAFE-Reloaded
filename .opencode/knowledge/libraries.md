@@ -38,7 +38,7 @@ self.libraries = {
 
 ## Optional Hugging Face Dependency
 
-KafeHF's wrapper is imported and registered by the visitor in the default environment. Its external `datasets` dependency is optional and absent from `requirements.txt`: `import huggingface;` works without that package, while a dataset-loading call reports the missing dependency. Preserve the baseline without `datasets`, including `tests/KafeHF/hf_load_dataset_no_dep.error.kf`, and keep any environment for exercising the installed integration distinct from that baseline. The coordinated uv migration must represent this optional integration without adding it to the default dependencies; legacy pip instructions in its runtime diagnostic also need coordinated migration with the corresponding expected-output fixture.
+KafeHF's wrapper is imported and registered by the visitor in the default environment. Its external `datasets` dependency is optional and absent from the default uv environment: `import huggingface;` works without that package, while a dataset-loading call reports the missing dependency. Preserve the baseline without `datasets`, including `tests/KafeHF/hf_load_dataset_no_dep.error.kf`, and keep any environment for exercising the installed integration distinct from that baseline. Enable the integration with `uv sync --locked --extra huggingface`; the missing-dependency diagnostic points to this command and its paired expected-output fixture records the exact message.
 
 ## Adding a New Library
 

@@ -46,6 +46,6 @@ The Lead orchestrates this workflow, delegating each step to the responsible age
 
 ## Validation Requirements
 
-- `pytest tests/test_KafeXXX.py` passes.
-- Full suite `pytest tests/` passes.
+- `uv run --locked --group dev pytest tests/test_KafeXXX.py` passes.
+- Full suite `uv run --locked --group dev pytest tests/` passes.
 - `import <key>` works in a `.kf` program; un-imported usage raises correctly.

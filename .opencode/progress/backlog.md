@@ -2,14 +2,13 @@
 
 Candidate items not yet on the roadmap. Add items here during Impact Analysis and planning sessions.
 
-## Repository Policy Alignment — Pending Deliverables
+## Repository Policy Alignment — Remaining Deliverables
 
-The instruction alignment documents the following work; it does not complete either migration.
+The policy baseline is integrated locally. The locked uv dependency/setup migration is implemented on `build/uv-environment`; its final validation, feature commit, push, and test CI result remain pending in `.opencode/progress/current.md`. The branch sequence, scope, and unresolved English-migration decisions are tracked in `.opencode/progress/repository-alignment.md`.
 
-The proposed branch order and current continuation point are tracked in `.opencode/progress/repository-alignment.md` and `.opencode/progress/current.md`.
-
-- **Complete English migration:** inventory and migrate remaining Spanish in source, grammar sources and syntax where needed, identifiers, user-facing diagnostics, fixtures and expected outputs, published documentation, file/directory names, and project guidance. Update imports, links, MkDocs navigation, and other references together; plan public syntax and path changes explicitly and verify the affected interpreter behavior and documentation build. Keep intentional translations separate from application logic.
-- **Coordinated uv and quality-gate migration:** introduce `pyproject.toml` and `uv.lock` with runtime, development, documentation, and optional dependencies; update setup guidance, MkDocs dependencies, CI, and `flake.nix` together. Reconcile Nix's Python package declarations with the uv project while retaining useful system tools. Keep `datasets` optional and preserve a deterministic default environment without it, including migration of legacy install diagnostics and expected outputs. Implement the mirrored root quality requirements: Ruff, basedpyright, codespell, `uv audit`, explicit suppression-policy checks, at least 80% coverage of owned source excluding generated ANTLR files, and zero errors/warnings. Measure fixture-launched child interpreter coverage and observe their full diagnostics; parent pytest-cov and warning filters alone are insufficient. Preserve expected-error fixtures and current CLI semantics. Extend the existing test, docs, and Nix workflow responsibilities, then provide local and CI execution evidence before declaring the gates operational.
+- **Interpreter quality evidence:** measure and combine coverage from fixture-launched child interpreters, propagate warning policy, and inspect full child stdout/stderr and exit behavior. Preserve expected-error fixtures and CLI semantics. Parent-process pytest-cov and warning filters alone are insufficient. Exclude generated ANTLR outputs and demonstrate at least 80% coverage of owned source before calling this gate complete.
+- **Complete English migration:** inventory and migrate remaining Spanish in source, grammar sources and syntax where needed, identifiers, user-facing diagnostics, fixtures and expected outputs, published documentation, file/directory names, and project guidance. Update imports, links, MkDocs navigation, and other references together; plan public syntax and path changes explicitly and verify affected interpreter behavior and the documentation build. Keep intentional translations separate from application logic.
+- **Python quality gates:** implement explicit Ruff rules, basedpyright, codespell, `uv audit`, suppression-policy checks, warnings-as-errors, and zero-error/zero-warning checks in the existing workflows. The required tools are in the uv `dev` group; child-interpreter coverage and diagnostic observation remain part of the separate evidence work. Preserve Nix lock maintenance, ANTLR prerequisites, and the docs deployment while extending the existing workflows.
 
 ## Machine Learning
 

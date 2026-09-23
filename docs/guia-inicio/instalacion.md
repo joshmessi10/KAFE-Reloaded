@@ -1,139 +1,94 @@
-# Instalación
+# Installation
 
-## Requisitos
+## Requirements
 
-- **Python** >= 3.10
-- **Git**
-- **Java JDK** >= 11 (requerido para ANTLR)
-- **ANTLR 4.13.2**
-- **Pytest** (para ejecutar tests)
+- Python 3.10 or later
+- Git
+- uv, installed using the [official instructions](https://docs.astral.sh/uv/getting-started/installation/)
+- Java JDK 11 or later and ANTLR 4.13.2 for parser generation on fresh clones or after grammar changes
 
 ---
 
-## Opción 1: Instalación Manual
+## Manual setup
 
-### 1. Instalar Java JDK
+### 1. Install Java JDK 11 or later
 
-Descarga desde [Oracle](https://www.oracle.com/java/technologies/downloads/) y verifica:
+Install [Java JDK 11 or later](https://www.oracle.com/java/technologies/downloads/) and verify it with `java -version`. Java is required to generate the parser, but not to run KAFE when the generated files are present.
 
-```bash
-java -version
-```
-
-### 2. Instalar ANTLR 4.13.2
-
-**Windows:**
-
-```bash
-# Descargar el JAR
-curl -O https://www.antlr.org/download/antlr-4.13.2-complete.jar
-
-# Crear carpeta y mover
-mkdir C:\Users\TuUsuario\.antlr
-mv antlr-4.13.2-complete.jar C:\Users\TuUsuario\.antlr\
-
-# Crear archivo antlr.cmd en la misma carpeta con:
-# @echo off
-# java -jar C:\Users\TuUsuario\.antlr\antlr-4.13.2-complete.jar %*
-
-# Agregar C:\Users\TuUsuario\.antlr al PATH del sistema
-# Reiniciar la terminal
-```
-
-**Linux/macOS:**
-
-```bash
-curl -O https://www.antlr.org/download/antlr-4.13.2-complete.jar
-sudo mkdir -p /usr/local/lib
-sudo mv antlr-4.13.2-complete.jar /usr/local/lib/
-echo "alias antlr='java -jar /usr/local/lib/antlr-4.13.2-complete.jar'" >> ~/.bashrc
-source ~/.bashrc
-```
-
-### 3. Clonar el Repositorio
+### 2. Clone the repository and install dependencies
 
 ```bash
 git clone https://github.com/joshmessi10/KAFE-Reloaded.git
 cd KAFE-Reloaded
+uv sync --locked --group dev
 ```
 
-### 4. Entorno Virtual
+KafeHF's Hugging Face integration is optional. Install it only when needed:
 
 ```bash
-python -m venv .venv
-
-# Windows
-.venv\Scripts\activate
-
-# Linux/macOS
-source .venv/bin/activate
+uv sync --locked --extra huggingface
 ```
 
-### 5. Instalar Dependencias
+### 3. Download ANTLR 4.13.2
 
-```bash
-pip install -r requirements.txt
-```
+Download the [ANTLR 4.13.2 JAR](https://www.antlr.org/download/antlr-4.13.2-complete.jar) into the repository's `src/` directory. If you store it elsewhere, use its path in the generation command below.
 
-### 6. Generar el Parser (CRÍTICO)
+### 4. Generate the parser (required on a fresh clone)
+
+From the repository root:
 
 ```bash
 cd src
-antlr -no-listener -visitor -Dlanguage=Python3 Kafe_Grammar.g4
-# O con make:
-# make antlr
+java -jar antlr-4.13.2-complete.jar -no-listener -visitor -Dlanguage=Python3 Kafe_Grammar.g4
 cd ..
 ```
 
-!!! warning "Importante"
-    Sin este paso obtendrás el error: `ModuleNotFoundError: No module named 'Kafe_GrammarLexer'`
+The generated files are ignored by Git. If they are missing, KAFE reports `ModuleNotFoundError: No module named 'Kafe_GrammarLexer'`.
 
 ---
 
-## Opción 2: Entorno con Nix Flake
+## Nix development shell
 
-El entorno Nix preconfigura todas las dependencias automáticamente:
+The Nix Flake provides Python, uv, Java, ANTLR, and other system tools. Install Nix and enable flakes using the [official instructions](https://nixos.org/download/). Then enter the shell and install the locked Python dependencies:
 
 ```bash
-# Instalar Nix (si no lo tienes)
-curl -L https://nixos.org/nix/install | sh
-
-# Habilitar flakes
-mkdir -p ~/.config/nix
-echo "experimental-features = nix-command flakes" >> ~/.config/nix/nix.conf
-
-# Iniciar entorno de desarrollo
 nix develop
+uv sync --locked --group dev
 ```
 
 ---
 
-## Ejecutar un Programa
+## Run a program
+
+From the repository root:
 
 ```bash
-python src/Kafe.py tests/Algorithms/Fibonacci.kf
+uv run --locked python src/Kafe.py tests/Algorithms/Fibonacci.kf
 ```
 
-## Ejecutar Tests
+## Run tests
+
+Run the complete suite or a focused test from the repository root:
 
 ```bash
-pytest tests/
+uv run --locked --group dev pytest tests/
+uv run --locked --group dev pytest tests/test_KafeMACHINE.py
 ```
 
----
+`src/Makefile` requires a POSIX-compatible Make and shell. On Windows, run pytest directly with the commands above.
 
-## Verificar la Instalación
+## Build the documentation locally
 
 ```bash
-# Verificar Java
+uv sync --locked --group docs --no-dev
+uv run --locked --group docs --no-dev mkdocs serve
+```
+
+## Verify the installation
+
+```bash
+uv run --locked python --version
+uv run --locked python -c "import antlr4"
 java -version
-
-# Verificar ANTLR
-antlr
-
-# Verificar Python
-python --version
-
-# Verificar parser generado
-ls src/Kafe_GrammarLexer.py
+java -jar src/antlr-4.13.2-complete.jar -version
 ```

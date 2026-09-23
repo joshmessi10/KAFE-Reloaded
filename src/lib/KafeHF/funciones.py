@@ -16,7 +16,7 @@ públicos directamente desde sus programas, de forma similar a:
         PARDOS df = huggingface.load_dataset("squad");
 
 Dependencia externa opcional: datasets (Hugging Face).
-    pip install datasets
+    uv sync --locked --extra huggingface
 """
 
 from global_utils import check_sig
@@ -33,7 +33,8 @@ def _require_hf():
     """Verifica que la librería datasets de Hugging Face esté instalada."""
     if not _HF_AVAILABLE:
         raise Exception(
-            "Para usar huggingface, instala: pip install datasets"
+            "To use huggingface, install the optional extra: "
+            "uv sync --locked --extra huggingface"
         )
 
 

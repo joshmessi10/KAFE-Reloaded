@@ -8,7 +8,7 @@ For every item, add **PASS**, **FAIL**, **PENDING**, or **N/A** and evidence or 
 
 - [ ] Implementation exists
 - [ ] Validation passed
-- [ ] Tests passed for applicable code changes (focused checks and full `pytest tests/` suite); approved documentation-only scope records application tests N/A with its reason and document-check evidence
+- [ ] Tests passed for applicable code changes (focused checks and full `uv run --locked --group dev pytest tests/` suite); approved documentation-only scope records application tests N/A with its reason and document-check evidence
 - [ ] Documentation updated (`docs/` + `.opencode/knowledge/`)
 - [ ] History updated (`.opencode/history/`)
 

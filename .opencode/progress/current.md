@@ -1,20 +1,29 @@
 # Current Work
 
-## Active Work — Repository Rule Alignment (2026-09-23)
+Feature: Locked uv dependency environment and repository setup alignment
+Status: in_progress
+Current step: Task 7 local validation complete — stage and review the scoped feature commit
+Next step: Commit, push the authorized branch, and verify test-workflow CI
+Blockers: Nix validation is unavailable on this Windows host; hosted CI awaits the feature push
+Related ADRs: ADR-0010
 
-**Status:** Policy baseline and Kiro retirement committed locally as `845bcb3` on the existing `docs/english-migration` branch. No follow-on branch has been created.
+## Active Work — Locked uv Environment (2026-09-23)
 
-**Observed Git state:** Baseline commit `845bcb3` has parent `a460d5b`, which matched `origin/main` when checked. `docs/english-migration` has no upstream. The worktree and index were clean immediately after the baseline commit; local Superpowers artifacts remain ignored. Recheck live state before resuming.
+**Status:** Tasks 2–7 local implementation and validation are complete on the user-approved `build/uv-environment` branch. The feature commit, push, and hosted test CI remain pending.
 
-**Authorization:** Commits and pushes are authorized when needed. Creating, renaming, or switching branches still requires explicit authorization; publishing a branch that does not yet exist remotely is also gated on that authorization.
+**Observed Git state:** `HEAD` is `d27df87`, following separate local policy commits `845bcb3` and `d27df87`. The feature changes are uncommitted. The approved local branch has no upstream and has not been pushed. Verify live Git state before staging, committing, or pushing.
 
-**Authoritative plan:** `.opencode/progress/repository-alignment.md` contains the branch sequence, scope, dependencies, acceptance criteria, and English-migration decisions that remain open. `.opencode/progress/roadmap.md` and `.opencode/progress/backlog.md` link to it.
+**Authorization:** The user explicitly approved creating and switching to `build/uv-environment`, and authorized commits and pushes when needed. Do not create, rename, or switch to another branch without explicit authorization. Do not merge this branch.
 
-**Next step:** Obtain explicit authorization to create and switch to `build/uv-environment` based on `845bcb3`. Then implement the approved uv plan and follow the sequence in the tracker.
+**Validation:** A fresh external Python 3.10 environment synced from the lock without `datasets`; ANTLR 4.13.2 regenerated the parser; the full suite passed (485 tests); the docs group built successfully without warnings; changed YAML/front matter parsed; lock integrity, whitespace, and root-file mirror checks passed. The focused KafeHF suite also passed (2 tests). Nix validation is unavailable here. GNU Make is unavailable, with direct Windows pytest commands documented.
 
-**Resume prompt:** Open the same `KAFE-Reloaded` checkout and ask: “Continue the repository-alignment work from `.opencode/progress/current.md` and `.opencode/progress/repository-alignment.md`. Verify live Git state first and preserve all existing edits. Commits and pushes are authorized when needed; do not create, rename, or switch branches without my explicit authorization.”
+**Authoritative plan:** `.opencode/progress/repository-alignment.md` tracks the branch sequence and remaining English/quality decisions. The approved implementation plan remains local and ignored at `docs/superpowers/plans/2026-09-23-uv-environment.md`.
 
-The sections below are retained implementation notes from earlier work; they are not the current active task, and their test counts must not be treated as current verification.
+**Next step:** Review and commit the scoped uv migration, push the authorized branch, and record the actual test-workflow CI result. The docs workflow deploys only on `main`, so its hosted deployment remains pending integration.
+
+**Resume prompt:** Continue the KAFE uv migration on `build/uv-environment`. Verify live Git state and preserve all checkout edits. The user authorized this branch and commits/pushes when needed; do not create, rename, switch, or merge branches without explicit authorization.
+
+The sections below are retained implementation notes from earlier work; their historical test counts must not be treated as current verification.
 
 ---
 

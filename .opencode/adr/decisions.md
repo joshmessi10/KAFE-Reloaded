@@ -397,3 +397,41 @@ The preceding policy alignment brought Kiro steering under the mirrored root inv
 - **Keep duplicate Kiro steering:** rejected because the user approved retiring repository-level support and canonical guidance already covers the project.
 - **Delete historical decisions and events:** rejected because it would erase the reason for the changed authority boundary.
 - **Remove global tools or migrate MCP settings automatically:** outside the authorized repository scope.
+
+---
+
+## ADR-0010: uv Owns Python Dependency Management
+
+- **Status**: accepted
+- **Date**: 2026-09-23
+
+### Context
+
+KAFE's Python runtime, development tools, MkDocs dependencies, optional Hugging Face integration, Nix shell, and CI previously used separate or implicit dependency sources. This made fresh setup and optional-dependency behavior difficult to reproduce. The repository policy requires a committed uv lock while keeping `datasets` absent from the default environment.
+
+### Decision
+
+1. Use the root `pyproject.toml` and committed `uv.lock` as the sole Python dependency definition. Keep this as a non-package project with `requires-python = ">=3.10"` and the uv-required non-release metadata version.
+2. Declare ANTLR runtime in the base project, developer tools and pytest in `dev`, MkDocs dependencies in `docs`, and Hugging Face `datasets` only in the optional `huggingface` extra. Set `tool.uv.exclude-newer = "7 days"`.
+3. Use locked uv sync/run commands for local development, docs, Make targets, OpenCode procedures, and GitHub Actions. Install uv using Astral's official instructions when it is unavailable.
+4. Keep Nix responsible for Python, uv, Java, ANTLR, and system utilities; do not maintain Python library dependencies in Nix. Preserve ANTLR 4.13.2 generation and runtime compatibility.
+5. Remove the legacy `requirements.txt` manifest and point KafeHF's missing-dependency diagnostic to `uv sync --locked --extra huggingface`. Keep the default environment free of `datasets`.
+
+### Rationale
+
+- A single committed lock makes local setup, CI, and docs dependency resolution reproducible.
+- Separate groups keep docs tooling out of the normal project install and preserve KafeHF's deterministic missing-dependency behavior.
+- Nix remains useful for system tools without duplicating Python dependency ownership.
+
+### Consequences
+
+- Developer setup, Make, OpenCode guidance, and both existing Python workflows use the locked uv project.
+- `datasets` is installed only when the Hugging Face extra is selected; the missing-dependency fixture remains part of the default suite.
+- The required quality tools are declared in `dev`, but their lint, typing, spelling, audit, coverage, warning, and suppression-policy gates remain pending for the separate quality-gates work.
+- Nix validation requires a Nix-capable host. Test CI is verified after the authorized feature push; the docs workflow deploys only from `main`.
+
+### Alternatives Considered
+
+- **Keep pip/requirements alongside uv:** rejected because it would retain two dependency authorities.
+- **Keep Python libraries in Nix:** rejected because it would duplicate the uv project and lock.
+- **Make `datasets` a base or development dependency:** rejected because it would invalidate the deterministic missing-dependency environment.

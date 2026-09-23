@@ -32,7 +32,7 @@ Project-specific conventions implementing the mirrored `AGENTS.md` and `CLAUDE.m
   3. Python built-in functionality.
 - External dependencies require explicit justification.
 - Importing external algorithm implementations for ML/DL features implemented inside KAFE is prohibited (no sklearn, TensorFlow, PyTorch) — implement and teach inside KAFE.
-- `requirements.txt` and pip commands are the current legacy bootstrap. The planned `uv`/`pyproject.toml`/`uv.lock` migration must cover runtime, development, documentation, Nix's role, optional integrations, and CI together; do not introduce additional ad hoc pip workflows.
+- Use `uv`, `pyproject.toml`, and the committed `uv.lock` for Python dependencies. The `dev` group contains developer tools and tests, the `docs` group contains MkDocs dependencies, and `datasets` is available only through the optional `huggingface` extra. Do not add dependencies through ad hoc pip workflows.
 - KafeHF's Hugging Face `datasets` integration remains optional. Preserve baseline operation and deterministic fixtures for an environment where `datasets` is absent.
 
 ## Git Conventions
@@ -59,8 +59,8 @@ Project-specific conventions implementing the mirrored `AGENTS.md` and `CLAUDE.m
 
 ## Documentation Conventions
 
-- The MkDocs Material site lives in `docs/`; its existing Spanish content is migration debt toward the English target. Current legacy bootstrap: `pip install mkdocs mkdocs-material pymdown-extensions`, then `mkdocs serve`. Move these dependencies and commands into the coordinated uv migration.
-- Docs deploy to GitHub Pages via `.github/workflows/docs.yml` on push to `main` (`mkdocs gh-deploy --force`).
+- The MkDocs Material site lives in `docs/`; its existing Spanish content is migration debt toward the English target. Install its locked dependencies with `uv sync --locked --group docs --no-dev`, then preview it with `uv run --locked --group docs --no-dev mkdocs serve`.
+- Docs deploy to GitHub Pages via `.github/workflows/docs.yml` on push to `main` (`uv run --locked --python 3.10 --group docs --no-dev mkdocs gh-deploy --force`).
 - Keep `docs/especificacion/` (grammar EBNF, operational semantics, operator precedence) in sync with grammar changes.
 - Project knowledge lives in `.opencode/knowledge/` (see AGENTS.md — Repository Knowledge Map).
 

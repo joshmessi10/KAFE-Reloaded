@@ -6,7 +6,7 @@ Close the current session. This is the end-of-session lifecycle (see `.opencode/
 
 ## Hard gate
 
-1. Run `/init` (full checks, including `pytest tests/ -q`).
+1. Run `/init` (full checks, including `uv run --locked --group dev pytest tests/ -q`).
    - If it does not end green, **do not close**: either fix the failure or record the session as `blocked` in `current.md` (Status: `blocked`) and stop. Never close a session with a red suite.
 2. Run `/dod` for the session's active work item (the feature in `current.md`) if it is complete.
    - If `/dod` fails, **do not close**: fix the failures first.

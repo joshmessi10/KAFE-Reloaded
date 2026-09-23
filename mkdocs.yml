@@ -116,8 +116,8 @@ extra:
 plugins:
   - search
 
-validation:
-  not_in_nav:
-    action: info
-    exclude:
-      - PLAN.md
+exclude_docs: |
+  /superpowers/
+
+not_in_nav: |
+  /PLAN.md

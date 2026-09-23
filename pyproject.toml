@@ -1,0 +1,28 @@
+[project]
+name = "kafe-reloaded"
+version = "0.0.0"  # uv requires a version; package=false keeps this project unpublished.
+requires-python = ">=3.10"
+dependencies = [
+    "antlr4-python3-runtime==4.13.2",
+]
+
+[project.optional-dependencies]
+huggingface = ["datasets"]
+
+[dependency-groups]
+dev = [
+    "basedpyright",
+    "codespell",
+    "pytest>=9.0.2",
+    "pytest-cov",
+    "ruff",
+]
+docs = [
+    "mkdocs",
+    "mkdocs-material",
+    "pymdown-extensions",
+]
+
+[tool.uv]
+package = false
+exclude-newer = "7 days"

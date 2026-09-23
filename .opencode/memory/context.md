@@ -8,7 +8,7 @@ KAFE is an educational DSL focused on Machine Learning and Deep Learning, implem
 
 ## Important Assumptions
 
-- Python >= 3.10; `antlr4-python3-runtime==4.13.2` is pinned in the current legacy `requirements.txt`/pip bootstrap. The coordinated uv migration remains pending and must cover runtime, development, docs, Nix's role, optional integrations, and CI.
+- Python >= 3.10; `pyproject.toml` and the committed `uv.lock` own runtime, development, documentation, and optional dependencies. Nix supplies Python, uv, Java, ANTLR, and other system tools; the CI workflows consume the lock. The `huggingface` extra keeps `datasets` out of the default environment.
 - Java JDK 11+ is needed to generate the ignored, untracked ANTLR parser on fresh clones and after grammar changes. Execution then uses the generated outputs without Java. Never stage or commit those outputs.
 - Fixture tests run the interpreter in child processes from `src/` (`cwd=src/`). Parent pytest-cov/warning configuration alone does not establish child coverage or diagnostic handling; those gates remain pending.
 - Dependencies are forbidden by default; external ML/DL algorithm implementations are prohibited.

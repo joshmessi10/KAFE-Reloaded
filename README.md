@@ -149,129 +149,120 @@ FLOAT ev   = machine.explained_variance_score(y_true, y_pred);
    cd KAFE-Reloaded
    ```
 
-4. **Crea un entorno virtual**:
+4. **Install uv** using the [official instructions](https://docs.astral.sh/uv/getting-started/installation/).
+
+5. **Install the locked developer environment** from the repository root:
 
    ```bash
-   python -m venv .venv
+   uv sync --locked --group dev
    ```
 
-5. **Activa el entorno virtual**:
+6. **Optional: Enable KafeHF's Hugging Face integration** by installing the extra:
 
    ```bash
-   # Windows
-   .venv\Scripts\activate
-
-   # Linux/macOS
-   source .venv/bin/activate
+   uv sync --locked --extra huggingface
    ```
 
-6. **Instala las dependencias de Python**:
-
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-7. **⚠️ CRÍTICO: Genera los archivos del parser**:
+7. **⚠️ CRITICAL: Generate the parser files**:
 
    ```bash
    cd src
    antlr -no-listener -visitor -Dlanguage=Python3 Kafe_Grammar.g4
-   # O con make:
+    # Or with make:
    # make antlr
    cd ..
    ```
 
-   **Sin este paso, obtendrás el error**: `ModuleNotFoundError: No module named 'Kafe_GrammarLexer'`
+    **If you skip this step, KAFE reports**: `ModuleNotFoundError: No module named 'Kafe_GrammarLexer'`
 
 ### 🚀 Ejecutar un programa
 
-Desde el directorio raíz del proyecto:
+From the repository root:
 
 ```bash
-python src/Kafe.py tests/Algorithms/Fibonacci.kf
+uv run --locked python src/Kafe.py tests/Algorithms/Fibonacci.kf
 ```
 
-O desde cualquier ubicación usando rutas absolutas o relativas:
+From `src/`, use the project root explicitly:
 
 ```bash
-# Ejemplo con ruta relativa
-cd src
-python Kafe.py ../tests/Algorithms/Fibonacci.kf
-
-# Ejemplo con ruta absoluta
-python src/Kafe.py C:/ruta/completa/a/tu/programa.kf
+uv run --locked --project .. python Kafe.py ../tests/Algorithms/Fibonacci.kf
 ```
 
-### 🧪 Ejecutar tests
+### Run tests
 
 ```bash
-pytest tests/
+uv run --locked --group dev pytest tests/
 ```
 
-### 🧪 Opción alternativa: Entorno reproducible con **Nix Flake** (Recomendado)
+### Reproducible environment with **Nix Flake**
 
-Si prefieres evitar instalar dependencias manualmente, puedes utilizar nuestro entorno preconfigurado con **Nix Flake**. Este entorno contiene todas las herramientas necesarias para compilar y ejecutar KAFE, incluyendo:
+The Nix development shell provides system tools, including:
 
 - Python 3.10+
-- ANTLR 4 runtime
-- OpenJDK (para ANTLR)
+- uv
+- OpenJDK (for ANTLR)
+- ANTLR 4 generator
 - Git
-- Pytest
 
-**Ventaja**: No necesitas instalar Java ni ANTLR manualmente, todo está preconfigurado.
+Install the locked Python dependencies after entering the shell with `nix develop`:
 
-#### 🚀 Usar KAFE con Nix
+#### Use KAFE with Nix
 
-### 🐧 Instalación de Nix en **Linux**
+### Install Nix on **Linux**
 
-1. Abre tu terminal.
+1. Open a terminal.
 
-2. Ejecuta el siguiente comando para instalar Nix:
+2. Run the following command to install Nix:
 
 ```bash
 curl -L https://nixos.org/nix/install | sh
 ```
 
-3.Una vez instalado, reinicia tu terminal o ejecuta:
+3. After installation, restart the terminal or run:
 
 ```bash
 . ~/.nix-profile/etc/profile.d/nix.sh
 ```
 
-4. Habilita los flakes:
+4. Enable flakes:
 
 ```bash
 mkdir -p ~/.config/nix
 nano ~/.config/nix/nix.conf
 ```
 
-Y dentro del archivo activa lo siguiente :
+Add this setting to the file:
 
 ```bash
 experimental-features = nix-command flakes
 ```
 
-### 🍎 Instalación de Nix en macOS (Intel / Apple Silicon)
+### Install Nix on macOS (Intel / Apple Silicon)
 
-1. Abre la aplicación Terminal.
+1. Open Terminal.
 
-2. Ejecuta el siguiente comando:
+2. Run the following command:
 
 ```bash
 curl -L https://nixos.org/nix/install | sh
 ```
 
-3. En Apple Silicon (M1/M2/M3), si encuentras problemas, puedes ejecutar Terminal usando Rosetta o configurar el entorno adecuadamente para tu arquitectura.
+3. On Apple Silicon, if you encounter issues, run Terminal with Rosetta or configure the environment for your architecture.
 
-4. Activa flakes igual que en Linux
+4. Enable flakes as described for Linux.
 
-✅ Una vez Nix esté listo, puedes iniciar el entorno de desarrollo con:
+Once Nix is ready, start the development shell:
 
 ```bash
 nix develop
 ```
 
-Esto te dará acceso a todas las herramientas necesarias. Los archivos del parser se generarán automáticamente o estarán disponibles.
+```bash
+uv sync --locked --group dev
+```
+
+The uv project supplies the ANTLR runtime and Python developer tools. Generate parser files on a fresh clone as described above.
 
 ---
 
@@ -300,11 +291,11 @@ Incluye:
 
 ### Contribuir a la Documentación
 
-La documentación está construida con [MkDocs Material](https://squidfunnel.github.io/mkdocs-material/). Para desarrollar localmente:
+The documentation uses [MkDocs Material](https://squidfunnel.github.io/mkdocs-material/). Install its locked dependency group and serve the site locally:
 
 ```bash
-pip install mkdocs mkdocs-material pymdown-extensions
-mkdocs serve
+uv sync --locked --group docs --no-dev
+uv run --locked --group docs --no-dev mkdocs serve
 ```
 
-El sitio estará disponible en `http://127.0.0.1:8000`.
+The site will be available at `http://127.0.0.1:8000`.

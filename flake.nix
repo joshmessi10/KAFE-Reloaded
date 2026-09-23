@@ -1,5 +1,5 @@
 {
-  description = "Flake para el desarollo de KAFE";
+  description = "KAFE development shell";
 
   inputs.nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
 
@@ -32,12 +32,8 @@
               flex
               openjdk
               git
-              (python3.withPackages (
-                p: with p; [
-                  pytest
-                  antlr4-python3-runtime
-                ]
-              ))
+              python3
+              uv
               bison
             ];
           };
