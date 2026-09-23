@@ -4,7 +4,7 @@ Active project planning. Do not move this content into AGENTS.md (see AGENTS.md 
 
 ## Repository Policy Alignment
 
-The policy baseline is committed separately in local commits `845bcb3` and `d27df87`. The user-approved `build/uv-environment` branch contains the locked uv setup implementation, locally validated (485 tests and a clean docs build) and committed as `f4e544a`; push and test CI remain pending. The remaining sequence is `test/interpreter-quality-evidence` → `refactor/english-repository` → `chore/python-quality-gates`. See `.opencode/progress/repository-alignment.md` for live Git observations, branch scopes, dependencies, exit criteria, and open English-migration decisions. Commits and pushes are authorized when needed; get explicit authorization before any additional branch create, rename, or switch.
+The policy baseline is committed separately in local commits `845bcb3` and `d27df87`. The user-approved `build/uv-environment` branch contains the locked uv setup implementation, locally validated (485 tests and a clean docs build), pushed, and verified by GitHub test CI at `b40965f` (485 passed). The remaining sequence is `test/interpreter-quality-evidence` → `refactor/english-repository` → `chore/python-quality-gates`; get explicit authorization before creating or switching to the next branch. See `.opencode/progress/repository-alignment.md` for branch scopes, dependencies, exit criteria, and open English-migration decisions. Commits and pushes are authorized when needed.
 
 ## Machine Learning
 - ✔ Base Machine (2026-07-28)

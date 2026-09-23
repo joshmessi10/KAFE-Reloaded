@@ -1,7 +1,7 @@
 # Repository Alignment — Continuity Plan
 
 **Last checked:** 2026-09-23
-**Status:** The user-approved `build/uv-environment` branch has passed local validation (full suite: 485 tests; docs build clean). Feature commit `f4e544a` is local; push and test-workflow CI remain pending.
+**Status:** The user-approved `build/uv-environment` branch passed local validation (full suite: 485 tests; docs build clean), was pushed to `origin`, and passed GitHub's `Run Tests` workflow at `b40965f` (485 passed in 56.07s). Hosted docs deployment remains main-only. Get explicit authorization before the next branch operation.
 
 ## Purpose and source of truth
 
@@ -11,8 +11,8 @@ When resuming, verify the live branch, `HEAD`, index, and working tree first. Th
 
 ## Current checkout observation
 
-- Current branch: `build/uv-environment`, created from `d27df87` after the user's explicit approval. The implementation commit is `f4e544a`, following separate policy commits `845bcb3` and `d27df87`. At the last check, the index and working tree were clean. The local `docs/english-migration` branch still points to the baseline state. Verify the live branch, index, and worktree before publication.
-- The feature branch has no upstream; `git ls-remote --heads origin build/uv-environment` returned no ref, and the branch has not been pushed. Tasks 2–7 are committed and locally validated. Commits and pushes are authorized when needed; do not merge this branch.
+- Current branch: `build/uv-environment`, created from `d27df87` after the user's explicit approval. Implementation commit `f4e544a` follows policy commits `845bcb3` and `d27df87`; progress commit `b40965f` records the implementation state. The branch was pushed and tracked by `origin/build/uv-environment`; local and upstream HEAD matched at `b40965f` immediately before this CI-status update. The local `docs/english-migration` branch still points to the baseline state. Reverify branch, HEAD, index, and worktree before further work.
+- Local checks passed (full suite: 485; clean locked docs build). GitHub `Run Tests` passed at pushed commit `b40965f`; the log reports 485 passed in 56.07s. The run added non-blocking deprecation advisories for the Node 20 transition affecting checkout/setup actions, `setup-java@v4`, and the upcoming `ubuntu-latest` migration. The docs deployment workflow remains main-only; do not merge this branch.
 - The branch-creation/switch authorization applies to `build/uv-environment`. Do not create, rename, or switch to another branch without explicit authorization. The former proposal to rename `docs/english-migration` was not carried out.
 - The committed policy baseline is reflected in `AGENTS.md`, `CLAUDE.md`, `OPENCODE.md`, `.opencode/`, ADR-0008/0009, history, and progress. `AGENTS.md` and `CLAUDE.md` remain substantively mirrored.
 - Repository-level Kiro files have been removed. Useful file-I/O fixture and parser-cleanup details are retained in `.opencode/knowledge/verifications.md`.
@@ -25,7 +25,7 @@ Integrate the policy baseline first. Then implement the following branches in or
 | Order | Proposed branch | Status | Scope and exit criteria |
 |---|---|---|---|
 | Base | `docs/english-migration` | Policy baseline committed locally as `845bcb3` plus state record `d27df87`; not pushed | Preserve the policy/OpenCode changes and Kiro retirement. Root-file mirroring and documentation diff were verified. The branch was not renamed. |
-| 1 | `build/uv-environment` | Implementation committed locally as `f4e544a`; push and test CI pending | Add `pyproject.toml` and `uv.lock`; assign runtime, dev, docs, and optional `datasets` dependencies; migrate setup, Make/OpenCode commands, Nix Python ownership, workflows, and KafeHF's optional diagnostic together. Preserve the baseline without `datasets` and ANTLR generation requirements. Push the authorized branch and verify test-workflow CI before declaring it complete. |
+| 1 | `build/uv-environment` | Complete: implementation `f4e544a` and progress commit `b40965f` pushed; GitHub test CI passed (485 tests) | Add `pyproject.toml` and `uv.lock`; assign runtime, dev, docs, and optional `datasets` dependencies; migrate setup, Make/OpenCode commands, Nix Python ownership, workflows, and KafeHF's optional diagnostic together. Preserve the baseline without `datasets` and ANTLR generation requirements. Hosted docs deployment remains main-only. |
 | 2 | `test/interpreter-quality-evidence` | Planned; depends on branch 1 | Prove coverage and complete diagnostics from fixture-launched child interpreters, propagate warning policy, preserve CLI/error-fixture behavior, and reach at least 80% coverage of owned source with generated ANTLR excluded. The current audit counted 15 subprocess runner modules; that is inventory, not a passing result. |
 | 3 | `refactor/english-repository` | Planned; follows the runner-evidence branch | Migrate owned runtime, internal names, grammar labels, comments, fixtures/data/outputs, documentation, paths, and OpenCode records as one coordinated line with reviewable batches. Preserve the already-English public lexer vocabulary; do not redesign KAFE keywords without a separate approved need. Keep imports, dynamic dispatch, examples, fixture pairs, MkDocs routes, and tracked assets consistent. |
 | 4 | `chore/python-quality-gates` | Planned; after English names and paths settle | Fix and enforce explicit Ruff and basedpyright checks, codespell, `# pyright:`/`# noqa:` policy checks, `uv audit`, tests, coverage, warning/diagnostic policy, and documentation build in existing workflows. Finish with zero unexpected errors/warnings and actual CI evidence when publication is authorized. |
