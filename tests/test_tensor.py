@@ -1,8 +1,11 @@
-import subprocess
-import sys
 import os
 import pytest
-from utils import obtener_parametros, get_programs, get_kafe_path, get_src_dir
+from utils import (
+    assert_valid_kafe_result,
+    get_programs,
+    obtener_parametros,
+    run_kafe_program,
+)
 
 
 def _get_tensor_programs():
@@ -16,12 +19,5 @@ def _get_tensor_programs():
     list(obtener_parametros(_get_tensor_programs())),
 )
 def test_valid_programs(programa, entrada, salida_esperada):
-    result = subprocess.run(
-        [sys.executable, get_kafe_path(), programa],
-        capture_output=True,
-        text=True,
-        input=entrada,
-        cwd=get_src_dir(),
-    )
-    assert result.returncode == 0, f"Non-zero exit for {programa}"
-    assert result.stdout == salida_esperada, f"Incorrect output for {programa}"
+    result = run_kafe_program(programa, input_text=entrada)
+    assert_valid_kafe_result(result, programa, salida_esperada)

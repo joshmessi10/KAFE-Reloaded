@@ -26,3 +26,21 @@ docs = [
 [tool.uv]
 package = false
 exclude-newer = "7 days"
+
+[tool.pytest.ini_options]
+filterwarnings = ["error"]
+
+[tool.coverage.run]
+branch = false
+source = ["src"]
+patch = ["subprocess"]
+omit = [
+    "*/Kafe_GrammarLexer.py",
+    "*/Kafe_GrammarParser.py",
+    "*/Kafe_GrammarVisitor.py",
+]
+
+[tool.coverage.report]
+fail_under = 80
+include_namespace_packages = true
+show_missing = true

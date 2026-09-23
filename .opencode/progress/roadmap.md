@@ -4,7 +4,7 @@ Active project planning. Do not move this content into AGENTS.md (see AGENTS.md 
 
 ## Repository Policy Alignment
 
-The policy baseline is committed separately in local commits `845bcb3` and `d27df87`. The user-approved `build/uv-environment` branch contains the locked uv setup implementation, locally validated (485 tests and a clean docs build), pushed, and verified by GitHub test CI at `b40965f` (485 passed). The remaining sequence is `test/interpreter-quality-evidence` → `refactor/english-repository` → `chore/python-quality-gates`; get explicit authorization before creating or switching to the next branch. See `.opencode/progress/repository-alignment.md` for branch scopes, dependencies, exit criteria, and open English-migration decisions. Commits and pushes are authorized when needed.
+The policy baseline is committed separately in local commits `845bcb3` and `d27df87`. The user-approved `build/uv-environment` branch contains the locked uv setup implementation, locally validated (485 tests and a clean docs build), pushed, and verified by GitHub test CI at `b40965f` (485 passed). The locally reviewed `test/interpreter-quality-evidence` branch passed 497 tests in 353.72s at 83.78% coverage across 111 tracked source files with no warnings; commit, push, and exact-SHA CI are pending. The remaining sequence is this quality-evidence branch → `refactor/english-repository` → `chore/python-quality-gates`; get explicit authorization before creating or switching to a later branch. See `.opencode/progress/repository-alignment.md` for branch scopes, dependencies, exit criteria, and open English-migration decisions. Commits and pushes are authorized when needed.
 
 ## Machine Learning
 - ✔ Base Machine (2026-07-28)
@@ -54,6 +54,7 @@ The policy baseline is committed separately in local commits `845bcb3` and `d27d
 
 ## Documentation & Engineering
 
+- ◐ Interpreter subprocess quality evidence — 497 tests passed, 83.78%, independent review complete; commit and exact-SHA CI pending (2026-09-23)
 - ✔ MkDocs theme — Black/White/Yellow palette (2026-08-04)
 - ✔ Knowledge concepts — All ML algorithms documented (2026-08-04)
 - ✔ Benchmarks — Full suite characterization (2026-08-04)

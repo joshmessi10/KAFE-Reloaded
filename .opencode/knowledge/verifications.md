@@ -8,7 +8,7 @@ The Python project uses `pyproject.toml` and the committed `uv.lock`. It require
 
 1. Install uv using the [official instructions](https://docs.astral.sh/uv/getting-started/installation/), then run `uv sync --locked --group dev` from the repository root.
 2. On a fresh clone, generate the ignored parser outputs as described below before running any interpreter program or fixture suite.
-3. From the repository root, run a program with `uv run --locked python src/Kafe.py tests/Algorithms/Fibonacci.kf` or run the suite with `uv run --locked --group dev pytest tests/`.
+3. From the repository root, run a program with `uv run --locked python src/Kafe.py tests/Algorithms/Fibonacci.kf` or run the complete quality gate with the command in [Verification Process](#verification-process).
 
 Java JDK 11+ is needed for parser generation, including fresh-clone setup. It is not needed to execute programs once compatible generated outputs exist. Nix provides system tools while uv owns Python dependencies. Use `uv sync --locked --extra huggingface` only when enabling the optional integration.
 
@@ -26,7 +26,7 @@ java -jar /path/to/antlr-4.13.2-complete.jar -no-listener -visitor -Dlanguage=Py
 
 The jar is not in the repo; download ANTLR 4.13.2 or use the PATH `antlr` command (see README). If you skip this you'll hit `ModuleNotFoundError: No module named 'Kafe_GrammarLexer'`.
 
-Replace the jar path with its actual location. CI does this automatically: `.github/workflows/tests.yml` downloads the ANTLR jar, regenerates the parser in `src/`, then runs `uv run --locked --python 3.10 --group dev pytest tests/ -v`.
+Replace the jar path with its actual location. CI does this automatically: `.github/workflows/tests.yml` downloads the ANTLR jar, regenerates the parser in `src/`, then runs the locked full-suite coverage gate with absolute workspace paths.
 
 To remove the generated ANTLR outputs, run `make clean` from `src/` in the existing POSIX Make environment. The target uses the POSIX `rm` command and requires a compatible shell/toolchain; plain Windows PowerShell does not supply that environment. Regenerate the parser afterward with the commands above before running interpreter programs or fixture tests.
 
@@ -45,8 +45,11 @@ To remove the generated ANTLR outputs, run `make clean` from `src/` in the exist
 
 ## Validation Rules
 
-- Valid programs: `.kf` + `.expec` (expected stdout), optional `.in` (stdin). Exit code must be 0.
-- Invalid programs: `.error.kf` + `.error.expec`. Expected output = **last line of stderr plus trailing newline** (`stderr.splitlines()[-1] + "\n"`); exit code 1.
+- Valid programs: `.kf` + `.expec` (expected stdout), optional `.in` (stdin). The interpreter child must exit 0, stdout must match exactly, and stderr must be empty.
+- Invalid programs: `.error.kf` + `.error.expec`. The child must exit 1, stdout must match `.error.stdout.expec` when present (otherwise it must be empty), and complete stderr must match the required `.error.stderr.expec`. The final stderr line must also match the existing `.error.expec` semantic diagnostic.
+- `tests/base/variable_undefined.error.stdout.expec` intentionally preserves the trailing space in the CLI prompt `> `; do not trim this exact-output snapshot.
+- Fixture child processes inherit the parent environment and set `PYTHONWARNINGS=error`; pytest itself uses `filterwarnings = ["error"]`.
+- Child stdout and stderr are captured in full. Normalize only the exact absolute checkout root to `<REPO>`; preserve all other output.
 - Interpreter quirk (do not fix): non-`.error.kf` files print runtime errors to **stdout** and exit **0**.
 
 ## Definition of Done
@@ -78,28 +81,37 @@ Repository-wide migrations and missing gates must remain visibly PENDING. Their 
 For code tasks and other changes whose approved validation requires the application suite:
 
 1. Generate the parser if outputs are missing or the grammar changed (see Parser Regeneration above).
-2. Run the focused category: `uv run --locked --group dev pytest tests/test_KafeMACHINE.py` (single case via `uv run --locked --group dev pytest tests/test_base.py::test_valid_programs -k <name>`).
-3. Run the full suite: `uv run --locked --group dev pytest tests/`.
+2. Run the focused category: `uv run --locked --python 3.10 --group dev pytest tests/test_KafeMACHINE.py` (single case via `uv run --locked --python 3.10 --group dev pytest tests/test_base.py::test_valid_programs -k <name>`).
+3. Run the complete local quality gate from the repository root in PowerShell:
+
+   ```powershell
+   $repo = (Get-Location).Path
+   uv run --locked --python 3.10 --group dev pytest tests/ -v "--cov=$repo/src" "--cov-config=$repo/pyproject.toml" --cov-report=term-missing --cov-fail-under=80
+   ```
+
+Coverage measures `src`, collects data from interpreter subprocesses, and includes namespace-package directories so unimported owned source is visible in the report. Only the three generated ANTLR files listed in `pyproject.toml` are omitted.
 
 ## Quality Gates
 
-- The test workflow regenerates the parser and runs `uv run --locked --python 3.10 --group dev pytest tests/ -v` on push and relevant pull requests via `.github/workflows/tests.yml`.
+- The test workflow regenerates the parser and runs the locked full-suite coverage gate on push and relevant pull requests via `.github/workflows/tests.yml`.
 - Definition of Done verified.
 - `.opencode/history/` updated for significant changes.
 - `docs/` and `.opencode/knowledge/` reflect the change.
 
-Inspect the checked-in workflow and configuration before claiming a gate exists. The current workflows are `tests.yml` (uv-locked fixture suite), `docs.yml` (uv-locked MkDocs deployment), and `main.yml` (Nix lock maintenance). The uv dependency migration is implemented. Ruff, basedpyright, codespell, dependency audit, minimum 80% owned-source coverage, warning enforcement, and suppression-comment policy checks remain **pending implementation**. Existing pytest success does not prove those gates. Preserve KAFE's workflow structure when implementing them.
+Inspect the checked-in workflow and configuration before claiming a gate exists. The current workflows are `tests.yml` (uv-locked fixture suite and subprocess coverage), `docs.yml` (uv-locked MkDocs deployment), and `main.yml` (Nix lock maintenance). The uv dependency migration, pytest warning enforcement, subprocess stream assertions, and minimum 80% owned-source coverage gate are implemented. Ruff, basedpyright, codespell, dependency audit, and suppression-comment policy checks remain **pending implementation**. Preserve KAFE's workflow structure when implementing them.
 
-### Child Interpreter Coverage and Diagnostics — Pending
+### Child Interpreter Coverage and Diagnostics — Implemented
 
-Fixture tests launch new Python processes to run KAFE. Configuring pytest-cov or `filterwarnings = ["error"]` in the parent pytest process alone does not demonstrate coverage or warning handling in those child interpreters.
+Fixture tests launch new Python processes to run KAFE. Configuring pytest-cov or `filterwarnings = ["error"]` in the parent pytest process alone does not demonstrate coverage or warning handling in those child interpreters. The shared runner in `tests/utils.py` copies the environment, sets `PYTHONWARNINGS=error`, preserves complete stdout/stderr and the return code, and compares each stream against the fixture contract.
 
-The future quality-gate migration must:
+The implemented quality gate:
 
-- Measure and combine coverage from the interpreter subprocesses, proving that the executed owned source contributes to the report. Exclude generated ANTLR outputs for the documented reason, not to hide uncovered owned code.
-- Demonstrate how warning settings reach each child process and how diagnostics are observed. Inspect complete child stdout/stderr and exit behavior; an assertion on stdout or only the last stderr line can miss additional warnings or tracebacks.
-- Preserve valid expected-error fixtures, including their expected stderr and exit codes, and the current CLI semantics documented above. Expected KAFE errors are fixture outcomes, not permission to ignore unexpected diagnostics. Any change to CLI semantics needs its own approved change.
-- Provide execution evidence for zero unexpected errors/warnings and the coverage threshold before marking these future gates passed.
+- Uses `[tool.coverage.run] source = ["src"]` and `patch = ["subprocess"]` to measure and combine interpreter-child coverage. `include_namespace_packages = true` ensures files beneath namespace directories such as `src/lib/` are discoverable even when they were not imported. Coverage reporting shows missing lines and enforces at least 80%.
+- Omits only `Kafe_GrammarLexer.py`, `Kafe_GrammarParser.py`, and `Kafe_GrammarVisitor.py`, which are generated and ignored by Git. Do not add ordinary source files to the omission list.
+- Requires valid fixture exit code 0, exact `.expec` stdout, and empty stderr. Invalid fixtures require exit code 1, exact full stderr from `.error.stderr.expec`, optional exact stdout from `.error.stdout.expec` (empty by default), and a final semantic line matching `.error.expec`.
+- Normalizes only the exact absolute checkout root to `<REPO>`. Do not trim streams or suppress additional diagnostics.
+- Imports the interpreter entrypoint in a harness smoke test so the central pytest-cov process also records owned source; importing the CLI must not execute a program or print output. This avoids a no-data warning without disabling Coverage.py warnings.
+- Runs the PowerShell full-suite command above locally and the equivalent command in `.github/workflows/tests.yml`, using absolute `${GITHUB_WORKSPACE}` source and config paths. Expected KAFE diagnostics are fixture outcomes, not permission to ignore Python warnings or extra output.
 
 ## Quality Standards
 

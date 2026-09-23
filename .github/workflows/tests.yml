@@ -48,4 +48,9 @@ jobs:
           java -jar /tmp/antlr-4.13.2-complete.jar -no-listener -visitor -Dlanguage=Python3 Kafe_Grammar.g4
 
       - name: Run tests
-        run: uv run --locked --python 3.10 --group dev pytest tests/ -v
+        run: >-
+          uv run --locked --python 3.10 --group dev pytest tests/ -v
+          --cov="${GITHUB_WORKSPACE}/src"
+          --cov-config="${GITHUB_WORKSPACE}/pyproject.toml"
+          --cov-report=term-missing
+          --cov-fail-under=80

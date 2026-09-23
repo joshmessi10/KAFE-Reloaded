@@ -1,8 +1,13 @@
-import subprocess
-import sys
 import pytest
 import os
-from utils import obtener_parametros, get_programs, get_kafe_path, get_src_dir, get_invalid_programs, get_kafe_path, get_src_dir
+from utils import (
+    assert_invalid_kafe_result,
+    assert_valid_kafe_result,
+    get_invalid_programs,
+    get_programs,
+    obtener_parametros,
+    run_kafe_program,
+)
 
 
 @pytest.mark.parametrize(
@@ -10,13 +15,7 @@ from utils import obtener_parametros, get_programs, get_kafe_path, get_src_dir, 
     list(obtener_parametros(get_programs("../tests/KafeFiles"))),
 )
 def test_valid_programs(programa, entrada, salida_esperada):
-    result = subprocess.run(
-        [sys.executable, get_kafe_path(), programa],
-        capture_output=True,
-        text=True,
-        input=entrada,
-        cwd=get_src_dir(),
-    )
+    result = run_kafe_program(programa, input_text=entrada)
 
     carpeta_destino = os.path.dirname(programa)
     nombre_base = os.path.splitext(os.path.basename(programa))[0]
@@ -41,8 +40,7 @@ def test_valid_programs(programa, entrada, salida_esperada):
     assert (
         txt_generado == txt_prueba
     ), f"{txt_prueba_path} doesn't match {txt_generado_path}"
-    assert result.returncode == 0, f"Non-zero exit for {programa}"
-    assert result.stdout == salida_esperada, f"Incorrect output for {programa}"
+    assert_valid_kafe_result(result, programa, salida_esperada)
 
 
 @pytest.mark.parametrize(
@@ -50,15 +48,6 @@ def test_valid_programs(programa, entrada, salida_esperada):
     list(obtener_parametros(get_invalid_programs("../tests/KafeFiles"))),
 )
 def test_invalid_programs(programa, entrada, salida_esperada):
-    result = subprocess.run(
-        [sys.executable, get_kafe_path(), programa],
-        capture_output=True,
-        text=True,
-        input=entrada,
-        cwd=get_src_dir(),
-    )
+    result = run_kafe_program(programa, input_text=entrada)
 
-    assert result.returncode == 1, f"Zero exit for {programa}"
-    assert (
-        result.stderr.splitlines()[-1] + "\n" == salida_esperada
-    ), f"Incorrect output for {programa}"
+    assert_invalid_kafe_result(result, programa, salida_esperada)

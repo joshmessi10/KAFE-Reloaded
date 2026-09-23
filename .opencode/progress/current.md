@@ -1,27 +1,27 @@
 # Current Work
 
-Feature: Locked uv dependency environment and repository setup alignment
-Status: complete
-Current step: `build/uv-environment` pushed; GitHub test workflow passed at `b40965f` (485 tests)
-Next step: Get explicit authorization before creating or switching to the next planned branch, `test/interpreter-quality-evidence`
-Blockers: Nix validation is unavailable on this Windows host; CI emitted non-blocking GitHub Actions and runner deprecation advisories
-Related ADRs: ADR-0010
+Feature: Interpreter subprocess quality evidence
+Status: locally_reviewed_pending_commit_and_ci
+Current step: Independent review and full local gate passed; prepare the focused commit
+Next step: Review the staged diff, commit, push the authorized branch, and verify CI for the exact pushed SHA
+Blockers: Hosted CI for the final commit is pending; no merge or additional branch operation is authorized
+Related ADRs: None
 
-## Active Work — Locked uv Environment (2026-09-23)
+## Active Work — Interpreter Quality Evidence (2026-09-23)
 
-**Status:** Tasks 2–7 are implemented and locally validated on the user-approved `build/uv-environment` branch. Implementation commit `f4e544a` and progress commit `b40965f` are pushed. GitHub's `Run Tests` workflow passed at `b40965f`; its log reports 485 passed in 56.07s.
+**Status:** The user approved the plan and authorized commits/pushes when needed on `test/interpreter-quality-evidence`. The implementation and independent review are complete locally. The final locked gate passed 497 tests in 353.72s at 83.78% coverage, with all 111 tracked Python source files measured, only generated ANTLR outputs omitted, and no warnings. The focused commit, push, and exact-SHA test CI remain.
 
-**Observed Git state:** The implementation is committed as `f4e544a` after separate local policy commits `845bcb3` and `d27df87`. The branch was pushed to `origin/build/uv-environment`; the checkout matched its upstream at `b40965f` immediately before this CI-status update. Verify live Git state before further work.
+**Observed Git state:** The branch was created from `2500945` after confirming the prior checkout was clean and matched `origin/build/uv-environment`. The implementation and continuity updates were reviewed from that base with no staged changes; recheck the branch, index, and worktree before staging or publication.
 
-**Authorization:** The user explicitly approved creating and switching to `build/uv-environment`, and authorized commits and pushes when needed. Do not create, rename, or switch to another branch without explicit authorization. Do not merge this branch.
+**Authorization:** The user explicitly approved creating and switching to `test/interpreter-quality-evidence`; commits and pushes are authorized when needed. Do not create, rename, or switch to another branch without explicit authorization. Do not merge this branch.
 
-**Validation:** A fresh external Python 3.10 environment synced from the lock without `datasets`; ANTLR 4.13.2 regenerated the parser; the full suite passed (485 tests); the docs group built successfully without warnings; changed YAML/front matter parsed; lock integrity, whitespace, and root-file mirror checks passed. The focused KafeHF suite also passed (2 tests). Nix validation is unavailable here. GNU Make is unavailable, with direct Windows pytest commands documented.
+**Implementation and evidence:** All 29 launches in 15 modules use the shared child runner. Invalid results compare complete `.error.stderr.expec`, optional `.error.stdout.expec`, exit code 1, and the original semantic `.error.expec`; valid results require exit code 0, exact `.expec` stdout, and empty stderr. Snapshot verification found 160 invalid fixtures, 160 required stderr sidecars, and two stdout sidecars. The final report measured 111 tracked Python source files and reached 83.78%; all three generated parser modules were absent and the final log contained no warnings.
 
-**Authoritative plan:** `.opencode/progress/repository-alignment.md` tracks the branch sequence and remaining English/quality decisions. The approved implementation plan remains local and ignored at `docs/superpowers/plans/2026-09-23-uv-environment.md`.
+**Acceptance target:** Demonstrate child interpreter coverage, propagate warnings-as-errors to child Python processes, inspect complete stdout/stderr and exit behavior, preserve expected error fixtures and CLI semantics, and reach at least 80% coverage of owned source while excluding generated ANTLR outputs.
 
-**Next step:** The uv environment branch is complete. Get explicit authorization before creating or switching to the planned `test/interpreter-quality-evidence` branch. Do not merge; the docs workflow deploys only on `main`, so hosted documentation deployment remains pending integration.
+**Next step:** Create one focused commit, push only this branch, and verify the test workflow at the exact pushed SHA. Do not merge or switch to a later branch.
 
-**Resume prompt:** Continue the KAFE uv migration on `build/uv-environment`. Verify live Git state and preserve all checkout edits. The user authorized this branch and commits/pushes when needed; do not create, rename, switch, or merge branches without explicit authorization.
+**Resume prompt:** Finish interpreter subprocess quality evidence on `test/interpreter-quality-evidence`. Verify live Git state and preserve all checkout edits. The user approved the plan and authorized commits/pushes when needed. The final local gate passed 497 tests at 83.78% coverage across 111 tracked source files, with no warnings; independent review is complete. Make one focused commit, push this branch, and verify CI for the exact pushed SHA. Do not merge or create, rename, or switch branches without explicit authorization.
 
 The sections below are retained implementation notes from earlier work; their historical test counts must not be treated as current verification.
 
