@@ -16,13 +16,13 @@ class GaussianMixture(BaseMachine):
     Mathematical foundation:
         P(x) = Σ_{k=1}^{K} π_k * N(x | μ_k, Σ_k)
 
-        Donde:
+        Where:
             π_k = weight of component k (Σ π_k = 1)
             μ_k = mean of the k component
             Σ_k = covariance of component k
-            N(x | μ, Σ) = Gaussiana multivariante
+            N(x | μ, Σ) = multivariate Gaussian
 
-        Algoritmo EM:
+        EM algorithm:
             E-step: γ(z_k) = π_k * N(x_n | μ_k, Σ_k) / Σ_j π_j * N(x_n | μ_j, Σ_j)
             M-step: μ_k = Σ_n γ(z_kn) * x_n / N_k
                     Σ_k = Σ_n γ(z_kn) * (x_n - μ_k)(x_n - μ_k)^T / N_k
@@ -172,7 +172,7 @@ class GaussianMixture(BaseMachine):
 
     @check_sig([2], [pardos_type] + numeric_matrix_types, is_method=True)
     def fit(self, X):
-        """Ajusta GaussianMixture usando EM."""
+        """Fit GaussianMixture with EM."""
         matrix, cols, is_df = self._unwrap_data(X)
         matrix = self._validate_matrix_shape(matrix)
 

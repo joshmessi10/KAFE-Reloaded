@@ -120,7 +120,7 @@ class Functional(Model):
         """
         super().__init__()
 
-        # Normalizar a listas
+        # Normalize to lists
         if isinstance(inputs, Input):
             self._inputs = [inputs]
         elif isinstance(inputs, list):
@@ -226,7 +226,7 @@ class Functional(Model):
         # Run in topological order
         for node in self._exec_order:
             if isinstance(node, InputNode):
-                continue  # ya tiene _output_cache asignado
+                continue  # _output_cache is already assigned
 
             layer = node.layer
             inbound = node.inbound_nodes
@@ -257,7 +257,7 @@ class Functional(Model):
         """Backward propagation in reverse topological order.
 
         Distribute the gradients throughout the graph. For nodes with multiple
-        salidas (skip-connections), acumula gradientes.
+        outputs (skip connections), accumulate their gradients.
 
         Args:
             grad: Gradient of the loss with respect to the model output.
@@ -265,7 +265,7 @@ class Functional(Model):
         if not isinstance(grad, list):
             grad = [grad]
 
-        # Mapa nodo_id → gradiente acumulado
+        # Map node ID to accumulated gradient
         grad_map = {}
 
         # Initialize gradients at output nodes

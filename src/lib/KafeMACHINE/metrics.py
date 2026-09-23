@@ -188,8 +188,8 @@ def roc_auc_score(y_true, y_score):
         AUC = ∫₀¹ TPR(FPR⁻¹(t)) dt
 
         Interpretation:
-        - AUC = 1.0: clasificador perfecto
-        - AUC = 0.5: clasificador aleatorio
+        - AUC = 1.0: perfect classifier
+        - AUC = 0.5: random classifier
         - AUC < 0.5: worse than random
 
     Parameters:

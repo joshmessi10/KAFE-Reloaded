@@ -15,15 +15,15 @@ class ActivationFunctionLoader:
         if not name:
             return IdentityActivation()
         n = name.lower()
-        if n in ("sigmoid", "sigmoide"):
+        if n == "sigmoid":
             return SigmoidActivation()
         if n == "relu":
             return ReLU()
-        if n in ("tanh", "tangente"):
+        if n == "tanh":
             return Tanh()
-        if n in ("linear", "identity", "identidad"):
+        if n in ("linear", "identity"):
             return IdentityActivation()
-        if n in ("step", "escalon", "escalonada"):
+        if n == "step":
             return StepActivation()
         if n == "softmax":
             return Softmax()

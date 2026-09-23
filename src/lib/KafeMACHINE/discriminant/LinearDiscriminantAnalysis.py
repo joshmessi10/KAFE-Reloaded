@@ -51,7 +51,7 @@ class LinearDiscriminantAnalysis(BaseMachine):
         self.covariance_ = []
 
     def _matrix_multiply(self, A, B):
-        """Multiplica matrices A * B."""
+        """Multiply matrices A * B."""
         rows_a = len(A)
         cols_a = len(A[0])
         cols_b = len(B[0])
@@ -70,11 +70,11 @@ class LinearDiscriminantAnalysis(BaseMachine):
         return [[A[i][j] for i in range(rows)] for j in range(cols)]
 
     def _matrix_subtract(self, A, B):
-        """Resta matrices A - B."""
+        """Subtract matrices A - B."""
         return [[A[i][j] - B[i][j] for j in range(len(A[0]))] for i in range(len(A))]
 
     def _matrix_add(self, A, B):
-        """Suma matrices A + B."""
+        """Add matrices A + B."""
         return [[A[i][j] + B[i][j] for j in range(len(A[0]))] for i in range(len(A))]
 
     def _scalar_multiply(self, scalar, A):
@@ -139,7 +139,7 @@ class LinearDiscriminantAnalysis(BaseMachine):
         return eigenvalues, components
 
     def _solve_eigen(self, S_W, S_B, n_features):
-        """Resuelve S_W^{-1} S_B w = λ w usando Jacobi."""
+        """Solve S_W^{-1} S_B w = λ w using Jacobi."""
         S_W_inv = self._inverse_matrix(S_W, n_features)
         M = self._matrix_multiply(S_W_inv, S_B)
         M_T = self._matrix_transpose(M)

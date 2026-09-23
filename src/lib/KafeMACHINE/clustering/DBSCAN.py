@@ -47,7 +47,7 @@ class DBSCAN(BaseMachine):
         self.core_sample_indices_ = []
 
     def _euclidean_distance(self, a, b):
-        """Distancia euclidiana entre dos puntos."""
+        """Euclidean distance between two points."""
         return sqrt(sum((x - y) ** 2 for x, y in zip(a, b)))
 
     def _region_query(self, X, point_idx):

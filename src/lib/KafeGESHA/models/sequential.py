@@ -5,7 +5,7 @@ From each layer is the input to the following:
 
     Input → Layer 1 → Layer 2 → ... → Layer N → Output
 
-Uso:
+Usage:
 
     model = Sequential([
         Dense(128, activation="relu"),

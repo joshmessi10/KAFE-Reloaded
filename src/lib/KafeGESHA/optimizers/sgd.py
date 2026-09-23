@@ -1,4 +1,4 @@
-"""Optimizadores SGD y RMSprop."""
+"""SGD and RMSprop optimizers."""
 from lib.KafeMATH.functions import pow_, sqrt
 from lib.KafeGESHA.optimizers.optimizer import Optimizer
 

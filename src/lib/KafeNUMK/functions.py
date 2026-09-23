@@ -253,8 +253,8 @@ def sum_axis(a, axis):
     """
     Sum along the specified axis.
     
-    sum_axis([[1,2],[3,4]], 0) → [4, 6]       (suma filas)
-    sum_axis([[1,2],[3,4]], 1) → [3, 7]       (suma columnas)
+    sum_axis([[1,2],[3,4]], 0) → [4, 6]       (sum across rows)
+    sum_axis([[1,2],[3,4]], 1) → [3, 7]       (sum across columns)
     sum_axis([[[1,2],[3,4]],[[5,6],[7,8]]], 0) → [[6,8],[10,12]]
     """
     return _sum_nd(a, axis)

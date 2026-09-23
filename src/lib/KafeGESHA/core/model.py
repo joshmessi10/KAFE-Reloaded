@@ -6,13 +6,13 @@ Model hierarchy:
      ├── Sequential (linear graph)
      └── Functional (DAG graph)
 
-The design follows the stable Keras pattern:
+The design follows the established Keras pattern:
 - The model does NOT know if the data is binary, multiclass or regression.
 - The difference is defined by the combination (final activation, loss function).
 - fit() is generic; supports supervised (y != None) and unsupervised (y=None).
 
-Backwards Compatibility:
-- Gesha is kept as Model alias so as not to break TypeUtils.py.
+Compatibility:
+- Gesha remains the runtime model type recognized by TypeUtils.py.
 - GeshaDeep is removed; Sequential replaces it.
 """
 from abc import ABC, abstractmethod

@@ -1,4 +1,4 @@
-"""Optimizadores Adam y AdamW."""
+"""Adam and AdamW optimizers."""
 from lib.KafeMATH.functions import pow_, sqrt
 from lib.KafeGESHA.optimizers.optimizer import Optimizer
 

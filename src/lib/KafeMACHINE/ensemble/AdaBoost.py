@@ -13,13 +13,13 @@ class AdaBoostClassifier(BaseMachine):
     where each classifier emphasizes the errors of the previous one.
 
     Mathematical foundation:
-        1. Inicializar pesos uniformes: w_i = 1/n
+        1. Initialize uniform weights: w_i = 1/n
         2. For each iteration t:
            to. Train weak classifier h_t with weights w_i
-           b. Calcular error: ε_t = Σ w_i * I(h_t(x_i) ≠ y_i)
+           b. Calculate error: ε_t = Σ w_i * I(h_t(x_i) ≠ y_i)
            c. Calculate classifier weight: α_t = 0.5 * ln((1 - ε_t) / ε_t)
-           d. Actualizar pesos: w_i *= exp(-α_t * y_i * h_t(x_i))
-           e. Normalizar pesos
+           d. Update weights: w_i *= exp(-α_t * y_i * h_t(x_i))
+           e. Normalize weights
         3. Final prediction: H(x) = sign(Σ α_t * h_t(x))
 
     Parameters:
@@ -93,7 +93,7 @@ class AdaBoostClassifier(BaseMachine):
 
     @check_sig([3], [pardos_type] + numeric_vector_types + numeric_matrix_types, numeric_vector_types, is_method=True)
     def fit(self, X, y):
-        """Ajusta AdaBoost."""
+        """Fit AdaBoost."""
         matrix, cols, is_df = self._unwrap_data(X)
         matrix = self._validate_matrix_shape(matrix)
 

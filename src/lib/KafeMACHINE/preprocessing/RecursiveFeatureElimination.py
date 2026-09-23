@@ -17,7 +17,7 @@ class RecursiveFeatureElimination(BaseMachine):
 
         Importance is calculated as |coefficient| for linear models.
 
-    Parametros:
+    Parameters:
         estimator: model with coef_ or feature_importances_ (default LinearRegression)
         n_features: number of features to select (default 1)
 

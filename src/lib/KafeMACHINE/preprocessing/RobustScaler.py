@@ -6,7 +6,7 @@ from ..BaseMachine import BaseMachine
 
 class RobustScaler(BaseMachine):
     """
-    Robust Scaler — Escalamiento robusto usando mediana e IQR.
+    Robust Scaler — Robust scaling using the median and IQR.
 
     Scale features using outlier-robust statistics:
     - Median (Q2) instead of mean
@@ -15,7 +15,7 @@ class RobustScaler(BaseMachine):
     Mathematical foundation:
         X_scaled = (X - median) / IQR
 
-        Donde:
+        Where:
             median = Q2 (percentil 50)
             IQR = Q3 - Q1 (percentil 75 - percentil 25)
 

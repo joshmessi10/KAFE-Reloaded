@@ -35,10 +35,10 @@ def read_csv(path):
     header = [h.strip() for h in header_line.split(delim)]
     data = []
     for row in lines[1:]:
-        partes = [c.strip() for c in row.split(delim)]
-        if len(partes) < len(header):
-            partes += [""] * (len(header) - len(partes))
-        converted_row = [infer_type(c) for c in partes[: len(header)]]
+        parts = [c.strip() for c in row.split(delim)]
+        if len(parts) < len(header):
+            parts += [""] * (len(header) - len(parts))
+        converted_row = [infer_type(c) for c in parts[: len(header)]]
         data.append(converted_row)
 
     return DataFrame(header, data)

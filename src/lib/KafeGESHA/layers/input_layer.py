@@ -4,7 +4,7 @@ Input is not a transformation layer; It is a symbolic starting point
 which defines the expected shape of the input data. Produces an InputNode
 that the Functional model uses to start the graph path.
 
-Uso:
+Usage:
 
     inputs = Input(shape=(784,))
     x = Dense(128)(inputs)      # Dense.__call__(inputs) → Node
@@ -29,9 +29,9 @@ class Input:
         shape: Entry form.
         node: Symbolic InputNode that represents this tensor in the graph.
 
-    Uso:
+    Usage:
         inputs = Input(shape=(784,))
-        x = Dense(128)(inputs)   # Dense.__call__ acepta Input o Node
+        x = Dense(128)(inputs)   # Dense.__call__ accepts Input or Node
     """
 
     def __init__(self, shape):

@@ -146,7 +146,7 @@ class GradientBoostingClassifier(BaseMachine):
 
     @check_sig([3], [pardos_type] + numeric_vector_types + numeric_matrix_types, numeric_vector_types, is_method=True)
     def fit(self, X, y):
-        """Ajusta GradientBoostingClassifier."""
+        """Fit GradientBoostingClassifier."""
         matrix, cols, is_df = self._unwrap_data(X)
         matrix = self._validate_matrix_shape(matrix)
 
@@ -358,7 +358,7 @@ class GradientBoostingRegressor(BaseMachine):
 
     @check_sig([3], [pardos_type] + numeric_vector_types + numeric_matrix_types, numeric_vector_types, is_method=True)
     def fit(self, X, y):
-        """Ajusta GradientBoostingRegressor."""
+        """Fit GradientBoostingRegressor."""
         matrix, cols, is_df = self._unwrap_data(X)
         matrix = self._validate_matrix_shape(matrix)
 

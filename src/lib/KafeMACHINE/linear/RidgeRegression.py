@@ -116,7 +116,7 @@ class RidgeRegression(BaseMachine):
 
     @check_sig([2], numeric_vector_types + numeric_matrix_types, is_method=True)
     def predict(self, X):
-        """Predice usando Ridge regression."""
+        """Predict using Ridge regression."""
         self._check_fitted("predict")
         if not X:
             return []

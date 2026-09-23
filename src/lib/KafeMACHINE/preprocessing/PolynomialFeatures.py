@@ -107,7 +107,7 @@ class PolynomialFeatures(BaseMachine):
 
     @check_sig([2], [pardos_type] + numeric_matrix_types, is_method=True)
     def transform(self, data):
-        """Transforma features a features polinomiales."""
+        """Transform features into polynomial features."""
         self._check_fitted("transform")
         matrix, cols, is_df = self._unwrap_data(data)
 

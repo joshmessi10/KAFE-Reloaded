@@ -35,7 +35,7 @@
   <text x="250" y="345" font-size="12" text-anchor="middle">X</text>
   <g transform="translate(20,175) rotate(-90)"><text font-size="12" text-anchor="middle">Y</text></g>
   <rect x="510" y="5" width="160" height="80" fill="white" stroke="#ccc" rx="5"/>
-  <text x="520" y="30" font-size="12" font-weight="bold">Leyenda</text>
+  <text x="520" y="30" font-size="12" font-weight="bold">Legend</text>
   <rect x="520" y="40" width="10" height="10" fill="blue"/>
   <text x="535" y="50" font-size="10">puntos de entrenamiento</text>
   <rect x="520" y="60" width="10" height="10" fill="red"/>

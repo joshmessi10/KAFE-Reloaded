@@ -14,7 +14,7 @@ class SVR(BaseMachine):
     Mathematical foundation:
         Minimiza: (1/2)||w||² + C * Σ(max(0, |y_i - f(x_i)| - ε))
 
-        Donde:
+        Where:
         - w = model weights
         - C = regularization parameter (trade-off between flatness and tolerance)
         - ε = epsilon-insensitive tube width
@@ -234,7 +234,7 @@ class SVR(BaseMachine):
 
     @check_sig([2], numeric_vector_types + numeric_matrix_types, is_method=True)
     def predict(self, X):
-        """Predice usando SVR."""
+        """Predict using SVR."""
         self._check_fitted("predict")
         if not X:
             return []

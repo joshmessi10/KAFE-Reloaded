@@ -6,8 +6,8 @@ def accuracy(y_true, y_pred):
     Calculate the classification accuracy.
     
     Args:
-        y_true: Valores verdaderos
-        y_pred: Predicciones
+        y_true: True values
+        y_pred: Predictions
         
     Returns:
         Accuracy (0.0 to 1.0)
@@ -24,8 +24,8 @@ def mse(y_true, y_pred):
     Calculate the Mean Square Error.
     
     Args:
-        y_true: Valores verdaderos
-        y_pred: Predicciones
+        y_true: True values
+        y_pred: Predictions
         
     Returns:
         MSE
@@ -42,8 +42,8 @@ def mae(y_true, y_pred):
     Calculate the Mean Absolute Error.
     
     Args:
-        y_true: Valores verdaderos
-        y_pred: Predicciones
+        y_true: True values
+        y_pred: Predictions
         
     Returns:
         MAE

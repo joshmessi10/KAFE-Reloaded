@@ -18,7 +18,7 @@ class KMeans(BaseMachine):
         where μ_j is the centroid of cluster C_j.
 
     Complexity: O(n · k · d · i), where n=points, k=clusters,
-        d=dimensiones, i=iteraciones.
+        d=dimensions, i=iterations.
 
     Parameters:
         n_clusters: number of clusters (k), default 3
@@ -45,11 +45,11 @@ class KMeans(BaseMachine):
         self.inertia_ = 0.0
 
     def _euclidean_distance_sq(self, a, b):
-        """Distancia euclidiana al cuadrado entre dos puntos."""
+        """Squared Euclidean distance between two points."""
         return sum((x - y) ** 2 for x, y in zip(a, b))
 
     def _euclidean_distance(self, a, b):
-        """Distancia euclidiana entre dos puntos."""
+        """Euclidean distance between two points."""
         return self._euclidean_distance_sq(a, b) ** 0.5
 
     def _init_centroids_kmeans_pp(self, X):
@@ -144,7 +144,7 @@ class KMeans(BaseMachine):
         """
         Fit the K-Means model to the X data.
 
-        Algoritmo:
+        Algorithm:
             1. Initialize centroids with K-Means++
             2. Repeat until convergence or max_iter:
                to. Assign each point to the nearest centroid (E)

@@ -17,7 +17,7 @@ class VarianceThreshold(BaseMachine):
         A feature with variance 0 is constant (it does not provide information).
         A feature with low variance has little discriminatory capacity.
 
-    Parametros:
+    Parameters:
         threshold: minimum variance threshold (default 0.0)
 
     Attributes (after fit):

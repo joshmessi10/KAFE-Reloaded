@@ -13,7 +13,7 @@ class AgglomerativeClustering(BaseMachine):
         1. Start: each point is a cluster (n clusters)
         2. Calculate distance matrix between all pairs
         3. Find the two closest clusters
-        4. Merge esos dos clusters
+        4. Merge those two clusters
         5. Repeat until you have n_clusters
 
     Link criteria (linkage):
@@ -50,7 +50,7 @@ class AgglomerativeClustering(BaseMachine):
         self.distances_ = []
 
     def _euclidean_distance(self, a, b):
-        """Distancia euclidiana entre dos puntos."""
+        """Euclidean distance between two points."""
         return sum((x - y) ** 2 for x, y in zip(a, b)) ** 0.5
 
     def _compute_distance_matrix(self, X):

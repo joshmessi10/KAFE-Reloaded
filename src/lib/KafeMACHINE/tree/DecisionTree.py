@@ -341,7 +341,7 @@ class DecisionTreeRegressor(BaseMachine):
 
     @check_sig([3], [pardos_type] + numeric_vector_types + numeric_matrix_types, numeric_vector_types, is_method=True)
     def fit(self, X, y):
-        """Ajusta DecisionTreeRegressor."""
+        """Fit DecisionTreeRegressor."""
         matrix, cols, is_df = self._unwrap_data(X)
         matrix = self._validate_matrix_shape(matrix)
 

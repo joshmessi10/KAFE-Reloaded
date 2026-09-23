@@ -54,7 +54,7 @@ class ElasticNet(BaseMachine):
             return 0.0
 
     def _coordinate_descent(self, X, y):
-        """Ajusta Elastic Net usando Coordinate Descent."""
+        """Fit Elastic Net using coordinate descent."""
         n = len(X)
         m = len(X[0])
 
@@ -93,7 +93,7 @@ class ElasticNet(BaseMachine):
 
     @check_sig([3], [pardos_type] + numeric_vector_types + numeric_matrix_types, numeric_vector_types, is_method=True)
     def fit(self, X, y):
-        """Ajusta Elastic Net regression."""
+        """Fit Elastic Net regression."""
         matrix, cols, is_df = self._unwrap_data(X)
         matrix = self._validate_matrix_shape(matrix)
 
@@ -121,7 +121,7 @@ class ElasticNet(BaseMachine):
 
     @check_sig([2], numeric_vector_types + numeric_matrix_types, is_method=True)
     def predict(self, X):
-        """Predice usando Elastic Net."""
+        """Predict using Elastic Net."""
         self._check_fitted("predict")
         if not X:
             return []

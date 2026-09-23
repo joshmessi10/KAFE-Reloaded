@@ -345,7 +345,7 @@ def render():
 
         content += (
             f'  <text x="{x_label}" y="{y_label}" '
-            f'font-size="12" font-weight="bold">Leyenda</text>\n'
+            f'font-size="12" font-weight="bold">Legend</text>\n'
         )
 
         y_offset = y_label + 20
@@ -492,7 +492,7 @@ def pie(labels, values):
 
         svg += f'<rect x="{x_label - 10}" y="{y_label - 25}" width="160" height="{box_height}" fill="white" stroke="#ccc" rx="5"/>\n'
         svg += f"""<text x="{x_label}" y="{y_label}" font-size="12" font-weight="bold">
-  <tspan x="{x_label}" dy="0">Leyenda</tspan>
+  <tspan x="{x_label}" dy="0">Legend</tspan>
 </text>\n"""
         for i, label in enumerate(labels):
             y_offset = y_label + 30 + i * 20

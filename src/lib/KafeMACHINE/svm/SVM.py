@@ -16,7 +16,7 @@ class SVM(BaseMachine):
         Primary formulation:
             Minimiza: (1/2)||w||² + C * Σ(max(0, 1 - y_i * f(x_i)))
 
-            Donde:
+            Where:
             - w = model weights
             - C = regularization parameter (trade-off between margin and errors)
             - y_i ∈ {-1, +1} = class labels

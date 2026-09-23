@@ -50,7 +50,7 @@ class LassoRegression(BaseMachine):
             return 0.0
 
     def _coordinate_descent(self, X, y):
-        """Ajusta Lasso usando Coordinate Descent."""
+        """Fit Lasso using coordinate descent."""
         n = len(X)
         m = len(X[0])
 
@@ -112,7 +112,7 @@ class LassoRegression(BaseMachine):
 
     @check_sig([2], numeric_vector_types + numeric_matrix_types, is_method=True)
     def predict(self, X):
-        """Predice usando Lasso regression."""
+        """Predict using Lasso regression."""
         self._check_fitted("predict")
         if not X:
             return []
