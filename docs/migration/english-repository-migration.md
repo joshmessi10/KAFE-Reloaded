@@ -2,6 +2,8 @@
 
 This is the path, route, and compatibility contract for the approved English migration. It records the tracked tree at `58bf7d51ac1dcbc462e735bcfe5d555192a9a106` before renaming. The migration changes owned English-facing names and prose while preserving KAFE execution semantics, CLI exit codes, and fixture purposes. Old Python aliases, KAFE aliases, file paths, and documentation redirects are **not retained**. Consumers must adopt the replacements below.
 
+The Spanish spellings in this note are literal old paths, source symbols, fixture names, or code examples needed for migration. The explanatory prose and target names are English.
+
 KAFE syntax stays English and unchanged. In particular, the lexer literals `drip`, `pour`, `show`, `len`, `remove`, `append`, `return`, `if`, `elif`, `else`, `match`, `FUNC`, `range`, `import`, `int`, `float`, `str`, `bool`, `List`, `INT`, `FLOAT`, `BOOL`, `VOID`, `STR`, `GESHA`, `PARDOS`, `MACHINE`, `True`, and `False` are not translated. The built-in import keys `numk`, `math`, `files`, `plot`, `geshaDeep`, `pardos`, `machine`, and `huggingface` remain exactly as registered by `EvalVisitorPrimitivo.self.libraries`.
 
 ## Work ownership and text surfaces
@@ -19,13 +21,19 @@ The tracked baseline contains 1,458 paths: 116 under `src/`, 1,174 under `tests/
 
 ## Source and Python import path map
 
-Every listed directory move applies to **every tracked descendant**, including `utils.py` and fixture sidecars. Entries below resolve all renamed source modules; names absent from the table stay at their present paths.
+Every listed directory move applies to **every tracked descendant**, including files whose basename stays English, such as `utils.py`. The `base` and `method_calling` subdirectories retain those names under the new parent. Entries below resolve all renamed source modules; names absent from the table stay at their present paths.
 
 | Old path | New path | Owner |
 |---|---|---|
 | `src/Ejemplo.kf` | `src/Example.kf` | 2 |
 | `src/EvalVisitorPrimitivo.py` | `src/InterpreterVisitor.py` | 2 |
 | `src/errores.py` | `src/errors.py` | 2 |
+| `src/componentes_lenguaje/` | `src/language_components/` | 2; all tracked descendants |
+| `src/componentes_lenguaje/bucles/` | `src/language_components/loops/` | 2; all tracked descendants |
+| `src/componentes_lenguaje/condicionales/` | `src/language_components/conditionals/` | 2; all tracked descendants |
+| `src/componentes_lenguaje/funciones/` | `src/language_components/functions/` | 2; all tracked descendants |
+| `src/componentes_lenguaje/importar/` | `src/language_components/imports/` | 2; all tracked descendants |
+| `src/componentes_lenguaje/librerias/` | `src/language_components/libraries/` | 2; all tracked descendants |
 | `src/componentes_lenguaje/base/funciones.py` | `src/language_components/base/functions.py` | 2 |
 | `src/componentes_lenguaje/bucles/funciones.py` | `src/language_components/loops/functions.py` | 2 |
 | `src/componentes_lenguaje/condicionales/funciones.py` | `src/language_components/conditionals/functions.py` | 2 |
@@ -53,7 +61,14 @@ Every listed directory move applies to **every tracked descendant**, including `
 
 `src/componentes_lenguaje/librerias/funciones.py` uses `getattr` for library function and constant dispatch; `src/componentes_lenguaje/method_calling/funciones.py` uses it for object functions and constants. Other `getattr` calls in `funciones/funciones.py`, `funciones/utils.py`, and `src/lib/KafeMACHINE/BaseMachine.py` inspect English Python attributes (`signature`, `_name`, `_is_fitted`) and are not KAFE name translations. `DataFrame.query(query_str)` calls the generated KAFE lexer/parser on a KAFE expression, injects column values into visitor scope via `asignar_variable`, and evaluates the tree. Its method name and expression grammar remain unchanged; the internal helper import changes with Task 2.
 
-Spanish Python names are externally importable but not reached as KAFE built-in call names. Rename `EvalVisitorPrimitivo` to `InterpreterVisitor`; `revisarImportacion` to `check_imported`; `esObjeto` to `is_object`; `obtener_tipo_dentro_lista`/`obtener_tipo_lista`/`obtener_tipo_dato` to `get_inner_list_type`/`get_list_type`/`get_data_type`; `esTipoCorrecto`/`asignar_variable`/`obtener_nivel_anidamiento`/`verificarHomogeneidad` to `is_correct_type`/`assign_variable`/`get_nesting_level`/`verify_homogeneity`; `inferir_tipo` to `infer_type`; `globals.ruta_programa` to `globals.program_path`; and `tests.utils.obtener_parametros` to `tests.utils.get_parameters`. These are source-level Python import/attribute migrations; change all first-party references atomically. Spanish parameters, locals, and comments are translated in the owning task. Do not claim a KAFE call spelling changed merely because its Python implementation signature changes.
+Spanish Python names are externally importable but not reached as KAFE built-in call names. Rename `EvalVisitorPrimitivo` to `InterpreterVisitor`; `revisarImportacion` to `check_imported`; `esObjeto` to `is_object`; `obtener_tipo_dentro_lista`/`obtener_tipo_lista`/`obtener_tipo_dato` to `get_inner_list_type`/`get_list_type`/`get_data_type`; `esTipoCorrecto`/`asignar_variable`/`obtener_nivel_anidamiento`/`verificarHomogeneidad` to `is_correct_type`/`assign_variable`/`get_nesting_level`/`verify_homogeneity`; `inferir_tipo` to `infer_type`; `globals.ruta_programa` to `globals.program_path`; and `tests.utils.obtener_parametros` to `tests.utils.get_parameters`. The additional cross-module helper mappings below are part of the same Python import migration. These are source-level Python import/attribute migrations; change all first-party references atomically. Spanish parameters, locals, and comments are translated in the owning task. Do not claim a KAFE call spelling changed merely because its Python implementation signature changes.
+
+| Old Python helper | English replacement | Definition and callers to update |
+|---|---|---|
+| `construir_tipo_lista` | `build_list_type` | Defined and recursively called in `src/TypeUtils.py`; used there to construct type constants and imported/called by `src/lib/KafePLOT/funciones.py` for `bar` and `pie` signatures. Tasks 2 and 3 must update both modules together. |
+| `es_misma_dimension` | `has_same_dimensions` | Defined in `src/lib/KafeNUMK/utils.py`; imported and called by `src/lib/KafeNUMK/funciones.py` in `add` and `sub`. It compares outer lengths and each corresponding row length. Task 3. |
+| `es_uniforme` | `is_uniform_matrix` | Defined in `src/lib/KafeNUMK/utils.py`; imported and called by `src/lib/KafeNUMK/funciones.py` in `mul`, `inv`, and `dot_matrix`. It checks equal row lengths and accepts an empty matrix. Task 3. |
+| `operar_matrices` | `apply_matrix_operation` | Defined in `src/lib/KafeNUMK/utils.py`; imported and called by `src/lib/KafeNUMK/funciones.py` in `add` and `sub` to apply the supplied operation element by element. Task 3. |
 
 `importStmt` first recognizes the unchanged registry keys. For user modules it searches `<current KAFE program directory>/<module>.kf`, then `<directory of imports/functions.py>/<module>.kf`, then its parent `<language_components>/<module>.kf`. Moving the module changes those latter two fallback directories; preserve this search behavior intentionally and document the resulting paths in import diagnostics. `tests/import/matematica.kf` is a user module, not a built-in library key; programs must change `import matematica` to `import math_module` when that fixture moves.
 
@@ -117,7 +132,7 @@ Routes below are relative to `https://joshmessi10.github.io/KAFE-Reloaded/`. MkD
 | `docs/lenguaje/operadores.md` | `docs/language/operators.md` | `/lenguaje/operadores/` → `/language/operators/` |
 | `docs/lenguaje/sistema-tipos.md` | `docs/language/type-system.md` | `/lenguaje/sistema-tipos/` → `/language/type-system/` |
 
-Update every `mkdocs.yml` nav entry (including labels), internal Markdown links, anchors, README links, and repository guidance references to these targets. MkDocs currently omits the clustering plot example from nav but it is still a tracked example and must move. `PLAN.md` is currently excluded from nav; after moving it, update `not_in_nav` or deliberately publish its English route, without leaving an obsolete exclusion.
+Update every `mkdocs.yml` nav entry (including labels), internal Markdown links, anchors, README links, and repository guidance references to these targets. MkDocs currently omits the clustering plot example from nav but it is still a tracked example and must move. The current `not_in_nav: /PLAN.md` setting keeps the documentation plan out of navigation while leaving its built route available. Task 5 must preserve that unlisted status by changing the setting to `not_in_nav: /documentation-plan.md`; the new `/documentation-plan/` route remains available without a redirect.
 
 ## Approved retirement and migration notice
 
