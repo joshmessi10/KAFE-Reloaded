@@ -1,7 +1,7 @@
 # Repository Alignment — Continuity Plan
 
 **Last checked:** 2026-09-23
-**Status:** Policy baseline is in the local working tree; four follow-on branches are planned. No commit or new branch has been made.
+**Status:** Policy baseline is committed locally as `845bcb3` on `docs/english-migration`; four follow-on branches are planned. No follow-on branch has been created or pushed.
 
 ## Purpose and source of truth
 
@@ -11,10 +11,10 @@ When resuming, verify the live branch, `HEAD`, index, and working tree first. Th
 
 ## Current checkout observation
 
-- Working branch: `docs/english-migration`, at `a460d5b` (`KafeMACHINE Implemented`), the same commit as `origin/main` at the time checked; this branch has no upstream.
-- There are 26 tracked modifications/deletions in the working tree, one untracked progress tracker, and no staged changes. The original policy/OpenCode/Kiro-retirement baseline contributed 22 paths; this continuity update added four tracked progress/memory pointers and the new tracker. No changes have been committed or pushed.
-- The current branch name overstates the payload: full English migration remains pending. Before the eventual first commit, consider renaming this local branch to `docs/agent-policy-alignment`. No rename is made by this plan.
-- The policy baseline is already reflected in `AGENTS.md`, `CLAUDE.md`, `OPENCODE.md`, `.opencode/`, ADR-0008/0009, the history, and backlog. `AGENTS.md` and `CLAUDE.md` match except for identifying text.
+- Baseline commit: `845bcb3` (`docs: align repository policies and retire Kiro steering`), parent `a460d5b` (`KafeMACHINE Implemented`), which matched `origin/main` when checked. The current local branch `docs/english-migration` has no upstream.
+- The baseline commit contains the 26 pre-existing tracked changes/deletions and the new alignment tracker (27 paths total). The index and worktree were clean immediately after that commit. No push or branch operation has been performed.
+- The current branch name overstates the payload: full English migration remains pending. The suggested rename to `docs/agent-policy-alignment` was not performed; renaming requires explicit user authorization.
+- The committed policy baseline is reflected in `AGENTS.md`, `CLAUDE.md`, `OPENCODE.md`, `.opencode/`, ADR-0008/0009, the history, and backlog. `AGENTS.md` and `CLAUDE.md` match except for identifying text.
 - Repository-level Kiro files have been removed. Useful file-I/O fixture and parser-cleanup details are retained in `.opencode/knowledge/verifications.md`.
 - No application tests, coverage, lint, type check, or dependency audit were run for this planning work. Future branches must report their own evidence.
 
@@ -24,7 +24,7 @@ Integrate the policy baseline first. Then implement the following branches in or
 
 | Order | Proposed branch | Status | Scope and exit criteria |
 |---|---|---|---|
-| Base | `docs/agent-policy-alignment` | In progress on local `docs/english-migration` | Preserve the current policy/OpenCode changes and Kiro retirement. Verify root-file mirroring and documentation diff. The branch rename is only a recommendation for the eventual first commit. |
+| Base | `docs/agent-policy-alignment` | Policy baseline committed locally as `845bcb3` on `docs/english-migration`; not pushed | Preserve the policy/OpenCode changes and Kiro retirement. Root-file mirroring and documentation diff were verified. No branch rename or push was done. |
 | 1 | `build/uv-environment` | Planned | Add `pyproject.toml` and `uv.lock`; assign runtime, dev, docs, and optional `datasets` dependencies; migrate setup, Make/OpenCode commands, Nix Python ownership, and existing workflow invocations together. Preserve the baseline without `datasets` and ANTLR generation requirements. Complete a fresh locked setup and tests on the supported local/CI platforms. |
 | 2 | `test/interpreter-quality-evidence` | Planned; depends on branch 1 | Prove coverage and complete diagnostics from fixture-launched child interpreters, propagate warning policy, preserve CLI/error-fixture behavior, and reach at least 80% coverage of owned source with generated ANTLR excluded. The current audit counted 15 subprocess runner modules; that is inventory, not a passing result. |
 | 3 | `refactor/english-repository` | Planned; follows the runner-evidence branch | Migrate owned runtime, internal names, grammar labels, comments, fixtures/data/outputs, documentation, paths, and OpenCode records as one coordinated line with reviewable batches. Preserve the already-English public lexer vocabulary; do not redesign KAFE keywords without a separate approved need. Keep imports, dynamic dispatch, examples, fixture pairs, MkDocs routes, and tracked assets consistent. |
@@ -45,6 +45,6 @@ The current policy does not require an automatic language detector. Codespell re
 
 Open the same `KAFE-Reloaded` project/checkout and start with this prompt:
 
-> Continue the KAFE repository-alignment work. Read `AGENTS.md`, `CLAUDE.md`, `.opencode/progress/current.md`, `.opencode/memory/active-work.md`, `.opencode/progress/roadmap.md`, `.opencode/progress/backlog.md`, and `.opencode/progress/repository-alignment.md`. First verify the actual Git branch, HEAD, staged changes, and working tree; preserve all existing edits. Resume from the recorded next step. Do not commit, push, or create/rename/switch branches unless I explicitly authorize it.
+> Continue the KAFE repository-alignment work. Read `AGENTS.md`, `CLAUDE.md`, `.opencode/progress/current.md`, `.opencode/memory/active-work.md`, `.opencode/progress/roadmap.md`, `.opencode/progress/backlog.md`, and `.opencode/progress/repository-alignment.md`. First verify the actual Git branch, HEAD, staged changes, and working tree; preserve all existing edits. Resume from the recorded next step. Commits and pushes are authorized when needed; do not create, rename, or switch branches unless I explicitly authorize it.
 
 Update this tracker and the current-work pointers whenever a branch is approved, started, merged, paused, or its blockers change. Keep local Superpowers specs/plans ignored; durable status belongs in the tracked progress files.

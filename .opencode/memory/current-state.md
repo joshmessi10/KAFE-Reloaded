@@ -16,19 +16,19 @@ KafeMACHINE architectural review completed (2026-09-14):
 
 ## Current Milestone
 
-Repository policy alignment — ◐ Policy baseline is present in the local working tree but remains uncommitted. The four-branch follow-on sequence is recorded in `.opencode/progress/repository-alignment.md`.
+Repository policy alignment — ◐ Policy baseline committed locally as `845bcb3` on `docs/english-migration`. The four-branch follow-on sequence is recorded in `.opencode/progress/repository-alignment.md`; starting its first branch awaits explicit branch-operation authorization.
 
 KafeMACHINE machine learning library — ✔ Complete. 11 models, preprocessing, metrics, model selection.
 KafeGESHA deep learning library — ◐ In Progress. Dense, activations, optimizers; Conv2D/LSTM/Transformer pending.
 
 ## Current Priorities
 
-1. Preserve and review the current uncommitted policy/Kiro-retirement baseline; wait for explicit authorization before commits or branch operations.
-2. After that baseline is integrated, deliver `build/uv-environment` → `test/interpreter-quality-evidence` → `refactor/english-repository` → `chore/python-quality-gates`.
-3. Resolve the historical-record, tracked PDF, stale-log, and path/API decisions before approving the English-migration design.
-4. Resume KafeGESHA layers, legacy reviews, and performance work according to the project roadmap after the repository-alignment sequence or when the user reprioritizes them.
+1. After explicit authorization, create/switch to `build/uv-environment` based on the policy baseline commit and deliver the sequence in `.opencode/progress/repository-alignment.md`.
+2. Resolve the historical-record, tracked PDF, stale-log, and path/API decisions before approving the English-migration design.
+3. Resume KafeGESHA layers, legacy reviews, and performance work according to the project roadmap after the repository-alignment sequence or when the user reprioritizes them.
 
 ## Current Blockers
 
 - English-history/PDF/log disposition is not yet decided; do not claim full English compliance until it is.
 - Coverage and static-analysis baselines have not yet been measured. The inventory counts in the alignment tracker are not passing checks.
+- Explicit authorization to create or switch to the planned feature branch is still pending.

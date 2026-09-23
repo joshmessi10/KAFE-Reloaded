@@ -6,7 +6,7 @@ Repository rule alignment and staged migration plan
 
 ## Status
 
-Policy baseline documented; changes remain uncommitted on the local working tree. Four follow-on branches are planned, none created.
+Policy baseline committed locally as `845bcb3` on `docs/english-migration`. The first follow-on branch has not been created; explicit authorization for branch operations is still required.
 
 ## Completed in this work line
 
@@ -18,5 +18,5 @@ Policy baseline documented; changes remain uncommitted on the local working tree
 ## Next Steps
 
 - On resume, read `.opencode/progress/current.md` and `.opencode/progress/repository-alignment.md`, then verify live Git state.
-- Preserve the uncommitted baseline. Do not commit, push, or create/rename/switch branches without explicit user authorization.
-- After the policy baseline is integrated, start `build/uv-environment`; follow the order and exit criteria in the tracker.
+- Commits and pushes are authorized when needed. Do not create, rename, or switch branches without explicit user authorization; publication that requires creating a remote branch remains behind that gate.
+- After explicit branch authorization, start `build/uv-environment` from the baseline commit and follow the order and exit criteria in the tracker.

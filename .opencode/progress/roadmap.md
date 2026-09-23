@@ -4,7 +4,7 @@ Active project planning. Do not move this content into AGENTS.md (see AGENTS.md 
 
 ## Repository Policy Alignment
 
-The policy baseline is currently uncommitted. The planned sequence is `build/uv-environment` → `test/interpreter-quality-evidence` → `refactor/english-repository` → `chore/python-quality-gates`. See `.opencode/progress/repository-alignment.md` for current Git state, branch scopes, dependencies, exit criteria, and open English-migration decisions. Do not create branches or commit changes without explicit user authorization.
+The policy baseline is committed locally as `845bcb3`. The planned sequence is `build/uv-environment` → `test/interpreter-quality-evidence` → `refactor/english-repository` → `chore/python-quality-gates`. See `.opencode/progress/repository-alignment.md` for Git observations, branch scopes, dependencies, exit criteria, and open English-migration decisions. Commits and pushes are authorized when needed; do not create, rename, or switch branches without explicit user authorization.
 
 ## Machine Learning
 - ✔ Base Machine (2026-07-28)

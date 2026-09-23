@@ -2,15 +2,17 @@
 
 ## Active Work — Repository Rule Alignment (2026-09-23)
 
-**Status:** The policy baseline and Kiro retirement are present as uncommitted local changes. The branch plan is agreed; no future branch has been created.
+**Status:** Policy baseline and Kiro retirement committed locally as `845bcb3` on the existing `docs/english-migration` branch. No follow-on branch has been created.
 
-**Observed Git state:** `docs/english-migration` at `a460d5b`, equal to `origin/main` when checked, with no upstream, 26 tracked changes, one untracked alignment tracker, and an empty index. Recheck this state before resuming.
+**Observed Git state:** Baseline commit `845bcb3` has parent `a460d5b`, which matched `origin/main` when checked. `docs/english-migration` has no upstream. The worktree and index were clean immediately after the baseline commit; local Superpowers artifacts remain ignored. Recheck live state before resuming.
+
+**Authorization:** Commits and pushes are authorized when needed. Creating, renaming, or switching branches still requires explicit authorization; publishing a branch that does not yet exist remotely is also gated on that authorization.
 
 **Authoritative plan:** `.opencode/progress/repository-alignment.md` contains the branch sequence, scope, dependencies, acceptance criteria, and English-migration decisions that remain open. `.opencode/progress/roadmap.md` and `.opencode/progress/backlog.md` link to it.
 
-**Next step:** Preserve the current changes and wait for explicit user authorization before commits or branch operations. After the policy baseline is integrated, begin `build/uv-environment`, then follow the sequence in the tracker.
+**Next step:** Obtain explicit authorization to create and switch to `build/uv-environment` based on `845bcb3`. Then implement the approved uv plan and follow the sequence in the tracker.
 
-**Resume prompt:** Open the same `KAFE-Reloaded` checkout and ask: “Continue the repository-alignment work from `.opencode/progress/current.md` and `.opencode/progress/repository-alignment.md`. Verify live Git state first, preserve all existing edits, and do not commit, push, or create/rename/switch branches without my explicit authorization.”
+**Resume prompt:** Open the same `KAFE-Reloaded` checkout and ask: “Continue the repository-alignment work from `.opencode/progress/current.md` and `.opencode/progress/repository-alignment.md`. Verify live Git state first and preserve all existing edits. Commits and pushes are authorized when needed; do not create, rename, or switch branches without my explicit authorization.”
 
 The sections below are retained implementation notes from earlier work; they are not the current active task, and their test counts must not be treated as current verification.
 
