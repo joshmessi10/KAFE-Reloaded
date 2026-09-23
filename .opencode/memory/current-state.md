@@ -16,14 +16,14 @@ KafeMACHINE architectural review completed (2026-09-14):
 
 ## Current Milestone
 
-Repository alignment — ◐ Policy baseline committed separately as `845bcb3` and progress-state commit `d27df87`. The user approved the `build/uv-environment` branch, where the locked dependency/setup migration is in progress. Tasks 2–5 are implemented; final record updates, validation, commit, push, and CI remain.
+Repository alignment — ◐ Policy baseline committed separately as `845bcb3` and progress-state commit `d27df87`. The user approved the `build/uv-environment` branch; locked dependency/setup migration is implemented and locally validated in commit `f4e544a`. Push and test CI remain.
 
 KafeMACHINE machine learning library — ✔ Complete. 11 models, preprocessing, metrics, model selection.
 KafeGESHA deep learning library — ◐ In Progress. Dense, activations, optimizers; Conv2D/LSTM/Transformer pending.
 
 ## Current Priorities
 
-1. Final local validation passed on `build/uv-environment`; review and commit the scoped diff, push the authorized branch, then verify test CI at the pushed commit. Keep docs deployment pending until main integration.
+1. Final local validation passed on `build/uv-environment` at implementation commit `f4e544a`; push the authorized branch, then verify test CI at the pushed commit. Keep docs deployment pending until main integration.
 2. Continue the remaining alignment branches in `.opencode/progress/repository-alignment.md` after this branch; get explicit authorization before any additional branch operation.
 3. Resolve the historical-record, tracked PDF, stale-log, and path/API decisions before approving the English-migration design.
 4. Resume KafeGESHA layers, legacy reviews, and performance work according to the project roadmap after the repository-alignment sequence or when the user reprioritizes them.

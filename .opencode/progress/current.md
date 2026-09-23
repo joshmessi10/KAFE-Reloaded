@@ -2,16 +2,16 @@
 
 Feature: Locked uv dependency environment and repository setup alignment
 Status: in_progress
-Current step: Task 7 local validation complete — stage and review the scoped feature commit
-Next step: Commit, push the authorized branch, and verify test-workflow CI
+Current step: Task 7 local validation and scoped feature commit complete
+Next step: Push the authorized branch and verify test-workflow CI
 Blockers: Nix validation is unavailable on this Windows host; hosted CI awaits the feature push
 Related ADRs: ADR-0010
 
 ## Active Work — Locked uv Environment (2026-09-23)
 
-**Status:** Tasks 2–7 local implementation and validation are complete on the user-approved `build/uv-environment` branch. The feature commit, push, and hosted test CI remain pending.
+**Status:** Tasks 2–7 local implementation and validation are complete on the user-approved `build/uv-environment` branch. Feature commit `f4e544a` records the implementation; push and hosted test CI remain pending.
 
-**Observed Git state:** `HEAD` is `d27df87`, following separate local policy commits `845bcb3` and `d27df87`. The feature changes are uncommitted. The approved local branch has no upstream and has not been pushed. Verify live Git state before staging, committing, or pushing.
+**Observed Git state:** The implementation is committed as `f4e544a` after separate local policy commits `845bcb3` and `d27df87`. At the last check, `build/uv-environment` had no upstream or remote branch ref, and its index and working tree were clean. Verify live Git state before publication.
 
 **Authorization:** The user explicitly approved creating and switching to `build/uv-environment`, and authorized commits and pushes when needed. Do not create, rename, or switch to another branch without explicit authorization. Do not merge this branch.
 
@@ -19,7 +19,7 @@ Related ADRs: ADR-0010
 
 **Authoritative plan:** `.opencode/progress/repository-alignment.md` tracks the branch sequence and remaining English/quality decisions. The approved implementation plan remains local and ignored at `docs/superpowers/plans/2026-09-23-uv-environment.md`.
 
-**Next step:** Review and commit the scoped uv migration, push the authorized branch, and record the actual test-workflow CI result. The docs workflow deploys only on `main`, so its hosted deployment remains pending integration.
+**Next step:** Push `build/uv-environment` and record the actual test-workflow CI result. The docs workflow deploys only on `main`, so its hosted deployment remains pending integration.
 
 **Resume prompt:** Continue the KAFE uv migration on `build/uv-environment`. Verify live Git state and preserve all checkout edits. The user authorized this branch and commits/pushes when needed; do not create, rename, switch, or merge branches without explicit authorization.
 

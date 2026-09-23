@@ -6,7 +6,7 @@ Locked uv dependency environment and repository setup alignment
 
 ## Status
 
-In progress on the user-approved local branch `build/uv-environment`. Policy baseline commits `845bcb3` and `d27df87` remain separate. Tasks 2–7 local validation are complete. The feature commit, push, and test-workflow CI remain pending. No feature commit or push has been made.
+In progress on the user-approved branch `build/uv-environment`. Policy baseline commits `845bcb3` and `d27df87` remain separate. Tasks 2–7 local validation are complete, and implementation commit `f4e544a` is local. The branch has no upstream or remote ref yet; push and test-workflow CI remain pending.
 
 ## Completed in this work line
 
@@ -16,11 +16,11 @@ In progress on the user-approved local branch `build/uv-environment`. Policy bas
 - Updated KafeHF's missing-dependency diagnostic and fixture; the focused Python 3.10 suite passes with `datasets` absent by default.
 - Removed the legacy `requirements.txt` manifest and updated the ADR, history, roadmap, backlog, and current-work records.
 - Fresh Python 3.10 locked dev sync, ANTLR 4.13.2 regeneration, full test suite (485 passed), locked docs build, YAML/front-matter parsing, lock integrity, whitespace, and root-file mirror checks passed.
+- Committed the scoped implementation as `f4e544a` after reviewing the complete staged change set; generated and local Superpowers artifacts were excluded.
 
 ## Next Steps
 
-- Review and stage the complete change set without Superpowers or generated artifacts, then create the scoped feature commit.
-- Push `build/uv-environment` when the approved local gates pass, then verify test CI at the pushed commit. Do not merge; the docs deployment workflow only runs on `main`.
+- Push `build/uv-environment` (no upstream or remote branch ref existed at the last check), then verify test CI at the pushed commit. Do not merge; the docs deployment workflow only runs on `main`.
 
 ## Authorization and platform notes
 
