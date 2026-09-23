@@ -16,14 +16,14 @@ KafeMACHINE architectural review completed (2026-09-14):
 
 ## Current Milestone
 
-Repository alignment — ◐ Policy baseline committed separately as `845bcb3` and progress-state commit `d27df87`. The user-approved `build/uv-environment` branch's locked dependency/setup migration is implemented (`f4e544a`), pushed, and passed GitHub test CI at `b40965f` (485 tests). The authorized `test/interpreter-quality-evidence` branch now has a locally completed and independently reviewed child-process quality gate: 497 tests passed in 353.72s, coverage reached 83.78% across 111 tracked source files, and the final run emitted no warnings. The remaining steps are commit, push, and exact-SHA CI verification; no merge is planned.
+Repository alignment — ◐ Policy baseline committed separately as `845bcb3` and progress-state commit `d27df87`. The user-approved `build/uv-environment` branch's locked dependency/setup migration is implemented (`f4e544a`), pushed, and passed GitHub test CI at `b40965f` (485 tests). The authorized `test/interpreter-quality-evidence` branch is complete and unmerged: 497 tests passed in 353.72s, coverage reached 83.78% across 111 tracked source files, the final run emitted no warnings, and independent review passed. Commit `6e8edd5` was pushed, and GitHub Actions `Run Tests` passed at that exact SHA (run 127, ID `35901709547`).
 
 KafeMACHINE machine learning library — ✔ Complete. 11 models, preprocessing, metrics, model selection.
 KafeGESHA deep learning library — ◐ In Progress. Dense, activations, optimizers; Conv2D/LSTM/Transformer pending.
 
 ## Current Priorities
 
-1. Create the focused implementation commit, push the authorized branch, and verify CI at that exact commit SHA.
+1. Keep the quality-evidence branch unmerged and get explicit authorization before starting the next repository-alignment branch.
 2. Keep docs deployment pending until main integration; it is restricted to `main`.
 3. Resolve the historical-record, tracked PDF, stale-log, and path/API decisions before approving the English-migration design.
 4. Resume KafeGESHA layers, legacy reviews, and performance work according to the project roadmap after the repository-alignment sequence or when the user reprioritizes them.
@@ -33,4 +33,4 @@ KafeGESHA deep learning library — ◐ In Progress. Dense, activations, optimiz
 - English-history/PDF/log disposition is not yet decided; do not claim full English compliance until it is.
 - Child-process coverage and warning/stream gates are locally verified at 83.78% across 111 tracked source files. Ruff, basedpyright, codespell, dependency-audit, and suppression-policy baselines remain pending.
 - Nix validation is unavailable on this Windows host. GNU Make is unavailable, so the POSIX Make target cannot be exercised here; the direct locked uv pytest command is documented for Windows.
-- The interpreter quality implementation is locally complete and independently reviewed on `test/interpreter-quality-evidence`; commit, push, and exact-SHA test CI are pending. Nix validation is unavailable on this Windows host. Documentation deployment is main-only and remains pending until integration.
+- The interpreter quality branch is pushed and exact-SHA GitHub test CI passed; the branch remains unmerged. Nix validation is unavailable on this Windows host. Documentation deployment is main-only and remains pending until integration.

@@ -2,11 +2,11 @@
 
 ## Current Feature
 
-Interpreter subprocess quality evidence
+Interpreter subprocess quality evidence — complete
 
 ## Status
 
-The user authorized the existing `test/interpreter-quality-evidence` branch and approved the implementation plan. The implementation and independent review are complete locally: the shared runner covers all 29 fixture launches, 160 invalid fixtures have complete stderr snapshots, warnings are strict in pytest and child interpreters, and the final suite passed 497 tests in 353.72s with 83.78% coverage across all 111 tracked Python source files. The report had no warnings; only generated ANTLR files were omitted. The focused commit, push, and exact-SHA GitHub CI verification are the remaining delivery steps.
+The user authorized the existing `test/interpreter-quality-evidence` branch and approved the implementation plan. The implementation and independent review are complete: the shared runner covers all 29 fixture launches, 160 invalid fixtures have complete stderr snapshots, warnings are strict in pytest and child interpreters, and the final suite passed 497 tests in 353.72s with 83.78% coverage across all 111 tracked Python source files. The report had no warnings; only generated ANTLR files were omitted. Commit `6e8edd5` was pushed, and GitHub Actions `Run Tests` passed at that exact SHA (run 127, ID `35901709547`). The branch remains unmerged.
 
 ## Completed implementation
 
@@ -18,7 +18,7 @@ The user authorized the existing `test/interpreter-quality-evidence` branch and 
 
 ## Next Steps
 
-- Create one focused commit, push only `test/interpreter-quality-evidence`, and verify GitHub test CI for that exact SHA. Do not merge or switch branches.
+- Keep `test/interpreter-quality-evidence` unmerged. Get explicit authorization before creating or switching to the next alignment branch.
 
 ## Authorization and platform notes
 

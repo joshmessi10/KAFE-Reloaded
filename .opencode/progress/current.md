@@ -1,17 +1,17 @@
 # Current Work
 
 Feature: Interpreter subprocess quality evidence
-Status: locally_reviewed_pending_commit_and_ci
-Current step: Independent review and full local gate passed; prepare the focused commit
-Next step: Review the staged diff, commit, push the authorized branch, and verify CI for the exact pushed SHA
-Blockers: Hosted CI for the final commit is pending; no merge or additional branch operation is authorized
+Status: completed_and_ci_verified
+Current step: Run Tests 127 passed at implementation SHA 6e8edd5; branch is pushed
+Next step: Keep this branch unmerged; get explicit authorization before the next branch operation
+Blockers: None for this deliverable; the next branch operation requires explicit approval
 Related ADRs: None
 
 ## Active Work — Interpreter Quality Evidence (2026-09-23)
 
-**Status:** The user approved the plan and authorized commits/pushes when needed on `test/interpreter-quality-evidence`. The implementation and independent review are complete locally. The final locked gate passed 497 tests in 353.72s at 83.78% coverage, with all 111 tracked Python source files measured, only generated ANTLR outputs omitted, and no warnings. The focused commit, push, and exact-SHA test CI remain.
+**Status:** The user approved the plan and authorized commits/pushes when needed on `test/interpreter-quality-evidence`. The implementation and independent review are complete. The final locked gate passed 497 tests in 353.72s at 83.78% coverage, with all 111 tracked Python source files measured, only generated ANTLR outputs omitted, and no warnings. Commit `6e8edd5565c6c1341697426a2bd0dff4187dc5cc` was pushed, and GitHub Actions `Run Tests` passed at that exact SHA (run 127, ID `35901709547`). The branch remains unmerged.
 
-**Observed Git state:** The branch was created from `2500945` after confirming the prior checkout was clean and matched `origin/build/uv-environment`. The implementation and continuity updates were reviewed from that base with no staged changes; recheck the branch, index, and worktree before staging or publication.
+**Observed Git state:** The branch was created from `2500945` after confirming the prior checkout was clean and matched `origin/build/uv-environment`. The reviewed implementation commit was pushed to `origin/test/interpreter-quality-evidence`; the checkout was clean and the local and remote refs matched `6e8edd5565c6c1341697426a2bd0dff4187dc5cc` at verification.
 
 **Authorization:** The user explicitly approved creating and switching to `test/interpreter-quality-evidence`; commits and pushes are authorized when needed. Do not create, rename, or switch to another branch without explicit authorization. Do not merge this branch.
 
@@ -19,9 +19,9 @@ Related ADRs: None
 
 **Acceptance target:** Demonstrate child interpreter coverage, propagate warnings-as-errors to child Python processes, inspect complete stdout/stderr and exit behavior, preserve expected error fixtures and CLI semantics, and reach at least 80% coverage of owned source while excluding generated ANTLR outputs.
 
-**Next step:** Create one focused commit, push only this branch, and verify the test workflow at the exact pushed SHA. Do not merge or switch to a later branch.
+**Next step:** Keep this branch unmerged. Get explicit authorization before creating or switching to the next repository-alignment branch.
 
-**Resume prompt:** Finish interpreter subprocess quality evidence on `test/interpreter-quality-evidence`. Verify live Git state and preserve all checkout edits. The user approved the plan and authorized commits/pushes when needed. The final local gate passed 497 tests at 83.78% coverage across 111 tracked source files, with no warnings; independent review is complete. Make one focused commit, push this branch, and verify CI for the exact pushed SHA. Do not merge or create, rename, or switch branches without explicit authorization.
+**Resume prompt:** Interpreter subprocess quality evidence is complete on `test/interpreter-quality-evidence`. The final local gate passed 497 tests in 353.72s at 83.78% coverage across 111 tracked source files, with no warnings; independent review passed. Commit `6e8edd5565c6c1341697426a2bd0dff4187dc5cc` is pushed, and GitHub Actions `Run Tests` passed at that exact SHA (run 127, ID `35901709547`). Keep the branch unmerged and get explicit approval before creating, renaming, or switching to another branch.
 
 The sections below are retained implementation notes from earlier work; their historical test counts must not be treated as current verification.
 
