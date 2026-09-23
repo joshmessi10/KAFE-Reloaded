@@ -4,19 +4,19 @@ Template. Project-wide context, assumptions, and engineering notes. This file is
 
 ## Project Context
 
-KAFE is an educational DSL focused on Machine Learning and Deep Learning, implemented as a tree-walking interpreter in Python + ANTLR 4 (Visitor pattern). `.kf` files are KAFE source. The engineering system lives under `.opencode/`; `OPENCODE.md` is the operating manual and `AGENTS.md` is the engineering constitution.
+KAFE is an educational DSL focused on Machine Learning and Deep Learning, implemented as a tree-walking interpreter in Python + ANTLR 4 (Visitor pattern). `.kf` files are KAFE source. The engineering system lives under `.opencode/`; `OPENCODE.md` is the operating manual and the mirrored `AGENTS.md`/`CLAUDE.md` files define the engineering constitution. Applicable runtime/user instructions govern execution; OpenCode procedures implement the root policies.
 
 ## Important Assumptions
 
-- Python >= 3.10; `antlr4-python3-runtime==4.13.2` is pinned in `requirements.txt`.
-- Java JDK 11+ is needed only to regenerate the ANTLR parser, not to run.
-- Tests always run the interpreter from `src/` (`cwd=src/`).
+- Python >= 3.10; `antlr4-python3-runtime==4.13.2` is pinned in the current legacy `requirements.txt`/pip bootstrap. The coordinated uv migration remains pending and must cover runtime, development, docs, Nix's role, optional integrations, and CI.
+- Java JDK 11+ is needed to generate the ignored, untracked ANTLR parser on fresh clones and after grammar changes. Execution then uses the generated outputs without Java. Never stage or commit those outputs.
+- Fixture tests run the interpreter in child processes from `src/` (`cwd=src/`). Parent pytest-cov/warning configuration alone does not establish child coverage or diagnostic handling; those gates remain pending.
 - Dependencies are forbidden by default; external ML/DL algorithm implementations are prohibited.
-- Docs and code comments are largely in Spanish; recent commit messages are in English.
+- English is the repository target. Existing Spanish prose, comments, and product syntax are migration debt; syntax/behavior changes require a separate migration plan.
 
 ## Engineering Notes
 
 - KafeMACHINE (ML) and KafeGESHA (DL) are implemented from scratch inside KAFE.
-- `self.libraries` uses lowercase import keys: `numk`, `math`, `files`, `plot`, `geshaDeep`, `pardos`, `machine`.
-- Source of Truth precedence: ADRs > Knowledge Layer > History > Progress (see AGENTS.md — Source of Truth).
+- `self.libraries` uses case-sensitive import keys: `numk`, `math`, `files`, `plot`, `geshaDeep`, `pardos`, `machine`, and `huggingface` (KafeHF). Its external `datasets` dependency remains optional; preserve missing-dependency fixtures.
+- ADRs > Knowledge Layer > History > Progress resolves conflicts among project records only; mirrored root policies and applicable runtime/user instructions remain above those records (ADR-0008).
 - Test fixtures: `<name>.kf` + `<name>.expec` (expected stdout), optional `<name>.in`, invalid `<name>.error.kf` + `<name>.error.expec`.

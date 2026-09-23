@@ -1,13 +1,13 @@
 # KAFE Architecture
 
-How KAFE works, end to end. This is the reference for the interpreter internals.
+How KAFE works, end to end. This is the reference for the interpreter internals, subject to the repository invariants in `AGENTS.md` and `CLAUDE.md` and applicable system/runtime and user instructions.
 
 ## Compact Diagram
 
 ```
 .kf → src/Kafe.py (ANTLR lexer/parser → AST) → EvalVisitorPrimitivo.py (walks AST, scope stack)
     → src/componentes_lenguaje/ (variables, bucles, condicionales, funciones, importar, librerias, method_calling)
-    → src/lib/Kafe{NUMK,MATH,FILES,PLOT,GESHA,PARDOS,MACHINE}/funciones.py
+    → src/lib/Kafe{NUMK,MATH,FILES,PLOT,GESHA,PARDOS,MACHINE,HF}/funciones.py
 ```
 
 ## High-Level Overview
@@ -17,10 +17,10 @@ KAFE is a DSL for teaching Deep Learning, implemented as a tree-walking interpre
 Source layout:
 
 - `src/Kafe.py` — entry point: lexing/parsing pipeline, error listener, process exit handling.
-- `src/Kafe_Grammar.g4` + `src/Kafe_Lexer.g4` — ANTLR grammar (parser + lexer). The generated `Kafe_GrammarLexer.py`, `Kafe_GrammarParser.py`, `Kafe_GrammarVisitor.py`, `*.tokens`, `*.interp` are **gitignored**; regenerate after grammar edits.
+- `src/Kafe_Grammar.g4` + `src/Kafe_Lexer.g4` — ANTLR grammar (parser + lexer). The generated `Kafe_GrammarLexer.py`, `Kafe_GrammarParser.py`, `Kafe_GrammarVisitor.py`, `*.tokens`, `*.interp` are **gitignored and untracked**; generate on a fresh checkout and regenerate after grammar edits.
 - `src/EvalVisitorPrimitivo.py` — the main visitor: walks the AST with a scope stack, dispatches to language components and libraries.
 - `src/componentes_lenguaje/` — language features: `base`, `bucles`, `condicionales`, `funciones`, `importar`, `librerias`, `method_calling`.
-- `src/lib/` — built-in libraries: `KafeNUMK`, `KafeMATH`, `KafeFILES`, `KafePLOT`, `KafeGESHA`, `KafePARDOS`, `KafeMACHINE`.
+- `src/lib/` — built-in libraries: `KafeNUMK`, `KafeMATH`, `KafeFILES`, `KafePLOT`, `KafeGESHA`, `KafePARDOS`, `KafeMACHINE`, `KafeHF`.
 - `src/TypeUtils.py` — type system. `src/errores.py` — error raising helpers. `src/global_utils.py` — shared helpers. `src/globals.py` — global interpreter state (`current_dir`, `ruta_programa`, `current_visitor`), imported as `import globals` (module import, never `from ... import`).
 
 ## Execution Flow
@@ -58,7 +58,9 @@ Source layout:
 ### Library Architecture
 
 - Each library exposes plain Python functions in `src/lib/KafeXXX/funciones.py`; stateful models are Python classes in sibling modules (e.g., `KafeMACHINE/LinearRegression.py`).
-- Registered in `EvalVisitorPrimitivo.__init__` under `self.libraries`: `{"numk": [module, imported_flag], ...}`. KAFE `import <name>` flips the flag; calls dispatch through `libraryFunctionCall`.
+- Import each library's `funciones` module in `src/EvalVisitorPrimitivo.py`, then register it in `EvalVisitorPrimitivo.__init__` under `self.libraries`: `{"numk": [module, imported_flag], ...}`. KAFE `import <name>;` flips the flag; calls dispatch through `libraryFunctionCall`. Registry keys are case-sensitive, including the existing `geshaDeep` key.
+- KafeMACHINE uses `import lib.KafeMACHINE.funciones as machine_funcs_module` and the `machine` registry key. KafeHF uses `import lib.KafeHF.funciones as hf_funcs_module` and the `huggingface` key. Its wrapper is registered by default, but Hugging Face `datasets` is an optional external dependency: importing `huggingface` is allowed without it, while dataset-loading calls report a missing-dependency error.
+- KafeHF's `load_dataset` and `load_dataset_split` functions convert loaded data to KafePARDOS `DataFrame` objects. Preserve the default environment without `datasets` and the missing-dependency fixture under `tests/KafeHF/`; the future uv migration must express this optional integration without making it a default dependency.
 - Library functions receive evaluated KAFE arguments (lists as Python lists; GESHA/PARDOS/MACHINE objects as their Python classes).
 - KAFE values map to Python types via `TypeUtils.py`.
 

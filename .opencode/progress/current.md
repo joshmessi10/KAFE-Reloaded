@@ -1,5 +1,21 @@
 # Current Work
 
+## Active Work — Repository Rule Alignment (2026-09-23)
+
+**Status:** The policy baseline and Kiro retirement are present as uncommitted local changes. The branch plan is agreed; no future branch has been created.
+
+**Observed Git state:** `docs/english-migration` at `a460d5b`, equal to `origin/main` when checked, with no upstream, 26 tracked changes, one untracked alignment tracker, and an empty index. Recheck this state before resuming.
+
+**Authoritative plan:** `.opencode/progress/repository-alignment.md` contains the branch sequence, scope, dependencies, acceptance criteria, and English-migration decisions that remain open. `.opencode/progress/roadmap.md` and `.opencode/progress/backlog.md` link to it.
+
+**Next step:** Preserve the current changes and wait for explicit user authorization before commits or branch operations. After the policy baseline is integrated, begin `build/uv-environment`, then follow the sequence in the tracker.
+
+**Resume prompt:** Open the same `KAFE-Reloaded` checkout and ask: “Continue the repository-alignment work from `.opencode/progress/current.md` and `.opencode/progress/repository-alignment.md`. Verify live Git state first, preserve all existing edits, and do not commit, push, or create/rename/switch branches without my explicit authorization.”
+
+The sections below are retained implementation notes from earlier work; they are not the current active task, and their test counts must not be treated as current verification.
+
+---
+
 ## Fix: model_selection test fixtures and test_Algorithms error support
 
 **Status:** Implemented and verified

@@ -1,6 +1,14 @@
 # KAFE Engineering Procedures
 
-Source of truth for the engineering processes referenced by AGENTS.md.
+Project-specific engineering procedures implementing the mirrored `AGENTS.md` and `CLAUDE.md` policies.
+
+## Instruction Authority
+
+Applicable runtime and user instructions govern execution. `AGENTS.md` and `CLAUDE.md` define the same repository invariants; this file, `OPENCODE.md`, and other `.opencode/` procedures implement those invariants and cannot waive them. Read both root policy files before applying the procedures below.
+
+The ADR > Knowledge > History > Progress order resolves conflicts among project records only. It does not place historical records above current root policies or applicable runtime/user instructions (see ADR-0008).
+
+For non-trivial implementation, follow the root Superpowers lifecycle and integrate its approved design and plan with Impact Analysis and these project procedures. Superpowers specs, plans, reviews, and coordination reports stay in the ignored local artifact paths; never stage, force-add, or commit them.
 
 ## Impact Analysis Process
 
@@ -50,7 +58,7 @@ End-of-session lifecycle (run via `/close`). Closing a session means:
 2. **Definition of Done gate**: run `/dod` for the session's active work item if it is complete. If `/dod` fails, do not close; if no work item has `/dod` scope this session, record `/dod` as not applicable in the close summary.
 3. Update `.opencode/memory/` (`current-state`, `active-work`, `technical-debt`, `known-issues`, `context` as needed).
 4. Update `.opencode/progress/` (`roadmap`, `backlog`, `milestones`) only if priorities changed.
-5. Append a session entry to `.opencode/progress/session-log.md` (append-only bitácora).
+5. Append a session entry to `.opencode/progress/session-log.md` (append-only log).
 6. Write a `.opencode/history/YYYY/YYYY-MM.md` record if the session produced a significant change (append to monthly file).
 7. Reset `.opencode/progress/current.md` to its template (empty values, clean scratchpad).
 8. Verify repository hygiene: no temp files, no debug `print()`, no context-less TODOs.
@@ -75,7 +83,7 @@ The session log is the lightweight per-session record; `.opencode/history/` hold
 
 When work is delegated to subagents (the Architect, Builder, Reviewer, Historian, and Tester roles implemented as opencode subagents), coordinate to prevent interpretation drift ("broken telephone"):
 
-- Subagents must write their results to files (e.g., `progress/impl-<feature>.md`, `progress/review-<feature>.md`) and return **only a file reference** in chat, never the content.
+- Subagents must write their results to files and return **only a file reference** in chat, never the content. Superpowers coordination reports belong under the ignored `.superpowers/` workspace for the active plan; persist durable decisions separately in the appropriate project records.
 - Instruction template for a delegated task:
 
   > "Investigate <topic>. Write your findings to <file>. Your reply must be only: `done -> <file>` or `blocked -> <reason>`."
@@ -88,24 +96,24 @@ When work is delegated to subagents (the Architect, Builder, Reviewer, Historian
 
 For significant tasks, respond with this enriched structure:
 
-1. **Theory** — Concepto matemático: qué es, por qué existe, fundamento matemático (fórmulas en LaTeX cuando aplique), complejidad computacional, ventajas, limitaciones, relación con la implementación KAFE.
-2. **Analysis** — Estado actual del código, qué existe, qué falta.
-3. **Impact** — Módulos afectados, riesgos, compatibilidad.
-4. **Plan** — Plan paso a paso con pasos de verificación.
-5. **Implementation** — Cambios realizados, estructura de código, decisiones de diseño.
-6. **Validation** — Tests ejecutados, resultados, edge cases cubiertos.
-7. **Documentation** — Archivos actualizados, concept records creados, ejemplos agregados.
-8. **Next Steps** — Trabajo pendiente, mejoras futuras.
+1. **Theory** — The mathematical concept, its purpose and foundation (LaTeX formulas when appropriate), computational complexity, advantages, limitations, and relationship with KAFE's implementation.
+2. **Analysis** — Current code, what exists, and what is missing.
+3. **Impact** — Affected modules, risks, and compatibility.
+4. **Plan** — Ordered steps with verification steps.
+5. **Implementation** — Changes, code structure, and design decisions.
+6. **Validation** — Tests executed, results, and edge cases covered.
+7. **Documentation** — Files updated, concept records created, and examples added.
+8. **Next Steps** — Pending work and future improvements.
 
 ### Concept Record Requirements
 
 Every ML/DL concept record MUST include:
 
-- **Mathematical Foundation**: Fórmulas, análisis de complejidad, sketch de prueba cuando aplique.
-- **Step-by-Step Algorithm**: Cómo funciona el algoritmo paso a paso, no solo qué hace.
-- **Advantages & Limitations**: Cuándo usar, cuándo no usar.
-- **Relationship with KAFE**: Cómo la teoría se mapea a la implementación.
-- **References**: Papers, libros, fuentes autoritativas.
+- **Mathematical Foundation**: Formulas, complexity analysis, and a proof sketch when applicable.
+- **Step-by-Step Algorithm**: How the algorithm works at each step, beyond describing its result.
+- **Advantages & Limitations**: When to use it and when to avoid it.
+- **Relationship with KAFE**: How the theory maps to the implementation.
+- **References**: Papers, books, and authoritative sources.
 
 Never respond with only "Done", "Fixed", "Completed".
 
@@ -123,11 +131,11 @@ After implementing ANY ML/DL component, these updates are **mandatory** (not opt
 
 After each implementation, verify ALL of these exist:
 
-- [ ] `.opencode/knowledge/concepts/<name>.md` — concept record enriquecido
+- [ ] `.opencode/knowledge/concepts/<name>.md` — enriched concept record
 - [ ] `.opencode/history/YYYY/YYYY-MM.md` — history record
 - [ ] `tests/KafeMACHINE/<category>/` — 7+ fixtures (5 valid + 2 error)
-- [ ] `.opencode/benchmarks/records.md` — benchmark con 5 escenarios
-- [ ] `docs/bibliotecas/` — documentación actualizada
-- [ ] `.opencode/progress/roadmap.md` — refleja completado
+- [ ] `.opencode/benchmarks/records.md` — benchmark with 5 scenarios
+- [ ] `docs/bibliotecas/` — updated documentation
+- [ ] `.opencode/progress/roadmap.md` — reflects completion
 
 If any of these is missing, the task is NOT complete.

@@ -16,16 +16,19 @@ KafeMACHINE architectural review completed (2026-09-14):
 
 ## Current Milestone
 
+Repository policy alignment — ◐ Policy baseline is present in the local working tree but remains uncommitted. The four-branch follow-on sequence is recorded in `.opencode/progress/repository-alignment.md`.
+
 KafeMACHINE machine learning library — ✔ Complete. 11 models, preprocessing, metrics, model selection.
 KafeGESHA deep learning library — ◐ In Progress. Dense, activations, optimizers; Conv2D/LSTM/Transformer pending.
 
 ## Current Priorities
 
-1. KafeGESHA: Conv2D, LSTM, Transformer layers (per roadmap).
-2. Legacy review tasks (BaseMachine, LinearRegression, LogisticRegression, KNN, Metrics).
-3. Performance optimization (vectorization, parallel execution).
-4. Documentation — remaining component documentation cycles.
+1. Preserve and review the current uncommitted policy/Kiro-retirement baseline; wait for explicit authorization before commits or branch operations.
+2. After that baseline is integrated, deliver `build/uv-environment` → `test/interpreter-quality-evidence` → `refactor/english-repository` → `chore/python-quality-gates`.
+3. Resolve the historical-record, tracked PDF, stale-log, and path/API decisions before approving the English-migration design.
+4. Resume KafeGESHA layers, legacy reviews, and performance work according to the project roadmap after the repository-alignment sequence or when the user reprioritizes them.
 
 ## Current Blockers
 
-None identified.
+- English-history/PDF/log disposition is not yet decided; do not claim full English compliance until it is.
+- Coverage and static-analysis baselines have not yet been measured. The inventory counts in the alignment tracker are not passing checks.

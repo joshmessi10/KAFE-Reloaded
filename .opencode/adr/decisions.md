@@ -320,3 +320,80 @@ Validate hyperparameters in `__init__()`:
 - `max_iter > 0` — zero or negative values prevent training
 
 Fails fast at construction time instead of silently producing a broken model.
+
+---
+
+## ADR-0008: Mirrored Root Policies Govern Project Procedures
+
+- **Status**: accepted
+- **Date**: 2026-09-23
+- **Clarifies**: ADR-0001 (its historical text remains unchanged)
+
+### Context
+
+KAFE's root instructions have adopted applicable repository policies for English, Superpowers, dependency management, and quality gates. `AGENTS.md` and `CLAUDE.md` must express the same substantive rules. Some OpenCode knowledge and review instructions still described themselves as the exclusive review authority, which could exclude those root invariants. The repository also retains legacy setup and unimplemented migration gates that must not be presented as passing checks.
+
+### Decision
+
+1. Applicable runtime and user instructions govern execution. The mirrored `AGENTS.md` and `CLAUDE.md` files define repository invariants. Only their file-identifying introductory text may differ.
+2. `OPENCODE.md`, `.opencode/` procedures and knowledge, and `.kiro/` steering implement the root invariants and cannot waive them. Reviews and `/dod` must consult both root policies and relevant technical knowledge.
+3. ADR-0001's ADR > Knowledge > History > Progress order applies to conflicts among project records only. It does not elevate historical records above current root policies or applicable runtime/user instructions. OpenCode remains the persistent project engineering system with its existing lifecycle, roles, and ML/DL documentation and benchmark duties.
+4. Record verification as PASS, FAIL, PENDING, or N/A with evidence or reasons. Distinguish task acceptance from repository migration debt. Missing gates remain PENDING; a task that promises to implement one is incomplete until its enforcement is demonstrated.
+5. Keep Superpowers specs, plans, and review reports local in the ignored artifact paths. Never stage, force-add, or commit them; persist durable project decisions in ADR/history/knowledge records instead.
+
+### Rationale
+
+- A mirrored policy body prevents agent-specific rule drift.
+- Project knowledge retains its technical role without excluding repository-wide obligations.
+- Evidence and explicit pending status prevent existing pytest success from being mistaken for complete quality-policy enforcement.
+- The clarification preserves historical decisions and KAFE's educational engineering process.
+
+### Consequences
+
+- Root policy changes must remain synchronized and be reflected in affected procedures and steering.
+- English migration, coordinated uv setup, and new quality/CI checks remain separate implementation work. The uv plan must cover runtime, development, docs, Nix's role, and optional integrations while preserving KafeHF's missing-dependency behavior.
+- Child interpreter coverage and full diagnostic observation require explicit implementation and execution evidence; parent pytest-cov/filterwarnings alone do not establish them.
+- Existing applicable full-suite, session-closure, ML/DL artifact, benchmark, and history obligations remain in force.
+
+### Alternatives Considered
+
+- **Mirror only a new policy section:** rejected because substantive rules elsewhere could still diverge.
+- **Keep knowledge as the exclusive review authority:** rejected because it could bypass root invariants.
+- **Rewrite ADR-0001:** rejected to preserve the historical decision and make the clarification traceable.
+
+---
+
+## ADR-0009: Retire Repository-level Kiro Configuration and Steering
+
+- **Status**: accepted
+- **Date**: 2026-09-23
+- **Partially supersedes**: ADR-0008, Decision 2, only its inclusion of `.kiro/` steering
+
+### Context
+
+The preceding policy alignment brought Kiro steering under the mirrored root invariants. A subsequent user-approved retirement removes repository-level Kiro support. The steering's reusable KAFE facts are already represented in the root and OpenCode documentation; its file I/O fixture casing and parser-cleanup details are preserved in canonical verification guidance. The repository-scoped MCP configuration contains no reusable engineering policy.
+
+### Decision
+
+1. Remove `.kiro/settings/mcp.json` and `.kiro/steering/product.md`, `structure.md`, and `tech.md` from this repository. This decision does not authorize changing global/user Kiro configuration or unrelated MCP integrations.
+2. Current subordinate repository procedures are `OPENCODE.md` and `.opencode/`. Remove active Kiro authority references from the mirrored root instructions, the operating manual, and engineering/context records.
+3. Preserve ADR-0008 unchanged as a historical decision. Its inclusion of Kiro steering in Decision 2 is superseded by this retirement; all remaining authority, review, local-artifact, migration-status, and verification requirements stay in force.
+4. Preserve the earlier alignment history and append this retirement event. Keep the reusable `tests/KafeFiles/` casing and `make clean` requirements in `.opencode/knowledge/verifications.md`.
+
+### Rationale
+
+- Retiring a duplicated tool-specific instruction surface reduces maintenance and rule drift.
+- Canonical guidance retains the useful operational details without preserving repository-level Kiro integration.
+- A scoped superseding decision records the changed support boundary without rewriting historical policy.
+
+### Consequences
+
+- The repository no longer supplies Kiro MCP settings or steering; historical Kiro references describe the earlier state and this retirement only.
+- `AGENTS.md` and `CLAUDE.md` remain mirrored. OpenCode retains its operating-manual and persistent-engineering-system roles under the root policies.
+- Runtime behavior, dependency declarations, fixtures, workflows, and pending English/uv/quality migrations are unaffected by the retirement.
+
+### Alternatives Considered
+
+- **Keep duplicate Kiro steering:** rejected because the user approved retiring repository-level support and canonical guidance already covers the project.
+- **Delete historical decisions and events:** rejected because it would erase the reason for the changed authority boundary.
+- **Remove global tools or migrate MCP settings automatically:** outside the authorized repository scope.

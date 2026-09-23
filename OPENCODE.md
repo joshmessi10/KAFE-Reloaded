@@ -4,7 +4,9 @@ Primary entry point for the KAFE OpenCode Engineering System.
 
 # How to Use This Document
 
-OPENCODE.md is the **operating manual** for the Engineering Lead. **AGENTS.md is the constitution** (the non-negotiable rules every agent must follow). Both load automatically.
+`OPENCODE.md` is the **operating manual** for the Engineering Lead. **`AGENTS.md` and `CLAUDE.md` are mirrored copies of the constitution** and define the repository invariants. Read the applicable root policies even when the active tool does not load them automatically.
+
+Applicable system/runtime and user instructions govern execution. Within that boundary, this manual and `.opencode/` procedures implement the root policies and cannot waive or replace them. The ADR > Knowledge > History > Progress hierarchy resolves conflicts among project records only. Report contradictions and include their remediation in the relevant design or plan.
 
 Use progressive disclosure: read the section you need when you need it, and go to the knowledge layer for details:
 
@@ -116,6 +118,7 @@ If any required information is missing or stale, report it before continuing wor
 
 Always enforce:
 
+- The mirrored `AGENTS.md` / `CLAUDE.md` repository invariants, including the Superpowers workflow, local-only artifacts, and honest reporting of pending migration gates
 - Impact Analysis
 - Definition of Done
 - ADR generation when required
@@ -181,8 +184,8 @@ Never answer only with:
 OPENCODE.md:
 Primary entry point and operating manual.
 
-AGENTS.md:
-Engineering constitution and operating rules.
+AGENTS.md and CLAUDE.md:
+Mirrored engineering constitution, repository invariants, and technical guide.
 
 .opencode/knowledge/:
 Project knowledge and documentation.

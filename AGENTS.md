@@ -1,10 +1,10 @@
 # AGENTS.md
 
-Engineering constitution for the KAFE engineering system. This file defines what KAFE is and the rules agents must follow. **OPENCODE.md is the primary entry point** (operating manual); the persistent engineering system (knowledge, memory, history, planning, ADR, benchmarks, skills, commands) lives under `.opencode/`.
+Engineering constitution and technical guide for KAFE. This file and its mirrored counterpart define repository-wide invariants. `OPENCODE.md` is the operating manual; the persistent engineering system lives under `.opencode/`.
 
 # How to Use This Document
 
-AGENTS.md is both the **constitution** (non-negotiable rules) and a **navigation map**. Use progressive disclosure: read the section you need when you need it — do not treat it as a bible to consume end-to-end. Process detail lives in `.opencode/knowledge/engineering.md`; reusable workflows live in `.opencode/skills/`.
+`AGENTS.md` and `CLAUDE.md` are mirrored copies of the **constitution** (repository invariants) and **navigation map**. `OPENCODE.md` is the operating manual. Use progressive disclosure: read the relevant sections when needed. Process detail lives in `.opencode/knowledge/engineering.md`; reusable workflows live in `.opencode/skills/`.
 
 Read before deciding, in this order: `.opencode/knowledge/` → `.opencode/memory/` → `.opencode/history/` → `.opencode/progress/`.
 
@@ -42,12 +42,12 @@ Before implementing any significant change:
 1. Understand the current implementation.
 2. Read relevant documentation.
 3. Perform Impact Analysis.
-4. Produce an implementation plan.
+4. Follow the Superpowers workflow below: approved design, local implementation plan, implementation, and verification.
 
 After implementation:
 
-1. Run tests.
-2. Validate behavior.
+1. Run applicable tests and checks; explain when a check is not relevant to the change.
+2. Validate behavior or document integrity, as appropriate.
 3. Update documentation.
 4. Update project history.
 5. Verify Definition of Done.
@@ -87,7 +87,7 @@ Progress (`.opencode/progress/`):
 - `backlog.md` — prioritized task list.
 - `milestones.md` — major project milestones.
 - `current.md` — current work tracking (feature, status, current/next step, blockers, related ADRs).
-- `session-log.md` — append-only bitácora of closed sessions (written by `/close`).
+- `session-log.md` — append-only record of closed sessions (written by `/close`).
 
 # Impact Analysis
 
@@ -187,13 +187,18 @@ When a significant engineering decision is made:
 
 # Definition of Done
 
-A task is not complete unless:
+Before declaring a task complete, verify all applicable items:
 
-- Implementation exists.
-- Validation passed.
-- Tests passed.
-- Documentation updated.
-- History updated.
+- The requested implementation or documentation change exists and follows its approved design.
+- Required local Superpowers specs and plans exist and no Superpowers artifacts were staged or committed.
+- `AGENTS.md` and `CLAUDE.md` have identical substantive content.
+- Only necessary dependencies were introduced, using the applicable package-management policy.
+- New and edited prose follows the English policy; any remaining language migration debt is recorded.
+- Applicable validation, tests, coverage, lint, type checks, spelling, dependency audits, and CI passed with zero errors and zero warnings, subject only to documented unavoidable upstream warning exceptions.
+- Documentation, project knowledge, history, and planning records were updated as required.
+- Any unavailable or pending migration gate is explicitly reported as pending, not passed. A bounded documentation task does not complete the deferred English, uv, or CI migrations.
+
+For a documentation-only task, validate the changed documents and references; do not describe an unrun application test suite as passed. Do not declare completion of a migration while a known in-scope violation remains unresolved.
 
 When applicable (ML/DL components):
 
@@ -210,14 +215,14 @@ Never respond with only: "Done", "Fixed", "Completed".
 
 For significant tasks always provide:
 
-1. **Theory** — Concepto matemático: qué es, por qué existe, fundamento matemático (fórmulas en LaTeX cuando aplique), complejidad computacional, ventajas, limitaciones, relación con la implementación KAFE.
-2. **Analysis** — Estado actual del código, qué existe, qué falta.
-3. **Impact** — Módulos afectados, riesgos, compatibilidad.
-4. **Plan** — Plan paso a paso con pasos de verificación.
-5. **Implementation** — Cambios realizados, estructura de código, decisiones de diseño.
-6. **Validation** — Tests ejecutados, resultados, edge cases cubiertos.
-7. **Documentation** — Archivos actualizados, concept records creados, ejemplos agregados.
-8. **Next Steps** — Trabajo pendiente, mejoras futuras.
+1. **Theory** — What the concept is, why it exists, its mathematical foundation (with LaTeX formulas when useful), computational complexity, advantages, limitations, and relationship to the KAFE implementation.
+2. **Analysis** — Current code state, what exists, and what is missing.
+3. **Impact** — Affected modules, risks, and compatibility.
+4. **Plan** — Ordered steps, including verification.
+5. **Implementation** — Changes made, code structure, and design decisions.
+6. **Validation** — Tests run, results, and covered edge cases.
+7. **Documentation** — Updated files, created concept records, and added examples.
+8. **Next Steps** — Remaining work and possible improvements.
 
 Standards: `.opencode/knowledge/engineering.md` (Educational Response Standards).
 
@@ -249,38 +254,86 @@ Project planning is maintained in:
 - `.opencode/progress/roadmap.md`
 - `.opencode/progress/backlog.md`
 
-Do not store active roadmap information inside AGENTS.md.
+Do not store active roadmap information inside `AGENTS.md` or `CLAUDE.md`.
 
-# Dependency Policy
+# Repository Policies
 
-Dependencies are forbidden by default.
+## Mirrored constitution and instruction authority
 
-Before introducing a new dependency, verify that the functionality cannot be implemented using:
+`AGENTS.md` and `CLAUDE.md` define the same repository-wide invariants. Their complete substantive content must match; only the file-identifying title and introductory description may differ. Whenever either file changes, apply the same substantive change to the other and compare both bodies before completing the task.
 
-1. Existing KAFE libraries.
-2. Existing KAFE modules.
-3. Python built-in functionality.
+Applicable system/runtime instructions and the user's instructions govern execution. Within that boundary, these mirrored root policies define the repository invariants. `OPENCODE.md` and `.opencode/` procedures implement those invariants and cannot waive or replace them. The ADR > Knowledge > History > Progress hierarchy resolves conflicts among project records only; it does not override the root policies. Identify conflicts and include their remediation in the relevant design, plan, or direct-task action plan.
 
-External dependencies require explicit justification.
+## Project scope and language policy
 
-For machine learning and deep learning implementations, importing external algorithm implementations is prohibited.
+KAFE is a Python 3.10+ educational DSL for functional programming, machine learning, and deep learning. `.kf` files are KAFE source programs. Its interpreter uses ANTLR 4 and the Visitor pattern. The repository contains the command-line interpreter, Python libraries and tests, and MkDocs documentation. It has no active JavaScript/TypeScript frontend, web backend, or application database. React, FastAPI, frontend routing, and database-normalization requirements do not apply to this architecture.
 
-Examples:
+All repository content must be in English, including source code, identifiers, comments, documentation, configuration, tests, file and directory names, commit messages, and user-facing text. Legacy Spanish remains in syntax, APIs, paths, fixtures, and prose; full compliance is pending the coordinated English migration. Write new prose in English and translate prose you edit. Changes to executable syntax, public identifiers, paths, and expected output require coordinated compatibility, documentation, and fixture updates in that migration; do not silently change runtime behavior during an instruction-only edit. Keep this debt explicit until resolved.
 
-- Do not use sklearn implementations of algorithms that are being implemented inside KAFE.
-- Do not use TensorFlow or PyTorch implementations of layers that are being implemented inside KAFE.
+Add another language only for intentional internationalization. Use a well-known i18n/gettext-style library when needed, keep translations separate from application logic, and follow established internationalization practices. `codespell` checks spelling; it does not prove that content is English. These rules do not require a separate automatic language detector.
 
-# Key Constraints
+## Python package management and migration status
 
-- **Simplicity principles (always follow):** Simplicity is a state of being uncluttered and clear, often representing the final result of excellent design. Simplification is the active process of reducing complexity to reach simplicity. They transform overwhelming noise into elegant, accessible solutions.
+Use `uv`, `pyproject.toml`, and a committed `uv.lock` as the target Python dependency-management standard. Add only packages the project actually needs. Do not add dependencies through `pip`, `requirements.txt`, Poetry, Pipenv, Conda, or another competing Python dependency manager.
 
-# Language Policy
+**Pending migration:** this checkout still uses `requirements.txt` and has no `pyproject.toml` or `uv.lock`. The existing pip bootstrap may be used only to operate this pre-migration checkout. Do not extend it or describe the future uv commands as already available.
 
-**All repository content is written in English** — code, identifiers, comments, docstrings, user-facing strings, file names, directory names, and documentation.
+The coordinated migration must cover runtime and development dependencies, developer setup, MkDocs dependencies, CI, optional integrations, and the Python environment currently supplied by `flake.nix`. Define Nix's supporting role explicitly so it does not maintain a conflicting Python dependency source. Preserve its necessary system tools, including Java and ANTLR. Update all corresponding setup and dependency instructions together.
 
-The repository is mid-migration from Spanish, so Spanish still remains in places. **Do not add new Spanish.** When you edit a file that still contains Spanish, translate what you touch.
+Keep Hugging Face `datasets` optional for KafeHF. The baseline environment must continue to work without it, and the missing-dependency fixture must remain deterministic. An optional integration environment must not accidentally invalidate the baseline test by installing `datasets` globally or as a required development dependency.
 
-`codespell` is an English spell *checker*, not a language detector — it flags only a small fraction of Spanish (given four plainly Spanish lines it reports one word) and must not be treated as the enforcement mechanism.
+After migration, use uv for installation, dependency changes, scripts, documentation commands, and CI. If uv is absent, install it using the official instructions at https://docs.astral.sh/uv/getting-started/installation/ before using the migrated workflow. Report an installation blocker instead of falling back to another dependency manager.
+
+The `dev` dependency group must contain `basedpyright`, `codespell`, `ruff`, `pytest`, and `pytest-cov`. Add `pytest-asyncio` and its appropriate loop settings only when asynchronous tests exist. Set `tool.uv.exclude-newer` to `"7 days"`. Avoid broad extras and convenience bundles unless every included capability is required.
+
+## Superpowers workflow
+
+Superpowers is mandatory for non-trivial implementation, including new features, components, behavior changes, non-trivial fixes, and architecture changes. If it is not installed in the active agent environment, install it using the official instructions at https://github.com/obra/superpowers before starting implementation. If installation cannot be completed, report the blocker and pause implementation.
+
+The required sequence is `superpowers:brainstorming` → approved design spec → `superpowers:writing-plans` → implementation → verification with `superpowers:verification-before-completion`. Prefer `superpowers:subagent-driven-development` when delegation is permitted and appropriate; use `superpowers:executing-plans` when it is not. Integrate this sequence with KAFE's Impact Analysis, ADR, knowledge, and Definition of Done processes. Do not implement a non-trivial feature or fix directly from the initial request.
+
+During brainstorming:
+
+1. Explore the relevant repository context and current implementation.
+2. Identify constraints and existing architecture.
+3. Ask clarifying questions one at a time when a decision genuinely belongs to the user.
+4. Present two or three viable approaches when meaningful alternatives exist.
+5. Explain their trade-offs and recommend an approach based on KAFE's constraints.
+6. Present the design in logical sections and obtain approval before implementation.
+
+Maintain one local design spec per implementation line or branch at `docs/superpowers/specs/YYYY-MM-DD-<topic>-design.md`. After approval, use `superpowers:writing-plans` to create one plan per spec and implementation line at `docs/superpowers/plans/YYYY-MM-DD-<topic>.md`.
+
+Plans describe intention, structure, approach, and execution order. Override any skill instruction to reproduce complete implementations in the plan. Use only the minimum code signal needed to remove ambiguity: a function signature, interface, schema shape, key expression, small configuration excerpt, migration outline, or list of cases. Do not paste complete files, functions, components, or tests. For tests, describe the asserted behavior, inputs, expected outputs, edge cases, and a table of cases when useful.
+
+## Local-only Superpowers artifacts
+
+Specs, plans, delegated task briefs, and review reports are local working artifacts. Store them under `docs/superpowers/specs/`, `docs/superpowers/plans/`, or `.superpowers/`. Preserve the specific `.gitignore` exclusions for `docs/superpowers/` and `.superpowers/`; never ignore the published `docs/` tree.
+
+Never stage these artifacts, force-add them, commit them, propose committing them, or remove their ignore exclusions. This overrides skill instructions to commit design documents or plans. An ignored artifact's absence from `git status` is not proof that it does not exist; verify required local artifacts directly.
+
+## Direct tasks and execution conventions
+
+A full design spec and plan are unnecessary only for genuinely simple, mechanical tasks with no substantive design decision. Before editing, acknowledge the requested change, identify unresolved user decisions and repository conflicts, and give the exact action and verification plan. Obtain a go-ahead if the task is not already authorized; existing clear user authorization remains valid and must not be requested again. Do not use this exception to bypass Superpowers for non-trivial work.
+
+Stay on the current branch when continuing the same implementation line. Otherwise use a clearly named branch for a coherent deliverable. Do not use Git worktrees or create one branch per individual rule. Commits must be logically scoped, meaningful, well described, and free of unrelated changes. Do not create low-quality checkpoint commits merely to record progress.
+
+## Python quality and CI
+
+The following quality gates are required outcomes of the pending uv/quality migration, not claims that this checkout already implements them. Configure Ruff with explicit rules, run `basedpyright` on project-owned Python, use `codespell` for spelling, and run pytest with `pytest-cov`. Exclude generated ANTLR outputs from static analysis and coverage. Measure project-owned KAFE source and enforce at least 80% coverage; do not copy a coverage target for an unrelated `app` package. Configure pytest with `filterwarnings = ["error"]`.
+
+The fixture suite launches the KAFE interpreter in child Python processes. Parent-process pytest-cov and pytest warning filters alone do not prove interpreter coverage or warning enforcement. Future gates must collect and combine coverage from those children, propagate warning policy, and inspect their complete stdout, stderr, and diagnostics. Validate those mechanisms with evidence. Preserve expected KAFE errors, error fixtures, exit codes, and current CLI semantics; an expected invalid-program result is not itself a quality-gate failure. Do not discard earlier child diagnostics merely because the final expected error line matches.
+
+Python CI must include `uv audit` over the locked dependencies including development dependencies, codespell, Ruff, basedpyright, tests, coverage, and an explicit repository-policy check rejecting any project-authored `# pyright:` or `# noqa:` comments in Python source. Those comments are prohibited even when narrowly targeted. Fix the underlying issue rather than suppressing it.
+
+Extend the existing KAFE workflows: `.github/workflows/tests.yml` for interpreter and policy checks, `.github/workflows/docs.yml` for the MkDocs build and deployment, and `.github/workflows/main.yml` for Nix lockfile maintenance. Preserve ANTLR generation/runtime prerequisites and the documentation site's deployment. Do not require a generic `ci.yml` or unrelated frontend jobs. The quality migration must run mandatory checks on branch pushes and pull requests and use suitable concurrency, permissions, and job time limits.
+
+**0 errors and 0 warnings** is a hard local and CI completion gate for the applicable checks. Do not remove or weaken gates to obtain a passing result. An unavoidable upstream warning exception must be narrowly scoped to that warning, documented with its reason, and accompanied by an explanatory comment; never globally downgrade warnings. Record unavailable or not-yet-implemented gates as pending, never passing. Do not claim full repository alignment while known migration gaps remain.
+
+## Dependencies and simplicity
+
+Before adding a dependency, determine whether Python built-ins or the existing KAFE stack already provide the capability, whether the dependency is necessary, and whether its installed functionality will actually be used. Justify external dependencies and add only the minimum package required. Do not import external implementations of ML/DL algorithms or layers that KAFE is implementing itself.
+
+Prefer fewer concepts and moving parts, explicit data flow, obvious ownership, predictable behavior, and minimal incidental complexity. Continuously remove unnecessary abstractions, dependencies, indirection, state, duplication, configuration, and custom infrastructure. Simplicity means understandable software, not merely fewer lines. Solve the actual requirement with the smallest robust design and avoid infrastructure for hypothetical future needs.
 
 # Educational Response Requirement
 
@@ -303,11 +356,154 @@ Do not only describe code changes. Explain the underlying theory behind the impl
 
 # Source of Truth
 
-Engineering decisions and documentation are authoritative in this order:
+For conflicts among project records only, use this order:
 
 1. **ADRs** — `.opencode/adr/` (architectural decisions and public API changes).
 2. **Knowledge Layer** — `.opencode/knowledge/` (architecture, conventions, language spec, libraries).
 3. **History** — `.opencode/history/` (significant project events).
 4. **Progress** — `.opencode/progress/` (roadmap, backlog, milestones, and current work).
 
-When documents conflict, the higher-precedence source wins.
+Within those project records, the higher-precedence source wins. This order does not override applicable system/runtime and user instructions or the mirrored root policies. OpenCode procedures remain subordinate implementations of those policies.
+
+# Technical Setup and Repository Map
+
+## Setup
+
+Requires **Java JDK 11+** (for ANTLR) and **Python 3.10+**.
+
+**Dependency migration status:** this checkout still uses `requirements.txt` and has no `pyproject.toml` or `uv.lock`. For this pre-migration checkout only, its existing bootstrap is:
+
+```bash
+pip install -r requirements.txt
+```
+
+This is a temporary compatibility path, not the dependency-management standard. Do not add dependencies or new workflows with pip. The separate uv migration must update runtime, development, documentation, Nix, optional integrations, and CI together. After that, use `uv sync --group dev` and run commands through `uv run` in the locked environment. Today, `flake.nix` supplies a separate Python environment and system tools, and the docs workflow installs its MkDocs dependencies separately; both are part of the migration scope. KafeHF's `datasets` dependency remains optional, including in the future locked configuration.
+
+Download the ANTLR JAR once from https://www.antlr.org/download/antlr-4.13.2-complete.jar and place it in `src/`.
+
+## Critical: Generate Parser Files
+
+**Generate on a fresh clone and after any grammar change** (`Kafe_Grammar.g4` or `Kafe_Lexer.g4`). From the repository root:
+
+```bash
+cd src
+java -jar antlr-4.13.2-complete.jar -no-listener -visitor -Dlanguage=Python3 Kafe_Grammar.g4
+# Alternative from src/: make antlr (requires the antlr command on PATH)
+```
+
+The generated files (`Kafe_GrammarLexer.py`, `Kafe_GrammarParser.py`, `Kafe_GrammarVisitor.py`, and token/interpreter metadata) are ignored and untracked. Do not commit them or assume a fresh clone contains them. Keep the generator compatible with the currently pinned ANTLR runtime version, 4.13.2.
+
+## Running Programs
+
+Run these commands from the repository root after generating the parser:
+
+```bash
+python src/Kafe.py <path-to-file.kf>
+# Example:
+python src/Kafe.py tests/Algorithms/Fibonacci.kf
+```
+
+## Tests
+
+Run pytest from the repository root; use the Makefile from `src/`:
+
+```bash
+pytest tests/          # all tests
+pytest tests/ -v       # verbose
+pytest tests/test_base.py                                 # one category
+pytest tests/test_base.py::test_valid_programs            # specific test function
+# From src/ in a shell with make:
+make test prueba=KafeMACHINE                             # via Makefile
+```
+
+**Test structure**: each category in `tests/` has `.kf` programs paired with `.expec` (expected stdout) and optional `.in` (stdin). Invalid-program tests use `.error.kf` + `.error.expec`. The `tests/utils.py` helpers discover and parameterize these files for pytest.
+
+The Makefile invokes `python -m pytest`, not `python3`; ensure `python` selects the intended environment. After the uv migration, run pytest through `uv run`; invoke the Makefile through `uv run make test prueba=KafeMACHINE` from `src/` when that route is used. The fixture runners start child interpreters with `sys.executable`, so the quality migration must account for those processes as described above.
+
+**KafeMACHINE tests** have ten immediate fixture directories and eleven configured paths in `tests/test_KafeMACHINE.py`; `metrics/` contributes two paths. Consult that module when the test layout changes.
+
+| Configured fixture path under `tests/KafeMACHINE/` | Area |
+|---|---|
+| `linear/` | Linear models |
+| `neighbors/` | Neighbor models |
+| `tree/` | Tree models |
+| `preprocessing/` | Preprocessing and transformations |
+| `metrics/classification/` | Classification metrics |
+| `metrics/regression/` | Regression metrics |
+| `clustering/` | Clustering |
+| `naive_bayes/` | Naive Bayes |
+| `model_selection/` | Model selection |
+| `svm/` | Support vector models |
+| `ensemble/` | Ensemble models |
+
+KafeHF fixtures live in `tests/KafeHF/` and are collected by `tests/test_KafeHF.py`. `hf_load_dataset_no_dep.error.kf` expects the optional `datasets` package to be absent; preserve that baseline when planning integration tests.
+
+## Architecture
+
+### Execution flow
+
+```
+.kf file → Kafe.py (entry) → ANTLR Lexer/Parser → parse tree
+         → EvalVisitorPrimitivo.py (walks the tree, manages scope stack)
+         → src/componentes_lenguaje/ (language features)
+         → src/lib/ (built-in libraries)
+```
+
+### Key files
+
+| File | Role |
+|------|------|
+| `src/Kafe_Grammar.g4` | Grammar (imports `Kafe_Lexer.g4`) — source of truth for syntax |
+| `src/EvalVisitorPrimitivo.py` | Main visitor: variable scope, dispatch to components and libraries |
+| `src/TypeUtils.py` | Type system definitions and validation |
+| `src/global_utils.py` | Shared helpers (variable assignment, type checking) |
+| `src/errores.py` | Custom exception classes |
+| `src/globals.py` | Global state (program path, working directory) |
+
+### Language components (`src/componentes_lenguaje/`)
+
+Modular implementations called by the visitor:
+
+- `base/` — variables, operators, indexing, literals, type coercion
+- `bucles/` — `for` / `while`
+- `condicionales/` — `if` / `elif` / `else`
+- `funciones/` — `drip` declarations, lambdas, currying, built-ins (`show`, `pour`, `range`, `len`, `append`, `remove`)
+- `importar/` — `import` statements
+- `librerias/` — routes method calls to the correct `lib/` module
+- `method_calling/` — object method resolution
+
+### Built-in libraries (`src/lib/`)
+
+| Library | Import key | Purpose |
+|---|---|---|
+| `KafeNUMK` | `numk` | NumPy-style arrays and matrices |
+| `KafeGESHA` | `geshaDeep` | Neural networks and deep learning primitives |
+| `KafeMATH` | `math` | Math utilities |
+| `KafePLOT` | `plot` | Plotting and visualization |
+| `KafePARDOS` | `pardos` | DataFrames and CSV |
+| `KafeFILES` | `files` | File I/O |
+| `KafeMACHINE` | `machine` | ML models, preprocessing, model selection, and metrics |
+| `KafeHF` | `huggingface` | Optional Hugging Face dataset loading through `datasets` |
+
+Import keys are case-sensitive and come from `EvalVisitorPrimitivo.libraries`. Preserve their spelling unless a coordinated language/API migration changes them.
+
+### KAFE language keywords
+
+`drip` (function def) · `show` (print) · `pour` (debug print) · `import` · `if/elif/else` · `while` · `for` · `return`
+
+Types include `INT`, `FLOAT`, `STR`, `BOOL`, `VOID`, `List[...]`, `GESHA`, `PARDOS`, `MACHINE`, and `FUNC` function types. `List` is case-sensitive; `LIST` is the lexer token name, not its source spelling.
+
+### Adding a new built-in library
+
+1. Perform Impact Analysis and follow `.opencode/skills/create-library/` under the root policies.
+2. Create the package `src/lib/KafeXXX/` with `__init__.py` and `funciones.py`, exposing the required library functions and any supporting classes.
+3. Import `lib.KafeXXX.funciones` in `src/EvalVisitorPrimitivo.py` and register its case-sensitive import key in `self.libraries`, following the existing `[module, False]` pattern.
+4. Reuse the generic dispatch in `src/componentes_lenguaje/librerias/funciones.py`; change it only when the library requires new dispatch behavior.
+5. Add paired fixtures under `tests/KafeXXX/`, a collecting `tests/test_KafeXXX.py` module, and applicable library documentation, examples, and project records.
+
+### Adding grammar features
+
+1. Edit `Kafe_Grammar.g4` (or `Kafe_Lexer.g4` for tokens).
+2. Regenerate the ignored parser files from `src/` with the configured ANTLR generator (`make antlr` when available).
+3. Add visitor methods in `EvalVisitorPrimitivo.py` (or delegate to a new component).
+4. Add relevant valid/invalid fixtures and update language documentation; preserve generated-file exclusions.
