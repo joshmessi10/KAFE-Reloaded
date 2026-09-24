@@ -1,0 +1,2777 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Technical documentation for the KAFE Deep Learning Language">
+      
+      
+      
+        <link rel="canonical" href="https://joshmessi10.github.io/KAFE-Reloaded/migration/english-repository-migration/">
+      
+      
+        <link rel="prev" href="../../about/license/">
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>English Repository Migration - KAFE — Language Documentation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="https://unpkg.com/katex/dist/katex.min.css">
+    
+      <link rel="stylesheet" href="../../assets/css/custom.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="black" data-md-color-accent="yellow">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#english-repository-migration-inventory" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="KAFE — Language Documentation" class="md-header__button md-logo" aria-label="KAFE — Language Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            KAFE — Language Documentation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              English Repository Migration
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="black" data-md-color-accent="yellow"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="yellow"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/joshmessi10/KAFE-Reloaded" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    KAFE-Reloaded
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="KAFE — Language Documentation" class="md-nav__button md-logo" aria-label="KAFE — Language Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    KAFE — Language Documentation
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/joshmessi10/KAFE-Reloaded" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    KAFE-Reloaded
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Getting Started
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/first-program/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    First Program
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/basic-examples/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Basic Examples
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Language
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Language
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/lexical-structure/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lexical Structure
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/type-system/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Type System
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/operators/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operators and Expressions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/control-structures/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Control Structures
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/functions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Functions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/lists/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lists
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/imports/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Imports
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Libraries
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Libraries
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../libraries/numk/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    NUMK (Linear Algebra)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../libraries/math/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MATH (Mathematics)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../libraries/plot/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PLOT (Visualization)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../libraries/files/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    FILES (File Operations)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../libraries/gesha/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    GeshaDeep (Deep Learning)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../libraries/pardos/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PARDOS (DataFrames)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../libraries/machine/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MACHINE (ML Utilities)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Specification
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Specification
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../specification/ebnf-grammar/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Formal Grammar (EBNF)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../specification/operational-semantics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operational Semantics
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../specification/lexical-syntactic-semantic-analysis/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lexical, Syntactic, and Semantic Analysis
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../specification/operator-precedence/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operator Precedence
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Error Handling
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Error Handling
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../errors/error-types/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Error Types
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../errors/lexical-errors/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lexical Errors
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../errors/syntax-errors/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Syntax Errors
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../errors/semantic-errors/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Semantic Errors
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../errors/error-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Error Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Examples
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Examples
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/hello-world.kf" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Hello World
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/fibonacci-currying.kf" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fibonacci with Currying
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/merge-sort.kf" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Merge Sort
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/linear-regression.kf" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Linear Regression
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/neural-network.kf" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Neural Network
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/decision-tree.kf" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Decision Tree
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    About
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    About
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../about/credits/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Credits
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../about/license/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    License
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_9" id="__nav_9_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Migration
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Migration
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    English Repository Migration
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    English Repository Migration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#work-ownership-and-text-surfaces" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Work ownership and text surfaces
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#source-and-python-import-path-map" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Source and Python import path map
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#dispatch-and-public-name-audit" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dispatch and public-name audit
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Dispatch and public-name audit">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#task-3-shared-type-and-decorator-migration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Task 3 shared type and decorator migration
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#test-and-fixture-path-map" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Test and fixture path map
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#documentation-file-and-route-map" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Documentation file and route map
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#approved-retirement-and-migration-notice" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Approved retirement and migration notice
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#work-ownership-and-text-surfaces" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Work ownership and text surfaces
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#source-and-python-import-path-map" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Source and Python import path map
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#dispatch-and-public-name-audit" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dispatch and public-name audit
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Dispatch and public-name audit">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#task-3-shared-type-and-decorator-migration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Task 3 shared type and decorator migration
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#test-and-fixture-path-map" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Test and fixture path map
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#documentation-file-and-route-map" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Documentation file and route map
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#approved-retirement-and-migration-notice" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Approved retirement and migration notice
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="english-repository-migration-inventory">English repository migration inventory<a class="headerlink" href="#english-repository-migration-inventory" title="Permanent link">&para;</a></h1>
+<p>This is the path, route, and compatibility contract for the approved English migration. It records the tracked tree at <code>58bf7d51ac1dcbc462e735bcfe5d555192a9a106</code> before renaming. The migration changes owned English-facing names and prose while preserving KAFE execution semantics, CLI exit codes, and fixture purposes. Old Python aliases, KAFE aliases, file paths, and documentation redirects are <strong>not retained</strong>. Consumers must adopt the replacements below.</p>
+<p>The Spanish spellings in this note are literal old paths, source symbols, fixture names, or code examples needed for migration. The explanatory prose and target names are English.</p>
+<p>KAFE syntax stays English and unchanged. In particular, the lexer literals <code>drip</code>, <code>pour</code>, <code>show</code>, <code>len</code>, <code>remove</code>, <code>append</code>, <code>return</code>, <code>if</code>, <code>elif</code>, <code>else</code>, <code>match</code>, <code>FUNC</code>, <code>range</code>, <code>import</code>, <code>int</code>, <code>float</code>, <code>str</code>, <code>bool</code>, <code>List</code>, <code>INT</code>, <code>FLOAT</code>, <code>BOOL</code>, <code>VOID</code>, <code>STR</code>, <code>GESHA</code>, <code>PARDOS</code>, <code>MACHINE</code>, <code>True</code>, and <code>False</code> are not translated. The built-in import keys <code>numk</code>, <code>math</code>, <code>files</code>, <code>plot</code>, <code>geshaDeep</code>, <code>pardos</code>, <code>machine</code>, and <code>huggingface</code> remain exactly as registered by <code>InterpreterVisitor.self.libraries</code>.</p>
+<h2 id="work-ownership-and-text-surfaces">Work ownership and text surfaces<a class="headerlink" href="#work-ownership-and-text-surfaces" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Later task</th>
+<th>Tracked surfaces to review and translate</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>2 — core</td>
+<td><code>src/Kafe.py</code>, <code>src/EvalVisitorPrimitivo.py</code>, <code>src/TypeUtils.py</code>, <code>src/global_utils.py</code>, <code>src/globals.py</code>, <code>src/errores.py</code>, both <code>.g4</code> grammars, and all <code>src/componentes_lenguaje/**</code>. Translate internal identifiers, comments, diagnostics, and paths; preserve lexer literals. <code>src/Ejemplo.kf</code> is a first-party example and becomes <code>src/Example.kf</code>.</td>
+</tr>
+<tr>
+<td>3 — libraries</td>
+<td>Every owned <code>src/lib/**</code> Python file, including comments, docstrings, parameters, diagnostics, import references, and Spanish internal helpers. Public English library calls and object methods remain spelled as they are.</td>
+</tr>
+<tr>
+<td>4 — tests and data</td>
+<td>Every owned <code>tests/**/*.py</code>, <code>.kf</code>, <code>.in</code>, <code>.expec</code>, <code>.error.expec</code>, <code>.error.stderr.expec</code>, <code>.error.stdout.expec</code>, <code>.txt</code>, <code>.csv</code>, <code>.json</code>, and <code>.svg</code>. Translate meaningful strings, comments, test identifiers, data headers/labels, and SVG text/metadata while retaining cases, values, pairings, and stream contracts.</td>
+</tr>
+<tr>
+<td>5 — site</td>
+<td>All tracked <code>docs/**/*.md</code> and <code>docs/**/*.kf</code>, <code>docs/assets/css/custom.css</code> if human-readable text exists, <code>mkdocs.yml</code>, <code>README.md</code>, and documentation references in <code>OPENCODE.md</code>. Change <code>theme.language: es</code> to <code>en</code>, translate site/nav labels and prose, update links/anchors, and retain correct KAFE syntax in examples.</td>
+</tr>
+<tr>
+<td>6 — records and retirement</td>
+<td><code>AGENTS.md</code>, <code>CLAUDE.md</code>, <code>OPENCODE.md</code>, all tracked <code>.opencode/**/*.md</code> (ADR, agents, benchmarks, commands, history, knowledge/concepts, memory, progress, skills, templates), and root guidance/configuration prose. Translate historical entries faithfully while preserving dates, IDs, decisions, and measured results; add ADR-0011 for this one-time backfill. The root instruction mirrors must remain substantively equal. Remove only the three approved artifacts listed below.</td>
+</tr>
+<tr>
+<td>7 — final audit</td>
+<td>Re-enumerate <code>git ls-files</code> across source, tests, docs, records, <code>.github/workflows/*.yml</code>, <code>pyproject.toml</code>, <code>opencode.json</code>, <code>flake.nix</code>, <code>src/Makefile</code>, and all tracked text-bearing assets. Search old names and Spanish prose manually; technical data, established product/proper names, mathematical notation, third-party symbols, and KAFE syntax are not prose to translate blindly.</td>
+</tr>
+</tbody>
+</table>
+<p>The tracked baseline contains 1,458 paths: 116 under <code>src/</code>, 1,174 under <code>tests/</code>, 38 under <code>docs/</code>, and 112 under <code>.opencode/</code>. The other 18 are root/configuration/workflow files. These counts are a baseline for coverage, not a requirement that the final count remain fixed.</p>
+<p>The <code>test</code> target in <code>src/Makefile</code> accepts <code>suite=&lt;collector-name&gt;</code>; this replaces the former Spanish <code>prueba=&lt;collector-name&gt;</code> parameter. The target behavior and selected pytest collector remain unchanged.</p>
+<h2 id="source-and-python-import-path-map">Source and Python import path map<a class="headerlink" href="#source-and-python-import-path-map" title="Permanent link">&para;</a></h2>
+<p>Every listed directory move applies to <strong>every tracked descendant</strong>, including files whose basename stays English, such as <code>utils.py</code>. The <code>base</code> and <code>method_calling</code> subdirectories retain those names under the new parent. Entries below resolve all renamed source modules; names absent from the table stay at their present paths.</p>
+<table>
+<thead>
+<tr>
+<th>Old path</th>
+<th>New path</th>
+<th>Owner</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>src/Ejemplo.kf</code></td>
+<td><code>src/Example.kf</code></td>
+<td>2</td>
+</tr>
+<tr>
+<td><code>src/EvalVisitorPrimitivo.py</code></td>
+<td><code>src/InterpreterVisitor.py</code></td>
+<td>2</td>
+</tr>
+<tr>
+<td><code>src/errores.py</code></td>
+<td><code>src/errors.py</code></td>
+<td>2</td>
+</tr>
+<tr>
+<td><code>src/componentes_lenguaje/</code></td>
+<td><code>src/language_components/</code></td>
+<td>2; all tracked descendants</td>
+</tr>
+<tr>
+<td><code>src/componentes_lenguaje/bucles/</code></td>
+<td><code>src/language_components/loops/</code></td>
+<td>2; all tracked descendants</td>
+</tr>
+<tr>
+<td><code>src/componentes_lenguaje/condicionales/</code></td>
+<td><code>src/language_components/conditionals/</code></td>
+<td>2; all tracked descendants</td>
+</tr>
+<tr>
+<td><code>src/componentes_lenguaje/funciones/</code></td>
+<td><code>src/language_components/functions/</code></td>
+<td>2; all tracked descendants</td>
+</tr>
+<tr>
+<td><code>src/componentes_lenguaje/importar/</code></td>
+<td><code>src/language_components/imports/</code></td>
+<td>2; all tracked descendants</td>
+</tr>
+<tr>
+<td><code>src/componentes_lenguaje/librerias/</code></td>
+<td><code>src/language_components/libraries/</code></td>
+<td>2; all tracked descendants</td>
+</tr>
+<tr>
+<td><code>src/componentes_lenguaje/base/funciones.py</code></td>
+<td><code>src/language_components/base/functions.py</code></td>
+<td>2</td>
+</tr>
+<tr>
+<td><code>src/componentes_lenguaje/bucles/funciones.py</code></td>
+<td><code>src/language_components/loops/functions.py</code></td>
+<td>2</td>
+</tr>
+<tr>
+<td><code>src/componentes_lenguaje/condicionales/funciones.py</code></td>
+<td><code>src/language_components/conditionals/functions.py</code></td>
+<td>2</td>
+</tr>
+<tr>
+<td><code>src/componentes_lenguaje/funciones/funciones.py</code></td>
+<td><code>src/language_components/functions/functions.py</code></td>
+<td>2</td>
+</tr>
+<tr>
+<td><code>src/componentes_lenguaje/funciones/utils.py</code></td>
+<td><code>src/language_components/functions/utils.py</code></td>
+<td>2</td>
+</tr>
+<tr>
+<td><code>src/componentes_lenguaje/importar/funciones.py</code></td>
+<td><code>src/language_components/imports/functions.py</code></td>
+<td>2</td>
+</tr>
+<tr>
+<td><code>src/componentes_lenguaje/librerias/funciones.py</code></td>
+<td><code>src/language_components/libraries/functions.py</code></td>
+<td>2</td>
+</tr>
+<tr>
+<td><code>src/componentes_lenguaje/method_calling/funciones.py</code></td>
+<td><code>src/language_components/method_calling/functions.py</code></td>
+<td>2</td>
+</tr>
+<tr>
+<td><code>src/lib/KafeFILES/funciones.py</code></td>
+<td><code>src/lib/KafeFILES/functions.py</code></td>
+<td>3</td>
+</tr>
+<tr>
+<td><code>src/lib/KafeGESHA/funciones.py</code></td>
+<td><code>src/lib/KafeGESHA/functions.py</code></td>
+<td>3</td>
+</tr>
+<tr>
+<td><code>src/lib/KafeHF/funciones.py</code></td>
+<td><code>src/lib/KafeHF/functions.py</code></td>
+<td>3</td>
+</tr>
+<tr>
+<td><code>src/lib/KafeMACHINE/funciones.py</code></td>
+<td><code>src/lib/KafeMACHINE/functions.py</code></td>
+<td>3</td>
+</tr>
+<tr>
+<td><code>src/lib/KafeMATH/funciones.py</code></td>
+<td><code>src/lib/KafeMATH/functions.py</code></td>
+<td>3</td>
+</tr>
+<tr>
+<td><code>src/lib/KafeMATH/errores.py</code></td>
+<td><code>src/lib/KafeMATH/errors.py</code></td>
+<td>3</td>
+</tr>
+<tr>
+<td><code>src/lib/KafeNUMK/funciones.py</code></td>
+<td><code>src/lib/KafeNUMK/functions.py</code></td>
+<td>3</td>
+</tr>
+<tr>
+<td><code>src/lib/KafeNUMK/errores.py</code></td>
+<td><code>src/lib/KafeNUMK/errors.py</code></td>
+<td>3</td>
+</tr>
+<tr>
+<td><code>src/lib/KafePARDOS/funciones.py</code></td>
+<td><code>src/lib/KafePARDOS/functions.py</code></td>
+<td>3</td>
+</tr>
+<tr>
+<td><code>src/lib/KafePLOT/funciones.py</code></td>
+<td><code>src/lib/KafePLOT/functions.py</code></td>
+<td>3</td>
+</tr>
+</tbody>
+</table>
+<p><code>Kafe_GrammarLexer.py</code>, <code>Kafe_GrammarParser.py</code>, <code>Kafe_GrammarVisitor.py</code>, token files, and <code>.interp</code> files are generated by ANTLR 4.13.2 and ignored, not tracked rename targets. The grammar labels <code>unaryExpresion</code>, <code>primaryExpresion</code>, and <code>lambdaExpresion</code> become <code>unaryExpression</code>, <code>primaryExpression</code>, and <code>lambdaExpression</code>. Their generated visitor methods become <code>visitUnaryExpression</code>, <code>visitPrimaryExpression</code>, and <code>visitLambdaExpression</code>; update <code>visitUnaryExpresion</code> and <code>visitLambdaExpresion</code> in the owned visitor and check whether a <code>visitPrimaryExpresion</code> override is needed. Grammar rule/token names and token literals remain stable.</p>
+<h2 id="dispatch-and-public-name-audit">Dispatch and public-name audit<a class="headerlink" href="#dispatch-and-public-name-audit" title="Permanent link">&para;</a></h2>
+<p><code>visitObjectFunctionCall</code> and <code>visitObjectConstant</code> resolve <code>object.name</code> against the eight-entry library registry, then <code>getattr(library_module, name)</code> or <code>getattr(object_t, name)</code>. Thus top-level functions/constants in a registered <code>src/lib/Kafe*/functions.py</code> and callable or readable object attributes are KAFE-visible; the old filename <code>funciones.py</code> was an internal Python import path. Existing exported names in these libraries are English (including <code>math</code> functions, <code>numk</code> operations, <code>files.create/read/write/delete</code>, <code>plot.figure/graph/render/bar/pie</code>, <code>pardos.read_csv/read_json/concat/merge</code>, Gesha layer/model functions, machine constructors/metrics, and Hugging Face functions). <strong>The audit found no Spanish KAFE public callable requiring a spelling change.</strong> Do not translate their English names to a different API.</p>
+<p><code>src/language_components/libraries/functions.py</code> uses <code>getattr</code> for library function and constant dispatch; <code>src/language_components/method_calling/functions.py</code> uses it for object functions and constants. Other <code>getattr</code> calls in <code>language_components/functions/functions.py</code>, <code>language_components/functions/utils.py</code>, and <code>src/lib/KafeMACHINE/BaseMachine.py</code> inspect English Python attributes (<code>signature</code>, <code>_name</code>, <code>_is_fitted</code>) and are not KAFE name translations. <code>DataFrame.query(query_str)</code> calls the generated KAFE lexer/parser on a KAFE expression, injects column values into visitor scope via <code>assign_variable</code>, and evaluates the tree. Its method name and expression grammar remain unchanged; the internal helper import changed with Task 2.</p>
+<p>Spanish Python names are externally importable but not reached as KAFE built-in call names. Rename <code>EvalVisitorPrimitivo</code> to <code>InterpreterVisitor</code>; <code>revisarImportacion</code> to <code>check_imported</code>; <code>esObjeto</code> to <code>is_object</code>; <code>obtener_tipo_dentro_lista</code>/<code>obtener_tipo_lista</code>/<code>obtener_tipo_dato</code> to <code>get_inner_list_type</code>/<code>get_list_type</code>/<code>get_data_type</code>; <code>esTipoCorrecto</code>/<code>asignar_variable</code>/<code>obtener_nivel_anidamiento</code>/<code>verificarHomogeneidad</code> to <code>is_correct_type</code>/<code>assign_variable</code>/<code>get_nesting_level</code>/<code>verify_homogeneity</code>; <code>inferir_tipo</code> to <code>infer_type</code>; <code>globals.ruta_programa</code> to <code>globals.program_path</code>; and <code>tests.utils.obtener_parametros</code> to <code>tests.utils.get_parameters</code>. The additional cross-module helper mappings below are part of the same Python import migration. These are source-level Python import/attribute migrations; change all first-party references atomically. Spanish parameters, locals, and comments are translated in the owning task. Do not claim a KAFE call spelling changed merely because its Python implementation signature changes.</p>
+<table>
+<thead>
+<tr>
+<th>Old Python helper</th>
+<th>English replacement</th>
+<th>Definition and callers to update</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>construir_tipo_lista</code></td>
+<td><code>build_list_type</code></td>
+<td>Defined and recursively called in <code>src/TypeUtils.py</code>; used there to construct type constants and imported/called by <code>src/lib/KafePLOT/functions.py</code> for <code>bar</code> and <code>pie</code> signatures. Tasks 2 and 3 must update both modules together.</td>
+</tr>
+<tr>
+<td><code>es_misma_dimension</code></td>
+<td><code>has_same_dimensions</code></td>
+<td>Defined in <code>src/lib/KafeNUMK/utils.py</code>; imported and called by <code>src/lib/KafeNUMK/functions.py</code> in <code>add</code> and <code>sub</code>. It compares outer lengths and each corresponding row length. Task 3.</td>
+</tr>
+<tr>
+<td><code>es_uniforme</code></td>
+<td><code>is_uniform_matrix</code></td>
+<td>Defined in <code>src/lib/KafeNUMK/utils.py</code>; imported and called by <code>src/lib/KafeNUMK/functions.py</code> in <code>mul</code>, <code>inv</code>, and <code>dot_matrix</code>. It checks equal row lengths and accepts an empty matrix. Task 3.</td>
+</tr>
+<tr>
+<td><code>operar_matrices</code></td>
+<td><code>apply_matrix_operation</code></td>
+<td>Defined in <code>src/lib/KafeNUMK/utils.py</code>; imported and called by <code>src/lib/KafeNUMK/functions.py</code> in <code>add</code> and <code>sub</code> to apply the supplied operation element by element. Task 3.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="task-3-shared-type-and-decorator-migration">Task 3 shared type and decorator migration<a class="headerlink" href="#task-3-shared-type-and-decorator-migration" title="Permanent link">&para;</a></h3>
+<p>The following exact Python identifier moves were rescanned across <code>src/TypeUtils.py</code>, <code>src/global_utils.py</code>, <code>src/language_components/**</code>, and every <code>src/lib/**</code> file before editing. <code>src/TypeUtils.py</code> defines every type name below. Library consumers include the listed root files and all imports in their nested <code>KafeGESHA</code> and <code>KafeMACHINE</code> packages; references to these names are changed together, with no aliases. The type <em>values</em> (<code>INT</code>, <code>List[...]</code>, and others) stay unchanged.</p>
+<table>
+<thead>
+<tr>
+<th>Old Python name</th>
+<th>New Python name</th>
+<th>Caller surfaces found</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>nombre_tipos</code></td>
+<td><code>type_names</code></td>
+<td><code>TypeUtils.py</code> only</td>
+</tr>
+<tr>
+<td><code>vector_numeros_t</code></td>
+<td><code>numeric_vector_types</code></td>
+<td>31 files in <code>src/lib/KafeGESHA</code>, <code>KafeMACHINE</code>, <code>KafeMATH</code>, <code>KafeNUMK</code>, <code>KafePLOT</code></td>
+</tr>
+<tr>
+<td><code>matriz_numeros_t</code></td>
+<td><code>numeric_matrix_types</code></td>
+<td>33 files in <code>src/lib/KafeGESHA</code>, <code>KafeMACHINE</code>, <code>KafeNUMK</code>, <code>KafePLOT</code></td>
+</tr>
+<tr>
+<td><code>matriz_cualquiera_t</code></td>
+<td><code>any_matrix_type</code></td>
+<td><code>KafeNUMK/functions.py</code>, <code>KafePARDOS/DataFrame.py</code>, <code>KafeMACHINE/preprocessing/SimpleImputer.py</code></td>
+</tr>
+<tr>
+<td><code>lista_cadenas_t</code></td>
+<td><code>string_list_type</code></td>
+<td><code>KafeGESHA/functions.py</code>, <code>KafeGESHA/core/model.py</code>, <code>KafePARDOS/DataFrame.py</code>, <code>KafeMACHINE/preprocessing/OneHotEncoder.py</code>, <code>OrdinalEncoder.py</code></td>
+</tr>
+<tr>
+<td><code>numeros_t</code></td>
+<td><code>number_types</code></td>
+<td><code>TypeUtils.py</code> only as a complete token; 40 substring matches arise from the numeric vector/matrix names</td>
+</tr>
+<tr>
+<td><code>entero_t</code></td>
+<td><code>integer_type</code></td>
+<td><code>global_utils.py</code>, <code>language_components/base/functions.py</code>, <code>language_components/functions/functions.py</code>, and 18 library files</td>
+</tr>
+<tr>
+<td><code>flotante_t</code></td>
+<td><code>float_type</code></td>
+<td><code>global_utils.py</code>, <code>language_components/base/functions.py</code>, and 14 library files</td>
+</tr>
+<tr>
+<td><code>booleano_t</code></td>
+<td><code>boolean_type</code></td>
+<td><code>global_utils.py</code>, <code>language_components/base/functions.py</code>, and 5 library files</td>
+</tr>
+<tr>
+<td><code>cadena_t</code></td>
+<td><code>string_type</code></td>
+<td><code>global_utils.py</code>, <code>language_components/base/functions.py</code>, <code>language_components/loops/functions.py</code>, and 11 library files</td>
+</tr>
+<tr>
+<td><code>lista_t</code></td>
+<td><code>list_type</code></td>
+<td><code>global_utils.py</code>, <code>language_components/base/functions.py</code></td>
+</tr>
+<tr>
+<td><code>gesha_t</code></td>
+<td><code>gesha_type</code></td>
+<td><code>language_components/base/functions.py</code> and 3 library files</td>
+</tr>
+<tr>
+<td><code>pardos_t</code></td>
+<td><code>pardos_type</code></td>
+<td><code>language_components/base/functions.py</code> and 29 library files</td>
+</tr>
+<tr>
+<td><code>machine_t</code></td>
+<td><code>machine_type</code></td>
+<td><code>KafeMACHINE/preprocessing/LabelEncoder.py</code></td>
+</tr>
+<tr>
+<td><code>funcion_t</code></td>
+<td><code>function_type</code></td>
+<td><code>global_utils.py</code>, <code>language_components/functions/functions.py</code></td>
+</tr>
+<tr>
+<td><code>lista_cualquiera_t</code></td>
+<td><code>any_list_types</code></td>
+<td><code>global_utils.py</code>, <code>language_components/functions/functions.py</code>, and 5 library files</td>
+</tr>
+<tr>
+<td><code>todos_t</code></td>
+<td><code>all_types</code></td>
+<td><code>language_components/functions/functions.py</code></td>
+</tr>
+<tr>
+<td><code>func_nombre</code></td>
+<td><code>function_name</code></td>
+<td><code>global_utils.py</code> decorator keyword lookup; keyword callers in <code>language_components/functions/functions.py</code> and <code>KafePLOT/functions.py</code></td>
+</tr>
+</tbody>
+</table>
+<p><code>void_t</code> is already English and remains unchanged. The other Task 3 internal helpers map as <code>es_misma_dimension</code> → <code>has_same_dimensions</code>, <code>es_uniforme</code> → <code>is_uniform_matrix</code>, <code>operar_matrices</code> → <code>apply_matrix_operation</code>, and <code>inferir_tipo</code> → <code>infer_type</code>; <code>construir_tipo_lista</code> → <code>build_list_type</code> was completed in Task 2.</p>
+<p>Task 3 review also removed legacy activation selector strings. <code>sigmoide</code> → <code>sigmoid</code>, <code>tangente</code> → <code>tanh</code>, <code>identidad</code> → <code>identity</code> (or <code>linear</code>), and <code>escalon</code>/<code>escalonada</code> → <code>step</code>. These are breaking input changes for callers of the Python activation loader; no Spanish selector aliases remain. No first-party fixture or example used those old selector strings.</p>
+<p>Task 3 translated library diagnostics before the fixture-wide Task 4 rename. To keep Task 3's exact-stream fixture gate executable, it updated only the directly corresponding KafeGESHA expected sidecars: the valid <code>neural_network_xor_gate.expec</code> summary line and the paired <code>.error.expec</code>/<code>.error.stderr.expec</code> files for <code>invalid_loss</code>, <code>invalid_optimizer</code>, and <code>set_lr_before_compile</code>. Their programs, fixture names, exit codes, and other output were unchanged. Task 4 still owns the broader fixture content and path translation.</p>
+<p>The Task 3 review changed the plotted SVG label <code>Leyenda</code> to <code>Legend</code>. Its seven directly corresponding SVG expected files were updated: six <code>tests/KafePLOT/grafico_*.svg</code> fixtures (<code>plot_dense_data</code>, <code>plot_exponential_growth</code>, <code>plot_mixed_positive_negative</code>, <code>plot_sine_wave</code>, <code>plot_sparse_data</code>, <code>plot_zigzag_pattern</code>) and <code>tests/KafeGESHA/multiclass/grafico_neural_network_multiclass.svg</code>. Other fixture content remains for Task 4.</p>
+<p><code>importStmt</code> first recognizes the unchanged registry keys. For user modules it searches <code>&lt;current KAFE program directory&gt;/&lt;module&gt;.kf</code>, then <code>&lt;directory of imports/functions.py&gt;/&lt;module&gt;.kf</code>, then its parent <code>&lt;language_components&gt;/&lt;module&gt;.kf</code>. Moving the module changes those latter two fallback directories; preserve this search behavior intentionally and document the resulting paths in import diagnostics. The former <code>tests/import/matematica.kf</code> is now <code>tests/import/math_module.kf</code>; it is a user module, not a built-in library key. Programs migrate from the former <code>import matematica</code> spelling to <code>import math_module</code>.</p>
+<h2 id="test-and-fixture-path-map">Test and fixture path map<a class="headerlink" href="#test-and-fixture-path-map" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Old path/pattern</th>
+<th>New path/pattern</th>
+<th>Contract</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>tests/bucles/&lt;relative path&gt;</code></td>
+<td><code>tests/loops/&lt;same relative path&gt;</code></td>
+<td>Move every tracked <code>.kf</code>, <code>.expec</code>, <code>.in</code>, <code>.error.stderr.expec</code>, and <code>.error.stdout.expec</code> descendant as one set.</td>
+</tr>
+<tr>
+<td><code>tests/condicionales/&lt;relative path&gt;</code></td>
+<td><code>tests/conditionals/&lt;same relative path&gt;</code></td>
+<td>Same pairing rule.</td>
+</tr>
+<tr>
+<td><code>tests/funciones/&lt;relative path&gt;</code></td>
+<td><code>tests/functions/&lt;same relative path&gt;</code></td>
+<td>Same pairing rule.</td>
+</tr>
+<tr>
+<td><code>tests/test_bucles.py</code></td>
+<td><code>tests/test_loops.py</code></td>
+<td>Update collector directory.</td>
+</tr>
+<tr>
+<td><code>tests/test_condicionales.py</code></td>
+<td><code>tests/test_conditionals.py</code></td>
+<td>Update collector directory.</td>
+</tr>
+<tr>
+<td><code>tests/test_funciones.py</code></td>
+<td><code>tests/test_functions.py</code></td>
+<td>Update collector directory.</td>
+</tr>
+<tr>
+<td><code>tests/import/matematica.kf</code></td>
+<td><code>tests/import/math_module.kf</code></td>
+<td>Update user-module imports.</td>
+</tr>
+<tr>
+<td><code>tests/import/matematica.expec</code></td>
+<td><code>tests/import/math_module.expec</code></td>
+<td>Keep expected output paired.</td>
+</tr>
+<tr>
+<td><code>tests/KafeGESHA/{clustering,multiclass}/grafico_&lt;stem&gt;.svg</code></td>
+<td><code>tests/KafeGESHA/{clustering,multiclass}/graph_&lt;stem&gt;.svg</code></td>
+<td>Both tracked SVG assets.</td>
+</tr>
+<tr>
+<td><code>tests/KafePLOT/grafico_&lt;stem&gt;.svg</code></td>
+<td><code>tests/KafePLOT/graph_&lt;stem&gt;.svg</code></td>
+<td>All 22 tracked SVG assets; update the two plot test modules' <code>grafico_</code> filename construction consistently.</td>
+</tr>
+</tbody>
+</table>
+<p>For the last two SVG rows, <code>&lt;stem&gt;</code> is exactly the unchanged suffix after <code>grafico_</code> in each old tracked filename; no other suffix substitution is implied. <code>src/lib/KafePLOT/utils.py</code> writes <code>&lt;program basename&gt;.svg</code>, while <code>tests/test_KafePLOT.py</code> and <code>tests/test_KafeGESHA.py</code> construct the tracked <code>graph_&lt;basename&gt;.svg</code> comparison paths. Keep actual generated names and comparison paths aligned. <code>tests/utils.py</code> discovers valid <code>*.kf</code> except <code>*.error.kf</code> and invalid <code>*.error.kf</code> recursively; <code>get_parameters</code> reads matching <code>.in</code> and <code>.expec</code> by base. Invalid cases additionally require full <code>.stderr.expec</code>, optional <code>.stdout.expec</code>, final semantic error, and exit code 1; valid cases require exact stdout, empty stderr, and exit code 0. Do not collapse <code>.error.expec</code> into stream sidecars or drop a case. The remaining first-party KAFE fixtures in <code>tests/Algorithms</code>, <code>tests/Kafe*</code>, <code>tests/base</code>, <code>tests/data</code>, and <code>tests/import</code> keep their path unless explicitly mapped above, but their Spanish identifiers, prose, data labels, and expected diagnostics are Task 4 content changes.</p>
+<h2 id="documentation-file-and-route-map">Documentation file and route map<a class="headerlink" href="#documentation-file-and-route-map" title="Permanent link">&para;</a></h2>
+<p>Routes below are relative to <code>https://joshmessi10.github.io/KAFE-Reloaded/</code>. MkDocs Markdown routes end in <code>/</code>; the <code>.kf</code> example routes keep their extension. The exact file move also defines the new repository link target. <code>docs/index.md</code>, <code>docs/assets/css/custom.css</code>, and already-English basenames remain in place. <code>docs/migration/english-repository-migration.md</code> is a new <code>/migration/english-repository-migration/</code> route.</p>
+<table>
+<thead>
+<tr>
+<th>Old file</th>
+<th>New file</th>
+<th>Old route → new route</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>docs/PLAN.md</code></td>
+<td><code>docs/documentation-plan.md</code></td>
+<td><code>/PLAN/</code> → <code>/documentation-plan/</code></td>
+</tr>
+<tr>
+<td><code>docs/about/creditos.md</code></td>
+<td><code>docs/about/credits.md</code></td>
+<td><code>/about/creditos/</code> → <code>/about/credits/</code></td>
+</tr>
+<tr>
+<td><code>docs/about/licencia.md</code></td>
+<td><code>docs/about/license.md</code></td>
+<td><code>/about/licencia/</code> → <code>/about/license/</code></td>
+</tr>
+<tr>
+<td><code>docs/bibliotecas/files.md</code></td>
+<td><code>docs/libraries/files.md</code></td>
+<td><code>/bibliotecas/files/</code> → <code>/libraries/files/</code></td>
+</tr>
+<tr>
+<td><code>docs/bibliotecas/gesha.md</code></td>
+<td><code>docs/libraries/gesha.md</code></td>
+<td><code>/bibliotecas/gesha/</code> → <code>/libraries/gesha/</code></td>
+</tr>
+<tr>
+<td><code>docs/bibliotecas/machine.md</code></td>
+<td><code>docs/libraries/machine.md</code></td>
+<td><code>/bibliotecas/machine/</code> → <code>/libraries/machine/</code></td>
+</tr>
+<tr>
+<td><code>docs/bibliotecas/math.md</code></td>
+<td><code>docs/libraries/math.md</code></td>
+<td><code>/bibliotecas/math/</code> → <code>/libraries/math/</code></td>
+</tr>
+<tr>
+<td><code>docs/bibliotecas/numk.md</code></td>
+<td><code>docs/libraries/numk.md</code></td>
+<td><code>/bibliotecas/numk/</code> → <code>/libraries/numk/</code></td>
+</tr>
+<tr>
+<td><code>docs/bibliotecas/pardos.md</code></td>
+<td><code>docs/libraries/pardos.md</code></td>
+<td><code>/bibliotecas/pardos/</code> → <code>/libraries/pardos/</code></td>
+</tr>
+<tr>
+<td><code>docs/bibliotecas/plot.md</code></td>
+<td><code>docs/libraries/plot.md</code></td>
+<td><code>/bibliotecas/plot/</code> → <code>/libraries/plot/</code></td>
+</tr>
+<tr>
+<td><code>docs/ejemplos/decision-tree.kf</code></td>
+<td><code>docs/examples/decision-tree.kf</code></td>
+<td><code>/ejemplos/decision-tree.kf</code> → <code>/examples/decision-tree.kf</code></td>
+</tr>
+<tr>
+<td><code>docs/ejemplos/ejemplo-clustering-plot.kf</code></td>
+<td><code>docs/examples/clustering-plot-example.kf</code></td>
+<td><code>/ejemplos/ejemplo-clustering-plot.kf</code> → <code>/examples/clustering-plot-example.kf</code></td>
+</tr>
+<tr>
+<td><code>docs/ejemplos/fibo-curri.kf</code></td>
+<td><code>docs/examples/fibonacci-currying.kf</code></td>
+<td><code>/ejemplos/fibo-curri.kf</code> → <code>/examples/fibonacci-currying.kf</code></td>
+</tr>
+<tr>
+<td><code>docs/ejemplos/hola-mundo.kf</code></td>
+<td><code>docs/examples/hello-world.kf</code></td>
+<td><code>/ejemplos/hola-mundo.kf</code> → <code>/examples/hello-world.kf</code></td>
+</tr>
+<tr>
+<td><code>docs/ejemplos/merge-sort.kf</code></td>
+<td><code>docs/examples/merge-sort.kf</code></td>
+<td><code>/ejemplos/merge-sort.kf</code> → <code>/examples/merge-sort.kf</code></td>
+</tr>
+<tr>
+<td><code>docs/ejemplos/red-neuronal.kf</code></td>
+<td><code>docs/examples/neural-network.kf</code></td>
+<td><code>/ejemplos/red-neuronal.kf</code> → <code>/examples/neural-network.kf</code></td>
+</tr>
+<tr>
+<td><code>docs/ejemplos/regresion-lineal.kf</code></td>
+<td><code>docs/examples/linear-regression.kf</code></td>
+<td><code>/ejemplos/regresion-lineal.kf</code> → <code>/examples/linear-regression.kf</code></td>
+</tr>
+<tr>
+<td><code>docs/errores/errores-lexicos.md</code></td>
+<td><code>docs/errors/lexical-errors.md</code></td>
+<td><code>/errores/errores-lexicos/</code> → <code>/errors/lexical-errors/</code></td>
+</tr>
+<tr>
+<td><code>docs/errores/errores-semanticos.md</code></td>
+<td><code>docs/errors/semantic-errors.md</code></td>
+<td><code>/errores/errores-semanticos/</code> → <code>/errors/semantic-errors/</code></td>
+</tr>
+<tr>
+<td><code>docs/errores/errores-sintacticos.md</code></td>
+<td><code>docs/errors/syntax-errors.md</code></td>
+<td><code>/errores/errores-sintacticos/</code> → <code>/errors/syntax-errors/</code></td>
+</tr>
+<tr>
+<td><code>docs/errores/referencia-errores.md</code></td>
+<td><code>docs/errors/error-reference.md</code></td>
+<td><code>/errores/referencia-errores/</code> → <code>/errors/error-reference/</code></td>
+</tr>
+<tr>
+<td><code>docs/errores/tipos-error.md</code></td>
+<td><code>docs/errors/error-types.md</code></td>
+<td><code>/errores/tipos-error/</code> → <code>/errors/error-types/</code></td>
+</tr>
+<tr>
+<td><code>docs/especificacion/analisis-lexico-sintactico-semantico.md</code></td>
+<td><code>docs/specification/lexical-syntactic-semantic-analysis.md</code></td>
+<td><code>/especificacion/analisis-lexico-sintactico-semantico/</code> → <code>/specification/lexical-syntactic-semantic-analysis/</code></td>
+</tr>
+<tr>
+<td><code>docs/especificacion/gramatica-ebnf.md</code></td>
+<td><code>docs/specification/ebnf-grammar.md</code></td>
+<td><code>/especificacion/gramatica-ebnf/</code> → <code>/specification/ebnf-grammar/</code></td>
+</tr>
+<tr>
+<td><code>docs/especificacion/precedencia-operadores.md</code></td>
+<td><code>docs/specification/operator-precedence.md</code></td>
+<td><code>/especificacion/precedencia-operadores/</code> → <code>/specification/operator-precedence/</code></td>
+</tr>
+<tr>
+<td><code>docs/especificacion/semantica-operacional.md</code></td>
+<td><code>docs/specification/operational-semantics.md</code></td>
+<td><code>/especificacion/semantica-operacional/</code> → <code>/specification/operational-semantics/</code></td>
+</tr>
+<tr>
+<td><code>docs/guia-inicio/ejemplos-basicos.md</code></td>
+<td><code>docs/getting-started/basic-examples.md</code></td>
+<td><code>/guia-inicio/ejemplos-basicos/</code> → <code>/getting-started/basic-examples/</code></td>
+</tr>
+<tr>
+<td><code>docs/guia-inicio/instalacion.md</code></td>
+<td><code>docs/getting-started/installation.md</code></td>
+<td><code>/guia-inicio/instalacion/</code> → <code>/getting-started/installation/</code></td>
+</tr>
+<tr>
+<td><code>docs/guia-inicio/primer-programa.md</code></td>
+<td><code>docs/getting-started/first-program.md</code></td>
+<td><code>/guia-inicio/primer-programa/</code> → <code>/getting-started/first-program/</code></td>
+</tr>
+<tr>
+<td><code>docs/lenguaje/estructura-lexica.md</code></td>
+<td><code>docs/language/lexical-structure.md</code></td>
+<td><code>/lenguaje/estructura-lexica/</code> → <code>/language/lexical-structure/</code></td>
+</tr>
+<tr>
+<td><code>docs/lenguaje/estructuras-control.md</code></td>
+<td><code>docs/language/control-structures.md</code></td>
+<td><code>/lenguaje/estructuras-control/</code> → <code>/language/control-structures/</code></td>
+</tr>
+<tr>
+<td><code>docs/lenguaje/funciones.md</code></td>
+<td><code>docs/language/functions.md</code></td>
+<td><code>/lenguaje/funciones/</code> → <code>/language/functions/</code></td>
+</tr>
+<tr>
+<td><code>docs/lenguaje/importaciones.md</code></td>
+<td><code>docs/language/imports.md</code></td>
+<td><code>/lenguaje/importaciones/</code> → <code>/language/imports/</code></td>
+</tr>
+<tr>
+<td><code>docs/lenguaje/listas.md</code></td>
+<td><code>docs/language/lists.md</code></td>
+<td><code>/lenguaje/listas/</code> → <code>/language/lists/</code></td>
+</tr>
+<tr>
+<td><code>docs/lenguaje/operadores.md</code></td>
+<td><code>docs/language/operators.md</code></td>
+<td><code>/lenguaje/operadores/</code> → <code>/language/operators/</code></td>
+</tr>
+<tr>
+<td><code>docs/lenguaje/sistema-tipos.md</code></td>
+<td><code>docs/language/type-system.md</code></td>
+<td><code>/lenguaje/sistema-tipos/</code> → <code>/language/type-system/</code></td>
+</tr>
+</tbody>
+</table>
+<p>Update every <code>mkdocs.yml</code> nav entry (including labels), internal Markdown links, anchors, README links, and repository guidance references to these targets. MkDocs currently omits the clustering plot example from nav but it is still a tracked example and must move. The current <code>not_in_nav: /PLAN.md</code> setting keeps the documentation plan out of navigation while leaving its built route available. Task 5 must preserve that unlisted status by changing the setting to <code>not_in_nav: /documentation-plan.md</code>; the new <code>/documentation-plan/</code> route remains available without a redirect.</p>
+<h2 id="approved-retirement-and-migration-notice">Approved retirement and migration notice<a class="headerlink" href="#approved-retirement-and-migration-notice" title="Permanent link">&para;</a></h2>
+<p>Only <code>KAFE LANGUAGE Deep Learning for Dummies .pdf</code>, <code>test_results.txt</code>, and <code>test_output.txt</code> are approved for removal from the current tree. Their Git objects remain historical recovery points. <code>src/stderr.txt</code> and test input/output data are not on the removal list; inspect and translate or retain them according to content. No other file is implicitly retired by this inventory.</p>
+<p>The new paths and Python names are intentional breaking changes for callers that import internals or link old site routes. There are no old-name aliases and no route redirects. KAFE's existing executable vocabulary and built-in import keys remain unchanged. Release notes must point users to this map and call out the renamed user-module fixture only as an example migration, not as a KAFE syntax change.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/joshmessi10/KAFE-Reloaded" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.expand", "navigation.top", "navigation.indexes", "search.highlight", "search.suggest", "content.code.copy", "content.code.annotate", "content.tabs.link", "toc.follow"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+        <script src="https://unpkg.com/katex/dist/katex.min.js"></script>
+      
+        <script src="https://unpkg.com/katex/dist/contrib/auto-render.min.js"></script>
+      
+    
+  </body>
+</html>
