@@ -1,4 +1,4 @@
--- Error sumar matrices con tamaño incorrecto
+-- Error: adding matrices with an invalid size
 import numk;
 
 List[List[INT]] A = [[1, 2]];

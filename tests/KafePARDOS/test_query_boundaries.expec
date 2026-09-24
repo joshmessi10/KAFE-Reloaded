@@ -1,2 +1,2 @@
---- Boundaries: edad <= 28 ---
-"cols: ['id', 'edad', 'nombre', 'salario'], rows: [[2, 25, 'Bob', 48000], [5, 28, 'Eva', 53000]]"
+--- Boundaries: age <= 28 ---
+"cols: ['id', 'age', 'name', 'salary'], rows: [[2, 25, 'Bob', 48000], [5, 28, 'Eva', 53000]]"

@@ -3,7 +3,7 @@ import math;
 import plot;
 
 
-List[List[FLOAT]] datos = [
+List[List[FLOAT]] data = [
     [1.0, 2.0],
     [1.5, 1.8],
     [5.0, 8.0],
@@ -13,7 +13,7 @@ List[List[FLOAT]] datos = [
 ];
 
 
-GESHA capa1 = geshaDeep.create_dense(
+GESHA layer1 = geshaDeep.create_dense(
     8,
     "relu",
     [2],
@@ -21,7 +21,7 @@ GESHA capa1 = geshaDeep.create_dense(
     12
 );
 
-GESHA capa1b = geshaDeep.create_dense(
+GESHA layer1b = geshaDeep.create_dense(
     4,
     "relu",
     [],
@@ -29,18 +29,18 @@ GESHA capa1b = geshaDeep.create_dense(
     99
 );
 
-GESHA capa2 = geshaDeep.create_dense(
+GESHA layer2 = geshaDeep.create_dense(
     2, "softmax", [], 0.0, 42
 );
 
-GESHA modelo = geshaDeep.sequential([capa1, capa1b, capa2]);
+GESHA model = geshaDeep.sequential([layer1, layer1b, layer2]);
 
-geshaDeep.compile(modelo, "adam", "categorical_crossentropy", []);
+geshaDeep.compile(model, "adam", "categorical_crossentropy", []);
 
-geshaDeep.set_lr(modelo, 0.0005);
+geshaDeep.set_lr(model, 0.0005);
 
 -- Modo no supervisado: y=[]
-modelo.fit(datos, [], 50, 2);
+model.fit(data, [], 50, 2);
 
 
 List[FLOAT] X0 = [];
@@ -48,24 +48,24 @@ List[FLOAT] Y0 = [];
 List[FLOAT] X1 = [];
 List[FLOAT] Y1 = [];
 
-List[INT] indices = [0,1,2,3,4,5];
-for (i in indices):
-    List[FLOAT] punto = datos[i];
-    List[FLOAT] probs = modelo.predict(punto);
+List[INT] indexes = [0,1,2,3,4,5];
+for (i in indexes):
+    List[FLOAT] point = data[i];
+    List[FLOAT] probs = model.predict(point);
     show([math.round(probs[0], 12), math.round(probs[1], 12)]);
 
     FLOAT p0 = probs[0];
     FLOAT p1 = probs[1];
-    INT etiqueta;
+    INT label;
     if (p0 >= p1):
-        etiqueta = 0;
+        label = 0;
     else:
-        etiqueta = 1;
+        label = 1;
     ;
 
-    FLOAT xi = punto[0];
-    FLOAT yi = punto[1];
-    if (etiqueta == 0):
+    FLOAT xi = point[0];
+    FLOAT yi = point[1];
+    if (label == 0):
         append(X0, xi);
         append(Y0, yi);
     else:
@@ -78,20 +78,20 @@ for (i in indices):
 FLOAT sumx0 = 0.0; FLOAT sumy0 = 0.0; INT count0 = 0;
 FLOAT sumx1 = 0.0; FLOAT sumy1 = 0.0; INT count1 = 0;
 
-for (i in indices):
-    List[FLOAT] punto = datos[i];
-    List[FLOAT] probs = modelo.predict(punto);
+for (i in indexes):
+    List[FLOAT] point = data[i];
+    List[FLOAT] probs = model.predict(point);
     FLOAT p0 = probs[0];
     FLOAT p1 = probs[1];
-    INT etiqueta;
+    INT label;
     if (p0 >= p1):
-        etiqueta = 0;
+        label = 0;
     else:
-        etiqueta = 1;
+        label = 1;
     ;
-    FLOAT xi = punto[0];
-    FLOAT yi = punto[1];
-    if (etiqueta == 0):
+    FLOAT xi = point[0];
+    FLOAT yi = point[1];
+    if (label == 0):
         sumx0 = sumx0 + xi;
         sumy0 = sumy0 + yi;
         count0 = count0 + 1;
@@ -134,19 +134,19 @@ List[FLOAT] CX = [cx0, cx1];
 List[FLOAT] CY = [cy0, cy1];
 
 
-List[List[FLOAT]] pares0 = [];
+List[List[FLOAT]] class_zero_points = [];
 for (i in range(0, len(X0))):
-    append(pares0, [X0[i], Y0[i]]);
+    append(class_zero_points, [X0[i], Y0[i]]);
 ;
 
-List[List[FLOAT]] pares1 = [];
+List[List[FLOAT]] class_one_points = [];
 for (i in range(0, len(X1))):
-    append(pares1, [X1[i], Y1[i]]);
+    append(class_one_points, [X1[i], Y1[i]]);
 ;
 
-List[List[FLOAT]] centros = [];
+List[List[FLOAT]] centers = [];
 for (i in range(0, len(CX))):
-    append(centros, [CX[i], CY[i]]);
+    append(centers, [CX[i], CY[i]]);
 ;
 
 
@@ -157,23 +157,23 @@ plot.ylabel("Y");
 plot.grid(True);
 
 
-if (len(pares0) > 0):
+if (len(class_zero_points) > 0):
     plot.pointColor("red");
     plot.pointSize(6);
-    plot.graph(pares0, "point");
+    plot.graph(class_zero_points, "point");
 ;
 
-if (len(pares1) > 0):
+if (len(class_one_points) > 0):
     plot.pointColor("green");
     plot.pointSize(6);
-    plot.graph(pares1, "point");
+    plot.graph(class_one_points, "point");
 ;
 
-if (len(centros) > 0):
+if (len(centers) > 0):
     plot.pointColor("black");
     plot.pointSize(8);
-    plot.graph(centros, "point");
+    plot.graph(centers, "point");
 ;
 
-plot.legend("red: clúster 0 ; green: clúster 1 ; black: centros");
+plot.legend("red: cluster 0 ; green: cluster 1 ; black: centers");
 plot.render();

@@ -1,6 +1,6 @@
 import machine;
 
--- All indices should appear exactly once in test sets
+-- All indexes should appear exactly once in test sets
 List[INT] all_test = [];
 
 for (fold in machine.k_fold(10, 5, False, 0)):

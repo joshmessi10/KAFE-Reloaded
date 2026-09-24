@@ -1,5 +1,5 @@
-import matematica;
+import math_module;
 
--- Debe imprimir primero un saludo y luego el cuadrado de 5
-show("¡Bienvenido a Kafe!");
+-- Print a greeting first, then the square of 5
+show("Welcome to Kafe!");
 show(square(5));

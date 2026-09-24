@@ -1,13 +1,13 @@
 import geshaDeep;
 import pardos;
 
--- Cargar datos desde CSV (preprocesamiento externo al modelo)
+-- Load data from CSV (preprocessing outside the model)
 PARDOS df = pardos.read_csv("../tests/data/clustering_sample.csv");
 
--- Convertir DataFrame a matriz de entrenamiento
+-- Convert DataFrame to the training matrix
 List[List[FLOAT]] X_train = pardos.to_matrix(df);
 
--- Entrenar modelo (modo no supervisado: y=[])
+-- Train the model (unsupervised mode: y=[])
 GESHA layer1 = geshaDeep.create_dense(4, "relu",    [2], 0.0, 42);
 GESHA layer2 = geshaDeep.create_dense(2, "softmax", [],  0.0, 42);
 GESHA model  = geshaDeep.sequential([layer1, layer2]);

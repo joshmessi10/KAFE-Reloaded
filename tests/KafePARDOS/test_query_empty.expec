@@ -1,2 +1,2 @@
---- Empty Result: edad > 100 ---
-"cols: ['id', 'edad', 'nombre', 'salario'], rows: []"
+--- Empty Result: age > 100 ---
+"cols: ['id', 'age', 'name', 'salary'], rows: []"

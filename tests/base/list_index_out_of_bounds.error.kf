@@ -1,7 +1,7 @@
--- Indexación con tipo de dato que no es entero
+-- Indexing with a non-integer data type
 
-List[List[INT]] matriz = [
+List[List[INT]] matrix = [
 	[234, 234],
 	[2341, 1234]
 ];
-show(matriz[4.5][2 - 1]);
+show(matrix[4.5][2 - 1]);

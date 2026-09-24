@@ -1,4 +1,4 @@
--- Error Inversa matriz con infinitas soluciones
+-- Error: matrix inverse with infinitely many solutions
 import numk;
 
 List[List[INT]] A = [

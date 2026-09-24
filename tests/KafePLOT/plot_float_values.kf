@@ -1,9 +1,9 @@
 import plot;
 
 plot.figure();
-plot.title("Trayectoria con Rejilla");
-plot.xlabel("Tiempo");
-plot.ylabel("Velocidad");
+plot.title("Trajectory with grid");
+plot.xlabel("Time");
+plot.ylabel("Speed");
 plot.grid(True);
 
 List[INT] x = [0, 5, 10, 15, 20];

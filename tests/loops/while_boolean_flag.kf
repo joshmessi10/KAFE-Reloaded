@@ -1,0 +1,8 @@
+INT i = 0;
+BOOL keep_going = True;
+while (keep_going):
+    show(i);
+    i = i + 1;
+    if (i == 3):
+        keep_going = False;
+;;

@@ -1,0 +1,8 @@
+drip get_text() => INT:
+    List[INT] numbers = [1, 2, 3];
+    for (n in numbers):
+        return ("hello");
+    ;
+;
+
+show(get_text());

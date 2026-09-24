@@ -121,46 +121,46 @@ def assert_invalid_kafe_result(result, program, expected_final_error):
         raise AssertionError(message)
 
 
-def get_programs(dir):
-    """Obtiene programas .kf validos recursivamente (excluye .error.kf)."""
-    if dir.startswith("../tests/"):
-        dir = os.path.join(os.path.dirname(__file__), dir[len("../tests/"):])
-    archivos = []
-    for root, dirs, files in os.walk(dir):
+def get_programs(directory_path):
+    """Find valid .kf programs recursively, excluding .error.kf cases."""
+    if directory_path.startswith("../tests/"):
+        directory_path = os.path.join(os.path.dirname(__file__), directory_path[len("../tests/"):])
+    program_paths = []
+    for root, dirs, files in os.walk(directory_path):
         for filename in files:
             if filename.endswith(".kf") and not filename.endswith(".error.kf"):
                 base = filename[:-3]
-                archivos.append(os.path.join(root, base))
-    return archivos
+                program_paths.append(os.path.join(root, base))
+    return program_paths
 
 
-def get_invalid_programs(dir):
-    """Obtiene programas .error.kf recursivamente."""
-    if dir.startswith("../tests/"):
-        dir = os.path.join(os.path.dirname(__file__), dir[len("../tests/"):])
-    archivos = []
-    for root, dirs, files in os.walk(dir):
+def get_invalid_programs(directory_path):
+    """Find invalid .error.kf programs recursively."""
+    if directory_path.startswith("../tests/"):
+        directory_path = os.path.join(os.path.dirname(__file__), directory_path[len("../tests/"):])
+    program_paths = []
+    for root, dirs, files in os.walk(directory_path):
         for filename in files:
             if filename.endswith(".error.kf"):
                 base = filename[:-3]
-                archivos.append(os.path.join(root, base))
-    return archivos
+                program_paths.append(os.path.join(root, base))
+    return program_paths
 
 
-def obtener_parametros(programas):
-    for base in programas:
-        programa = base + ".kf"
-        archivo_entrada = base + ".in"
-        archivo_salida_esperada = base + ".expec"
+def get_parameters(program_bases):
+    for base in program_bases:
+        program = base + ".kf"
+        input_path = base + ".in"
+        expected_output_path = base + ".expec"
 
-        entrada = ""
-        if os.path.isfile(archivo_entrada):
-            with open(archivo_entrada, encoding="utf-8") as f:
-                entrada = f.read()
+        input_text = ""
+        if os.path.isfile(input_path):
+            with open(input_path, encoding="utf-8") as f:
+                input_text = f.read()
 
-        salida_esperada = ""
-        if os.path.isfile(archivo_salida_esperada):
-            with open(archivo_salida_esperada, encoding="utf-8") as f:
-                salida_esperada = f.read()
+        expected_stdout = ""
+        if os.path.isfile(expected_output_path):
+            with open(expected_output_path, encoding="utf-8") as f:
+                expected_stdout = f.read()
 
-        yield programa, entrada, salida_esperada
+        yield program, input_text, expected_stdout

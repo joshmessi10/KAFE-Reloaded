@@ -1,4 +1,4 @@
--- Indexar con un no entero
+-- Index using a non-integer
 
 List[STR] strings = ["asdf", "asdf"];
 strings[False] = 'asd';

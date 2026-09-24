@@ -1,0 +1,10 @@
+INT a = 7;
+if (a > 0) :
+    if (a < 10) :
+        show("It is between 1 and 9");
+       else :
+        show("Greater than or equal to 10");
+    ;
+; else :
+    show("Negative or zero");
+;

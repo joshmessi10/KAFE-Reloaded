@@ -1,2 +1,2 @@
---- Complex Logic: (Edad < 30 && Salario > 50000) || Edad > 35 ---
-"cols: ['id', 'edad', 'nombre', 'salario'], rows: [[3, 40, 'Carol', 72000], [5, 28, 'Eva', 53000]]"
+--- Complex Logic: (Age < 30 && Salary > 50000) || Age > 35 ---
+"cols: ['id', 'age', 'name', 'salary'], rows: [[3, 40, 'Carol', 72000], [5, 28, 'Eva', 53000]]"

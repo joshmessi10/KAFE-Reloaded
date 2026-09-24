@@ -17,6 +17,6 @@ drip bubbleSort(arr: List[INT]) => List[INT]:
     return(arr);
 ;
 
-List[INT] miLista = [5, 4324, 8, 4, 2];
-List[INT] ordenada = bubbleSort(miLista);
-show(ordenada);
+List[INT] my_list = [5, 4324, 8, 4, 2];
+List[INT] sorted_list = bubbleSort(my_list);
+show(sorted_list);

@@ -1,0 +1,9 @@
+-- Redefining a function causes an error
+
+drip multiply(a: INT, b: INT) => INT:
+    return a * b;
+;
+
+drip multiply(a: INT) => INT:
+    return a * a;
+;

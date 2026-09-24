@@ -1,0 +1,9 @@
+drip apply_function(f: FUNC(INT) => INT, x: INT) => INT:
+    return f(x);
+;
+
+drip square(a: INT) => INT:
+    return a * a;
+;
+
+show(apply_function(square, 4));

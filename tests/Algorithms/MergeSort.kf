@@ -75,5 +75,5 @@ drip mergeSort(lst: List[INT]) => List[INT]:
 
 List[INT] unsorted = [3, 400, 32432, 46, 223, 9];
 List[INT] sorted = mergeSort(unsorted);
-show("Lista ordenada con Merge Sort:");
+show("List sorted with Merge Sort:");
 show(sorted);

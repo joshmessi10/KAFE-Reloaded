@@ -1,0 +1,14 @@
+-- Returning a list with an incorrect type
+drip get_powers(number: INT, upper_bound: INT) => List[INT]:
+    List[INT] powers = [];
+
+    INT i = 0;
+    while (i <= upper_bound):
+	    powers = powers + [number ^ i];
+	    i = i + 1;
+    ;
+
+    return [powers];
+;
+
+show(get_powers(2, 5));

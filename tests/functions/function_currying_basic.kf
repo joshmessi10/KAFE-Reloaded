@@ -1,0 +1,6 @@
+drip subtract(a: INT,b: INT)=>INT:
+    return a - b;
+;
+
+INT res = subtract(8)(3);
+show(res);  -- 5

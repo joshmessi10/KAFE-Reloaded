@@ -1,10 +1,10 @@
 import plot;
 
--- Definimos lista de valores “Y”:
-List[INT] valores = [10, 20, 15, 25, 60];
+-- Define the list of Y values:
+List[INT] values = [10, 20, 15, 25, 60];
 
--- Como solo tenemos Y, creamos X = [0, 1, 2, 3, 4]:
-List[INT] indices = [0, 1, 2, 3, 4];
+-- Since only Y values are available, create X = [0, 1, 2, 3, 4]:
+List[INT] indexes = [0, 1, 2, 3, 4];
 
--- Ahora sí llamamos correctamente a plot.graph(X, Y):
-plot.graph(indices, valores);
+-- Now call correctly a plot.graph(X, Y):
+plot.graph(indexes, values);

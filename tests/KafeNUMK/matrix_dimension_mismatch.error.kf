@@ -1,4 +1,4 @@
--- Error sumar matrices con valores de tipo incorrecto
+-- Error: adding matrices with invalid value types
 import numk;
 
 INT a = 5;

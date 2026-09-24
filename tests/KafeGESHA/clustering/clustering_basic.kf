@@ -1,6 +1,6 @@
 import geshaDeep;
 
--- Simple clustering test (modo no supervisado: y=None)
+-- Simple clustering test (unsupervised mode: y=None)
 List[List[FLOAT]] X_train = [
     [1.0, 1.0],
     [1.5, 2.0],

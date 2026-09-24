@@ -1,0 +1,8 @@
+drip sum_values(a: INT, b: INT) => VOID:
+    show(a+b);
+;
+
+sum_values(10)(5);  -- 15
+sum_values(10, 5);  -- 15
+
+FUNC(INT)=>INT add_fifteen = sum_values(15);

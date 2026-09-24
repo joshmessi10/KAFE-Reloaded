@@ -1,0 +1,7 @@
+INT sum_value = 0;
+INT n = 1;
+while (n <= 5):
+    sum_value = sum_value + n;
+    n = n + 1;
+;
+show(sum_value);
