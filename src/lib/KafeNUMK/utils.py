@@ -64,7 +64,7 @@ def _op_nd(a, b, op):
     if isinstance(a, list) and isinstance(b, list):
         if len(a) != len(b):
             raise ValueError("Dimension mismatch in element-wise operation")
-        return [_op_nd(ai, bi, op) for ai, bi in zip(a, b)]
+        return [_op_nd(ai, bi, op) for ai, bi in zip(a, b, strict=True)]
     raise ValueError(f"Cannot apply operation to {type(a).__name__} and {type(b).__name__}")
 
 
@@ -74,7 +74,7 @@ def _broadcastable(s1, s2):
     max_len = max(len(s1), len(s2))
     s1_padded = (1,) * (max_len - len(s1)) + s1
     s2_padded = (1,) * (max_len - len(s2)) + s2
-    for d1, d2 in zip(s1_padded, s2_padded):
+    for d1, d2 in zip(s1_padded, s2_padded, strict=True):
         if d1 != d2 and d1 != 1 and d2 != 1:
             return False
     return True

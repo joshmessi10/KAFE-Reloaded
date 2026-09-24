@@ -1,6 +1,7 @@
 from global_utils import check_sig
-from TypeUtils import pardos_type, string_list_type
 from lib.KafePARDOS.DataFrame import DataFrame
+from TypeUtils import pardos_type, string_list_type
+
 from ..BaseMachine import BaseMachine
 
 

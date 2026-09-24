@@ -51,7 +51,7 @@ class AgglomerativeClustering(BaseMachine):
 
     def _euclidean_distance(self, a, b):
         """Euclidean distance between two points."""
-        return sum((x - y) ** 2 for x, y in zip(a, b)) ** 0.5
+        return sum((x - y) ** 2 for x, y in zip(a, b, strict=False)) ** 0.5
 
     def _compute_distance_matrix(self, X):
         """Calculates the distance matrix between all points."""

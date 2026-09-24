@@ -1,6 +1,7 @@
 from global_utils import check_sig
-from TypeUtils import pardos_type, string_list_type
 from lib.KafePARDOS.DataFrame import DataFrame
+from TypeUtils import pardos_type, string_list_type
+
 from ..BaseMachine import BaseMachine
 
 
@@ -81,8 +82,6 @@ class OneHotEncoder(BaseMachine):
         for orig_col, ohe_cols in self._ohe_column_map_.items():
             for ohe_col in ohe_cols:
                 ohe_to_orig[ohe_col] = orig_col
-
-        all_ohe_cols = set(ohe_to_orig.keys())
 
         new_data = []
         for row in df.data:

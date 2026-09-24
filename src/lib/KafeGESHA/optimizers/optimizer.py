@@ -1,5 +1,6 @@
 """Abstract base class for optimizers."""
 from abc import abstractmethod
+
 from global_utils import check_sig
 from TypeUtils import numeric_vector_types
 

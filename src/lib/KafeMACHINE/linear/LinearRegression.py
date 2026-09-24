@@ -1,7 +1,8 @@
 from global_utils import check_sig
-from TypeUtils import numeric_vector_types, numeric_matrix_types, pardos_type
-from ..metrics import r2_score
+from TypeUtils import numeric_matrix_types, numeric_vector_types, pardos_type
+
 from ..BaseMachine import BaseMachine
+from ..metrics import r2_score
 
 
 class LinearRegression(BaseMachine):
@@ -45,9 +46,9 @@ class LinearRegression(BaseMachine):
         y_vals = list(y)
         m = len(matrix[0])
 
-        Xt = list(zip(*X_design))
+        Xt = list(zip(*X_design, strict=False))
         XtX = [
-            [sum(a * b for a, b in zip(Xt[i], Xt[j])) for j in range(m + 1)]
+            [sum(a * b for a, b in zip(Xt[i], Xt[j], strict=True)) for j in range(m + 1)]
             for i in range(m + 1)
         ]
         Xty = [sum(Xt[i][j] * y_vals[j] for j in range(n)) for i in range(m + 1)]

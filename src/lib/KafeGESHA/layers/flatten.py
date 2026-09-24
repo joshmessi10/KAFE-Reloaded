@@ -1,7 +1,7 @@
 """Flatten layer to reshape tensors."""
-from lib.KafeGESHA.layers.layer import Layer
 from global_utils import check_sig
-from TypeUtils import numeric_vector_types, numeric_matrix_types
+from lib.KafeGESHA.layers.layer import Layer
+from TypeUtils import numeric_matrix_types, numeric_vector_types
 
 
 class Flatten(Layer):

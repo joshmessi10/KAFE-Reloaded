@@ -43,22 +43,30 @@ Expected pipeline from KAFE:
     model.fit(X_train, y_train, 20, 32);
 """
 from global_utils import check_sig
-from TypeUtils import (
-    integer_type, string_type, float_type, gesha_type,
-    numeric_vector_types, numeric_matrix_types,
-    string_list_type, any_list_types, void_t
+from lib.KafeGESHA.layers.activation_layers import (
+    LinearLayer,
+    ReLULayer,
+    SigmoidLayer,
+    SoftmaxLayer,
+    TanhLayer,
 )
 from lib.KafeGESHA.layers.dense import Dense
 from lib.KafeGESHA.layers.dropout import Dropout
 from lib.KafeGESHA.layers.flatten import Flatten
-from lib.KafeGESHA.layers.activation_layers import (
-    ReLULayer, SigmoidLayer, TanhLayer, SoftmaxLayer, LinearLayer
-)
 from lib.KafeGESHA.layers.input_layer import Input
+from lib.KafeGESHA.models.functional import Add, Functional
 from lib.KafeGESHA.models.sequential import Sequential
-from lib.KafeGESHA.models.functional import Functional, Add
-from lib.KafeNUMK import functions as numk
-
+from TypeUtils import (
+    any_list_types,
+    float_type,
+    gesha_type,
+    integer_type,
+    numeric_vector_types,
+    string_list_type,
+    string_type,
+    void_t,
+)
+from TypeUtils import numeric_matrix_types as numeric_matrix_types
 
 # --------------------------------------------------------------------------
 # Layers

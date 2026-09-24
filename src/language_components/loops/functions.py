@@ -1,10 +1,10 @@
-from TypeUtils import get_data_type, get_inner_list_type, string_type
 from errors import (
     raiseConditionMustBeBoolean,
     raiseExceededIterationCount,
     raiseNonIterableVariable,
 )
 from language_components.functions.utils import ReturnValue
+from TypeUtils import get_data_type, get_inner_list_type, string_type
 
 
 def whileLoop(self, ctx):
@@ -36,7 +36,7 @@ def forLoop(self, ctx):
 
     iterable_type = get_data_type(iterable)
 
-    if type(iterable) == list:
+    if type(iterable) is list:
         item_type = get_inner_list_type(iterable)
     elif iterable_type == string_type:
         item_type = string_type

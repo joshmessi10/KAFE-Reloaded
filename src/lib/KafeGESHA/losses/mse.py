@@ -1,26 +1,26 @@
 """MSE and MAE loss functions."""
-from lib.KafeMATH.functions import math_abs
 from lib.KafeGESHA.losses.loss import LossFunction
+from lib.KafeMATH.functions import math_abs
 
 
 class MeanSquaredError(LossFunction):
     def compute(self, y_true, y_pred):
-        errors = [(yt - yp) * (yt - yp) for yt, yp in zip(y_true, y_pred)]
+        errors = [(yt - yp) * (yt - yp) for yt, yp in zip(y_true, y_pred, strict=False)]
         return sum(errors) / len(errors)
 
     def derivative(self, y_true, y_pred):
         n = len(y_true)
-        return [2 * (yp - yt) / n for yt, yp in zip(y_true, y_pred)]
+        return [2 * (yp - yt) / n for yt, yp in zip(y_true, y_pred, strict=False)]
 
 
 class MeanAbsoluteError(LossFunction):
     def compute(self, y_true, y_pred):
-        errors = [math_abs(yt - yp) for yt, yp in zip(y_true, y_pred)]
+        errors = [math_abs(yt - yp) for yt, yp in zip(y_true, y_pred, strict=False)]
         return sum(errors) / len(errors)
 
     def derivative(self, y_true, y_pred):
         n = len(y_true)
         return [
             ((yp - yt) / math_abs(yp - yt)) / n if yp != yt else 0
-            for yt, yp in zip(y_true, y_pred)
+            for yt, yp in zip(y_true, y_pred, strict=False)
         ]

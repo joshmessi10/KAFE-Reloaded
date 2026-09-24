@@ -1,6 +1,6 @@
 """SGD and RMSprop optimizers."""
-from lib.KafeMATH.functions import pow_, sqrt
 from lib.KafeGESHA.optimizers.optimizer import Optimizer
+from lib.KafeMATH.functions import pow_, sqrt
 
 
 class SGD(Optimizer):
@@ -8,7 +8,7 @@ class SGD(Optimizer):
         self.lr = lr
 
     def step(self, params, grads):
-        return [p - self.lr * g for p, g in zip(params, grads)]
+        return [p - self.lr * g for p, g in zip(params, grads, strict=False)]
 
 
 class RMSprop(Optimizer):

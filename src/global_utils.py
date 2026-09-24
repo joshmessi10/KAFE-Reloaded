@@ -1,5 +1,19 @@
-from errors import raiseTypeMismatch, raiseFunctionIncorrectArgumentType, raiseWrongNumberOfArgs
-from TypeUtils import get_data_type, integer_type, float_type, boolean_type, string_type, function_type, list_type, any_list_types
+from errors import (
+    raiseFunctionIncorrectArgumentType,
+    raiseTypeMismatch,
+    raiseWrongNumberOfArgs,
+)
+from TypeUtils import (
+    any_list_types,
+    boolean_type,
+    float_type,
+    function_type,
+    get_data_type,
+    integer_type,
+    list_type,
+    string_type,
+)
+
 
 def is_correct_type(value, declared_type):
     value_type = get_data_type(value)
@@ -68,7 +82,7 @@ def verify_homogeneity(items):
     if (len(items) != 0):
         data_type = type(items[0])
         for item in items:
-            if type(item) != data_type:
+            if type(item) is not data_type:
                 return False
 
     return True

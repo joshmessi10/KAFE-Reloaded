@@ -10,12 +10,12 @@ activation occupies its own node in the graph, allowing architectures
 where the same activation block is shared or connected
 nonlinearly (e.g., with skip connections in the Functional API).
 """
-from lib.KafeGESHA.layers.layer import Layer
 from lib.KafeGESHA.activations.relu import ReLU as _ReLU
 from lib.KafeGESHA.activations.sigmoid import SigmoidActivation as _SigmoidActivation
-from lib.KafeGESHA.activations.tanh import Tanh as _Tanh
 from lib.KafeGESHA.activations.softmax import Softmax as _Softmax
 from lib.KafeGESHA.activations.step import IdentityActivation as _IdentityActivation
+from lib.KafeGESHA.activations.tanh import Tanh as _Tanh
+from lib.KafeGESHA.layers.layer import Layer
 
 
 class ActivationLayer(Layer):

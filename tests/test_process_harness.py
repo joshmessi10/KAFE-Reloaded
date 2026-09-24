@@ -5,7 +5,6 @@ import sys
 import warnings
 
 import pytest
-
 import utils
 
 
@@ -25,7 +24,7 @@ def test_interpreter_entrypoint_can_be_imported_without_running_cli(
 
 def test_pytest_warning_policy_raises_on_python_warning():
     with pytest.raises(UserWarning, match="parent warning"):
-        warnings.warn("controlled parent warning", UserWarning)
+        warnings.warn("controlled parent warning", UserWarning, stacklevel=2)
 
 
 def test_build_child_environment_copies_parent_and_promotes_warnings(monkeypatch):

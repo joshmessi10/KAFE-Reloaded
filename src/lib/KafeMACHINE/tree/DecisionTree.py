@@ -1,8 +1,9 @@
-from lib.KafeMATH.functions import log
 from global_utils import check_sig
-from TypeUtils import numeric_vector_types, numeric_matrix_types, pardos_type
-from ..metrics import accuracy_score, r2_score
+from lib.KafeMATH.functions import log
+from TypeUtils import numeric_matrix_types, numeric_vector_types, pardos_type
+
 from ..BaseMachine import BaseMachine
+from ..metrics import accuracy_score, r2_score
 
 
 class DecisionTreeClassifier(BaseMachine):

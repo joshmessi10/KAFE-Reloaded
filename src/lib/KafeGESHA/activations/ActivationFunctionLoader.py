@@ -1,10 +1,10 @@
 """Activation function loader."""
-from lib.KafeGESHA.activations.sigmoid import SigmoidActivation
-from lib.KafeGESHA.activations.relu import ReLU
-from lib.KafeGESHA.activations.tanh import Tanh
-from lib.KafeGESHA.activations.step import IdentityActivation, StepActivation
-from lib.KafeGESHA.activations.softmax import Softmax
 from global_utils import check_sig
+from lib.KafeGESHA.activations.relu import ReLU
+from lib.KafeGESHA.activations.sigmoid import SigmoidActivation
+from lib.KafeGESHA.activations.softmax import Softmax
+from lib.KafeGESHA.activations.step import IdentityActivation, StepActivation
+from lib.KafeGESHA.activations.tanh import Tanh
 from TypeUtils import string_type, void_t
 
 

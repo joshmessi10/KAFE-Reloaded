@@ -1,10 +1,12 @@
-import os
 import json
+import os
+
 from errors import raiseFileNotFound
 from global_utils import check_sig
-from .utils import infer_type
+from TypeUtils import any_list_types, pardos_type, string_type
+
 from .DataFrame import DataFrame
-from TypeUtils import string_type, pardos_type, any_list_types
+from .utils import infer_type
 
 
 @check_sig([1], [string_type])
@@ -21,15 +23,15 @@ def read_csv(path):
             raiseFileNotFound(path, globals.current_dir)
 
     with open(real_path, encoding="utf-8") as f:
-        lines = [l.rstrip("\r\n") for l in f]
+        lines = [line.rstrip("\r\n") for line in f]
     while lines and lines[-1] == "":
         lines.pop()
     if len(lines) == 0:
         return DataFrame([], [])
 
     header_line = lines[0]
-    semicolons = sum(l.count(";") for l in lines)
-    commas = sum(l.count(",") for l in lines)
+    semicolons = sum(line.count(";") for line in lines)
+    commas = sum(line.count(",") for line in lines)
     delim = ";" if semicolons >= commas else ","
 
     header = [h.strip() for h in header_line.split(delim)]
@@ -98,10 +100,10 @@ def to_matrix(df):
     Converts a PARDOS DataFrame to an array (list of lists of floats).
     Only numeric columns (integer and float) are included.
     """
-    from TypeUtils import integer_type, float_type
+    from TypeUtils import float_type, integer_type
     dtypes = df.dtypes()
     numeric_indices = []
-    for i, (col_name, type_name) in enumerate(dtypes):
+    for i, (_col_name, type_name) in enumerate(dtypes):
         if type_name in (integer_type, float_type):
             numeric_indices.append(i)
 

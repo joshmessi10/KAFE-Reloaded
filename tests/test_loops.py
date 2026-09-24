@@ -3,8 +3,8 @@ from utils import (
     assert_invalid_kafe_result,
     assert_valid_kafe_result,
     get_invalid_programs,
-    get_programs,
     get_parameters,
+    get_programs,
     run_kafe_program,
 )
 

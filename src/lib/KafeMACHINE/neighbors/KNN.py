@@ -1,9 +1,11 @@
 import copy
-from lib.KafeMATH.functions import sqrt
+
 from global_utils import check_sig
-from TypeUtils import numeric_vector_types, numeric_matrix_types, integer_type, pardos_type
-from ..metrics import accuracy_score, r2_score
+from lib.KafeMATH.functions import sqrt
+from TypeUtils import numeric_matrix_types, numeric_vector_types, pardos_type
+
 from ..BaseMachine import BaseMachine
+from ..metrics import accuracy_score, r2_score
 
 
 class KNN(BaseMachine):
@@ -20,7 +22,7 @@ class KNN(BaseMachine):
             raise Exception("KNN: k cannot be greater than number of training samples")
 
     def _euclidean_distance(self, a, b):
-        return sqrt(sum((x - y) ** 2 for x, y in zip(a, b)))
+        return sqrt(sum((x - y) ** 2 for x, y in zip(a, b, strict=False)))
 
     @check_sig([3], [pardos_type] + numeric_vector_types + numeric_matrix_types, numeric_vector_types, is_method=True)
     def fit(self, X, y):
@@ -157,7 +159,7 @@ class KNNRegressor(BaseMachine):
 
     def _euclidean_distance(self, a, b):
         """Calculate the Euclidean distance."""
-        return sqrt(sum((x - y) ** 2 for x, y in zip(a, b)))
+        return sqrt(sum((x - y) ** 2 for x, y in zip(a, b, strict=False)))
 
     @check_sig([3], [pardos_type] + numeric_vector_types + numeric_matrix_types, numeric_vector_types, is_method=True)
     def fit(self, X, y):

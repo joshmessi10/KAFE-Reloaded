@@ -1,4 +1,9 @@
-from errors import raiseLibraryNotImported, raiseFunctionNotDefined, raiseVariableNotDefined
+from errors import (
+    raiseFunctionNotDefined,
+    raiseLibraryNotImported,
+    raiseVariableNotDefined,
+)
+
 
 def check_imported(library):
     was_imported = library[1]

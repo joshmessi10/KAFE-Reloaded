@@ -30,8 +30,8 @@ Or with separate activation layers (useful for visualizing the graph):
         SoftmaxLayer()
     ])
 """
-from lib.KafeGESHA.core.model import Model
 from global_utils import check_sig
+from lib.KafeGESHA.core.model import Model
 from TypeUtils import gesha_type
 
 

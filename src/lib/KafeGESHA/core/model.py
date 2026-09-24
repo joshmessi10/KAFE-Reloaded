@@ -16,19 +16,25 @@ Compatibility:
 - GeshaDeep is removed; Sequential replaces it.
 """
 from abc import ABC, abstractmethod
-from global_utils import check_sig
-from TypeUtils import (
-    gesha_type, numeric_vector_types, numeric_matrix_types,
-    integer_type, string_type, string_list_type, void_t, float_type
-)
-from lib.KafeGESHA.losses.loss import LossFunction
-from lib.KafeGESHA.losses.mse import MeanSquaredError, MeanAbsoluteError
-from lib.KafeGESHA.losses.binary_crossentropy import BinaryCrossEntropy
-from lib.KafeGESHA.losses.categorical_crossentropy import CategoricalCrossEntropy, SparseCategoricalCrossEntropy
-from lib.KafeGESHA.optimizers.optimizer import Optimizer
-from lib.KafeGESHA.optimizers.sgd import SGD, RMSprop
-from lib.KafeGESHA.optimizers.adam import Adam, AdamW
 
+from global_utils import check_sig
+from lib.KafeGESHA.losses.binary_crossentropy import BinaryCrossEntropy
+from lib.KafeGESHA.losses.categorical_crossentropy import (
+    CategoricalCrossEntropy,
+    SparseCategoricalCrossEntropy,
+)
+from lib.KafeGESHA.losses.mse import MeanAbsoluteError, MeanSquaredError
+from lib.KafeGESHA.optimizers.adam import Adam, AdamW
+from lib.KafeGESHA.optimizers.sgd import SGD, RMSprop
+from TypeUtils import (
+    float_type,
+    integer_type,
+    numeric_matrix_types,
+    numeric_vector_types,
+    string_list_type,
+    string_type,
+    void_t,
+)
 
 # --------------------------------------------------------------------------
 # Resolution of loss and optimizer by name
@@ -288,7 +294,7 @@ class Model(ABC):
         self._set_training(False)
         total_loss = 0.0
         n = len(x_test)
-        for xi, yi in zip(x_test, y_test):
+        for xi, yi in zip(x_test, y_test, strict=False):
             out = self.forward(xi)
             loss_val, _ = self._compute_loss_and_grad(out, yi)
             total_loss += loss_val
@@ -318,7 +324,7 @@ class Model(ABC):
         """Prints a summary of the model architecture."""
         print(f"=== {self.__class__.__name__} ===")
         layers = self.get_layers()
-        for i, layer in enumerate(layers, 1):
+        for _i, layer in enumerate(layers, 1):
             layer.summary()
         print("=" * 30)
 
@@ -395,7 +401,7 @@ class Model(ABC):
         """Generates the validation message by calculating the loss in percentage."""
         total = 0.0
         n = len(x_val)
-        for xi, yi in zip(x_val, y_val):
+        for xi, yi in zip(x_val, y_val, strict=False):
             out = self.forward(xi)
             loss_val, _ = self._compute_loss_and_grad(out, yi)
             total += loss_val

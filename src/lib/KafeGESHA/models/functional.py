@@ -30,7 +30,7 @@ Internally the model:
 4. In backward: runs in reverse order, propagating gradients.
 """
 from lib.KafeGESHA.core.model import Model
-from lib.KafeGESHA.core.node import Node, InputNode
+from lib.KafeGESHA.core.node import InputNode, Node
 from lib.KafeGESHA.layers.input_layer import Input
 
 
@@ -216,7 +216,7 @@ class Functional(Model):
         # Assign input(s) to InputNodes
         if isinstance(x, list) and self._input_nodes and isinstance(x[0], list):
             # Multiple inputs
-            for inp_node, xi in zip(self._input_nodes, x):
+            for inp_node, xi in zip(self._input_nodes, x, strict=False):
                 inp_node._output_cache = xi
         else:
             # A single input
@@ -272,7 +272,7 @@ class Functional(Model):
         if len(self._output_nodes) == 1:
             grad_map[id(self._output_nodes[0])] = grad
         else:
-            for out_node, g in zip(self._output_nodes, grad):
+            for out_node, g in zip(self._output_nodes, grad, strict=False):
                 grad_map[id(out_node)] = g if isinstance(g, list) else [g]
 
         lr = self._optimizer_obj.lr
@@ -293,7 +293,7 @@ class Functional(Model):
             if isinstance(layer, Add):
                 # Add distributes the gradient to each branch
                 branch_grads = layer.backward(node_grad, learning_rate=lr)
-                for ib, bg in zip(inbound, branch_grads):
+                for ib, bg in zip(inbound, branch_grads, strict=False):
                     ib_id = id(ib)
                     if ib_id in grad_map:
                         # Accumulate (for nodes with multiple consumers)

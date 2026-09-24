@@ -1,7 +1,8 @@
-from lib.KafeMATH.functions import sqrt, pow_, math_round
 from global_utils import check_sig
-from TypeUtils import pardos_type, integer_type, numeric_matrix_types
+from lib.KafeMATH.functions import math_round, pow_, sqrt
 from lib.KafePARDOS.DataFrame import DataFrame
+from TypeUtils import numeric_matrix_types, pardos_type
+
 from ..BaseMachine import BaseMachine
 
 

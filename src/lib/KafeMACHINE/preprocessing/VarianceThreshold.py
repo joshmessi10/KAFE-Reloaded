@@ -1,6 +1,7 @@
 from global_utils import check_sig
-from TypeUtils import pardos_type, numeric_matrix_types, float_type
 from lib.KafePARDOS.DataFrame import DataFrame
+from TypeUtils import numeric_matrix_types, pardos_type
+
 from ..BaseMachine import BaseMachine
 
 

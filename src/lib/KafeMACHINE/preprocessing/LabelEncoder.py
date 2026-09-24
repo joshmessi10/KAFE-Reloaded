@@ -1,5 +1,6 @@
 from global_utils import check_sig
-from TypeUtils import machine_type, any_list_types, numeric_vector_types
+from TypeUtils import any_list_types, numeric_vector_types
+
 from ..BaseMachine import BaseMachine
 
 

@@ -1,6 +1,7 @@
-from TypeUtils import void_t
 from errors import raiseFunctionCantReturnVoid, raiseTypeMismatch
 from global_utils import is_correct_type
+from TypeUtils import void_t
+
 
 class ReturnValue(Exception):
     def __init__(self, value):

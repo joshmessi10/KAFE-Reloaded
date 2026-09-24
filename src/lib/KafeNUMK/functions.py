@@ -1,12 +1,29 @@
+import random as _random_module
+
+from global_utils import check_sig
+from TypeUtils import (
+    any_list_types,
+    any_matrix_type,
+    float_type,
+    integer_type,
+    numeric_matrix_types,
+    numeric_vector_types,
+)
+
 from .errors import raiseDifferentDimension, raiseNonUniformMatrix
 from .utils import (
-    has_same_dimensions, is_uniform_matrix, apply_matrix_operation,
-    _shape_nd, _op_nd, _broadcastable, _broadcast_to_nd,
-    _sum_nd, _max_nd, _reshape_nd, _is_scalar, _depth
+    _broadcast_to_nd,
+    _broadcastable,
+    _max_nd,
+    _op_nd,
+    _reshape_nd,
+    _shape_nd,
+    _sum_nd,
+    apply_matrix_operation,
+    has_same_dimensions,
+    is_uniform_matrix,
 )
-from TypeUtils import any_matrix_type, numeric_matrix_types, numeric_vector_types, integer_type, float_type, any_list_types
-from global_utils import check_sig
-import random as _random_module
+
 
 @check_sig([2], numeric_matrix_types, numeric_matrix_types)
 def add(matrix1, matrix2):
@@ -85,7 +102,7 @@ def inv(matrix):
 
 @check_sig([1], [any_matrix_type])
 def transpose(matrix):
-    return list(map(list, zip(*matrix)))
+    return list(map(list, zip(*matrix, strict=False)))
 
 
 
@@ -94,7 +111,7 @@ def dot(vec1, vec2):
     if len(vec1) != len(vec2):
         raiseDifferentDimension('dot')
 
-    return sum(x * y for x, y in zip(vec1, vec2))
+    return sum(x * y for x, y in zip(vec1, vec2, strict=True))
 
 
 @check_sig([2], numeric_matrix_types, numeric_matrix_types)
@@ -198,7 +215,7 @@ def broadcast_add(a, b):
     s2_padded = (1,) * (max_len - len(s2)) + s2
 
     # Broadcast both to target shape
-    target = tuple(max(d1, d2) for d1, d2 in zip(s1_padded, s2_padded))
+    target = tuple(max(d1, d2) for d1, d2 in zip(s1_padded, s2_padded, strict=True))
     a_bc = _broadcast_to_nd(a, target, s1)
     b_bc = _broadcast_to_nd(b, target, s2)
     return _op_nd(a_bc, b_bc, lambda x, y: x + y)
@@ -218,7 +235,7 @@ def broadcast_sub(a, b):
     max_len = max(len(s1), len(s2))
     s1_padded = (1,) * (max_len - len(s1)) + s1
     s2_padded = (1,) * (max_len - len(s2)) + s2
-    target = tuple(max(d1, d2) for d1, d2 in zip(s1_padded, s2_padded))
+    target = tuple(max(d1, d2) for d1, d2 in zip(s1_padded, s2_padded, strict=True))
     a_bc = _broadcast_to_nd(a, target, s1)
     b_bc = _broadcast_to_nd(b, target, s2)
     return _op_nd(a_bc, b_bc, lambda x, y: x - y)
@@ -238,7 +255,7 @@ def broadcast_mul(a, b):
     max_len = max(len(s1), len(s2))
     s1_padded = (1,) * (max_len - len(s1)) + s1
     s2_padded = (1,) * (max_len - len(s2)) + s2
-    target = tuple(max(d1, d2) for d1, d2 in zip(s1_padded, s2_padded))
+    target = tuple(max(d1, d2) for d1, d2 in zip(s1_padded, s2_padded, strict=True))
     a_bc = _broadcast_to_nd(a, target, s1)
     b_bc = _broadcast_to_nd(b, target, s2)
     return _op_nd(a_bc, b_bc, lambda x, y: x * y)

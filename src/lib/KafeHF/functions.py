@@ -73,7 +73,7 @@ def load_dataset(dataset_name):
     except Exception as e:
         raise Exception(
             f"huggingface: Error loading dataset '{dataset_name}': {e}"
-        )
+        ) from e
 
     if hasattr(dataset_dict, "keys"):
         splits = list(dataset_dict.keys())
@@ -117,7 +117,7 @@ def load_dataset_split(dataset_name, split):
     except Exception as e:
         raise Exception(
             f"huggingface: Error loading split '{split}' from dataset '{dataset_name}': {e}"
-        )
+        ) from e
 
     return _convert_to_pardos(dataset_dict, dataset_name)
 

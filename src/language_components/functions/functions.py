@@ -1,15 +1,15 @@
-from Kafe_GrammarParser import Kafe_GrammarParser
-
-from TypeUtils import function_type, void_t, integer_type, all_types, any_list_types
 from errors import (
     raiseFunctionAlreadyDefined,
-    raiseVoidAsParameterType,
-    raiseWrongNumberOfArgs,
     raiseFunctionNotDefined,
     raiseSignatureMismatch,
+    raiseVoidAsParameterType,
+    raiseWrongNumberOfArgs,
 )
 from global_utils import assign_variable, check_sig
-from .utils import ReturnValue, check_value_type, _parse_signature
+from Kafe_GrammarParser import Kafe_GrammarParser
+from TypeUtils import all_types, any_list_types, function_type, integer_type, void_t
+
+from .utils import ReturnValue, _parse_signature, check_value_type
 
 
 def _get_top_params(signature: str) -> list[str]:
@@ -91,7 +91,7 @@ def functionDecl(self, ctx):
                 saved_scope_stack = outer.scope_stack[:]
 
             try:
-                for decl, val in zip(params_flat, new_vals):
+                for decl, val in zip(params_flat, new_vals, strict=False):
                     expected = decl.typeDecl().getText().replace(" ", "")
 
                     obtained_signature = getattr(val, "signature", None)
@@ -202,7 +202,7 @@ def lambdaExpr(self, ctx):
             outer.variables = dict(captured)
             outer.scope_stack = [{}]  # Fresh scope stack for lambda
             try:
-                for decl, val in zip(params, new_vals):
+                for decl, val in zip(params, new_vals, strict=False):
                     expected = decl.typeDecl().getText().replace(" ", "")
 
                     obtained_signature = getattr(val, "signature", None)

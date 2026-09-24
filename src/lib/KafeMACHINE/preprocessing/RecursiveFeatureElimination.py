@@ -1,6 +1,7 @@
 from global_utils import check_sig
-from TypeUtils import pardos_type, numeric_matrix_types, numeric_vector_types, integer_type
 from lib.KafePARDOS.DataFrame import DataFrame
+from TypeUtils import numeric_matrix_types, numeric_vector_types, pardos_type
+
 from ..BaseMachine import BaseMachine
 from ..linear.LinearRegression import LinearRegression
 
@@ -66,7 +67,6 @@ class RecursiveFeatureElimination(BaseMachine):
         if not matrix or not matrix[0]:
             raise Exception("RecursiveFeatureElimination: Empty input data")
 
-        n_samples = len(matrix)
         n_features = len(matrix[0])
         self.n_features_in_ = n_features
 

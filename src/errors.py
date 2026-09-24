@@ -1,5 +1,6 @@
 from TypeUtils import get_data_type, void_t
 
+
 def raiseVoidAsVariableType():
     message = f"{void_t} cannot be used as variable type"
     raise TypeError(message)
@@ -45,7 +46,7 @@ def raiseTypeMismatch(variable, declared_type):
 def raiseFunctionIncorrectArgumentType(function_name, value, declared_type):
     value_type = get_data_type(value)
 
-    if type(declared_type) == list:
+    if type(declared_type) is list:
         expected_types = ""
         for i in range(len(declared_type) - 1):
             expected_types += declared_type[i] + " or "
@@ -73,7 +74,7 @@ def raiseNonIterableVariable(variable):
     raise TypeError(message)
 
 def raiseWrongNumberOfArgs(function_name, num_args, recv_args):
-    if type(num_args) == list:
+    if type(num_args) is list:
         arg_counts_text = ""
         for i in range(len(num_args) - 1):
             arg_counts_text += str(num_args[i]) + " or "

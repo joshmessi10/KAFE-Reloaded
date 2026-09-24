@@ -1,7 +1,8 @@
 from global_utils import check_sig
-from TypeUtils import numeric_vector_types, numeric_matrix_types, pardos_type
-from ..metrics import r2_score
+from TypeUtils import numeric_matrix_types, numeric_vector_types, pardos_type
+
 from ..BaseMachine import BaseMachine
+from ..metrics import r2_score
 
 
 class RidgeRegression(BaseMachine):
@@ -50,7 +51,7 @@ class RidgeRegression(BaseMachine):
         n = len(X)
         m = len(X[0])
 
-        Xt = list(zip(*X))
+        Xt = list(zip(*X, strict=False))
         XtX = [
             [sum(Xt[i][k] * Xt[j][k] for k in range(n)) for j in range(m)]
             for i in range(m)

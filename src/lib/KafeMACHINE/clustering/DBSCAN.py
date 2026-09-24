@@ -1,6 +1,7 @@
 from global_utils import check_sig
-from TypeUtils import numeric_matrix_types, pardos_type
 from lib.KafeMATH.functions import sqrt
+from TypeUtils import numeric_matrix_types, pardos_type
+
 from ..BaseMachine import BaseMachine
 
 
@@ -48,7 +49,7 @@ class DBSCAN(BaseMachine):
 
     def _euclidean_distance(self, a, b):
         """Euclidean distance between two points."""
-        return sqrt(sum((x - y) ** 2 for x, y in zip(a, b)))
+        return sqrt(sum((x - y) ** 2 for x, y in zip(a, b, strict=False)))
 
     def _region_query(self, X, point_idx):
         """Find all points within distance eps of point_idx."""

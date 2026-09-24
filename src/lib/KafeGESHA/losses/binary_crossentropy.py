@@ -1,6 +1,6 @@
 """Binary Cross Entropy loss function."""
-from lib.KafeMATH.functions import log
 from lib.KafeGESHA.losses.loss import LossFunction
+from lib.KafeMATH.functions import log
 
 
 class BinaryCrossEntropy(LossFunction):
@@ -26,7 +26,7 @@ class BinaryCrossEntropy(LossFunction):
 
     def compute(self, y_true, y_pred):
         loss = []
-        for yt, yp in zip(y_true, y_pred):
+        for yt, yp in zip(y_true, y_pred, strict=False):
             yp_c = self._clip(yp)
             term = -(yt * log(yp_c) + (1 - yt) * log(1 - yp_c))
             loss.append(term)
@@ -34,7 +34,7 @@ class BinaryCrossEntropy(LossFunction):
 
     def derivative(self, y_true, y_pred):
         grads = []
-        for yt, yp in zip(y_true, y_pred):
+        for yt, yp in zip(y_true, y_pred, strict=False):
             yp_c = self._clip(yp)
             grad = (yp_c - yt) / (yp_c * (1 - yp_c) + self.epsilon)
             grads.append(grad)

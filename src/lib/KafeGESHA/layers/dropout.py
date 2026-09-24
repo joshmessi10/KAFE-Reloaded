@@ -1,8 +1,7 @@
 """Dropout layer for regularization."""
 import random
+
 from lib.KafeGESHA.layers.layer import Layer
-from global_utils import check_sig
-from TypeUtils import numeric_vector_types, float_type, void_t
 
 
 class Dropout(Layer):

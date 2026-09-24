@@ -1,6 +1,7 @@
 from global_utils import check_sig
-from TypeUtils import numeric_vector_types, numeric_matrix_types, pardos_type
-from lib.KafeMATH.functions import sqrt, pow_, exp, log
+from lib.KafeMATH.functions import exp, log, pow_, sqrt
+from TypeUtils import numeric_matrix_types, numeric_vector_types, pardos_type
+
 from ..BaseMachine import BaseMachine
 
 

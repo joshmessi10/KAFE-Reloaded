@@ -1,15 +1,17 @@
 import pathlib
-from antlr4 import FileStream, CommonTokenStream
+
+from antlr4 import CommonTokenStream, FileStream
+
+import globals
+from errors import raiseModuleNotFound
 from Kafe_GrammarLexer import Kafe_GrammarLexer
 from Kafe_GrammarParser import Kafe_GrammarParser
 
-from errors import raiseModuleNotFound
-import globals
 
 def importStmt(self, ctx):
     module = ctx.ID().getText()
 
-    is_library = self.libraries.get(module) != None
+    is_library = self.libraries.get(module) is not None
     if is_library:
         self.libraries[module][1] = True
         return

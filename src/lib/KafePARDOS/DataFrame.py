@@ -1,15 +1,16 @@
-import lib.KafeMATH.functions as math
 import json
 import os
+
+import lib.KafeMATH.functions as math
 from global_utils import check_sig
 from TypeUtils import (
+    any_matrix_type,
+    boolean_type,
+    float_type,
+    integer_type,
     pardos_type,
     string_list_type,
-    any_matrix_type,
-    integer_type,
     string_type,
-    float_type,
-    boolean_type,
 )
 
 # Alias built-in sum to avoid shadowing by DataFrame.sum method
@@ -21,7 +22,7 @@ class DataFrame:
     def __init__(self, columns, data):
         for row in data:
             if len(row) != len(columns):
-                raise Exception(f"pardos: Inconsistent dimensions")
+                raise Exception("pardos: Inconsistent dimensions")
 
         self.columns = list(columns)
         self.data = [list(row) for row in data]
@@ -492,11 +493,12 @@ class DataFrame:
 
         # Lazy import to avoid crashes if antlr4 is missing in some environments
         try:
-            from antlr4 import InputStream, CommonTokenStream
+            from antlr4 import CommonTokenStream, InputStream
+
             from Kafe_GrammarLexer import Kafe_GrammarLexer
             from Kafe_GrammarParser import Kafe_GrammarParser
-        except ImportError:
-            raise Exception("pardos: antlr4-python3-runtime is not installed")
+        except ImportError as e:
+            raise Exception("pardos: antlr4-python3-runtime is not installed") from e
 
         # Parse the query string as an expression
         input_stream = InputStream(query_str)

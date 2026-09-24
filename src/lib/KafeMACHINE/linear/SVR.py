@@ -1,7 +1,8 @@
 from global_utils import check_sig
-from TypeUtils import numeric_vector_types, numeric_matrix_types, pardos_type
-from ..metrics import r2_score
+from TypeUtils import numeric_matrix_types, numeric_vector_types, pardos_type
+
 from ..BaseMachine import BaseMachine
+from ..metrics import r2_score
 
 
 class SVR(BaseMachine):
@@ -83,15 +84,15 @@ class SVR(BaseMachine):
     def _kernel_function(self, x1, x2, gamma=None):
         """Calculates the kernel between two vectors."""
         if self.kernel == 'linear':
-            return sum(a * b for a, b in zip(x1, x2))
+            return sum(a * b for a, b in zip(x1, x2, strict=False))
         elif self.kernel == 'rbf':
             if gamma is None:
                 gamma = self._compute_gamma(len(x1))
-            dist = sum((a - b) ** 2 for a, b in zip(x1, x2))
+            dist = sum((a - b) ** 2 for a, b in zip(x1, x2, strict=False))
             from math import exp as pyexp
             return pyexp(-gamma * dist)
         elif self.kernel == 'poly':
-            dot = sum(a * b for a, b in zip(x1, x2))
+            dot = sum(a * b for a, b in zip(x1, x2, strict=False))
             return (dot + 1) ** self.degree
         return 0
 
@@ -173,7 +174,7 @@ class SVR(BaseMachine):
         self._dual_coefs = [0.0] * n
         self.intercept_ = 0.0
 
-        for iteration in range(self.max_iter):
+        for _iteration in range(self.max_iter):
             for i in range(n):
                 pred = self.intercept_ + sum(
                     self._dual_coefs[j] * K[i][j] for j in range(n)

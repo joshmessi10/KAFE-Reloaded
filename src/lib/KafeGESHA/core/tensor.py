@@ -51,7 +51,7 @@ class Tensor:
                     f"Irregular tensor: dimension {depth} "
                     f"has length {len(data)}, expected {expected_shape[depth]}"
                 )
-            for i, sublist in enumerate(data):
+            for _i, sublist in enumerate(data):
                 if not isinstance(sublist, list):
                     raise ValueError(
                         f"Irregular tensor: expected a sublist at dimension {depth}, "

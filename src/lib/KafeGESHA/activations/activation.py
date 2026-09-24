@@ -1,5 +1,6 @@
 """Abstract base class for activation functions."""
 from abc import ABC, abstractmethod
+
 from global_utils import check_sig
 from TypeUtils import float_type, integer_type, numeric_vector_types
 

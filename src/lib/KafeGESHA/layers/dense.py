@@ -1,10 +1,11 @@
 """Dense layer (fully connected)."""
 import random
+
+from global_utils import check_sig
+from lib.KafeGESHA.activations.ActivationFunctionLoader import ActivationFunctionLoader
 from lib.KafeGESHA.layers.layer import Layer
 from lib.KafeGESHA.layers.utils import check_regularization
-from lib.KafeGESHA.activations.ActivationFunctionLoader import ActivationFunctionLoader
-from global_utils import check_sig
-from TypeUtils import integer_type, numeric_vector_types, float_type, void_t
+from TypeUtils import float_type, integer_type, numeric_vector_types, void_t
 
 
 class Dense(Layer):

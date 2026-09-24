@@ -1,6 +1,6 @@
 from global_utils import check_sig
 from lib.KafeMATH.functions import sqrt
-from TypeUtils import numeric_vector_types, numeric_matrix_types
+from TypeUtils import numeric_matrix_types, numeric_vector_types
 
 
 def _validate_inputs(func_name, y_true, y_pred):
@@ -13,14 +13,14 @@ def _validate_inputs(func_name, y_true, y_pred):
 @check_sig([2], numeric_vector_types, numeric_vector_types)
 def accuracy_score(y_true, y_pred):
     _validate_inputs("accuracy_score", y_true, y_pred)
-    correct = sum(1 for t, p in zip(y_true, y_pred) if t == p)
+    correct = sum(1 for t, p in zip(y_true, y_pred, strict=True) if t == p)
     return correct / len(y_true)
 
 
 def _per_class_tp_fp_fn(y_true, y_pred, cls):
-    tp = sum(1 for t, p in zip(y_true, y_pred) if t == cls and p == cls)
-    fp = sum(1 for t, p in zip(y_true, y_pred) if t != cls and p == cls)
-    fn = sum(1 for t, p in zip(y_true, y_pred) if t == cls and p != cls)
+    tp = sum(1 for t, p in zip(y_true, y_pred, strict=True) if t == cls and p == cls)
+    fp = sum(1 for t, p in zip(y_true, y_pred, strict=True) if t != cls and p == cls)
+    fn = sum(1 for t, p in zip(y_true, y_pred, strict=True) if t == cls and p != cls)
     return tp, fp, fn
 
 
@@ -66,7 +66,7 @@ def confusion_matrix(y_true, y_pred):
     class_to_idx = {c: i for i, c in enumerate(classes)}
     n = len(classes)
     matrix = [[0] * n for _ in range(n)]
-    for t, p in zip(y_true, y_pred):
+    for t, p in zip(y_true, y_pred, strict=True):
         matrix[class_to_idx[t]][class_to_idx[p]] += 1
     return matrix
 
@@ -80,9 +80,9 @@ def classification_report(y_true, y_pred):
 
     per_class = {}
     for cls in classes:
-        tp = sum(1 for t, p in zip(y_true, y_pred) if t == cls and p == cls)
-        fp = sum(1 for t, p in zip(y_true, y_pred) if t != cls and p == cls)
-        fn = sum(1 for t, p in zip(y_true, y_pred) if t == cls and p != cls)
+        tp = sum(1 for t, p in zip(y_true, y_pred, strict=True) if t == cls and p == cls)
+        fp = sum(1 for t, p in zip(y_true, y_pred, strict=True) if t != cls and p == cls)
+        fn = sum(1 for t, p in zip(y_true, y_pred, strict=True) if t == cls and p != cls)
         sup = sum(1 for t in y_true if t == cls)
         p = tp / (tp + fp) if (tp + fp) > 0 else 0.0
         r = tp / (tp + fn) if (tp + fn) > 0 else 0.0
@@ -111,19 +111,19 @@ def classification_report(y_true, y_pred):
 @check_sig([2], numeric_vector_types, numeric_vector_types)
 def mean_squared_error(y_true, y_pred):
     _validate_inputs("mean_squared_error", y_true, y_pred)
-    return sum((t - p) ** 2 for t, p in zip(y_true, y_pred)) / len(y_true)
+    return sum((t - p) ** 2 for t, p in zip(y_true, y_pred, strict=True)) / len(y_true)
 
 
 @check_sig([2], numeric_vector_types, numeric_vector_types)
 def mean_absolute_error(y_true, y_pred):
     _validate_inputs("mean_absolute_error", y_true, y_pred)
-    return sum(abs(t - p) for t, p in zip(y_true, y_pred)) / len(y_true)
+    return sum(abs(t - p) for t, p in zip(y_true, y_pred, strict=True)) / len(y_true)
 
 
 @check_sig([2], numeric_vector_types, numeric_vector_types)
 def root_mean_squared_error(y_true, y_pred):
     _validate_inputs("root_mean_squared_error", y_true, y_pred)
-    mse = sum((t - p) ** 2 for t, p in zip(y_true, y_pred)) / len(y_true)
+    mse = sum((t - p) ** 2 for t, p in zip(y_true, y_pred, strict=True)) / len(y_true)
     return sqrt(mse)
 
 
@@ -131,7 +131,7 @@ def root_mean_squared_error(y_true, y_pred):
 def r2_score(y_true, y_pred):
     _validate_inputs("r2_score", y_true, y_pred)
     y_mean = sum(y_true) / len(y_true)
-    ss_res = sum((t - p) ** 2 for t, p in zip(y_true, y_pred))
+    ss_res = sum((t - p) ** 2 for t, p in zip(y_true, y_pred, strict=True))
     ss_tot = sum((t - y_mean) ** 2 for t in y_true)
     if ss_tot == 0:
         return 1.0 if ss_res == 0 else 0.0
@@ -141,13 +141,13 @@ def r2_score(y_true, y_pred):
 @check_sig([2], numeric_vector_types, numeric_vector_types)
 def max_error(y_true, y_pred):
     _validate_inputs("max_error", y_true, y_pred)
-    return float(max(abs(t - p) for t, p in zip(y_true, y_pred)))
+    return float(max(abs(t - p) for t, p in zip(y_true, y_pred, strict=True)))
 
 
 @check_sig([2], numeric_vector_types, numeric_vector_types)
 def median_absolute_error(y_true, y_pred):
     _validate_inputs("median_absolute_error", y_true, y_pred)
-    abs_errors = sorted(abs(t - p) for t, p in zip(y_true, y_pred))
+    abs_errors = sorted(abs(t - p) for t, p in zip(y_true, y_pred, strict=True))
     n = len(abs_errors)
     if n % 2 == 1:
         return float(abs_errors[n // 2])
@@ -160,16 +160,16 @@ def mean_absolute_percentage_error(y_true, y_pred):
     for t in y_true:
         if t == 0:
             raise Exception("mean_absolute_percentage_error: y_true contains zero, MAPE is undefined")
-    return 100.0 / len(y_true) * sum(abs(t - p) / abs(t) for t, p in zip(y_true, y_pred))
+    return 100.0 / len(y_true) * sum(abs(t - p) / abs(t) for t, p in zip(y_true, y_pred, strict=True))
 
 
 @check_sig([2], numeric_vector_types, numeric_vector_types)
 def explained_variance_score(y_true, y_pred):
     _validate_inputs("explained_variance_score", y_true, y_pred)
     y_mean = sum(y_true) / len(y_true)
-    err_mean = sum(t - p for t, p in zip(y_true, y_pred)) / len(y_true)
+    err_mean = sum(t - p for t, p in zip(y_true, y_pred, strict=True)) / len(y_true)
     var_y = sum((t - y_mean) ** 2 for t in y_true) / len(y_true)
-    var_err = sum(((t - p) - err_mean) ** 2 for t, p in zip(y_true, y_pred)) / len(y_true)
+    var_err = sum(((t - p) - err_mean) ** 2 for t, p in zip(y_true, y_pred, strict=True)) / len(y_true)
     if var_y == 0:
         return 0.0
     return 1.0 - var_err / var_y

@@ -1,7 +1,7 @@
-from .errors import raiseDomainError, raiseNonEqualLength
-from TypeUtils import numeric_vector_types, number_types, integer_type
 from global_utils import check_sig
+from TypeUtils import integer_type, number_types, numeric_vector_types
 
+from .errors import raiseDomainError, raiseNonEqualLength
 
 pi = 3.141592653589793
 e = 2.718281828459045
@@ -494,7 +494,7 @@ def dist(p, q):
     if len(p) != len(q):
         raiseNonEqualLength('dist')
     s = 0.0
-    for a, b in zip(p, q):
+    for a, b in zip(p, q, strict=True):
         s += (a - b) ** 2
     return sqrt(s)
 
@@ -521,7 +521,7 @@ def sumprod(p, q):
     if len(p) != len(q):
         raiseNonEqualLength('sumprod')
     total = 0
-    for a, b in zip(p, q):
+    for a, b in zip(p, q, strict=True):
         total += a * b
     return total
 

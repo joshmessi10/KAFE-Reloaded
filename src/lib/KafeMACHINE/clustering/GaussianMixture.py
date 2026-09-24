@@ -1,7 +1,9 @@
 import random
+
 from global_utils import check_sig
-from TypeUtils import numeric_matrix_types, integer_type, pardos_type
-from lib.KafeMATH.functions import sqrt, exp, pow_, log
+from lib.KafeMATH.functions import exp, log, sqrt
+from TypeUtils import numeric_matrix_types, pardos_type
+
 from ..BaseMachine import BaseMachine
 
 
@@ -265,7 +267,6 @@ class GaussianMixture(BaseMachine):
 
     def aic(self, X):
         """Akaike Information Criterion (AIC)."""
-        n_samples = len(X)
         n_features = len(X[0])
         log_likelihood = self._compute_log_likelihood(X)
 

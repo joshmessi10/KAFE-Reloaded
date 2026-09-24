@@ -1,9 +1,11 @@
 import random
-from lib.KafeMATH.functions import log, exp
+
 from global_utils import check_sig
-from TypeUtils import numeric_vector_types, numeric_matrix_types, pardos_type
-from ..metrics import accuracy_score, r2_score
+from lib.KafeMATH.functions import exp, log
+from TypeUtils import numeric_matrix_types, numeric_vector_types, pardos_type
+
 from ..BaseMachine import BaseMachine
+from ..metrics import accuracy_score, r2_score
 
 
 class GradientBoostingClassifier(BaseMachine):
@@ -173,7 +175,7 @@ class GradientBoostingClassifier(BaseMachine):
 
         rng = random.Random(self.random_state if self.random_state != 0 else None)
 
-        for t in range(self.n_estimators):
+        for _t in range(self.n_estimators):
             probs = [self._sigmoid(fi) for fi in F]
 
             residuals = [y_binary[i] - probs[i] for i in range(n)]
@@ -374,7 +376,7 @@ class GradientBoostingRegressor(BaseMachine):
 
         rng = random.Random(self.random_state if self.random_state != 0 else None)
 
-        for t in range(self.n_estimators):
+        for _t in range(self.n_estimators):
             residuals = [y[i] - F[i] for i in range(n)]
 
             if self.subsample < 1.0:

@@ -1,25 +1,25 @@
-from lib.KafeGESHA.core.model import Gesha
 from errors import (
+    raiseExpectedHomogeneousList,
+    raiseIndexOutOfBounds,
+    raiseNonIntegerIndex,
+    raiseTypeMismatch,
     raiseVariableAlreadyDefined,
     raiseVariableNotDefined,
     raiseVoidAsVariableType,
-    raiseExpectedHomogeneousList,
-    raiseNonIntegerIndex,
-    raiseIndexOutOfBounds,
-    raiseTypeMismatch,
 )
+from global_utils import assign_variable, is_correct_type, verify_homogeneity
+from lib.KafeGESHA.core.model import Gesha
 from TypeUtils import (
+    boolean_type,
+    float_type,
+    gesha_type,
     get_data_type,
     integer_type,
-    float_type,
-    string_type,
-    boolean_type,
     list_type,
-    void_t,
-    gesha_type,
     pardos_type,
+    string_type,
+    void_t,
 )
-from global_utils import is_correct_type, verify_homogeneity, assign_variable
 
 
 def varDecl(self, ctx):
@@ -75,8 +75,8 @@ def assignStmt(self, ctx):
 def expr(self, ctx):
     result = self.visitChildren(ctx)
 
-    if type(result) == list:
-        if verify_homogeneity(result) == False:
+    if type(result) is list:
+        if not verify_homogeneity(result):
             raiseExpectedHomogeneousList()
 
     return result
@@ -171,10 +171,10 @@ def indexingExpr(self, ctx):
     collection = self.visit(ctx.primaryExpr())
     index = self.visit(ctx.expr())
 
-    if type(index) != int:
+    if type(index) is not int:
         raiseNonIntegerIndex(index)
 
-    if type(collection) == str or type(collection) == list:
+    if type(collection) is str or type(collection) is list:
         try:
             return collection[index]
         except IndexError:
@@ -195,7 +195,7 @@ def indexedAssignStmt(self, ctx):
     indexes = self.visit(ctx.indexing())
 
     for index in indexes:
-        if type(index) != int:
+        if type(index) is not int:
             raiseNonIntegerIndex(index)
 
     if list_name not in self.variables:

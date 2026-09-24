@@ -9,7 +9,7 @@ def get_inner_list_type(items):
 def build_list_type(nesting_level, data_type=None):
     built_type = "List["
     if nesting_level == 1:
-        built_type += type_names[data_type] if data_type != None else ""
+        built_type += type_names[data_type] if data_type is not None else ""
     else:
         built_type += build_list_type(nesting_level - 1, data_type=data_type)
     built_type += "]"
@@ -26,12 +26,12 @@ def get_list_type(items):
     return data_type
 
 def get_data_type(value):
-    from lib.KafePARDOS.DataFrame import DataFrame
     from lib.KafeGESHA.core.model import Gesha
-    from lib.KafeGESHA.layers.layer import Layer
     from lib.KafeGESHA.core.node import Node
     from lib.KafeGESHA.layers.input_layer import Input
+    from lib.KafeGESHA.layers.layer import Layer
     from lib.KafeMACHINE.BaseMachine import BaseMachine
+    from lib.KafePARDOS.DataFrame import DataFrame
 
     if type(value) is list:
         return get_list_type(value)

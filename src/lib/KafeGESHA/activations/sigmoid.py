@@ -1,6 +1,6 @@
 """Sigmoid activation function."""
-from lib.KafeMATH.functions import exp
 from lib.KafeGESHA.activations.activation import ActivationFunction
+from lib.KafeMATH.functions import exp
 
 
 class SigmoidActivation(ActivationFunction):

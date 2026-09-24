@@ -1,16 +1,16 @@
+import lib.KafePLOT.utils as utils
+from errors import raiseFunctionIncorrectArgumentType
 from global_utils import check_sig
+from lib.KafeMATH.functions import cos, radians, sin
 from TypeUtils import (
-    string_type,
     boolean_type,
     build_list_type,
-    integer_type,
     get_data_type,
-    numeric_vector_types,
+    integer_type,
     numeric_matrix_types,
+    numeric_vector_types,
+    string_type,
 )
-from errors import raiseFunctionIncorrectArgumentType
-from lib.KafeMATH.functions import radians, sin, cos
-import lib.KafePLOT.utils as utils
 
 
 @check_sig([0], [])
@@ -274,7 +274,7 @@ def render():
                 )
 
         if draw_point:
-            for xv, yv in zip(xs, ys):
+            for xv, yv in zip(xs, ys, strict=False):
                 x_svg, y_svg = x_scale(xv), y_scale(yv)
                 content += f'  <circle cx="{x_svg}" cy="{y_svg}" r="{tam}" fill="{clr_puntos}"/>\n'
 
@@ -392,7 +392,7 @@ def bar(labels, values):
     svg = (
         f'<svg width="{width}" height="{height}" xmlns="http://www.w3.org/2000/svg">\n'
     )
-    svg += f'<rect width="100%" height="100%" fill="white"/>\n'
+    svg += '<rect width="100%" height="100%" fill="white"/>\n'
 
     if max_val == 0:
         svg += f'<text x="{width // 2}" y="{height // 2}" font-size="14" text-anchor="middle">All values are zero</text>\n'
@@ -407,7 +407,7 @@ def bar(labels, values):
         svg += f'<line x1="{padding}" y1="{y}" x2="{width - padding}" y2="{y}" stroke="#ccc" />\n'
         svg += f'<text x="{padding - 10}" y="{y + 4}" font-size="10" text-anchor="end">{val}</text>\n'
 
-    for i, (label, val) in enumerate(zip(labels, values)):
+    for i, (label, val) in enumerate(zip(labels, values, strict=False)):
         x = padding + i * bar_width
         h = int((val / max_val) * (height - 2 * padding))
         y = height - padding - h
@@ -460,9 +460,9 @@ def pie(labels, values):
     svg = (
         f'<svg width="{width}" height="{height}" xmlns="http://www.w3.org/2000/svg">\n'
     )
-    svg += f'<rect width="100%" height="100%" fill="white"/>\n'
+    svg += '<rect width="100%" height="100%" fill="white"/>\n'
 
-    for i, (label, val) in enumerate(zip(labels, values)):
+    for i, (_label, val) in enumerate(zip(labels, values, strict=False)):
         angle = val / total * 360
         end_angle = start_angle + angle
 

@@ -1,6 +1,8 @@
 import random
+
 from global_utils import check_sig
-from TypeUtils import numeric_matrix_types, integer_type, pardos_type
+from TypeUtils import numeric_matrix_types, pardos_type
+
 from ..BaseMachine import BaseMachine
 
 
@@ -46,7 +48,7 @@ class KMeans(BaseMachine):
 
     def _euclidean_distance_sq(self, a, b):
         """Squared Euclidean distance between two points."""
-        return sum((x - y) ** 2 for x, y in zip(a, b))
+        return sum((x - y) ** 2 for x, y in zip(a, b, strict=False))
 
     def _euclidean_distance(self, a, b):
         """Euclidean distance between two points."""
@@ -167,7 +169,7 @@ class KMeans(BaseMachine):
             new_centroids = self._update_centroids(matrix, self.labels_)
 
             converged = True
-            for old, new in zip(self.cluster_centers_, new_centroids):
+            for old, new in zip(self.cluster_centers_, new_centroids, strict=False):
                 if self._euclidean_distance(old, new) > 1e-6:
                     converged = False
                     break

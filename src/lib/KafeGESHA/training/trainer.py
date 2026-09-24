@@ -3,7 +3,6 @@
 Trainer is an alternative to model.fit() for users who want
 greater control over the training process (custom callbacks, etc.).
 """
-from lib.KafeGESHA.training.metrics import accuracy, mse
 
 
 class Trainer:
@@ -38,7 +37,7 @@ class Trainer:
             bx = x_train[i:end]
             by = y_train[i:end]
 
-            for xi, yi in zip(bx, by):
+            for xi, yi in zip(bx, by, strict=False):
                 out = self.model.forward(xi)
                 loss_val, grad = self.model._compute_loss_and_grad(out, yi)
                 total_loss += loss_val
@@ -58,7 +57,7 @@ class Trainer:
         """
         total = 0.0
         n = len(x_val)
-        for xi, yi in zip(x_val, y_val):
+        for xi, yi in zip(x_val, y_val, strict=False):
             out = self.model.forward(xi)
             loss_val, _ = self.model._compute_loss_and_grad(out, yi)
             total += loss_val

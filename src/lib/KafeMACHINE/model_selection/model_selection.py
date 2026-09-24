@@ -1,6 +1,14 @@
 import random
+
 from global_utils import check_sig
-from TypeUtils import integer_type, float_type, boolean_type, numeric_matrix_types, numeric_vector_types, string_type
+from TypeUtils import (
+    boolean_type,
+    float_type,
+    integer_type,
+    numeric_matrix_types,
+    numeric_vector_types,
+)
+
 from ..BaseMachine import BaseMachine
 
 
@@ -136,7 +144,6 @@ def k_fold(n_samples, n_splits=5, shuffle=False, random_state=0):
     else:
         indices = list(range(n_samples))
 
-    folds = []
     fold_sizes = [n_samples // n_splits] * n_splits
     for i in range(n_samples % n_splits):
         fold_sizes[i] += 1
@@ -242,7 +249,7 @@ def _generate_param_grid(param_grid):
     values = list(param_grid.values())
 
     combinations = [{}]
-    for key, vals in zip(keys, values):
+    for key, vals in zip(keys, values, strict=True):
         new_combinations = []
         for combo in combinations:
             for val in vals:
@@ -524,7 +531,7 @@ class Pipeline(BaseMachine):
         if len(names) != len(steps):
             raise Exception("Pipeline: names and steps must have the same length")
 
-        self.steps = list(zip(names, steps))
+        self.steps = list(zip(names, steps, strict=True))
         self.steps_ = []
         self.named_steps_ = {}
 
@@ -570,7 +577,7 @@ class Pipeline(BaseMachine):
 
         current_X = [row[:] for row in X]
 
-        for name, step in self.steps_:
+        for _name, step in self.steps_:
             is_last = (step == self.steps_[-1][1])
 
             if is_last:
@@ -590,7 +597,7 @@ class Pipeline(BaseMachine):
         model = self.steps_[-1][1]
 
         current_X = [row[:] for row in X]
-        for name, step in self.steps_[:-1]:
+        for _name, step in self.steps_[:-1]:
             current_X = step.transform(current_X)
 
         return model.score(current_X, y, metric)
@@ -606,7 +613,7 @@ class Pipeline(BaseMachine):
 
         current_X = [row[:] for row in X]
 
-        for name, step in self.steps_:
+        for _name, step in self.steps_:
             is_last = (step == self.steps_[-1][1])
             if not is_last:
                 current_X = step.transform(current_X)

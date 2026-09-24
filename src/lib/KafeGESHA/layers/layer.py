@@ -1,7 +1,8 @@
 """Abstract base class for neural network layers."""
 from abc import ABC, abstractmethod
+
 from global_utils import check_sig
-from TypeUtils import numeric_vector_types, float_type, void_t
+from TypeUtils import float_type, numeric_vector_types, void_t
 
 
 class Layer(ABC):

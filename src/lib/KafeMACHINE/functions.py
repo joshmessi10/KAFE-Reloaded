@@ -1,43 +1,102 @@
 from global_utils import check_sig
-from TypeUtils import integer_type, string_type, number_types, float_type, boolean_type, numeric_matrix_types, numeric_vector_types, any_list_types
+from TypeUtils import any_list_types as any_list_types
+from TypeUtils import (
+    boolean_type,
+    float_type,
+    integer_type,
+    number_types,
+    numeric_matrix_types,
+    numeric_vector_types,
+    string_type,
+)
+
+from .clustering.AgglomerativeClustering import AgglomerativeClustering
+from .clustering.DBSCAN import DBSCAN
+from .clustering.GaussianMixture import GaussianMixture
+from .clustering.KMeans import KMeans
+from .discriminant.LinearDiscriminantAnalysis import LinearDiscriminantAnalysis
+from .ensemble.AdaBoost import AdaBoostClassifier
+from .ensemble.GradientBoosting import (
+    GradientBoostingClassifier,
+    GradientBoostingRegressor,
+)
+from .linear.ElasticNet import ElasticNet
+from .linear.LassoRegression import LassoRegression
 from .linear.LinearRegression import LinearRegression
+from .linear.LogisticRegression import LogisticRegression
+from .linear.RidgeRegression import RidgeRegression
+from .linear.SVR import SVR
+from .metrics import (
+    accuracy_score as accuracy_score,
+)
+from .metrics import (
+    classification_report as classification_report,
+)
+from .metrics import (
+    confusion_matrix as confusion_matrix,
+)
+from .metrics import (
+    explained_variance_score as explained_variance_score,
+)
+from .metrics import (
+    f1_score as f1_score,
+)
+from .metrics import (
+    max_error as max_error,
+)
+from .metrics import (
+    mean_absolute_error as mean_absolute_error,
+)
+from .metrics import (
+    mean_absolute_percentage_error as mean_absolute_percentage_error,
+)
+from .metrics import (
+    mean_squared_error as mean_squared_error,
+)
+from .metrics import (
+    median_absolute_error as median_absolute_error,
+)
+from .metrics import (
+    precision_score as precision_score,
+)
+from .metrics import (
+    r2_score as r2_score,
+)
+from .metrics import (
+    recall_score as recall_score,
+)
+from .metrics import (
+    roc_auc_score as roc_auc_score,
+)
+from .metrics import (
+    root_mean_squared_error as root_mean_squared_error,
+)
+from .metrics import (
+    silhouette_score as silhouette_score,
+)
+from .model_selection.model_selection import (
+    CrossValScore,
+    GridSearchCV,
+    Pipeline,
+    RandomizedSearchCV,
+)
+from .naive_bayes.GaussianNB import GaussianNB
+from .neighbors.KNN import KNN, KNNRegressor
 from .preprocessing.LabelEncoder import LabelEncoder
+from .preprocessing.MinMaxScaler import MinMaxScaler
 from .preprocessing.OneHotEncoder import OneHotEncoder
 from .preprocessing.OrdinalEncoder import OrdinalEncoder
 from .preprocessing.PCA import PCA
-from .preprocessing.StandardScaler import StandardScaler
-from .preprocessing.MinMaxScaler import MinMaxScaler
-from .preprocessing.SimpleImputer import SimpleImputer
 from .preprocessing.PolynomialFeatures import PolynomialFeatures
-from .preprocessing.VarianceThreshold import VarianceThreshold
 from .preprocessing.RecursiveFeatureElimination import RecursiveFeatureElimination
 from .preprocessing.RobustScaler import RobustScaler
-from .linear.LogisticRegression import LogisticRegression
-from .neighbors.KNN import KNN, KNNRegressor
-from .tree.DecisionTree import DecisionTreeClassifier, DecisionTreeRegressor
-from .naive_bayes.GaussianNB import GaussianNB
-from .clustering.KMeans import KMeans
-from .clustering.DBSCAN import DBSCAN
-from .tree.RandomForest import RandomForestClassifier, RandomForestRegressor
-from .linear.RidgeRegression import RidgeRegression
-from .linear.LassoRegression import LassoRegression
-from .linear.SVR import SVR
+from .preprocessing.SimpleImputer import SimpleImputer
+from .preprocessing.StandardScaler import StandardScaler
+from .preprocessing.VarianceThreshold import VarianceThreshold
 from .svm.SVM import SVM
-from .linear.ElasticNet import ElasticNet
-from .clustering.AgglomerativeClustering import AgglomerativeClustering
-from .ensemble.AdaBoost import AdaBoostClassifier
-from .ensemble.GradientBoosting import GradientBoostingClassifier, GradientBoostingRegressor
-from .clustering.GaussianMixture import GaussianMixture
-from .discriminant.LinearDiscriminantAnalysis import LinearDiscriminantAnalysis
-from .model_selection.model_selection import CrossValScore, GridSearchCV, RandomizedSearchCV, Pipeline
-from .metrics import (
-    accuracy_score, precision_score, recall_score, f1_score,
-    confusion_matrix, classification_report,
-    mean_squared_error, mean_absolute_error, root_mean_squared_error,
-    r2_score, max_error, median_absolute_error,
-    mean_absolute_percentage_error, explained_variance_score,
-    roc_auc_score, silhouette_score,
-)
+from .tree.DecisionTree import DecisionTreeClassifier, DecisionTreeRegressor
+from .tree.RandomForest import RandomForestClassifier, RandomForestRegressor
+
 
 @check_sig([0], [])
 def linear_regression():

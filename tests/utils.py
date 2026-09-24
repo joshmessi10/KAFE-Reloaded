@@ -128,7 +128,7 @@ def get_programs(directory_path):
     if directory_path.startswith("../tests/"):
         directory_path = os.path.join(os.path.dirname(__file__), directory_path[len("../tests/"):])
     program_paths = []
-    for root, dirs, files in os.walk(directory_path):
+    for root, _dirs, files in os.walk(directory_path):
         for filename in files:
             if filename.endswith(".kf") and not filename.endswith(".error.kf"):
                 base = filename[:-3]
@@ -141,7 +141,7 @@ def get_invalid_programs(directory_path):
     if directory_path.startswith("../tests/"):
         directory_path = os.path.join(os.path.dirname(__file__), directory_path[len("../tests/"):])
     program_paths = []
-    for root, dirs, files in os.walk(directory_path):
+    for root, _dirs, files in os.walk(directory_path):
         for filename in files:
             if filename.endswith(".error.kf"):
                 base = filename[:-3]

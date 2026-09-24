@@ -1,13 +1,14 @@
-import sys
 import pathlib
-from antlr4 import InputStream, CommonTokenStream
+import sys
+
+from antlr4 import CommonTokenStream, InputStream
 from antlr4.error.ErrorListener import ErrorListener
-from Kafe_GrammarLexer import Kafe_GrammarLexer
-from Kafe_GrammarParser import Kafe_GrammarParser
-from InterpreterVisitor import InterpreterVisitor
-from errors import raiseScientificNotationError
 
 import globals
+from errors import raiseScientificNotationError
+from InterpreterVisitor import InterpreterVisitor
+from Kafe_GrammarLexer import Kafe_GrammarLexer
+from Kafe_GrammarParser import Kafe_GrammarParser
 
 
 class KafeErrorListener(ErrorListener):

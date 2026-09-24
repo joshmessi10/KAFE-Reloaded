@@ -1,7 +1,8 @@
-from lib.KafeMATH.functions import isnan
 from global_utils import check_sig
-from TypeUtils import pardos_type, any_matrix_type
+from lib.KafeMATH.functions import isnan
 from lib.KafePARDOS.DataFrame import DataFrame
+from TypeUtils import any_matrix_type, pardos_type
+
 from ..BaseMachine import BaseMachine
 
 

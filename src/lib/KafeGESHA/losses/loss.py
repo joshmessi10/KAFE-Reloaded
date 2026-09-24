@@ -1,7 +1,13 @@
 """Abstract base class for loss functions."""
 from abc import ABC, abstractmethod
+
 from global_utils import check_sig
-from TypeUtils import numeric_vector_types, float_type, integer_type, numeric_matrix_types
+from TypeUtils import (
+    float_type,
+    integer_type,
+    numeric_matrix_types,
+    numeric_vector_types,
+)
 
 
 class LossFunction(ABC):

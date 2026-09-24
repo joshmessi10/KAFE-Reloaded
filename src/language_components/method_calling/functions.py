@@ -1,4 +1,10 @@
-from errors import raiseVariableIsNotObject, raiseFunctionNotDefined, raiseVariableNotDefined
+from errors import (
+    raiseFunctionNotDefined,
+    raiseVariableIsNotObject,
+    raiseVariableNotDefined,
+)
+
+
 def is_object(var):
     if isinstance(var, (str, int, float, bool, type(None))):
         return False

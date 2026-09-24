@@ -1,4 +1,5 @@
 import os
+
 import globals
 
 x_label = ""
@@ -47,4 +48,4 @@ def save_svg(content):
         with open(svg_path, "w", encoding="utf-8") as f:
             f.write(content)
     except OSError as e:
-        raise Exception(f"save_svg: Could not write SVG to {svg_path}: {e}")
+        raise Exception(f"save_svg: Could not write SVG to {svg_path}: {e}") from e

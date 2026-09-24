@@ -1,8 +1,9 @@
-from lib.KafeMATH.functions import log, exp
 from global_utils import check_sig
-from TypeUtils import numeric_vector_types, numeric_matrix_types, pardos_type
-from ..metrics import accuracy_score
+from lib.KafeMATH.functions import exp, log
+from TypeUtils import numeric_matrix_types, numeric_vector_types, pardos_type
+
 from ..BaseMachine import BaseMachine
+from ..metrics import accuracy_score
 
 
 class AdaBoostClassifier(BaseMachine):
@@ -113,7 +114,7 @@ class AdaBoostClassifier(BaseMachine):
         self.estimator_weights_ = []
         self.estimator_errors_ = []
 
-        for t in range(self.n_estimators):
+        for _t in range(self.n_estimators):
             stump, error = self._decision_stump(matrix, y_binary, weights)
 
             error = max(error, 1e-10)
@@ -153,7 +154,7 @@ class AdaBoostClassifier(BaseMachine):
         predictions = []
         for row in X:
             score = 0.0
-            for stump, alpha in zip(self.estimators_, self.estimator_weights_):
+            for stump, alpha in zip(self.estimators_, self.estimator_weights_, strict=False):
                 feature_idx, threshold, pred_left, pred_right = stump
                 pred = pred_left if row[feature_idx] <= threshold else pred_right
                 score += alpha * pred
