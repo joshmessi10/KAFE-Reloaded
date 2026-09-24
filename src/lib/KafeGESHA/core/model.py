@@ -82,7 +82,7 @@ class Model(ABC):
         compile(optimizer, loss, metrics) — configures training.
         fit(X, y, epochs, batch_size, x_val, y_val) — generic training.
         predict(x) — inference on a single example.
-        predict_proba(x) — exit probability(s).
+        predict_proba(x) — model output probabilities.
         predict_label(x) — predicted label (argmax or threshold 0.5).
         evaluate(X, y) — calculates the loss on a data set.
         set_lr(new_lr) — updates the learning rate.
@@ -252,7 +252,7 @@ class Model(ABC):
 
     @check_sig([2], numeric_vector_types, is_method=True)
     def predict_proba(self, x):
-        """Returns the exit probability.
+        """Returns the model output probabilities.
 
         - 1D output (one element): returns the scalar.
         - Multi-dimensional output: returns the probability vector.

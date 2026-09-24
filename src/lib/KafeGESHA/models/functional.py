@@ -100,7 +100,7 @@ class Functional(Model):
     Supports:
     - Linear graphs (equivalent to Sequential).
     - Simple skip connections (2 branches + Add).
-    - Multiple entrances and exits (prepared structure).
+    - Multiple inputs and outputs (prepared structure).
 
     Internally builds the topology using topological sort (BFS
     from the output nodes to the input nodes).
