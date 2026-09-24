@@ -64,16 +64,24 @@ from lib.KafeNUMK import funciones as numk
 # Capas
 # --------------------------------------------------------------------------
 
-@check_sig([4, 5], [entero_t], [cadena_t, void_t], vector_numeros_t + [void_t], [flotante_t, entero_t], [entero_t, void_t])
-def create_dense(units, activation, input_shape, regularization_lambda, seed=None):
+@check_sig([3, 4, 5], [entero_t], [cadena_t, void_t], vector_numeros_t + [void_t], [flotante_t, entero_t], [entero_t, void_t])
+def create_dense(units, activation, input_shape, regularization_lambda=0.0, seed=None):
     """Crea una capa Dense.
 
     Args:
         units: Número de neuronas.
         activation: Función de activación ('relu', 'sigmoid', 'softmax', 'tanh', 'linear', None).
         input_shape: Lista con la dimensión de entrada, o [] para inferencia automática.
-        regularization_lambda: Coeficiente de regularización L2 (0.0 para ninguna).
-        seed: Semilla para reproducibilidad (opcional).
+        regularization_lambda: Coeficiente de regularización L2 (opcional, default 0.0).
+        seed: Semilla para reproducibilidad (opcional, default None).
+
+    Ejemplo:
+        # Uso simple (3 args)
+        geshaDeep.create_dense(1, "sigmoid", [2])
+        # Con regularización (4 args)
+        geshaDeep.create_dense(1, "sigmoid", [2], 0.01)
+        # Con regularización y semilla (5 args)
+        geshaDeep.create_dense(1, "sigmoid", [2], 0.01, 42)
     """
     shape = tuple(input_shape) if input_shape else None
     return Dense(units, activation, shape, regularization_lambda, seed=seed)
