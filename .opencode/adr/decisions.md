@@ -471,3 +471,45 @@ The user requires the current repository content to be in English and approved T
 - **Leave historical Spanish untouched:** rejected because the user requires English current-tree content and approved the one-time backfill.
 - **Rewrite or filter Git history:** rejected because it is unnecessary for the current-tree requirement and would remove the original record snapshots.
 - **Make all future records freely editable:** rejected because the user authorized only this one-time backfill.
+
+---
+
+## ADR-0012: Python Quality Gates and CI Enforcement
+
+- **Status**: accepted
+- **Date**: 2026-09-24
+
+### Context
+
+The repository now uses a committed uv lock for Python runtime, development, documentation, and optional dependencies. The interpreter fixture suite also verifies child-process diagnostics, warnings, and subprocess coverage. Consistent local and hosted quality gates are needed to check the owned Python code and preserve that evidence without analyzing generated ANTLR outputs or masking authored issues.
+
+### Decision
+
+1. Use the locked `dev` group and existing tools. Ruff targets Python 3.10, enables `E4`, `E7`, `E9`, `F`, `B`, and `I`, and sets `force-exclude = true`. basedpyright analyzes `src/` and `tests/` using Python 3.10, `basic` mode, and `failOnWarnings = true`.
+2. Exclude only `src/Kafe_GrammarLexer.py`, `src/Kafe_GrammarParser.py`, and `src/Kafe_GrammarVisitor.py` from Ruff, basedpyright, and coverage. Keep generated parser outputs ignored and untracked. Regenerate with ANTLR 4.13.2 before interpreter tests or checks when the files are absent or the grammar changes.
+3. Configure codespell to scan hidden files with the exact case-sensitive ignore list `expec,mape,MAPE,FPR,Hart,le`. Skip only justified local/build outputs, root-local `docs/superpowers/`, and generated ANTLR artifacts; keep source, tests, `.opencode/`, and ordinary documentation in scope.
+4. Prohibit authored `# noqa` and `# pyright:` comment tokens. The repository policy checker enumerates tracked `*.py` files with `git ls-files -z`, tokenizes comments, and reports findings with file and line. It must fail on unreadable or invalid tracked Python files; ignored generated parsers need not be tracked.
+5. Enforce locked dependency auditing, Ruff, basedpyright, codespell, the suppression policy checker, and the full pytest/coverage gate through the existing `.github/workflows/tests.yml`, after Java 11 setup and ANTLR generation. Keep `filterwarnings = ["error"]` and `PYTHONWARNINGS=error` for interpreter child processes. Preserve exact stdout/stderr/exit expectations and the 80% minimum coverage for `src/`.
+6. Run `.github/workflows/docs.yml` validation on all pushes, pull requests, and manual dispatches. Deploy only from `main` for documentation-changing pushes or manual dispatches. Serialize eligible deploy jobs by workflow/ref with a non-cancelling queue, explicitly check out `main`, strictly rebuild that snapshot, then run `mkdocs gh-deploy --force`. Keep `NO_MKDOCS_2_WARNING=1` scoped to the strict build that needs the Material for MkDocs upstream MkDocs 2.0 warning exception.
+7. Keep `.github/workflows/main.yml` for weekly/manual Nix lock maintenance; do not add Python quality duties or a generic CI workflow there. Require zero errors and zero warnings for applicable quality gates. Distinguish local verification from hosted CI, and record remote status only after observing the run at the exact pushed commit.
+
+### Rationale
+
+- Locked commands, narrowly selected rule sets, and a fixed Python target make local and CI results reproducible.
+- Explicit generated-file exclusions keep tool output focused on owned code while ensuring no ordinary Python files are silently ignored.
+- Token-based suppression checking catches authored directives without matching the same text inside string literals.
+- The existing workflow boundaries preserve interpreter/ANTLR setup, docs publication, and Nix ownership while making quality checks mandatory.
+- Warning-as-error gates expose regressions; the one upstream documentation advisory exception remains narrow and explained.
+
+### Consequences
+
+- Local commands and exclusions are documented in `.opencode/knowledge/verifications.md`; root guidance remains mirrored in `AGENTS.md` and `CLAUDE.md`.
+- Hosted success is not implied by committed workflow configuration. The quality migration remains open until the authorized branch is pushed and all required remote checks are observed at the resulting exact SHA.
+- Future changes must preserve optional `datasets` behavior, fixture contracts, generated parser exclusions, and the docs/Nix workflow boundaries.
+
+### Alternatives Considered
+
+- **Use broad ignores or blanket suppressions:** rejected because they could hide owned-source defects.
+- **Analyze generated ANTLR modules:** rejected because their output is generated and not project-authored.
+- **Replace existing workflows with a generic Python CI job:** rejected because it would risk dropping Java/ANTLR setup, docs deployment, or Nix ownership.
+- **Mark migration complete after local checks alone:** rejected because hosted CI and deployment behavior must be observed at the exact pushed commit.

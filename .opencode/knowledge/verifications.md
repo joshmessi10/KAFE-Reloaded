@@ -93,12 +93,47 @@ Coverage measures `src`, collects data from interpreter subprocesses, and includ
 
 ## Quality Gates
 
-- The test workflow regenerates the parser and runs the locked full-suite coverage gate on push and relevant pull requests via `.github/workflows/tests.yml`.
-- Definition of Done verified.
-- `.opencode/history/` updated for significant changes.
-- `docs/` and `.opencode/knowledge/` reflect the change.
+Install the locked development tools from the repository root with Python 3.10:
 
-Inspect the checked-in workflow and configuration before claiming a gate exists. The current workflows are `tests.yml` (uv-locked fixture suite and subprocess coverage), `docs.yml` (uv-locked MkDocs deployment), and `main.yml` (Nix lock maintenance). The uv dependency migration, pytest warning enforcement, subprocess stream assertions, and minimum 80% owned-source coverage gate are implemented. Ruff, basedpyright, codespell, dependency audit, and suppression-comment policy checks remain **pending implementation**. Preserve KAFE's workflow structure when implementing them.
+```powershell
+uv sync --locked --python 3.10 --group dev
+```
+
+Run the configured local quality gates from the same root:
+
+```powershell
+uv audit --locked --preview-features audit
+uv run --locked --group dev ruff check src tests
+uv run --locked --group dev basedpyright
+uv run --locked --group dev codespell
+uv run --locked --group dev python scripts/check_quality_policy.py
+uv run --locked --group dev pytest tests/test_quality_policy.py -q
+```
+
+Ruff targets Python 3.10, selects `E4`, `E7`, `E9`, `F`, `B`, and `I`, and force-excludes only the three generated parser modules below. basedpyright checks `src/` and `tests/` in `basic` mode for Python 3.10, treats warnings as failures, and ignores only those same generated files. Coverage measures `src/`, collects subprocess data, and omits only those files. codespell scans hidden files; its case-sensitive exception list is exactly `expec,mape,MAPE,FPR,Hart,le`. The codespell skip list is limited to local/build outputs, root-local `docs/superpowers/`, and generated parser outputs (`*.interp`, `*.tokens`, and the three generated modules). It does not skip source, tests, `.opencode/`, or normal documentation.
+
+The only generated ANTLR Python exclusions are:
+
+- `src/Kafe_GrammarLexer.py`
+- `src/Kafe_GrammarParser.py`
+- `src/Kafe_GrammarVisitor.py`
+
+Keep them ignored and untracked. A Java JDK 11+ is required for parser generation; CI pins Java 11. On a fresh clone, generate these outputs before running the interpreter, tests, or Python checks; see Parser Regeneration above. The policy checker enumerates only Git-tracked `*.py` files, tokenizes Python, and rejects `# noqa` and `# pyright:` comment tokens. It does not require ignored generated files to be tracked. Do not add inline suppression comments or broaden the generated-file exclusions.
+
+See [Verification Process](#verification-process) for the exact PowerShell full-suite command. It runs every `tests/` test, collects coverage from interpreter subprocesses, reports missing lines, and enforces at least 80% coverage for owned `src/` code. Pytest warnings are errors through `filterwarnings = ["error"]`; fixture child processes also receive `PYTHONWARNINGS=error`. Applicable local and CI quality gates require zero errors and zero warnings.
+
+For a strict local documentation build, install the locked docs group and set the documented upstream warning exception only for that build:
+
+```powershell
+uv sync --locked --python 3.10 --group docs --no-dev
+$env:NO_MKDOCS_2_WARNING = "1"
+uv run --locked --python 3.10 --group docs --no-dev mkdocs build --strict
+Remove-Item Env:\NO_MKDOCS_2_WARNING
+```
+
+`NO_MKDOCS_2_WARNING=1` suppresses Material for MkDocs' upstream MkDocs 2.0 advisory only; keep it scoped to `mkdocs build --strict`. The docs workflow validates every push, pull request, and manual dispatch. It deploys only on `main` when a push changes root `docs/**` or `mkdocs.yml`, or on a manual dispatch. The serialized deploy job explicitly checks out `main`, reruns the locked strict build, and only then runs `mkdocs gh-deploy --force`. Nix remains in `.github/workflows/main.yml` with weekly and manual triggers; it does not run Python quality checks.
+
+Inspect the checked-in configuration and workflows before claiming a gate exists. A local pass or configured workflow does not prove hosted CI; record remote results only after observing the run at the exact pushed commit. Keep Definition of Done, `.opencode/history/`, `docs/`, and `.opencode/knowledge/` current for significant changes.
 
 ### Child Interpreter Coverage and Diagnostics — Implemented
 

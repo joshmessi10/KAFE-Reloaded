@@ -4,7 +4,7 @@ Active project planning. Do not move this content into AGENTS.md (see AGENTS.md 
 
 ## Repository Policy Alignment
 
-The policy baseline is committed separately in local commits `845bcb3` and `d27df87`. The user-approved `build/uv-environment` branch contains the locked uv setup implementation, locally validated (485 tests and a clean docs build), pushed, and verified by GitHub test CI at `b40965f` (485 passed). The `test/interpreter-quality-evidence` branch is complete: 497 tests passed in 353.72s at 83.78% coverage across 111 tracked source files with no warnings; independent review passed; commit `6e8edd5` was pushed and GitHub `Run Tests` passed at its exact SHA (run 127). The English branch's Tasks 1–7 are complete, with the 498-test suite passing at 83.78% coverage and the tracked-tree language audit clear. The active workstream is `chore/python-quality-gates`; Task 1 impact and progress records are complete, and implementation continues under the approved plan. Commits are authorized when needed; do not push. See `.opencode/progress/repository-alignment.md` for scopes, dependencies, exit criteria, and resolved migration decisions.
+The policy baseline is committed separately in local commits `845bcb3` and `d27df87`. The user-approved `build/uv-environment` branch contains the locked uv setup implementation, locally validated (485 tests and a clean docs build), pushed, and verified by GitHub test CI at `b40965f` (485 passed). The `test/interpreter-quality-evidence` branch is complete: 497 tests passed in 353.72s at 83.78% coverage across 111 tracked source files with no warnings; independent review passed; commit `6e8edd5` was pushed and GitHub `Run Tests` passed at its exact SHA (run 127). The English branch's Tasks 1–7 are complete, with the 498-test suite passing at 83.78% coverage and the tracked-tree language audit clear. The active `chore/python-quality-gates` workstream has completed local Tasks 1–8; Task 9 must push the authorized branch and verify hosted checks at the exact pushed SHA. Commits and pushes are authorized when needed; remote results remain pending until observed. See `.opencode/progress/repository-alignment.md` for scope, dependencies, evidence, and migration status.
 
 ## Machine Learning
 - ✔ Base Machine (2026-07-28)
@@ -65,8 +65,9 @@ The policy baseline is committed separately in local commits `845bcb3` and `d27d
 - ✔ CI Test Suite Fixes — pre-existing broken tests fixed, CrossValScore architecture fix (2026-09-21)
 - ✔ KafeGESHA clustering test — platform-independence fix (2026-09-21)
 - ✔ English repository migration — Tasks 1–7 completed (2026-09-24)
+- ⏳ Python quality gates — local Tasks 1–8 complete; exact-SHA hosted verification pending Task 9
 - ☐ Harness Engineering — Update rules for five benchmarks, enriched concepts, and context verification
-- ☐ Engineering Lead permissions — edit/write access for documentation and records
+- ☐ Engineering Lead permissions — review complete edit/write access for documentation and records
 
 ## Historical Review Tasks — Full Review Pending
 

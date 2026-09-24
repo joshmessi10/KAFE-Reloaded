@@ -78,3 +78,15 @@ Format for each entry:
 - **Review**: No independent reviewer could be allocated because the host thread limit was reached; the full diff received a read-only self-review.
 - **Git/remote state**: No branch was created, renamed, or switched. The last successful remote lookup returned no `origin/refactor/english-repository` ref; a later refresh could not connect to GitHub on port 443. No push was made because it would create a remote branch.
 - **Next step**: Proceed to the next approved repository-alignment workstream.
+
+---
+
+## 2026-09-24 — Python Quality Gates, Task 8
+
+- **Feature**: Complete local Python quality-gate implementation and update canonical project guidance on `chore/python-quality-gates`.
+- **Status**: done locally; Task 9 hosted verification pending.
+- **Summary**: Documented exact quality commands, rule selections, generated parser exclusions, warning policy, strict docs build/deploy behavior, and Nix boundaries. Added ADR-0012, updated mirrored root guidance and OpenCode edit permissions, and synchronized current progress records. No application code, tests, Python tool configuration, or workflows changed in this documentation task.
+- **Tests**: N/A; Task 8 changed guidance and project records only.
+- **Validation**: Local documentation checks passed: hidden-file codespell, the substantive root guidance mirror, `opencode.json` parsing and permission assertion, `pyproject.toml` and workflow contract assertions, and `git diff --check`. No application tests were run for Task 8. Task 9 will run the final full suite and dependency audit; independent Task 8 review is pending.
+- **Significant history records**: `.opencode/history/2026/2026-09.md`; `.opencode/adr/decisions.md`.
+- **Next step**: Task 9 — run all local gates, push the authorized branch, and observe required hosted checks at the exact pushed SHA.

@@ -1,11 +1,11 @@
 # Current Work
 
-Feature: Python quality gates — Task 1 complete; implementation workstream active
-Status: active on `chore/python-quality-gates`
-Current step: Task 1 recorded the approved configuration, source, workflow, and governance impacts; no application implementation was in scope.
-Next step: Continue with the next task in the approved implementation plan. Do not push.
-Blockers: None.
-Related ADRs: ADR-0012 is planned for the implementation workstream; none is required for this documentation-only task.
+Feature: Python quality gates — local Tasks 1–8 complete; Task 9 remote verification pending
+Status: active on `chore/python-quality-gates`; hosted CI result for this branch is not yet recorded
+Current step: Task 8 updated canonical quality-gate guidance, ADR-0012, project status records, and the CLAUDE.md edit permission without changing application code, Python tool configuration, tests, or workflows.
+Next step: Task 9 — push the approved branch when ready and verify hosted checks at the exact pushed SHA. Record only observed remote results.
+Blockers: Hosted validation is pending Task 9; no local documentation-task blocker.
+Related ADRs: ADR-0012.
 
 ## Completed Work — English Repository Migration, Task 7 (2026-09-24)
 

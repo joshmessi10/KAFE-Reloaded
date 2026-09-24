@@ -2,13 +2,15 @@
 
 ## Current Feature
 
-Python quality gates — Task 1 complete: impact recorded; implementation workstream remains active.
+Python quality gates — local Tasks 1–8 complete; Task 9 hosted verification remains.
 
 ## Status
 
-Task 1 is complete on `chore/python-quality-gates`, created from the verified clean baseline `917a176f467e3ac2b60abb86ac79d4bda640d4bf`. It recorded impact and progress only and changed no application code, tests, tool configuration, or workflows. The Python quality-gates design and implementation plan are approved.
+Tasks 1–8 of the approved Python quality-gates plan are complete locally on `chore/python-quality-gates`. Task 1 recorded impact and progress only. Tasks 2–7 implemented Ruff, basedpyright, codespell, the suppression-policy checker, and the test/docs/Nix workflow gates. Task 8 updates this guidance, ADR-0012, and progress/history records.
 
-The user authorized creating and switching to this branch and authorized commits when needed. Do not push. Continue on the current branch unless the user authorizes another branch operation.
+The Task 3 locked suite passed 498 tests in 350.67 seconds at 83.86% coverage with no pytest warnings; Ruff passed, and basedpyright reported 0 errors and 0 warnings. Codespell completed with no findings; the policy checker passed its five focused tests and the tracked-source scan. The full suite has not been rerun since Task 5 added those focused policy tests. Task 6–7 workflow checks and Task 8 documentation checks were structural only. The `uv audit` gate is configured in CI, but no local or hosted result for this quality-gates branch is recorded yet.
+
+The user authorized commits and pushes when needed. Commits are local through implementation/workflow HEAD `0914d6fdd8302321c579fb1a4a12f7b2f98606dd`; Task 9 owns the pending push and exact-SHA hosted verification. No hosted CI result is claimed. Continue on the existing branch; branch changes are outside the remaining task.
 
 ## Completed Workstream — English Repository Migration
 
