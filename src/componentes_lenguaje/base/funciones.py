@@ -1,4 +1,4 @@
-from lib.KafeGESHA.core.model import Gesha
+from lib.KafeGESHA.models import Model as Gesha
 from errores import (
     raiseVariableAlreadyDefined,
     raiseVariableNotDefined,

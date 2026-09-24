@@ -11,13 +11,11 @@ API pública exportada:
     Add        — merge de ramas (API Functional)
     ReLULayer, SigmoidLayer, TanhLayer, SoftmaxLayer — activaciones como capas
 """
-from lib.KafeGESHA.core.model import Model, Gesha
-from lib.KafeGESHA.models.sequential import Sequential
-from lib.KafeGESHA.models.functional import Functional, Add
-from lib.KafeGESHA.layers.dense import Dense
-from lib.KafeGESHA.layers.dropout import Dropout
-from lib.KafeGESHA.layers.flatten import Flatten
-from lib.KafeGESHA.layers.input_layer import Input
-from lib.KafeGESHA.layers.activation_layers import (
-    ReLULayer, SigmoidLayer, TanhLayer, SoftmaxLayer, LinearLayer
-)
+from lib.KafeGESHA.models import Model as Gesha, Model, Sequential, Functional
+from lib.KafeGESHA.layers import Dense, Dropout, Flatten, Input, Add, ActivationLayer
+# Alias para mantener compatibilidad
+ReLULayer = lambda: ActivationLayer("relu")
+SigmoidLayer = lambda: ActivationLayer("sigmoid")
+TanhLayer = lambda: ActivationLayer("tanh")
+SoftmaxLayer = lambda: ActivationLayer("softmax")
+LinearLayer = lambda: ActivationLayer("linear")
