@@ -6,6 +6,4 @@ Track custom commands executed during this session.
 |---------|-------------|--------|
 | /init | Validate engineering system | done |
 | /resume | Reconstruct project state | done |
-| /open-work | BaseMachine Architectural Review | done |
-| /impact | Impact analysis for BaseMachine refactor | done |
-| /close | Close session | done |
+| /open-work | Test OR gate perceptron (KafeGESHA) | done |

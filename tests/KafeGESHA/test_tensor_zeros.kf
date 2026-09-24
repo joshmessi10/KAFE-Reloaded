@@ -1,3 +1,0 @@
-import geshaDeep;
-
-show(geshaDeep.tensor_zeros([2, 3]));

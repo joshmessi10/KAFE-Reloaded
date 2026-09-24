@@ -1,1 +1,0 @@
-Exception: geshaDeep: Model: compile() debe llamarse antes de set_lr()
