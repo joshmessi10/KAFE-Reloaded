@@ -10,12 +10,12 @@ jobs:
     permissions:
       contents: read
     timeout-minutes: 15
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       docs_changed: ${{ steps.path_changes.outputs.docs_changed }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
@@ -44,7 +44,7 @@ jobs:
           echo "docs_changed=$docs_changed" >> "$GITHUB_OUTPUT"
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: "3.10"
 
@@ -53,6 +53,7 @@ jobs:
         with:
           version: "0.11.3"
           enable-cache: true
+          cache-suffix: docs-validate
           cache-dependency-glob: |
             **/pyproject.toml
             **/uv.lock
@@ -79,15 +80,15 @@ jobs:
     permissions:
       contents: write
     timeout-minutes: 15
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           ref: main
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: "3.10"
 
@@ -96,6 +97,7 @@ jobs:
         with:
           version: "0.11.3"
           enable-cache: true
+          cache-suffix: docs-deploy
           cache-dependency-glob: |
             **/pyproject.toml
             **/uv.lock
