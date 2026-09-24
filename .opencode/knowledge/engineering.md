@@ -121,7 +121,7 @@ Never respond with only "Done", "Fixed", "Completed".
 
 After implementing ANY ML/DL component, these updates are **mandatory** (not optional):
 
-1. Update `docs/bibliotecas/machine.md` (or `gesha.md`) with the new component section.
+1. Update `docs/libraries/machine.md` (or `gesha.md`) with the new component section.
 2. Create/enrich concept record in `.opencode/knowledge/concepts/<name>.md`.
 3. Update `.opencode/knowledge/ml-library.md` (Structure, Public API, Tests).
 4. Update `.opencode/history/YYYY/YYYY-MM.md` with the addition.
@@ -135,7 +135,7 @@ After each implementation, verify ALL of these exist:
 - [ ] `.opencode/history/YYYY/YYYY-MM.md` — history record
 - [ ] `tests/KafeMACHINE/<category>/` — 7+ fixtures (5 valid + 2 error)
 - [ ] `.opencode/benchmarks/records.md` — benchmark with 5 scenarios
-- [ ] `docs/bibliotecas/` — updated documentation
+- [ ] `docs/libraries/` — updated documentation
 - [ ] `.opencode/progress/roadmap.md` — reflects completion
 
 If any of these is missing, the task is NOT complete.

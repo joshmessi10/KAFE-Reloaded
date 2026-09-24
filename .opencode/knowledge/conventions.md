@@ -10,7 +10,7 @@ Project-specific conventions implementing the mirrored `AGENTS.md` and `CLAUDE.m
 
 ## Repository Conventions
 
-- English is the target for repository prose, code comments, and documentation. Existing Spanish is migration debt; follow the root language policy for touched content and authorized localization. Changes to KAFE syntax, identifiers, or user-visible behavior require their own migration plan.
+- English is mandatory for repository prose, code comments, identifiers, and documentation. Tasks 1–5 migrated runtime code, tests, fixtures, and the published site; Task 6 translates project records, and Task 7 performs the final audit. Follow the root language policy for untouched surfaces. Changes to KAFE syntax, identifiers, or user-visible behavior require an explicitly approved migration.
 - Fixture-driven testing: `.kf` + `.expec` pairs under `tests/` (see `.opencode/knowledge/verifications.md`).
 - Dependency policy: see Dependency Policy below.
 
@@ -18,7 +18,7 @@ Project-specific conventions implementing the mirrored `AGENTS.md` and `CLAUDE.m
 
 - Python, snake_case for modules and functions; PEP 8 as the baseline.
 - Import `globals` as a module (`import globals`, never `from globals import ...`).
-- Public interpreter APIs dispatch through `EvalVisitorPrimitivo` and the component/library modules (see `.opencode/knowledge/architecture.md`); do not add parallel dispatch mechanisms.
+- Public interpreter APIs dispatch through `InterpreterVisitor` and the component/library modules (see `.opencode/knowledge/architecture.md`); do not add parallel dispatch mechanisms.
 - Write new or updated code comments and docstrings in English.
 - Do not add code comments unless they explain non-obvious intent.
 - Do not author `# pyright:` or `# noqa:` suppression comments. Apply the root exception process for upstream issues instead of suppressing owned-code diagnostics. The explicit CI policy check remains pending until the quality-gate migration implements it.
@@ -52,16 +52,16 @@ Project-specific conventions implementing the mirrored `AGENTS.md` and `CLAUDE.m
 
 ## Library Design Conventions
 
-- Public API in `funciones.py` as plain functions; stateful models as Python classes with a scikit-learn-style API (`fit()`, `predict()`, `score()`).
+- Public API in `functions.py` as plain functions; stateful models as Python classes with a scikit-learn-style API (`fit()`, `predict()`, `score()`).
 - Factories: `machine.linear_regression()`, `machine.knn(k)`, `machine.standard_scaler()`, etc.
 - Reuse existing KAFE libraries before Python stdlib: use KafeMATH for math, KafeNUMK for linear algebra.
 - Never import external algorithm implementations (sklearn, TensorFlow, PyTorch) for algorithms implemented inside KAFE.
 
 ## Documentation Conventions
 
-- The MkDocs Material site lives in `docs/`; its existing Spanish content is migration debt toward the English target. Install its locked dependencies with `uv sync --locked --group docs --no-dev`, then preview it with `uv run --locked --group docs --no-dev mkdocs serve`.
+- The English MkDocs Material site lives in `docs/`. Install its locked dependencies with `uv sync --locked --group docs --no-dev`, then preview it with `uv run --locked --group docs --no-dev mkdocs serve`.
 - Docs deploy to GitHub Pages via `.github/workflows/docs.yml` on push to `main` (`uv run --locked --python 3.10 --group docs --no-dev mkdocs gh-deploy --force`).
-- Keep `docs/especificacion/` (grammar EBNF, operational semantics, operator precedence) in sync with grammar changes.
+- Keep `docs/specification/` (grammar EBNF, operational semantics, operator precedence) in sync with grammar changes.
 - Project knowledge lives in `.opencode/knowledge/` (see AGENTS.md — Repository Knowledge Map).
 
 ## Engineering Conventions

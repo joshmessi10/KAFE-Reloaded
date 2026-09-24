@@ -1,6 +1,6 @@
 # Session Log
 
-Append-only bitácora of closed sessions. Each entry is added by `/close` at the end of a session and is never modified.
+Append-only log of closed sessions. Each entry is added by `/close` at the end of a session and is never modified, except for the one-time faithful English backfill authorized by ADR-0011.
 
 Relationship with `.opencode/history/`:
 
@@ -28,7 +28,7 @@ Format for each entry:
 
 - **Feature**: Harness engineering adoption
 - **Status**: done
-- **Summary**: Evaluated `betta-tech/ejemplo-harness-subagentes`; reinforced `/init` (progress consistency + `pytest tests/ -q`), documented the anti-telephone rule, aligned AGENTS.md/OPENCODE.md navigation with progressive disclosure, and implemented the session lifecycle (this bitácora, `/close`).
+- **Summary**: Evaluated `betta-tech/ejemplo-harness-subagentes`; reinforced `/init` (progress consistency + `pytest tests/ -q`), documented the anti-telephone rule, aligned AGENTS.md/OPENCODE.md navigation with progressive disclosure, and implemented the session lifecycle (this log and `/close`).
 - **Tests**: 315 passed in 52s (`pytest tests/`)
 - **Validation**: Full suite green; reference grep across AGENTS.md/OPENCODE.md/`.opencode/`.
 - **Significant history records**: `.opencode/history/2026/2026-08-03-harness-adoption.md`, `.opencode/history/2026/2026-08-03-session-lifecycle.md`
@@ -68,3 +68,13 @@ Format for each entry:
 - **Files modified**: BaseMachine.py, LinearRegression.py, LogisticRegression.py, KNN.py, DecisionTree.py, KMeans.py, StandardScaler.py, MinMaxScaler.py, PCA.py, SimpleImputer.py, LabelEncoder.py
 - **Tests**: 344 passed, 0 failed
 - **Key decisions**: Flexible fit() contract, centralized _validate_matrix_shape(), score() reuses metrics.py, fit_transform() removed from base
+
+## 2026-09-24 — English Repository Migration, Tasks 6–7
+
+- **Feature**: Complete the English-only repository migration and final audit on `refactor/english-repository`.
+- **Status**: complete locally.
+- **Summary**: Translated tracked repository guidance and `.opencode/` records under ADR-0011; refreshed current operational paths and status pointers; removed only the three approved retired artifacts; fixed the subprocess harness to explicitly preserve UTF-8 child output on Windows.
+- **Validation**: The final locked suite ran on 2026-09-23 and passed 498 tests in 349.42s at 83.78% coverage with no pytest warnings. The focused subprocess harness passed 13 tests. The tracked-tree English audit, strict MkDocs build, tracked-file codespell check, root policy mirror check, and diff checks passed; final close-out checks were completed on 2026-09-24. The docs build printed the upstream Material for MkDocs MkDocs 2.0 advisory before succeeding.
+- **Review**: No independent reviewer could be allocated because the host thread limit was reached; the full diff received a read-only self-review.
+- **Git/remote state**: No branch was created, renamed, or switched. The last successful remote lookup returned no `origin/refactor/english-repository` ref; a later refresh could not connect to GitHub on port 443. No push was made because it would create a remote branch.
+- **Next step**: Proceed to the next approved repository-alignment workstream.

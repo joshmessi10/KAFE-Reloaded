@@ -34,26 +34,11 @@ where $n$ is the number of iterations (n_iter), $k$ is the number of folds, and 
 
 ## KAFE Implementation
 
-```kafe
-import machine;
-
-MACHINE lr = machine.logistic_regression(0.01, 1000);
-
--- Define parameter distributions
-Dict param_dist = {"lr": [0.001, 0.01, 0.1, 0.5], "iter": [100, 500, 1000, 2000]};
-
--- RandomizedSearchCV: 10 iterations, 5-fold CV
-MACHINE rs = machine.randomized_search_cv(lr, param_dist, 10, 5, machine.accuracy_score);
-rs.fit(X_train, y_train);
-
-show(rs.best_params_);    -- Best parameter combination found
-show(rs.best_score_);     -- Best cross-validation score
-show(rs.best_estimator_); -- Model refit with best params
-```
+The `machine.randomized_search_cv(n_iter, cv, scoring, random_state)` factory currently creates a wrapper with an empty distribution and does not expose a KAFE argument for configuring `param_distributions`. The Python `RandomizedSearchCV` constructor accepts distributions, but a configured search is not currently available through this KAFE factory.
 
 ## Relationship with KAFE
 
-RandomizedSearchCV in KAFE is implemented from scratch, wrapping k_fold_cross_validation with a random sampling layer. It provides an educational comparison with GridSearchCV, showing how random search can be more efficient for hyperparameter optimization.
+RandomizedSearchCV in KAFE is implemented in `src/lib/KafeMACHINE/model_selection/model_selection.py`. It samples parameter combinations and builds shuffled k-fold splits internally to evaluate each sample.
 
 ## References
 

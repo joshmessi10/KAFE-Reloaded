@@ -2,112 +2,111 @@
 
 ## Mathematical Foundation
 
-K-Fold Cross Validation es un método de evaluación que particiona el dataset en $k$ subconjuntos (folds) y entrena/evalúa el modelo $k$ veces, cada vez usando un fold diferente como test set y los demás como training set.
+K-Fold Cross Validation is an evaluation method that partitions a dataset into $k$ subsets (folds) and trains and evaluates a model $k$ times. Each run uses a different fold as the test set and the remaining folds as the training set.
 
-### Formulación
+### Formulation
 
-Dado un dataset $D$ de tamaño $n$, se particiona en $k$ folds disjuntos $D_1, D_2, \dots, D_k$ de tamaño aproximado $n/k$:
+Given a dataset $D$ with $n$ samples, partition it into $k$ disjoint folds $D_1, D_2, \dots, D_k$ of approximately $n/k$ samples each:
 
 $$D = \bigcup_{i=1}^{k} D_i, \quad D_i \cap D_j = \emptyset \quad \forall i \neq j$$
 
-Para cada fold $i \in \{1, \dots, k\}$:
+For each fold $i \in \{1, \dots, k\}$:
 
-- **Training set**: $D_{train}^{(i)} = D \setminus D_i$ — tamaño $(k-1) \cdot n/k$
-- **Test set**: $D_{test}^{(i)} = D_i$ — tamaño $n/k$
+- **Training set**: $D_{train}^{(i)} = D \setminus D_i$ — size $(k-1) \cdot n/k$.
+- **Test set**: $D_{test}^{(i)} = D_i$ — size $n/k$.
 
-### Score Agregado
+### Aggregate Score
 
-El score final es el promedio de los scores de cada fold:
+The final score is the mean of the scores from each fold:
 
 $$\text{CV}_k = \frac{1}{k} \sum_{i=1}^{k} \text{score}(f^{(i)}, D_i)$$
 
-Donde $f^{(i)}$ es el modelo entrenado en $D_{train}^{(i)}$.
+where $f^{(i)}$ is the model trained on $D_{train}^{(i)}$.
 
-### Varianza del Estimador
+### Estimator Variance
 
-La varianza de la estimación CV se puede calcular como:
+The variance of the cross-validation estimate can be calculated as:
 
 $$\text{Var}(\text{CV}_k) = \frac{1}{k} \sum_{i=1}^{k} \left( \text{score}_i - \text{CV}_k \right)^2$$
 
-### Complejidad Computacional
+### Computational Complexity
 
-| Operación | Complejidad Temporal | Complejidad Espacial |
+| Operation | Time Complexity | Space Complexity |
 |-----------|---------------------|---------------------|
-| Partición | $O(n)$ | $O(n)$ |
-| Evaluación completa | $O(k \cdot T(n))$ | $O(n)$ |
+| Partition | $O(n)$ | $O(n)$ |
+| Full evaluation | $O(k \cdot T(n))$ | $O(n)$ |
 
-Donde $T(n)$ es el costo de entrenar el modelo en $n$ muestras.
+Here, $T(n)$ is the cost of training the model on $n$ samples.
 
 ## Step-by-Step Algorithm
 
-1. **Barajar dataset**: Permutar aleatoriamente los $n$ índices
-2. **Crear folds**: Dividir los índices en $k$ grupos de tamaño aproximado $n/k$
-3. **Para cada fold $i = 1 \dots k$**:
-   a. Asignar fold $i$ como test set
-   b. Concatenar los demás folds como training set
-   c. Entrenar modelo $f^{(i)}$ en el training set
-   d. Evaluar $\text{score}_i$ en el test set
-   e. Almacenar $\text{score}_i$
-4. **Promediar**: Calcular $\text{CV}_k = \frac{1}{k} \sum_{i=1}^{k} \text{score}_i$
-5. **Opcional**: Calcular desviación estándar para intervalos de confianza
+1. **Shuffle the dataset**: Randomly permute the $n$ indices.
+2. **Create folds**: Divide the indices into $k$ groups of approximately $n/k$ elements.
+3. **For each fold $i = 1, \ldots, k$**:
+   a. Use fold $i$ as the test set.
+   b. Concatenate the remaining folds into the training set.
+   c. Train model $f^{(i)}$ on the training set.
+   d. Evaluate $\text{score}_i$ on the test set.
+   e. Store $\text{score}_i$.
+4. **Average**: Calculate $\text{CV}_k = \frac{1}{k} \sum_{i=1}^{k} \text{score}_i$.
+5. **Optional**: Calculate the standard deviation for confidence intervals.
 
 ## Motivation
 
-El problema fundamental de Train-Test Split es su alta varianza: la evaluación depende de una única partición. K-Fold CV resuelve esto evaluando en múltiples particiones y promediando, proporcionando una estimación más estable y robusta del rendimiento de generalización.
+The main limitation of Train-Test Split is its high variance: the evaluation depends on a single partition. K-Fold CV addresses this by evaluating multiple partitions and averaging their scores, producing a more stable estimate of generalization performance.
 
-La intuición es que cada muestra es usada exactamente una vez para test y $k-1$ veces para training, maximizando el uso de los datos disponibles.
+Each sample is used exactly once for testing and $k-1$ times for training, making efficient use of the available data.
 
 ## Advantages
 
-- **Baja varianza**: Promedia múltiples evaluaciones, reduciendo la sensibilidad a la partición
-- **Uso eficiente de datos**: Cada muestra se usa tanto para training como para test
-- **Estimación robusta**: Proporciona intervalos de confianza del rendimiento
-- **Universal**: Aplicable a cualquier modelo y cualquier métrica
-- **Sin desperdicio**: A diferencia de train-test split, no se descarta ningún dato
+- **Lower variance**: Averages multiple evaluations and reduces sensitivity to a single partition.
+- **Efficient data use**: Each sample is used for both training and testing.
+- **Robust estimate**: Provides a basis for estimating performance variability.
+- **General-purpose**: Applies to many models and metrics.
+- **No samples discarded**: Unlike a single train-test split, every sample is used.
 
 ## Limitations
 
-- **Costo computacional**: Entrena el modelo $k$ veces (vs 1 vez con train-test split)
-- **No adecuado para series temporales**: La mezcla temporal rompe la dependencia temporal
-- **Sesgo de evaluación**: El modelo se evalúa en $k-1$ folds, no en el dataset completo
-- **Overlapping de folds**: Los folds de training se solapan significativamente
+- **Computational cost**: Trains the model $k$ times instead of once.
+- **Not suitable for time series**: Shuffling breaks temporal dependencies.
+- **Evaluation bias**: Each model is evaluated on one fold, not the full dataset.
+- **Overlapping training sets**: Training folds overlap substantially.
 
 ## When to Use
 
-- Datasets pequeños o medianos donde cada muestra importa
-- Cuando se necesita una estimación robusta del rendimiento
-- Comparación de modelos (selección de hiperparámetros)
-- Validación de estabilidad del modelo
-- Cuando el dataset es demasiado pequeño para un split único confiable
+- Small or medium-sized datasets where every sample matters.
+- When a robust performance estimate is needed.
+- Comparing models or selecting hyperparameters.
+- Assessing model stability.
+- When the dataset is too small for a reliable single split.
 
 ## When NOT to Use
 
-- Datasets muy grandes (>$10^5$): train-test split es suficiente y más rápido
-- Datos con dependencia temporal: usar TimeSeriesSplit
-- Cuando el entrenamiento es extremadamente costoso (usar holdout)
-- Cuando se necesita evaluar en datos completamente nuevos (usar holdout)
+- Very large datasets (>$10^5$), where a train-test split may be sufficient and faster.
+- Data with temporal dependence (use a time-series split).
+- When training is extremely expensive (use a holdout set).
+- When evaluation must use a completely new dataset (use a holdout set).
 
 ## Dependencies
 
-- No depende de otros módulos KAFE
-- Solo necesita permutación aleatoria y partición
+- Does not depend on other KAFE modules.
+- Requires only random permutation and partitioning.
 
 ## Related Concepts
 
-- **Train-Test Split**: Versión simplificada (1 partición)
-- **Stratified K-Fold**: K-Fold que preserva proporciones de clase
-- **Leave-One-Out (LOO)**: K-Fold con $k = n$
-- **Repeated K-Fold**: Repite K-Fold múltiples veces
-- **Nested Cross-Validation**: Para selección de hiperparámetros sin sesgo
+- **Train-Test Split**: Simplified version with one partition.
+- **Leave-One-Out (LOO)**: K-Fold with $k = n$.
+- **Repeated K-Fold**: Repeats K-Fold multiple times.
+- **Nested Cross-Validation**: For less-biased hyperparameter selection.
 
 ## Relationship with KAFE
 
-KAFE implementa `k_fold_cross_validation` en `model_selection.py` como función que retorna scores por fold y el score promedio. La implementación:
+KAFE implements `k_fold` in `src/lib/KafeMACHINE/model_selection/model_selection.py` as a function that returns training and test indices for each fold. It defaults to `n_splits=5`, `shuffle=False`, and `random_state=0` (where `0` selects a non-fixed random seed). The `machine.cross_val_score(cv, scoring, random_state)` factory creates a `CrossValScore` object that evaluates a model over shuffled folds. The implementation:
 
-- Acepta una función `evaluate_fn(model, X_test, y_test)` como callback
-- Retorna `(List[FLOAT], FLOAT)` — scores por fold y promedio
-- Soporta stratified folding para clasificación
-- Compatible con cualquier modelo KafeMACHINE
+- `machine.k_fold(n_samples, n_splits, shuffle, random_state)` returns a list of `[train_indices, test_indices]` pairs.
+- `CrossValScore.fit(model, X, y)` fits and scores the model on each fold.
+- Supported scoring names include `accuracy`, `r2`, and `mse`.
+- `CrossValScore` works with KafeMACHINE models that implement `fit` and `predict`.
 
 ## Usage Examples
 
@@ -120,20 +119,22 @@ List[List[FLOAT]] X = [[1.0, 2.0], [2.0, 3.0], [3.0, 4.0],
 List[FLOAT] y = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0];
 
 MACHINE lr = machine.linear_regression();
-(List[FLOAT] scores, FLOAT mean_score) = machine.k_fold_cross_validation(
-    lr, X, y, 5, machine.r2_score
-);
-show(scores);      -- [0.92, 0.95, 0.88, 0.91, 0.94]
-show(mean_score);  -- ~0.92
+MACHINE cvs = machine.cross_val_score(5, "r2", 42);
+cvs.fit(lr, X, y);
+show(cvs.scores_);
+show(cvs.mean_score_);
+show(cvs.std_score_);
 ```
 
 ## Implementation Location
 
-- `src/lib/KafeMACHINE/model_selection.py` — función `k_fold_cross_validation`
+- `src/lib/KafeMACHINE/model_selection/model_selection.py` — `k_fold` and `CrossValScore` implementations.
 
 ## Public API
 
-- `machine.k_fold_cross_validation(model, X, y, k, scoring_fn)` → `(List[FLOAT], FLOAT)`
+- `machine.k_fold(n_samples, n_splits=5, shuffle=False, random_state=0)` returns fold index pairs.
+- `machine.cross_val_score(cv=5, scoring="accuracy", random_state=0)` creates a `CrossValScore` object.
+- `cvs.fit(model, X, y)` computes `scores_`, `mean_score_`, and `std_score_`.
 
 ## References
 

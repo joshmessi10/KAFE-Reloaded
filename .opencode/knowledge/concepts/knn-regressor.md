@@ -2,20 +2,20 @@
 
 ## Mathematical Foundation
 
-K-Nearest Neighbors para regresión que predice el promedio de los k vecinos más cercanos.
+K-Nearest Neighbors for regression predicts the average target value of the $k$ nearest neighbors.
 
-### Algoritmo
+### Algorithm
 
-1. Calcular distancia a todos los puntos de entrenamiento
-2. Seleccionar los k vecinos más cercanos
-3. Predecir:
+1. Calculate the distance to every training point.
+2. Select the $k$ nearest neighbors.
+3. Predict:
 
 $$\hat{y} = \frac{1}{k} \sum_{i=1}^{k} y_i$$
 
-### Pesos (weights)
+### Weights
 
-- **uniform**: promedio simple
-- **distance**: promedio ponderado por distancia inversa
+- **uniform**: unweighted average.
+- **distance**: average weighted by inverse distance.
 
 $$\hat{y} = \frac{\sum_{i=1}^{k} w_i \cdot y_i}{\sum_{i=1}^{k} w_i}, \quad w_i = \frac{1}{d_i + \epsilon}$$
 
@@ -28,33 +28,33 @@ $$\hat{y} = \frac{\sum_{i=1}^{k} w_i \cdot y_i}{\sum_{i=1}^{k} w_i}, \quad w_i =
 
 ## Advantages
 
-1. **Simple** — fácil de entender e implementar
-2. **No necesita entrenamiento** — lazy learning
-3. **Adaptable** — captura relaciones locales
-4. **Sin supuestos** — no asume distribución
+1. **Simple** — easy to understand and implement.
+2. **No model fitting required** — uses lazy learning.
+3. **Adaptable** — captures local relationships.
+4. **Few assumptions** — does not assume a particular data distribution.
 
 ## Limitations
 
-1. **Lento en predicción** — debe calcular distancias a todos los puntos
-2. **Sensible a dimensionalidad** — curse of dimensionality
-3. **Sensible a outliers** — vecinos ruidosos afectan predicción
-4. **Requiere normalización** — distancias dependen de escala
+1. **Slow prediction** — distances to all training points must be calculated.
+2. **Sensitive to dimensionality** — affected by the curse of dimensionality.
+3. **Sensitive to outliers** — noisy neighbors can affect predictions.
+4. **Requires normalization** — distances depend on feature scales.
 
 ## When to Use
 
-- Dataset pequeños/medianos
-- Datos con patrones locales
-- Necesitas algo simple y rápido de implementar
+- Small or medium-sized datasets.
+- Data with local patterns.
+- When a simple model is quick to implement.
 
 ## When NOT to Use
 
-- Dataset grandes (lento en predicción)
-- Muchas features (curse of dimensionality)
-- Datos con outliers (afectan predicción)
+- Large datasets where prediction cost is too high.
+- Data with many features.
+- Data with outliers that distort neighborhood predictions.
 
 ## Implementation Location
 
-- `src/lib/KafeMACHINE/KNN.py` — KNNRegressor class
+- `src/lib/KafeMACHINE/neighbors/KNN.py` — KNNRegressor class
 
 ## Public API
 

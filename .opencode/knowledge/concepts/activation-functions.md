@@ -1,240 +1,236 @@
-# Activation Functions (Funciones de Activación)
+# Activation Functions
 
 ## Category
 
-Deep Learning — Componente de red neuronal
+Deep Learning — neural-network component
 
 ## Description
 
-Las funciones de activación introducen **no linealidad** en las redes neuronales. Sin ellas,任意 composición de capas densas seguiría siendo una transformación lineal, incapaz de modelar relaciones complejas.
+Activation functions introduce **nonlinearity** into neural networks. Without them, any composition of dense layers would still be a linear transformation and could not model complex relationships.
 
-Cada función de activación $\sigma: \mathbb{R} \rightarrow \mathbb{R}$ (o $\sigma: \mathbb{R}^k \rightarrow \mathbb{R}^k$ para Softmax) transforma la pre-activación $z$ en una salida $a = \sigma(z)$. La derivada $\sigma'(z)$ es esencial para la retropropagación.
+Each activation function $\sigma: \mathbb{R} \rightarrow \mathbb{R}$ (or $\sigma: \mathbb{R}^k \rightarrow \mathbb{R}^k$ for Softmax) transforms the pre-activation $z$ into an output $a = \sigma(z)$. The derivative $\sigma'(z)$ is essential for backpropagation.
 
-KafeGESHA implementa 6 funciones de activación desde cero:
+KafeGESHA implements six activation functions from scratch:
 
-| Función | Fórmula | Rango | Uso principal |
+| Function | Formula | Range | Primary Use |
 |---|---|---|---|
-| Sigmoide | $\sigma(x) = \frac{1}{1 + e^{-x}}$ | $(0, 1)$ | Salidas de probabilidad, binary classification |
-| ReLU | $f(x) = \max(0, x)$ | $[0, \infty)$ | Capas ocultas (estándar) |
-| Tanh | $\tanh(x) = \frac{e^x - e^{-x}}{e^x + e^{-x}}$ | $(-1, 1)$ | Capas ocultas (centrada en cero) |
-| Softmax | $\text{softmax}(z_i) = \frac{e^{z_i}}{\sum_j e^{z_j}}$ | $(0, 1), \sum = 1$ | Salida de clasificación multiclase |
-| Identidad | $f(x) = x$ | $(-\infty, \infty)$ | Regresión lineal |
-| Escalonada | $f(x) = \begin{cases} 1 & x \geq 0 \\ 0 & x < 0 \end{cases}$ | $\{0, 1\}$ | Perceptrón binario |
+| Sigmoid | $\sigma(x) = \frac{1}{1 + e^{-x}}$ | $(0, 1)$ | Probability outputs and binary classification |
+| ReLU | $f(x) = \max(0, x)$ | $[0, \infty)$ | Hidden layers (standard choice) |
+| Tanh | $\tanh(x) = \frac{e^x - e^{-x}}{e^x + e^{-x}}$ | $(-1, 1)$ | Hidden layers (zero-centered) |
+| Softmax | $\text{softmax}(z_i) = \frac{e^{z_i}}{\sum_j e^{z_j}}$ | $(0, 1), \sum = 1$ | Multiclass-classification output |
+| Identity | $f(x) = x$ | $(-\infty, \infty)$ | Linear regression |
+| Step | $f(x) = \begin{cases} 1 & x \geq 0 \\ 0 & x < 0 \end{cases}$ | $\{0, 1\}$ | Binary perceptron |
 
 ## Mathematical Foundation
 
-### Sigmoide
+### Sigmoid
 
 $$\sigma(x) = \frac{1}{1 + e^{-x}}$$
 
-**Derivada** (usando la propiedad $\sigma'(x) = \sigma(x)(1 - \sigma(x))$):
+**Derivative** (using the identity $\sigma'(x) = \sigma(x)(1 - \sigma(x))$):
 
 $$\sigma'(x) = \sigma(x) \cdot (1 - \sigma(x))$$
 
-**Propiedades**:
-- Rango: $(0, 1)$ — interpretable como probabilidad
-- Monotón creciente
+**Properties**:
+- Range: $(0, 1)$ — can be interpreted as a probability.
+- Monotonically increasing.
 - $\sigma(0) = 0.5$
 - $\lim_{x \to \infty} \sigma(x) = 1$, $\lim_{x \to -\infty} \sigma(x) = 0$
-- **Problema**: gradientes pequeños para $|x|$ grande → vanishing gradient
+- **Limitation**: gradients become small for large $|x|$, causing the vanishing-gradient problem.
 
 ### ReLU (Rectified Linear Unit)
 
-$$f(x) = \max(0, x) = \begin{cases} x & \text{si } x > 0 \\ 0 & \text{si } x \leq 0 \end{cases}$$
+$$f(x) = \max(0, x) = \begin{cases} x & \text{if } x > 0 \\ 0 & \text{if } x \leq 0 \end{cases}$$
 
-**Derivada**:
+**Derivative**:
 
-$$f'(x) = \begin{cases} 1 & \text{si } x > 0 \\ 0 & \text{si } x \leq 0 \end{cases}$$
+$$f'(x) = \begin{cases} 1 & \text{if } x > 0 \\ 0 & \text{if } x \leq 0 \end{cases}$$
 
-**Propiedades**:
-- Rango: $[0, \infty)$
-- No acota los gradientes positivos → mitiga vanishing gradient
-- **Dead ReLU**: si $x < 0$ siempre, la neurona "muere" (gradiente cero)
-- La derivada en $x = 0$ no está definida; KafeGESHA usa $f'(0) = 0$
+**Properties**:
+- Range: $[0, \infty)$.
+- Does not bound positive gradients, which helps mitigate vanishing gradients.
+- **Dead ReLU**: if $x < 0$ on every input, the neuron "dies" (its gradient is zero).
+- The derivative at $x = 0$ is undefined; KafeGESHA uses $f'(0) = 0$.
 
-### Tanh (Tangente Hiperbólica)
+### Tanh (Hyperbolic Tangent)
 
 $$\tanh(x) = \frac{e^x - e^{-x}}{e^x + e^{-x}} = 2\sigma(2x) - 1$$
 
-**Derivada**:
+**Derivative**:
 
 $$\tanh'(x) = 1 - \tanh^2(x)$$
 
-**Propiedades**:
-- Rango: $(-1, 1)$ — salida centrada en cero
-- Más estable que Sigmoide para capas ocultas
-- Sigue teniendo vanishing gradient para $|x|$ grande
+**Properties**:
+- Range: $(-1, 1)$ — zero-centered output.
+- More stable than Sigmoid for hidden layers.
+- Still suffers from vanishing gradients for large $|x|$.
 
 ### Softmax
 
 $$\text{softmax}(z_i) = \frac{e^{z_i}}{\sum_{j=1}^{k} e^{z_j}}$$
 
-**Matriz Jacobiana**:
+**Jacobian Matrix**:
 
-$$\frac{\partial \text{softmax}(z_i)}{\partial z_j} = \begin{cases} s_i(1 - s_i) & \text{si } i = j \\ -s_i \cdot s_j & \text{si } i \neq j \end{cases}$$
+$$\frac{\partial \text{softmax}(z_i)}{\partial z_j} = \begin{cases} s_i(1 - s_i) & \text{if } i = j \\ -s_i \cdot s_j & \text{if } i \neq j \end{cases}$$
 
-Donde $s_i = \text{softmax}(z_i)$.
+where $s_i = \text{softmax}(z_i)$.
 
-**Propiedades**:
-- Transforma un vector de logits en probabilidades (suma = 1)
-- Diferenciable everywhere
-- Equivario a escala: $\text{softmax}(z) = \text{softmax}(z + c)$ para cualquier constante $c$
+**Properties**:
+- Transforms a vector of logits into probabilities that sum to 1.
+- Differentiable everywhere.
+- Shift-invariant: $\text{softmax}(z) = \text{softmax}(z + c)$ for any constant $c$ added to every logit.
 
-### Identidad
+### Identity
 
 $$f(x) = x, \quad f'(x) = 1$$
 
-Usada para capas de salida en regresión donde la predicción debe ser un valor continuo sin restricción.
+Used in regression output layers when predictions must be unrestricted continuous values.
 
-### Escalonada (Step)
+### Step Function
 
 $$f(x) = \begin{cases} 1 & x \geq 0 \\ 0 & x < 0 \end{cases}, \quad f'(x) = 0$$
 
-El perceptrón clásico de Rosenblatt. La derivada es cero几乎 everywhere, por lo que no es apta para retropropagación. KafeGESHA la incluye con fines educativos.
+The classic Rosenblatt perceptron. Its derivative is zero almost everywhere, so it is unsuitable for backpropagation. KafeGESHA includes it for educational purposes.
 
 ## Step-by-Step Algorithm
 
-### Cálculo de Forward (usando Sigmoid como ejemplo)
+### Forward Pass Calculation (Sigmoid Example)
 
-1. Recibir pre-activación $z$.
-2. Calcular $e^{-z}$ usando la función exponencial.
-3. Calcular $\sigma(z) = \frac{1}{1 + e^{-z}}$.
-4. Almacenar $\sigma(z)$ para usar en backward.
-5. Retornar $\sigma(z)$.
+1. Receive the pre-activation $z$.
+2. Calculate $e^{-z}$ using the exponential function.
+3. Calculate $\sigma(z) = \frac{1}{1 + e^{-z}}$.
+4. Store $\sigma(z)$ for the backward pass.
+5. Return $\sigma(z)$.
 
-### Cálculo de Backward (derivada)
+### Backward Pass Calculation (Derivative)
 
-6. Si se almacenó la salida $\sigma(z)$ en forward:
-   - Retornar $\sigma(z) \cdot (1 - \sigma(z))$ (reutiliza el valor calculado).
-7. Si no se almacenó:
-   - Recalcular $\sigma(z)$ y retornar $\sigma(z) \cdot (1 - \sigma(z))$.
+6. If the output $\sigma(z)$ was stored during the forward pass:
+   - Return $\sigma(z) \cdot (1 - \sigma(z))$, reusing the calculated value.
+7. Otherwise:
+   - Recalculate $\sigma(z)$ and return $\sigma(z) \cdot (1 - \sigma(z))$.
 
-### Cálculo de Softmax (forward)
+### Softmax Forward Pass
 
-8. Recibir vector $\mathbf{z} \in \mathbb{R}^k$.
-9. Calcular $e^{z_i}$ para cada componente.
-10. Sumar $\sum_{j=1}^{k} e^{z_j}$.
-11. Dividir: $s_i = \frac{e^{z_i}}{\sum_j e^{z_j}}$.
-12. Retornar vector $\mathbf{s}$.
+8. Receive vector $\mathbf{z} \in \mathbb{R}^k$.
+9. Calculate $e^{z_i}$ for every component.
+10. Sum $\sum_{j=1}^{k} e^{z_j}$.
+11. Divide: $s_i = \frac{e^{z_i}}{\sum_j e^{z_j}}$.
+12. Return vector $\mathbf{s}$.
 
-### Cálculo de Softmax (derivada — Jacobiana)
+### Softmax Derivative (Jacobian)
 
-13. Calcular $\mathbf{s} = \text{softmax}(\mathbf{z})$.
-14. Para cada par $(i, j)$:
-    - Si $i = j$: $J_{ij} = s_i(1 - s_i)$.
-    - Si $i \neq j$: $J_{ij} = -s_i \cdot s_j$.
-15. Retornar matriz Jacobiana $J \in \mathbb{R}^{k \times k}$.
+13. Calculate $\mathbf{s} = \text{softmax}(\mathbf{z})$.
+14. For each pair $(i, j)$:
+    - If $i = j$: $J_{ij} = s_i(1 - s_i)$.
+    - If $i \neq j$: $J_{ij} = -s_i \cdot s_j$.
+15. Return the Jacobian matrix $J \in \mathbb{R}^{k \times k}$.
 
 ## Motivation
 
-Las funciones de activación son la razón por la cual las redes neuronales profundas pueden aprender representaciones complejas. Sin no linealidad, una red de $L$ capas es equivalente a una sola transformación lineal $W_L \cdots W_1 x$. KafeGESHA implementa cada función desde cero para que el estudiante vea exactamente qué計算 ocurre en cada forward y backward pass.
+Activation functions enable deep neural networks to learn complex representations. Without nonlinearity, a network of $L$ layers is equivalent to a single linear transformation $W_L \cdots W_1 x$. KafeGESHA implements each function from scratch so students can inspect every calculation in each forward and backward pass.
 
 ## Advantages
 
-- **Reutilización de valores**: Tanto Sigmoid como Tanh almacenan la salida de forward para calcular la derivada sin re-calcular la exponencial.
-- **Derivadas analíticas**: Todas las funciones (excepto Escalonada) tienen derivadas cerradas, eficientes para retropropagación.
-- **Selectividad de Softmax**: Se aplica al vector completo (no elemento por elemento), correctamente implementado como caso especial en Dense.
-- **Diversidad de rangos**: Cada función produce salidas en un rango apropiado para su caso de uso.
+- **Value reuse**: Sigmoid and Tanh both store the forward output so the derivative can be computed without recalculating exponentials.
+- **Analytical derivatives**: Every function except Step has a closed-form derivative that is efficient for backpropagation.
+- **Softmax handling**: It is applied to the entire vector, not element by element, and is correctly implemented as a special case in Dense.
+- **Different output ranges**: Each function produces a range suited to its use case.
 
 ## Limitations
 
-- **Dead neurons (ReLU)**: Si una neurona ReLU siempre recibe pre-activación negativa, su gradiente es cero y nunca se actualiza.
-- **Vanishing gradient (Sigmoide, Tanh)**: Para entradas grandes en magnitud, los gradientes se vuelven muy pequeños, ralentizando el aprendizaje en capas profundas.
-- **No definida en 0 (ReLo)**: La derivada de ReLU en exactamente cero no está definida; KafeGESHA usa 0 como convención.
-- **Escalonada no entrenable**: Su derivada es siempre cero, making it useless for gradient-based learning.
+- **Dead neurons (ReLU)**: If a ReLU neuron always receives a negative pre-activation, its gradient is zero and it is never updated.
+- **Vanishing gradients (Sigmoid, Tanh)**: For inputs with large magnitude, gradients become very small and slow learning in deep layers.
+- **Undefined at zero (ReLU)**: The derivative at exactly zero is undefined; KafeGESHA uses zero as a convention.
+- **Step is not trainable**: Its derivative is always zero, making it unsuitable for gradient-based learning.
 
 ## When to Use
 
-- **Sigmoide**: Capa de salida para binary classification (interpretada como probabilidad).
-- **ReLU**: Capas ocultas — es el estándar por su simplicidad y eficiencia.
-- **Tanh**: Cuando se necesita salida centrada en cero; alternativa a ReLU en RNNs.
-- **Softmax**: Capa de salida para clasificación multiclase (producing distribución de probabilidad).
-- **Identidad**: Capa de salida para regresión.
-- **Escalonada**: Solo educativa / perceptrón binario sin retropropagación.
+- **Sigmoid**: Output layer for binary classification, interpreted as a probability.
+- **ReLU**: Hidden layers; the standard choice because of its simplicity and efficiency.
+- **Tanh**: When zero-centered output is needed; an alternative to ReLU in RNNs.
+- **Softmax**: Output layer for multiclass classification, producing a probability distribution.
+- **Identity**: Output layer for regression.
+- **Step**: Educational use only or a binary perceptron without backpropagation.
 
 ## When NOT to Use
 
-- **Sigmoide en capas ocultas profundas**: Vanishing gradient hace el entrenamiento lento o imposible.
-- **ReLU sin monitoreo**: Puede causar dead neurons si el learning rate es muy alto.
-- **Softmax en capas internas**: Generalmente solo se usa en la capa de salida de clasificación.
+- **Sigmoid in deep hidden layers**: Vanishing gradients can make training slow or impossible.
+- **ReLU without monitoring**: A very high learning rate can cause dead neurons.
+- **Softmax in hidden layers**: It is generally used only in the classification output layer.
 
 ## Dependencies
 
-- `lib.KafeMATH.functions` — `exp()` (exponencial), derivada del módulo matemático de KAFE.
+- `lib.KafeMATH.functions` — `exp()`, KAFE's exponential function.
 
 ## Related Concepts
 
-- `dense-layer.md` — La capa Dense aplica funciones de activación post-transformación lineal.
-- `loss-functions.md` — Las funciones de pérdida trabajan con las salidas de activación.
-- `optimizers.md` — Los optimizadores usan las derivadas de activación para calcular gradientes.
+- `dense-layer.md` — Dense applies activation functions after the linear transformation.
+- `loss-functions.md` — Loss functions use activation outputs.
+- `optimizers.md` — Optimizers use activation derivatives to calculate gradients.
 
 ## Relationship with KAFE
 
-### Implementación en `ActivationFunction.py`
+### Implementation in `activations/`
 
-La clase abstracta `ActivationFunction` define el contrato:
+The abstract `ActivationFunction` class defines the interface:
 
 ```python
 class ActivationFunction(ABC):
-    def activate(self, x) → float     # σ(x)
-    def derivative(self, x) → float   # σ'(x)
+    def activate(self, x) -> float     # σ(x)
+    def derivative(self, x) -> float   # σ'(x)
 ```
 
-**Cada implementación almacena estado para backward eficiente**:
+**Each implementation stores state for an efficient backward pass**:
 
-| Función | Estado almacenado | Beneficio |
+| Function | Stored State | Benefit |
 |---|---|---|
-| `Sigmoide` | `self.last_output` | Evita re-calcular $e^{-x}$ en derivada |
-| `ReLU` | `self.last_input` | Permite distinguir $x > 0$ de $x \leq 0$ en derivada |
-| `Tanh` | `self.last_output` | Reutiliza $\tanh(x)$ para calcular $1 - \tanh^2(x)$ |
-| `Softmax` | `self.last_output` | Reutiliza vector de probabilidades |
-| `Identidad` | — | No necesita estado (derivative = 1) |
-| `Escalonada` | — | No necesita estado (derivative = 0) |
+| `SigmoidActivation` | `self.last_output` | Avoids recalculating $e^{-x}$ for the derivative. |
+| `ReLU` | `self.last_input` | Distinguishes $x > 0$ from $x \leq 0$ when calculating the derivative. |
+| `Tanh` | `self.last_output` | Reuses $\tanh(x)$ to calculate $1 - \tanh^2(x)$. |
+| `Softmax` | `self.last_output` | Reuses the probability vector. |
+| `IdentityActivation` | — | No state needed (derivative = 1). |
+| `StepActivation` | — | No state needed (derivative = 0). |
 
-### Decisión de diseño: Derivada de Softmax como Jacobiana
+### Design Decision: Softmax Derivative as a Jacobian
 
-La clase Softmax retorna la **matriz Jacobiana completa** en `derivative()`, no un vector. Esto es porque Softmax es una función vectorial: cada salida depende de todas las entradas. La capa Dense usa esta Jacobiana propagando el gradiente correctamente.
+The `Softmax` class returns the **full Jacobian matrix** from `derivative()`, not a vector. Softmax is a vector-valued function: each output depends on every input. The Dense layer uses this Jacobian to propagate gradients correctly.
 
-### Decisión de diseño: ReLU con $f'(0) = 0$
+### Design Decision: ReLU with $f'(0) = 0$
 
-En $x = 0$, ReLU no está formalmente diferenciable. KafeGESHA usa la convención $f'(0) = 0$ (no $f'(0) = 1$). Esto es la implementación estándar en la mayoría de frameworks.
+At $x = 0$, ReLU is not differentiable. KafeGESHA uses the convention $f'(0) = 0$ (not $f'(0) = 1$), which is standard in most frameworks.
 
-### Decisión de diseño: Softmax como caso especial en Dense
+### Design Decision: Softmax as a Special Case in Dense
 
-La capa Dense detecta `self.activation_name == "softmax"` y aplica `self.activation.activate(z)` sobre el vector completo, en lugar de elemento por elemento como con otras activaciones. Esto es necesario porque Softmax es colectiva.
+The Dense layer detects `self.activation_name == "softmax"` and applies `self.activation.activate(z)` to the full vector instead of element by element, as it does for other activations. Softmax operates on the vector collectively.
 
 ## Usage Examples
 
 ```kafe
-import gesha;
+import geshaDeep;
 
-GESHA modelo = gesha.deep("classification");
+-- ReLU in hidden layers (the standard choice)
+GESHA hidden = geshaDeep.create_dense(64, "relu", [10], 0.0);
 
--- ReLU en capas ocultas (el estándar)
-modelo.add(gesha.dense(64, activation: "relu", input_shape: [10]));
+-- Softmax in the output layer (multiclass classification)
+GESHA output = geshaDeep.create_dense(5, "softmax", [], 0.0);
 
--- Softmax en capa de salida (clasificación multiclase)
-modelo.add(gesha.dense(5, activation: "softmax"));
+-- Sigmoid for binary classification
+GESHA binary = geshaDeep.sigmoid_layer();
 
--- Sigmoide para binary classification
-GESHA binario = gesha.deep("binary");
-binario.add(gesha.dense(1, activation: "sigmoid", input_shape: [8]));
-
--- Sin activación (regresión lineal)
-GESHA reg = gesha.deep("regression");
-reg.add(gesha.dense(1, input_shape: [3]));
+-- No activation (linear regression)
+GESHA regression = geshaDeep.create_dense(1, "linear", [3], 0.0);
 ```
 
 ## Implementation Location
 
-- `src/lib/KafeGESHA/ActivationFunction.py` — clases `Sigmoide`, `ReLU`, `Tanh`, `Identidad`, `Escalonada`, `Softmax`
-- `src/lib/KafeGESHA/ActivationFunctionLoader.py` — factory para cargar por nombre
+- `src/lib/KafeGESHA/activations/` — activation classes and their implementations.
+- `src/lib/KafeGESHA/activations/ActivationFunctionLoader.py` — factory that loads an activation by name.
 
 ## Public API
 
-- Constructor por nombre: `"sigmoid"`, `"relu"`, `"tanh"`, `"softmax"`, `"identity"`, `"step"`
-- Método: `activate(x)` → resultado de la función
-- Método: `derivative(x)` → derivada en el punto
+- Constructor by name: `"sigmoid"`, `"relu"`, `"tanh"`, `"softmax"`, `"identity"`, `"step"`.
+- Method: `activate(x)` → function output.
+- Method: `derivative(x)` → derivative at the given point.
 
 ## References
 

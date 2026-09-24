@@ -229,8 +229,8 @@ The term $\alpha||\theta||^2$ penalizes large coefficients without removing them
 ### Constructor parameters
 
 ```kafe
--- Defaults: alpha=1.0, fit_intercept=true, max_iter=1000
-MACHINE ridge = machine.ridge_regression(1.0, true, 1000);
+-- Defaults: alpha=1.0, fit_intercept=True, max_iter=1000
+MACHINE ridge = machine.ridge_regression(1.0, True, 1000);
 ```
 
 ### Properties
@@ -292,8 +292,8 @@ The term $\alpha||\theta||_1$ can set coefficients exactly to zero, removing irr
 ### Constructor parameters
 
 ```kafe
--- Defaults: alpha=1.0, fit_intercept=true, max_iter=1000
-MACHINE lasso = machine.lasso_regression(1.0, true, 1000);
+-- Defaults: alpha=1.0, fit_intercept=True, max_iter=1000
+MACHINE lasso = machine.lasso_regression(1.0, True, 1000);
 ```
 
 ### Properties
@@ -357,15 +357,15 @@ Where:
 ### Constructor parameters
 
 ```kafe
--- Defaults: alpha=1.0, l1_ratio=0.5, fit_intercept=true, max_iter=1000
-MACHINE en = machine.elastic_net(1.0, 0.5, true, 1000);
+-- Defaults: alpha=1.0, l1_ratio=0.5, fit_intercept=True, max_iter=1000
+MACHINE en = machine.elastic_net(1.0, 0.5, True, 1000);
 ```
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
 | `alpha` | FLOAT | 1.0 | Regularization strength |
 | `l1_ratio` | FLOAT | 0.5 | L1-to-L2 ratio (0 = Ridge, 1 = Lasso) |
-| `fit_intercept` | BOOL | true | Whether to fit an intercept |
+| `fit_intercept` | BOOL | `True` | Whether to fit an intercept |
 | `max_iter` | INT | 1000 | Maximum number of iterations |
 
 ### Properties
@@ -578,8 +578,8 @@ Tools for splitting datasets and evaluating models robustly.
 
 | Function | Signature | Description |
 |---------|-------|-------------|
-| `machine.train_test_split(X, y, test_size, random_state)` | `(List[List[NUM]], List[NUM], FLOAT, INT) -> (List[List[NUM]], List[List[NUM]], List[NUM], List[NUM])` | Splits data into training and test sets |
-| `machine.k_fold_cross_validation(model, X, y, k, scoring_fn)` | `(MACHINE, List[List[NUM]], List[NUM], INT, FUNC) -> (List[FLOAT], FLOAT)` | Evaluates a model with K-fold CV and returns per-fold scores and their mean |
+| `machine.train_test_split(X, y, test_size, random_state, shuffle)` | `(List[List[NUM]], List[NUM], FLOAT, INT, BOOL) -> Tuple` | Splits data into training and test sets; shuffling is enabled by default |
+| `machine.k_fold(n_samples, n_splits, shuffle, random_state)` | `(INT, INT, BOOL, INT) -> List` | Returns training and test index pairs for each fold; shuffling is disabled by default |
 
 ### train_test_split
 
@@ -591,13 +591,13 @@ Given a dataset of $n$ examples, randomly partitions it into two subsets:
 - **Training set**: $(1 - \text{test\_size}) \cdot n$ examples
 - **Test set**: $\text{test\_size} \cdot n$ examples (default: 20%)
 
-The `random_state` parameter sets the random seed for reproducibility.
+Set `shuffle=False` to retain input order. A nonzero `random_state` makes shuffling reproducible; the default value `0` selects a non-fixed seed. The function does not stratify by class label.
 
 #### Methods
 
 | Method | Signature | Description |
 |--------|-------|-------------|
-| `train_test_split(X, y, test_size, random_state)` | `(List[List[NUM]], List[NUM], FLOAT, INT) -> Tuple` | Returns `(X_train, X_test, y_train, y_test)` |
+| `train_test_split(X, y, test_size, random_state, shuffle)` | `(List[List[NUM]], List[NUM], FLOAT, INT, BOOL) -> Tuple` | Returns `(X_train, X_test, y_train, y_test)` |
 
 #### Example
 
@@ -623,49 +623,31 @@ FLOAT r2 = lr.score(X_test, y_test);
 show(r2);  -- ~1.0
 ```
 
-### k_fold_cross_validation
+### k_fold
 
-Evaluates a model with K-fold cross-validation by partitioning the dataset into $k$ folds and training/evaluating $k$ times.
+Partitions sample indices into $k$ folds and returns the train/test indices for each fold. This function does not fit or evaluate a model; use `CrossValScore` for model evaluation.
 
 #### Theory
 
-1. Shuffle and split the dataset into $k$ folds.
-2. For each fold $i$, use fold $i$ as the test set and the others as the training set.
-3. Average the scores for all folds.
+1. Create an index for each sample.
+2. Optionally shuffle the indices.
+3. Split the indices into $k$ folds and return one training/test index pair per fold.
 
-Compared with a train-test split, each sample is used exactly once for testing and $k-1$ times for training, making better use of the data.
+Each sample is used once for testing and $k-1$ times for training. Scoring and model fitting are handled separately.
 
 #### Methods
 
 | Method | Signature | Description |
 |--------|-------|-------------|
-| `k_fold_cross_validation(model, X, y, k, scoring_fn)` | `(MACHINE, List[List[NUM]], List[NUM], INT, FUNC) -> Tuple` | Returns `(scores, mean_score)` |
+| `k_fold(n_samples, n_splits, shuffle, random_state)` | `(INT, INT, BOOL, INT) -> List` | Returns `(train_indices, test_indices)` pairs |
 
-#### Example
-
-```kafe
-import machine;
-
-List[List[FLOAT]] X = [[1.0, 2.0], [2.0, 3.0], [3.0, 4.0],
-                        [4.0, 5.0], [5.0, 6.0], [6.0, 7.0],
-                        [7.0, 8.0], [8.0, 9.0], [9.0, 10.0], [10.0, 11.0]];
-List[FLOAT] y = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0];
-
-MACHINE lr = machine.linear_regression();
-
--- 5-fold cross-validation
-(List[FLOAT] scores, FLOAT mean_score) = machine.k_fold_cross_validation(
-    lr, X, y, 5, machine.r2_score
-);
-show(scores);      -- [0.92, 0.95, 0.88, 0.91, 0.94]
-show(mean_score);  -- ~0.92
-```
+The default is `n_splits=5`, `shuffle=False`, and `random_state=0`. When shuffling is enabled, a nonzero `random_state` provides reproducible partitions; `0` selects a non-fixed seed.
 
 #### Comparison: train-test split vs. K-fold CV
 
 | Aspect | Train-Test Split | K-Fold CV |
 |---------|------------------|-----------|
-| Particiones | 1 | $k$ |
+| Partitions | 1 | $k$ |
 | Variance | High | Low |
 | Computational cost | $1 \times$ | $k \times$ |
 | Data usage | Leaves out the test set | Each sample is used for testing and training |
@@ -739,14 +721,13 @@ GridSearchCV evaluates **all** possible parameter combinations defined in the gr
 
 | Function | Signature | Description |
 |---------|-------|-------------|
-| `machine.grid_search_cv(model, param_grid, cv, scoring_fn)` | `(MACHINE, Dict, INT, FUNC) -> MACHINE` | Creates a GridSearchCV object |
+| `machine.grid_search_cv(cv, scoring, random_state)` | `(INT, STR, INT) -> MACHINE` | Creates a GridSearchCV wrapper; the current KAFE factory does not accept a parameter grid |
 
 ### Methods
 
 | Method | Signature | Description |
 |--------|-------|-------------|
 | `gs.fit(X, y)` | `(List[List[NUM]], List[NUM]) -> VOID` | Runs the exhaustive CV search |
-| `gs.predict(X)` | `(List[List[NUM]]) -> List[NUM]` | Predicts with the best model found |
 
 ### Properties
 
@@ -754,29 +735,9 @@ GridSearchCV evaluates **all** possible parameter combinations defined in the gr
 |-----------|------|-------------|
 | `gs.best_params_` | `Dict` | Best parameters found |
 | `gs.best_score_` | `FLOAT` | Best cross-validation score |
-| `gs.best_estimator_` | `MACHINE` | Model refitted with the best parameters |
-| `gs.cv_results_` | `List[Dict]` | Results for each evaluated combination |
+| `gs.cv_results_` | `List[FLOAT]` | Mean score for each evaluated combination |
 
-### Example
-
-```kafe
-import machine;
-
-MACHINE lr = machine.logistic_regression(0.01, 1000);
-
--- Define the parameter grid
-Dict param_grid = {"lr": [0.001, 0.01, 0.1], "iter": [500, 1000, 2000]};
-
--- GridSearchCV with 5-fold CV
-MACHINE gs = machine.grid_search_cv(lr, param_grid, 5, machine.accuracy_score);
-gs.fit(X_train, y_train);
-
-show(gs.best_params_);   -- Best parameter combination
-show(gs.best_score_);    -- Best CV score
-
-List[INT] preds = gs.predict(X_test);
-show(preds);
-```
+The KAFE factory currently initializes an empty grid and does not expose a parameter-grid argument. The underlying Python `GridSearchCV` constructor accepts `param_grid`, but a configured grid search is not currently available through this KAFE factory.
 
 ### Comparison: GridSearchCV vs. RandomizedSearchCV
 
@@ -806,14 +767,13 @@ RandomizedSearchCV performs **random search** over parameter distributions:
 
 | Function | Signature | Description |
 |---------|-------|-------------|
-| `machine.randomized_search_cv(model, param_dist, n_iter, cv, scoring_fn)` | `(MACHINE, Dict, INT, INT, FUNC) -> MACHINE` | Creates a RandomizedSearchCV object |
+| `machine.randomized_search_cv(n_iter, cv, scoring, random_state)` | `(INT, INT, STR, INT) -> MACHINE` | Creates a RandomizedSearchCV wrapper; the current KAFE factory does not accept parameter distributions |
 
 ### Methods
 
 | Method | Signature | Description |
 |--------|-------|-------------|
 | `rs.fit(X, y)` | `(List[List[NUM]], List[NUM]) -> VOID` | Runs the randomized CV search |
-| `rs.predict(X)` | `(List[List[NUM]]) -> List[NUM]` | Predicts with the best model found |
 
 ### Properties
 
@@ -821,29 +781,9 @@ RandomizedSearchCV performs **random search** over parameter distributions:
 |-----------|------|-------------|
 | `rs.best_params_` | `Dict` | Best parameters found |
 | `rs.best_score_` | `FLOAT` | Best cross-validation score |
-| `rs.best_estimator_` | `MACHINE` | Model refitted with the best parameters |
-| `rs.cv_results_` | `List[Dict]` | Results for each evaluated combination |
+| `rs.cv_results_` | `List[FLOAT]` | Mean score for each sampled combination |
 
-### Example
-
-```kafe
-import machine;
-
-MACHINE lr = machine.logistic_regression(0.01, 1000);
-
--- Define the parameter distributions
-Dict param_dist = {"lr": [0.001, 0.01, 0.1, 0.5], "iter": [100, 500, 1000, 2000]};
-
--- RandomizedSearchCV: 10 iterations, 5-fold CV
-MACHINE rs = machine.randomized_search_cv(lr, param_dist, 10, 5, machine.accuracy_score);
-rs.fit(X_train, y_train);
-
-show(rs.best_params_);    -- Best combination found
-show(rs.best_score_);     -- Best CV score
-
-List[INT] preds = rs.predict(X_test);
-show(preds);
-```
+The KAFE factory currently initializes an empty distribution and does not expose a parameter-distribution argument. The underlying Python `RandomizedSearchCV` constructor accepts `param_distributions`, but a configured randomized search is not currently available through this KAFE factory.
 
 ---
 
@@ -909,24 +849,6 @@ show(pipe.named_steps_["scaler"]);
 show(pipe.get_params());  -- ["scaler", "model"]
 ```
 
-### Example with GridSearchCV
-
-```kafe
-import machine;
-
-MACHINE scaler = machine.standard_scaler();
-MACHINE lr = machine.logistic_regression(0.01, 1000);
-MACHINE pipe = machine.pipeline("scaler", scaler, "model", lr);
-
--- Search the scaler and model hyperparameters at the same time
-Dict param_grid = {"model__lr": [0.001, 0.01, 0.1], "scaler": [scaler]};
-MACHINE gs = machine.grid_search_cv(pipe, param_grid, 5, machine.accuracy_score);
-gs.fit(X_train, y_train);
-
-show(gs.best_params_);
-show(gs.best_score_);
-```
-
 ### Comparison: manual code vs. pipeline
 
 | Aspect | Manual code | Pipeline |
@@ -934,7 +856,7 @@ show(gs.best_score_);
 | Data leakage | High risk (forgetting to separate fit/transform) | Prevented automatically |
 | Modularity | Repetitive code | Reusable blocks |
 | Cross-validation | Common error: fit the scaler on the entire dataset | Correct by design |
-| GridSearchCV | Cannot be integrated | Nested hyperparameter search |
+| Hyperparameter search | Not exposed through the current KAFE factory | Not exposed through the current KAFE factory |
 | Readability | Multiple fit/transform lines | One expressive object |
 
 ---
@@ -2543,14 +2465,14 @@ Number of output features (with bias): $\binom{d+n}{n} = \frac{(d+n)!}{d! \cdot 
 ### Constructor Parameters
 
 ```kafe
--- degree=2, include_bias=true (default values)
-MACHINE pf = machine.polynomial_features(2, true);
+-- degree=2, include_bias=True (default values)
+MACHINE pf = machine.polynomial_features(2, True);
 ```
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
 | `degree` | INT | 2 | Maximum polynomial degree |
-| `include_bias` | BOOL | true | Whether to include a bias column (ones) |
+| `include_bias` | BOOL | `True` | Whether to include a bias column (ones) |
 
 ### Properties
 
@@ -2566,7 +2488,7 @@ import machine;
 
 List[List[FLOAT]] X = [[1.0, 2.0], [3.0, 4.0], [5.0, 6.0]];
 
-MACHINE pf = machine.polynomial_features(2, true);
+MACHINE pf = machine.polynomial_features(2, True);
 List[List[FLOAT]] X_poly = pf.fit_transform(X);
 
 show(pf.n_features_in_);   -- 2
@@ -2736,7 +2658,7 @@ rfe.fit(X, y);
 
 show(rfe.ranking_);          -- [1, 3, 1, 2]
 show(rfe.selected_indices_); -- [0, 2]
-show(rfe.support_);          -- [true, false, true, false]
+show(rfe.support_);          -- [True, False, True, False]
 
 List[List[FLOAT]] X_new = rfe.transform(X);
 show(X_new);  -- [[1.0, 3.0], [2.0, 6.0], [3.0, 9.0], [4.0, 12.0], [5.0, 15.0]]

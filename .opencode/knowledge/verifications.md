@@ -35,11 +35,11 @@ To remove the generated ANTLR outputs, run `make clean` from `src/` in the exist
 - Suite: `uv run --locked --group dev pytest tests/` from the repo root.
 - Running programs: `uv run --locked python src/Kafe.py <file.kf>` from the repo root; `Kafe.py` resolves paths first from cwd, then relative to `src/`.
 - Fixture tests spawn the interpreter as a subprocess with `cwd=src/` (paths from `tests/utils.py`). This is the fixture harness's execution context, not a requirement that every CLI caller use `src/`.
-- Add new fixtures by dropping files in a directory and a `tests/test_*.py` that parameterizes via `obtener_parametros(get_programs(...))`.
+- Add new fixtures by dropping files in a directory and a `tests/test_*.py` module that parameterizes via `get_parameters(get_programs(...))`.
 - `tests/test_KafeMACHINE.py` is the authoritative fixture map. Its `SUBDIRS` currently contains 11 paths across 10 immediate directories: `linear`, `neighbors`, `tree`, `preprocessing`, `metrics/classification`, `metrics/regression`, `clustering`, `naive_bayes`, `model_selection`, `svm`, and `ensemble`. Keep new categories wired into that map.
 - Other categories mirror the same pattern: `tests/test_KafeXXX.py` + fixtures under `tests/KafeXXX/`.
 - File I/O uses the case-sensitive paths `tests/test_KafeFiles.py` and `tests/KafeFiles/`, while its implementation package is `src/lib/KafeFILES/`. Preserve this existing distinction when adding fixtures or updating references.
-- From `src/`, `uv run --locked --project .. --group dev make test prueba=KafeMACHINE` runs `tests/test_KafeMACHINE.py` and requires POSIX-compatible Make and shell. On Windows, run `uv run --locked --group dev pytest tests/test_KafeMACHINE.py` from the repository root.
+- From `src/`, `uv run --locked --project .. --group dev make test suite=KafeMACHINE` runs `tests/test_KafeMACHINE.py` and requires POSIX-compatible Make and shell. On Windows, run `uv run --locked --group dev pytest tests/test_KafeMACHINE.py` from the repository root.
 - Keep KafeHF's optional `datasets` integration separate from baseline dependencies and preserve deterministic coverage of its missing-dependency behavior.
 - To preview documentation locally, run `uv sync --locked --group docs --no-dev`, then `uv run --locked --group docs --no-dev mkdocs serve`.
 

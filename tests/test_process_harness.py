@@ -31,13 +31,16 @@ def test_pytest_warning_policy_raises_on_python_warning():
 def test_build_child_environment_copies_parent_and_promotes_warnings(monkeypatch):
     monkeypatch.setenv("KAFE_HARNESS_SENTINEL", "keep-me")
     monkeypatch.setenv("PYTHONWARNINGS", "default")
+    monkeypatch.setenv("PYTHONIOENCODING", "ascii")
 
     child_env = utils.build_child_environment()
 
     assert child_env is not os.environ
     assert child_env["KAFE_HARNESS_SENTINEL"] == "keep-me"
     assert child_env["PYTHONWARNINGS"] == "error"
+    assert child_env["PYTHONIOENCODING"] == "utf-8"
     assert os.environ["PYTHONWARNINGS"] == "default"
+    assert os.environ["PYTHONIOENCODING"] == "ascii"
 
 
 def test_run_child_process_captures_complete_streams_input_and_exit_code(tmp_path):
@@ -72,6 +75,17 @@ def test_run_child_process_turns_child_warning_into_failure(tmp_path):
 
     assert result.returncode != 0
     assert "UserWarning: controlled child warning" in result.stderr
+
+
+def test_run_child_process_decodes_utf8_child_output(tmp_path, monkeypatch):
+    monkeypatch.setenv("PYTHONUTF8", "1")
+
+    result = utils.run_child_process(
+        [sys.executable, "-c", "print('UTF-8 — output')"],
+        cwd=str(tmp_path),
+    )
+
+    assert result.stdout == "UTF-8 — output\n"
 
 
 def test_normalize_child_output_replaces_repo_root_and_preserves_other_paths(tmp_path):

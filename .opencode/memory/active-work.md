@@ -2,26 +2,33 @@
 
 ## Current Feature
 
-Interpreter subprocess quality evidence — complete
+English repository migration — Task 7: final audit completed; close out the verified change set.
 
 ## Status
 
-The user authorized the existing `test/interpreter-quality-evidence` branch and approved the implementation plan. The implementation and independent review are complete: the shared runner covers all 29 fixture launches, 160 invalid fixtures have complete stderr snapshots, warnings are strict in pytest and child interpreters, and the final suite passed 497 tests in 353.72s with 83.78% coverage across all 111 tracked Python source files. The report had no warnings; only generated ANTLR files were omitted. Commit `6e8edd5` was pushed, and GitHub Actions `Run Tests` passed at that exact SHA (run 127, ID `35901709547`). The branch remains unmerged.
+Tasks 1–7 are complete on `refactor/english-repository`. Task 5 is committed at `13ca2bf1b84a692780fff0c83106c46fdf6d15d1`; the Task 6–7 change set passed the final local audit. ADR-0011 authorizes a one-time faithful English backfill of existing tracked project records; future session and history entries remain append-only and English.
 
-## Completed implementation
+The user requires all repository-owned content to be in English and approved removing `KAFE LANGUAGE Deep Learning for Dummies .pdf`, `test_results.txt`, and `test_output.txt` from the current tree. Commits and pushes are authorized when needed. Stay on the current branch; do not create, rename, or switch branches.
 
-- 15 test modules contain 29 `subprocess.run` calls and exercise 320 valid plus 160 expected-error fixtures.
-- All 15 fixture modules use the shared runner and assert return code and complete streams. Valid programs require exact stdout and empty stderr; invalid programs compare full stderr and any explicitly observed stdout while retaining the semantic `.error.expec` assertion.
-- The uv lock already resolves pytest-cov 7.1.0 and coverage 7.16.1.
-- The report covers 111 tracked `src/**/*.py` files, including namespace-package directories, and excludes only the three generated ANTLR modules. It reports `src/Kafe.py` and reaches 83.78% overall.
-- CI and `.opencode/knowledge/verifications.md` now use/document the same absolute-path coverage gate; the 160 stderr and two stdout sidecars passed the inventory verifier.
+## Completed Repository Alignment Work
 
-## Next Steps
+- Tasks 1–2 inventoried the language/API/path changes and migrated core interpreter paths and generated ANTLR labels.
+- Task 3 migrated built-in library internals while preserving English KAFE calls.
+- Task 4 migrated fixture and test-module names while preserving all 1,174 test paths and 480 KAFE programs.
+- Task 5 translated and repathed the published documentation; 36 old-to-new routes were checked, local Markdown links resolved, and `mkdocs build --strict` succeeded. Material for MkDocs printed its upstream MkDocs 2.0 advisory before the build.
+- The interpreter subprocess quality evidence branch remains a separate, unmerged milestone: commit `6e8edd5565c6c1341697426a2bd0dff4187dc5cc` passed 497 tests at 83.78% coverage across 111 tracked Python source files, with no warnings; GitHub Actions passed at that exact SHA.
 
-- Keep `test/interpreter-quality-evidence` unmerged. Get explicit authorization before creating or switching to the next alignment branch.
+## Task 6–7 Results and Follow-up
 
-## Authorization and platform notes
+1. Translated owned `.opencode/` records and repository guidance, preserving record IDs, dates, facts, results, decisions, formulas, code identifiers, and chronology.
+2. Updated operational references to the final English source, test, documentation, and CLI paths; kept old paths only where they are historical mappings.
+3. Removed exactly the three approved retired files and verified their original Git objects remain available.
+4. Completed the repository-wide English audit, root-policy mirror check, strict documentation build, tracked-file codespell check, and full regression suite. The suite passed 498 tests in 349.42 seconds at 83.78% coverage with no warnings.
+5. Record the reviewed change set in a commit on the existing branch. The host could not allocate an independent reviewer at its thread limit; complete and record the inline read-only review.
 
-- The user explicitly approved creating and switching to `test/interpreter-quality-evidence`; commits and pushes are authorized when needed. Do not create, rename, or switch to another branch without explicit authorization.
-- Preserve expected KAFE error outputs, exit codes, and CLI behavior. Commit/push authorization applies to this work; no merge or branch change has been authorized.
-- Nix and GNU Make are unavailable on this Windows host; use locked uv commands for Python validation.
+## Authorization and Execution Notes
+
+- Do not create, rename, or switch branches, and do not use a worktree.
+- Independent subagent delegation was requested, but the host rejected allocation at its thread limit; the read-only inline review is complete and documented.
+- The final regression suite was run after the subprocess encoding fix: 498 passed, 83.78% coverage, no warnings.
+- Nix and GNU Make are unavailable on this Windows host; direct locked `uv` commands are documented for applicable validation.

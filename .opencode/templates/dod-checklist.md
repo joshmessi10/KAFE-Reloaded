@@ -44,13 +44,13 @@ Record status and evidence for each; these gates are pending until the coordinat
   - [ ] When to use / when NOT to use
   - [ ] Relationship with KAFE
   - [ ] References (papers, books)
-- [ ] Examples exist (`.kf` files under `docs/ejemplos/`)
+- [ ] Examples exist (`.kf` files under `docs/examples/`)
 - [ ] **Context saving verified** — ALL of these must exist:
   - [ ] `.opencode/knowledge/concepts/<name>.md`
   - [ ] `.opencode/history/YYYY/YYYY-MM.md`
   - [ ] `tests/KafeMACHINE/<category>/` (7+ fixtures: 5 valid + 2 error)
   - [ ] `.opencode/benchmarks/records.md` (5 scenarios)
-  - [ ] `docs/bibliotecas/machine.md` updated
+  - [ ] `docs/libraries/machine.md` updated
   - [ ] `.opencode/progress/roadmap.md` updated
 
 ## When Applicable (Session Closure)

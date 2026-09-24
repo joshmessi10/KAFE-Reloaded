@@ -2,77 +2,77 @@
 
 ## Mathematical Foundation
 
-Lasso (Least Absolute Shrinkage and Selection Operator) es una regresión lineal con **regularización L1** que puede eliminar features completamente.
+Lasso (Least Absolute Shrinkage and Selection Operator) is linear regression with **L1 regularization**, which can remove features entirely.
 
-### Objetivo
+### Objective
 
-Minimizar la función de coste:
+Minimize the objective function:
 
 $$J(\theta) = ||y - X\theta||^2 + \alpha||\theta||_1$$
 
-Donde:
-- $||y - X\theta||^2$ es el error de ajuste
-- $\alpha||\theta||_1$ es la penalización L1 (suma de valores absolutos)
-- $\alpha$ controla la fuerza de regularización
+where:
+- $||y - X\theta||^2$ is the fitting error.
+- $\alpha||\theta||_1$ is the L1 penalty (the sum of absolute coefficient values).
+- $\alpha$ controls the regularization strength.
 
-### Solución: Coordinate Descent
+### Solution: Coordinate Descent
 
-No hay solución cerrada para L1. Se usa **Coordinate Descent**:
+There is no closed-form solution for L1 regularization, so **Coordinate Descent** is used:
 
-Para cada coeficiente $\theta_j$:
+For each coefficient $\theta_j$:
 
 $$\theta_j \leftarrow S\left(\frac{X_j^T r_j}{X_j^T X_j}, \frac{\alpha}{X_j^T X_j}\right)$$
 
-Donde $S$ es el operador de **soft-thresholding**:
+where $S$ is the **soft-thresholding** operator:
 
 $$S(z, \lambda) = \text{sign}(z) \max(|z| - \lambda, 0)$$
 
-### Propiedades
+### Properties
 
-- **α = 0**: Equivale a OLS
-- **α → ∞**: Todos los coeficientes llegan a 0 exactamente
-- **Selección de features**: El soft-thresholding puede poner coeficientes en 0 exacto
-- **Sparse models**: Genera modelos con pocos features no nulos
+- **$\alpha = 0$**: Equivalent to OLS.
+- **$\alpha \to \infty$**: All coefficients become exactly zero.
+- **Feature selection**: Soft thresholding can set coefficients exactly to zero.
+- **Sparse models**: Produces models with few nonzero features.
 
-## Complejidad Computacional
+## Computational Complexity
 
-| Operación | Complejidad Temporal | Complejidad Espacial |
+| Operation | Time Complexity | Space Complexity |
 |-----------|---------------------|---------------------|
 | Training | $O(n \cdot m \cdot T)$ | $O(m^2)$ |
 | Prediction | $O(m)$ | $O(1)$ |
 
-Donde $n$ = muestras, $m$ = features, $T$ = iteraciones.
+Here, $n$ is the number of samples, $m$ is the number of features, and $T$ is the number of iterations.
 
-## Ventajas
+## Advantages
 
-1. **Selección de features** — elimina features irrelevantes (coef = 0)
-2. **Modelos sparse** — fáciles de interpretar
-3. **Reduce overfitting** — regularización L1
-4. **Maneja colineales** — selecciona una feature de cada grupo correlacionado
+1. **Feature selection** — removes irrelevant features by setting their coefficients to zero.
+2. **Sparse models** — easy to interpret.
+3. **Can reduce overfitting** — through L1 regularization.
+4. **Handles collinearity** — tends to select one feature from a correlated group.
 
-## Limitaciones
+## Limitations
 
-1. **Sin solución cerrada** — requiere iteraciones
-2. **Inestable con features correlacionadas** — selección arbitraria
-3. **Máximo n features** — no puede seleccionar más features que samples
-4. **Sensible a escala** — requiere normalización
+1. **No closed-form solution** — requires iterative optimization.
+2. **Unstable with correlated features** — feature selection may be arbitrary.
+3. **At most $n$ selected features** — it cannot select more features than samples.
+4. **Sensitive to scale** — feature normalization is required.
 
-## Cuando Usar
+## When to Use
 
-- Muchos features, pocos relevantes
-- Necesitas interpretabilidad (modelo sparse)
-- Selección de features automática
-- Overfitting con muchos features
+- Many features, only a few of which are relevant.
+- When interpretability and a sparse model are important.
+- Automatic feature selection.
+- Overfitting caused by many features.
 
-## Cuando NO Usar
+## When NOT to Use
 
-- Features altamente correlacionadas (usar Ridge)
-- Todos los features son relevantes
-- p >> n (más features que samples)
+- Highly correlated features (consider Ridge).
+- When all features are relevant.
+- $p \gg n$ (many more features than samples).
 
-## Relación con KAFE
+## Relationship with KAFE
 
-KAFE implementa LassoRegression con Coordinate Descent y soft-thresholding. El algoritmo itera sobre cada coeficiente, actualizando uno a la vez hasta convergencia.
+KAFE implements `LassoRegression` with Coordinate Descent and soft thresholding. The algorithm iterates over each coefficient, updating one at a time until convergence.
 
 ## References
 

@@ -45,5 +45,5 @@ KafeHF's wrapper is imported and registered by the visitor in the default enviro
 1. Create `src/lib/KafeXXX/functions.py` (mirror an existing library's `functions.py`).
 2. Import the module in `InterpreterVisitor.py` near the other `import lib.Kafe*` lines.
 3. Register it in `self.libraries` with its chosen KAFE `import` name; use lowercase for new names and preserve existing public-key casing such as `geshaDeep`.
-4. Add fixtures under `tests/KafeXXX/` and a `tests/test_KafeXXX.py` that parameterizes via `obtener_parametros(get_programs(...))`.
-5. Update docs (`docs/bibliotecas/`) and `.opencode/knowledge/` if the library introduces a concept.
+4. Add fixtures under `tests/KafeXXX/` and a `tests/test_KafeXXX.py` module that parameterizes via `get_parameters(get_programs(...))`.
+5. Update docs (`docs/libraries/`) and `.opencode/knowledge/` if the library introduces a concept.

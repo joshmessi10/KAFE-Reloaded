@@ -11,7 +11,7 @@ show("Hello, KAFE!");
 To run it, save it as `hello.kf` and run:
 
 ```bash
-python src/Kafe.py hola.kf
+python src/Kafe.py hello.kf
 ```
 
 ---

@@ -79,8 +79,8 @@ Guards: calling `transform`/`inverse_transform` before `fit` raises `RobustScale
 $$X_{scaled} = \frac{X - \text{median}}{IQR}$$
 
 Where:
-- $\text{median} = Q2$ (percentil 50)
-- $IQR = Q3 - Q1$ (percentil 75 − percentil 25)
+- $\text{median} = Q2$ (50th percentile)
+- $IQR = Q3 - Q1$ (75th percentile − 25th percentile)
 
 ### Why median/IQR instead of mean/std?
 

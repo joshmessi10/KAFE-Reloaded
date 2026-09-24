@@ -73,7 +73,7 @@ Guards: calling `transform`/`inverse_transform` before `fit` raises `StandardSca
 
 ## Implementation Location
 
-- `src/lib/KafeMACHINE/StandardScaler.py` (class `StandardScaler(BaseMachine)`).
+- `src/lib/KafeMACHINE/preprocessing/StandardScaler.py` (class `StandardScaler(BaseMachine)`).
 - Factory: `src/lib/KafeMACHINE/functions.py` — `standard_scaler()`.
 - Tests: `tests/KafeMACHINE/preprocessing/test_standard_scaler{,_list,_single_feature,_zero_variance}.kf` and error fixtures `test_ss_{empty,not_fitted,dim_mismatch}.error.kf`.
 

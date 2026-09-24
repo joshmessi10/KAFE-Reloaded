@@ -26,7 +26,7 @@ The Lead orchestrates this workflow, delegating each step to the responsible age
 
 1. Run Impact Analysis first (`/impact`) — mandatory before modifying grammar rules.
 2. Read `.opencode/knowledge/language-spec.md` and `src/Kafe_Grammar.g4` / `src/Kafe_Lexer.g4`.
-3. Edit the grammar. Keep `docs/especificacion/` (EBNF, operational semantics, operator precedence) in sync.
+3. Edit the grammar. Keep `docs/specification/` (EBNF, operational semantics, and operator precedence) in sync.
 4. Regenerate the parser (required — generated files are gitignored):
    ```bash
    cd src && make antlr
@@ -43,7 +43,7 @@ The Lead orchestrates this workflow, delegating each step to the responsible age
 
 ## Required Documentation Updates
 
-- `docs/especificacion/` (EBNF and semantics).
+- `docs/specification/` (EBNF and semantics).
 - `.opencode/knowledge/language-spec.md` (keywords/types).
 - History record.
 

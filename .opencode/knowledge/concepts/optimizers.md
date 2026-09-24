@@ -1,260 +1,244 @@
-# Gradient Descent Optimizers (Optimizadores de Descenso de Gradiente)
+# Gradient Descent Optimizers
 
 ## Category
 
-Deep Learning — Componente de red neuronal
+Deep learning — neural-network component
 
 ## Description
 
-Los optimizadores determinan **cómo** se actualizan los pesos de la red neuronal basándose en los gradientes calculados por la retropropagación. Un buen optimizador puede significar la diferencia entre un modelo que converge y uno que diverge o se atasca en mínimos locales subóptimos.
+Optimizers define **how** model parameters are updated using gradients from backpropagation. The choice of optimizer can affect whether training converges, diverges, or stalls at a suboptimal point.
 
-KafeGESHA implementa 4 optimizadores desde cero, progresando en sofisticación:
+KafeGESHA implements four optimizers:
 
-| Optimizer | Tipo | Fórmula de actualización |
+| Optimizer | Type | Update rule |
 |---|---|---|
-| SGD | Gradiente descendente básico | $\theta \leftarrow \theta - \eta \cdot g$ |
-| RMSprop | Tasa adaptativa | $\theta \leftarrow \theta - \eta \cdot \frac{g}{\sqrt{v} + \epsilon}$ |
-| Adam | Momentum + tasa adaptativa | $\theta \leftarrow \theta - \eta \cdot \frac{\hat{m}}{\sqrt{\hat{v}} + \epsilon}$ |
-| AdamW | Adam + weight decay | $\theta \leftarrow \theta - \eta \cdot \frac{\hat{m}}{\sqrt{\hat{v}} + \epsilon} - \eta \lambda \theta$ |
+| SGD | Basic gradient descent | $\theta \leftarrow \theta - \eta \cdot g$ |
+| RMSprop | Adaptive learning rate | $\theta \leftarrow \theta - \eta \cdot \frac{g}{\sqrt{v} + \epsilon}$ |
+| Adam | Momentum and adaptive learning rate | $\theta \leftarrow \theta - \eta \cdot \frac{\hat{m}}{\sqrt{\hat{v}} + \epsilon}$ |
+| AdamW | Adam with weight decay | $\theta \leftarrow \theta - \eta \cdot \frac{\hat{m}}{\sqrt{\hat{v}} + \epsilon} - \eta \lambda \theta$ |
 
 ## Mathematical Foundation
 
 ### SGD (Stochastic Gradient Descent)
 
-El optimizador más simple. Actualiza cada parámetro en la dirección opuesta al gradiente:
+The simplest optimizer. It updates each parameter in the direction opposite to its gradient:
 
 $$\theta_{t+1} = \theta_t - \eta \cdot g_t$$
 
-Donde:
-- $\theta_t$ es el parámetro en el paso $t$
-- $\eta$ es la tasa de aprendizaje (learning rate)
-- $g_t = \frac{\partial L}{\partial \theta}$ es el gradiente
+Where:
+- $\theta_t$ is the parameter at step $t$.
+- $\eta$ is the learning rate.
+- $g_t = \frac{\partial L}{\partial \theta}$ is the gradient.
 
-**Propiedades**:
-- Simple, eficiente, determinista (sin memoria adicional)
-- Sensible a la tasa de aprendizaje: demasiado grande → diverge; demasiado pequeña → lento
-- Oscila en direcciones de alta curvatura
-- Puede atascarse en mínimos locales o saddle points
+**Properties**:
+- Simple, efficient, and stateless.
+- Sensitive to learning rate: too large can diverge; too small can be slow.
+- Can oscillate in directions with high curvature.
+- Can stall at local minima or saddle points.
 
 ### RMSprop (Root Mean Square Propagation)
 
-Mantiene una media móvil exponencial de los gradientes al cuadrado para adaptar la tasa de aprendizaje por parámetro:
+Maintains an exponential moving average of squared gradients to adapt the learning rate per parameter:
 
 $$v_t = \rho \cdot v_{t-1} + (1 - \rho) \cdot g_t^2$$
 
 $$\theta_{t+1} = \theta_t - \eta \cdot \frac{g_t}{\sqrt{v_t} + \epsilon}$$
 
-Donde:
-- $v_t$ es el "cache" (promedio móvil de $g^2$)
-- $\rho$ es el factor de decaimiento (típicamente 0.9)
-- $\epsilon$ previene división por cero (típicamente $10^{-8}$)
+Where:
+- $v_t$ is the cache (moving average of $g^2$).
+- $\rho$ is the decay factor (typically 0.9).
+- $\epsilon$ prevents division by zero (typically $10^{-8}$).
 
-**Intuición**: Si un parámetro tiene gradientes consistentemente grandes, $v_t$ crece, y la actualización se hace más pequeña. Si los gradientes son pequeños y variables, $v_t$ es pequeño, y la actualización se hace más grande.
+**Intuition**: If a parameter consistently has large gradients, $v_t$ grows and its updates become smaller. If its gradients are small and variable, $v_t$ stays smaller and its updates become larger.
 
-**Propiedades**:
-- Adapta la tasa de aprendizaje por dimensión
-- Funciona bien en problemas con curvaturas diferentes por dimensión
-- Requiere un hiperparámetro adicional ($\rho$)
+**Properties**:
+- Adapts the learning rate per dimension.
+- Works well when curvature differs across dimensions.
+- Requires the additional hyperparameter $\rho$.
 
 ### Adam (Adaptive Moment Estimation)
 
-Combina las ideas de **momentum** (promedio móvil de gradientes) y **RMSprop** (promedio móvil de gradientes al cuadrado):
+Combines **momentum** (a moving average of gradients) and **RMSprop** (a moving average of squared gradients).
 
-**Primer momento** (media móvil de gradientes — momentum):
+**First moment** (moving average of gradients):
 $$m_t = \beta_1 \cdot m_{t-1} + (1 - \beta_1) \cdot g_t$$
 
-**Segundo momento** (media móvil de $g^2$ — adaptativo):
+**Second moment** (moving average of $g^2$):
 $$v_t = \beta_2 \cdot v_{t-1} + (1 - \beta_2) \cdot g_t^2$$
 
-**Corrección de sesgo** (por inicializar en ceros):
+**Bias correction** (for zero initialization):
 $$\hat{m}_t = \frac{m_t}{1 - \beta_1^t}, \quad \hat{v}_t = \frac{v_t}{1 - \beta_2^t}$$
 
-**Actualización**:
+**Update**:
 $$\theta_{t+1} = \theta_t - \eta \cdot \frac{\hat{m}_t}{\sqrt{\hat{v}_t} + \epsilon}$$
 
-**Hiperparámetros típicos**: $\beta_1 = 0.9$, $\beta_2 = 0.999$, $\epsilon = 10^{-8}$
+**Typical hyperparameters**: $\beta_1 = 0.9$, $\beta_2 = 0.999$, and $\epsilon = 10^{-8}$.
 
-**Propiedades**:
-- El optimizador más popular para deep learning
-- Combina las ventajas de momentum y adaptación
-- Las correcciones de sesgo compensan la inicialización en ceros de $m_0$ y $v_0$
-- Robusto a la elección de learning rate (relativamente)
+**Properties**:
+- Widely used for deep learning.
+- Combines momentum with adaptive updates.
+- Bias correction compensates for initializing $m_0$ and $v_0$ to zero.
+- Relatively robust to the choice of learning rate.
 
 ### AdamW (Adam with Weight Decay)
 
-Adam estándar con **weight decay** explícito (decoupled del gradient update):
+Adam with explicit, decoupled weight decay:
 
 $$\theta_{t+1} = \theta_t - \eta \cdot \frac{\hat{m}_t}{\sqrt{\hat{v}_t} + \epsilon} - \eta \cdot \lambda \cdot \theta_t$$
 
-Donde $\lambda$ es el coeficiente de weight decay.
+Here $\lambda$ is the weight-decay coefficient.
 
-**Diferencia con L2 regularization**:
-- L2 agrega $\lambda \cdot \theta$ al gradiente: $g' = g + \lambda \cdot \theta$. Esto se ve afectado por la adaptación de Adam.
-- AdamW aplica weight decay **después** de la actualización de Adam, sin escalar por $\sqrt{\hat{v}_t}$. Esto es más efectivo para regularización.
+**Difference from L2 regularization**:
+- L2 adds $\lambda \cdot \theta$ to the gradient: $g' = g + \lambda \cdot \theta$. Adam's adaptive scaling also affects this term.
+- AdamW applies weight decay after the Adam update, without scaling it by $\sqrt{\hat{v}_t}$.
 
-**Propiedades**:
-- Generalmente supera a Adam en tareas de generalización
-- El weight decay actúa como regularización implícita
-- Más estable en entrenamientos largos
+**Properties**:
+- Often generalizes better than Adam on some tasks.
+- Weight decay acts as implicit regularization.
+- Can be more stable during long training runs.
 
 ## Step-by-Step Algorithm
 
 ### SGD
 
-1. Recibir parámetros $\theta$ y gradientes $g$.
-2. Para cada parámetro $i$: $\theta_i \leftarrow \theta_i - \eta \cdot g_i$.
-3. Retornar nuevos parámetros.
+1. Receive parameters $\theta$ and gradients $g$.
+2. For each parameter $i$, compute $\theta_i \leftarrow \theta_i - \eta \cdot g_i$.
+3. Return the updated parameter list.
 
 ### RMSprop
 
-4. Inicializar cache $v = 0$ si es la primera vez.
-5. Para cada parámetro $i$:
-   a. Actualizar cache: $v_i \leftarrow \rho \cdot v_i + (1 - \rho) \cdot g_i^2$.
-   b. Calcular actualización: $\Delta_i = \eta \cdot \frac{g_i}{\sqrt{v_i} + \epsilon}$.
-   c. Actualizar: $\theta_i \leftarrow \theta_i - \Delta_i$.
-6. Retornar nuevos parámetros.
+4. Initialize cache $v = 0$ on the first call.
+5. For each parameter $i$:
+   - Update the cache: $v_i \leftarrow \rho \cdot v_i + (1 - \rho) \cdot g_i^2$.
+   - Compute the update: $\Delta_i = \eta \cdot \frac{g_i}{\sqrt{v_i} + \epsilon}$.
+   - Update the parameter: $\theta_i \leftarrow \theta_i - \Delta_i$.
+6. Return the updated parameter list.
 
 ### Adam
 
-7. Inicializar momentos $m = 0$, $v = 0$, contador $t = 0$ si es la primera vez.
-8. Incrementar $t \leftarrow t + 1$.
-9. Para cada parámetro $i$:
-   a. Actualizar primer momento: $m_i \leftarrow \beta_1 \cdot m_i + (1 - \beta_1) \cdot g_i$.
-   b. Actualizar segundo momento: $v_i \leftarrow \beta_2 \cdot v_i + (1 - \beta_2) \cdot g_i^2$.
-   c. Corregir sesgo: $\hat{m}_i = \frac{m_i}{1 - \beta_1^t}$, $\hat{v}_i = \frac{v_i}{1 - \beta_2^t}$.
-   d. Calcular actualización: $\Delta_i = \eta \cdot \frac{\hat{m}_i}{\sqrt{\hat{v}_i} + \epsilon}$.
-   e. Actualizar: $\theta_i \leftarrow \theta_i - \Delta_i$.
-10. Retornar nuevos parámetros.
+7. On the first call, initialize moments $m = 0$, $v = 0$, and step counter $t = 0$.
+8. Increment $t \leftarrow t + 1$.
+9. For each parameter $i$:
+   - Update first moment: $m_i \leftarrow \beta_1 \cdot m_i + (1 - \beta_1) \cdot g_i$.
+   - Update second moment: $v_i \leftarrow \beta_2 \cdot v_i + (1 - \beta_2) \cdot g_i^2$.
+   - Correct the bias: $\hat{m}_i = \frac{m_i}{1 - \beta_1^t}$, $\hat{v}_i = \frac{v_i}{1 - \beta_2^t}$.
+   - Compute the update: $\Delta_i = \eta \cdot \frac{\hat{m}_i}{\sqrt{\hat{v}_i} + \epsilon}$.
+   - Update the parameter: $\theta_i \leftarrow \theta_i - \Delta_i$.
+10. Return the updated parameter list.
 
 ### AdamW
 
-11. Ejecutar pasos 7-10 de Adam → obtener $\theta_{\text{adam}}$.
-12. Para cada parámetro $i$:
-    a. Aplicar weight decay: $\theta_i \leftarrow \theta_{\text{adam}, i} - \eta \cdot \lambda \cdot \theta_{\text{adam}, i}$.
-13. Retornar nuevos parámetros.
+11. Run the Adam steps to obtain updated parameters $\theta_{adam}$.
+12. For each parameter $i$, apply weight decay: $\theta_i \leftarrow \theta_{adam,i} - \eta \cdot \lambda \cdot \theta_{adam,i}$.
+13. Return the updated parameter list.
 
 ## Motivation
 
-Sin optimizadores sofisticados, las redes neuronales profundas son extremadamente difíciles de entrenar. SGD puro oscila y converge lentamente. RMSprop y Adam resuelven esto adaptando la tasa de aprendizaje por parámetro, making el entrenamiento más robusto y rápido. AdamW mejora la generalización al aplicar weight decay correctamente. KafeGESHA implementa cada uno desde cero para que el estudiante vea exactamente qué estado mantiene cada optimizador y por qué las correcciones de sesgo son necesarias.
+Deep networks can be difficult to train with basic gradient descent alone. SGD can oscillate or converge slowly. RMSprop and Adam adapt updates by parameter, and AdamW applies decoupled weight decay. KafeGESHA implements each optimizer directly so learners can inspect its internal state and bias correction.
 
 ## Advantages
 
-- **Progresión educativa**: Los 4 optimizadores muestran una evolución clara: SGD → RMSprop → Adam → AdamW.
-- **Estado interno explícito**: Cada optimizador almacena su estado ($m$, $v$, cache) como atributos, making visible lo que otros frameworks ocultan.
-- **Corrección de sesgo en Adam**: Implementada correctamente, previene la inicialización lenta en los primeros pasos.
-- **Weight decay decoupled**: AdamW aplica weight decay correctamente, no como regularización L2.
+- **Educational progression**: The four optimizers show a progression from SGD to RMSprop, Adam, and AdamW.
+- **Explicit internal state**: Each stateful optimizer stores values such as $m$, $v$, or the RMSprop cache as attributes.
+- **Adam bias correction**: Correctly compensates for zero initialization during early steps.
+- **Decoupled weight decay**: AdamW applies weight decay separately from the adaptive gradient update.
 
 ## Limitations
 
-- **SGD sin momentum**: Oscila en direcciones de alta curvatura; sin momentum, converge lentamente.
-- **Hiperparámetros**: RMSprop, Adam y AdamW requieren ajustar $\rho/\beta$, $\epsilon$, y learning rate.
-- **Memoria**: Adam y AdamW mantienen 2 momentos por parámetro (duplica la memoria vs SGD).
-- **Adam puede generalizar peor que SGD**: En algunos problemas, SGD con momentum generaliza mejor que Adam.
+- **SGD without momentum**: Can oscillate in high-curvature directions and converge slowly.
+- **Hyperparameters**: RMSprop, Adam, and AdamW require choices for decay parameters, $\epsilon$, and the learning rate.
+- **Memory**: Adam and AdamW store two moments per parameter, using roughly twice the optimizer state of SGD.
+- **Generalization trade-offs**: On some problems, SGD with momentum may generalize better than Adam.
 
 ## When to Use
 
-- **SGD**: Problemas simples, prototipado rápido, cuando se quiere entender el efecto del learning rate.
-- **RMSprop**: RNNs, problemas con gradientes de magnitudes muy diferentes por dimensión.
-- **Adam**: El estándar para la mayoría de problemas de deep learning; buen punto de partida.
-- **AdamW**: Cuando se necesita regularización efectiva (modelos grandes, poca data).
+- **SGD**: Simple problems, quick prototyping, or studying the effect of learning rate.
+- **RMSprop**: RNNs or problems where gradient magnitudes differ substantially by dimension.
+- **Adam**: A general starting point for many deep-learning problems.
+- **AdamW**: When decoupled weight decay is desired, such as with large models or limited data.
 
 ## When NOT to Use
 
-- **SGD para redes profundas**: Sin momentum, el entrenamiento puede ser prohibitivamente lento.
-- **Adam para problemas convexos simples**: Puede ser sobre-ingeniería; SGD con learning rate decay suele ser suficiente.
-- **AdamW sin weight decay**: Si $\lambda = 0$, es idéntico a Adam.
+- **SGD for deep networks**: Without momentum, training may be prohibitively slow.
+- **Adam for simple convex problems**: It may be unnecessary; SGD with learning-rate decay may suffice.
+- **AdamW without weight decay**: With $\lambda = 0$, it is equivalent to Adam.
 
 ## Dependencies
 
-- `lib.KafeMATH.functions` — `pow_()` (potencia), `sqrt()` (raíz cuadrada).
+- `lib.KafeMATH.functions` — `pow_()` and `sqrt()`.
 
 ## Related Concepts
 
-- `dense-layer.md` — Las capas Dense aplican las actualizaciones de pesos producidas por optimizadores.
-- `loss-functions.md` — Las funciones de pérdida generan los gradientes que optimizadores consumen.
-- `activation-functions.md` — Las derivadas de activación contribuyen a los gradientes.
+- `dense-layer.md` — Dense layers apply parameter updates during backpropagation.
+- `loss-functions.md` — Loss functions generate the gradients used by training.
+- `activation-functions.md` — Activation derivatives contribute to gradients.
 
 ## Relationship with KAFE
 
-### Implementación en `Optimizer.py`
+### Implementation
 
-La clase abstracta `Optimizer` define:
+The abstract `Optimizer` interface defines `step(params, grads)` and returns a parameter list.
 
-```python
-class Optimizer:
-    def step(self, params, grads) → list  # Retorna nuevos parámetros
-```
-
-**Estado de cada optimizador**:
-
-| Optimizer | Estado | Descripción |
+| Optimizer | State | Description |
 |---|---|---|
-| `SGD` | — | Sin memoria (estadoless) |
-| `RMSprop` | `self.cache` | Media móvil de $g^2$ por parámetro |
-| `Adam` | `self.m`, `self.v`, `self.t$ | Primer momento, segundo momento, contador de pasos |
-| `AdamW` | Hereda de Adam + `self.weight_decay` | Weight decay $\lambda$ |
+| `SGD` | — | No stored state |
+| `RMSprop` | `self.cache` | Per-parameter moving average of $g^2$ |
+| `Adam` | `self.m`, `self.v`, `self.t` | First moment, second moment, and step counter |
+| `AdamW` | Inherits Adam state and adds `self.weight_decay` | Weight-decay coefficient $\lambda$ |
 
-### Decisión de diseño: Optimizers no mutan parámetros in-place
+### Design: `step()` returns new parameters
 
-Los optimizadores en KafeGESHA **retornan** nuevos parámetros en lugar de modificar los existentes. Esto es más seguro y educativo (el estudiante puede inspeccionar antes y después). Sin embargo, la capa Dense sí muta sus pesos internos en `backward()` usando `learning_rate` directamente.
+The optimizer implementations return a new parameter list instead of mutating the input list. This makes before-and-after values inspectable.
 
-### Decisión de diseño: `step()` recibe vectores planos
+### Training integration status
 
-Los optimizadores operan sobre listas planas de parámetros y gradientes, no sobre matrices. Esto simplifica la implementación pero significa que la capa Dense debe "aplanar" sus pesos si quisiera usar optimizadores externos. Actualmente, Dense aplica SGD internamente en `backward()`.
+`Sequential` and `Functional` currently read the compiled optimizer's learning rate and pass it to layer backpropagation. `Dense.backward()` updates its own weights with that learning rate; the model training path does not call the optimizer's `step()` method. Thus, selecting an optimizer name configures the accepted learning-rate value, but the implemented training update is inline SGD. The standalone `step()` implementations can be called directly, but their RMSprop, Adam, and AdamW stateful update rules are not currently applied by model training.
 
-### Decisión de diseño: AdamW hereda de Adam
+### Optimizer name resolution
 
-`AdamW` extiende `Adam` y agrega weight decay después de la actualización de Adam. Esto es correcto: el weight decay se aplica **después** de la corrección de momentum, no antes. La diferencia es sutil pero importante para la efectividad de la regularización.
+The model accepts these names in `compile()`:
 
-### Integración con GeshaDeep
-
-En `GeshaDeep.compile()`, se mapean strings a objetos optimizer:
-
-```python
-"sgd" → SGD(lr=0.01)
-"rmsprop" → RMSprop(lr=0.001)
-"adam" → Adam(lr=0.001)
-"adamw" → AdamW(lr=0.001)
+```text
+"sgd"     -> SGD(lr=0.01)
+"rmsprop" -> RMSprop(lr=0.001)
+"adam"    -> Adam(lr=0.001)
+"adamw"   -> AdamW(lr=0.001)
 ```
 
-El learning rate se puede ajustar posteriormente con `set_lr(new_lr)`.
+The learning rate can be changed later with `geshaDeep.set_lr(model, new_lr)`.
 
 ## Usage Examples
 
 ```kafe
-import gesha;
+import geshaDeep;
 
-GESHA modelo = gesha.deep("classification");
-modelo.add(gesha.dense(32, activation: "relu", input_shape: [4]));
-modelo.add(gesha.dense(3, activation: "softmax"));
+GESHA layer = geshaDeep.create_dense(3, "softmax", [4], 0.0);
+GESHA model = geshaDeep.sequential([layer]);
 
--- SGD: el más simple, good para educación
-modelo.compile(optimizer: "sgd", loss: "categorical_crossentropy");
+-- Compile with an accepted optimizer name and loss
+geshaDeep.compile(model, "sgd", "categorical_crossentropy", []);
 
--- Adam: el estándar, buen default
-modelo.compile(optimizer: "adam", loss: "categorical_crossentropy");
-
--- AdamW: con regularización implícita
-modelo.compile(optimizer: "adamw", loss: "categorical_crossentropy");
-
--- Ajustar learning rate dinámicamente
-modelo.set_lr(0.0001);
+-- Update the compiled learning rate
+geshaDeep.set_lr(model, 0.0001);
 ```
 
 ## Implementation Location
 
-- `src/lib/KafeGESHA/Optimizer.py` — clases `SGD`, `RMSprop`, `Adam`, `AdamW`
-- `src/lib/KafeGESHA/GeshaDeep.py` — mapeo de strings a optimizers en `compile()` y `set_lr()`
+- `src/lib/KafeGESHA/optimizers/optimizer.py` — `Optimizer` interface.
+- `src/lib/KafeGESHA/optimizers/sgd.py` — `SGD` and `RMSprop`.
+- `src/lib/KafeGESHA/optimizers/adam.py` — `Adam` and `AdamW`.
+- `src/lib/KafeGESHA/core/model.py` — resolves optimizer names during `compile()`.
+- `src/lib/KafeGESHA/models/sequential.py` and `models/functional.py` — model training passes the configured learning rate to layers.
 
 ## Public API
 
-- Nombres en `compile()`: `"sgd"`, `"rmsprop"`, `"adam"`, `"adamw"`
-- Método: `step(params, grads)` → nuevos parámetros
-- Método (en GeshaDeep): `set_lr(new_lr)` → ajusta learning rate
+- Optimizer names accepted by `compile()`: `"sgd"`, `"rmsprop"`, `"adam"`, and `"adamw"`.
+- Optimizer method: `step(params, grads)` returns an updated parameter list.
+- Interpreter helper: `geshaDeep.set_lr(model, new_lr)` updates the configured learning rate.
 
 ## References
 
-- Robbins, H., & Monro, S. (1951). A stochastic approximation method. The Annals of Mathematical Statistics, 22(3), 400-407.
+- Robbins, H., & Monro, S. (1951). A stochastic approximation method. *The Annals of Mathematical Statistics*, 22(3), 400-407.
 - Hinton, G. (2012). Lecture 6a: Overview of mini-batch gradient descent. Coursera/Neural Networks.
 - Kingma, D. P., & Ba, J. (2014). Adam: A method for stochastic optimization. arXiv:1412.6980.
 - Loshchilov, I., & Hutter, F. (2017). Decoupled weight decay regularization. arXiv:1711.05101.

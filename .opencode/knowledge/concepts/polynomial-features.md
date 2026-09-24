@@ -2,7 +2,7 @@
 
 ## Name
 
-PolynomialFeatures — Generación de Features Polinomiales
+PolynomialFeatures — Polynomial Feature Generation
 
 ## Category
 
@@ -10,25 +10,25 @@ ML preprocessing
 
 ## Description
 
-PolynomialFeatures transforma un conjunto de $d$ features en todas las combinaciones polinomiales hasta un grado especificado $n$. Dado un vector $[x_1, x_2]$ y grado 2, genera $[1, x_1, x_2, x_1^2, x_1 x_2, x_2^2]$. Esto permite que un modelo lineal capture relaciones no lineales entre las variables de entrada.
+`PolynomialFeatures` transforms a set of $d$ features into all polynomial combinations up to a specified degree $n$. For example, given $[x_1, x_2]$ and degree 2, it generates $[1, x_1, x_2, x_1^2, x_1 x_2, x_2^2]$. This allows a linear model to capture nonlinear relationships between input variables.
 
-El término de sesgo (bias) es una columna de 1s que representa el intercepto del modelo.
+The bias term is a column of ones that represents the model intercept.
 
 ## Mathematical Foundation
 
-Para $d$ features de entrada y grado $n$, el número total de features de salida es:
+For $d$ input features and degree $n$, the total number of output features is:
 
 $$\text{n\_features\_out} = \binom{d + n}{n} = \frac{(d + n)!}{d! \cdot n!}$$
 
-Incluyendo el término de sesgo (grado 0). Sin sesgo, se resta 1.
+This count includes the bias term (degree 0). Subtract 1 when bias is excluded.
 
-Cada feature de salida es el producto de las entradas originales elevadas a potencias no negativas $p_1, p_2, \ldots, p_d$ donde:
+Each output feature is the product of the original inputs raised to nonnegative powers $p_1, p_2, \ldots, p_d$, where:
 
 $$p_1 + p_2 + \cdots + p_d \leq n$$
 
-**Ejemplo** con $[x_1, x_2]$ y grado 2:
+**Example** for $[x_1, x_2]$ and degree 2:
 
-| Combinación | Potencias | Valor |
+| Combination | Powers | Value |
 |-------------|-----------|-------|
 | Bias | $(0,0)$ | $1$ |
 | $x_1$ | $(1,0)$ | $x_1$ |
@@ -37,14 +37,14 @@ $$p_1 + p_2 + \cdots + p_d \leq n$$
 | $x_1 x_2$ | $(1,1)$ | $x_1 \cdot x_2$ |
 | $x_2^2$ | $(0,2)$ | $x_2^2$ |
 
-**Complejidad**:
+**Complexity**:
 
-- **Tiempo de transformación**: $O(n_{samples} \cdot \binom{d+n}{n} \cdot d)$
-- **Espacio**: $O(n_{samples} \cdot \binom{d+n}{n})$
+- **Transformation time**: $O(n_{samples} \cdot \binom{d+n}{n} \cdot d)$.
+- **Space**: $O(n_{samples} \cdot \binom{d+n}{n})$.
 
-**Número de combinaciones**:
+**Number of combinations**:
 
-| d (features) | n (grado) | Con bias | Sin bias |
+| d (features) | n (degree) | With bias | Without bias |
 |---------------|-----------|----------|----------|
 | 2 | 2 | 6 | 5 |
 | 3 | 2 | 10 | 9 |
@@ -54,43 +54,43 @@ $$p_1 + p_2 + \cdots + p_d \leq n$$
 
 ## Step-by-Step Algorithm
 
-1. **Validar entrada**: Verificar que $d > 0$ y $n \geq 1$.
-2. **Generar combinaciones de potencias**: Para cada combinación de potencias $(p_1, \ldots, p_d)$ donde $\sum p_i \leq n$, crear un feature resultante.
-3. **Calcular dimensiones de salida**: Contar combinaciones, restar 1 si se excluye bias.
-4. **Transformar cada muestra**: Para cada fila del dataset, calcular el producto de las entradas elevadas a las potencias correspondientes.
-5. **Retornar resultado**: Matriz de $n_{samples} \times n_{features\_out}$.
+1. **Validate input**: Check that $d > 0$ and $n \geq 1$.
+2. **Generate power combinations**: For every combination $(p_1, \ldots, p_d)$ where $\sum p_i \leq n$, create one output feature.
+3. **Calculate output dimensions**: Count the combinations and subtract 1 if bias is excluded.
+4. **Transform each sample**: For every dataset row, multiply the inputs raised to the corresponding powers.
+5. **Return the result**: A matrix with shape $n_{samples} \times n_{features\_out}$.
 
 ## Motivation
 
-Muchos algoritmos de ML (regresión lineal, SVM lineal) solo pueden capturar relaciones lineales entre features y target. PolynomialFeatures permite que estos modelos capturen interacciones y no linealidades al crear features polinomiales. Es una técnica fundamental de feature engineering.
+Many ML algorithms, such as linear regression and linear SVMs, can capture only linear relationships between features and the target. `PolynomialFeatures` lets these models capture interactions and nonlinearities by creating polynomial features. It is a fundamental feature-engineering technique.
 
 ## Advantages
 
-- Captura no linealidad: Permite que modelos lineales ajusten relaciones cuadráticas, cúbicas, etc.
-- Flexible: El grado $n$ controla la complejidad del polinomio.
-- Combinación con regularización: Usado junto con Ridge/Lasso puede manejar la dimensionalidad expandida.
-- Simple de entender: Cada feature de salida es una combinación polinomial clara.
+- Captures nonlinearities: lets linear models fit quadratic, cubic, and higher-order relationships.
+- Flexible: degree $n$ controls polynomial complexity.
+- Works with regularization: Ridge or Lasso can help manage the expanded feature space.
+- Easy to understand: each output feature is a clear polynomial combination.
 
 ## Limitations
 
-- **Maldición de la dimensionalidad**: El número de features crece exponencialmente con el grado. Para $d=10$ y $n=2$, se generan 66 features.
-- **Overfitting**: Features polinomiales de alto grado pueden memorizar ruido en los datos.
-- **Escalado requerido**: Los valores polinomiales pueden tener magnitudes muy diferentes; requiere StandardScaler.
-- **No invertible**: No existe inverse_transform (la transformación pierde información de la estructura original).
-- **Multicolinealidad**: Las features polinomiales son altamente correlacionadas entre sí.
+- **Curse of dimensionality**: The number of features grows rapidly with degree. For $d=10$ and $n=2$, 66 features are generated.
+- **Overfitting**: High-degree polynomial features can memorize noise.
+- **Scaling may be required**: Polynomial values can have very different magnitudes; consider `StandardScaler`.
+- **Not invertible**: There is no `inverse_transform` because the transformation loses the original feature structure.
+- **Multicollinearity**: Polynomial features can be highly correlated.
 
 ## When to Use
 
-- Cuando la relación features→target es no lineal y se usa un modelo lineal.
-- Cuando se sospecha que existen interacciones entre features.
-- Para datasets pequeños/medianos donde la dimensionalidad expandida es manejable.
-- En combinación con regularización (Ridge, Lasso, ElasticNet) para controlar overfitting.
+- When the feature-to-target relationship is nonlinear but a linear model is used.
+- When interactions between features are expected.
+- For small or medium-sized datasets where the expanded dimensionality is manageable.
+- With regularization (Ridge, Lasso, or ElasticNet) to control overfitting.
 
 ## When NOT to Use
 
-- Con modelos que ya capturan no linealidad (Random Forest, SVM con kernel RBF, redes neuronales).
-- Con datasets de alta dimensionalidad (miles de features) — la explosión combinatoria es inmanejable.
-- Cuando el grado es alto (>3) en datasets grandes — riesgo de overfitting extremo.
+- With models that already capture nonlinearities, such as random forests, RBF-kernel SVMs, and neural networks.
+- With high-dimensional datasets where combinatorial growth becomes unmanageable.
+- With high degree (>3) on large datasets because of the high risk of overfitting.
 
 ## Dependencies
 
@@ -100,40 +100,40 @@ Muchos algoritmos de ML (regresión lineal, SVM lineal) solo pueden capturar rel
 
 ## Related Concepts
 
-- LinearRegression, RidgeRegression, LassoRegression — modelos que combinan bien con PolynomialFeatures
-- StandardScaler — se recomienda escalar después de generar features polinomiales
-- Feature engineering — técnica fundamental de preprocesamiento
+- LinearRegression, RidgeRegression, and LassoRegression — models that work well with PolynomialFeatures.
+- StandardScaler — scaling is recommended after generating polynomial features.
+- Feature engineering — a fundamental preprocessing technique.
 
 ## Relationship with KAFE
 
-PolynomialFeatures se implementó como transformador KafeMACHINE siguiendo el contrato de BaseMachine:
+`PolynomialFeatures` is implemented as a KafeMACHINE transformer that follows the `BaseMachine` contract:
 
-- `fit(data)` calcula las dimensiones de salida y genera nombres de features.
-- `transform(data)` aplica la expansión polinomial.
-- `fit_transform(data)` combina ambos pasos.
-- Soporte nativo para PARDOS DataFrames (preserve columnas).
-- `inverse_transform` lanza error intencionalmente (transformación no invertible).
+- `fit(data)` calculates output dimensions and generates feature names.
+- `transform(data)` applies the polynomial expansion.
+- `fit_transform(data)` combines both steps.
+- Native support for PARDOS DataFrames preserves column labels.
+- `inverse_transform` intentionally raises an error because the transformation is not invertible.
 
-La generación de combinaciones usa recursión para enumerar todas las combinaciones de potencias.
+Combinations are generated recursively to enumerate every combination of powers.
 
 ## Usage Examples
 
 ```kafe
 import machine;
 
--- Crear PolynomialFeatures de grado 2
-MACHINE pf = machine.polynomial_features(2, true);
+-- Create PolynomialFeatures with degree 2
+MACHINE pf = machine.polynomial_features(2, True);
 
--- Datos de entrada: 2 features
+-- Input data: 2 features
 List[List[FLOAT]] X = [[1.0, 2.0], [3.0, 4.0], [5.0, 6.0]];
 
--- Transformar
+-- Transform
 List[List[FLOAT]] X_poly = pf.fit_transform(X);
--- Resultado: [[1.0, 1.0, 2.0, 1.0, 2.0, 4.0],
+-- Result: [[1.0, 1.0, 2.0, 1.0, 2.0, 4.0],
 --              [1.0, 3.0, 4.0, 9.0, 12.0, 16.0],
 --              [1.0, 5.0, 6.0, 25.0, 30.0, 36.0]]
 
--- Combinar con regresión lineal
+-- Combine with linear regression
 MACHINE lr = machine.linear_regression();
 lr.fit(X_poly, y);
 ```
@@ -149,8 +149,8 @@ lr.fit(X_poly, y);
 MACHINE pf = machine.polynomial_features(degree, include_bias);
 
 -- Parameters:
--- degree: INT (default 2) — máximo grado del polinomio
--- include_bias: BOOL (default true) — incluir columna de sesgo (1s)
+-- degree: INT (default 2) — maximum polynomial degree
+-- include_bias: BOOL (default True) — include a bias column (ones)
 
 -- Methods:
 pf.fit(data)           -> MACHINE

@@ -60,7 +60,7 @@ show(preds);
 
 ## Implementation Location
 
-- `src/lib/KafeMACHINE/DecisionTree.py` — DecisionTreeClassifier class
+- `src/lib/KafeMACHINE/tree/DecisionTree.py` — DecisionTreeClassifier class
 
 ## Public API
 

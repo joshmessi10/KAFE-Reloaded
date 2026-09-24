@@ -30,11 +30,11 @@ Source of Truth precedence: **ADRs > Knowledge Layer > History > Progress**.
 
 - Significant changes must be traceable through ADRs, history, and the session log
 - AGENTS.md stays lean; detail lives in `.opencode/knowledge/`
-- Session memory files and bitácora must be updated on close
+- Session memory files and the session log must be updated when closing a session
 
 ---
 
-## ADR-0002: Roles como Subagentes OpenCode (SUPERSEDED)
+## ADR-0002: OpenCode Roles as Subagents (SUPERSEDED)
 
 - **Status**: superseded by ADR-0005
 - **Date**: 2026-08-03
@@ -42,15 +42,15 @@ Source of Truth precedence: **ADRs > Knowledge Layer > History > Progress**.
 
 ### Context (Original)
 
-AGENTS.md define cinco roles de ingeniería que originalmente fueron diferidos como subagentes porque el volumen de trabajo no justificaba la sobrecarga de orquestación.
+AGENTS.md defines five engineering roles that were initially deferred as subagents because the workload did not justify the orchestration overhead.
 
 ### Decision (Original)
 
-Mantener los cinco roles como responsabilidades documentadas y diferir su implementación.
+Keep the five roles as documented responsibilities and defer their implementation.
 
-### Decision (Actualizada — 2026-08-04)
+### Decision (Updated — 2026-08-04)
 
-Los cinco roles ahora están implementados como subagentes OpenCode en `.opencode/agents/`. Reemplazado por ADR-0005.
+The five roles are now implemented as OpenCode subagents in `.opencode/agents/`. Superseded by ADR-0005.
 
 ---
 
@@ -85,7 +85,7 @@ Use explicit local gates through commands instead of CI hooks:
 
 ---
 
-## ADR-0004: Session Lifecycle (Bitácora + `/close`)
+## ADR-0004: Session Lifecycle (Session Log + `/close`)
 
 - **Status**: accepted
 - **Date**: 2026-08-03
@@ -97,7 +97,7 @@ Without an end-of-session lifecycle, `current.md` accumulated state across sessi
 ### Decision
 
 Implement a session lifecycle with two mechanisms:
-- Append-only bitácora `.opencode/progress/session-log.md`
+- Append-only session log at `.opencode/progress/session-log.md`
 - `/close` command with hard gates
 
 ### Rationale
@@ -121,39 +121,39 @@ Implement a session lifecycle with two mechanisms:
 
 ### Context
 
-AGENTS.md define cinco roles de ingeniería que originalmente fueron diferidos como subagentes (ADR-0002). El sistema de ingeniería ha madurado y el volumen de trabajo justifica la implementación.
+AGENTS.md defines five engineering roles that were initially deferred as subagents (ADR-0002). The engineering system has matured, and the workload now justifies implementing them.
 
 ### Decision
 
-Implementar los cinco roles como subagentes OpenCode en `.opencode/agents/`:
+Implement the five roles as OpenCode subagents in `.opencode/agents/`:
 
-| Archivo | Modo | Responsabilidad |
+| File | Mode | Responsibility |
 |---------|------|-----------------|
-| `engineering-lead.md` | primary | Orquestador |
-| `architect.md` | subagent | Diseño + ADR |
-| `builder.md` | subagent | Implementación + tests |
-| `reviewer.md` | subagent | Quality gates + DoD |
+| `engineering-lead.md` | primary | Orchestrator |
+| `architect.md` | subagent | Design + ADR |
+| `builder.md` | subagent | Implementation + tests |
+| `reviewer.md` | subagent | Quality gates + Definition of Done |
 | `historian.md` | subagent | History/knowledge/memory |
 | `tester.md` | subagent | Validation + benchmarks |
 
-Configuración en `opencode.json`:
+Configuration in `opencode.json`:
 - `default_agent: "engineering-lead"`
 - `subagent_depth: 2`
-- Permisos granulares por agente
+- Granular permissions per agent
 
 ### Rationale
 
-- Separación de responsabilidades
-- Orquestación paralela
-- Permisos granulares
-- Enforcement del protocolo anti-telephone
+- Separation of responsibilities
+- Parallel orchestration
+- Granular permissions
+- Enforcement of the anti-telephone protocol
 
 ### Consequences
 
-- 7 skills actualizados con Agent Ownership
+- Seven skills updated with agent ownership
 - ADR-0002 superseded
-- Lead orquesta via Task tool
-- Subagentes siguen protocolo anti-telephone
+- The Lead orchestrates via the Task tool
+- Subagents follow the anti-telephone protocol
 
 ---
 
@@ -435,3 +435,39 @@ KAFE's Python runtime, development tools, MkDocs dependencies, optional Hugging 
 - **Keep pip/requirements alongside uv:** rejected because it would retain two dependency authorities.
 - **Keep Python libraries in Nix:** rejected because it would duplicate the uv project and lock.
 - **Make `datasets` a base or development dependency:** rejected because it would invalidate the deterministic missing-dependency environment.
+
+---
+
+## ADR-0011: One-Time English Backfill of Project Records
+
+- **Status**: accepted
+- **Date**: 2026-09-23
+
+### Context
+
+The user requires the current repository content to be in English and approved Task 6 to translate existing project records. The records include append-only session history and accepted ADRs whose Spanish prose predates this requirement. Translating those entries in place is necessary for the current-tree language requirement, but would ordinarily conflict with the record-preservation rules. Their original versions remain in Git history.
+
+### Decision
+
+1. Authorize one faithful English translation pass over existing tracked Spanish prose in repository guidance and `.opencode/` records, including historical session entries and accepted ADR prose. Preserve chronology, dates, identifiers, statuses, measured results, decisions, and substantive meaning; do not rewrite Git history.
+2. For this one backfill only, this ADR supersedes prior append-only or accepted-record immutability rules to the extent they would prevent translating existing prose. It does not authorize deleting or altering historical facts, changing the outcome of a recorded decision, or editing captured contents of retired artifacts.
+3. Keep future session and history entries append-only, write them in English, and do not use this exception for later editorial rewrites.
+4. Remove the PDF and machine-specific logs listed in the approved Task 6 brief from the current tree without modifying their captured contents. Their Git history remains available.
+
+### Rationale
+
+- A faithful current-tree translation satisfies the user's English requirement while preserving the original record meaning and chronology.
+- An explicit, narrowly scoped exception prevents this backfill from weakening future append-only protection.
+- Keeping Git history unchanged preserves the original Spanish wording and the approved retired artifacts for recovery.
+
+### Consequences
+
+- Existing tracked records may receive language-only edits in Task 6; substantive decisions, dates, identifiers, and measured results remain unchanged.
+- Future project records remain append-only and English.
+- The approved retired PDF and logs are absent from the current tree but remain recoverable from Git history.
+
+### Alternatives Considered
+
+- **Leave historical Spanish untouched:** rejected because the user requires English current-tree content and approved the one-time backfill.
+- **Rewrite or filter Git history:** rejected because it is unnecessary for the current-tree requirement and would remove the original record snapshots.
+- **Make all future records freely editable:** rejected because the user authorized only this one-time backfill.

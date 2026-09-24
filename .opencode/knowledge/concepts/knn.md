@@ -67,7 +67,7 @@ show(preds);  -- [0, 1, 0]
 
 ## Implementation Location
 
-- `src/lib/KafeMACHINE/KNN.py` — class `KNN(BaseMachine)`
+- `src/lib/KafeMACHINE/neighbors/KNN.py` — class `KNN(BaseMachine)`
 
 ## Public API
 

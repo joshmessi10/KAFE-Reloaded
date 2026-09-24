@@ -1,26 +1,26 @@
-# Loss Functions (Funciones de Pérdida)
+# Loss Functions
 
 ## Category
 
-Deep Learning — Componente de red neuronal
+Deep learning — neural-network component
 
 ## Description
 
-Las funciones de pérdida (loss functions) cuantifican qué tan "equivocado" está el modelo. Miden la discrepancia entre las predicciones $\hat{y}$ y los valores reales $y$. El objetivo del entrenamiento es **minimizar** esta función.
+Loss functions quantify how far model predictions $\hat{y}$ are from the true values $y$. Training aims to **minimize** the selected loss.
 
-KafeGESHA implementa 5 funciones de pérdida desde cero:
+KafeGESHA implements five loss functions:
 
-| Función | Fórmula | Uso principal |
+| Function | Formula | Main use |
 |---|---|---|
-| MSE | $\frac{1}{n}\sum(y_i - \hat{y}_i)^2$ | Regresión |
-| MAE | $\frac{1}{n}\sum\|y_i - \hat{y}_i\|$ | Regresión (robusta) |
+| MSE | $\frac{1}{n}\sum(y_i - \hat{y}_i)^2$ | Regression |
+| MAE | $\frac{1}{n}\sum|y_i - \hat{y}_i|$ | Regression (robust) |
 | Binary Cross-Entropy | $-\frac{1}{n}\sum[y_i\log(\hat{y}_i) + (1-y_i)\log(1-\hat{y}_i)]$ | Binary classification |
 | Categorical Cross-Entropy | $-\frac{1}{n}\sum\sum y_{ij}\log(\hat{y}_{ij})$ | Multiclass classification |
-| Sparse Categorical CE | $-\frac{1}{n}\sum\log(\hat{y}_{y_i})$ | Multiclass (etiquetas enteras) |
+| Sparse Categorical Cross-Entropy | $-\frac{1}{n}\sum\log(\hat{y}_{y_i})$ | Multiclass classification with integer labels |
 
-Cada función implementa dos métodos:
-- `compute(y_true, y_pred)` → valor escalar de pérdida
-- `derivative(y_true, y_pred)` → gradiente $\frac{\partial L}{\partial \hat{y}}$
+Each loss implements two methods:
+- `compute(y_true, y_pred)` returns a scalar loss value.
+- `derivative(y_true, y_pred)` returns the gradient $\frac{\partial L}{\partial \hat{y}}$.
 
 ## Mathematical Foundation
 
@@ -28,219 +28,218 @@ Cada función implementa dos métodos:
 
 $$L_{\text{MSE}} = \frac{1}{n} \sum_{i=1}^{n} (y_i - \hat{y}_i)^2$$
 
-**Derivada**:
+**Derivative**:
 
 $$\frac{\partial L}{\partial \hat{y}_i} = \frac{2(\hat{y}_i - y_i)}{n}$$
 
-**Propiedades**:
-- Penaliza errores grandes de forma cuadrática (sensible a outliers)
-- Derivada lineal → gradientes proporcionales al error
-- Mínimo analítico en $\hat{y} = y$
-- Equivalente a asumir errores distribuidos normalmente
+**Properties**:
+- Penalizes large errors quadratically and is sensitive to outliers.
+- Its derivative is linear, so gradients are proportional to the error.
+- The minimum occurs at $\hat{y} = y$.
+- It corresponds to assuming normally distributed errors.
 
 ### Mean Absolute Error (MAE)
 
 $$L_{\text{MAE}} = \frac{1}{n} \sum_{i=1}^{n} |y_i - \hat{y}_i|$$
 
-**Derivada**:
+**Derivative**:
 
-$$\frac{\partial L}{\partial \hat{y}_i} = \frac{1}{n} \cdot \frac{\hat{y}_i - y_i}{|\hat{y}_i - y_i|} = \begin{cases} \frac{1}{n} & \text{si } \hat{y}_i > y_i \\ -\frac{1}{n} & \text{si } \hat{y}_i < y_i \\ 0 & \text{si } \hat{y}_i = y_i \end{cases}$$
+$$\frac{\partial L}{\partial \hat{y}_i} = \frac{1}{n} \cdot \frac{\hat{y}_i - y_i}{|\hat{y}_i - y_i|} = \begin{cases} \frac{1}{n} & \text{if } \hat{y}_i > y_i \\ -\frac{1}{n} & \text{if } \hat{y}_i < y_i \\ 0 & \text{if } \hat{y}_i = y_i \end{cases}$$
 
-**Propiedades**:
-- Robusta ante outliers (penalización lineal)
-- Derivada constante (signo del error) → no diferencia errores grandes de pequeños
-- Equivalente a asumir errores distribuidos laplacianamente
+**Properties**:
+- Robust to outliers because its penalty grows linearly.
+- The derivative is the sign of the error, so it does not distinguish between large and small errors.
+- It corresponds to assuming Laplace-distributed errors.
 
 ### Binary Cross-Entropy (BCE)
 
 $$L_{\text{BCE}} = -\frac{1}{n} \sum_{i=1}^{n} \left[ y_i \log(\hat{y}_i) + (1 - y_i) \log(1 - \hat{y}_i) \right]$$
 
-**Derivada**:
+**Derivative**:
 
 $$\frac{\partial L}{\partial \hat{y}_i} = \frac{\hat{y}_i - y_i}{\hat{y}_i(1 - \hat{y}_i) + \epsilon}$$
 
-**Propiedades**:
-- Asumida probabilidad $\hat{y}_i \in (0, 1)$
-- Penaliza fuertemente predicciones confiadas y equivocadas
-- Derivada estable gracias al epsilon de clipping
-- Equivalente a maximum likelihood para distribución de Bernoulli
+**Properties**:
+- Assumes predicted probabilities $\hat{y}_i \in (0, 1)$.
+- Strongly penalizes confident, incorrect predictions.
+- Epsilon-based clipping helps keep the derivative numerically stable.
+- Corresponds to maximum likelihood for a Bernoulli distribution.
 
 ### Categorical Cross-Entropy (CCE)
 
 $$L_{\text{CCE}} = -\frac{1}{n} \sum_{i=1}^{n} \sum_{j=1}^{k} y_{ij} \log(\hat{y}_{ij})$$
 
-**Derivada**:
+**Derivative**:
 
 $$\frac{\partial L}{\partial \hat{y}_{ij}} = \hat{y}_{ij} - y_{ij}$$
 
-**Propiedades**:
-- $y$ es one-hot encoded (solo un $y_{ij} = 1$)
-- Combinada con Softmax: la derivada se simplifica a $\hat{y} - y$
-- Estable numéricamente gracias al epsilon
+**Properties**:
+- $y$ is one-hot encoded (exactly one $y_{ij} = 1$ for each sample).
+- In the Softmax combination, the derivative simplifies to $\hat{y} - y$.
+- Epsilon helps maintain numerical stability.
 
 ### Sparse Categorical Cross-Entropy
 
 $$L_{\text{SCCE}} = -\frac{1}{n} \sum_{i=1}^{n} \log(\hat{y}_{y_i})$$
 
-**Derivada**:
+**Derivative**:
 
-$$\frac{\partial L}{\partial \hat{y}_{ij}} = \begin{cases} \hat{y}_{ij} - 1 & \text{si } j = y_i \\ \hat{y}_{ij} & \text{si } j \neq y_i \end{cases}$$
+$$\frac{\partial L}{\partial \hat{y}_{ij}} = \begin{cases} \hat{y}_{ij} - 1 & \text{if } j = y_i \\ \hat{y}_{ij} & \text{if } j \neq y_i \end{cases}$$
 
-**Propiedades**:
-- Equivalente a CCE pero acepta etiqueta entera en lugar de one-hot
-- Más eficiente en memoria para muchos clases
-- La derivada es la misma que CCE cuando se combina con Softmax
+**Properties**:
+- Like CCE, but accepts integer labels instead of one-hot vectors.
+- Uses less memory when there are many classes.
+- Its derivative matches CCE when combined with Softmax.
 
 ## Step-by-Step Algorithm
 
 ### MSE — Forward
 
-1. Recibir vectores $y_{\text{true}}$ y $y_{\text{pred}}$, ambos de longitud $n$.
-2. Para cada par $(y_i, \hat{y}_i)$, calcular error cuadrático: $(y_i - \hat{y}_i)^2$.
-3. Promediar: $L = \frac{1}{n} \sum (y_i - \hat{y}_i)^2$.
+1. Receive vectors $y_{\text{true}}$ and $y_{\text{pred}}$, each of length $n$.
+2. For each pair $(y_i, \hat{y}_i)$, compute squared error: $(y_i - \hat{y}_i)^2$.
+3. Average: $L = \frac{1}{n} \sum (y_i - \hat{y}_i)^2$.
 
 ### MSE — Backward
 
-4. Para cada par, calcular gradiente: $\frac{2(\hat{y}_i - y_i)}{n}$.
-5. Retornar vector de gradientes.
+4. For each pair, compute the gradient: $\frac{2(\hat{y}_i - y_i)}{n}$.
+5. Return the gradient vector.
 
 ### Binary Cross-Entropy — Forward
 
-6. Recibir $y_{\text{true}}$ y $y_{\text{pred}}$.
-7. Para cada par:
-   a. Clippear $\hat{y}_i$ al rango $(\epsilon, 1 - \epsilon)$.
-   b. Calcular $-(y_i \log(\hat{y}_i) + (1 - y_i) \log(1 - \hat{y}_i))$.
-8. Promediar sobre $n$ muestras.
+6. Receive $y_{\text{true}}$ and $y_{\text{pred}}$.
+7. For each pair:
+   - Clip $\hat{y}_i$ to $(\epsilon, 1 - \epsilon)$.
+   - Compute $-(y_i \log(\hat{y}_i) + (1 - y_i) \log(1 - \hat{y}_i))$.
+8. Average over $n$ samples.
 
 ### Binary Cross-Entropy — Backward
 
-9. Para cada par:
-   a. Clippear $\hat{y}_i$.
-   b. Calcular $\frac{\hat{y}_i - y_i}{\hat{y}_i(1 - \hat{y}_i) + \epsilon}$.
-10. Retornar vector de gradientes.
+9. For each pair, clip $\hat{y}_i$ and compute $\frac{\hat{y}_i - y_i}{\hat{y}_i(1 - \hat{y}_i) + \epsilon}$.
+10. Return the gradient vector.
 
 ### Categorical Cross-Entropy — Forward
 
-11. Recibir matrices $Y_{\text{true}}$ y $Y_{\text{pred}}$ (one-hot).
-12. Para cada muestra $i$:
-    a. Calcular $-\sum_j y_{ij} \log(\hat{y}_{ij} + \epsilon)$.
-13. Promediar sobre $n$.
+11. Receive one-hot matrices $Y_{\text{true}}$ and $Y_{\text{pred}}$.
+12. For each sample $i$, compute $-\sum_j y_{ij} \log(\hat{y}_{ij} + \epsilon)$.
+13. Average over $n$ samples.
 
 ### Categorical Cross-Entropy — Backward
 
-14. Para cada muestra $i$ y clase $j$:
-    a. Calcular $\hat{y}_{ij} - y_{ij}$.
-15. Retornar matriz de gradientes.
+14. For each sample $i$ and class $j$, compute $\hat{y}_{ij} - y_{ij}$.
+15. Return the gradient matrix.
 
 ## Motivation
 
-La elección de la función de pérdida determina qué tan bien el modelo aprende un tipo de tarea específico. MSE es ideal para regresión pero inadecuada para clasificación (penalización cuadrática no alinea con la métrica de accuracy). Cross-Entropy es el estándar para clasificación porque sus gradientes son más informativos y estables. KafeGESHA implementa cada una desde cero para que el estudiante entienda por qué se usan funciones diferentes para tareas diferentes.
+The loss function determines how well a model learns a particular task. MSE is useful for regression but usually unsuitable for classification because its quadratic penalty does not align with accuracy. Cross-entropy is standard for classification because its gradients are informative and stable. KafeGESHA implements each loss directly to show why different tasks use different loss functions.
 
 ## Advantages
 
-- **Clipping numérico**: BCE y CCE usan epsilon para evitar $\log(0)$, making el entrenamiento estable.
-- **Derivadas simplificadas**: CCE + Softmax produce la derivada más elegante del deep learning: $\hat{y} - y$.
-- **Compatibilidad con sparse labels**: SparseCCE permite usar etiquetas enteras sin one-hot, saving memoria.
-- **Elección educativa**: Incluir MSE y MAE side-by-side permite comparar sus comportamientos ante outliers.
+- **Numerical clipping**: BCE and CCE use epsilon to avoid $\log(0)$ and help stabilize training.
+- **Simplified derivatives**: CCE combined with Softmax yields the derivative $\hat{y} - y$.
+- **Sparse-label support**: SparseCCE accepts integer labels instead of one-hot vectors, saving memory.
+- **Educational comparison**: MSE and MAE can be compared side by side, including their behavior on outliers.
 
 ## Limitations
 
-- **MSE sensible a outliers**: Un solo punto con error grande domina la pérdida.
-- **MAE no diferenciable en cero**: $|x|$ no tiene derivada en $x = 0$; KafeGESHA usa 0 como convención.
-- **BCE requiere probabilidades**: Si el modelo produce valores fuera de $(0,1)$, necesita clipping.
-- **No incluye regularización**: Las funciones de pérdida de KafeGESHA no incorporan términos de regularización (L1/L2); esto se maneja en la capa Dense.
+- **MSE is sensitive to outliers**: One point with a large error can dominate the loss.
+- **MAE is not differentiable at zero**: $|x|$ has no derivative at $x=0$; KafeGESHA uses zero by convention.
+- **BCE requires probabilities**: Predictions outside $(0,1)$ must be clipped.
+- **No built-in regularization**: KafeGESHA loss functions do not include L1/L2 regularization terms; the Dense layer handles its own L2 regularization.
 
 ## When to Use
 
-- **MSE**: Regresión cuando los errores grandes son significativamente peores que los pequeños.
-- **MAE**: Regresión cuando hay outliers y se necesita robustez.
-- **BCE**: Binary classification con salida sigmoid (probabilidad).
-- **CCE**: Multiclass classification con salida Softmax y etiquetas one-hot.
-- **SparseCCE**: Multiclass con etiquetas enteras (eficiente en memoria).
+- **MSE**: Regression when large errors are substantially worse than small ones.
+- **MAE**: Regression with outliers when robustness is needed.
+- **BCE**: Binary classification with a sigmoid probability output.
+- **CCE**: Multiclass classification with a Softmax output and one-hot labels.
+- **SparseCCE**: Multiclass classification with integer labels to save memory.
 
 ## When NOT to Use
 
-- **MSE para clasificación**: Los gradientes de MSE son ineficientes para probabilidades (se "saturan" lejos del óptimo).
-- **BCE para regresión**: BCE asume distribución de Bernoulli, no aplica a valores continuos.
-- **CCE sin Softmax**: La derivada $\hat{y} - y$ solo es correcta cuando se combina con Softmax.
+- **MSE for classification**: Its gradients can be inefficient for probabilities and may saturate far from the optimum.
+- **BCE for regression**: BCE assumes a Bernoulli distribution and is not suitable for continuous targets.
+- **CCE without Softmax**: The derivative $\hat{y} - y$ applies to the combined CCE and Softmax setup.
 
 ## Dependencies
 
-- `lib.KafeMATH.functions` — `log()` (logaritmo natural), `math_abs()` (valor absoluto).
+- `lib.KafeMATH.functions` — `log()` (natural logarithm) and `math_abs()` (absolute value).
 
 ## Related Concepts
 
-- `activation-functions.md` — Las funciones de activación producen las salidas que se evalúan con loss functions.
-- `dense-layer.md` — Las capas Dense usan los gradientes de loss functions para backward.
-- `optimizers.md` — Los optimizadores aplican los gradientes de loss functions para actualizar pesos.
+- `activation-functions.md` — Activations produce outputs evaluated by loss functions.
+- `dense-layer.md` — Dense layers propagate loss gradients during backpropagation.
+- `optimizers.md` — Optimizers use gradients to update parameters.
 
 ## Relationship with KAFE
 
-### Implementación en `LossFunction.py`
+### Implementation
 
-La clase abstracta `LossFunction` define el contrato:
+`LossFunction` defines the interface:
 
 ```python
 class LossFunction(ABC):
-    def compute(self, y_true, y_pred) → float   # Pérdida promedio
-    def derivative(self, y_true, y_pred) → list  # Gradiente ∂L/∂ŷ
+    def compute(self, y_true, y_pred) -> float   # Average loss
+    def derivative(self, y_true, y_pred) -> list  # Gradient ∂L/∂ŷ
 ```
 
-### Decisión de diseño: Clipping en BCE
+### Design: BCE clipping
 
-BinaryCrossEntropy introduce un epsilon por defecto de $10^{-8}$ y clippea las predicciones al rango $(\epsilon, 1-\epsilon)$. Esto previene $\log(0)$ que produciría $-\infty$. El mismo patrón se usa en CCE y SparseCCE.
+`BinaryCrossEntropy` uses a default epsilon of $10^{-8}$ and clips predictions to $(\epsilon, 1-\epsilon)$. This prevents $\log(0)$, which would produce $-\infty$. CCE and SparseCCE also add epsilon to predicted probabilities.
 
-### Decisión de設計: Derivada de CCE simplificada
+### Design: Simplified CCE derivative
 
-La derivada de Categorical Cross-Entropy es simplemente $\hat{y}_{ij} - y_{ij}$. Esto es un resultado matemático elegante que ocurre cuando se combina CCE con Softmax. En KafeGESHA, la capa Dense aplica la Jacobiana de Softmax al gradiente de CCE, producing esta simplificación automáticamente.
+Categorical Cross-Entropy returns $\hat{y}_{ij} - y_{ij}$. This derivative is intended for use with Softmax; the Dense layer treats Softmax as a special case and passes the gradient through directly.
 
-### Decisión de diseño: SparseCCE acepta etiquetas enteras
+### Design: SparseCCE accepts integer labels
 
-`SparseCategoricalCrossEntropy` recibe `y_true` como vector de enteros (ej: `[0, 2, 1, 3]`) en lugar de one-hot. Internamente accede a $\hat{y}_{y_i}$ usando la etiqueta como índice. Esto ahorra memoria significativa cuando hay muchas clases.
+`SparseCategoricalCrossEntropy` accepts `y_true` as a vector of integers (for example, `[0, 2, 1, 3]`) instead of one-hot vectors. It indexes $\hat{y}_{y_i}$ using each label, reducing memory use when there are many classes.
 
-### Decisión de diseño: MSE y MAE como base para regresión
+### Design: MSE and MAE for regression
 
-MSE y MAE son las funciones de pérdida estándar para regresión en KafeGESHA. No incluyen Huber Loss (que combina MSE y MAE), pero esto podría agregarse en el futuro.
+MSE and MAE are the standard regression losses in KafeGESHA. Huber Loss, which combines MSE and MAE, is not included in the current implementation.
 
 ## Usage Examples
 
 ```kafe
-import gesha;
+import geshaDeep;
 
--- Regresión con MSE
-GESHA reg = gesha.deep("regression");
-reg.add(gesha.dense(16, activation: "relu", input_shape: [3]));
-reg.add(gesha.dense(1, activation: "identity"));
-reg.compile(optimizer: "sgd", loss: "mse");
-reg.fit(x_train, y_train, epochs: 50);
+-- Regression with MSE
+GESHA reg_layer = geshaDeep.create_dense(16, "relu", [3], 0.0);
+GESHA reg_output = geshaDeep.create_dense(1, "linear", [], 0.0);
+GESHA reg = geshaDeep.sequential([reg_layer, reg_output]);
+geshaDeep.compile(reg, "sgd", "mse", []);
+reg.fit(x_train, y_train, 50, 1);
 
--- Binary classification con Binary Cross-Entropy
-GESHA bin_model = gesha.deep("binary");
-bin_model.add(gesha.dense(8, activation: "relu", input_shape: [4]));
-bin_model.add(gesha.dense(1, activation: "sigmoid"));
-bin_model.compile(optimizer: "adam", loss: "binary_crossentropy");
+-- Binary classification with Binary Cross-Entropy
+GESHA bin_hidden = geshaDeep.create_dense(8, "relu", [4], 0.0);
+GESHA bin_output = geshaDeep.create_dense(1, "sigmoid", [], 0.0);
+GESHA bin_model = geshaDeep.sequential([bin_hidden, bin_output]);
+geshaDeep.compile(bin_model, "adam", "binary_crossentropy", []);
 
--- Multiclass con Categorical Cross-Entropy
-GESHA multi = gesha.deep("classification");
-multi.add(gesha.dense(32, activation: "relu", input_shape: [784]));
-multi.add(gesha.dense(10, activation: "softmax"));
-multi.compile(optimizer: "adam", loss: "categorical_crossentropy");
+-- Multiclass classification with Categorical Cross-Entropy
+GESHA multi_hidden = geshaDeep.create_dense(32, "relu", [784], 0.0);
+GESHA multi_output = geshaDeep.create_dense(10, "softmax", [], 0.0);
+GESHA multi = geshaDeep.sequential([multi_hidden, multi_output]);
+geshaDeep.compile(multi, "adam", "categorical_crossentropy", []);
 ```
 
 ## Implementation Location
 
-- `src/lib/KafeGESHA/LossFunction.py` — clases `MeanSquaredError`, `MeanAbsoluteError`, `BinaryCrossEntropy`, `CategoricalCrossEntropy`, `SparseCategoricalCrossEntropy`
-- `src/lib/KafeGESHA/GeshaDeep.py` — mapeo de strings a objetos de pérdida en `compile()`
+- `src/lib/KafeGESHA/losses/loss.py` — abstract `LossFunction`.
+- `src/lib/KafeGESHA/losses/mse.py` — `MeanSquaredError` and `MeanAbsoluteError`.
+- `src/lib/KafeGESHA/losses/binary_crossentropy.py` — `BinaryCrossEntropy`.
+- `src/lib/KafeGESHA/losses/categorical_crossentropy.py` — `CategoricalCrossEntropy` and `SparseCategoricalCrossEntropy`.
+- `src/lib/KafeGESHA/core/model.py` — resolves loss names during `compile()`.
 
 ## Public API
 
-- Nombres en `compile()`: `"mse"`, `"mae"`, `"binary_crossentropy"`, `"categorical_crossentropy"`, `"sparse_categorical_crossentropy"`
-- Método: `compute(y_true, y_pred)` → float (pérdida promedio)
-- Método: `derivative(y_true, y_pred)` → list (gradientes)
+- Loss names in `compile()`: `"mse"`, `"mae"`, `"binary_crossentropy"`, `"categorical_crossentropy"`, and `"sparse_categorical_crossentropy"`.
+- `compute(y_true, y_pred)` returns a scalar average loss.
+- `derivative(y_true, y_pred)` returns gradients.
 
 ## References
 
-- Goodfellow, I., Bengio, Y., & Courville, A. (2016). Deep Learning, Chapter 5.5: Output Units. MIT Press.
-- Bishop, C. M. (2006). Pattern Recognition and Machine Learning, Chapter 4.3: Bayesian Linear Regression.
-- De Boer, P. T., et al. (2005). A tutorial on the cross-entropy method. Annals of Operations Research, 134(1), 19-67.
-- Rubinstein, R. (1999). The cross-entropy method for combinatorial and continuous optimization. Methodology and Computing in Applied Probability, 1(2), 127-190.
+- Goodfellow, I., Bengio, Y., & Courville, A. (2016). *Deep Learning*, Chapter 5.5: Output Units. MIT Press.
+- Bishop, C. M. (2006). *Pattern Recognition and Machine Learning*, Chapter 4.3: Bayesian Linear Regression.
+- De Boer, P. T., et al. (2005). A tutorial on the cross-entropy method. *Annals of Operations Research*, 134(1), 19-67.
+- Rubinstein, R. (1999). The cross-entropy method for combinatorial and continuous optimization. *Methodology and Computing in Applied Probability*, 1(2), 127-190.

@@ -16,9 +16,10 @@ def get_src_dir():
 
 
 def build_child_environment():
-    """Copy the current environment and promote all Python warnings to errors."""
+    """Copy the current environment with UTF-8 output and strict warnings."""
     child_environment = os.environ.copy()
     child_environment["PYTHONWARNINGS"] = "error"
+    child_environment["PYTHONIOENCODING"] = "utf-8"
     return child_environment
 
 
@@ -28,6 +29,7 @@ def run_child_process(command: Sequence[str], *, cwd, input_text=""):
         list(command),
         capture_output=True,
         text=True,
+        encoding="utf-8",
         input=input_text,
         cwd=cwd,
         env=build_child_environment(),

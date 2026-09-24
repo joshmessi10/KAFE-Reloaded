@@ -30,11 +30,11 @@ The Lead orchestrates this checklist, delegating each step to the responsible ag
 
 1. Generate the parser on a fresh clone, whenever outputs are missing, and after grammar edits; regenerate for the release (`make antlr` from `src/`, with ANTLR 4.13.2 on PATH, or the jar command in `verifications.md`). Confirm ignored generated outputs are neither staged nor committed. They may exist locally for execution.
 2. Run the full suite: `uv run --locked --group dev pytest tests/`.
-3. Verify documentation: `uv run --locked --group docs --no-dev mkdocs build` (site in `site/`). English is the repository target; existing Spanish is migration debt.
+3. Verify documentation: `uv run --locked --group docs --no-dev mkdocs build` (site in `site/`). Keep all repository-owned prose and code in English; document genuine proper names and technical terms when needed.
 4. Confirm `.opencode/history/` has records for all significant changes since the last release.
 5. Confirm ADR records exist for all significant decisions.
 6. Confirm benchmarks in `.opencode/benchmarks/records.md` are current.
-7. Run `/dod` for all completed work against both root policies and current configuration/workflows. Record PASS/FAIL/PENDING/N/A with evidence and reasons, including unimplemented migration gates. Do not infer coverage, child warning handling, lint, types, audit, or policy checks from pytest success. Apply any implemented root gates with zero errors and zero warnings.
+7. Run `/dod` for all completed work against both root policies and current configuration/workflows. Record PASS/FAIL/PENDING/N/A with evidence and reasons, including unimplemented migration gates. Report the implemented test, coverage, warning, and stream checks from their actual run; lint, types, dependency audit, codespell-in-CI, and suppression-policy checks remain pending until implemented. Apply all implemented root gates with zero errors and zero warnings.
 8. Create the release tag/notes summarizing changes.
 
 ## Outputs
@@ -53,7 +53,7 @@ The Lead orchestrates this checklist, delegating each step to the responsible ag
 - `uv run --locked --group docs --no-dev mkdocs build` succeeds.
 - No generated parser files or `*.svg` staged (except `tests/**/grafico_*.svg`).
 - Definition of Done verified for all shipped work.
-- Pending English and quality/CI migrations disclosed in the readiness report; missing applicable release gates must not be reported as passed. A release promising policy alignment cannot be declared ready while its required gates remain pending.
-- Child interpreter coverage and complete diagnostic observation demonstrated when those gates apply; parent pytest-cov/filterwarnings alone do not prove enforcement. Preserve expected-error fixtures and CLI semantics.
+- Pending quality/CI migration gates disclosed in the readiness report; missing applicable release gates must not be reported as passed. A release promising full policy alignment cannot be declared ready while its required gates remain pending.
+- Child interpreter coverage and complete diagnostic observation demonstrated by the checked-in test workflow; preserve expected-error fixtures and CLI semantics.
 - Superpowers release planning/review artifacts remain local and are never staged or committed.
 - Session closure follows the existing `/init`, session log, memory/history, and `/close` obligations.

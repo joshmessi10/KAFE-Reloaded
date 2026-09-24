@@ -13,19 +13,19 @@ Verify the Definition of Done for the current task. The **Reviewer** role runs t
    - **Tests passed** — applicable code tasks have focused validation and the full suite (`uv run --locked --group dev pytest tests/`). For an approved documentation-only task with no runtime, fixture, dependency, or workflow change, record application tests as N/A with the reason and verify the approved document checks.
    - **Documentation updated** — `docs/` and `.opencode/knowledge/` reflect the change.
    - **History updated** — a record exists under `.opencode/history/`.
-3. Check applicable root policies: substantive AGENTS/CLAUDE synchronization; authorized scope and local Superpowers artifacts; English and dependency rules; absence of authored suppression comments; and all implemented quality gates. Verify uv lock/setup independently; record lint, typing, spelling, audit, coverage, warnings, and the explicit CI suppression-comment check as PENDING until their migration delivers executable checks. Inspect the current `tests.yml`, `docs.yml`, and `main.yml` rather than assuming a generic `ci.yml` exists. For a gate being implemented by the task, missing evidence is an unmet acceptance criterion.
-4. For work on coverage/warning gates, require evidence from the fixture-launched child interpreters, including combined owned-source coverage and complete stdout/stderr diagnostics. Parent pytest-cov/filterwarnings alone are insufficient. Preserve expected-error fixtures and existing CLI semantics. Record these repository gates as PENDING until implemented.
+3. Check applicable root policies: substantive AGENTS/CLAUDE synchronization; authorized scope and local Superpowers artifacts; English and dependency rules; authored suppression comments; and all implemented quality gates. Verify uv lock/setup independently. The test workflow implements the locked full-suite coverage gate and warning/stream checks; record Ruff, typing, codespell-in-CI, dependency audit, and the explicit CI suppression-comment check as PENDING until executable checks are added. Inspect the current `tests.yml`, `docs.yml`, and `main.yml` rather than assuming a generic `ci.yml` exists. For a gate being implemented by the task, missing evidence is an unmet acceptance criterion.
+4. For work on coverage/warning gates, require evidence from fixture-launched child interpreters, including combined owned-source coverage and complete stdout/stderr diagnostics. Parent pytest-cov/filterwarnings alone are insufficient. Preserve expected-error fixtures and existing CLI semantics. The existing test workflow enforces these checks; report them PASS only with a current successful run.
 5. Check the applicable items (ML/DL components):
    - **ADR exists** — if architecture or public APIs changed.
    - **Benchmarks exist with 5 scenarios** — verify `.opencode/benchmarks/records.md` has 5 test scenarios for this component.
    - **Enriched concept record** — verify `.opencode/knowledge/concepts/<name>.md` has: mathematical foundation, step-by-step algorithm, advantages (3+), limitations (2+), when to use/NOT to use, references.
-   - **Examples exist** — `.kf` files under `docs/ejemplos/`.
+   - **Examples exist** — `.kf` files under `docs/examples/`.
 6. **Context saving verification** (ML/DL components):
    - [ ] `.opencode/knowledge/concepts/<name>.md` exists and is enriched
    - [ ] `.opencode/history/YYYY/YYYY-MM.md` has record
-   - [ ] `tests/KafeMACHINE/<category>/` has 7+ fixtures (5 valid + 2 error)
+   - [ ] `tests/KafeMACHINE/<category>/` has at least 7 fixtures (5 valid + 2 error)
    - [ ] `.opencode/benchmarks/records.md` has 5 scenarios
-   - [ ] `docs/bibliotecas/machine.md` is updated
+   - [ ] `docs/libraries/machine.md` is updated
    - [ ] `.opencode/progress/roadmap.md` is updated
 7. If this is session closure, preserve the existing `/init` full-suite and progress-consistency gate, session log, memory/history updates, and `/close` procedure in `engineering.md`. Completing a documentation-only task is not evidence that session-closure gates ran.
 

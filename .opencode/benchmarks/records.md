@@ -6,30 +6,30 @@ This file consolidates all benchmark records for KAFE. Individual benchmark file
 
 | Benchmark | Component | Category | Date | Status |
 |-----------|-----------|----------|------|--------|
-| DecisionTreeClassifier | `src/lib/KafeMACHINE/DecisionTree.py` | ML algorithm | 2026-08-04 | Baseline |
+| DecisionTreeClassifier | `src/lib/KafeMACHINE/tree/DecisionTree.py` | ML algorithm | 2026-08-04 | Baseline |
 | KafeMACHINE Full Suite | `src/lib/KafeMACHINE/` (all models) | ML algorithm | 2026-08-04 | Baseline |
 | OrdinalEncoder | `src/lib/KafeMACHINE/preprocessing/OrdinalEncoder.py` | ML preprocessing | 2026-09-02 | Baseline |
 | KafeGESHA Full Suite | `src/lib/KafeGESHA/` (all DL components) | DL component | 2026-09-02 | Baseline |
-| GaussianNB | `src/lib/KafeMACHINE/GaussianNB.py` | ML algorithm | 2026-09-14 | Baseline |
-| GaussianMixture | `src/lib/KafeMACHINE/GaussianMixture.py` | ML algorithm | 2026-09-21 | Baseline |
-| RandomForest | `src/lib/KafeMACHINE/RandomForest.py` | ML algorithm | 2026-09-14 | Baseline |
-| RidgeRegression | `src/lib/KafeMACHINE/RidgeRegression.py` | ML algorithm | 2026-09-14 | Baseline |
-| LassoRegression | `src/lib/KafeMACHINE/LassoRegression.py` | ML algorithm | 2026-09-14 | Baseline |
-| SVR | `src/lib/KafeMACHINE/SVR.py` | ML algorithm | 2026-09-14 | Baseline |
-| SVM | `src/lib/KafeMACHINE/SVM.py` | ML algorithm | 2026-09-21 | Baseline |
-| ModelSelection | `src/lib/KafeMACHINE/model_selection.py` | ML utility | 2026-09-18 | Baseline |
-| GridSearchCV | `src/lib/KafeMACHINE/model_selection.py` (GridSearchCV) | ML utility | 2026-09-18 | Baseline |
-| RandomizedSearchCV | `src/lib/KafeMACHINE/model_selection.py` (RandomizedSearchCV) | ML utility | 2026-09-18 | Baseline |
-| Pipeline | `src/lib/KafeMACHINE/model_selection.py` (Pipeline) | ML utility | 2026-09-18 | Baseline |
+| GaussianNB | `src/lib/KafeMACHINE/naive_bayes/GaussianNB.py` | ML algorithm | 2026-09-14 | Baseline |
+| GaussianMixture | `src/lib/KafeMACHINE/clustering/GaussianMixture.py` | ML algorithm | 2026-09-21 | Baseline |
+| RandomForest | `src/lib/KafeMACHINE/tree/RandomForest.py` | ML algorithm | 2026-09-14 | Baseline |
+| RidgeRegression | `src/lib/KafeMACHINE/linear/RidgeRegression.py` | ML algorithm | 2026-09-14 | Baseline |
+| LassoRegression | `src/lib/KafeMACHINE/linear/LassoRegression.py` | ML algorithm | 2026-09-14 | Baseline |
+| SVR | `src/lib/KafeMACHINE/linear/SVR.py` | ML algorithm | 2026-09-14 | Baseline |
+| SVM | `src/lib/KafeMACHINE/svm/SVM.py` | ML algorithm | 2026-09-21 | Baseline |
+| ModelSelection | `src/lib/KafeMACHINE/model_selection/model_selection.py` | ML utility | 2026-09-18 | Baseline |
+| GridSearchCV | `src/lib/KafeMACHINE/model_selection/model_selection.py` (GridSearchCV) | ML utility | 2026-09-18 | Baseline |
+| RandomizedSearchCV | `src/lib/KafeMACHINE/model_selection/model_selection.py` (RandomizedSearchCV) | ML utility | 2026-09-18 | Baseline |
+| Pipeline | `src/lib/KafeMACHINE/model_selection/model_selection.py` (Pipeline) | ML utility | 2026-09-18 | Baseline |
 | PolynomialFeatures | `src/lib/KafeMACHINE/preprocessing/PolynomialFeatures.py` | ML preprocessing | 2026-09-21 | Baseline |
-| ElasticNet | `src/lib/KafeMACHINE/ElasticNet.py` | ML algorithm | 2026-09-21 | Baseline |
-| AgglomerativeClustering | `src/lib/KafeMACHINE/AgglomerativeClustering.py` | ML algorithm | 2026-09-21 | Baseline |
-| AdaBoost | `src/lib/KafeMACHINE/AdaBoost.py` | ML algorithm | 2026-09-21 | Baseline |
-| GradientBoostingClassifier | `src/lib/KafeMACHINE/GradientBoosting.py` (Classifier) | ML algorithm | 2026-09-21 | Baseline |
-| GradientBoostingRegressor | `src/lib/KafeMACHINE/GradientBoosting.py` (Regressor) | ML algorithm | 2026-09-21 | Baseline |
+| ElasticNet | `src/lib/KafeMACHINE/linear/ElasticNet.py` | ML algorithm | 2026-09-21 | Baseline |
+| AgglomerativeClustering | `src/lib/KafeMACHINE/clustering/AgglomerativeClustering.py` | ML algorithm | 2026-09-21 | Baseline |
+| AdaBoost | `src/lib/KafeMACHINE/ensemble/AdaBoost.py` | ML algorithm | 2026-09-21 | Baseline |
+| GradientBoostingClassifier | `src/lib/KafeMACHINE/ensemble/GradientBoosting.py` (Classifier) | ML algorithm | 2026-09-21 | Baseline |
+| GradientBoostingRegressor | `src/lib/KafeMACHINE/ensemble/GradientBoosting.py` (Regressor) | ML algorithm | 2026-09-21 | Baseline |
 | RobustScaler | `src/lib/KafeMACHINE/preprocessing/RobustScaler.py` | ML preprocessing | 2026-09-21 | Baseline |
-| DecisionTreeRegressor | `src/lib/KafeMACHINE/DecisionTree.py` (Regressor) | ML algorithm | 2026-09-21 | Baseline |
-| KNNRegressor | `src/lib/KafeMACHINE/KNN.py` (Regressor) | ML algorithm | 2026-09-21 | Baseline |
+| DecisionTreeRegressor | `src/lib/KafeMACHINE/tree/DecisionTree.py` (Regressor) | ML algorithm | 2026-09-21 | Baseline |
+| KNNRegressor | `src/lib/KafeMACHINE/neighbors/KNN.py` (Regressor) | ML algorithm | 2026-09-21 | Baseline |
 
 ---
 
@@ -89,7 +89,7 @@ Within this file, use this format for each benchmark:
 ### Benchmark: DecisionTreeClassifier
 
 - **Date**: 2026-08-04
-- **Component**: `src/lib/KafeMACHINE/DecisionTree.py`
+- **Component**: `src/lib/KafeMACHINE/tree/DecisionTree.py`
 - **Category**: ML algorithm
 - **Purpose**: Baseline performance characterization of the from-scratch Decision Tree implementation
 
@@ -122,7 +122,7 @@ Within this file, use this format for each benchmark:
 
 #### Related
 
-- Tests: `tests/KafeMACHINE/tree_models/`
+- Tests: `tests/KafeMACHINE/tree/`
 - Knowledge: `.opencode/knowledge/concepts/decision-tree.md`
 
 ---
@@ -277,7 +277,7 @@ Within this file, use this format for each benchmark:
 ### GridSearchCV — 2026-09-18
 
 - **Date**: 2026-09-18
-- **Component**: `src/lib/KafeMACHINE/model_selection.py` (GridSearchCV)
+- **Component**: `src/lib/KafeMACHINE/model_selection/model_selection.py` (GridSearchCV)
 - **Category**: ML utility
 - **Purpose**: Baseline performance characterization of GridSearchCV hyperparameter search
 
@@ -318,14 +318,14 @@ Within this file, use this format for each benchmark:
 
 - Tests: `tests/KafeMACHINE/model_selection/`
 - Knowledge: `.opencode/knowledge/concepts/grid-search.md`
-- Implementation: `src/lib/KafeMACHINE/model_selection.py`
+- Implementation: `src/lib/KafeMACHINE/model_selection/model_selection.py`
 
 ---
 
 ### RandomizedSearchCV — 2026-09-18
 
 - **Date**: 2026-09-18
-- **Component**: `src/lib/KafeMACHINE/model_selection.py` (RandomizedSearchCV)
+- **Component**: `src/lib/KafeMACHINE/model_selection/model_selection.py` (RandomizedSearchCV)
 - **Category**: ML utility
 - **Purpose**: Baseline performance characterization of RandomizedSearchCV hyperparameter search
 
@@ -366,12 +366,12 @@ Within this file, use this format for each benchmark:
 
 - Tests: `tests/KafeMACHINE/model_selection/`
 - Knowledge: `.opencode/knowledge/concepts/randomized-search.md`
-- Implementation: `src/lib/KafeMACHINE/model_selection.py`
+- Implementation: `src/lib/KafeMACHINE/model_selection/model_selection.py`
 
 ### Pipeline — 2026-09-18
 
 - **Date**: 2026-09-18
-- **Component**: `src/lib/KafeMACHINE/model_selection.py` (Pipeline)
+- **Component**: `src/lib/KafeMACHINE/model_selection/model_selection.py` (Pipeline)
 - **Category**: ML utility
 - **Purpose**: Baseline performance characterization of Pipeline chaining preprocessing and model
 
@@ -412,14 +412,14 @@ Within this file, use this format for each benchmark:
 
 - Tests: `tests/KafeMACHINE/model_selection/`
 - Knowledge: `.opencode/knowledge/concepts/pipeline.md`
-- Implementation: `src/lib/KafeMACHINE/model_selection.py`
+- Implementation: `src/lib/KafeMACHINE/model_selection/model_selection.py`
 
 ---
 
 ### Benchmark: SVM — 2026-09-21
 
 - **Date**: 2026-09-21
-- **Component**: `src/lib/KafeMACHINE/SVM.py`
+- **Component**: `src/lib/KafeMACHINE/svm/SVM.py`
 - **Category**: ML algorithm
 - **Purpose**: Baseline performance characterization of the from-scratch SVM Classifier implementation
 
@@ -460,14 +460,14 @@ Within this file, use this format for each benchmark:
 
 - Tests: `tests/KafeMACHINE/svm/`
 - Knowledge: `.opencode/knowledge/concepts/svm.md`
-- Implementation: `src/lib/KafeMACHINE/SVM.py`
+- Implementation: `src/lib/KafeMACHINE/svm/SVM.py`
 
 ---
 
 ### Benchmark: AgglomerativeClustering — 2026-09-21
 
 - **Date**: 2026-09-21
-- **Component**: `src/lib/KafeMACHINE/AgglomerativeClustering.py`
+- **Component**: `src/lib/KafeMACHINE/clustering/AgglomerativeClustering.py`
 - **Category**: ML algorithm
 - **Purpose**: Baseline performance characterization of the from-scratch Agglomerative Clustering implementation
 
@@ -510,14 +510,14 @@ Within this file, use this format for each benchmark:
 
 - Tests: `tests/KafeMACHINE/clustering/`
 - Knowledge: `.opencode/knowledge/concepts/agglomerative-clustering.md`
-- Implementation: `src/lib/KafeMACHINE/AgglomerativeClustering.py`
+- Implementation: `src/lib/KafeMACHINE/clustering/AgglomerativeClustering.py`
 
 ---
 
 ### Benchmark: AdaBoost — 2026-09-21
 
 - **Date**: 2026-09-21
-- **Component**: `src/lib/KafeMACHINE/AdaBoost.py`
+- **Component**: `src/lib/KafeMACHINE/ensemble/AdaBoost.py`
 - **Category**: ML algorithm
 - **Purpose**: Baseline performance characterization of the from-scratch AdaBoostClassifier implementation
 
@@ -559,14 +559,14 @@ Within this file, use this format for each benchmark:
 
 - Tests: `tests/KafeMACHINE/ensemble/`
 - Knowledge: `.opencode/knowledge/concepts/adaboost.md`
-- Implementation: `src/lib/KafeMACHINE/AdaBoost.py`
+- Implementation: `src/lib/KafeMACHINE/ensemble/AdaBoost.py`
 
 ---
 
 ### Benchmark: GradientBoostingClassifier — 2026-09-21
 
 - **Date**: 2026-09-21
-- **Component**: `src/lib/KafeMACHINE/GradientBoosting.py` (GradientBoostingClassifier)
+- **Component**: `src/lib/KafeMACHINE/ensemble/GradientBoosting.py` (GradientBoostingClassifier)
 - **Category**: ML algorithm
 - **Purpose**: Baseline performance characterization of the from-scratch GradientBoostingClassifier implementation
 
@@ -608,14 +608,14 @@ Within this file, use this format for each benchmark:
 
 - Tests: `tests/KafeMACHINE/ensemble/`
 - Knowledge: `.opencode/knowledge/concepts/gradient-boosting-classifier.md`
-- Implementation: `src/lib/KafeMACHINE/GradientBoosting.py`
+- Implementation: `src/lib/KafeMACHINE/ensemble/GradientBoosting.py`
 
 ---
 
 ### Benchmark: GradientBoostingRegressor — 2026-09-21
 
 - **Date**: 2026-09-21
-- **Component**: `src/lib/KafeMACHINE/GradientBoosting.py` (GradientBoostingRegressor)
+- **Component**: `src/lib/KafeMACHINE/ensemble/GradientBoosting.py` (GradientBoostingRegressor)
 - **Category**: ML algorithm
 - **Purpose**: Baseline performance characterization of the from-scratch GradientBoostingRegressor implementation
 
@@ -657,14 +657,14 @@ Within this file, use this format for each benchmark:
 
 - Tests: `tests/KafeMACHINE/ensemble/`
 - Knowledge: `.opencode/knowledge/concepts/gradient-boosting-regressor.md`
-- Implementation: `src/lib/KafeMACHINE/GradientBoosting.py`
+- Implementation: `src/lib/KafeMACHINE/ensemble/GradientBoosting.py`
 
 ---
 
 ### Benchmark: LinearDiscriminantAnalysis — 2026-09-21
 
 - **Date**: 2026-09-21
-- **Component**: `src/lib/KafeMACHINE/LinearDiscriminantAnalysis.py`
+- **Component**: `src/lib/KafeMACHINE/discriminant/LinearDiscriminantAnalysis.py`
 - **Category**: ML algorithm
 - **Purpose**: Baseline performance characterization of the from-scratch LinearDiscriminantAnalysis implementation
 
@@ -705,9 +705,9 @@ Within this file, use this format for each benchmark:
 
 #### Related
 
-- Tests: `tests/KafeMACHINE/linear_models/`
+- Tests: `tests/KafeMACHINE/linear/`
 - Knowledge: `.opencode/knowledge/concepts/linear-discriminant-analysis.md`
-- Implementation: `src/lib/KafeMACHINE/LinearDiscriminantAnalysis.py`
+- Implementation: `src/lib/KafeMACHINE/discriminant/LinearDiscriminantAnalysis.py`
 
 ---
 
@@ -724,7 +724,7 @@ Within this file, use this format for each benchmark:
 ### Benchmark: DecisionTreeRegressor — 2026-09-21
 
 - **Date**: 2026-09-21
-- **Component**: `src/lib/KafeMACHINE/DecisionTree.py` (DecisionTreeRegressor)
+- **Component**: `src/lib/KafeMACHINE/tree/DecisionTree.py` (DecisionTreeRegressor)
 - **Category**: ML algorithm
 - **Purpose**: Baseline performance characterization of the from-scratch DecisionTreeRegressor implementation
 
@@ -764,16 +764,16 @@ Within this file, use this format for each benchmark:
 
 #### Related
 
-- Tests: `tests/KafeMACHINE/tree_models/`
+- Tests: `tests/KafeMACHINE/tree/`
 - Knowledge: `.opencode/knowledge/concepts/decision-tree-regressor.md`
-- Implementation: `src/lib/KafeMACHINE/DecisionTree.py`
+- Implementation: `src/lib/KafeMACHINE/tree/DecisionTree.py`
 
 ---
 
 ### Benchmark: KNNRegressor — 2026-09-21
 
 - **Date**: 2026-09-21
-- **Component**: `src/lib/KafeMACHINE/KNN.py` (KNNRegressor)
+- **Component**: `src/lib/KafeMACHINE/neighbors/KNN.py` (KNNRegressor)
 - **Category**: ML algorithm
 - **Purpose**: Baseline performance characterization of the from-scratch KNNRegressor implementation
 
@@ -815,14 +815,14 @@ Within this file, use this format for each benchmark:
 
 - Tests: `tests/KafeMACHINE/neighbors/`
 - Knowledge: `.opencode/knowledge/concepts/knn-regressor.md`
-- Implementation: `src/lib/KafeMACHINE/KNN.py`
+- Implementation: `src/lib/KafeMACHINE/neighbors/KNN.py`
 
 ---
 
 ### Benchmark: GaussianNB — 2026-09-14
 
 - **Date**: 2026-09-14
-- **Component**: `src/lib/KafeMACHINE/GaussianNB.py`
+- **Component**: `src/lib/KafeMACHINE/naive_bayes/GaussianNB.py`
 - **Category**: ML algorithm
 - **Purpose**: Baseline performance characterization of the from-scratch Gaussian Naive Bayes implementation
 
@@ -865,7 +865,7 @@ Within this file, use this format for each benchmark:
 
 - Tests: `tests/KafeMACHINE/naive_bayes/`
 - Knowledge: `.opencode/knowledge/concepts/gaussian-naive-bayes.md`
-- Implementation: `src/lib/KafeMACHINE/GaussianNB.py`
+- Implementation: `src/lib/KafeMACHINE/naive_bayes/GaussianNB.py`
 
 ### DBSCAN — 2026-09-14
 
@@ -888,7 +888,7 @@ Within this file, use this format for each benchmark:
 ### RandomForestClassifier — 2026-09-14
 
 - **Date**: 2026-09-14
-- **Component**: `src/lib/KafeMACHINE/RandomForest.py`
+- **Component**: `src/lib/KafeMACHINE/tree/RandomForest.py`
 - **Category**: ML algorithm
 - **Purpose**: Baseline performance characterization of the from-scratch Random Forest Classifier implementation
 
@@ -928,9 +928,9 @@ Within this file, use this format for each benchmark:
 
 #### Related
 
-- Tests: `tests/KafeMACHINE/tree_models/`
+- Tests: `tests/KafeMACHINE/tree/`
 - Knowledge: `.opencode/knowledge/concepts/random-forest.md`
-- Implementation: `src/lib/KafeMACHINE/RandomForest.py`
+- Implementation: `src/lib/KafeMACHINE/tree/RandomForest.py`
 
 ### RandomForestRegressor — 2026-09-14
 
@@ -975,9 +975,9 @@ Within this file, use this format for each benchmark:
 ### ModelSelection — 2026-09-18
 
 - **Date**: 2026-09-18
-- **Component**: `src/lib/KafeMACHINE/model_selection.py`
+- **Component**: `src/lib/KafeMACHINE/model_selection/model_selection.py`
 - **Category**: ML utility
-- **Purpose**: Baseline performance characterization of train_test_split and k_fold_cross_validation
+- **Purpose**: Baseline performance characterization of train_test_split and k_fold
 
 #### Setup
 
@@ -985,7 +985,7 @@ Within this file, use this format for each benchmark:
 - **Scenario 2 (Large split)**: 1000 samples, 5 features, test_size=0.3
 - **Scenario 3 (5-fold CV)**: 20 samples, 2 features, k=5
 - **Scenario 4 (10-fold CV)**: 100 samples, 4 features, k=10
-- **Scenario 5 (Stratified split)**: 50 samples, 3 features, 3 classes, test_size=0.2
+- **Scenario 5 (Class-labeled split)**: 50 samples, 3 features, 3 classes, test_size=0.2; this checks split size, not stratification
 - **Hardware**: Development machine (CPU only)
 - **Environment**: Python 3.10+, Windows, no external dependencies
 
@@ -1001,23 +1001,23 @@ Within this file, use this format for each benchmark:
 |----------|---------|-----------|------------|-----------|-----------|---------|
 | Small split | 1D | 10 | 1 | train_test_split | <1 | Yes |
 | Large split | 5D | 1000 | 5 | train_test_split | <5 | Yes |
-| 5-fold CV | 2D | 20 | 2 | k_fold_cross_validation | <50 | Yes |
-| 10-fold CV | 4D | 100 | 4 | k_fold_cross_validation | <200 | Yes |
-| Stratified split | 3-class | 50 | 3 | train_test_split (stratified) | <5 | Yes |
+| 5-fold CV | 2D | 20 | 2 | k_fold | <50 | Yes |
+| 10-fold CV | 4D | 100 | 4 | k_fold | <200 | Yes |
+| Class-labeled split | 3-class | 50 | 3 | train_test_split (shuffled; not stratified) | <5 | Yes |
 
 #### Conclusions
 
 - `train_test_split` is O(n) — single pass shuffle + slice
-- `k_fold_cross_validation` is O(k · T_model) — dominated by model training cost
+- `k_fold` generates index partitions and does not fit or evaluate a model
 - Negligible overhead for utility functions themselves
-- Stratified split preserves class distribution accurately
+- `train_test_split` does not guarantee preservation of class proportions
 - No external dependencies; pure Python
 
 #### Related
 
 - Tests: `tests/KafeMACHINE/model_selection/`
 - Knowledge: `.opencode/knowledge/concepts/train-test-split.md`, `.opencode/knowledge/concepts/k-fold-cross-validation.md`
-- Implementation: `src/lib/KafeMACHINE/model_selection.py`
+- Implementation: `src/lib/KafeMACHINE/model_selection/model_selection.py`
 
 ---
 
@@ -1030,11 +1030,11 @@ Within this file, use this format for each benchmark:
 
 #### Setup
 
-- **Scenario 1 (Basic, degree=2)**: 5 samples, 2 features, degree=2, include_bias=true
-- **Scenario 2 (Degree=3)**: 5 samples, 2 features, degree=3, include_bias=true
-- **Scenario 3 (Single feature)**: 5 samples, 1 feature, degree=2, include_bias=true
-- **Scenario 4 (4 features)**: 10 samples, 4 features, degree=2, include_bias=false
-- **Scenario 5 (Larger dataset)**: 50 samples, 3 features, degree=2, include_bias=true
+- **Scenario 1 (Basic, degree=2)**: 5 samples, 2 features, degree=2, include_bias=True
+- **Scenario 2 (Degree=3)**: 5 samples, 2 features, degree=3, include_bias=True
+- **Scenario 3 (Single feature)**: 5 samples, 1 feature, degree=2, include_bias=True
+- **Scenario 4 (4 features)**: 10 samples, 4 features, degree=2, include_bias=False
+- **Scenario 5 (Larger dataset)**: 50 samples, 3 features, degree=2, include_bias=True
 - **Hardware**: Development machine (CPU only)
 - **Environment**: Python 3.10+, Windows, no external dependencies
 
@@ -1073,7 +1073,7 @@ Within this file, use this format for each benchmark:
 ### Benchmark: ElasticNet — 2026-09-21
 
 - **Date**: 2026-09-21
-- **Component**: `src/lib/KafeMACHINE/ElasticNet.py`
+- **Component**: `src/lib/KafeMACHINE/linear/ElasticNet.py`
 - **Category**: ML algorithm
 - **Purpose**: Baseline performance characterization of the from-scratch ElasticNet regression implementation
 
@@ -1113,9 +1113,9 @@ Within this file, use this format for each benchmark:
 
 #### Related
 
-- Tests: `tests/KafeMACHINE/linear_models/`
+- Tests: `tests/KafeMACHINE/linear/`
 - Knowledge: `.opencode/knowledge/concepts/elastic-net.md`
-- Implementation: `src/lib/KafeMACHINE/ElasticNet.py`
+- Implementation: `src/lib/KafeMACHINE/linear/ElasticNet.py`
 
 ---
 
@@ -1171,7 +1171,7 @@ Within this file, use this format for each benchmark:
 ### Benchmark: GaussianMixture — 2026-09-21
 
 - **Date**: 2026-09-21
-- **Component**: `src/lib/KafeMACHINE/GaussianMixture.py`
+- **Component**: `src/lib/KafeMACHINE/clustering/GaussianMixture.py`
 - **Category**: ML algorithm
 - **Purpose**: Baseline performance characterization of the from-scratch Gaussian Mixture Model implementation
 
@@ -1213,4 +1213,4 @@ Within this file, use this format for each benchmark:
 
 - Tests: `tests/KafeMACHINE/clustering/`
 - Knowledge: `.opencode/knowledge/concepts/gaussian-mixture.md`
-- Implementation: `src/lib/KafeMACHINE/GaussianMixture.py`
+- Implementation: `src/lib/KafeMACHINE/clustering/GaussianMixture.py`

@@ -4,7 +4,7 @@ Active project planning. Do not move this content into AGENTS.md (see AGENTS.md 
 
 ## Repository Policy Alignment
 
-The policy baseline is committed separately in local commits `845bcb3` and `d27df87`. The user-approved `build/uv-environment` branch contains the locked uv setup implementation, locally validated (485 tests and a clean docs build), pushed, and verified by GitHub test CI at `b40965f` (485 passed). The `test/interpreter-quality-evidence` branch is complete: 497 tests passed in 353.72s at 83.78% coverage across 111 tracked source files with no warnings; independent review passed; commit `6e8edd5` was pushed and GitHub `Run Tests` passed at its exact SHA (run 127). The remaining sequence is `refactor/english-repository` → `chore/python-quality-gates`; get explicit authorization before creating or switching to a later branch. See `.opencode/progress/repository-alignment.md` for branch scopes, dependencies, exit criteria, and open English-migration decisions. Commits and pushes are authorized when needed.
+The policy baseline is committed separately in local commits `845bcb3` and `d27df87`. The user-approved `build/uv-environment` branch contains the locked uv setup implementation, locally validated (485 tests and a clean docs build), pushed, and verified by GitHub test CI at `b40965f` (485 passed). The `test/interpreter-quality-evidence` branch is complete: 497 tests passed in 353.72s at 83.78% coverage across 111 tracked source files with no warnings; independent review passed; commit `6e8edd5` was pushed and GitHub `Run Tests` passed at its exact SHA (run 127). The active sequence is `refactor/english-repository` → `chore/python-quality-gates`; the English branch's Tasks 1–7 are complete, with the 498-test suite passing at 83.78% coverage and the tracked-tree language audit clear. Commits and pushes are authorized when needed. See `.opencode/progress/repository-alignment.md` for scopes, dependencies, exit criteria, and resolved migration decisions.
 
 ## Machine Learning
 - ✔ Base Machine (2026-07-28)
@@ -64,17 +64,18 @@ The policy baseline is committed separately in local commits `845bcb3` and `d27d
 - ✔ Model validation improvements — dimension checks, len(X)==len(y), hyperparameter validation (2026-09-14)
 - ✔ CI Test Suite Fixes — pre-existing broken tests fixed, CrossValScore architecture fix (2026-09-21)
 - ✔ KafeGESHA clustering test — platform-independence fix (2026-09-21)
-- ☐ Harness Engineering — Actualizar reglas (5 benchmarks, conceptos enriquecidos, verificación de contexto)
-- ☐ Engineering Lead Permissions — Permisos edit/write para docs y records
+- ✔ English repository migration — Tasks 1–7 completed (2026-09-24)
+- ☐ Harness Engineering — Update rules for five benchmarks, enriched concepts, and context verification
+- ☐ Engineering Lead permissions — edit/write access for documentation and records
 
-## Review Tasks (Historical) — Pendientes de Revisión Full
+## Historical Review Tasks — Full Review Pending
 
-Cada implementación debe pasar por el flujo completo del harness engineering:
-Impact Analysis → Implementación → 5 Benchmarks → Concepto Enriquecido → Docs → History → DoD
+Each implementation must pass through the full engineering-harness workflow:
+Impact Analysis → Implementation → Five Benchmarks → Enriched Concept → Docs → History → Definition of Done
 
-- ☐ Revisión de BaseMachine — fit/transform/score, concepto enriquecido, 5 benchmarks, history 28 julio
-- ☐ Revisión de LinearRegression — OLS normal equation, concepto enriquecido, 5 benchmarks, history 28 julio
-- ☐ Revisión de LogisticRegression — gradient descent + sigmoid, concepto enriquecido, 5 benchmarks, history 28 julio
-- ☐ Revisión de KNN — Euclidean distance, concepto enriquecido, 5 benchmarks, history 28 julio
-- ☐ Revisión de Métricas de Clasificación — accuracy/precision/recall/F1, concepto enriquecido, 5 benchmarks, history 28 julio
-- ☐ Revisión de Métricas de Regresión — MSE/MAE/R², concepto enriquecido, 5 benchmarks, history 28 julio
+- ☐ Review BaseMachine — fit/transform/score, enriched concept, five benchmarks, July 28 history
+- ☐ Review LinearRegression — OLS normal equation, enriched concept, five benchmarks, July 28 history
+- ☐ Review LogisticRegression — gradient descent + sigmoid, enriched concept, five benchmarks, July 28 history
+- ☐ Review KNN — Euclidean distance, enriched concept, five benchmarks, July 28 history
+- ☐ Review classification metrics — accuracy/precision/recall/F1, enriched concept, five benchmarks, July 28 history
+- ☐ Review regression metrics — MSE/MAE/R², enriched concept, five benchmarks, July 28 history

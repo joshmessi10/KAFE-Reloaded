@@ -2,80 +2,80 @@
 
 ## Mathematical Foundation
 
-SVR es una extensión de SVM para regresión que encuentra un hiperplano que ajusta los datos dentro de un margen de ε (epsilon).
+SVR extends SVM to regression. It finds a hyperplane that fits the data within a margin of width $\epsilon$.
 
 ### Epsilon-Insensitive Loss
 
-SVR usa una función de pérdida epsilon-insensitive:
+SVR uses an epsilon-insensitive loss function:
 
 $$L_\epsilon(y, f(x)) = \max(0, |y - f(x)| - \epsilon)$$
 
-Solo penaliza predicciones que están fuera del tubo de radio ε.
+It penalizes only predictions outside the tube of radius $\epsilon$.
 
-### Formulación
+### Formulation
 
-Minimiza:
+The objective is to minimize:
 
 $$\frac{1}{2}||w||^2 + C \sum_{i=1}^{n} L_\epsilon(y_i, f(x_i))$$
 
-Donde:
-- $w$ = pesos del modelo
-- $C$ = parámetro de regularización (trade-off entre flatness y tolerancia)
-- $\epsilon$ = ancho del tubo epsilon-insensitive
+Where:
+- $w$ = model weights
+- $C$ = regularization parameter (trade-off between flatness and tolerance)
+- $\epsilon$ = width of the epsilon-insensitive tube
 - $f(x) = w \cdot x + b$
 
-### Support Vectores
+### Support Vectors
 
-Los puntos que están fuera o en el borde del tubo ε son los **support vectors**. Solo estos puntos contribuyen al modelo.
+Points on or outside the boundary of the $\epsilon$ tube are the **support vectors**. Only these points contribute to the model.
 
 ### Kernels
 
-- **Lineal**: $K(x_i, x_j) = x_i \cdot x_j$
+- **Linear**: $K(x_i, x_j) = x_i \cdot x_j$
 - **RBF (Gaussian)**: $K(x_i, x_j) = \exp(-\gamma ||x_i - x_j||^2)$
-- **Polinomial**: $K(x_i, x_j) = (x_i \cdot x_j + 1)^d$
+- **Polynomial**: $K(x_i, x_j) = (x_i \cdot x_j + 1)^d$
 
-## Complejidad Computacional
+## Computational Complexity
 
-| Operación | Complejidad Temporal | Complejidad Espacial |
-|-----------|---------------------|---------------------|
-| Training | $O(n^2 \cdot m)$ (kernel) o $O(n \cdot m)$ (linear) | $O(n^2)$ (kernel) o $O(m)$ (linear) |
-| Prediction | $O(n_{sv} \cdot m)$ (kernel) o $O(m)$ (linear) | $O(n_{sv})$ |
+| Operation | Time Complexity | Space Complexity |
+|-----------|-----------------|------------------|
+| Training | $O(n^2 \cdot m)$ (kernel) or $O(n \cdot m)$ (linear) | $O(n^2)$ (kernel) or $O(m)$ (linear) |
+| Prediction | $O(n_{sv} \cdot m)$ (kernel) or $O(m)$ (linear) | $O(n_{sv})$ |
 
-Donde $n$ = muestras, $m$ = features, $n_{sv}$ = vectores de soporte.
+Where $n$ = number of samples, $m$ = number of features, and $n_{sv}$ = number of support vectors.
 
-## Ventajas
+## Advantages
 
-1. **Robusto a outliers** — epsilon-insensitive loss ignora errores pequeños
-2. **Efectivo en alta dimensión** — kernel trick maneja features no lineales
-3. **Generalización** — maximiza el margen, minimiza overfitting
-4. **Sparse model** — solo usa support vectors para predicción
+1. **Robust to outliers** — epsilon-insensitive loss ignores small errors.
+2. **Effective in high dimensions** — the kernel trick handles nonlinear features.
+3. **Generalization** — maximizes the margin to reduce overfitting.
+4. **Sparse model** — prediction uses only support vectors.
 
-## Limitaciones
+## Limitations
 
-1. **Escalabilidad** — entrenamiento O(n²) con kernels
-2. **Sensible a hiperparámetros** — C y ε deben ajustarse cuidadosamente
-3. **No probabilístico** — no produce probabilidades comooutput
-4. **Interpretabilidad limitada** — kernel no lineal es difícil de interpretar
+1. **Scalability** — kernel training takes $O(n^2)$ time.
+2. **Hyperparameter sensitivity** — $C$ and $\epsilon$ require careful tuning.
+3. **Not probabilistic** — it does not produce probabilities as output.
+4. **Limited interpretability** — nonlinear kernels are difficult to interpret.
 
-## Cuando Usar
+## When to Use
 
-- Datos con outliers
-- Relaciones no lineales (con kernel)
-- Alta dimensionalidad
-- Necesitas robustez
+- Data with outliers.
+- Nonlinear relationships (with a kernel).
+- High-dimensional data.
+- When robustness is important.
 
-## Cuando NO Usar
+## When NOT to Use
 
-- Datasets muy grandes (entrenamiento lento)
-- Necesitas probabilidades
-- Interpretabilidad crítica
+- Very large datasets (training is slow).
+- When probability estimates are required.
+- When interpretability is critical.
 
-## Relación con KAFE
+## Relationship with KAFE
 
-KAFE implementa SVR desde scratch:
-- **Lineal**: Coordinate Descent con epsilon-insensitive loss
-- **Kernel**: SMO simplificado con kernel matrix
-- Soporta kernels lineal, RBF y polinomial
+KAFE implements SVR from scratch:
+- **Linear**: coordinate descent with epsilon-insensitive loss.
+- **Kernel**: simplified SMO with a kernel matrix.
+- Supports linear, RBF, and polynomial kernels.
 
 ## References
 

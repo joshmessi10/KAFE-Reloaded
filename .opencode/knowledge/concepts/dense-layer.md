@@ -1,210 +1,204 @@
-# Dense Layer (Capa Densamente Conectada)
+# Dense Layer (Fully Connected Layer)
 
 ## Category
 
-Deep Learning — Componente de red neuronal
+Deep learning — neural-network component
 
 ## Description
 
-Una capa Dense (totalmente conectada o fully connected) es el bloque fundamental de las redes neuronales artificiales. Cada neurona de la capa recibe la **totalidad** de las entradas y produce una salida mediante una transformación lineal seguida de una función de activación no lineal.
+A Dense layer (also called a fully connected layer) is a fundamental building block of artificial neural networks. Every neuron receives all inputs and produces an output by applying a linear transformation followed by a nonlinear activation function.
 
-Una capa Dense implementa el **perceptrón multicapa**: cada unidad $j$ calcula una suma ponderada de todas las entradas $x_i$, le agrega un sesgo $b_j$, y aplica una función de activación $\sigma$:
+For unit $j$, the layer computes a weighted sum of all inputs $x_i$, adds a bias $b_j$, and applies an activation function $\sigma$:
 
 $$z_j = \sum_{i=1}^{n} w_{ij} \cdot x_i + b_j$$
 
 $$a_j = \sigma(z_j)$$
 
-Donde:
-- $w_{ij}$ es el peso de la conexión entre la entrada $i$ y la unidad $j$
-- $b_j$ es el sesgo (bias) de la unidad $j$
-- $\sigma$ es la función de activación
-- $z_j$ es la pre-activación (input lineal)
-- $a_j$ es la salida activada
+Where:
+- $w_{ij}$ is the weight connecting input $i$ to unit $j$.
+- $b_j$ is the bias of unit $j$.
+- $\sigma$ is the activation function.
+- $z_j$ is the pre-activation value (the linear input).
+- $a_j$ is the activated output.
 
-**Dimensiones**: Para una capa con $n$ entradas y $m$ unidades:
-- Pesos: matriz $W \in \mathbb{R}^{n \times m}$
-- Sesgos: vector $b \in \mathbb{R}^{m}$
-- Salida: vector $a \in \mathbb{R}^{m}$
+**Dimensions**: For a layer with $n$ inputs and $m$ units:
+- Weights: matrix $W \in \mathbb{R}^{n \times m}$.
+- Biases: vector $b \in \mathbb{R}^{m}$.
+- Output: vector $a \in \mathbb{R}^{m}$.
 
-**Complejidad**:
-- Forward: $O(n \cdot m)$ multiplicaciones
-- Backward: $O(n \cdot m)$ para gradientes + $O(n \cdot m)$ para actualización
-- Espacio: $O(n \cdot m)$ para almacenar pesos + $O(m)$ para sesgos
+**Complexity**:
+- Forward pass: $O(n \cdot m)$ multiplications.
+- Backward pass: $O(n \cdot m)$ for gradients and $O(n \cdot m)$ for updates.
+- Space: $O(n \cdot m)$ for weights and $O(m)$ for biases.
 
 ## Mathematical Foundation
 
 ### Forward Pass
 
-Para una entrada $x \in \mathbb{R}^n$ y pesos $W \in \mathbb{R}^{n \times m}$, $b \in \mathbb{R}^m$:
+For input $x \in \mathbb{R}^n$, weights $W \in \mathbb{R}^{n \times m}$, and bias $b \in \mathbb{R}^m$:
 
 $$z = W^T x + b \in \mathbb{R}^m$$
 
 $$a = \sigma(z) \in \mathbb{R}^m$$
 
-### Backward Pass (Retropropagación)
+### Backward Pass
 
-Dado el gradiente de la pérdida respecto a la salida $\frac{\partial L}{\partial a}$, se calcula:
+Given the loss gradient with respect to the output $\frac{\partial L}{\partial a}$, compute:
 
-1. **Gradiente de pre-activación**:
+1. **Pre-activation gradient**:
 $$\frac{\partial L}{\partial z_j} = \frac{\partial L}{\partial a_j} \cdot \sigma'(z_j)$$
 
-2. **Gradiente de pesos**:
+2. **Weight gradient**:
 $$\frac{\partial L}{\partial w_{ij}} = x_i \cdot \frac{\partial L}{\partial z_j}$$
 
-3. **Gradiente de sesgos**:
+3. **Bias gradient**:
 $$\frac{\partial L}{\partial b_j} = \frac{\partial L}{\partial z_j}$$
 
-4. **Gradiente para la capa anterior** (para encadenar):
+4. **Gradient for the previous layer**:
 $$\frac{\partial L}{\partial x_i} = \sum_{j=1}^{m} w_{ij} \cdot \frac{\partial L}{\partial z_j}$$
 
-### Regla de Actualización de Pesos
+### Weight Update
 
-Con tasa de aprendizaje $\eta$:
+Using learning rate $\eta$:
 
 $$w_{ij} \leftarrow w_{ij} - \eta \cdot \frac{\partial L}{\partial w_{ij}}$$
 
 $$b_j \leftarrow b_j - \eta \cdot \frac{\partial L}{\partial b_j}$$
 
-### Regularización L2 (Weight Decay)
+### L2 Regularization (Weight Decay)
 
-El término de regularización agrega una penalización al gradiente:
+The regularization term adds a penalty to the weight gradient:
 
 $$\frac{\partial L}{\partial w_{ij}} = \frac{\partial L}{\partial w_{ij}} + \lambda \cdot w_{ij}$$
 
-Donde $\lambda$ es el hiperparámetro de regularización.
+Here, $\lambda$ is the regularization hyperparameter.
 
 ## Step-by-Step Algorithm
 
-### Inicialización
+### Initialization
 
-1. Seleccionar el número de unidades $m$ y la forma de entrada $n$.
-2. Inicializar pesos $W$ con valores aleatorios en $[-0.5, 0.5]$ (usando semilla opcional para reproducibilidad).
-3. Inicializar sesgos $b$ con ceros.
+1. Choose the number of units $m$ and input dimension $n$.
+2. Initialize weights $W$ with random values in $[-0.5, 0.5]$ (an optional seed makes initialization reproducible).
+3. Initialize biases $b$ to zero.
 
 ### Forward Pass
 
-4. Recibir vector de entrada $x$.
-5. Si los pesos no están inicializados, hacer `build(len(x))`.
-6. Para cada unidad $j = 1, \ldots, m$:
-   a. Calcular $z_j = \sum_{i=1}^{n} x_i \cdot w_{ij} + b_j$.
-7. Aplicar función de activación $\sigma$ a cada $z_j$.
-8. Si la activación es Softmax, aplicar sobre el vector completo $\mathbf{z}$.
-9. Retornar vector de salida $a$.
+4. Receive input vector $x$.
+5. If weights are not initialized, call `build(len(x))`.
+6. For each unit $j = 1, \ldots, m$, compute $z_j = \sum_{i=1}^{n} x_i \cdot w_{ij} + b_j$.
+7. Apply activation function $\sigma$ to each $z_j$.
+8. For Softmax, apply the activation to the complete vector $\mathbf{z}$.
+9. Return output vector $a$.
 
 ### Backward Pass
 
-10. Recibir gradiente de salida $\frac{\partial L}{\partial a}$.
-11. Calcular gradiente de pre-activación:
-    - Si Softmax: usar el gradiente directo (ya incluye la derivada Jacobiana).
-    - Si otra activación: $\frac{\partial L}{\partial z_j} = \frac{\partial L}{\partial a_j} \cdot \sigma'(z_j)$.
-12. Calcular gradiente de pesos: $\frac{\partial L}{\partial w_{ij}} = x_i \cdot \frac{\partial L}{\partial z_j}$.
-13. Calcular gradiente de sesgos: $\frac{\partial L}{\partial b_j} = \frac{\partial L}{\partial z_j}$.
-14. Si hay regularización L2: agregar $\lambda \cdot w_{ij}$ al gradiente de pesos.
-15. Actualizar pesos: $w_{ij} \leftarrow w_{ij} - \eta \cdot \frac{\partial L}{\partial w_{ij}}$.
-16. Actualizar sesgos: $b_j \leftarrow b_j - \eta \cdot \frac{\partial L}{\partial b_j}$.
-17. Calcular y retornar gradiente para la capa anterior: $\frac{\partial L}{\partial x_i} = \sum_{j=1}^{m} w_{ij} \cdot \frac{\partial L}{\partial z_j}$.
+10. Receive output gradient $\frac{\partial L}{\partial a}$.
+11. Compute the pre-activation gradient. For Softmax, the layer uses the supplied gradient directly; for other activations, compute $\frac{\partial L}{\partial z_j} = \frac{\partial L}{\partial a_j} \cdot \sigma'(z_j)$.
+12. Compute weight gradients: $\frac{\partial L}{\partial w_{ij}} = x_i \cdot \frac{\partial L}{\partial z_j}$.
+13. Compute bias gradients: $\frac{\partial L}{\partial b_j} = \frac{\partial L}{\partial z_j}$.
+14. If L2 regularization is enabled, add $\lambda \cdot w_{ij}$ to the weight gradients.
+15. Update weights: $w_{ij} \leftarrow w_{ij} - \eta \cdot \frac{\partial L}{\partial w_{ij}}$.
+16. Update biases: $b_j \leftarrow b_j - \eta \cdot \frac{\partial L}{\partial b_j}$.
+17. Compute and return the gradient for the previous layer: $\frac{\partial L}{\partial x_i} = \sum_{j=1}^{m} w_{ij} \cdot \frac{\partial L}{\partial z_j}$.
 
 ## Motivation
 
-La capa Dense es el building block esencial de las redes neuronales profundas. Sin ella, no existe forma de aprender representaciones jerárquicas de los datos. KafeGESHA implementa Dense desde cero para que el estudiante pueda observar cada multiplicación de matriz, cada cálculo de gradiente, y cada actualización de peso — sin abstracciones que oculten la mecánica del aprendizaje.
+Dense layers are essential building blocks in deep neural networks. KafeGESHA implements them directly so students can inspect matrix multiplications, gradient calculations, and weight updates without abstractions hiding the learning mechanics.
 
 ## Advantages
 
-- **Universalidad aproximada**: Una red con al menos una capa Dense oculta y suficientes unidades puede aproximar cualquier función continua (Teorema de Universalidad de Cybenko).
-- **Simplicidad conceptual**: La operación es una combinación lineal + activación no lineal, fácil de entender y derivar.
-- **Composabilidad**: Se apilan múltiples capas para crear redes profundas con mayor capacidad de representación.
-- **Flexibilidad**: Acepta cualquier función de activación, cualquier dimensionalidad de entrada/salida.
+- **Universal approximation**: A network with at least one hidden Dense layer and enough units can approximate any continuous function (Cybenko's universal approximation theorem).
+- **Conceptual simplicity**: The operation is a linear combination followed by a nonlinear activation, which is easy to understand and differentiate.
+- **Composability**: Stacking layers creates deep networks with greater representational capacity.
+- **Flexibility**: Supports different activation functions and input/output dimensions.
 
 ## Limitations
 
-- **Parámetros cuadráticos**: Para una capa de $n$ entradas y $m$ salidas, tiene $n \cdot m + m$ parámetros. Las capas muy anchas generan modelos pesados.
-- **No capturan estructura espacial**: A diferencia de capas convolucionales, no aprovechan la estructura espacial de imágenes o secuencias.
-- **Sensibles a la inicialización**: Una mala inicialización puede causar vanishing/exploding gradients.
-- **Overfitting sin regularización**: Con muchos parámetros, tiende a memorizar en lugar de generalizar.
+- **Quadratic parameter growth**: A layer with $n$ inputs and $m$ outputs has $n \cdot m + m$ parameters. Very wide layers create large models.
+- **No spatial inductive bias**: Unlike convolutional layers, Dense layers do not exploit the spatial structure of images or sequences.
+- **Initialization sensitivity**: Poor initialization can cause vanishing or exploding gradients.
+- **Overfitting without regularization**: With many parameters, a layer can memorize rather than generalize.
 
 ## When to Use
 
-- Tareas de clasificación y regresión con datos tabulares.
-- Capas de salida en redes convolucionales (para clasificación).
-- Redes neuronales pequeñas para educación y prototipado.
-- Cuando la interpretabilidad de los pesos es importante.
+- Classification and regression with tabular data.
+- Output layers of convolutional networks used for classification.
+- Small neural networks for education and prototyping.
+- When inspecting individual weights is useful.
 
 ## When NOT to Use
 
-- Datos con estructura espacial (imágenes) → preferir convolucionales.
-- Secuencias largas → preferir RNN, LSTM, o Transformers.
-- Datos extremadamente grandes → la cantidad de parámetros puede ser prohibitiva.
+- Spatial data such as images, where convolutional layers are usually preferable.
+- Long sequences, where RNNs, LSTMs, or Transformers may be preferable.
+- Extremely large inputs, where the number of parameters may be prohibitive.
 
 ## Dependencies
 
-- `lib.KafeGESHA.Gesha` — clase base para capas de red neuronal.
-- `lib.KafeGESHA.ActivationFunctionLoader` — loader para funciones de activación.
-- `lib.KafeGESHA.utils` — utilidades de regularización.
-- `lib.KafeMATH.functions` — funciones matemáticas auxiliares.
+- `lib.KafeGESHA.layers.layer` — base class for neural-network layers.
+- `lib.KafeGESHA.activations.ActivationFunctionLoader` — loads activation functions.
+- `lib.KafeGESHA.layers.utils` — regularization utilities.
 
 ## Related Concepts
 
-- `activation-functions.md` — Funciones de activación aplicadas post-transformación lineal.
-- `loss-functions.md` — Funciones de pérdida que generan los gradientes para backward.
-- `optimizers.md` — Optimizadores que controlan la tasa de aprendizaje.
-- `soft-kmeans-clustering.md` — Clustering que utiliza capas Dense internamente.
+- `activation-functions.md` — Activation functions applied after a linear transformation.
+- `loss-functions.md` — Loss functions that generate gradients for backpropagation.
+- `optimizers.md` — Optimizers that control parameter updates.
+- `soft-kmeans-clustering.md` — Clustering approach that uses Dense layers internally.
 
 ## Relationship with KAFE
 
-### Implementación en `Dense.py`
+### Implementation in `layers/dense.py`
 
-La clase `Dense` hereda de `Gesha` y encapsula:
+The `Dense` class extends `Layer` and stores:
 
-| Componente | Atributo | Descripción |
+| Component | Attribute | Description |
 |---|---|---|
-| Pesos | `self.weights` | Matriz $n \times m$ inicializada con `_random_matrix()` en $[-0.5, 0.5]$ |
-| Sesgos | `self.bias` | Vector de ceros |
-| Activación | `self.activation` | Objeto cargado via `ActivationFunctionLoader` |
-| Historial | `self.last_input`, `self.last_z` | Guarda entrada y pre-activación para backward |
-| Regularización | `self.regularization_lambda` | Coeficiente L2, validado por `check_regularization()` |
-| Semilla | `self._rng` | RNG con semilla opcional para reproducibilidad |
+| Weights | `self.weights` | $n \times m$ matrix initialized uniformly in $[-0.5, 0.5]$ |
+| Biases | `self.bias` | Zero-initialized vector |
+| Activation | `self.activation` | Object loaded through `ActivationFunctionLoader` |
+| Forward-pass state | `self.last_input`, `self.last_z` | Input and pre-activation values used by `backward` |
+| Regularization | `self.regularization_lambda` | L2 coefficient validated by `check_regularization()` |
+| Seed | `self._rng` | Random-number generator; an optional seed makes initialization reproducible |
 
-### Decisión de diseño: Inicialización uniforme en $[-0.5, 0.5]$
+### Design: Uniform initialization in $[-0.5, 0.5]$
 
-Los pesos se inicializan con `(rng.random() - 0.5)`, lo que produce valores en el rango $[-0.5, 0.5]$. Esta es una aproximación simplificada; en la práctica se usan inicializaciones como Xavier/Glorot o He, que escalan según el número de entradas/salidas. Para fines educativos, la inicialización uniforme es más fácil de entender.
+Weights are initialized with `(rng.random() - 0.5)`, producing values in $[-0.5, 0.5]$. This is a simplified approach; practical initializers such as Xavier/Glorot or He scale values by the number of inputs and outputs. Uniform initialization is easier to explain in an educational implementation.
 
-### Decisión de diseño: Softmax como caso especial
+### Design: Softmax is a special case
 
-La capa detecta si la activación es `"softmax"` y aplica la función sobre el vector completo de pre-activaciones, en lugar de elemento por elemento. Esto es necesario porque Softmax es una función colectiva (depende de todos los elementos del vector).
+When the selected activation is `"softmax"`, the layer applies it to the full vector of pre-activation values rather than element by element. Softmax depends on all elements in the vector.
 
-### Decisión de diseño: Backward sin optimizer acoplado
+### Design: Inline SGD update
 
-La capa Dense recibe `learning_rate` como parámetro en `backward()`, no un objeto optimizer. El optimizer se gestiona en el nivel de `GeshaDeep`. Esto mantiene la capa como un componente puro y reutilizable.
+`Dense.backward()` accepts a `learning_rate` value and updates its own weights and biases. It does not receive an optimizer object.
 
 ## Usage Examples
 
 ```kafe
-import gesha;
+import geshaDeep;
 
-GESHA modelo = gesha.deep("classification");
-
-modelo.add(gesha.dense(32, activation: "relu", input_shape: [4]));
-modelo.add(gesha.dense(16, activation: "relu"));
-modelo.add(gesha.dense(3, activation: "softmax"));
-
-modelo.compile(optimizer: "adam", loss: "categorical_crossentropy");
-modelo.fit(x_train, y_train, epochs: 100);
+GESHA hidden = geshaDeep.create_dense(32, "relu", [4], 0.0);
+GESHA output = geshaDeep.create_dense(3, "softmax", [], 0.0);
+GESHA model = geshaDeep.sequential([hidden, output]);
+geshaDeep.compile(model, "adam", "categorical_crossentropy", []);
+model.fit(x_train, y_train, 100, 32);
 ```
 
 ## Implementation Location
 
-- `src/lib/KafeGESHA/Dense.py` — clase `Dense(Gesha)`
-- `src/lib/KafeGESHA/ActivationFunctionLoader.py` — carga de activaciones
-- `src/lib/KafeGESHA/utils.py` — `check_regularization()`
+- `src/lib/KafeGESHA/layers/dense.py` — `Dense(Layer)`.
+- `src/lib/KafeGESHA/activations/ActivationFunctionLoader.py` — activation loading.
+- `src/lib/KafeGESHA/layers/utils.py` — `check_regularization()`.
 
 ## Public API
 
-- Constructor: `Dense(units, activation=None, input_shape=None, regularization_lambda=0.0, seed=None)`
-- Métodos: `build(input_dim)`, `forward(x)`, `backward(output_error, learning_rate, regularization_lambda=None)`, `summary()`
-- Hereda de `Gesha`: `add()`, `predict()`, `compile()`
+- Constructor: `Dense(units, activation=None, input_shape=None, regularization_lambda=0.0, seed=None)`.
+- Interpreter factory: `geshaDeep.create_dense(units, activation, input_shape, regularization_lambda, seed=None)`.
+- Layer methods: `build(input_dim)`, `forward(x)`, `backward(output_error, learning_rate, regularization_lambda=None)`, `parameters()`, `summary()`.
+- `Dense` extends `Layer`.
 
 ## References
 
-- Rumelhart, D. E., Hinton, G. E., & Williams, R. J. (1986). Learning representations by back-propagating errors. Nature, 323(6088), 533-536.
-- Goodfellow, I., Bengio, Y., & Courville, A. (2016). Deep Learning, Chapter 6: Deep Feedforward Networks. MIT Press.
-- Cybenko, G. (1989). Approximation by superpositions of a sigmoidal function. Mathematics of Control, Signals and Systems, 2(4), 303-314.
+- Rumelhart, D. E., Hinton, G. E., & Williams, R. J. (1986). Learning representations by back-propagating errors. *Nature*, 323(6088), 533-536.
+- Goodfellow, I., Bengio, Y., & Courville, A. (2016). *Deep Learning*, Chapter 6: Deep Feedforward Networks. MIT Press.
+- Cybenko, G. (1989). Approximation by superpositions of a sigmoidal function. *Mathematics of Control, Signals and Systems*, 2(4), 303-314.

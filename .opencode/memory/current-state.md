@@ -2,35 +2,26 @@
 
 ## Architecture Status
 
-The engineering system under `.opencode/` is complete.
+KAFE is an educational Python 3.10+ DSL with an ANTLR 4 parser and Visitor-based interpreter. Its command-line interpreter, Python libraries, tests, and MkDocs documentation are active; it has no active JavaScript/TypeScript frontend, web backend, or application database.
 
-KafeMACHINE architectural review completed (2026-09-14):
-- BaseMachine refactored with unified contract (ADR-0007)
-- Flexible `fit()` signatures documented
-- Centralized `_validate_matrix_shape()` for dimension validation
-- Consistent `_unwrap_data()` usage across all components
-- `score()` methods now reuse `metrics.py` functions with optional metric parameter
-- `fit_transform()` removed from base, implemented per-transformer
-- CrossValScore now inherits from BaseMachine (2026-09-21)
-- All 262 tests passing (Algorithms + KafeMACHINE + KafeGESHA)
+The repository engineering system under `.opencode/` is established. KafeMACHINE's model-selection and preprocessing components and KafeGESHA's dense layer, activations, optimizers, and soft-clustering support are implemented. Conv2D, LSTM, Transformer, and performance work remain on the product roadmap.
 
-## Current Milestone
+## Repository Alignment
 
-Repository alignment — ◐ Policy baseline committed separately as `845bcb3` and progress-state commit `d27df87`. The user-approved `build/uv-environment` branch's locked dependency/setup migration is implemented (`f4e544a`), pushed, and passed GitHub test CI at `b40965f` (485 tests). The authorized `test/interpreter-quality-evidence` branch is complete and unmerged: 497 tests passed in 353.72s, coverage reached 83.78% across 111 tracked source files, the final run emitted no warnings, and independent review passed. Commit `6e8edd5` was pushed, and GitHub Actions `Run Tests` passed at that exact SHA (run 127, ID `35901709547`).
+The active branch is `refactor/english-repository`. Tasks 1–7 of the English repository migration are complete; Task 5's documentation/routes commit is `13ca2bf1b84a692780fff0c83106c46fdf6d15d1`. The final current-tree language audit, strict docs build, tracked-file codespell check, and full regression suite passed.
 
-KafeMACHINE machine learning library — ✔ Complete. 11 models, preprocessing, metrics, model selection.
-KafeGESHA deep learning library — ◐ In Progress. Dense, activations, optimizers; Conv2D/LSTM/Transformer pending.
+The separate `test/interpreter-quality-evidence` milestone is complete but remains unmerged. Its exact-SHA GitHub test run passed at `6e8edd5565c6c1341697426a2bd0dff4187dc5cc`; its final local run passed 497 tests at 83.78% coverage across 111 tracked Python source files with no warnings. Documentation deployment remains restricted to `main`.
 
 ## Current Priorities
 
-1. Keep the quality-evidence branch unmerged and get explicit authorization before starting the next repository-alignment branch.
-2. Keep docs deployment pending until main integration; it is restricted to `main`.
-3. Resolve the historical-record, tracked PDF, stale-log, and path/API decisions before approving the English-migration design.
-4. Resume KafeGESHA layers, legacy reviews, and performance work according to the project roadmap after the repository-alignment sequence or when the user reprioritizes them.
+1. Commit the reviewed English repository alignment changes on the existing branch.
+2. Check whether a matching remote branch already exists before pushing; do not create, rename, or switch branches without explicit authorization.
+3. After repository alignment, resume KafeGESHA layer development, legacy reviews, and performance work according to the roadmap or user reprioritization.
 
-## Current Blockers
+## Current Blockers and Pending Gates
 
-- English-history/PDF/log disposition is not yet decided; do not claim full English compliance until it is.
-- Child-process coverage and warning/stream gates are locally verified at 83.78% across 111 tracked source files. Ruff, basedpyright, codespell, dependency-audit, and suppression-policy baselines remain pending.
-- Nix validation is unavailable on this Windows host. GNU Make is unavailable, so the POSIX Make target cannot be exercised here; the direct locked uv pytest command is documented for Windows.
-- The interpreter quality branch is pushed and exact-SHA GitHub test CI passed; the branch remains unmerged. Nix validation is unavailable on this Windows host. Documentation deployment is main-only and remains pending until integration.
+- The independent reviewer agent could not be allocated because the host reached its thread limit; the final read-only self-review is complete.
+- The current tracked tree passed the Task 7 English audit. Historical identifier/path literals are retained only where they are explicitly documented as migration history or mappings.
+- Ruff, basedpyright, codespell, dependency-audit, and authored-suppression checks remain pending in the separate Python quality-gates deliverable.
+- Nix validation is unavailable on this Windows host. GNU Make is unavailable, so POSIX Make targets cannot be exercised here; use the documented locked `uv` commands.
+- The test branch remains unmerged. Docs deployment and external publication remain pending until main integration.

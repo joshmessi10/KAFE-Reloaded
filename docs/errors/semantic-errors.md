@@ -12,7 +12,7 @@ Semantic errors occur during execution when code is syntactically valid but viol
 -- Error
 INT x = 5.5;
 
--- Mensaje
+-- Message
 TypeError: Expected INT, obtained FLOAT
 ```
 
@@ -23,7 +23,7 @@ TypeError: Expected INT, obtained FLOAT
 List[FLOAT] a = [5.32, 0.234, 3.14, 2.7];
 a[3] = 45;  -- 45 is INT; FLOAT is expected
 
--- Mensaje
+-- Message
 TypeError: Expected FLOAT, obtained INT
 ```
 
@@ -33,7 +33,7 @@ TypeError: Expected FLOAT, obtained INT
 -- Error
 VOID a = 5;
 
--- Mensaje
+-- Message
 TypeError: VOID cannot be used as variable type
 ```
 
@@ -45,7 +45,7 @@ drip display(message: VOID) => VOID:
     show(message);
 ;
 
--- Mensaje
+-- Message
 TypeError: VOID cannot be used as parameter type
 ```
 
@@ -59,7 +59,7 @@ TypeError: VOID cannot be used as parameter type
 -- Error
 show(x);
 
--- Mensaje
+-- Message
 NameError: Variable 'x' not defined
 ```
 
@@ -73,7 +73,7 @@ drip add(a: INT, b: INT) => INT:
 
 displayMessage(1, 2);  -- Function is not defined
 
--- Mensaje
+-- Message
 NameError: Function 'displayMessage' not defined
 ```
 
@@ -84,7 +84,7 @@ NameError: Function 'displayMessage' not defined
 INT var = 234;
 BOOL var = True;
 
--- Mensaje
+-- Message
 NameError: Variable 'var' already defined
 ```
 
@@ -100,7 +100,7 @@ drip multiply(a: INT) => INT:
     return a * a;
 ;
 
--- Mensaje
+-- Message
 NameError: Function 'multiply' already defined
 ```
 
@@ -115,7 +115,7 @@ NameError: Function 'multiply' already defined
 List[List[INT]] matrix = [[1, 2], [3, 4]];
 show(matrix[4.5][2 - 1]);
 
--- Mensaje
+-- Message
 IndexError: Index must be an integer, obtained FLOAT
 ```
 
@@ -126,7 +126,7 @@ IndexError: Index must be an integer, obtained FLOAT
 STR a = "Hello";
 show(a[45]);
 
--- Mensaje
+-- Message
 IndexError: Index 45 out of bounds for collection of size 5
 ```
 
@@ -144,7 +144,7 @@ drip add(a: INT, b: INT) => INT:
 
 show(add(1));  -- One argument is missing
 
--- Mensaje
+-- Message
 Exception: 'add' expects 2 args, got 1
 ```
 
@@ -158,7 +158,7 @@ drip add(a: INT, b: INT) => INT:
 
 show(add("hello", 5));  -- "hello" is not an INT
 
--- Mensaje
+-- Message
 TypeError: Function add expects argument of type INT, got type STR
 ```
 
@@ -170,7 +170,7 @@ drip add(a: INT, b: INT) => INT:
     return bool(a + b);  -- Returns BOOL; INT is expected
 ;
 
--- Mensaje
+-- Message
 TypeError: Expected INT, obtained BOOL
 ```
 
@@ -182,7 +182,7 @@ drip display(a: INT, b: INT) => VOID:
     return 5;  -- A VOID function must not return a value
 ;
 
--- Mensaje
+-- Message
 TypeError: Function declared VOID must not return a value
 ```
 
@@ -196,7 +196,7 @@ TypeError: Function declared VOID must not return a value
 -- Error
 List[BOOL] a = [True] + [[False]];
 
--- Mensaje
+-- Message
 Exception: Expected homogeneous list
 ```
 
@@ -207,7 +207,7 @@ Exception: Expected homogeneous list
 List[List[INT]] a = [[5, 4], [4, 34]];
 a[0] = 5;  -- 5 is not a List[INT]
 
--- Mensaje
+-- Message
 TypeError: Expected List[INT], obtained INT
 ```
 
@@ -224,7 +224,7 @@ while (True):
     i = i + 1;
 ;
 
--- Mensaje
+-- Message
 RuntimeError: Maximum number of iterations exceeded in while loop
 ```
 
@@ -237,7 +237,7 @@ for (i in x):
     show(i);
 ;
 
--- Mensaje
+-- Message
 TypeError: Variable in for must be iterable, got INT
 ```
 
@@ -250,7 +250,7 @@ while (x):
     show(x);
 ;
 
--- Mensaje
+-- Message
 TypeError: Condition in while must be boolean, got INT
 ```
 
@@ -264,7 +264,7 @@ TypeError: Condition in while must be boolean, got INT
 -- Error
 import missing_module;
 
--- Mensaje
+-- Message
 FileNotFoundError: Module file for 'missing_module' not found. Tried: ...
 ```
 
@@ -274,7 +274,7 @@ FileNotFoundError: Module file for 'missing_module' not found. Tried: ...
 -- Error (numk has not been imported)
 show(numk.add([[1]], [[2]]));
 
--- Mensaje
+-- Message
 Exception: library not imported
 ```
 
@@ -288,7 +288,7 @@ Exception: library not imported
 -- Error
 STR content = files.read("missing.txt");
 
--- Mensaje
+-- Message
 FileNotFoundError: File 'missing.txt' not found at /path/
 ```
 
@@ -298,6 +298,6 @@ FileNotFoundError: File 'missing.txt' not found at /path/
 -- Error
 files.create("existing.txt");  -- The file already exists
 
--- Mensaje
+-- Message
 FileExistsError: File 'existing.txt' already exists at /path/
 ```

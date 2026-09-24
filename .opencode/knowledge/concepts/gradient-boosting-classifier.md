@@ -2,84 +2,84 @@
 
 ## Mathematical Foundation
 
-Gradient Boosting Classifier es un ensemble method que construye árboles secuencialmente, donde cada árbol corrige los errores del anterior usando gradient descent sobre la función de pérdida log-loss.
+Gradient Boosting Classifier is an ensemble method that builds trees sequentially, with each tree correcting the previous tree's errors using gradient descent on the log-loss function.
 
-### Algoritmo
+### Algorithm
 
-1. **Inicializar**: $F_0(x) = 0.5 \cdot \ln\left(\frac{1-p}{p}\right)$ donde $p$ es la proporción de la clase positiva
-2. **Para cada iteración t = 1, ..., T**:
-   - Calcular probabilidades: $p_i = \sigma(F_{t-1}(x_i))$
-   - Calcular residuos: $r_i = y_i - p_i$ (pseudo-residuos)
-   - Entrenar árbol $h_t$ para predecir residuos $r_i$
-   - Actualizar: $F_t(x) = F_{t-1}(x) + \eta \cdot h_t(x)$
-3. **Predicción**: $H(x) = \sigma(F_T(x))$
+1. **Initialize**: $F_0(x) = 0.5 \cdot \ln\left(\frac{1-p}{p}\right)$, where $p$ is the proportion of positive-class samples.
+2. **For each iteration $t = 1, \ldots, T$**:
+   - Calculate probabilities: $p_i = \sigma(F_{t-1}(x_i))$.
+   - Calculate residuals: $r_i = y_i - p_i$ (pseudo-residuals).
+   - Fit tree $h_t$ to predict residuals $r_i$.
+   - Update: $F_t(x) = F_{t-1}(x) + \eta \cdot h_t(x)$.
+3. **Predict**: $H(x) = \sigma(F_T(x))$.
 
-Donde $\sigma(x) = \frac{1}{1 + e^{-x}}$ es la función sigmoide.
+Here, $\sigma(x) = \frac{1}{1 + e^{-x}}$ is the sigmoid function.
 
-### Función de Pérdida
+### Loss Function
 
-Para clasificación binaria, Gradient Boosting minimiza la **log-loss** (deviance):
+For binary classification, Gradient Boosting minimizes **log loss** (deviance):
 
 $$\mathcal{L}(y, F) = -y \cdot \log(p) - (1-y) \cdot \log(1-p)$$
 
-Los pseudo-residuos son el negativo del gradiente de la pérdida respecto al score:
+The pseudo-residuals are the negative gradient of the loss with respect to the score:
 
 $$r_i = -\frac{\partial \mathcal{L}(y_i, F(x_i))}{\partial F(x_i)} = y_i - \sigma(F(x_i))$$
 
 ### Subsampling
 
-GradientBoostingClassifier soporta **stochastic gradient boosting** via el parámetro `subsample`:
-- Muestrea aleatoriamente una fracción de datos en cada iteración
-- Reduce overfitting y acelera entrenamiento
-- Análogo al bagging pero en el contexto de boosting
+`GradientBoostingClassifier` supports **stochastic gradient boosting** through the `subsample` parameter:
+- Randomly samples a fraction of the data on each iteration.
+- Reduces overfitting and speeds up training.
+- Similar to bagging, but used within boosting.
 
-## Complejidad Computacional
+## Computational Complexity
 
-| Operación | Complejidad Temporal | Complejidad Espacial |
+| Operation | Time Complexity | Space Complexity |
 |-----------|---------------------|---------------------|
 | Training | $O(T \cdot n \cdot m \cdot d)$ | $O(T \cdot n)$ |
 | Prediction | $O(T \cdot d)$ | $O(1)$ |
 
-Donde $T$ = n_estimators, $n$ = muestras, $m$ = features, $d$ = max_depth.
+Here, $T$ is `n_estimators`, $n$ is the number of samples, $m$ is the number of features, and $d$ is `max_depth`.
 
-## Ventajas
+## Advantages
 
-1. **Alta precisión** — generalmente mejor que Random Forest
-2. **Flexible** — soporta diversas funciones de pérdida
-3. **Feature importance** — se puede calcular importancia por feature
-4. **No necesita normalización** — árboles son invariantes a escala
-5. **Stochastic boosting** — subsampling reduce overfitting
+1. **High accuracy** — can outperform Random Forest on some datasets.
+2. **Flexible** — supports different loss functions.
+3. **Feature importance** — importance can be estimated for each feature.
+4. **No normalization required** — trees are invariant to scale.
+5. **Stochastic boosting** — subsampling can reduce overfitting.
 
-## Limitaciones
+## Limitations
 
-1. **Overfitting** — más susceptible que Random Forest
-2. **Secuencial** — no se puede paralelizar
-3. **Sensible a hiperparámetros** — learning_rate y n_estimators interactúan
-4. **Más lento** — entrenamiento secuencial
-5. **Solo binario** — nativamente solo clasificación binaria
+1. **Overfitting** — can be more susceptible than Random Forest.
+2. **Sequential** — boosting rounds cannot be parallelized.
+3. **Sensitive to hyperparameters** — `learning_rate` and `n_estimators` interact.
+4. **Slower training** — trees are fitted sequentially.
+5. **Binary only** — the implementation natively handles binary classification.
 
-## Cuando Usar
+## When to Use
 
-- Clasificación binaria
-- Necesitas máxima precisión
-- Tienes tiempo para tuning de hiperparámetros
-- Datos limpios (sin mucho ruido)
+- Binary classification.
+- When high accuracy is important.
+- When there is time to tune hyperparameters.
+- Relatively clean data with little noise.
 
-## Cuando NO Usar
+## When NOT to Use
 
-- Datos con mucho ruido (puede overfittear)
-- Datasets muy grandes (entrenamiento secuencial)
-- Necesitas paralelización (usar Random Forest)
-- Clasificación multiclase (usar otro enfoque)
+- Very noisy data, where overfitting may occur.
+- Very large datasets that make sequential training too slow.
+- When parallel training is required (consider Random Forest).
+- Multiclass classification (use another approach).
 
-## Relación con KAFE
+## Relationship with KAFE
 
-KAFE implementa GradientBoostingClassifier desde scratch:
-- Árboles de regresión como weak learners
-- Función de pérdida log-loss (deviance)
-- Sigmoide numéricamente estable
-- Stochastic gradient boosting via subsampling
-- API estilo scikit-learn: `fit()`, `predict()`, `score()`
+KAFE implements `GradientBoostingClassifier` from scratch:
+- Regression trees as weak learners.
+- Log-loss (deviance) objective.
+- Numerically stable sigmoid.
+- Stochastic gradient boosting through subsampling.
+- Scikit-learn-style API: `fit()`, `predict()`, and `score()`.
 
 ## References
 

@@ -57,7 +57,7 @@ Source layout:
 
 ### Library Architecture
 
-- Each library exposes plain Python functions in `src/lib/KafeXXX/functions.py`; stateful models are Python classes in sibling modules (e.g., `KafeMACHINE/LinearRegression.py`).
+- Each library exposes plain Python functions in `src/lib/KafeXXX/functions.py`; stateful models are Python classes in sibling modules (e.g., `KafeMACHINE/linear/LinearRegression.py`).
 - Import each library's `functions` module in `src/InterpreterVisitor.py`, then register it in `InterpreterVisitor.__init__` under `self.libraries`: `{"numk": [module, imported_flag], ...}`. KAFE `import <name>;` flips the flag; calls dispatch through `libraryFunctionCall`. Registry keys are case-sensitive, including the existing `geshaDeep` key.
 - KafeMACHINE uses `import lib.KafeMACHINE.functions as machine_funcs_module` and the `machine` registry key. KafeHF uses `import lib.KafeHF.functions as hf_funcs_module` and the `huggingface` key. Its wrapper is registered by default, but Hugging Face `datasets` is an optional external dependency: importing `huggingface` is allowed without it, while dataset-loading calls report a missing-dependency error.
 - KafeHF's `load_dataset` and `load_dataset_split` functions convert loaded data to KafePARDOS `DataFrame` objects. Preserve the default environment without `datasets` and the missing-dependency fixture under `tests/KafeHF/`; the future uv migration must express this optional integration without making it a default dependency.
@@ -68,5 +68,5 @@ Source layout:
 
 - New language component: create `src/language_components/<feature>/functions.py`, wire dispatch in `InterpreterVisitor.py`.
 - New built-in library: see `.opencode/knowledge/libraries.md`.
-- New grammar rule: edit `Kafe_Grammar.g4`/`Kafe_Lexer.g4`, regenerate the parser, keep `docs/especificacion/` EBNF in sync, add fixture tests.
+- New grammar rule: edit `src/Kafe_Grammar.g4` or `src/Kafe_Lexer.g4`, regenerate the parser, keep the EBNF in `docs/specification/` in sync, and add fixture tests.
 - New ML/DL functionality: see `.opencode/knowledge/ml-library.md`, `.opencode/knowledge/dl-library.md`, and `.opencode/knowledge/engineering.md`.

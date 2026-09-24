@@ -10,49 +10,49 @@ ML preprocessing
 
 ## Description
 
-OneHotEncoder codifica columnas categóricas de un DataFrame a representación binaria (one-hot). Crea una columna binaria por cada categoría única.
+`OneHotEncoder` encodes categorical DataFrame columns using a binary (one-hot) representation. It creates one binary column for each unique category.
 
 ## Mathematical Foundation
 
-Dado una columna categórica con $k$ categorías únicas $\{c_1, c_2, \ldots, c_k\}$, OneHotEncoder crea $k$ columnas binarias:
+Given a categorical column with $k$ unique categories $\{c_1, c_2, \ldots, c_k\}$, `OneHotEncoder` creates $k$ binary columns:
 
-$$\text{one\_hot}(x) = [e_1, e_2, \ldots, e_k] \quad \text{donde } e_j = \begin{cases} 1 & \text{si } x = c_j \\ 0 & \text{si no} \end{cases}$$
+$$\text{one\_hot}(x) = [e_1, e_2, \ldots, e_k] \quad \text{where } e_j = \begin{cases} 1 & \text{if } x = c_j \\ 0 & \text{otherwise} \end{cases}$$
 
-- **Time Complexity**: $O(n \cdot k)$ para transform
-- **Space Complexity**: $O(n \cdot k)$ para la representación resultante
+- **Time Complexity**: $O(n \cdot k)$ for `transform`.
+- **Space Complexity**: $O(n \cdot k)$ for the resulting representation.
 
 ## Step-by-Step Algorithm
 
-1. **fit(df, columns)**: Para cada columna, extraer categorías únicas y crear mapeo
-2. **transform(df)**: Para cada fila y columna categórica, crear vector one-hot y reemplazar la columna original
-3. **fit_transform(df, columns)**: Combinar fit y transform
+1. **`fit(df, columns)`**: Extract the unique categories in each column and create a mapping.
+2. **`transform(df)`**: For each row and categorical column, create a one-hot vector and replace the original column.
+3. **`fit_transform(df, columns)`**: Fit the encoder and transform the data.
 
 ## Motivation
 
-Las variables categóricas nominales (sin orden) no pueden ser codificadas con enteros directamente, ya que el modelo interpretaría un orden falso. OneHotEncoder crea representaciones binarias que evitan esta interpretación errónea.
+Nominal categorical variables have no natural order, so encoding them directly as integers could make a model infer a false order. `OneHotEncoder` avoids this by creating binary representations.
 
 ## Advantages
 
-- Elimina la interpretación ordinal incorrecta
-- Compatible con cualquier modelo que acepte features numéricas
-- Soporte para múltiples columnas
-- `handle_unknown` parameter para categorías nuevas en transform
+- Avoids an unintended ordinal interpretation.
+- Works with any model that accepts numeric features.
+- Supports multiple columns.
+- The `handle_unknown` parameter controls unseen categories during `transform`.
 
 ## Limitations
 
-- Aumenta la dimensionalidad significativamente (curse of dimensionality)
-- Crea columnas altamente correlacionadas (multicolinealidad)
-- No preserva información de frecuencia
+- Can greatly increase dimensionality (the curse of dimensionality).
+- Can create highly correlated columns (multicollinearity).
+- Does not preserve frequency information.
 
 ## When to Use
 
-- Variables categóricas nominales (color, tamaño, país)
-- Cuando el número de categorías es moderado
+- Nominal categorical variables, such as color, size, or country.
+- When the number of categories is moderate.
 
 ## When NOT to Use
 
-- Variables ordinales con orden natural (usar OrdinalEncoder)
-- Cuando hay muchas categorías únicas (usa otro encoding)
+- Ordinal variables with a natural order (use `OrdinalEncoder`).
+- When there are many unique categories (consider another encoding method).
 
 ## Dependencies
 
@@ -67,7 +67,7 @@ Las variables categóricas nominales (sin orden) no pueden ser codificadas con e
 
 ## Relationship with KAFE
 
-En KAFE, OneHotEncoder se implementa como una clase que extiende BaseMachine. Trabaja directamente con PARDOS DataFrames. El factory `machine.one_hot_encoder()` crea una instancia.
+In KAFE, `OneHotEncoder` is implemented as a class that extends `BaseMachine`. It works directly with PARDOS DataFrames. The factory `machine.one_hot_encoder()` creates an instance.
 
 ## Usage Examples
 
@@ -95,11 +95,11 @@ show(encoded);
 
 ## Public API
 
-- `machine.one_hot_encoder()` — crea OneHotEncoder
-- `ohe.fit(df, columns)` — aprende categorías de columnas
-- `ohe.transform(df)` — transforma a one-hot
-- `ohe.fit_transform(df, columns)` — fit + transform
-- `ohe.inverse_transform(df)` — revierte la codificación
+- `machine.one_hot_encoder()` — creates a `OneHotEncoder` instance.
+- `ohe.fit(df, columns)` — learns each column's categories.
+- `ohe.transform(df)` — applies one-hot encoding.
+- `ohe.fit_transform(df, columns)` — fits the encoder and transforms the data.
+- `ohe.inverse_transform(df)` — reverses the encoding.
 
 ## References
 

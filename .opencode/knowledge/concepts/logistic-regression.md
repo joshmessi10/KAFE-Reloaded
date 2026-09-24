@@ -70,7 +70,7 @@ show(preds);  -- [0, 0, 1, 1]
 
 ## Implementation Location
 
-- `src/lib/KafeMACHINE/LogisticRegression.py` — class `LogisticRegression(BaseMachine)`
+- `src/lib/KafeMACHINE/linear/LogisticRegression.py` — class `LogisticRegression(BaseMachine)`
 
 ## Public API
 

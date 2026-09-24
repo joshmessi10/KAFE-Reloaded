@@ -268,7 +268,7 @@ Applicable system/runtime instructions and the user's instructions govern execut
 
 KAFE is a Python 3.10+ educational DSL for functional programming, machine learning, and deep learning. `.kf` files are KAFE source programs. Its interpreter uses ANTLR 4 and the Visitor pattern. The repository contains the command-line interpreter, Python libraries and tests, and MkDocs documentation. It has no active JavaScript/TypeScript frontend, web backend, or application database. React, FastAPI, frontend routing, and database-normalization requirements do not apply to this architecture.
 
-All repository content must be in English, including source code, identifiers, comments, documentation, configuration, tests, file and directory names, commit messages, and user-facing text. Legacy Spanish remains in syntax, APIs, paths, fixtures, and prose; full compliance is pending the coordinated English migration. Write new prose in English and translate prose you edit. Changes to executable syntax, public identifiers, paths, and expected output require coordinated compatibility, documentation, and fixture updates in that migration; do not silently change runtime behavior during an instruction-only edit. Keep this debt explicit until resolved.
+All repository content must be in English, including source code, identifiers, comments, documentation, configuration, tests, file and directory names, commit messages, and user-facing text. The repository-wide English migration and final audit were completed on 2026-09-24; keep all newly authored content in English and resolve any newly discovered in-scope language debt. Write new prose in English and translate prose you edit. Changes to executable syntax, public identifiers, paths, and expected output require coordinated compatibility, documentation, and fixture updates in that migration; do not silently change runtime behavior during an instruction-only edit. Keep any confirmed debt explicit until resolved.
 
 Add another language only for intentional internationalization. Use a well-known i18n/gettext-style library when needed, keep translations separate from application logic, and follow established internationalization practices. `codespell` checks spelling; it does not prove that content is English. These rules do not require a separate automatic language detector.
 
@@ -319,9 +319,9 @@ Stay on the current branch when continuing the same implementation line. Otherwi
 
 ## Python quality and CI
 
-The following quality gates are required outcomes of the pending quality-gate migration; their tools are available in the uv `dev` group, but the gates are not yet implemented. Configure Ruff with explicit rules, run `basedpyright` on project-owned Python, use `codespell` for spelling, and run pytest with `pytest-cov`. Exclude generated ANTLR outputs from static analysis and coverage. Measure project-owned KAFE source and enforce at least 80% coverage; do not copy a coverage target for an unrelated `app` package. Configure pytest with `filterwarnings = ["error"]`.
+The locked pytest-cov gate and warnings-as-errors policy are implemented in the current project configuration and test workflow. The full suite measures project-owned KAFE source under `src`, enforces at least 80% coverage, and omits only the three generated ANTLR files. Keep pytest `filterwarnings = ["error"]`. The separate Python quality-gate migration still needs explicit Ruff rules, basedpyright, codespell in CI, `uv audit`, and a check for authored suppression comments; do not report these pending checks as passing.
 
-The fixture suite launches the KAFE interpreter in child Python processes. Parent-process pytest-cov and pytest warning filters alone do not prove interpreter coverage or warning enforcement. Future gates must collect and combine coverage from those children, propagate warning policy, and inspect their complete stdout, stderr, and diagnostics. Validate those mechanisms with evidence. Preserve expected KAFE errors, error fixtures, exit codes, and current CLI semantics; an expected invalid-program result is not itself a quality-gate failure. Do not discard earlier child diagnostics merely because the final expected error line matches.
+The fixture suite launches the KAFE interpreter in child Python processes. Its shared runner propagates `PYTHONWARNINGS=error`, captures complete stdout, stderr, and exit codes, and checks them against fixture expectations; Coverage.py is configured to collect and combine child-process coverage. Preserve those checks and verify their evidence whenever changing the harness or workflows. Parent-process pytest-cov and pytest warning filters alone do not prove interpreter coverage or warning enforcement. Preserve expected KAFE errors, error fixtures, exit codes, and current CLI semantics; an expected invalid-program result is not itself a quality-gate failure. Do not discard earlier child diagnostics merely because the final expected error line matches.
 
 Python CI must include `uv audit` over the locked dependencies including development dependencies, codespell, Ruff, basedpyright, tests, coverage, and an explicit repository-policy check rejecting any project-authored `# pyright:` or `# noqa:` comments in Python source. Those comments are prohibited even when narrowly targeted. Fix the underlying issue rather than suppressing it.
 
@@ -424,7 +424,7 @@ uv run --locked --group dev pytest tests/ -v       # verbose
 uv run --locked --group dev pytest tests/test_base.py
 uv run --locked --group dev pytest tests/test_base.py::test_valid_programs
 # From src/ in a POSIX shell with Make:
-uv run --locked --project .. --group dev make test prueba=KafeMACHINE
+uv run --locked --project .. --group dev make test suite=KafeMACHINE
 # On Windows, run pytest directly from the repository root.
 uv run --locked --group dev pytest tests/test_KafeMACHINE.py
 ```
@@ -457,8 +457,8 @@ KafeHF fixtures live in `tests/KafeHF/` and are collected by `tests/test_KafeHF.
 
 ```
 .kf file → Kafe.py (entry) → ANTLR Lexer/Parser → parse tree
-         → EvalVisitorPrimitivo.py (walks the tree, manages scope stack)
-         → src/componentes_lenguaje/ (language features)
+         → InterpreterVisitor.py (walks the tree, manages scope stack)
+         → src/language_components/ (language features)
          → src/lib/ (built-in libraries)
 ```
 
@@ -473,16 +473,16 @@ KafeHF fixtures live in `tests/KafeHF/` and are collected by `tests/test_KafeHF.
 | `src/errors.py` | Custom exception classes |
 | `src/globals.py` | Global state (program path, working directory) |
 
-### Language components (`src/componentes_lenguaje/`)
+### Language components (`src/language_components/`)
 
 Modular implementations called by the visitor:
 
 - `base/` — variables, operators, indexing, literals, type coercion
-- `bucles/` — `for` / `while`
-- `condicionales/` — `if` / `elif` / `else`
-- `funciones/` — `drip` declarations, lambdas, currying, built-ins (`show`, `pour`, `range`, `len`, `append`, `remove`)
-- `importar/` — `import` statements
-- `librerias/` — routes method calls to the correct `lib/` module
+- `loops/` — `for` / `while`
+- `conditionals/` — `if` / `elif` / `else`
+- `functions/` — `drip` declarations, lambdas, currying, built-ins (`show`, `pour`, `range`, `len`, `append`, `remove`)
+- `imports/` — `import` statements
+- `libraries/` — routes method calls to the correct `lib/` module
 - `method_calling/` — object method resolution
 
 ### Built-in libraries (`src/lib/`)
@@ -498,7 +498,7 @@ Modular implementations called by the visitor:
 | `KafeMACHINE` | `machine` | ML models, preprocessing, model selection, and metrics |
 | `KafeHF` | `huggingface` | Optional Hugging Face dataset loading through `datasets` |
 
-Import keys are case-sensitive and come from `EvalVisitorPrimitivo.libraries`. Preserve their spelling unless a coordinated language/API migration changes them.
+Import keys are case-sensitive and come from `InterpreterVisitor.libraries`. Preserve their spelling unless a coordinated language/API migration changes them.
 
 ### KAFE language keywords
 
@@ -518,5 +518,5 @@ Types include `INT`, `FLOAT`, `STR`, `BOOL`, `VOID`, `List[...]`, `GESHA`, `PARD
 
 1. Edit `Kafe_Grammar.g4` (or `Kafe_Lexer.g4` for tokens).
 2. Regenerate the ignored parser files from `src/` with the configured ANTLR generator (`make antlr` when available).
-3. Add visitor methods in `EvalVisitorPrimitivo.py` (or delegate to a new component).
+3. Add visitor methods in `InterpreterVisitor.py` (or delegate to a new component).
 4. Add relevant valid/invalid fixtures and update language documentation; preserve generated-file exclusions.

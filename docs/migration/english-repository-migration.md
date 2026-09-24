@@ -4,7 +4,7 @@ This is the path, route, and compatibility contract for the approved English mig
 
 The Spanish spellings in this note are literal old paths, source symbols, fixture names, or code examples needed for migration. The explanatory prose and target names are English.
 
-KAFE syntax stays English and unchanged. In particular, the lexer literals `drip`, `pour`, `show`, `len`, `remove`, `append`, `return`, `if`, `elif`, `else`, `match`, `FUNC`, `range`, `import`, `int`, `float`, `str`, `bool`, `List`, `INT`, `FLOAT`, `BOOL`, `VOID`, `STR`, `GESHA`, `PARDOS`, `MACHINE`, `True`, and `False` are not translated. The built-in import keys `numk`, `math`, `files`, `plot`, `geshaDeep`, `pardos`, `machine`, and `huggingface` remain exactly as registered by `EvalVisitorPrimitivo.self.libraries`.
+KAFE syntax stays English and unchanged. In particular, the lexer literals `drip`, `pour`, `show`, `len`, `remove`, `append`, `return`, `if`, `elif`, `else`, `match`, `FUNC`, `range`, `import`, `int`, `float`, `str`, `bool`, `List`, `INT`, `FLOAT`, `BOOL`, `VOID`, `STR`, `GESHA`, `PARDOS`, `MACHINE`, `True`, and `False` are not translated. The built-in import keys `numk`, `math`, `files`, `plot`, `geshaDeep`, `pardos`, `machine`, and `huggingface` remain exactly as registered by `InterpreterVisitor.self.libraries`.
 
 ## Work ownership and text surfaces
 
@@ -18,6 +18,8 @@ KAFE syntax stays English and unchanged. In particular, the lexer literals `drip
 | 7 — final audit | Re-enumerate `git ls-files` across source, tests, docs, records, `.github/workflows/*.yml`, `pyproject.toml`, `opencode.json`, `flake.nix`, `src/Makefile`, and all tracked text-bearing assets. Search old names and Spanish prose manually; technical data, established product/proper names, mathematical notation, third-party symbols, and KAFE syntax are not prose to translate blindly. |
 
 The tracked baseline contains 1,458 paths: 116 under `src/`, 1,174 under `tests/`, 38 under `docs/`, and 112 under `.opencode/`. The other 18 are root/configuration/workflow files. These counts are a baseline for coverage, not a requirement that the final count remain fixed.
+
+The `test` target in `src/Makefile` accepts `suite=<collector-name>`; this replaces the former Spanish `prueba=<collector-name>` parameter. The target behavior and selected pytest collector remain unchanged.
 
 ## Source and Python import path map
 
