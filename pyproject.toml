@@ -67,3 +67,8 @@ ignore = [
     "src/Kafe_GrammarParser.py",
     "src/Kafe_GrammarVisitor.py",
 ]
+
+[tool.codespell]
+check-hidden = true
+ignore-words-list = "expec,mape,MAPE,FPR,Hart,le"
+skip = ".git,.venv,.superpowers,*docs?superpowers*,site,.pytest_cache,.ruff_cache,__pycache__,.coverage,htmlcov,*.cover,*.interp,*.tokens,Kafe_GrammarLexer.py,Kafe_GrammarParser.py,Kafe_GrammarVisitor.py,output.txt,temp_output.txt,archivo_*.txt"
