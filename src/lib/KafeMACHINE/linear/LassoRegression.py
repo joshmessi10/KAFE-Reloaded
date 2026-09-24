@@ -8,7 +8,7 @@ class LassoRegression(BaseMachine):
     """
     Lasso Regression — Regularized linear regression with L1 penalty.
 
-    Minimiza: ||y - Xθ||² + α||θ||₁
+    Minimizes: ||y - Xθ||² + α||θ||₁
 
     The L1 regularization term (α||θ||₁) can eliminate features
     completely (coefficients = 0), acting as feature selection.

@@ -61,7 +61,7 @@ from lib.KafeNUMK import functions as numk
 
 
 # --------------------------------------------------------------------------
-# Capas
+# Layers
 # --------------------------------------------------------------------------
 
 @check_sig([4, 5], [integer_type], [string_type, void_t], numeric_vector_types + [void_t], [float_type, integer_type], [integer_type, void_t])

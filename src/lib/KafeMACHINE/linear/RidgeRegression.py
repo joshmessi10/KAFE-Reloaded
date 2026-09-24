@@ -8,7 +8,7 @@ class RidgeRegression(BaseMachine):
     """
     Ridge Regression — Regularized linear regression with L2 penalty.
 
-    Minimiza: ||y - Xθ||² + α||θ||²
+    Minimizes: ||y - Xθ||² + α||θ||²
 
     The L2 regularization term (α||θ||²) penalizes large coefficients,
     reducing overfitting without removing features.

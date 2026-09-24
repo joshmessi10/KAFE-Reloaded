@@ -9,7 +9,7 @@ class RecursiveFeatureElimination(BaseMachine):
     """
     Recursive Feature Elimination (RFE) - Feature selection by recursive elimination.
 
-    Fundamento matematico:
+    Mathematical basis:
         1. Train model with all the features
         2. Calculate the importance of each feature (coefficients or feature importance)
         3. Eliminate the least important feature

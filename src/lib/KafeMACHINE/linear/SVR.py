@@ -12,7 +12,7 @@ class SVR(BaseMachine):
     Only points outside the ε margin contribute to the loss (support vectors).
 
     Mathematical foundation:
-        Minimiza: (1/2)||w||² + C * Σ(max(0, |y_i - f(x_i)| - ε))
+        Minimizes: (1/2)||w||² + C * Σ(max(0, |y_i - f(x_i)| - ε))
 
         Where:
         - w = model weights

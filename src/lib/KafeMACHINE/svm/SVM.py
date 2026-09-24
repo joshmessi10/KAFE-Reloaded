@@ -14,7 +14,7 @@ class SVM(BaseMachine):
 
     Mathematical foundation:
         Primary formulation:
-            Minimiza: (1/2)||w||² + C * Σ(max(0, 1 - y_i * f(x_i)))
+            Minimizes: (1/2)||w||² + C * Σ(max(0, 1 - y_i * f(x_i)))
 
             Where:
             - w = model weights

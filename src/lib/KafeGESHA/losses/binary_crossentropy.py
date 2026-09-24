@@ -5,7 +5,7 @@ from lib.KafeGESHA.losses.loss import LossFunction
 
 class BinaryCrossEntropy(LossFunction):
     """
-    BCE robusta:
+    Robust BCE:
     • Clip the predictions to the range (ε, 1-ε).
     • Accepts scalar or list probability [probability].
     """

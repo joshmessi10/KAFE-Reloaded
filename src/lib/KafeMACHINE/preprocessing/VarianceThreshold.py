@@ -8,7 +8,7 @@ class VarianceThreshold(BaseMachine):
     """
     Eliminates features with variance below a threshold.
 
-    Fundamento matematico:
+    Mathematical basis:
         For each feature j:
             Var(j) = (1/n) * Sum(x_ij - mean_j)^2
 
