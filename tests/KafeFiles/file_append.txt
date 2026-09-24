@@ -1,1 +1,1 @@
- Esta es una segunda línea para probar el append.
+ This is a second line to test appending.

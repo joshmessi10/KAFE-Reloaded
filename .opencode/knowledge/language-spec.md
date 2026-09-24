@@ -3,8 +3,8 @@
 ## Sources of Truth
 
 - Grammar: `src/Kafe_Grammar.g4` (parser rules) and `src/Kafe_Lexer.g4` (tokens).
-- Formal EBNF and operational semantics: `docs/especificacion/` — keep in sync with grammar changes.
-- Language reference and error docs: `docs/lenguaje/`, `docs/errores/`.
+- Formal EBNF and operational semantics: `docs/specification/` — keep them in sync with grammar changes.
+- Language reference and error docs: `docs/language/`, `docs/errors/`.
 
 ## Keywords
 
@@ -22,5 +22,5 @@
 
 - `python src/Kafe.py <file.kf>`; paths resolve from cwd first, then relative to `src/`.
 - `.error.kf` programs: errors to **stderr**, exit **1**. All other programs: runtime errors to **stdout**, exit **0**.
-- `import` of user `.kf` modules resolves relative to `globals.current_dir` first, then the `importar` component directory.
+- `import` of user `.kf` modules resolves relative to `globals.current_dir` first, then the `src/language_components/imports/` directory.
 - Built-in libraries are imported by name and must be registered in `self.libraries` (see `.opencode/knowledge/libraries.md`).

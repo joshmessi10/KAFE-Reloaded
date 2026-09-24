@@ -1,0 +1,58 @@
+-- ============================================
+-- Fibonacci with currying
+-- Demonstrates recursive functions and closures
+-- ============================================
+
+-- Recursive Fibonacci function
+drip fibonacci(n: INT) => INT:
+    if (n <= 1):
+        return n;
+    ;
+    return fibonacci(n - 1) + fibonacci(n - 2);
+;
+
+-- Calculate Fibonacci numbers for several inputs
+show("=== Recursive Fibonacci ===");
+show("fib(0) = " + str(fibonacci(0)));
+show("fib(1) = " + str(fibonacci(1)));
+show("fib(7) = " + str(fibonacci(7)));
+show("fib(10) = " + str(fibonacci(10)));
+
+-- ============================================
+-- Currying: create specialized functions
+-- ============================================
+show("\n=== Currying ===");
+
+drip subtract(a: INT, b: INT) => INT:
+    return a - b;
+;
+
+-- Regular call
+show("subtract(10, 3) = " + str(subtract(10, 3)));
+
+-- Curried call
+show("subtract(10)(3) = " + str(subtract(10)(3)));
+
+-- Create a partially applied function
+FUNC(INT)=>INT subtract5 = subtract(5);
+show("subtract5(3) = " + str(subtract5(3)));   -- 2
+show("subtract5(10) = " + str(subtract5(10))); -- -5
+
+-- ============================================
+-- Closures: functions that capture their environment
+-- ============================================
+show("\n=== Closures ===");
+
+drip createCounter(initial: INT) => FUNC()=>INT:
+    INT c = initial;
+    return () => c = c + 1;
+;
+
+FUNC()=>INT counter = createCounter(0);
+show("Counter: " + str(counter()));  -- 1
+show("Counter: " + str(counter()));  -- 2
+show("Counter: " + str(counter()));  -- 3
+
+-- A second independent counter
+FUNC()=>INT counter2 = createCounter(10);
+show("Counter 2: " + str(counter2()));  -- 11

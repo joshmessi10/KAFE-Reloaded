@@ -1,6 +1,7 @@
 from global_utils import check_sig
-from TypeUtils import vector_numeros_t, matriz_numeros_t, pardos_t
-from lib.KafeMATH.funciones import sqrt, pow_, exp, log
+from lib.KafeMATH.functions import exp, log, pow_, sqrt
+from TypeUtils import numeric_matrix_types, numeric_vector_types, pardos_type
+
 from ..BaseMachine import BaseMachine
 
 
@@ -8,27 +9,27 @@ class GaussianNB(BaseMachine):
     """
     Gaussian Naive Bayes classifier.
 
-    Clasificador probabilístico basado en el teorema de Bayes con la asunción
-    naive de independencia condicional entre features.
+    Probabilistic classifier based on Bayes' theorem with the assumption
+    naive conditional independence between features.
 
-    Fundamento matemático:
+    Mathematical foundation:
         P(y|X) = P(X|y) * P(y) / P(X)
 
-        Para clasificación, computamos para cada clase c:
+        For classification, we compute for each class c:
             P(y=c|X) ∝ P(y=c) * ∏ P(x_i|y=c)
 
-        Donde P(x_i|y=c) se modela como Gaussiana:
+        Where P(x_i|y=c) is modeled as Gaussian:
             P(x_i|y=c) = (1 / sqrt(2π * σ²_c)) * exp(-(x_i - μ_c)² / (2 * σ²_c))
 
-    Parámetros:
-        Ninguno (no hay hiperparámetros)
+    Parameters:
+        None (no hyperparameters)
 
-    Atributos (después de fit):
-        classes_: etiquetas únicas de clase
-        class_prior_: probabilidad a priori de cada clase
-        theta_: media de cada feature por clase (n_classes, n_features)
-        var_: varianza de cada feature por clase (n_classes, n_features)
-        n_features_in_: número de features
+    Attributes (after fit):
+        classes_: unique class labels
+        class_prior_: a priori probability of each class
+        theta_: average of each feature per class (n_classes, n_features)
+        var_: variance of each feature per class (n_classes, n_features)
+        n_features_in_: number of features
     """
 
     def __init__(self):
@@ -39,9 +40,9 @@ class GaussianNB(BaseMachine):
         self.var_ = []
         self.n_features_in_ = 0
 
-    @check_sig([3], [pardos_t] + vector_numeros_t + matriz_numeros_t, vector_numeros_t, is_method=True)
+    @check_sig([3], [pardos_type] + numeric_vector_types + numeric_matrix_types, numeric_vector_types, is_method=True)
     def fit(self, X, y):
-        """Ajusta Gaussian Naive Bayes con X, y."""
+        """Fit Gaussian Naive Bayes with X, y."""
         matrix, cols, is_df = self._unwrap_data(X)
         matrix = self._validate_matrix_shape(matrix)
 
@@ -84,15 +85,15 @@ class GaussianNB(BaseMachine):
         return self
 
     def _gaussian_pdf(self, x, mean, var):
-        """Calcula la función de densidad de probabilidad Gaussiana."""
+        """Computes the Gaussian probability density function."""
         if var == 0:
             return 1.0 if x == mean else 0.0
         two_pi_var = 2.0 * 3.141592653589793 * var
         return (1.0 / sqrt(two_pi_var)) * exp(-pow_(x - mean, 2) / (2.0 * var))
 
-    @check_sig([2], vector_numeros_t + matriz_numeros_t, is_method=True)
+    @check_sig([2], numeric_vector_types + numeric_matrix_types, is_method=True)
     def predict(self, X):
-        """Predice etiquetas de clase para X."""
+        """Predict class labels for X."""
         self._check_fitted("predict")
         if not X:
             return []
@@ -109,7 +110,7 @@ class GaussianNB(BaseMachine):
         return [self._predict_one(x) for x in X]
 
     def _predict_one(self, x):
-        """Predice la clase para una sola muestra."""
+        """Predict the class for a single sample."""
         log_posteriors = []
 
         for idx in range(len(self.classes_)):
@@ -140,9 +141,9 @@ class GaussianNB(BaseMachine):
 
         return self.classes_[best_idx]
 
-    @check_sig([2], vector_numeros_t + matriz_numeros_t, is_method=True)
+    @check_sig([2], numeric_vector_types + numeric_matrix_types, is_method=True)
     def predict_proba(self, X):
-        """Predice probabilidades de clase para X."""
+        """Predict class probabilities for X."""
         self._check_fitted("predict_proba")
         if not X:
             return []
@@ -159,7 +160,7 @@ class GaussianNB(BaseMachine):
         return [self._predict_proba_one(x) for x in X]
 
     def _predict_proba_one(self, x):
-        """Predice probabilidades para una sola muestra."""
+        """Predict probabilities for a single sample."""
         log_posteriors = []
 
         for idx in range(len(self.classes_)):
@@ -202,7 +203,7 @@ class GaussianNB(BaseMachine):
         return [e / total for e in exps]
 
     def score(self, X, y, metric=None):
-        """Score usando accuracy (por defecto) o una métrica personalizada."""
+        """Score using accuracy (default) or a custom metric."""
         from ..metrics import accuracy_score
         self._check_fitted("score")
         preds = self.predict(X)

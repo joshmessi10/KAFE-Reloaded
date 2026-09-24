@@ -1,8 +1,9 @@
-from lib.KafeMATH.funciones import exp
 from global_utils import check_sig
-from TypeUtils import vector_numeros_t, matriz_numeros_t, pardos_t
-from ..metrics import accuracy_score
+from lib.KafeMATH.functions import exp
+from TypeUtils import numeric_matrix_types, numeric_vector_types, pardos_type
+
 from ..BaseMachine import BaseMachine
+from ..metrics import accuracy_score
 
 
 class LogisticRegression(BaseMachine):
@@ -17,7 +18,7 @@ class LogisticRegression(BaseMachine):
         self.learning_rate = learning_rate
         self.max_iter = max_iter
 
-    @check_sig([3], [pardos_t] + vector_numeros_t + matriz_numeros_t, vector_numeros_t, is_method=True)
+    @check_sig([3], [pardos_type] + numeric_vector_types + numeric_matrix_types, numeric_vector_types, is_method=True)
     def fit(self, X, y):
         matrix, cols, is_df = self._unwrap_data(X)
         matrix = self._validate_matrix_shape(matrix)
@@ -58,7 +59,7 @@ class LogisticRegression(BaseMachine):
         self._is_fitted = True
         return self
 
-    @check_sig([2], vector_numeros_t + matriz_numeros_t, is_method=True)
+    @check_sig([2], numeric_vector_types + numeric_matrix_types, is_method=True)
     def predict(self, X):
         self._check_fitted("predict")
         if not X:
@@ -66,7 +67,7 @@ class LogisticRegression(BaseMachine):
         probs = self.predict_proba(X)
         return [0 if p[0] >= 0.5 else 1 for p in probs]
 
-    @check_sig([2], vector_numeros_t + matriz_numeros_t, is_method=True)
+    @check_sig([2], numeric_vector_types + numeric_matrix_types, is_method=True)
     def predict_proba(self, X):
         self._check_fitted("predict_proba")
         if not X:

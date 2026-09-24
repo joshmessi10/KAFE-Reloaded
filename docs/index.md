@@ -1,22 +1,22 @@
 # KAFE — Deep Learning Language
 
-**KAFE** es un lenguaje de programación de dominio específico (DSL) diseñado para la comunidad académica, orientado al aprendizaje y desarrollo de redes neuronales artificiales. Su paradigma funcional permite el uso de funciones currificadas, composición funcional y estructuras declarativas, promoviendo una comprensión profunda del funcionamiento interno de los modelos neuronales.
+**KAFE** is a domain-specific programming language (DSL) designed for the academic community and focused on learning about and developing artificial neural networks. Its functional paradigm supports curried functions, function composition, and declarative structures, helping learners understand how neural models work internally.
 
 ---
 
-## Características Principales
+## Key features
 
-- **Paradigma Funcional**: Funciones de primer orden, currificación nativa, lambdas y closures
-- **Tipado Estático Explícito**: Tipos primitivos, listas genéricas, funciones tipadas
-- **Librerías Integradas**: Álgebra lineal, visualización, Deep Learning, DataFrames, ML
-- **Sintaxis Clara**: Diseñada para ser legible y expresiva en contextos educativos
+- **Functional paradigm**: First-class functions, native currying, lambdas, and closures
+- **Explicit static typing**: Primitive types, generic lists, and typed functions
+- **Built-in libraries**: Linear algebra, visualization, deep learning, DataFrames, and ML
+- **Clear syntax**: Designed to be readable and expressive in educational settings
 
 ---
 
-## Ejemplo Rápido
+## Quick example
 
 ```kafe
--- Fibonacci con recursión
+-- Recursive Fibonacci
 drip fibonacci(n: INT) => INT:
     if (n <= 1):
         return n;
@@ -29,24 +29,24 @@ show(fibonacci(7));  -- 13
 
 ---
 
-## Navegación
+## Navigation
 
-| Sección | Descripción |
+| Section | Description |
 |---------|-------------|
-| [**Guía de Inicio**](guia-inicio/instalacion.md) | Instalación, primeros pasos y ejemplos básicos |
-| [**Lenguaje**](lenguaje/estructura-lexica.md) | Referencia completa del lenguaje: tipos, operadores, funciones |
-| [**Bibliotecas**](bibliotecas/numk.md) | Documentación de NUMK, MATH, PLOT, FILES, GeshaDeep, PARDOS, MACHINE |
-| [**Especificación**](especificacion/gramatica-ebnf.md) | Gramática formal EBNF, semántica operacional, pipeline de ejecución |
-| [**Errores**](errores/tipos-error.md) | Referencia completa del sistema de errores |
-| [**Ejemplos**](ejemplos/hola-mundo.kf) | Programas de ejemplo progresivos |
+| [**Getting started**](getting-started/installation.md) | Installation, first steps, and basic examples |
+| [**Language**](language/lexical-structure.md) | Complete language reference: types, operators, and functions |
+| [**Libraries**](libraries/numk.md) | Documentation for NUMK, MATH, PLOT, FILES, GeshaDeep, PARDOS, and MACHINE |
+| [**Specification**](specification/ebnf-grammar.md) | EBNF grammar, operational semantics, and execution pipeline |
+| [**Errors**](errors/error-types.md) | Complete reference for the error system |
+| [**Examples**](examples/hello-world.kf) | Progressive sample programs |
 
 ---
 
-## Información del Proyecto
+## Project information
 
-- **Versión**: v2.0.0
-- **Licencia**: GPL-3.0
-- **Repositorio**: [GitHub](https://github.com/joshmessi10/KAFE-Reloaded)
-- **Autores**: Josh Sebastián López Murcia, Franklin Julián González Pérez, Karen Yireth Castañeda
-- **Coautores**: Andrés Felipe Sindicue, Luis Felipe Valencia, Emanuel Felipe Molina
-- **Asesor**: Joaquín Sánchez — Universidad Sergio Arboleda
+- **Version**: v2.0.0
+- **License**: GPL-3.0
+- **Repository**: [GitHub](https://github.com/joshmessi10/KAFE-Reloaded)
+- **Authors**: Josh Sebastián López Murcia, Franklin Julián González Pérez, Karen Yireth Castañeda
+- **Co-authors**: Andrés Felipe Sindicue, Luis Felipe Valencia, Emanuel Felipe Molina
+- **Advisor**: Joaquín Sánchez — Universidad Sergio Arboleda

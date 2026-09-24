@@ -2,16 +2,16 @@
 
 ## Mathematical Foundation
 
-Un árbol de decisión para regresión que predice valores continuos minimizando el MSE.
+`DecisionTreeRegressor` is a regression tree that predicts continuous values by minimizing mean squared error (MSE).
 
-### Algoritmo
+### Algorithm
 
-1. Para cada feature y umbral candidato:
-   - Dividir datos en izquierda (X ≤ threshold) y derecha (X > threshold)
-   - Calcular MSE reducido = MSE_parent - (n_l/n * MSE_left + n_r/n * MSE_right)
-2. Seleccionar split con mayor reducción de MSE
-3. Repetir recursivamente hasta condición de parada
-4. Hojas predicen la media de los valores en el nodo
+1. For each feature and candidate threshold:
+   - Split the data into left ($X \leq$ threshold) and right ($X >$ threshold) groups.
+   - Calculate the weighted MSE reduction: $MSE_{parent} - (n_l/n \cdot MSE_{left} + n_r/n \cdot MSE_{right})$.
+2. Select the split with the greatest MSE reduction.
+3. Repeat recursively until a stopping condition is met.
+4. Each leaf predicts the mean of the values in its node.
 
 ### MSE (Mean Squared Error)
 
@@ -22,35 +22,35 @@ $$MSE = \frac{1}{n} \sum_{i=1}^{n} (y_i - \bar{y})^2$$
 | Operation | Time | Space |
 |-----------|------|-------|
 | Training | $O(n \cdot m \cdot \log n)$ | $O(n)$ |
-| Prediction | $O(\log n)$ promedio | $O(1)$ |
+| Prediction | $O(\log n)$ on average | $O(1)$ |
 
 ## Advantages
 
-1. **Interpretable** — fácil de visualizar y entender
-2. **No necesita normalización** — invariantes a escala
-3. **Captura no-linearidades** — puede modelar relaciones complejas
-4. **Rápido en predicción** — O(log n) promedio
+1. **Interpretable** — easy to visualize and understand.
+2. **No normalization required** — invariant to feature scale.
+3. **Captures nonlinearities** — can model complex relationships.
+4. **Fast prediction** — $O(\log n)$ on average.
 
 ## Limitations
 
-1. **Overfitting** — puede memorizar datos de entrenamiento
-2. **Inestable** — pequeños cambios en datos cambian el árbol
-3. **Sesgo hacia features con muchos valores** — bias por cardinalidad
+1. **Overfitting** — it can memorize the training data.
+2. **Unstable** — small data changes can produce a different tree.
+3. **Bias toward features with many values** — high cardinality can be favored.
 
 ## When to Use
 
-- Datos con relaciones no-lineales
-- Necesitas interpretabilidad
-- Features de diferentes escalas
+- Data with nonlinear relationships.
+- When interpretability is important.
+- Features with different scales.
 
 ## When NOT to Use
 
-- Datos lineales (regresión lineal es mejor)
-- Overfitting es problemático (usar RandomForest)
+- Linear data (linear regression may be more appropriate).
+- When overfitting is a concern (consider a random forest).
 
 ## Implementation Location
 
-- `src/lib/KafeMACHINE/DecisionTree.py` — DecisionTreeRegressor class
+- `src/lib/KafeMACHINE/tree/DecisionTree.py` — DecisionTreeRegressor class
 
 ## Public API
 

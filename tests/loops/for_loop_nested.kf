@@ -1,0 +1,4 @@
+List[STR] letters = ['K', 'A', 'F', 'E'];
+for (l in letters):
+    show(l);
+;

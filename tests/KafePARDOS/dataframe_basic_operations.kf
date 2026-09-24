@@ -1,26 +1,26 @@
 import pardos;
 
--- Leer el CSV de prueba (estando en tests/Kafepardos, “test1.csv” se encuentra)
+-- Read the test CSV (test1.csv is in tests/KafePARDOS)
 PARDOS df = pardos.read_csv("dataframe_basic_operations.csv");
 
--- Mostrar primeras 3 filas
+-- Display the first three rows
 PARDOS first3 = df.head(3);
 show(df.head(3));
 
--- Mostrar últimas 2 filas
+-- Display the last two rows
 PARDOS last2 = df.tail(2);
 show(last2);
 
--- Shape: ahora devuelves un DataFrame con filas “Rows” y “Columns”
+-- Shape: now returns a DataFrame with rows “Rows” y “Columns”
 show(df.shape());
 
--- Columna "edad": lista de INT → List[INT]
-List[INT] edades = df.col("edad");
-show(edades);
+-- "age" column: list of INT → List[INT]
+List[INT] ages = df.col("age");
+show(ages);
 
 show(df.dtypes());
 
 show(df.info());
 
-PARDOS descripcion = df.describe();
-show(descripcion);
+PARDOS description = df.describe();
+show(description);

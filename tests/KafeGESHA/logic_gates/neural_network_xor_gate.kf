@@ -1,6 +1,6 @@
 import geshaDeep;
 
--- Datos y = 3x + 1  (x en INT, y en FLOAT)
+-- Data y = 3x + 1  (x is INT, y is FLOAT)
 List[List[INT]] x_train = [[0],[1],[2],[3],[4]];
 List[FLOAT]     y_train = [1.0, 4.0, 7.0, 10.0, 13.0];
 
@@ -13,9 +13,9 @@ GESHA model = geshaDeep.sequential([dense]);
 model.compile("sgd", "mse", []);
 model.fit(x_train, y_train, 200, 1, x_val, y_val);
 
--- predicción para x = 6  (≈ 19)
+-- prediction for x = 6  (≈ 19)
 List[INT] sample = [6];
 FLOAT y_pred = model.predict(sample)[0];
-show("Predicción para 6: " + str(y_pred));
+show("Prediction for 6: " + str(y_pred));
 
 model.summary();

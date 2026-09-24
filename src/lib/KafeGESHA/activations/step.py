@@ -1,8 +1,8 @@
-"""Funciones de activación Identidad y Escalonada."""
+"""Identity and Tiered activation functions."""
 from lib.KafeGESHA.activations.activation import ActivationFunction
 
 
-class Identidad(ActivationFunction):
+class IdentityActivation(ActivationFunction):
     def activate(self, x):
         return x
 
@@ -10,7 +10,7 @@ class Identidad(ActivationFunction):
         return 1.0
 
 
-class Escalonada(ActivationFunction):
+class StepActivation(ActivationFunction):
     def activate(self, x):
         return 1 if x >= 0 else 0
 

@@ -10,58 +10,57 @@ ML utility — model evaluation
 
 ## Description
 
-CrossValScore evalúa un modelo usando k-fold cross-validation de forma orientada a objetos. Calcula scores por fold, promedio y desviación estándar, proporcionando una medida robusta del rendimiento del modelo.
+`CrossValScore` evaluates a model with k-fold cross-validation through an object-oriented API. It computes the score for each fold, the mean, and the standard deviation to provide a robust estimate of model performance.
 
 ## Mathematical Foundation
 
-Dado un dataset de $n$ ejemplos y $k$ folds:
+Given a dataset of $n$ samples and $k$ folds:
 
-1. Barajar y particionar en $k$ folds $\{F_1, F_2, \ldots, F_k\}$
-2. Para cada fold $i$:
-   - Entrenar en $\bigcup_{j \neq i} F_j$
-   - Evaluar en $F_i$ usando la métrica de scoring
-3. Calcular: $\bar{s} = \frac{1}{k} \sum_{i=1}^k s_i$ y $\sigma = \sqrt{\frac{1}{k-1} \sum_{i=1}^k (s_i - \bar{s})^2}$
+1. Shuffle and partition the dataset into $k$ folds, $\{F_1, F_2, \ldots, F_k\}$.
+2. For each fold $i$:
+   - Train on $\bigcup_{j \neq i} F_j$.
+   - Evaluate on $F_i$ with the selected scoring metric.
+3. Compute the mean $\bar{s} = \frac{1}{k} \sum_{i=1}^k s_i$ and sample standard deviation $\sigma = \sqrt{\frac{1}{k-1} \sum_{i=1}^k (s_i - \bar{s})^2}$.
 
-- **Time Complexity**: $O(k \cdot T_{\text{model}})$ donde $T_{\text{model}}$ es el tiempo de entrenamiento por fold
-- **Space Complexity**: $O(n)$ para almacenar los folds
+- **Time complexity**: $O(k \cdot T_{\text{model}})$, where $T_{\text{model}}$ is training time per fold.
+- **Space complexity**: $O(n)$ to store the folds.
 
 ## Step-by-Step Algorithm
 
-1. Recibir modelo, datos X, y, y número de folds k
-2. Generar particiones de k-fold con shuffle
-3. Para cada fold: separar train/test, ajustar modelo, calcular score
-4. Almacenar scores, calcular promedio y desviación estándar
+1. Receive the model, data $X$ and $y$, and the number of folds $k$.
+2. Generate shuffled k-fold partitions.
+3. For each fold, split training and test data, fit the model, and calculate its score.
+4. Store the scores and calculate their mean and standard deviation.
 
 ## Motivation
 
-CrossValScore proporciona una forma estandarizada y reutilizable de evaluar modelos con cross-validation, encapsulando la lógica de partición y scoring en un solo objeto.
+`CrossValScore` provides a standardized, reusable way to evaluate models with cross-validation by encapsulating partitioning and scoring in one object.
 
 ## Advantages
 
-- Orientado a objetos (compatible con Pipeline y GridSearchCV)
-- Múltiples métricas de scoring
-- Desviación estándar para estimar varianza
-- Reproducibilidad con random_state
+- Object-oriented API (compatible with `Pipeline` and `GridSearchCV`).
+- Built-in handling for `accuracy`, `r2`, and `mse`, with a fallback to `model.score()`.
+- Standard deviation to estimate score variability.
+- Reproducibility through `random_state`.
 
 ## Limitations
 
-- Solo métricas predefinidas (accuracy, r2, mse)
-- No soporta custom scoring functions como k_fold_cross_validation
+- Custom scoring callbacks are not accepted; other scoring labels fall back to `model.score()`.
 
 ## When to Use
 
-- Para evaluación rápida de modelos
-- Como métrica de evaluación en GridSearchCV/RandomizedSearchCV
-- Cuando se necesita desviación estándar del rendimiento
+- For a quick model evaluation.
+- As an evaluation metric in `GridSearchCV` or `RandomizedSearchCV`.
+- When the standard deviation of model performance is needed.
 
 ## When NOT to Use
 
-- Cuando se necesita una métrica custom (usar k_fold_cross_validation con función personalizada)
+- When evaluation requires passing a custom scoring callback.
 
 ## Dependencies
 
-- k_fold (función de partición)
-- BaseMachine (modelos con interfaz fit/predict)
+- `k_fold` (partitioning function).
+- BaseMachine (models with a `fit`/`predict` interface)
 
 ## Related Concepts
 
@@ -71,7 +70,7 @@ CrossValScore proporciona una forma estandarizada y reutilizable de evaluar mode
 
 ## Relationship with KAFE
 
-En KAFE, CrossValScore se implementa como una clase en `model_selection.py`. El factory `machine.cross_val_score(cv, scoring, random_state)` crea una instancia.
+In KAFE, `CrossValScore` is implemented as a class in `src/lib/KafeMACHINE/model_selection/`. The factory `machine.cross_val_score(cv, scoring, random_state)` creates an instance.
 
 ## Usage Examples
 
@@ -88,15 +87,15 @@ show(cvs.std_score_);   -- ~0.025
 
 ## Implementation Location
 
-- `src/lib/KafeMACHINE/model_selection.py` — class `CrossValScore` (línea 162)
+- `src/lib/KafeMACHINE/model_selection/` — `CrossValScore` implementation.
 
 ## Public API
 
-- `machine.cross_val_score(cv, scoring, random_state)` — crea CrossValScore
-- `cvs.fit(model, X, y)` — evalúa modelo con k-fold CV
-- `cvs.scores_` — scores por fold
-- `cvs.mean_score_` — promedio de scores
-- `cvs.std_score_` — desviación estándar
+- `machine.cross_val_score(cv, scoring, random_state)` — creates a `CrossValScore` instance.
+- `cvs.fit(model, X, y)` — evaluates the model with k-fold cross-validation.
+- `cvs.scores_` — score for each fold.
+- `cvs.mean_score_` — mean score.
+- `cvs.std_score_` — standard deviation.
 
 ## References
 

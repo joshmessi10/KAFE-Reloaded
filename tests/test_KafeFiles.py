@@ -1,64 +1,54 @@
-import subprocess
-import sys
-import pytest
 import os
-from utils import obtener_parametros, get_programs, get_kafe_path, get_src_dir, get_invalid_programs, get_kafe_path, get_src_dir
+
+import pytest
+from utils import (
+    assert_invalid_kafe_result,
+    assert_valid_kafe_result,
+    get_invalid_programs,
+    get_parameters,
+    get_programs,
+    run_kafe_program,
+)
 
 
 @pytest.mark.parametrize(
-    "programa, entrada, salida_esperada",
-    list(obtener_parametros(get_programs("../tests/KafeFiles"))),
+    "program, input_text, expected_stdout",
+    list(get_parameters(get_programs("../tests/KafeFiles"))),
 )
-def test_valid_programs(programa, entrada, salida_esperada):
-    result = subprocess.run(
-        [sys.executable, get_kafe_path(), programa],
-        capture_output=True,
-        text=True,
-        input=entrada,
-        cwd=get_src_dir(),
-    )
+def test_valid_programs(program, input_text, expected_stdout):
+    result = run_kafe_program(program, input_text=input_text)
 
-    carpeta_destino = os.path.dirname(programa)
-    nombre_base = os.path.splitext(os.path.basename(programa))[0]
-    txt_generado_base = f"archivo_{nombre_base}.txt"
-    txt_prueba_base = f"{nombre_base}.txt"
-    txt_generado_path = os.path.join(carpeta_destino, txt_generado_base)
-    txt_prueba_path = os.path.join(carpeta_destino, txt_prueba_base)
+    output_directory = os.path.dirname(program)
+    program_basename = os.path.splitext(os.path.basename(program))[0]
+    generated_text_basename = f"file_{program_basename}.txt"
+    expected_text_basename = f"{program_basename}.txt"
+    generated_text_path = os.path.join(output_directory, generated_text_basename)
+    expected_text_path = os.path.join(output_directory, expected_text_basename)
 
     try:
-        with open(txt_generado_path) as f:
-            txt_generado = f.read()
-        os.remove(txt_generado_path)
+        with open(generated_text_path) as f:
+            generated_text = f.read()
+        os.remove(generated_text_path)
     except FileNotFoundError:
-        txt_generado = ""
+        generated_text = ""
 
     try:
-        with open(txt_prueba_path) as f:
-            txt_prueba = f.read()
+        with open(expected_text_path) as f:
+            expected_text = f.read()
     except FileNotFoundError:
-        txt_prueba = ""
+        expected_text = ""
 
     assert (
-        txt_generado == txt_prueba
-    ), f"{txt_prueba_path} doesn't match {txt_generado_path}"
-    assert result.returncode == 0, f"Non-zero exit for {programa}"
-    assert result.stdout == salida_esperada, f"Incorrect output for {programa}"
+        generated_text == expected_text
+    ), f"{expected_text_path} doesn't match {generated_text_path}"
+    assert_valid_kafe_result(result, program, expected_stdout)
 
 
 @pytest.mark.parametrize(
-    "programa, entrada, salida_esperada",
-    list(obtener_parametros(get_invalid_programs("../tests/KafeFiles"))),
+    "program, input_text, expected_stdout",
+    list(get_parameters(get_invalid_programs("../tests/KafeFiles"))),
 )
-def test_invalid_programs(programa, entrada, salida_esperada):
-    result = subprocess.run(
-        [sys.executable, get_kafe_path(), programa],
-        capture_output=True,
-        text=True,
-        input=entrada,
-        cwd=get_src_dir(),
-    )
+def test_invalid_programs(program, input_text, expected_stdout):
+    result = run_kafe_program(program, input_text=input_text)
 
-    assert result.returncode == 1, f"Zero exit for {programa}"
-    assert (
-        result.stderr.splitlines()[-1] + "\n" == salida_esperada
-    ), f"Incorrect output for {programa}"
+    assert_invalid_kafe_result(result, program, expected_stdout)

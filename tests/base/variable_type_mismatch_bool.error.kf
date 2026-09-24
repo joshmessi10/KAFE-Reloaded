@@ -1,3 +1,3 @@
--- Declaración de lista no homogénea
+-- Declaring a non-homogeneous list
 
 List[List[FLOAT]] h = [4.5, 4.34, 4];

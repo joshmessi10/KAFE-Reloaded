@@ -1,0 +1,21 @@
+INT age = 25;
+BOOL has_license = True;
+INT points = 3;
+
+if (age >= 18) :
+    if (has_license) :
+        if (points < 5) :
+            show("Can drive normally");
+        ; else :
+            show("Can drive but must be careful");
+        ;
+    ; else :
+        show("Cannot drive; no license");
+    ;
+; else :
+    if (age >= 16) :
+        show("Can drive with a learner permit");
+    ; else :
+        show("Is underage and cannot drive");
+    ;
+;

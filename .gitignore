@@ -33,7 +33,8 @@ htmlcov/
 # OS files
 .DS_Store
 
-# Ignore docs/superpowers
+# Local-only Superpowers artifacts (do not ignore published docs)
 docs/superpowers/
+.superpowers/
 # MkDocs generated site
 site/

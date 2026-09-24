@@ -10,79 +10,79 @@ ML utility — model selection / workflow composition
 
 ## Description
 
-Pipeline encadena múltiples pasos de preprocessing con un modelo final en un solo objeto. Cada paso se ajusta y transforma secuencialmente, evitando data leakage al garantizar que cada transformador solo vea los datos de entrenamiento durante `fit()`.
+`Pipeline` chains multiple preprocessing steps and a final model in a single object. Each step is fitted and transformed in sequence, preventing data leakage by ensuring that transformers see only the training data during `fit()`.
 
 ## Mathematical Foundation
 
-Dado un pipeline $P = [T_1, T_2, \ldots, T_n, M]$ donde $T_i$ son transformadores y $M$ es el modelo final:
+Given a pipeline $P = [T_1, T_2, \ldots, T_n, M]$, where $T_i$ are transformers and $M$ is the final model:
 
-**Entrenamiento**:
+**Training**:
 $$X' = T_1.\text{fit\_transform}(X)$$
 $$X'' = T_2.\text{fit\_transform}(X')$$
 $$\vdots$$
 $$M.\text{fit}(X^{(n)}, y)$$
 
-**Predicción**:
+**Prediction**:
 $$X' = T_1.\text{transform}(X)$$
 $$X'' = T_2.\text{transform}(X')$$
 $$\vdots$$
 $$\hat{y} = M.\text{predict}(X^{(n)})$$
 
-- **Time Complexity**: $O(\sum_{i=1}^{n} T_{\text{fit}}(T_i) + T_{\text{fit}}(M))$ para entrenamiento, $O(\sum_{i=1}^{n} T_{\text{transform}}(T_i) + T_{\text{predict}}(M))$ para predicción
-- **Space Complexity**: $O(n \cdot d)$ donde $d$ es el número de features, ya que cada transformación crea una nueva representación
+- **Time Complexity**: $O(\sum_{i=1}^{n} T_{\text{fit}}(T_i) + T_{\text{fit}}(M))$ for training and $O(\sum_{i=1}^{n} T_{\text{transform}}(T_i) + T_{\text{predict}}(M))$ for prediction.
+- **Space Complexity**: $O(n \cdot d)$, where $d$ is the number of features, because each transformation creates a new representation.
 
-**Key Formulas**: Cada paso $T_i$ aplica su propia transformación matemática (ej: StandardScaler aplica $z = (x - \mu) / \sigma$), y el pipeline las encadena.
+**Key Formulas**: Each step $T_i$ applies its own mathematical transformation (for example, `StandardScaler` applies $z = (x - \mu) / \sigma$), and the pipeline composes them.
 
 ## Step-by-Step Algorithm
 
-1. Recibir datos de entrada $X$ e $y$
-2. Para cada transformador $T_i$ (excepto el último paso):
-   a. Llamar $T_i.\text{fit\_transform}(X_{\text{actual}})$ si tiene `fit_transform`
-   b. Si no, llamar $T_i.\text{fit}(X_{\text{actual}})$ y luego $T_i.\text{transform}(X_{\text{actual}})$
-   c. Actualizar $X_{\text{actual}}$ con la salida transformada
-3. Para el modelo final $M$: llamar $M.\text{fit}(X_{\text{actual}}, y)$
-4. Almacenar todos los pasos ajustados en `steps_` y `named_steps_`
-5. Para predicción: aplicar `transform()` de cada transformador secuencialmente, luego `predict()` del modelo
+1. Receive input data $X$ and target values $y$.
+2. For each transformer $T_i$ except the final step:
+   a. Call $T_i.\text{fit\_transform}(X_{\text{current}})$ if it implements `fit_transform`.
+   b. Otherwise, call $T_i.\text{fit}(X_{\text{current}})$ followed by $T_i.\text{transform}(X_{\text{current}})$.
+   c. Replace $X_{\text{current}}$ with the transformed output.
+3. For the final model $M$, call $M.\text{fit}(X_{\text{current}}, y)$.
+4. Store the fitted steps in `steps_` and `named_steps_`.
+5. For prediction, apply each transformer's `transform()` in sequence, then call the model's `predict()`.
 
 ## Motivation
 
-Pipeline resuelve un problema fundamental en ML: **data leakage**. Sin Pipeline, es fácil accidentalmente ajustar un scaler en todo el dataset (incluyendo test) antes de dividir, lo que contamina la evaluación. Pipeline garantiza que cada transformador solo se ajuste en los datos de entrenamiento.
+`Pipeline` addresses a fundamental ML problem: **data leakage**. Without a pipeline, it is easy to fit a scaler on the entire dataset, including test data, before splitting it, which contaminates the evaluation. A pipeline ensures that each transformer is fitted only on the training data.
 
-También proporciona **modularidad**: permite experimentar fácilmente con diferentes combinaciones de preprocessing + modelo sin reescribir código.
+It also provides **modularity**, making it easy to experiment with different preprocessing and model combinations without rewriting code.
 
 ## Advantages
 
-- **Prevención de data leakage**: Cada transformador se ajusta solo en training data durante cross-validation
-- **Modularidad**: Combinar transformaciones y modelos como bloques LEGO
-- **Reproducibilidad**: El mismo pipeline produce los mismos resultados en cada ejecución
-- **Código limpio**: Un solo objeto reemplaza múltiples llamadas manuales a fit/transform
-- **Integración con GridSearchCV/RandomizedSearchCV**: Permite buscar hiperparámetros de preprocessing y modelo simultáneamente
+- **Prevents data leakage**: Each transformer is fitted only on training data during cross-validation.
+- **Modularity**: Combines transformations and models as reusable building blocks.
+- **Reproducibility**: The same pipeline applies the same sequence of steps on each run.
+- **Cleaner code**: One object replaces multiple manual `fit` and `transform` calls.
+- **Works with `GridSearchCV` and `RandomizedSearchCV`**: Allows simultaneous search over preprocessing and model hyperparameters.
 
 ## Limitations
 
-- **Menos flexible que código manual**: Casos edge (ej: transformaciones condicionales) requieren diseño personalizado
-- **Debugging más difícil**: Errores en pasos intermedios pueden ser difíciles de rastrear
-- **Solo secuencial**: No soporta grafos de transformación (ej: ramas paralelas)
-- **Último paso debe ser modelo**: Pipeline asume que el último elemento es un modelo con `fit(X, y)` y `predict(X)`
+- **Less flexible than custom code**: Edge cases such as conditional transformations require a custom design.
+- **Harder to debug**: Errors in intermediate steps may be difficult to trace.
+- **Sequential only**: Does not support transformation graphs such as parallel branches.
+- **Final step must be a model**: `Pipeline` expects the last element to provide `fit(X, y)` and `predict(X)`.
 
 ## When to Use
 
-- Cuando se necesita encadenar preprocessing con un modelo
-- Cuando se usa cross-validation y se quiere evitar data leakage
-- Cuando se quiere buscar hiperparámetros de preprocessing y modelo juntos (con GridSearchCV/RandomizedSearchCV)
-- Para workflows de ML reproducibles y modulares
+- When preprocessing steps must be chained with a model.
+- When using cross-validation and preventing data leakage is important.
+- When preprocessing and model hyperparameters should be searched together.
+- For reproducible and modular ML workflows.
 
 ## When NOT to Use
 
-- Transformaciones que necesitan acceso simultáneo a X e y en pasos intermedios
-- Grafos de transformación con ramas paralelas (se necesitaría un DAG)
-- Cuando el preprocessing es tan simple que un Pipeline agrega complejidad innecesaria
+- Intermediate transformations that need simultaneous access to $X$ and $y$.
+- Transformation graphs with parallel branches (a DAG is needed).
+- When preprocessing is so simple that a pipeline adds unnecessary complexity.
 
 ## Dependencies
 
-- BaseMachine (clase base)
-- Cualquier transformador con interfaz fit/transform (StandardScaler, MinMaxScaler, PCA, etc.)
-- Cualquier modelo con interfaz fit/predict
+- BaseMachine (base class)
+- Any transformer with a `fit`/`transform` interface (StandardScaler, MinMaxScaler, PCA, etc.)
+- Any model with a `fit`/`predict` interface
 
 ## Related Concepts
 
@@ -95,36 +95,36 @@ También proporciona **modularidad**: permite experimentar fácilmente con difer
 
 ## Relationship with KAFE
 
-En KAFE, Pipeline se implementa como una clase que extiende BaseMachine. El factory `machine.pipeline()` acepta pares alternados de nombre y paso:
+In KAFE, `Pipeline` is implemented as a class that extends `BaseMachine`. The factory `machine.pipeline()` accepts alternating name and step pairs:
 
 ```
 machine.pipeline("scaler", scaler, "model", lr)
 ```
 
-Pipeline hereda de BaseMachine, lo que le da compatibilidad con GridSearchCV y RandomizedSearchCV para búsqueda de hiperparámetros anidada.
+`Pipeline` inherits from `BaseMachine`, which makes it compatible with `GridSearchCV` and `RandomizedSearchCV` for nested hyperparameter search.
 
 ## Usage Examples
 
 ```kafe
 import machine;
 
--- Crear transformadores y modelo
+-- Create transformers and a model
 MACHINE scaler = machine.standard_scaler();
 MACHINE lr = machine.linear_regression();
 
--- Crear pipeline: escalar → regresión lineal
+-- Create a pipeline: scaling → linear regression
 MACHINE pipe = machine.pipeline("scaler", scaler, "model", lr);
 
--- Entrenar pipeline completo
+-- Fit the complete pipeline
 pipe.fit(X_train, y_train);
 
--- Predecir (aplica scaler automáticamente)
+-- Predict (the scaler is applied automatically)
 List[FLOAT] preds = pipe.predict(X_test);
 
--- Evaluar
+-- Evaluate
 FLOAT r2 = pipe.score(X_test, y_test);
 
--- Usar con GridSearchCV
+-- Use with GridSearchCV
 Dict param_grid = {"scaler__strategy": ["mean", "median"]};
 MACHINE gs = machine.grid_search_cv(pipe, param_grid, 5, machine.r2_score);
 gs.fit(X_train, y_train);
@@ -132,20 +132,20 @@ gs.fit(X_train, y_train);
 
 ## Implementation Location
 
-- `src/lib/KafeMACHINE/model_selection.py` — class `Pipeline(BaseMachine)` (línea 487)
-- `src/lib/KafeMACHINE/funciones.py` — factory `pipeline()` (línea 302)
+- `src/lib/KafeMACHINE/model_selection/` — `Pipeline` implementation.
+- `src/lib/KafeMACHINE/functions.py` — `pipeline()` factory.
 
 ## Public API
 
-- `machine.pipeline(name1, step1, name2, step2, ...)` — crea un Pipeline con pasos nombrados
-- `pipe.fit(X, y)` — ajusta todos los pasos del pipeline
-- `pipe.predict(X)` — aplica transformaciones y predice
-- `pipe.score(X, y, metric)` — evalúa usando el modelo final
-- `pipe.transform(X)` — aplica solo las transformaciones (sin el modelo)
-- `pipe.fit_transform(X, y)` — fit + transform
-- `pipe.get_params()` — retorna nombres de los pasos
-- `pipe.named_steps_` — dict de pasos por nombre (después de fit)
-- `pipe.steps_` — lista de tuplas (nombre, paso) ajustadas (después de fit)
+- `machine.pipeline(name1, step1, name2, step2, ...)` — creates a pipeline with named steps.
+- `pipe.fit(X, y)` — fits every pipeline step.
+- `pipe.predict(X)` — transforms the input and predicts.
+- `pipe.score(X, y, metric)` — evaluates using the final model.
+- `pipe.transform(X)` — applies only the transformations, without the model.
+- `pipe.fit_transform(X, y)` — fits the pipeline and transforms the data.
+- `pipe.get_params()` — returns the step names.
+- `pipe.named_steps_` — mapping of step names to steps after fitting.
+- `pipe.steps_` — list of fitted `(name, step)` tuples.
 
 ## References
 

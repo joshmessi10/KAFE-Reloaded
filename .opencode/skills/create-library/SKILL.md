@@ -26,10 +26,10 @@ The Lead orchestrates this workflow, delegating each step to the responsible age
 
 1. Run Impact Analysis first (`/impact`) — mandatory before adding a new library (new public API + library dispatch).
 2. Read `.opencode/knowledge/libraries.md` and mirror an existing library's structure.
-3. Create `src/lib/KafeXXX/funciones.py` (plain Python functions; stateful models as classes with `fit()`/`predict()`/`score()`).
-4. Import the module in `src/EvalVisitorPrimitivo.py` near the other `import lib.Kafe*` lines.
+3. Create `src/lib/KafeXXX/functions.py` (plain Python functions; stateful models as classes with `fit()`/`predict()`/`score()`).
+4. Import the module in `src/InterpreterVisitor.py` near the other `import lib.Kafe*` lines.
 5. Register it in `self.libraries` with the lowercase KAFE import name (`{"xxx": [module, False]}`).
-6. Add fixtures under `tests/KafeXXX/` and a `tests/test_KafeXXX.py` parameterized via `obtener_parametros(get_programs(...))`.
+6. Add fixtures under `tests/KafeXXX/` and a `tests/test_KafeXXX.py` module parameterized via `get_parameters(get_programs(...))`.
 7. Add an example `.kf` program under `docs/` if applicable.
 8. Reviewer runs `/dod` before the task is declared complete.
 
@@ -40,12 +40,12 @@ The Lead orchestrates this workflow, delegating each step to the responsible age
 
 ## Required Documentation Updates
 
-- `docs/bibliotecas/`.
+- `docs/libraries/`.
 - `.opencode/knowledge/libraries.md` (registry and library reference).
 - Concept record in `.opencode/knowledge/concepts/` if the library introduces a concept.
 
 ## Validation Requirements
 
-- `pytest tests/test_KafeXXX.py` passes.
-- Full suite `pytest tests/` passes.
+- `uv run --locked --group dev pytest tests/test_KafeXXX.py` passes.
+- Full suite `uv run --locked --group dev pytest tests/` passes.
 - `import <key>` works in a `.kf` program; un-imported usage raises correctly.

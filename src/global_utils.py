@@ -1,39 +1,53 @@
-from errores import raiseTypeMismatch, raiseFunctionIncorrectArgumentType, raiseWrongNumberOfArgs
-from TypeUtils import obtener_tipo_dato, entero_t, flotante_t, booleano_t, cadena_t, funcion_t, lista_t, lista_cualquiera_t
-
-def esTipoCorrecto(valor, tipo_definido):
-    tipo_valor = obtener_tipo_dato(valor)
-
-    if tipo_definido.startswith(funcion_t):
-        tipo_definido = tipo_definido[:4]
-
-    if tipo_valor.startswith(lista_t) and tipo_definido.startswith(lista_t):
-        posibles_tipos_internos = [entero_t, flotante_t, booleano_t, cadena_t]
-
-        tipo_valor_no_tiene_tipo_interno = not any(t in tipo_valor for t in posibles_tipos_internos)
-        tipo_definido_no_tiene_tipo_interno = not any(t in tipo_definido for t in posibles_tipos_internos)
-
-        es_lista_vacia = tipo_valor == obtener_tipo_dato([])
-
-        if es_lista_vacia:
-            tipo_valor = tipo_definido
-        elif tipo_valor_no_tiene_tipo_interno or tipo_definido_no_tiene_tipo_interno:
-            tipo_definido = tipo_definido.replace(entero_t,"").replace(flotante_t,"")
-            tipo_definido = tipo_definido.replace(cadena_t,"").replace(booleano_t,"")
-            tipo_valor = tipo_valor.replace(entero_t,"").replace(flotante_t,"")
-            tipo_valor = tipo_valor.replace(cadena_t,"").replace(booleano_t,"")
+from errors import (
+    raiseFunctionIncorrectArgumentType,
+    raiseTypeMismatch,
+    raiseWrongNumberOfArgs,
+)
+from TypeUtils import (
+    any_list_types,
+    boolean_type,
+    float_type,
+    function_type,
+    get_data_type,
+    integer_type,
+    list_type,
+    string_type,
+)
 
 
-    if tipo_definido != tipo_valor:
+def is_correct_type(value, declared_type):
+    value_type = get_data_type(value)
+
+    if declared_type.startswith(function_type):
+        declared_type = declared_type[:4]
+
+    if value_type.startswith(list_type) and declared_type.startswith(list_type):
+        possible_inner_types = [integer_type, float_type, boolean_type, string_type]
+
+        value_has_no_inner_type = not any(t in value_type for t in possible_inner_types)
+        declared_has_no_inner_type = not any(t in declared_type for t in possible_inner_types)
+
+        is_empty_list = value_type == get_data_type([])
+
+        if is_empty_list:
+            value_type = declared_type
+        elif value_has_no_inner_type or declared_has_no_inner_type:
+            declared_type = declared_type.replace(integer_type,"").replace(float_type,"")
+            declared_type = declared_type.replace(string_type,"").replace(boolean_type,"")
+            value_type = value_type.replace(integer_type,"").replace(float_type,"")
+            value_type = value_type.replace(string_type,"").replace(boolean_type,"")
+
+
+    if declared_type != value_type:
         return False
     else:
         return True
 
-def asignar_variable(self, name, valor, tipo):
-    if not esTipoCorrecto(valor, tipo):
-        raiseTypeMismatch(valor, tipo)
+def assign_variable(self, name, value, data_type):
+    if not is_correct_type(value, data_type):
+        raiseTypeMismatch(value, data_type)
 
-    self.variables[name] = (tipo, valor)
+    self.variables[name] = (data_type, value)
 
 def flatten_list(nested_list):
     flat_list = []
@@ -44,101 +58,97 @@ def flatten_list(nested_list):
             flat_list.append(item)
     return flat_list
 
-def obtener_nivel_anidamiento(lista):
-    if not isinstance(lista, list):
+def get_nesting_level(items):
+    if not isinstance(items, list):
         return 0
 
     max_depth = 0
-    for item in lista:
+    for item in items:
         if isinstance(item, list):
-            depth = obtener_nivel_anidamiento(item)
+            depth = get_nesting_level(item)
             if depth > max_depth:
                 max_depth = depth
 
     return max_depth + 1
 
-def verificarHomogeneidad(lista):
-    if len(lista) != 0:
-        anidamiento = obtener_nivel_anidamiento(lista[0])
-        for elemento in lista:
-            if obtener_nivel_anidamiento(elemento) != anidamiento:
+def verify_homogeneity(items):
+    if len(items) != 0:
+        nesting_level = get_nesting_level(items[0])
+        for item in items:
+            if get_nesting_level(item) != nesting_level:
                 return False
 
-    lista = flatten_list(lista)
-    if (len(lista) != 0):
-        tipo = type(lista[0])
-        for elemento in lista:
-            if type(elemento) != tipo:
+    items = flatten_list(items)
+    if (len(items) != 0):
+        data_type = type(items[0])
+        for item in items:
+            if type(item) is not data_type:
                 return False
 
     return True
 
 def check_sig(*args, **kwargs):
     """
-    Decorador para validar la firma de una función (num_args y tipos).
-    Soporta formato tradicional: check_sig(num_args, lista_tipos_1, lista_tipos_2, ...)
-    Y nuevo formato variable: check_sig({ num_args_1: (tipos_arg1, tipos_arg2, ...), num_args_2: (...) })
-    
-    is_method: Si es True, ignora el primer argumento (self) para la validación de tipos, 
-               pero lo cuenta para num_args (o puedes ajustar n_recibidos según prefieras).
-               Por consistencia con Kafe, n_recibidos incluye self.
+    Validate a function signature by argument count and type.
+    Accept either a fixed argument count and type lists, or a mapping from
+    argument counts to their corresponding type lists.
+
+    With is_method=True, include self in the count but skip its type check.
     """
-    config_variable = None
-    num_args_permitidos = []
-    lista_tipos_fijos = []
+    variable_config = None
+    allowed_arg_counts = []
+    fixed_type_lists = []
 
     if isinstance(args[0], dict):
-        config_variable = args[0]
-        num_args_permitidos = list(config_variable.keys())
+        variable_config = args[0]
+        allowed_arg_counts = list(variable_config.keys())
     else:
-        num_args_permitidos = args[0]
-        lista_tipos_fijos = list(args[1:])
+        allowed_arg_counts = args[0]
+        fixed_type_lists = list(args[1:])
 
-    func_nombre = kwargs.get('func_nombre', "")
+    function_name = kwargs.get('function_name', "")
     is_method = kwargs.get('is_method', False)
 
     def decorator(original_function):
-        nombre = func_nombre if func_nombre else original_function.__name__
+        name = function_name if function_name else original_function.__name__
 
-        def new_function(*args_recibidos, **kwargs_recibidos):
-            n_recibidos = len(args_recibidos) + len(kwargs_recibidos)
+        def new_function(*received_args, **received_kwargs):
+            received_count = len(received_args) + len(received_kwargs)
             
-            if n_recibidos not in num_args_permitidos:
-                raiseWrongNumberOfArgs(nombre, num_args_permitidos, n_recibidos)
+            if received_count not in allowed_arg_counts:
+                raiseWrongNumberOfArgs(name, allowed_arg_counts, received_count)
 
-            # Seleccionar la lista de tipos a validar
-            if config_variable:
-                tipos_a_validar = config_variable[n_recibidos]
+            # Select the type lists for the received argument count.
+            if variable_config:
+                types_to_validate = variable_config[received_count]
             else:
-                tipos_a_validar = lista_tipos_fijos
+                types_to_validate = fixed_type_lists
 
-            # Comenzamos desde 1 si es un método para ignorar 'self'
+            # Skip self when checking method argument types.
             start_idx = 1 if is_method else 0
 
-            # Validar cada argumento funcional
-            for i, arg in enumerate(args_recibidos[start_idx:]):
-                # El índice en tipos_a_validar corresponde al argumento funcional
-                # Si hay más argumentos que tipos definidos (y no es variable), el n_args ya falló arriba
-                # pero por seguridad checamos que i esté en rango si no es config_variable
-                if i >= len(tipos_a_validar):
+            # Validate each functional argument.
+            for i, arg in enumerate(received_args[start_idx:]):
+                # Extra arguments have already failed the argument count check.
+                if i >= len(types_to_validate):
                     continue 
 
-                tipos_definidos = tipos_a_validar[i]
-                if isinstance(tipos_definidos, str):
-                    tipos_definidos = [tipos_definidos]
-                coincidencias = [esTipoCorrecto(arg, tipo_definido) for tipo_definido in tipos_definidos]
+                defined_types = types_to_validate[i]
+                if isinstance(defined_types, str):
+                    defined_types = [defined_types]
+                matches = [is_correct_type(arg, declared_type) for declared_type in defined_types]
 
-                if not any(coincidencias):
-                    # Manejo especial para lista_cualquiera_t para mostrar "lists" en el error
-                    if set(lista_cualquiera_t).issubset(tipos_definidos):
-                        tipos_err = list(set(tipos_definidos) - set(lista_cualquiera_t))
-                        tipos_err.append("lists")
+                if not any(matches):
+                    # Display the broad list type as "lists" in diagnostics.
+                    if set(any_list_types).issubset(defined_types):
+                        error_types = list(set(defined_types) - set(any_list_types))
+                        error_types.append("lists")
                     else:
-                        tipos_err = tipos_definidos
+                        error_types = defined_types
 
-                    raiseFunctionIncorrectArgumentType(nombre, arg, tipos_err)
+                    raiseFunctionIncorrectArgumentType(name, arg, error_types)
 
-            return original_function(*args_recibidos, **kwargs_recibidos)
+            return original_function(*received_args, **received_kwargs)
 
         return new_function
     return decorator

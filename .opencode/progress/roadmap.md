@@ -2,6 +2,10 @@
 
 Active project planning. Do not move this content into AGENTS.md (see AGENTS.md — Progress Sources).
 
+## Repository Policy Alignment
+
+The policy baseline and earlier uv, interpreter-evidence, and English-repository workstreams are complete on their respective branches. The Python quality-gates implementation is complete on `chore/python-quality-gates`: implementation/workflow SHA `c23163de6fee34b8da7d9a25b4f2896b331c22e1` passed the hosted `Run Tests` and `Deploy Docs` workflows, including 503 tests at 83.86% coverage and the strict docs build. Final branch acceptance is gated on the plan-required CI check for the evidence-update SHA; the branch remains unmerged. See `.opencode/progress/repository-alignment.md` for scope, exact run IDs, and the observed ruleset.
+
 ## Machine Learning
 - ✔ Base Machine (2026-07-28)
 - ✔ Linear Regression (2026-07-28)
@@ -50,6 +54,7 @@ Active project planning. Do not move this content into AGENTS.md (see AGENTS.md 
 
 ## Documentation & Engineering
 
+- ✔ Interpreter subprocess quality evidence — pushed as `6e8edd5`; 497 tests passed, 83.78%; GitHub exact-SHA CI passed (2026-09-23)
 - ✔ MkDocs theme — Black/White/Yellow palette (2026-08-04)
 - ✔ Knowledge concepts — All ML algorithms documented (2026-08-04)
 - ✔ Benchmarks — Full suite characterization (2026-08-04)
@@ -59,17 +64,19 @@ Active project planning. Do not move this content into AGENTS.md (see AGENTS.md 
 - ✔ Model validation improvements — dimension checks, len(X)==len(y), hyperparameter validation (2026-09-14)
 - ✔ CI Test Suite Fixes — pre-existing broken tests fixed, CrossValScore architecture fix (2026-09-21)
 - ✔ KafeGESHA clustering test — platform-independence fix (2026-09-21)
-- ☐ Harness Engineering — Actualizar reglas (5 benchmarks, conceptos enriquecidos, verificación de contexto)
-- ☐ Engineering Lead Permissions — Permisos edit/write para docs y records
+- ✔ English repository migration — Tasks 1–7 completed (2026-09-24)
+- ✔ Python quality-gates implementation — hosted tests and strict docs validation passed at exact SHA `c23163de6fee34b8da7d9a25b4f2896b331c22e1` (2026-09-24); Task 9 final branch acceptance is tied to CI on the resulting evidence-update SHA
+- ☐ Harness Engineering — Update rules for five benchmarks, enriched concepts, and context verification
+- ☐ Engineering Lead permissions — review complete edit/write access for documentation and records
 
-## Review Tasks (Historical) — Pendientes de Revisión Full
+## Historical Review Tasks — Full Review Pending
 
-Cada implementación debe pasar por el flujo completo del harness engineering:
-Impact Analysis → Implementación → 5 Benchmarks → Concepto Enriquecido → Docs → History → DoD
+Each implementation must pass through the full engineering-harness workflow:
+Impact Analysis → Implementation → Five Benchmarks → Enriched Concept → Docs → History → Definition of Done
 
-- ☐ Revisión de BaseMachine — fit/transform/score, concepto enriquecido, 5 benchmarks, history 28 julio
-- ☐ Revisión de LinearRegression — OLS normal equation, concepto enriquecido, 5 benchmarks, history 28 julio
-- ☐ Revisión de LogisticRegression — gradient descent + sigmoid, concepto enriquecido, 5 benchmarks, history 28 julio
-- ☐ Revisión de KNN — Euclidean distance, concepto enriquecido, 5 benchmarks, history 28 julio
-- ☐ Revisión de Métricas de Clasificación — accuracy/precision/recall/F1, concepto enriquecido, 5 benchmarks, history 28 julio
-- ☐ Revisión de Métricas de Regresión — MSE/MAE/R², concepto enriquecido, 5 benchmarks, history 28 julio
+- ☐ Review BaseMachine — fit/transform/score, enriched concept, five benchmarks, July 28 history
+- ☐ Review LinearRegression — OLS normal equation, enriched concept, five benchmarks, July 28 history
+- ☐ Review LogisticRegression — gradient descent + sigmoid, enriched concept, five benchmarks, July 28 history
+- ☐ Review KNN — Euclidean distance, enriched concept, five benchmarks, July 28 history
+- ☐ Review classification metrics — accuracy/precision/recall/F1, enriched concept, five benchmarks, July 28 history
+- ☐ Review regression metrics — MSE/MAE/R², enriched concept, five benchmarks, July 28 history

@@ -5,7 +5,7 @@
   "subagent_depth": 2,
   "agent": {
     "engineering-lead": {
-      "description": "KAFE Engineering Lead - orquesta agentes, gestiona ciclo de vida, edita docs y records",
+      "description": "KAFE Engineering Lead - orchestrates agents, manages the lifecycle, and edits docs and records",
       "permission": {
         "task": {
           "*": "ask",
@@ -19,6 +19,7 @@
           ".opencode/**": "allow",
           "docs/**": "allow",
           "AGENTS.md": "allow",
+          "CLAUDE.md": "allow",
           "OPENCODE.md": "allow",
           "mkdocs.yml": "allow"
         },

@@ -93,7 +93,7 @@ A cluster C is a non-empty subset of D satisfying:
 
 KAFE implements DBSCAN from scratch:
 
-- Uses `KafeMATH.funciones.sqrt` for distance computation
+- Uses `KafeMATH.functions.sqrt` for distance computation
 - Inherits from `BaseMachine` with `fit()` and `fit_predict()` interface
 - Does NOT implement `predict()` — DBSCAN doesn't generalize to new points
 - Stores `labels_`, `n_clusters_`, `core_sample_indices_`

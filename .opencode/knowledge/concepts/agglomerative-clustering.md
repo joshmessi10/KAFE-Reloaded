@@ -2,66 +2,66 @@
 
 ## Mathematical Foundation
 
-Agglomerative Clustering es un algoritmo de clustering jerárquico aglomerativo (bottom-up).
+Agglomerative Clustering is a bottom-up hierarchical clustering algorithm.
 
-### Algoritmo
+### Algorithm
 
-1. Iniciar: cada punto es un cluster separado
-2. Calcular matriz de distancias entre todos los pares de clusters
-3. Encontrar los dos clusters más cercanos
-4. Merge esos dos clusters
-5. Repetir hasta tener n_clusters
+1. Start with each point in its own cluster.
+2. Compute distances between every pair of clusters.
+3. Find the two closest clusters.
+4. Merge those clusters.
+5. Repeat until `n_clusters` remains.
 
-### Criterios de Enlace (Linkage)
+### Linkage Criteria
 
-- **Single**: distancia mínima entre puntos de diferentes clusters
+- **Single**: minimum distance between points in different clusters.
   $d(C_i, C_j) = \min_{x \in C_i, y \in C_j} ||x - y||$
 
-- **Complete**: distancia máxima entre puntos
+- **Complete**: maximum distance between points in different clusters.
   $d(C_i, C_j) = \max_{x \in C_i, y \in C_j} ||x - y||$
 
-- **Average**: distancia promedio entre puntos
+- **Average**: mean distance between points in different clusters.
   $d(C_i, C_j) = \frac{1}{|C_i||C_j|} \sum_{x \in C_i} \sum_{y \in C_j} ||x - y||$
 
-- **Ward**: minimiza incremento de varianza intra-cluster
+- **Ward**: minimizes the increase in within-cluster variance.
   $\Delta = \frac{|C_i||C_j|}{|C_i| + |C_j|} ||\mu_i - \mu_j||^2$
 
-## Complejidad Computacional
+## Computational Complexity
 
-| Operación | Complejidad Temporal | Complejidad Espacial |
+| Operation | Time Complexity | Space Complexity |
 |-----------|---------------------|---------------------|
 | Training | $O(n^3)$ | $O(n^2)$ |
 
-## Ventajas
+## Advantages
 
-1. **No requiere número de clusters** — puede usar dendrograma para elegir k
-2. **Captura estructura jerárquica** — muestra relaciones anidadas
-3. **Flexible** — múltiples criterios de enlace
-4. **Determinístico** — mismo resultado siempre
+1. **Does not require a predefined number of clusters** — a dendrogram can help select $k$.
+2. **Captures hierarchical structure** — exposes nested relationships.
+3. **Flexible** — offers multiple linkage criteria.
+4. **Deterministic** — produces the same result for the same data.
 
-## Limitaciones
+## Limitations
 
-1. **Escalabilidad** — O(n³) no funciona con datasets grandes
-2. **No reasigna** — una vez merge, no se deshace
-3. **Sensible a ruido** — outliers afectan el resultado
-4. **Greedy** — no garantiza óptimo global
+1. **Scalability** — $O(n^3)$ is impractical for large datasets.
+2. **No reassignment** — a merge cannot be undone later.
+3. **Sensitive to noise** — outliers affect the result.
+4. **Greedy** — it does not guarantee a global optimum.
 
-## Cuando Usar
+## When to Use
 
-- Datasets pequeños/medianos
-- Estructura jerárquica en los datos
-- Necesitas dendrograma
-- No sabes el número de clusters
+- Small or medium-sized datasets.
+- Data with a hierarchical structure.
+- When a dendrogram is useful.
+- When the number of clusters is unknown.
 
-## Cuando NO Usar
+## When NOT to Use
 
-- Datasets grandes (>10k puntos)
-- Clusters esféricos (usar KMeans)
-- Muchos outliers
+- Large datasets (more than 10,000 points).
+- Spherical clusters (consider K-Means).
+- Data with many outliers.
 
-## Relación con KAFE
+## Relationship with KAFE
 
-KAFE implementa AgglomerativeClustering desde scratch con 4 criterios de enlace: single, complete, average, ward. El algoritmo es determinístico y no requiere semilla aleatoria.
+KAFE implements `AgglomerativeClustering` from scratch with four linkage criteria: single, complete, average, and ward. The algorithm is deterministic and does not require a random seed.
 
 ## References
 

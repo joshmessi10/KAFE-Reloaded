@@ -1,1 +1,1 @@
-"""Capas de KafeGESHA."""
+"""KafeGESHA layers."""

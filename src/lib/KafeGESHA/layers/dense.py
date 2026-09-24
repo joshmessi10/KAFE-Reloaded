@@ -1,24 +1,26 @@
-"""Capa Dense (totalmente conectada)."""
+"""Dense layer (fully connected)."""
 import random
+from typing import cast
+
+from global_utils import check_sig
+from lib.KafeGESHA.activations.ActivationFunctionLoader import ActivationFunctionLoader
 from lib.KafeGESHA.layers.layer import Layer
 from lib.KafeGESHA.layers.utils import check_regularization
-from lib.KafeGESHA.activations.ActivationFunctionLoader import ActivationFunctionLoader
-from global_utils import check_sig
-from TypeUtils import entero_t, vector_numeros_t, flotante_t, void_t
+from TypeUtils import float_type, integer_type, numeric_vector_types, void_t
 
 
 class Dense(Layer):
-    """Capa totalmente conectada (fully-connected).
+    """Fully connected layer (fully-connected).
 
-    Implementa la transformación afín: z = Wx + b, seguida de una
-    función de activación opcional.
+    Implements the affine transformation: z = Wx + b, followed by a
+    optional activation function.
 
     Args:
-        units: Número de neuronas de salida.
-        activation: Nombre de la función de activación (str) o None para lineal.
-        input_shape: Tupla con la forma de la entrada (opcional, se infiere en el primer forward).
-        regularization_lambda: Coeficiente de regularización L2.
-        seed: Semilla para reproducibilidad de la inicialización de pesos.
+        units: Number of output neurons.
+        activation: Activation function name (str) or None for linear.
+        input_shape: Tuple with the shape of the input (optional, inferred in the first forward).
+        regularization_lambda: L2 regularization coefficient.
+        seed: Seed for reproducibility of weight initialization.
     """
 
     def __init__(
@@ -38,10 +40,10 @@ class Dense(Layer):
         self._rng = random.Random(seed) if seed is not None else random
         self.seed = seed
 
-        self.weights = None
-        self.bias = None
-        self.last_input = None
-        self.last_z = None
+        self.weights: list[list[float]] | None = None
+        self.bias: list[float] | None = None
+        self.last_input: list[int | float] | None = None
+        self.last_z: list[float] | None = None
 
         self.regularization_lambda = check_regularization(regularization_lambda)
 
@@ -51,21 +53,23 @@ class Dense(Layer):
     def _zeros_vector(self, n):
         return [0.0 for _ in range(n)]
 
-    @check_sig([2], [entero_t], is_method=True)
+    @check_sig([2], [integer_type], is_method=True)
     def build(self, input_dim):
-        """Inicializa pesos y sesgos dado el número de entradas."""
+        """Initializes weights and biases given the number of inputs."""
         self.weights = self._random_matrix(input_dim, self.units)
         self.bias = self._zeros_vector(self.units)
 
-    @check_sig([2], vector_numeros_t, is_method=True)
+    @check_sig([2], numeric_vector_types, is_method=True)
     def forward(self, x):
-        """Propagación hacia adelante: z = Wx + b, salida = activation(z)."""
+        """Forward propagation: z = Wx + b, output = activation(z)."""
         self.last_input = x[:]
         if self.weights is None:
             self.build(len(x))
+        weights = cast(list[list[float]], self.weights)
+        bias = cast(list[float], self.bias)
 
         z = [
-            sum(x[i] * self.weights[i][j] for i in range(len(x))) + self.bias[j]
+            sum(x[i] * weights[i][j] for i in range(len(x))) + bias[j]
             for j in range(self.units)
         ]
         self.last_z = z[:]
@@ -75,11 +79,11 @@ class Dense(Layer):
 
         return [self.activation.activate(v) for v in z]
 
-    @check_sig([3, 4], vector_numeros_t + [flotante_t], [flotante_t], [flotante_t, void_t], is_method=True)
+    @check_sig([3, 4], numeric_vector_types + [float_type], [float_type], [float_type, void_t], is_method=True)
     def backward(self, output_error, learning_rate, regularization_lambda=None):
-        """Propagación hacia atrás con actualización de pesos (SGD inline).
+        """Backward propagation with weight update (SGD inline).
 
-        Devuelve el gradiente propagado hacia la capa anterior.
+        Returns the gradient propagated to the previous layer.
         """
         if not isinstance(output_error, list):
             output_error = [output_error]
@@ -91,13 +95,16 @@ class Dense(Layer):
             dL_dz = output_error[:]
         else:
             dL_dz = [
-                output_error[j] * self.activation.derivative(self.last_z[j])
+                output_error[j] * self.activation.derivative(cast(list[float], self.last_z)[j])
                 for j in range(self.units)
             ]
 
-        input_dim = len(self.last_input)
+        input_dim = len(cast(list[int | float], self.last_input))
+        last_input = cast(list[int | float], self.last_input)
+        weights = cast(list[list[float]], self.weights)
+        bias = cast(list[float], self.bias)
         grad_w = [
-            [self.last_input[i] * dL_dz[j] for j in range(self.units)]
+            [last_input[i] * dL_dz[j] for j in range(self.units)]
             for i in range(input_dim)
         ]
         grad_b = dL_dz[:]
@@ -105,27 +112,27 @@ class Dense(Layer):
         if regularization_lambda > 0:
             for i in range(input_dim):
                 for j in range(self.units):
-                    grad_w[i][j] += regularization_lambda * self.weights[i][j]
+                    grad_w[i][j] += regularization_lambda * weights[i][j]
 
         for i in range(input_dim):
             for j in range(self.units):
-                self.weights[i][j] -= learning_rate * grad_w[i][j]
+                weights[i][j] -= learning_rate * grad_w[i][j]
         for j in range(self.units):
-            self.bias[j] -= learning_rate * grad_b[j]
+            bias[j] -= learning_rate * grad_b[j]
 
         return [
-            sum(self.weights[i][j] * dL_dz[j] for j in range(self.units))
+            sum(weights[i][j] * dL_dz[j] for j in range(self.units))
             for i in range(input_dim)
         ]
 
     def parameters(self):
-        """Devuelve lista plana de todos los parámetros entrenables [W, b]."""
+        """Returns flat list of all trainable parameters [W, b]."""
         if self.weights is None:
             return []
         params = []
-        for row in self.weights:
+        for row in cast(list[list[float]], self.weights):
             params.extend(row)
-        params.extend(self.bias)
+        params.extend(cast(list[float], self.bias))
         return params
 
     def summary(self):

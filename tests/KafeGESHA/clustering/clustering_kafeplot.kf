@@ -2,11 +2,11 @@ import pardos;
 import geshaDeep;
 import plot;
 
--- Cargar datos con PARDOS
+-- Load data with PARDOS
 PARDOS df = pardos.read_csv("../tests/data/clustering_sample.csv");
 List[List[FLOAT]] X_train = pardos.to_matrix(df);
 
--- Crear modelo secuencial para clustering
+-- Create a sequential model for clustering
 GESHA layer1 = geshaDeep.create_dense(4, "relu", [2], 0.0, 42);
 GESHA layer2 = geshaDeep.create_dense(2, "softmax", [], 0.0, 42);
 GESHA model  = geshaDeep.sequential([layer1, layer2]);
@@ -31,7 +31,7 @@ for (p in X_train):
     ;
 ;
 
--- Graficar con KafePlot
+-- Plot with KafePlot
 plot.figure();
 plot.title("Test Clustering KafePlot");
 plot.xlabel("X1");

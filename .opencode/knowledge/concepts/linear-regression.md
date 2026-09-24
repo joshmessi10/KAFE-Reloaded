@@ -66,8 +66,8 @@ show(r2);              -- ~0.997
 
 ## Implementation Location
 
-- `src/lib/KafeMACHINE/LinearRegression.py` — class `LinearRegression(BaseMachine)`
-- Factory: `src/lib/KafeMACHINE/funciones.py` — `linear_regression()`
+- `src/lib/KafeMACHINE/linear/LinearRegression.py` — class `LinearRegression(BaseMachine)`
+- Factory: `src/lib/KafeMACHINE/functions.py` — `linear_regression()`
 
 ## Public API
 

@@ -1,30 +1,31 @@
 from global_utils import check_sig
-from TypeUtils import pardos_t, matriz_numeros_t, flotante_t
 from lib.KafePARDOS.DataFrame import DataFrame
+from TypeUtils import numeric_matrix_types, pardos_type
+
 from ..BaseMachine import BaseMachine
 
 
 class VarianceThreshold(BaseMachine):
     """
-    Elimina features con varianza por debajo de un umbral.
+    Eliminates features with variance below a threshold.
 
-    Fundamento matematico:
-        Para cada feature j:
+    Mathematical basis:
+        For each feature j:
             Var(j) = (1/n) * Sum(x_ij - mean_j)^2
 
-        Si Var(j) < threshold, la feature se elimina.
+        If Var(j) < threshold, the feature is removed.
 
-        Un feature con varianza 0 es constante (no aporta informacion).
-        Un feature con baja varianza tiene poca capacidad discriminatoria.
+        A feature with variance 0 is constant (it does not provide information).
+        A feature with low variance has little discriminatory capacity.
 
-    Parametros:
-        threshold: umbral de varianza minimo (default 0.0)
+    Parameters:
+        threshold: minimum variance threshold (default 0.0)
 
-    Atributos (despues de fit):
-        variances_: varianza de cada feature
-        selected_indices_: indices de features seleccionadas
-        n_features_in_: numero de features de entrada
-        n_features_out_: numero de features de salida
+    Attributes (after fit):
+        variances_: variance of each feature
+        selected_indices_: indices of selected features
+        n_features_in_: number of input features
+        n_features_out_: number of output features
     """
 
     def __init__(self, threshold=0.0):
@@ -37,9 +38,9 @@ class VarianceThreshold(BaseMachine):
         self.n_features_in_ = 0
         self.n_features_out_ = 0
 
-    @check_sig([2], [pardos_t] + matriz_numeros_t, is_method=True)
+    @check_sig([2], [pardos_type] + numeric_matrix_types, is_method=True)
     def fit(self, data):
-        """Ajusta VarianceThreshold (calcula varianzas y selecciona features)."""
+        """Set VarianceThreshold (calculate variances and select features)."""
         matrix, cols, is_df = self._unwrap_data(data)
 
         if not matrix or not matrix[0]:
@@ -62,12 +63,12 @@ class VarianceThreshold(BaseMachine):
         return self
 
     def fit_transform(self, data):
-        """Fit y transform en un solo paso."""
+        """Fit and transform in one step."""
         return self.fit(data).transform(data)
 
-    @check_sig([2], [pardos_t] + matriz_numeros_t, is_method=True)
+    @check_sig([2], [pardos_type] + numeric_matrix_types, is_method=True)
     def transform(self, data):
-        """Transforma eliminando features con baja varianza."""
+        """Transform by eliminating features with low variance."""
         self._check_fitted("transform")
         matrix, cols, is_df = self._unwrap_data(data)
 
@@ -84,9 +85,9 @@ class VarianceThreshold(BaseMachine):
         new_cols = [cols[j] for j in self.selected_indices_] if cols and is_df else None
         return DataFrame(new_cols, result) if is_df else result
 
-    @check_sig([2], [pardos_t] + matriz_numeros_t, is_method=True)
+    @check_sig([2], [pardos_type] + numeric_matrix_types, is_method=True)
     def inverse_transform(self, data):
-        """No implementado (transformacion no es invertible)."""
+        """Not implemented (transformation is not invertible)."""
         raise Exception("VarianceThreshold: inverse_transform not implemented")
 
     def __repr__(self):

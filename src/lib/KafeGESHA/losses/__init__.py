@@ -1,1 +1,1 @@
-"""Funciones de pérdida de KafeGESHA."""
+"""KafeGESHA loss functions."""

@@ -6,12 +6,12 @@ PARDOS df = pardos.read_csv("column_manipulation_test.csv");
 show("Original DataFrame:");
 show(df);
 
--- Rename 'name' to 'nombre'
-PARDOS df2 = df.rename("name", "nombre");
-show("After renaming 'name' to 'nombre':");
+-- Rename 'name' to 'name'
+PARDOS df2 = df.rename("name", "name");
+show("After renaming 'name' to 'name':");
 show(df2);
 
--- Rename 'age' to 'edad'
-PARDOS df3 = df2.rename("age", "edad");
-show("After renaming 'age' to 'edad':");
+-- Rename 'age' to 'age'
+PARDOS df3 = df2.rename("age", "age");
+show("After renaming 'age' to 'age':");
 show(df3);

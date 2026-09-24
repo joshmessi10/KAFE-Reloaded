@@ -12,5 +12,5 @@ drip linearSearch(lst: List[INT], target: INT) => INT:
 
 List[INT] data = [10, 20, 30, 40, 50];
 INT result = linearSearch(data, 30);
-show("Índice encontrado:");
+show("Found index:");
 show(result);

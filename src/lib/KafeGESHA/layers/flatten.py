@@ -1,16 +1,16 @@
-"""Capa Flatten para remodelar tensores."""
-from lib.KafeGESHA.layers.layer import Layer
+"""Flatten layer to reshape tensors."""
 from global_utils import check_sig
-from TypeUtils import vector_numeros_t, matriz_numeros_t
+from lib.KafeGESHA.layers.layer import Layer
+from TypeUtils import numeric_matrix_types, numeric_vector_types
 
 
 class Flatten(Layer):
-    """Capa Flatten que convierte tensores multidimensionales en vectores 1D.
+    """Flatten layer that converts multidimensional tensors into 1D vectors.
 
-    Útil para conectar capas convolucionales con capas Dense.
+    Useful for connecting convolutional layers with Dense layers.
 
     Args:
-        input_shape: Forma de entrada esperada (opcional, informativa).
+        input_shape: Expected form of entry (optional, informational).
     """
 
     def __init__(self, input_shape=None):
@@ -18,9 +18,9 @@ class Flatten(Layer):
         self.input_shape = input_shape
         self._original_shape = None
 
-    @check_sig([2], vector_numeros_t + matriz_numeros_t, is_method=True)
+    @check_sig([2], numeric_vector_types + numeric_matrix_types, is_method=True)
     def forward(self, x):
-        """Propagación hacia adelante: aplanar el tensor a 1D."""
+        """Forward propagation: flatten the tensor to 1D."""
         if isinstance(x[0], list):
             self._original_shape = (len(x), len(x[0]))
             return [x[i][j] for i in range(len(x)) for j in range(len(x[0]))]
@@ -29,7 +29,7 @@ class Flatten(Layer):
             return x[:]
 
     def backward(self, output_error, learning_rate, regularization_lambda=None):
-        """Propagación hacia atrás: restaurar la forma original."""
+        """Backward propagation: restore the original shape."""
         if self._original_shape is None:
             return output_error[:]
 

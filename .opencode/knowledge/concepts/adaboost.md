@@ -2,67 +2,67 @@
 
 ## Mathematical Foundation
 
-AdaBoost es un algoritmo de ensemble learning que combina múltiples weak classifiers de forma secuencial.
+AdaBoost is an ensemble-learning algorithm that sequentially combines multiple weak classifiers.
 
-### Algoritmo
+### Algorithm
 
-1. **Inicializar**: pesos uniformes $w_i = 1/n$
-2. **Para cada iteración t = 1, ..., T**:
-   - Entrenar weak classifier $h_t$ con pesos $w_i$
-   - Calcular error: $\epsilon_t = \sum w_i \cdot I(h_t(x_i) \neq y_i)$
-   - Calcular peso: $\alpha_t = 0.5 \cdot \ln\left(\frac{1 - \epsilon_t}{\epsilon_t}\right)$
-   - Actualizar pesos: $w_i \leftarrow w_i \cdot \exp(-\alpha_t \cdot y_i \cdot h_t(x_i))$
-   - Normalizar pesos: $w_i \leftarrow \frac{w_i}{\sum w_j}$
-3. **Predicción**: $H(x) = \text{sign}\left(\sum_{t=1}^{T} \alpha_t \cdot h_t(x)\right)$
+1. **Initialize** uniform weights $w_i = 1/n$.
+2. **For each iteration $t = 1, \ldots, T$**:
+   - Train weak classifier $h_t$ using weights $w_i$.
+   - Calculate error: $\epsilon_t = \sum w_i \cdot I(h_t(x_i) \neq y_i)$.
+   - Calculate classifier weight: $\alpha_t = 0.5 \cdot \ln\left(\frac{1 - \epsilon_t}{\epsilon_t}\right)$.
+   - Update weights: $w_i \leftarrow w_i \cdot \exp(-\alpha_t \cdot y_i \cdot h_t(x_i))$.
+   - Normalize weights: $w_i \leftarrow \frac{w_i}{\sum w_j}$.
+3. **Predict** with $H(x) = \text{sign}\left(\sum_{t=1}^{T} \alpha_t \cdot h_t(x)\right)$.
 
 ### Weak Classifier (Decision Stump)
 
-Un decision stump es un árbol de decisión con profundidad 1:
-- Selecciona una feature y un umbral
-- Predice una clase a la izquierda, otra a la derecha
+A decision stump is a depth-1 decision tree:
+- It selects a feature and threshold.
+- It predicts one class on the left and another on the right.
 
-## Complejidad Computacional
+## Computational Complexity
 
-| Operación | Complejidad Temporal | Complejidad Espacial |
+| Operation | Time Complexity | Space Complexity |
 |-----------|---------------------|---------------------|
 | Training | $O(T \cdot n \cdot m)$ | $O(T)$ |
 | Prediction | $O(T \cdot m)$ | $O(1)$ |
 
-Donde $T$ = n_estimators, $n$ = muestras, $m$ = features.
+Here, $T$ is `n_estimators`, $n$ is the number of samples, and $m$ is the number of features.
 
-## Ventajas
+## Advantages
 
-1. **Reduce overfitting** — ensemble de weak learners generaliza mejor
-2. **No necesita modelo complejo** — usa decision stumps (muy simples)
-3. **Adaptativo** — enfatiza errores del clasificador anterior
-4. **Interpretable** — se puede ver la importancia de cada stump
+1. **Can reduce overfitting** — an ensemble of weak learners may generalize better.
+2. **No complex base model required** — it uses simple decision stumps.
+3. **Adaptive** — it emphasizes examples misclassified by the previous classifier.
+4. **Interpretable** — the contribution of each stump can be inspected.
 
-## Limitaciones
+## Limitations
 
-1. **Solo binario** — nativamente solo clasifica 2 clases
-2. **Sensible a outliers** — puede overfittear en datos ruidosos
-3. **Secuencial** — no se puede paralelizar
-4. **Depende de weak learner** — si el weak learner es muy débil, converge lento
+1. **Binary classification only** — the implementation natively classifies two classes.
+2. **Sensitive to outliers** — it can overfit noisy data.
+3. **Sequential training** — boosting rounds cannot be parallelized.
+4. **Depends on the weak learner** — a very weak learner may converge slowly.
 
-## Cuando Usar
+## When to Use
 
-- Clasificación binaria
-- Weak learners simples (decision stumps)
-- Datos limpios (sin mucho ruido)
-- Necesitas interpretabilidad
+- Binary classification.
+- Simple weak learners such as decision stumps.
+- Relatively clean data with little noise.
+- When interpretability is useful.
 
-## Cuando NO Usar
+## When NOT to Use
 
-- Clasificación multiclase (usar One-vs-One)
-- Datos con muchos outliers
-- Datasets muy grandes (entrenamiento secuencial)
+- Multiclass classification (use One-vs-One).
+- Data with many outliers.
+- Very large datasets that make sequential training costly.
 
-## Relación con KAFE
+## Relationship with KAFE
 
-KAFE implementa AdaBoostClassifier desde scratch:
-- Usa decision stumps como weak learners
-- Implementa el algoritmo AdaBoost.R2 adaptado
-- Soporta `learning_rate` para controlar contribución de cada stump
+KAFE implements `AdaBoostClassifier` from scratch:
+- It uses decision stumps as weak learners.
+- It implements an adapted AdaBoost.R2 algorithm.
+- It supports `learning_rate` to control each stump's contribution.
 
 ## References
 

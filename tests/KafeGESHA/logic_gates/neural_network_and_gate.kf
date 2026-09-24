@@ -15,9 +15,9 @@ GESHA model = geshaDeep.sequential([layer]);
 model.compile("sgd", "binary_crossentropy", ["accuracy"]);
 model.fit(x_train, y_train, 100, 1, [], []);
 
--- Probamos los 4 puntos
+-- Test the four points
 for (p in x_train):
-    FLOAT prob = model.predict_proba(p);  -- probabilidad clase 1
-    INT   lbl  = model.predict_label(p);  -- etiqueta 0/1
+    FLOAT prob = model.predict_proba(p);  -- probability of class 1
+    INT   lbl  = model.predict_label(p);  -- label 0/1
     show(str(p) + " -> prob=" + str(prob) + ", label=" + str(lbl));
 ;

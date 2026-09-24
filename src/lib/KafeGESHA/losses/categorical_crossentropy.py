@@ -1,6 +1,6 @@
-"""Funciones de pérdida Categorical Cross Entropy."""
-from lib.KafeMATH.funciones import log
+"""Categorical Cross Entropy loss functions."""
 from lib.KafeGESHA.losses.loss import LossFunction
+from lib.KafeMATH.functions import log
 
 
 class CategoricalCrossEntropy(LossFunction):
@@ -9,15 +9,15 @@ class CategoricalCrossEntropy(LossFunction):
 
     def compute(self, y_true, y_pred):
         loss = [
-            -sum(yt_i * log(yp_i + self.epsilon) for yt_i, yp_i in zip(yt, yp))
-            for yt, yp in zip(y_true, y_pred)
+            -sum(yt_i * log(yp_i + self.epsilon) for yt_i, yp_i in zip(yt, yp, strict=False))
+            for yt, yp in zip(y_true, y_pred, strict=False)
         ]
         return sum(loss) / len(loss)
 
     def derivative(self, y_true, y_pred):
         return [
-            [yp_i - yt_i for yt_i, yp_i in zip(yt, yp)]
-            for yt, yp in zip(y_true, y_pred)
+            [yp_i - yt_i for yt_i, yp_i in zip(yt, yp, strict=False)]
+            for yt, yp in zip(y_true, y_pred, strict=False)
         ]
 
 
@@ -26,12 +26,12 @@ class SparseCategoricalCrossEntropy(LossFunction):
         self.epsilon = epsilon
 
     def compute(self, y_true, y_pred):
-        loss = [-log(yp[int(yt)] + self.epsilon) for yt, yp in zip(y_true, y_pred)]
+        loss = [-log(yp[int(yt)] + self.epsilon) for yt, yp in zip(y_true, y_pred, strict=False)]
         return sum(loss) / len(loss)
 
     def derivative(self, y_true, y_pred):
         grads = []
-        for yt, yp in zip(y_true, y_pred):
+        for yt, yp in zip(y_true, y_pred, strict=False):
             grad = [yp_i for yp_i in yp]
             grad[int(yt)] -= 1
             grads.append(grad)

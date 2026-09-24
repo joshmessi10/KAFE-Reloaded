@@ -28,7 +28,7 @@ The Lead orchestrates this workflow, delegating each step to the responsible age
 1. Run Impact Analysis first (`/impact`) — mandatory before adding DL components.
 2. Read `.opencode/knowledge/dl-library.md` and `.opencode/knowledge/architecture.md` for conventions.
 3. Implement the layer/component (forward and backward if training is involved) in `src/lib/KafeGESHA/`.
-4. Add the factory/function to `src/lib/KafeGESHA/funciones.py`.
+4. Add the factory/function to `src/lib/KafeGESHA/functions.py`.
 5. Add **at least 7 fixtures** (5 valid + 2 error cases) under `tests/KafeGESHA/` and wire a parameterized test in `tests/test_KafeGESHA.py`.
 6. Create **enriched concept record** in `.opencode/knowledge/concepts/<name>.md` with:
    - Mathematical foundation (formulas, complexity analysis)
@@ -37,8 +37,8 @@ The Lead orchestrates this workflow, delegating each step to the responsible age
    - When to use / when NOT to use
    - Relationship with KAFE implementation
    - References to original papers/books
-7. Add an example `.kf` program under `docs/ejemplos/`.
-8. **Update `docs/bibliotecas/gesha.md`** with the new component section (methods, properties, example, algorithm description).
+7. Add an example `.kf` program under `docs/examples/`.
+8. **Update `docs/libraries/gesha.md`** with the new component section (methods, properties, example, algorithm description).
 9. Update `.opencode/knowledge/dl-library.md` (Structure, Public API, Tests).
 10. Tester runs `/benchmark` with **5 test scenarios** and registers in `.opencode/benchmarks/records.md`.
 11. Reviewer runs `/dod` — must verify context saving (all 6 files exist).
@@ -51,22 +51,22 @@ The Lead orchestrates this workflow, delegating each step to the responsible age
 - At least 7 fixture tests (5 valid + 2 error).
 - Enriched concept record with math, algorithm, advantages, references.
 - Benchmark with 5 test scenarios.
-- Updated documentation in `docs/bibliotecas/`.
+- Updated documentation in `docs/libraries/`.
 - History record.
 - Updated roadmap.
 
 ## Validation Requirements (All Must Pass)
 
-- [ ] `pytest tests/test_KafeGESHA.py` passes
-- [ ] Full suite `pytest tests/` passes
+- [ ] `uv run --locked --group dev pytest tests/test_KafeGESHA.py` passes
+- [ ] Full suite `uv run --locked --group dev pytest tests/` passes
 - [ ] Concept record exists and is **enriched** (math, algorithm, advantages, references)
 - [ ] Benchmark has **5 test scenarios** with real measurements
-- [ ] Documentation updated in `docs/bibliotecas/`
+- [ ] Documentation updated in `docs/libraries/`
 - [ ] History record created in `.opencode/history/`
 - [ ] Context saving verified — all of these exist:
   - [ ] `.opencode/knowledge/concepts/<name>.md`
   - [ ] `.opencode/history/YYYY/YYYY-MM.md`
   - [ ] `tests/KafeGESHA/` (7+ fixtures)
   - [ ] `.opencode/benchmarks/records.md` (5 scenarios)
-  - [ ] `docs/bibliotecas/gesha.md` updated
+  - [ ] `docs/libraries/gesha.md` updated
   - [ ] `.opencode/progress/roadmap.md` updated

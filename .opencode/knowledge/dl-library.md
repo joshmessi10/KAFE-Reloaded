@@ -6,7 +6,7 @@ Deep learning and neural network components, implemented from scratch inside KAF
 
 ## Structure
 
-- `src/lib/KafeGESHA/funciones.py` — public functions (the `geshaDeep` API).
+- `src/lib/KafeGESHA/functions.py` — public functions (the `geshaDeep` API).
 - `GeshaDeep.py`, `Gesha.py` — model composition and the deep-learning model object.
 - `Dense.py` — dense layer.
 - `ActivationFunction.py` + `ActivationFunctionLoader.py` — activation functions.

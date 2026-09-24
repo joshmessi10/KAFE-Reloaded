@@ -2,8 +2,8 @@ import pardos;
 
 PARDOS df = pardos.read_csv("dataframe_basic_operations.csv");
 
-show("--- Complex Logic: (Edad < 30 && Salario > 50000) || Edad > 35 ---");
+show("--- Complex Logic: (Age < 30 && Salary > 50000) || Age > 35 ---");
 
-PARDOS res = df.query("(edad < 30 && salario > 50000) || edad > 35");
+PARDOS res = df.query("(age < 30 && salary > 50000) || age > 35");
 
 show(res);

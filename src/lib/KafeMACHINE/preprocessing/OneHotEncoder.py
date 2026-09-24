@@ -1,6 +1,7 @@
 from global_utils import check_sig
-from TypeUtils import pardos_t, lista_cadenas_t
 from lib.KafePARDOS.DataFrame import DataFrame
+from TypeUtils import pardos_type, string_list_type
+
 from ..BaseMachine import BaseMachine
 
 
@@ -15,7 +16,7 @@ class OneHotEncoder(BaseMachine):
         self._ohe_column_map_ = {}
         self._original_columns_ = []
 
-    @check_sig([3], [pardos_t], [lista_cadenas_t], is_method=True)
+    @check_sig([3], [pardos_type], [string_list_type], is_method=True)
     def fit(self, df, columns):
         self.columns_ = columns
         self.categories_ = {}
@@ -34,7 +35,7 @@ class OneHotEncoder(BaseMachine):
         self._is_fitted = True
         return self
 
-    @check_sig([2], [pardos_t], is_method=True)
+    @check_sig([2], [pardos_type], is_method=True)
     def transform(self, df):
         self._check_fitted("transform")
 
@@ -81,8 +82,6 @@ class OneHotEncoder(BaseMachine):
         for orig_col, ohe_cols in self._ohe_column_map_.items():
             for ohe_col in ohe_cols:
                 ohe_to_orig[ohe_col] = orig_col
-
-        all_ohe_cols = set(ohe_to_orig.keys())
 
         new_data = []
         for row in df.data:

@@ -1,36 +1,38 @@
+from typing import cast
+
 from ..BaseMachine import BaseMachine
 
 
 class AgglomerativeClustering(BaseMachine):
     """
-    Agglomerative Clustering — Clustering jerárquico aglomerativo.
+    Agglomerative Clustering — Agglomerative hierarchical clustering.
 
-    Algoritmo bottom-up que inicia cada punto como un cluster separado
-    y merge los clusters más cercanos iterativamente hasta alcanzar
-    el número deseado de clusters.
+    Bottom-up algorithm that starts each point as a separate cluster
+    and merge the closest clusters iteratively until reaching
+    the desired number of clusters.
 
-    Fundamento matemático:
-        1. Iniciar: cada punto es un cluster (n clusters)
-        2. Calcular matriz de distancias entre todos los pares
-        3. Encontrar los dos clusters más cercanos
-        4. Merge esos dos clusters
-        5. Repetir hasta tener n_clusters
+    Mathematical foundation:
+        1. Start: each point is a cluster (n clusters)
+        2. Calculate distance matrix between all pairs
+        3. Find the two closest clusters
+        4. Merge those two clusters
+        5. Repeat until you have n_clusters
 
-    Criterios de enlace (linkage):
-        - 'single': distancia mínima entre puntos de diferentes clusters
-        - 'complete': distancia máxima entre puntos de diferentes clusters
-        - 'average': distancia promedio entre puntos de diferentes clusters
-        - 'ward': minimiza la varianza intra-cluster al mergear
+    Link criteria (linkage):
+        - 'single': minimum distance between points of different clusters
+        - 'complete': maximum distance between points of different clusters
+        - 'average': average distance between points of different clusters
+        - 'ward': minimize intra-cluster variance when merging
 
-    Parámetros:
-        n_clusters: número de clusters (default 2)
-        linkage: criterio de enlace ('single', 'complete', 'average', 'ward') (default 'ward')
+    Parameters:
+        n_clusters: number of clusters (default 2)
+        linkage: link criteria ('single', 'complete', 'average', 'ward') (default 'ward')
 
-    Atributos (después de fit):
-        labels_: asignación de cluster para cada punto
-        n_clusters_: número de clusters
-        children_: historial de merges (par de clusters mergeados en cada paso)
-        distances_: distancias de cada merge
+    Attributes (after fit):
+        labels_: cluster assignment for each point
+        n_clusters_: number of clusters
+        children_: merge history (pair of clusters merged in each step)
+        distances_: distances of each merge
     """
 
     def __init__(self, n_clusters=2, linkage='ward'):
@@ -50,11 +52,11 @@ class AgglomerativeClustering(BaseMachine):
         self.distances_ = []
 
     def _euclidean_distance(self, a, b):
-        """Distancia euclidiana entre dos puntos."""
-        return sum((x - y) ** 2 for x, y in zip(a, b)) ** 0.5
+        """Euclidean distance between two points."""
+        return sum((x - y) ** 2 for x, y in zip(a, b, strict=False)) ** 0.5
 
     def _compute_distance_matrix(self, X):
-        """Calcula la matriz de distancias entre todos los puntos."""
+        """Calculates the distance matrix between all points."""
         n = len(X)
         dist_matrix = [[0.0] * n for _ in range(n)]
         for i in range(n):
@@ -65,7 +67,7 @@ class AgglomerativeClustering(BaseMachine):
         return dist_matrix
 
     def _compute_linkage_distance(self, cluster_i, cluster_j, dist_matrix, X):
-        """Calcula la distancia entre dos clusters según el criterio de enlace."""
+        """Calculate the distance between two clusters according to the link criterion."""
         if self.linkage == 'single':
             min_dist = float('inf')
             for i in cluster_i:
@@ -103,7 +105,7 @@ class AgglomerativeClustering(BaseMachine):
             return (n_i * n_j / (n_i + n_j)) * dist_sq
 
     def fit(self, X):
-        """Ajusta AgglomerativeClustering usando el algoritmo aglomerativo."""
+        """Adjusts AgglomerativeClustering using the agglomerative algorithm."""
         matrix, cols, is_df = self._unwrap_data(X)
         matrix = self._validate_matrix_shape(matrix)
 
@@ -127,8 +129,11 @@ class AgglomerativeClustering(BaseMachine):
 
             for i in range(len(clusters)):
                 for j in range(i + 1, len(clusters)):
-                    d = self._compute_linkage_distance(
-                        clusters[i], clusters[j], dist_matrix, matrix
+                    d = cast(
+                        float,
+                        self._compute_linkage_distance(
+                            clusters[i], clusters[j], dist_matrix, matrix
+                        ),
                     )
                     if d < min_dist:
                         min_dist = d
@@ -152,7 +157,7 @@ class AgglomerativeClustering(BaseMachine):
         return self
 
     def fit_predict(self, X):
-        """Fit y retorna labels en un solo paso."""
+        """Fit and return labels in one step."""
         self.fit(X)
         return self.labels_
 

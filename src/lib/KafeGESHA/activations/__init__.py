@@ -1,1 +1,1 @@
-"""Funciones de activación de KafeGESHA."""
+"""KafeGESHA activation functions."""

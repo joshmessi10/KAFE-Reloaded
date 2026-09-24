@@ -1,50 +1,53 @@
-from global_utils import check_sig
-from TypeUtils import vector_numeros_t, matriz_numeros_t, pardos_t
-from ..metrics import accuracy_score
-from ..BaseMachine import BaseMachine
 from math import exp as pyexp
+from typing import cast
+
+from global_utils import check_sig
+from TypeUtils import numeric_matrix_types, numeric_vector_types, pardos_type
+
+from ..BaseMachine import BaseMachine
+from ..metrics import accuracy_score
 
 
 class SVM(BaseMachine):
-    """Support Vector Machine para clasificación binaria.
+    """Support Vector Machine for binary classification.
 
-    SVM busca el hiperplano de máximo margen que separa las clases.
-    Solo los puntos dentro del margen o mal clasificados contribuyen
-    a la pérdida (vectores de soporte).
+    SVM searches for the hyperplane of maximum margin that separates the classes.
+    Only points within the range or misclassified contribute
+    to the loss (support vectors).
 
-    Fundamento matemático:
-        Formulación primal:
-            Minimiza: (1/2)||w||² + C * Σ(max(0, 1 - y_i * f(x_i)))
+    Mathematical foundation:
+        Primary formulation:
+            Minimizes: (1/2)||w||² + C * Σ(max(0, 1 - y_i * f(x_i)))
 
-            Donde:
-            - w = pesos del modelo
-            - C = parámetro de regularización (trade-off entre margen y errores)
-            - y_i ∈ {-1, +1} = etiquetas de clase
+            Where:
+            - w = model weights
+            - C = regularization parameter (trade-off between margin and errors)
+            - y_i ∈ {-1, +1} = class labels
             - f(x_i) = w·x_i + b
 
-        Formulación dual:
+        Dual formulation:
             max Σ α_i - (1/2) Σ_i Σ_j α_i α_j y_i y_j K(x_i, x_j)
             s.t. 0 ≤ α_i ≤ C, Σ α_i y_i = 0
 
             f(x) = Σ α_i y_i K(x_i, x) + b
 
-    Optimización: SGD para primal (kernel lineal), SMO simplificado para dual.
+    Optimization: SGD for primal (linear kernel), simplified SMO for dual.
 
-    Parámetros:
-        C: parámetro de regularización (default 1.0)
-        kernel: tipo de kernel ('linear', 'rbf', 'poly') (default 'linear')
-        gamma: parámetro del kernel RBF (default 'scale')
-        degree: grado del kernel polinomial (default 3)
-        tol: tolerancia para convergencia (default 1e-3)
-        max_iter: máximo de iteraciones (default 1000)
+    Parameters:
+        C: regularization parameter (default 1.0)
+        kernel: kernel type ('linear', 'rbf', 'poly') (default 'linear')
+        gamma: kernel parameter RBF (default 'scale')
+        degree: polynomial kernel degree (default 3)
+        tol: tolerance for convergence (default 1e-3)
+        max_iter: maximum iterations (default 1000)
 
-    Atributos (después de fit):
-        coef_: coeficientes del modelo (para kernel lineal)
-        intercept_: intercepto del modelo
-        support_vectors_: vectores de soporte
-        support_vector_labels_: etiquetas de los vectores de soporte
-        n_support_: número de vectores de soporte
-        classes_: clases únicas
+    Attributes (after fit):
+        coef_: model coefficients (for linear kernel)
+        intercept_: model intercept
+        support_vectors_: support vectors
+        support_vector_labels_: support vector labels
+        n_support_: number of support vectors
+        classes_: unique classes
     """
 
     def __init__(self, C=1.0, kernel='linear', gamma='scale', degree=3,
@@ -74,8 +77,8 @@ class SVM(BaseMachine):
         self._dual_coefs = []
         self._sv_indices = []
 
-    def _compute_gamma(self, n_features):
-        """Calcula el valor de gamma para el kernel RBF."""
+    def _compute_gamma(self, n_features) -> float:
+        """Calculates the gamma value for the RBF kernel."""
         if self.gamma == 'scale':
             if not self._X_train:
                 return 1.0 / n_features
@@ -85,24 +88,24 @@ class SVM(BaseMachine):
             return 1.0 / (n_features * var) if var > 0 else 1.0 / n_features
         elif self.gamma == 'auto':
             return 1.0 / n_features
-        return self.gamma
+        return cast(float, self.gamma)
 
     def _kernel_function(self, x1, x2, gamma=None):
-        """Calcula el kernel entre dos vectores."""
+        """Calculates the kernel between two vectors."""
         if self.kernel == 'linear':
-            return sum(a * b for a, b in zip(x1, x2))
+            return sum(a * b for a, b in zip(x1, x2, strict=False))
         elif self.kernel == 'rbf':
             if gamma is None:
                 gamma = self._compute_gamma(len(x1))
-            dist = sum((a - b) ** 2 for a, b in zip(x1, x2))
-            return pyexp(-gamma * dist)
+            dist = sum((a - b) ** 2 for a, b in zip(x1, x2, strict=False))
+            return pyexp(-cast(float, gamma) * dist)
         elif self.kernel == 'poly':
-            dot = sum(a * b for a, b in zip(x1, x2))
+            dot = sum(a * b for a, b in zip(x1, x2, strict=False))
             return (dot + 1) ** self.degree
         return 0
 
     def _compute_kernel_matrix(self, X):
-        """Calcula la matriz de kernel K donde K[i][j] = kernel(X[i], X[j])."""
+        """Computes the kernel matrix K where K[i][j] = kernel(X[i], X[j])."""
         n = len(X)
         K = [[0.0] * n for _ in range(n)]
         gamma = self._compute_gamma(len(X[0])) if self.kernel == 'rbf' else None
@@ -114,11 +117,11 @@ class SVM(BaseMachine):
         return K
 
     def _hinge_loss(self, y_true, y_pred):
-        """Calcula la pérdida hinge: max(0, 1 - y_true * y_pred)."""
+        """Calculate the hinge loss: max(0, 1 - y_true * y_pred)."""
         return max(0.0, 1.0 - y_true * y_pred)
 
     def _fit_primal(self, X, y):
-        """Ajusta SVM con kernel lineal usando SGD sobre pérdida hinge + L2."""
+        """Fits SVM with linear kernel using SGD over hinge + L2 loss."""
         n = len(X)
         m = len(X[0])
 
@@ -166,7 +169,7 @@ class SVM(BaseMachine):
         self.n_support_ = len(self.support_vectors_)
 
     def _fit_dual(self, X, y):
-        """Ajusta SVM con kernel usando SMO simplificado sobre formulación dual."""
+        """Fine-tune SVM with kernel using simplified SMO over dual formulation."""
         n = len(X)
 
         y_binary = [1.0 if yi == self.classes_[0] else -1.0 for yi in y]
@@ -177,7 +180,7 @@ class SVM(BaseMachine):
         self.intercept_ = 0.0
         eta = 0.01
 
-        for iteration in range(self.max_iter):
+        for _iteration in range(self.max_iter):
             for i in range(n):
                 pred = self.intercept_ + sum(
                     self._dual_coefs[j] * y_binary[j] * K[i][j] for j in range(n)
@@ -209,9 +212,9 @@ class SVM(BaseMachine):
                 self._sv_indices.append(i)
         self.n_support_ = len(self.support_vectors_)
 
-    @check_sig([3], [pardos_t] + vector_numeros_t + matriz_numeros_t, vector_numeros_t, is_method=True)
+    @check_sig([3], [pardos_type] + numeric_vector_types + numeric_matrix_types, numeric_vector_types, is_method=True)
     def fit(self, X, y):
-        """Ajusta el modelo SVM."""
+        """Adjust the SVM model."""
         matrix, cols, is_df = self._unwrap_data(X)
         matrix = self._validate_matrix_shape(matrix)
 
@@ -235,7 +238,7 @@ class SVM(BaseMachine):
         return self
 
     def _decision_function(self, X):
-        """Calcula la función de decisión (valor antes del signo)."""
+        """Calculates the decision function (value before the sign)."""
         m = len(self._X_train[0]) if self._X_train else 0
 
         if self.kernel == 'linear':
@@ -255,9 +258,9 @@ class SVM(BaseMachine):
                 predictions.append(pred)
             return predictions
 
-    @check_sig([2], vector_numeros_t + matriz_numeros_t, is_method=True)
+    @check_sig([2], numeric_vector_types + numeric_matrix_types, is_method=True)
     def predict(self, X):
-        """Predice etiquetas de clase usando SVM."""
+        """Predict class labels using SVM."""
         self._check_fitted("predict")
         if not X:
             return []
@@ -274,9 +277,9 @@ class SVM(BaseMachine):
         decisions = self._decision_function(X)
         return [self.classes_[0] if d >= 0 else self.classes_[1] for d in decisions]
 
-    @check_sig([2], vector_numeros_t + matriz_numeros_t, is_method=True)
+    @check_sig([2], numeric_vector_types + numeric_matrix_types, is_method=True)
     def predict_proba(self, X):
-        """Predice probabilidades usando la distancia al hiperplano (sigmoid)."""
+        """Predict probabilities using the distance to the hyperplane (sigmoid)."""
         self._check_fitted("predict_proba")
         if not X:
             return []
@@ -291,7 +294,7 @@ class SVM(BaseMachine):
         return probs
 
     def score(self, X, y, metric=None):
-        """Evalúa usando accuracy (default) o una métrica personalizada."""
+        """Evaluate using accuracy (default) or a custom metric."""
         self._check_fitted("score")
         preds = self.predict(X)
         if metric is None:

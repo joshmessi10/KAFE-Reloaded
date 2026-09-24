@@ -1,23 +1,44 @@
 """KafeGESHA — Deep Learning library for KAFE.
 
-API pública exportada:
-    Model      — clase base abstracta
-    Sequential — modelo de grafo lineal
-    Functional — modelo de grafo DAG
-    Dense      — capa totalmente conectada
-    Dropout    — regularización por dropout
-    Flatten    — aplanar tensores
-    Input      — entrada simbólica (API Functional)
-    Add        — merge de ramas (API Functional)
-    ReLULayer, SigmoidLayer, TanhLayer, SoftmaxLayer — activaciones como capas
+Exported public API:
+    Model — abstract base class
+    Sequential — linear graph model
+    Functional — DAG network model
+    Dense — fully connected layer
+    Dropout — dropout regularization
+    Flatten    — flatten tensors
+    Input — symbolic input (Functional API)
+    Add — branch merge (Functional API)
+    ReLULayer, SigmoidLayer, TanhLayer, SoftmaxLayer — activations as layers
 """
-from lib.KafeGESHA.core.model import Model, Gesha
-from lib.KafeGESHA.models.sequential import Sequential
-from lib.KafeGESHA.models.functional import Functional, Add
+from lib.KafeGESHA.core.model import Gesha, Model
+from lib.KafeGESHA.layers.activation_layers import (
+    LinearLayer,
+    ReLULayer,
+    SigmoidLayer,
+    SoftmaxLayer,
+    TanhLayer,
+)
 from lib.KafeGESHA.layers.dense import Dense
 from lib.KafeGESHA.layers.dropout import Dropout
 from lib.KafeGESHA.layers.flatten import Flatten
 from lib.KafeGESHA.layers.input_layer import Input
-from lib.KafeGESHA.layers.activation_layers import (
-    ReLULayer, SigmoidLayer, TanhLayer, SoftmaxLayer, LinearLayer
-)
+from lib.KafeGESHA.models.functional import Add, Functional
+from lib.KafeGESHA.models.sequential import Sequential
+
+__all__ = [
+    "Model",
+    "Gesha",
+    "Sequential",
+    "Functional",
+    "Add",
+    "Dense",
+    "Dropout",
+    "Flatten",
+    "Input",
+    "ReLULayer",
+    "SigmoidLayer",
+    "TanhLayer",
+    "SoftmaxLayer",
+    "LinearLayer",
+]

@@ -4,16 +4,16 @@
 **Reviewer**: reviewer agent
 **Feature**: OrdinalEncoder implementation in KafeMACHINE
 
-## Veredicto: APPROVED
+## Verdict: APPROVED
 
 ## DoD Check
 
 ### Required (All Tasks)
 
-- [x] **Implementation exists** — `src/lib/KafeMACHINE/preprocessing/OrdinalEncoder.py` (112 lines), factory in `funciones.py`, package export in `preprocessing/__init__.py`
+- [x] **Implementation exists** — `src/lib/KafeMACHINE/preprocessing/OrdinalEncoder.py` (112 lines), factory then in `funciones.py` (renamed to `functions.py` in Task 3), package export in `preprocessing/__init__.py`
 - [x] **Validation passed** — fit/transform/inverse_transform all produce correct output per test expectations
 - [x] **Tests passed** — `pytest tests/ -q`: 328 passed (6 OrdinalEncoder fixtures included: 3 valid + 3 error)
-- [x] **Documentation updated** — `docs/bibliotecas/machine.md` has OrdinalEncoder section (lines 506-550), factory in main table (line 26)
+- [x] **Documentation updated** — `docs/libraries/machine.md` has the OrdinalEncoder section (lines 506-550) and the factory in its main table (line 26)
 - [x] **History updated** — `.opencode/history/2026/2026-09.md` has OrdinalEncoder entry
 
 ### When Applicable (ML/DL Components — Preprocessing)
@@ -34,7 +34,7 @@
   - [x] `.opencode/history/2026/2026-09.md` — exists
   - [x] `tests/KafeMACHINE/preprocessing/` — 6 fixtures (3 valid + 3 error)
   - [x] `.opencode/benchmarks/records.md` — 5 scenarios
-  - [x] `docs/bibliotecas/machine.md` — updated
+  - [x] `docs/libraries/machine.md` — updated
   - [x] `.opencode/progress/roadmap.md` — updated (OrdinalEncoder marked complete)
 
 ## Files Verified
@@ -44,14 +44,14 @@
 | `src/lib/KafeMACHINE/preprocessing/OrdinalEncoder.py` | Present (112 lines) |
 | `src/lib/KafeMACHINE/preprocessing/__init__.py` | Exports OrdinalEncoder |
 | `src/lib/KafeMACHINE/__init__.py` | Updated imports |
-| `src/lib/KafeMACHINE/funciones.py` | `machine.ordinal_encoder()` factory present |
+| `src/lib/KafeMACHINE/functions.py` | `machine.ordinal_encoder()` factory present |
 | `tests/KafeMACHINE/preprocessing/test_ordinal_encoder.kf` | Passes |
 | `tests/KafeMACHINE/preprocessing/test_ordinal_encoder_inverse.kf` | Passes |
 | `tests/KafeMACHINE/preprocessing/test_ordinal_encoder_single_column.kf` | Passes |
 | `tests/KafeMACHINE/preprocessing/test_oe_column_not_found.error.kf` | Error case passes |
 | `tests/KafeMACHINE/preprocessing/test_oe_not_fitted.error.kf` | Error case passes |
 | `tests/KafeMACHINE/preprocessing/test_oe_unseen_category.error.kf` | Error case passes |
-| `docs/bibliotecas/machine.md` | OrdinalEncoder section present |
+| `docs/libraries/machine.md` | OrdinalEncoder section present |
 | `.opencode/knowledge/concepts/ordinal-encoder.md` | Enriched concept record |
 | `.opencode/benchmarks/records.md` | 5 scenarios registered |
 | `.opencode/history/2026/2026-09.md` | History record present |

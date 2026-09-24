@@ -1,0 +1,78 @@
+-- ============================================================
+-- Unsupervised clustering example with KafeGESHA, KafePARDOS, and KafePlot
+-- ============================================================
+-- Pipeline:
+-- Raw CSV data -> KafePARDOS preprocessing -> NumPy/matrix -> KafeGESHA model -> KafePlot visualization
+
+import pardos;
+import geshaDeep;
+import plot;
+
+show("=== Data clustering with KafeGESHA and KafePlot ===");
+
+-- 1. Preprocess data with KafePARDOS
+PARDOS df = pardos.read_csv("tests/data/clustering_sample.csv");
+List[List[FLOAT]] X_train = pardos.to_matrix(df);
+
+show("Training data loaded from DataFrame (" + str(len(X_train)) + " samples):");
+for (point in X_train):
+    show("  " + str(point));
+;
+
+-- 2. Define the neural network model with KafeGESHA
+GESHA layer1 = geshaDeep.create_dense(4, "relu", [2], 0.0, 42);
+GESHA layer2 = geshaDeep.create_dense(2, "softmax", [], 0.0, 42);
+GESHA model  = geshaDeep.sequential([layer1, layer2]);
+
+-- 3. Compile and train the unsupervised model (y = [])
+model.compile("adam", "mse", []);
+show("\nTraining the unsupervised clustering model...");
+model.fit(X_train, [], 30, 1);
+
+-- 4. Assign clusters and run inference
+List[FLOAT] c0_x = [];
+List[FLOAT] c0_y = [];
+List[FLOAT] c1_x = [];
+List[FLOAT] c1_y = [];
+
+show("\nCluster assignments:");
+for (p in X_train):
+    INT cluster_id = model.predict_label(p);
+    List[FLOAT] probs = model.predict(p);
+    show("Point " + str(p) + " -> cluster " + str(cluster_id) + " (probabilities: " + str(probs) + ")");
+
+    if (cluster_id == 0):
+        append(c0_x, p[0]);
+        append(c0_y, p[1]);
+    else:
+        append(c1_x, p[0]);
+        append(c1_y, p[1]);
+    ;
+;
+
+-- 5. Plot the results with KafePlot
+show("\nGenerating a chart with KafePlot...");
+plot.figure();
+plot.title("Unsupervised clustering with KafeGESHA");
+plot.xlabel("Feature X1");
+plot.ylabel("Feature X2");
+plot.grid(True);
+
+-- Plot points in cluster 0 (blue)
+if (len(c0_x) > 0):
+    plot.color("blue");
+    plot.pointColor("blue");
+    plot.pointSize(7);
+    plot.graph(c0_x, c0_y, "point");
+;
+
+-- Plot points in cluster 1 (red)
+if (len(c1_x) > 0):
+    plot.color("red");
+    plot.pointColor("red");
+    plot.pointSize(7);
+    plot.graph(c1_x, c1_y, "point");
+;
+
+plot.render();
+show("SVG visualization generated successfully.");

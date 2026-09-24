@@ -1,39 +1,40 @@
-import sys
 import pathlib
-from antlr4 import InputStream, CommonTokenStream
+import sys
+
+from antlr4 import CommonTokenStream, InputStream
 from antlr4.error.ErrorListener import ErrorListener
-from Kafe_GrammarLexer import Kafe_GrammarLexer
-from Kafe_GrammarParser import Kafe_GrammarParser
-from EvalVisitorPrimitivo import EvalVisitorPrimitivo
-from errores import raiseScientificNotationError
 
 import globals
+from errors import raiseScientificNotationError
+from InterpreterVisitor import InterpreterVisitor
+from Kafe_GrammarLexer import Kafe_GrammarLexer
+from Kafe_GrammarParser import Kafe_GrammarParser
 
 
 class KafeErrorListener(ErrorListener):
     def syntaxError(self, recognizer, offendingSymbol, line, column, msg, e):
-        # Error de string sin cerrar
+        # Handle an unterminated string literal.
         if "token recognition error" in msg:
             raise Exception(
                 f"SyntaxError: unterminated string literal at line {line}:{column}"
             )
 
-        # Detectamos si el error parece ser de notación científica
+        # Detect a possible scientific notation error.
         symbol_text = offendingSymbol.text if offendingSymbol else ""
         if "e" in symbol_text.lower() or "exponent" in msg.lower():
             raiseScientificNotationError(line, column, msg)
         else:
-            # Error de sintaxis genérico
+            # Report a general syntax error.
             print(
                 f"Syntax Error [Line {line}, Column {column}]: {msg}", file=sys.stderr
             )
-            # Error genérico de sintaxis
+            # Raise a general syntax error.
             raise Exception(f"SyntaxError at line {line}:{column} -> {msg}")
 
 
 def main():
     if len(sys.argv) < 2:
-        print("Uso: python Kafe.py <archivo.kf>")
+        print("Usage: python Kafe.py <file.kf>")
         sys.exit(1)
 
     input_file = sys.argv[1]
@@ -46,17 +47,17 @@ def main():
         base = pathlib.Path(__file__).parent
         filepath = base / input_file
         if not filepath.is_file():
-            print(f"Archivo '{input_file}' no encontrado")
+            print(f"File '{input_file}' not found")
             sys.exit(1)
 
-    globals.ruta_programa = str(filepath.absolute())
+    globals.program_path = str(filepath.absolute())
     globals.current_dir = str(filepath.parent.absolute())
 
-    contenido = filepath.read_text(encoding="utf-8")
+    content = filepath.read_text(encoding="utf-8")
 
-    visitor = EvalVisitorPrimitivo()
+    visitor = InterpreterVisitor()
 
-    input_stream = InputStream(contenido)
+    input_stream = InputStream(content)
     lexer = Kafe_GrammarLexer(input_stream)
     lexer.removeErrorListeners()
     lexer.addErrorListener(KafeErrorListener())

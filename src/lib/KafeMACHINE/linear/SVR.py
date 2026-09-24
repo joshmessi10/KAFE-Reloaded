@@ -1,42 +1,45 @@
+from typing import cast
+
 from global_utils import check_sig
-from TypeUtils import vector_numeros_t, matriz_numeros_t, pardos_t
-from ..metrics import r2_score
+from TypeUtils import numeric_matrix_types, numeric_vector_types, pardos_type
+
 from ..BaseMachine import BaseMachine
+from ..metrics import r2_score
 
 
 class SVR(BaseMachine):
     """
-    Support Vector Regression (SVR) — Regresión con pérdida epsilon-insensitive.
+    Support Vector Regression (SVR) — Regression with epsilon-insensitive loss.
 
-    SVR busca un hiperplano que ajuste los datos dentro de un margen epsilon (ε).
-    Solo los puntos fuera del margen ε contribuyen a la pérdida (vectores de soporte).
+    SVR searches for a hyperplane that fits the data within an epsilon (ε) margin.
+    Only points outside the ε margin contribute to the loss (support vectors).
 
-    Fundamento matemático:
-        Minimiza: (1/2)||w||² + C * Σ(max(0, |y_i - f(x_i)| - ε))
+    Mathematical foundation:
+        Minimizes: (1/2)||w||² + C * Σ(max(0, |y_i - f(x_i)| - ε))
 
-        Donde:
-        - w = pesos del modelo
-        - C = parámetro de regularización (trade-off entre flatness y tolerancia)
-        - ε = ancho del tubo epsilon-insensitive
+        Where:
+        - w = model weights
+        - C = regularization parameter (trade-off between flatness and tolerance)
+        - ε = epsilon-insensitive tube width
         - f(x) = w·x + b
 
-    Optimización: Coordinate Descent con epsilon-insensitive loss.
+    Optimization: Coordinate Descent with epsilon-insensitive loss.
 
-    Parámetros:
-        C: parámetro de regularización (default 1.0)
-        epsilon: ancho del tubo epsilon-insensitive (default 0.1)
-        kernel: tipo de kernel ('linear', 'rbf', 'poly') (default 'linear')
-        gamma: parámetro del kernel RBF (default 'scale')
-        degree: grado del kernel polinomial (default 3)
-        tol: tolerancia para convergencia (default 1e-3)
-        max_iter: máximo de iteraciones (default 1000)
+    Parameters:
+        C: regularization parameter (default 1.0)
+        epsilon: tube width epsilon-insensitive (default 0.1)
+        kernel: kernel type ('linear', 'rbf', 'poly') (default 'linear')
+        gamma: kernel parameter RBF (default 'scale')
+        degree: polynomial kernel degree (default 3)
+        tol: tolerance for convergence (default 1e-3)
+        max_iter: maximum iterations (default 1000)
 
-    Atributos (después de fit):
-        coef_: coeficientes del modelo (para kernel lineal)
-        intercept_: intercepto del modelo
-        support_vectors_: vectores de soporte
-        support_vector_labels_: valores objetivo de los vectores de soporte
-        n_support_: número de vectores de soporte
+    Attributes (after fit):
+        coef_: model coefficients (for linear kernel)
+        intercept_: model intercept
+        support_vectors_: support vectors
+        support_vector_labels_: target values ​​of support vectors
+        n_support_: number of support vectors
     """
 
     def __init__(self, C=1.0, epsilon=0.1, kernel='linear', gamma='scale',
@@ -67,8 +70,8 @@ class SVR(BaseMachine):
         self._y_train = []
         self._dual_coefs = []
 
-    def _compute_gamma(self, n_features):
-        """Calcula el valor de gamma para el kernel RBF."""
+    def _compute_gamma(self, n_features) -> float:
+        """Calculates the gamma value for the RBF kernel."""
         if self.gamma == 'scale':
             if not self._X_train:
                 return 1.0 / n_features
@@ -78,25 +81,25 @@ class SVR(BaseMachine):
             return 1.0 / (n_features * var) if var > 0 else 1.0 / n_features
         elif self.gamma == 'auto':
             return 1.0 / n_features
-        return self.gamma
+        return cast(float, self.gamma)
 
     def _kernel_function(self, x1, x2, gamma=None):
-        """Calcula el kernel entre dos vectores."""
+        """Calculates the kernel between two vectors."""
         if self.kernel == 'linear':
-            return sum(a * b for a, b in zip(x1, x2))
+            return sum(a * b for a, b in zip(x1, x2, strict=False))
         elif self.kernel == 'rbf':
             if gamma is None:
                 gamma = self._compute_gamma(len(x1))
-            dist = sum((a - b) ** 2 for a, b in zip(x1, x2))
+            dist = sum((a - b) ** 2 for a, b in zip(x1, x2, strict=False))
             from math import exp as pyexp
-            return pyexp(-gamma * dist)
+            return pyexp(-cast(float, gamma) * dist)
         elif self.kernel == 'poly':
-            dot = sum(a * b for a, b in zip(x1, x2))
+            dot = sum(a * b for a, b in zip(x1, x2, strict=False))
             return (dot + 1) ** self.degree
         return 0
 
     def _compute_kernel_matrix(self, X):
-        """Calcula la matriz de kernel K donde K[i][j] = kernel(X[i], X[j])."""
+        """Computes the kernel matrix K where K[i][j] = kernel(X[i], X[j])."""
         n = len(X)
         K = [[0.0] * n for _ in range(n)]
         gamma = self._compute_gamma(len(X[0])) if self.kernel == 'rbf' else None
@@ -108,14 +111,14 @@ class SVR(BaseMachine):
         return K
 
     def _epsilon_insensitive_loss(self, error):
-        """Calcula la pérdida epsilon-insensitive: max(0, |error| - epsilon)."""
+        """Calculates the loss epsilon-insensitive: max(0, |error| - epsilon)."""
         abs_err = abs(error)
         if abs_err <= self.epsilon:
             return 0.0
         return abs_err - self.epsilon
 
     def _fit_linear(self, X, y):
-        """Ajusta SVR con kernel lineal usando Coordinate Descent."""
+        """Adjust SVR with linear kernel using Coordinate Descent."""
         n = len(X)
         m = len(X[0])
 
@@ -165,7 +168,7 @@ class SVR(BaseMachine):
         self.n_support_ = len(self.support_vectors_)
 
     def _fit_kernel(self, X, y):
-        """Ajusta SVR con kernel usando aproximación SMO simplificada."""
+        """Fits SVR with kernel using simplified SMO approximation."""
         n = len(X)
 
         K = self._compute_kernel_matrix(X)
@@ -173,7 +176,7 @@ class SVR(BaseMachine):
         self._dual_coefs = [0.0] * n
         self.intercept_ = 0.0
 
-        for iteration in range(self.max_iter):
+        for _iteration in range(self.max_iter):
             for i in range(n):
                 pred = self.intercept_ + sum(
                     self._dual_coefs[j] * K[i][j] for j in range(n)
@@ -211,9 +214,9 @@ class SVR(BaseMachine):
                 self.support_vector_labels_.append(y[i])
                 self.n_support_ += 1
 
-    @check_sig([3], [pardos_t] + vector_numeros_t + matriz_numeros_t, vector_numeros_t, is_method=True)
+    @check_sig([3], [pardos_type] + numeric_vector_types + numeric_matrix_types, numeric_vector_types, is_method=True)
     def fit(self, X, y):
-        """Ajusta el modelo SVR."""
+        """Adjust the SVR model."""
         matrix, cols, is_df = self._unwrap_data(X)
         matrix = self._validate_matrix_shape(matrix)
 
@@ -232,9 +235,9 @@ class SVR(BaseMachine):
         self._is_fitted = True
         return self
 
-    @check_sig([2], vector_numeros_t + matriz_numeros_t, is_method=True)
+    @check_sig([2], numeric_vector_types + numeric_matrix_types, is_method=True)
     def predict(self, X):
-        """Predice usando SVR."""
+        """Predict using SVR."""
         self._check_fitted("predict")
         if not X:
             return []
@@ -265,7 +268,7 @@ class SVR(BaseMachine):
             return predictions
 
     def score(self, X, y, metric=None):
-        """Evalúa usando R² (default) o una métrica personalizada."""
+        """Evaluate using R² (default) or a custom metric."""
         self._check_fitted("score")
         preds = self.predict(X)
         if metric is None:

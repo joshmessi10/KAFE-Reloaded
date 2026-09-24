@@ -1,21 +1,21 @@
-"""Parámetros entrenables para modelos de deep learning."""
+"""Trainable parameters for deep learning models."""
 from lib.KafeGESHA.core.tensor import Tensor
 
 
 class Parameter:
     """
-    Representa un parámetro entrenable (pesos o sesgo).
-    Wraps un Tensor con metadata para optimización.
+    Represents a trainable parameter (weights or bias).
+    Wraps a Tensor with metadata for optimization.
     """
     
     def __init__(self, data, name=None, requires_grad=True):
         """
-        Inicializa un parámetro.
+        Initializes a parameter.
         
         Args:
-            data: Lista de listas o lista de números
-            name: Nombre opcional del parámetro
-            requires_grad: Si True, calcula gradientes
+            data: List of lists or list of numbers
+            name: Optional parameter name
+            requires_grad: If True, calculate gradients
         """
         if isinstance(data, Tensor):
             self.tensor = data
@@ -28,14 +28,14 @@ class Parameter:
     
     @staticmethod
     def zeros(shape, name=None):
-        """Crea un parámetro de ceros."""
-        from lib.KafeNUMK import funciones as numk
+        """Create a parameter of zeros."""
+        from lib.KafeNUMK import functions as numk
         return Parameter(numk.zeros_nd(shape), name)
     
     @staticmethod
     def random(shape, name=None):
-        """Crea un parámetro con valores aleatorios."""
-        from lib.KafeNUMK import funciones as numk
+        """Create a parameter with random values."""
+        from lib.KafeNUMK import functions as numk
         return Parameter(numk.random_tensor(shape), name)
     
     def __len__(self):

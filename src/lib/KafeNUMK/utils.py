@@ -1,41 +1,41 @@
-def es_misma_dimension(matriz1, matriz2):
-    if len(matriz1) == len(matriz2):
-        mismaDimension_filas = True
-        for i in range(len(matriz1)):
-            if len(matriz1[i]) != len(matriz2[i]):
-                mismaDimension_filas = False
+def has_same_dimensions(matrix1, matrix2):
+    if len(matrix1) == len(matrix2):
+        same_row_dimensions = True
+        for i in range(len(matrix1)):
+            if len(matrix1[i]) != len(matrix2[i]):
+                same_row_dimensions = False
                 break
 
-        if (mismaDimension_filas):
+        if (same_row_dimensions):
             return True
 
     return False
 
-def es_uniforme(matriz):
-    if not matriz:
+def is_uniform_matrix(matrix):
+    if not matrix:
         return True
 
-    longitud_fila = len(matriz[0])
-    for fila in matriz:
-        if len(fila) != longitud_fila:
+    row_length = len(matrix[0])
+    for row in matrix:
+        if len(row) != row_length:
             return False
     return True
 
-def operar_matrices(matriz1, matriz2, operacion):
-    resultado = []
-    for i in range(len(matriz1)):
-        fila = []
-        for j in range(len(matriz1[i])):
-            fila.append(operacion(matriz1[i][j], matriz2[i][j]))
-        resultado.append(fila)
+def apply_matrix_operation(matrix1, matrix2, operation):
+    result = []
+    for i in range(len(matrix1)):
+        row = []
+        for j in range(len(matrix1[i])):
+            row.append(operation(matrix1[i][j], matrix2[i][j]))
+        result.append(row)
 
-    return resultado
+    return result
 
 
 # --- N-D helpers ---
 
 def _shape_nd(obj):
-    """Calcula la forma de una estructura N-D recursivamente."""
+    """Calculates the shape of an N-D structure recursively."""
     dims = []
     current = obj
     while isinstance(current, list):
@@ -47,7 +47,7 @@ def _shape_nd(obj):
 
 
 def _depth(obj):
-    """Retorna la profundidad de anidamiento."""
+    """Returns the nesting depth."""
     if not isinstance(obj, list):
         return 0
     return 1 + _depth(obj[0]) if obj else 1
@@ -58,30 +58,30 @@ def _is_scalar(obj):
 
 
 def _op_nd(a, b, op):
-    """Aplica una operación elemento a elemento a dos estructuras N-D."""
+    """Applies an element-by-element operation to two N-D structures."""
     if _is_scalar(a) and _is_scalar(b):
         return op(a, b)
     if isinstance(a, list) and isinstance(b, list):
         if len(a) != len(b):
             raise ValueError("Dimension mismatch in element-wise operation")
-        return [_op_nd(ai, bi, op) for ai, bi in zip(a, b)]
+        return [_op_nd(ai, bi, op) for ai, bi in zip(a, b, strict=True)]
     raise ValueError(f"Cannot apply operation to {type(a).__name__} and {type(b).__name__}")
 
 
 def _broadcastable(s1, s2):
-    """Verifica si dos formas son compatibles para broadcasting."""
+    """Check if two forms are compatible for broadcasting."""
     # Pad shorter shape with 1s on the left
     max_len = max(len(s1), len(s2))
     s1_padded = (1,) * (max_len - len(s1)) + s1
     s2_padded = (1,) * (max_len - len(s2)) + s2
-    for d1, d2 in zip(s1_padded, s2_padded):
+    for d1, d2 in zip(s1_padded, s2_padded, strict=True):
         if d1 != d2 and d1 != 1 and d2 != 1:
             return False
     return True
 
 
 def _broadcast_to_nd(tensor, target_shape, src_shape=None):
-    """Expande un tensor N-D a la forma objetivo usando broadcasting."""
+    """Expands an N-D tensor to the target form using broadcasting."""
     if src_shape is None:
         src_shape = _shape_nd(tensor)
 
@@ -116,7 +116,7 @@ def _broadcast_to_nd(tensor, target_shape, src_shape=None):
 
 
 def _sum_nd(tensor, axis):
-    """Suma a lo largo del eje dado en un tensor N-D."""
+    """Sum along the given axis in an N-D tensor."""
     if not isinstance(tensor, list):
         return tensor
 
@@ -141,7 +141,7 @@ def _sum_nd(tensor, axis):
 
 
 def _max_nd(tensor, axis):
-    """Max a lo largo del eje dado en un tensor N-D."""
+    """Max along the given axis in an N-D tensor."""
     if not isinstance(tensor, list):
         return tensor
 
@@ -168,7 +168,7 @@ def _max_nd(tensor, axis):
 
 
 def _reshape_nd(tensor, new_shape):
-    """Reorganiza un tensor N-D a una nueva forma."""
+    """Rearrange an N-D tensor to a new form."""
     # Flatten first
     flat = []
     def _flatten(t):

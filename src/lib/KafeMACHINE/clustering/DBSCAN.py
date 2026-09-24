@@ -1,6 +1,7 @@
 from global_utils import check_sig
-from TypeUtils import matriz_numeros_t, pardos_t
-from lib.KafeMATH.funciones import sqrt
+from lib.KafeMATH.functions import sqrt
+from TypeUtils import numeric_matrix_types, pardos_type
+
 from ..BaseMachine import BaseMachine
 
 
@@ -8,30 +9,30 @@ class DBSCAN(BaseMachine):
     """
     DBSCAN: Density-Based Spatial Clustering of Applications with Noise.
 
-    Algoritmo de clustering que agrupa puntos densamente empaquetados,
-    marcando los atípicos como ruido. A diferencia de KMeans, DBSCAN puede
-    encontrar clusters de forma arbitraria y no requiere especificar el
-    número de clusters.
+    Clustering algorithm that groups densely packed points,
+    marking outliers as noise. Unlike KMeans, DBSCAN can
+    find clusters arbitrarily and does not require specifying the
+    number of clusters.
 
-    Fundamento matemático:
-        Concepto clave: alcanzabilidad por densidad
-        - Un punto p es punto central (core point) si al menos min_samples
-          puntos están dentro de la distancia eps (incluyendo p mismo)
-        - Un punto q es directamente alcanzable por densidad desde p si q
-          está dentro de la distancia eps de p y p es un punto central
-        - Un punto q es alcanzable por densidad desde p si existe una cadena
-          de puntos p1, ..., pn donde cada uno es directamente alcanzable
-          desde el anterior
-        - Un cluster es un conjunto de puntos densamente conectados
+    Mathematical foundation:
+        Key concept: reachability by density
+        - A point p is a core point if at least min_samples
+          points are within distance eps (including p itself)
+        - A point q is directly reachable by density from p if q
+          is within distance eps of p and p is a central point
+        - A point q is reachable by density from p if a chain exists
+          of points p1, ..., pn where each is directly reachable
+          since the previous
+        - A cluster is a set of densely connected points
 
-    Parámetros:
-        eps: distancia máxima entre dos puntos para ser considerados vecinos
-        min_samples: mínimo de puntos para formar una región densa
+    Parameters:
+        eps: maximum distance between two points to be considered neighbors
+        min_samples: minimum number of points to form a dense region
 
-    Atributos (después de fit):
-        labels_: etiquetas de cluster para cada punto (-1 = ruido)
-        n_clusters_: número de clusters encontrados (excluyendo ruido)
-        core_sample_indices_: índices de los puntos centrales
+    Attributes (after fit):
+        labels_: cluster labels for each point (-1 = noise)
+        n_clusters_: number of clusters found (excluding noise)
+        core_sample_indices_: center point indices
     """
 
     def __init__(self, eps=0.5, min_samples=5):
@@ -47,11 +48,11 @@ class DBSCAN(BaseMachine):
         self.core_sample_indices_ = []
 
     def _euclidean_distance(self, a, b):
-        """Distancia euclidiana entre dos puntos."""
-        return sqrt(sum((x - y) ** 2 for x, y in zip(a, b)))
+        """Euclidean distance between two points."""
+        return sqrt(sum((x - y) ** 2 for x, y in zip(a, b, strict=False)))
 
     def _region_query(self, X, point_idx):
-        """Encuentra todos los puntos dentro de la distancia eps de point_idx."""
+        """Find all points within distance eps of point_idx."""
         neighbors = []
         for i, point in enumerate(X):
             if self._euclidean_distance(X[point_idx], point) <= self.eps:
@@ -59,7 +60,7 @@ class DBSCAN(BaseMachine):
         return neighbors
 
     def _expand_cluster(self, X, labels, point_idx, neighbors, cluster_id):
-        """Expande un cluster desde un punto central."""
+        """Expand a cluster from a central point."""
         labels[point_idx] = cluster_id
         i = 0
         while i < len(neighbors):
@@ -76,13 +77,13 @@ class DBSCAN(BaseMachine):
 
             i += 1
 
-    @check_sig([2], [pardos_t] + matriz_numeros_t, is_method=True)
+    @check_sig([2], [pardos_type] + numeric_matrix_types, is_method=True)
     def fit(self, X):
         """
-        Realiza el clustering DBSCAN.
+        Performs DBSCAN clustering.
 
         Args:
-            X: Características (lista o DataFrame)
+            X: Features (list or DataFrame)
         """
         matrix, cols, is_df = self._unwrap_data(X)
         matrix = self._validate_matrix_shape(matrix)
@@ -113,22 +114,22 @@ class DBSCAN(BaseMachine):
         return self
 
     def fit_predict(self, X):
-        """Ajusta el modelo y devuelve las etiquetas de cluster."""
+        """Fits the model and returns the cluster labels."""
         self.fit(X)
         return self.labels_
 
     def labels(self):
-        """Devuelve las etiquetas de cluster después de fit."""
+        """Returns the cluster labels after fit."""
         self._check_fitted("labels")
         return self.labels_
 
     def n_clusters(self):
-        """Devuelve el número de clusters encontrados después de fit."""
+        """Returns the number of clusters found after fit."""
         self._check_fitted("n_clusters")
         return self.n_clusters_
 
     def core_sample_indices(self):
-        """Devuelve los índices de los puntos centrales después de fit."""
+        """Returns the indices of the center points after fit."""
         self._check_fitted("core_sample_indices")
         return self.core_sample_indices_
 

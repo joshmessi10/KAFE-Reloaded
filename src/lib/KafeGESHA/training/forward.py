@@ -1,31 +1,31 @@
-"""Implementaciones de forward pass.
+"""Forward pass implementations.
 
-El forward pass ahora se delega directamente a model.forward(x).
-Estas funciones auxiliares se mantienen para compatibilidad con Trainer.
+The forward pass is now delegated directly to model.forward(x).
+These auxiliary functions are maintained for compatibility with Trainer.
 """
 
 
 def forward_pass(model, x):
-    """Realiza un forward pass a través del modelo.
+    """Perform a forward pass through the model.
 
     Args:
-        model: Instancia de Model (Sequential o Functional).
-        x: Entrada (vector).
+        model: Model instance (Sequential or Functional).
+        x: Input (vector).
 
     Returns:
-        Salida del modelo.
+        Model output.
     """
     return model.forward(x)
 
 
 def forward_pass_batch(model, x_batch):
-    """Realiza un forward pass para un batch de datos.
+    """Perform a forward pass for a batch of data.
 
     Args:
-        model: Instancia de Model.
-        x_batch: Lista de entradas.
+        model: Model instance.
+        x_batch: List of entries.
 
     Returns:
-        Lista de salidas.
+        Exit list.
     """
     return [forward_pass(model, x) for x in x_batch]

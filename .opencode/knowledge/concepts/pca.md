@@ -10,61 +10,61 @@ ML preprocessing / dimensionality reduction
 
 ## Description
 
-PCA reduce la dimensionalidad de los datos encontrando las direcciones de mayor varianza (componentes principales) mediante el algoritmo de Jacobi para diagonalización de matrices.
+PCA reduces data dimensionality by finding the directions of greatest variance (the principal components) using the Jacobi algorithm for matrix diagonalization.
 
 ## Mathematical Foundation
 
-1. **Centrado de media**: $\tilde{X} = X - \bar{X}$ donde $\bar{X}$ es la media de cada feature
-2. **Matriz de covarianza**: $C = \frac{1}{n-1} \tilde{X}^T \tilde{X}$
-3. **Diagonalización**: Encontrar valores propios $\lambda_1 \geq \lambda_2 \geq \ldots \geq \lambda_d$ y vectores propios $v_1, v_2, \ldots, v_d$
-4. **Proyección**: $X_{reduced} = \tilde{X} \cdot V_k$ donde $V_k = [v_1, \ldots, v_k]$ son los primeros $k$ vectores propios
+1. **Mean centering**: $\tilde{X} = X - \bar{X}$, where $\bar{X}$ is the mean of each feature.
+2. **Covariance matrix**: $C = \frac{1}{n-1} \tilde{X}^T \tilde{X}$.
+3. **Diagonalization**: Find eigenvalues $\lambda_1 \geq \lambda_2 \geq \ldots \geq \lambda_d$ and eigenvectors $v_1, v_2, \ldots, v_d$.
+4. **Projection**: $X_{reduced} = \tilde{X} \cdot V_k$, where $V_k = [v_1, \ldots, v_k]$ contains the first $k$ eigenvectors.
 
 **Varianza explicada**: $\text{EV}_i = \frac{\lambda_i}{\sum_{j=1}^d \lambda_j}$
 
-- **Time Complexity**: $O(n \cdot d^2 + d^3)$ para fit (covarianza + Jacobi)
-- **Space Complexity**: $O(d^2)$ para la matriz de covarianza
+- **Time Complexity**: $O(n \cdot d^2 + d^3)$ for `fit` (covariance computation and Jacobi diagonalization).
+- **Space Complexity**: $O(d^2)$ for the covariance matrix.
 
 ## Step-by-Step Algorithm
 
-1. **fit(X)**: Centrar datos, calcular matriz de covarianza, aplicar Jacobi para obtener valores/vectores propios, ordenar por varianza descendente
-2. **transform(X)**: Proyectar datos centrados en los primeros $n$ componentes
-3. **round(n)**: Redondear valores internos a n decimales
+1. **`fit(X)`**: Center the data, compute the covariance matrix, apply Jacobi to obtain eigenvalues and eigenvectors, and sort them by decreasing variance.
+2. **`transform(X)`**: Project centered data onto the first $n$ components.
+3. **`round(n)`**: Round internal values to $n$ decimal places.
 
 ## Motivation
 
-PCA reduce la dimensionalidad preservando la máxima varianza. Es útil para visualización, reducción de ruido, y acelerar el entrenamiento de modelos.
+PCA reduces dimensionality while preserving as much variance as possible. It is useful for visualization, noise reduction, and faster model training.
 
 ## Advantages
 
-- Reduce dimensionalidad preservando información (varianza)
-- Elimina redundancia (features correlacionadas)
-- Sin parámetros supervisados (unsupervised)
-- Base para otros algoritmos (Kernel PCA, SVD)
+- Reduces dimensionality while retaining variance information.
+- Removes redundancy from correlated features.
+- Is unsupervised and does not require target labels.
+- Provides a basis for related methods such as Kernel PCA and SVD.
 
 ## Limitations
 
-- Solo captura relaciones lineales
-- Sensible a la escala de features (requiere StandardScaler previo)
-- Los componentes principales pueden ser difíciles de interpretar
-- Pierde información al reducir dimensiones
+- Captures only linear relationships.
+- Is sensitive to feature scales; apply `StandardScaler` first when appropriate.
+- Principal components can be difficult to interpret.
+- Loses information when dimensions are removed.
 
 ## When to Use
 
-- Visualización de datos de alta dimensionalidad
-- Reducción de ruido
-- Preprocessing antes de modelar (acelerar entrenamiento)
-- Cuando hay multicolinealidad
+- Visualizing high-dimensional data.
+- Reducing noise.
+- Preprocessing to speed up model training.
+- When multicollinearity is present.
 
 ## When NOT to Use
 
-- Relaciones no lineales (usar Kernel PCA o t-SNE)
-- Cuando la interpretabilidad es crítica (los componentes son combinaciones lineales)
+- Nonlinear relationships (consider Kernel PCA or t-SNE).
+- When interpretability is critical, since components are linear combinations of features.
 
 ## Dependencies
 
 - BaseMachine
 - PARDOS DataFrame
-- KafeMATH (para operaciones matriciales)
+- KafeMATH (for matrix operations)
 
 ## Related Concepts
 
@@ -74,7 +74,7 @@ PCA reduce la dimensionalidad preservando la máxima varianza. Es útil para vis
 
 ## Relationship with KAFE
 
-En KAFE, PCA se implementa usando el algoritmo de Jacobi para diagonalización de la matriz de covarianza. El factory `machine.pca(n)` crea un modelo con n componentes. Soporta tanto listas como PARDOS DataFrames.
+In KAFE, PCA uses the Jacobi algorithm to diagonalize the covariance matrix. The factory `machine.pca(n)` creates a model with $n$ components. It supports both lists and PARDOS DataFrames.
 
 ## Usage Examples
 
@@ -82,7 +82,7 @@ En KAFE, PCA se implementa usando el algoritmo de Jacobi para diagonalización d
 import pardos;
 import machine;
 
--- Reducir de 3D a 2D
+-- Reduce from 3D to 2D
 MACHINE pca_model = machine.pca(2);
 pca_model.fit(df);
 pca_model.round(4);
@@ -100,13 +100,13 @@ show(reduced.round(4));
 
 ## Public API
 
-- `machine.pca(n_components)` — crea PCA con n componentes
-- `pca.fit(X)` — ajusta el modelo
-- `pca.transform(X)` — proyecta en componentes principales
-- `pca.round(n)` — redondea valores internos
-- `pca.components_` — vectores propios (componentes)
-- `pca.mean_` — media de cada feature
-- `pca.explained_variance_` — varianza por componente
+- `machine.pca(n_components)` — creates a PCA model with $n$ components.
+- `pca.fit(X)` — fits the model.
+- `pca.transform(X)` — projects data onto the principal components.
+- `pca.round(n)` — rounds internal values.
+- `pca.components_` — eigenvectors (principal components).
+- `pca.mean_` — mean of each feature.
+- `pca.explained_variance_` — variance explained by each component.
 
 ## References
 

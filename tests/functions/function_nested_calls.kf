@@ -1,0 +1,26 @@
+List[INT] numbers = [1, 2, 3];
+List[STR] letters = ["a", "b"];
+List[BOOL] flags = [True];
+List[List[List[STR]]] strings = [];
+
+show(numbers);
+show(strings);
+
+append(numbers, 99);
+
+append(letters, "z");
+append(flags, False);
+append(strings, [[["asdf"]]]);
+
+show(numbers);
+show(letters);
+show(flags);
+show(strings);
+
+remove(numbers, 2);
+remove(letters, "a");
+
+show(numbers);
+show(letters);
+
+show(len(numbers));

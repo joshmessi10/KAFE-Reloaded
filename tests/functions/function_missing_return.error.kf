@@ -1,0 +1,6 @@
+-- Returning an incorrect value
+drip sum_value (a: INT, b: INT) => INT :
+    return bool(a + b);
+;
+
+show(sum_value(5, 4));

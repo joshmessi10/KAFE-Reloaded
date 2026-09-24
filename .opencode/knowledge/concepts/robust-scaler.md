@@ -36,7 +36,7 @@ StandardScaler and MinMaxScaler are sensitive to outliers because they use mean/
 - `src/lib/KafeMACHINE/BaseMachine.py` — base class providing the fit/transform contract, the `_is_fitted` guard, and `_unwrap_data` (DataFrame-aware).
 - `src/lib/KafePARDOS/DataFrame.py` — accepts `PARDOS` DataFrames and returns scaled DataFrames preserving columns.
 - `TypeUtils.py` / `global_utils.py` — `pardos_t`, `matriz_numeros_t`, `check_sig` for signature validation.
-- `src/lib/KafeMACHINE/funciones.py` — `machine.robust_scaler()` factory.
+- `src/lib/KafeMACHINE/functions.py` — `machine.robust_scaler()` factory.
 
 ## Related Concepts
 
@@ -79,8 +79,8 @@ Guards: calling `transform`/`inverse_transform` before `fit` raises `RobustScale
 $$X_{scaled} = \frac{X - \text{median}}{IQR}$$
 
 Where:
-- $\text{median} = Q2$ (percentil 50)
-- $IQR = Q3 - Q1$ (percentil 75 − percentil 25)
+- $\text{median} = Q2$ (50th percentile)
+- $IQR = Q3 - Q1$ (75th percentile − 25th percentile)
 
 ### Why median/IQR instead of mean/std?
 
@@ -115,7 +115,7 @@ Where n = samples, m = features. The log n factor comes from sorting each column
 ## Implementation Location
 
 - `src/lib/KafeMACHINE/preprocessing/RobustScaler.py` (class `RobustScaler(BaseMachine)`).
-- Factory: `src/lib/KafeMACHINE/funciones.py` — `robust_scaler()`.
+- Factory: `src/lib/KafeMACHINE/functions.py` — `robust_scaler()`.
 - Tests: `tests/KafeMACHINE/preprocessing/robust_scaler/` (4 fixtures).
 
 ## Public API

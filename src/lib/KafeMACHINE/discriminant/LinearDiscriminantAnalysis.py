@@ -1,38 +1,39 @@
-from lib.KafeMATH.funciones import sqrt, pow_
 from global_utils import check_sig
-from TypeUtils import vector_numeros_t, matriz_numeros_t, pardos_t
-from ..metrics import accuracy_score
+from lib.KafeMATH.functions import sqrt
+from TypeUtils import numeric_matrix_types, numeric_vector_types, pardos_type
+
 from ..BaseMachine import BaseMachine
+from ..metrics import accuracy_score
 
 
 class LinearDiscriminantAnalysis(BaseMachine):
     """
-    Linear Discriminant Analysis (LDA) — Clasificación y reducción de dimensionalidad.
+    Linear Discriminant Analysis (LDA) — Classification and dimensionality reduction.
 
-    LDA proyecta los datos en un espacio de menor dimensionalidad que
-    maximiza la separación entre clases (maximiza la razón entre varianza
-    inter-clase y varianza intra-clase).
+    LDA projects the data into a space of lower dimensionality than
+    maximizes the separation between classes (maximizes the ratio between variance
+    inter-class and intra-class variance).
 
-    Fundamento matemático:
-        1. Calcular medias por clase: μ_k
-        2. Calcular matriz de散 intra-clase: S_W = Σ_k Σ_{x∈C_k} (x - μ_k)(x - μ_k)^T
-        3. Calcular matriz de散 inter-clase: S_B = Σ_k n_k (μ_k - μ)(μ_k - μ)^T
-        4. Resolver eigenproblema: S_W^{-1} S_B w = λ w
-        5. Seleccionar los k eigenvectores con mayor eigenvalores
+    Mathematical foundation:
+        1. Calculate averages per class: μ_k
+        2. Calculate the within-class scatter matrix: S_W = Σ_k Σ_{x∈C_k} (x - μ_k)(x - μ_k)^T
+        3. Calculate the between-class scatter matrix: S_B = Σ_k n_k (μ_k - μ)(μ_k - μ)^T
+        4. Solve the eigenproblem: S_W^{-1} S_B w = λ w
+        5. Select the k eigenvectors with the highest eigenvalues
 
-    Proyección: y = W^T x
+    Projection: y = W^T x
 
-    Parámetros:
-        n_components: número de componentes (default None = min(n_classes-1, n_features))
-        solver: solver para eigendescomposición (default "svd")
-        store_covariance: si guarda la covarianza (default False)
+    Parameters:
+        n_components: number of components (default None = min(n_classes-1, n_features))
+        solver: solver for eigendecomposition (default "svd")
+        store_covariance: if save the covariance (default False)
 
-    Atributos (después de fit):
-        scalings_: eigenvectores (direcciones de proyección)
-        explained_variance_ratio_: proporción de varianza explicada
-        means_: medias por clase
-        classes_: clases únicas
-        prior_: probabilidades a priori
+    Attributes (after fit):
+        scalings_: eigenvectors (projection directions)
+        explained_variance_ratio_: proportion of variance explained
+        means_: averages per class
+        classes_: unique classes
+        prior_: prior probabilities
     """
 
     def __init__(self, n_components=None, solver="svd", store_covariance=False):
@@ -51,7 +52,7 @@ class LinearDiscriminantAnalysis(BaseMachine):
         self.covariance_ = []
 
     def _matrix_multiply(self, A, B):
-        """Multiplica matrices A * B."""
+        """Multiply matrices A * B."""
         rows_a = len(A)
         cols_a = len(A[0])
         cols_b = len(B[0])
@@ -64,29 +65,29 @@ class LinearDiscriminantAnalysis(BaseMachine):
         return result
 
     def _matrix_transpose(self, A):
-        """Transpone una matriz."""
+        """Transposes a matrix."""
         rows = len(A)
         cols = len(A[0])
         return [[A[i][j] for i in range(rows)] for j in range(cols)]
 
     def _matrix_subtract(self, A, B):
-        """Resta matrices A - B."""
+        """Subtract matrices A - B."""
         return [[A[i][j] - B[i][j] for j in range(len(A[0]))] for i in range(len(A))]
 
     def _matrix_add(self, A, B):
-        """Suma matrices A + B."""
+        """Add matrices A + B."""
         return [[A[i][j] + B[i][j] for j in range(len(A[0]))] for i in range(len(A))]
 
     def _scalar_multiply(self, scalar, A):
-        """Multiplica escalar por matriz."""
+        """Multiply scalar by matrix."""
         return [[scalar * A[i][j] for j in range(len(A[0]))] for i in range(len(A))]
 
     def _outer_product(self, a, b):
-        """Producto exterior de dos vectores."""
+        """Exterior product of two vectors."""
         return [[a[i] * b[j] for j in range(len(b))] for i in range(len(a))]
 
     def _jacobi_eigen(self, matrix, n):
-        """Calcula eigenvalores y eigenvectores usando Jacobi."""
+        """Calculate eigenvalues ​​and eigenvectors using Jacobi."""
         A = [row[:] for row in matrix]
         eigenvectors = [[1.0 if i == j else 0.0 for j in range(n)] for i in range(n)]
 
@@ -139,7 +140,7 @@ class LinearDiscriminantAnalysis(BaseMachine):
         return eigenvalues, components
 
     def _solve_eigen(self, S_W, S_B, n_features):
-        """Resuelve S_W^{-1} S_B w = λ w usando Jacobi."""
+        """Solve S_W^{-1} S_B w = λ w using Jacobi."""
         S_W_inv = self._inverse_matrix(S_W, n_features)
         M = self._matrix_multiply(S_W_inv, S_B)
         M_T = self._matrix_transpose(M)
@@ -149,7 +150,7 @@ class LinearDiscriminantAnalysis(BaseMachine):
         return eigenvalues, eigenvectors
 
     def _inverse_matrix(self, matrix, n):
-        """Calcula inversa de matriz usando Gauss-Jordan."""
+        """Calculates matrix inverse using Gauss-Jordan."""
         aug = [row[:] + [1.0 if i == j else 0.0 for j in range(n)] for i, row in enumerate(matrix)]
 
         for col in range(n):
@@ -174,9 +175,9 @@ class LinearDiscriminantAnalysis(BaseMachine):
 
         return [[aug[i][j + n] for j in range(n)] for i in range(n)]
 
-    @check_sig([3], [pardos_t] + vector_numeros_t + matriz_numeros_t, vector_numeros_t, is_method=True)
+    @check_sig([3], [pardos_type] + numeric_vector_types + numeric_matrix_types, numeric_vector_types, is_method=True)
     def fit(self, X, y):
-        """Ajusta LDA calculando proyección óptima."""
+        """Adjusts LDA by calculating optimal projection."""
         matrix, cols, is_df = self._unwrap_data(X)
         matrix = self._validate_matrix_shape(matrix)
 
@@ -250,9 +251,9 @@ class LinearDiscriminantAnalysis(BaseMachine):
         self._is_fitted = True
         return self
 
-    @check_sig([2], vector_numeros_t + matriz_numeros_t, is_method=True)
+    @check_sig([2], numeric_vector_types + numeric_matrix_types, is_method=True)
     def transform(self, X):
-        """Transforma X al espacio de menor dimensionalidad."""
+        """Transform X to the space of lower dimensionality."""
         self._check_fitted("transform")
         if not X:
             return []
@@ -277,12 +278,12 @@ class LinearDiscriminantAnalysis(BaseMachine):
         return result
 
     def fit_transform(self, X, y):
-        """Ajusta y transforma en un solo paso."""
+        """Adjust and transform in one step."""
         return self.fit(X, y).transform(X)
 
-    @check_sig([2], vector_numeros_t + matriz_numeros_t, is_method=True)
+    @check_sig([2], numeric_vector_types + numeric_matrix_types, is_method=True)
     def predict(self, X):
-        """Predice clases usando LDA como clasificador."""
+        """Predict classes using LDA as a classifier."""
         self._check_fitted("predict")
         if not X:
             return []
@@ -320,7 +321,7 @@ class LinearDiscriminantAnalysis(BaseMachine):
         return labels
 
     def score(self, X, y, metric=None):
-        """Score usando accuracy (default) o una métrica personalizada."""
+        """Score using accuracy (default) or a custom metric."""
         self._check_fitted("score")
         preds = self.predict(X)
         if metric is None:

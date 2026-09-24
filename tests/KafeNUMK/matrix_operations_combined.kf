@@ -1,4 +1,4 @@
--- Prueba Transpuesta
+-- Test transpose
 import numk;
 
 List[List[INT]] A = [

@@ -10,48 +10,48 @@ ML preprocessing
 
 ## Description
 
-LabelEncoder codifica etiquetas de texto a valores enteros ordinales. Asigna un entero único a cada categoría única, ordenadas alfabéticamente.
+`LabelEncoder` maps text labels to ordinal integer values. It assigns a unique integer to each unique category after sorting categories alphabetically.
 
 ## Mathematical Foundation
 
-Dado un conjunto de etiquetas $L = \{l_1, l_2, \ldots, l_n\}$ con categorías únicas $C = \{c_1, c_2, \ldots, c_k\}$ ordenadas alfabéticamente:
+Given a set of labels $L = \{l_1, l_2, \ldots, l_n\}$ with unique categories $C = \{c_1, c_2, \ldots, c_k\}$ sorted alphabetically:
 
-$$\text{encode}(c_j) = j - 1 \quad \text{para } j = 1, \ldots, k$$
+$$\text{encode}(c_j) = j - 1 \quad \text{for } j = 1, \ldots, k$$
 
-- **Time Complexity**: $O(n \log n)$ para fit (ordenar categorías), $O(n)$ para transform
-- **Space Complexity**: $O(k)$ para almacenar el mapeo de categorías
+- **Time complexity**: $O(n \log n)$ for `fit` (sorting categories), $O(n)$ for `transform`.
+- **Space complexity**: $O(k)$ to store the category mapping.
 
 ## Step-by-Step Algorithm
 
-1. **fit(labels)**: Extraer categorías únicas, ordenarlas alfabéticamente, crear mapeo $c_j \to j-1$
-2. **transform(labels)**: Para cada etiqueta, retornar su entero correspondiente
-3. **inverse_transform(encoded)**: Para cada entero, retornar la categoría correspondiente
+1. **`fit(labels)`**: Extract unique categories, sort them alphabetically, and create the mapping $c_j \to j-1$.
+2. **`transform(labels)`**: Return the corresponding integer for each label.
+3. **`inverse_transform(encoded)`**: Return the corresponding category for each integer.
 
 ## Motivation
 
-Muchos modelos de ML requieren entrada numérica. LabelEncoder convierte variables categóricas ordinales (donde el orden importa) a representación numérica.
+Many ML models require numeric input. `LabelEncoder` converts ordinal categorical variables, where order matters, to a numeric representation.
 
 ## Advantages
 
-- Simple y rápido
-- Inversión trivial (inverse_transform)
-- Orden alfabético determinista
+- Simple and fast.
+- Straightforward inverse mapping with `inverse_transform`.
+- Deterministic alphabetical ordering.
 
 ## Limitations
 
-- Solo para etiquetas (target), no para features (usar OneHotEncoder o OrdinalEncoder)
-- Impone un orden ordinal que puede no ser apropiado para variables nominales
-- Solo funciona con una columna a la vez
+- Intended for target labels, not features (use `OneHotEncoder` or `OrdinalEncoder` for features).
+- Imposes an ordinal order that may be inappropriate for nominal variables.
+- Processes one column at a time.
 
 ## When to Use
 
-- Para codificar el target (variable dependiente) en clasificación
-- Cuando las categorías tienen un orden natural
+- To encode the target in a classification problem.
+- When categories have a natural order.
 
 ## When NOT to Use
 
-- Para features categóricas (usar OneHotEncoder o OrdinalEncoder)
-- Cuando las categorías no tienen orden (OneHotEncoder)
+- For categorical features (use `OneHotEncoder` or `OrdinalEncoder`).
+- When categories have no natural order (use `OneHotEncoder`).
 
 ## Dependencies
 
@@ -65,7 +65,7 @@ Muchos modelos de ML requieren entrada numérica. LabelEncoder convierte variabl
 
 ## Relationship with KAFE
 
-En KAFE, LabelEncoder se implementa como una clase que extiende BaseMachine. El factory `machine.label_encoder()` crea una instancia sin parámetros.
+In KAFE, `LabelEncoder` is implemented as a class that extends `BaseMachine`. The factory `machine.label_encoder()` creates an instance without parameters.
 
 ## Usage Examples
 
@@ -91,12 +91,12 @@ show(decoded);  -- [cat, dog, bird, cat, bird]
 
 ## Public API
 
-- `machine.label_encoder()` — crea LabelEncoder
-- `le.fit(labels)` — aprende las clases únicas
-- `le.transform(labels)` — codifica etiquetas a enteros
-- `le.fit_transform(labels)` — fit + transform
-- `le.inverse_transform(encoded)` — decodifica enteros a etiquetas
-- `le.classes_` — lista ordenada de clases únicas
+- `machine.label_encoder()` — creates a `LabelEncoder` instance.
+- `le.fit(labels)` — learns the unique classes.
+- `le.transform(labels)` — encodes labels as integers.
+- `le.fit_transform(labels)` — fits the encoder and transforms the labels.
+- `le.inverse_transform(encoded)` — decodes integers to labels.
+- `le.classes_` — sorted list of unique classes.
 
 ## References
 

@@ -1,5 +1,26 @@
 # Current Work
 
+Feature: Python quality-gates implementation and workflows — validated at exact SHA `c23163de6fee34b8da7d9a25b4f2896b331c22e1`
+Status: Implementation/workflow changes passed hosted checks at `c23163de6fee34b8da7d9a25b4f2896b331c22e1`; results are recorded below. The branch remains unmerged.
+Current step: Task 9 records the local gates and exact-SHA hosted results for the implementation/workflow state at `c23163de6fee34b8da7d9a25b4f2896b331c22e1`.
+Next step: Keep the branch unmerged and use the verified implementation as the base for the next repository-alignment deliverable; Task 9 final branch acceptance follows CI for the evidence-update SHA. Do not create a pull request or merge without an explicit request.
+Blockers: The plan requires hosted checks on the resulting evidence-update SHA before final branch acceptance.
+Related ADRs: ADR-0012.
+
+## Completed Work — English Repository Migration, Task 7 (2026-09-24)
+
+**Status:** Tasks 1–7 are complete on `refactor/english-repository`; the final audit passed against the current branch. ADR-0011 authorizes a one-time faithful English backfill of existing project records; future session/history entries remain append-only and English.
+
+**Historical authorization:** The user required all repository-owned content to be in English, approved the one-time archival translation and removal of the PDF and two machine-specific logs, and authorized commits and pushes when needed. At that workstream's completion, `refactor/english-repository` was the active branch; the current approved workstream now uses `chore/python-quality-gates`.
+
+**Scope and preservation:** Translate existing Spanish prose in repository guidance and `.opencode/` while preserving dates, IDs, statuses, chronology, measured results, decisions, formulas, code identifiers, and meaning. Update current operational references to the verified English paths and APIs. Delete only `KAFE LANGUAGE Deep Learning for Dummies .pdf`, `test_results.txt`, and `test_output.txt`; verify their original Git objects remain recoverable.
+
+**Verification:** The tracked-file language audit passed with only English identifiers and detector false positives remaining. The full locked suite passed 498 tests in 349.42 seconds at 83.78% coverage with no warnings. The UTF-8 subprocess regression harness passed 13 tests. Strict MkDocs and tracked-file codespell checks, mirrored root policy, approved deletions, generated ANTLR exclusions, and final diff review are recorded in the Task 7 ledger.
+
+The sections below are retained implementation notes from earlier work. Their paths and identifiers record names used at the time and may have moved; consult the current architecture and migration records for active paths. Historical test counts must not be treated as current verification.
+
+---
+
 ## Fix: model_selection test fixtures and test_Algorithms error support
 
 **Status:** Implemented and verified
@@ -54,7 +75,7 @@
 
 **Changes:**
 - Created `src/lib/KafeMACHINE/LinearDiscriminantAnalysis.py` — LinearDiscriminantAnalysis from scratch using Jacobi eigenvalue decomposition for S_W^{-1} S_B, following the scikit-learn API pattern (`fit()`, `transform()`, `fit_transform()`, `predict()`, `score()`). Supports dimensionality reduction (maximizes inter-class vs intra-class scatter ratio) and classification (nearest class mean in LDA space).
-- Updated `src/lib/KafeMACHINE/__init__.py` — export de LinearDiscriminantAnalysis
+- Updated `src/lib/KafeMACHINE/__init__.py` — exported LinearDiscriminantAnalysis.
 - Updated `src/lib/KafeMACHINE/funciones.py` — factory function `linear_discriminant_analysis()` with check_sig (n_components)
 - Created 3 fixture tests under `tests/Algorithms/dimensionality_reduction/lda/`:
   - `test_lda_basic` — fit/transform on 2D data with 1 component, verify output dimensions
@@ -63,13 +84,13 @@
 
 **Test results:** 3/3 new tests passed. No regressions (9 pre-existing failures in model_selection).
 
-## Previous Feature: GaussianMixture (Modelo de Mezcla de Gaussianas)
+## Previous Feature: Gaussian Mixture Model
 
 **Status:** Implemented and verified
 
 **Changes:**
 - Created `src/lib/KafeMACHINE/GaussianMixture.py` — GaussianMixture from scratch using EM algorithm (Expectation-Maximization), following the scikit-learn API pattern (`fit()`, `predict()`, `predict_proba()`, `score()`). Includes `aic()` and `bic()` model selection criteria. Uses diagonal covariance assumption.
-- Updated `src/lib/KafeMACHINE/__init__.py` — export de GaussianMixture
+- Updated `src/lib/KafeMACHINE/__init__.py` — exported GaussianMixture.
 - Updated `src/lib/KafeMACHINE/funciones.py` — factory function `gaussian_mixture()` with check_sig (n_components, max_iter, tol, random_state)
 - Created 4 fixture tests under `tests/KafeMACHINE/clustering/gmm/`:
   - `test_gmm_basic` — fit/predict on 2D data with 2 components, verify labels, weights, and means
@@ -86,7 +107,7 @@
 **Changes:**
 - Updated `src/lib/KafeMACHINE/DecisionTree.py` — added `DecisionTreeRegressor` class from scratch using MSE as split criterion, following the scikit-learn API pattern (`fit()`, `predict()`, `score()`)
 - Updated `src/lib/KafeMACHINE/KNN.py` — added `KNNRegressor` class from scratch supporting uniform and distance weighting, following the scikit-learn API pattern (`fit()`, `predict()`, `score()`)
-- Updated `src/lib/KafeMACHINE/__init__.py` — export de DecisionTreeRegressor, KNNRegressor
+- Updated `src/lib/KafeMACHINE/__init__.py` — exported DecisionTreeRegressor and KNNRegressor.
 - Updated `src/lib/KafeMACHINE/funciones.py` — factory functions `decision_tree_regressor()` and `knn_regressor()` with check_sig
 - Created 4 fixture tests under `tests/Algorithms/regression/`:
   - `dtr_basic` — single-feature DTR fit/predict/score, verify predictions and R²
@@ -96,14 +117,14 @@
 
 **Test results:** 4/4 new tests passed. No regressions (9 pre-existing failures in model_selection).
 
-## Previous Feature: RobustScaler (Escalamiento Robusto)
+## Previous Feature: RobustScaler (Robust Scaling)
 
 **Status:** Implemented and verified
 
 **Changes:**
 - Created `src/lib/KafeMACHINE/preprocessing/RobustScaler.py` — RobustScaler from scratch using median and IQR, following the scikit-learn API pattern (`fit()`, `transform()`, `inverse_transform()`, `fit_transform()`)
-- Updated `src/lib/KafeMACHINE/preprocessing/__init__.py` — export de RobustScaler
-- Updated `src/lib/KafeMACHINE/__init__.py` — export de RobustScaler from preprocessing
+- Updated `src/lib/KafeMACHINE/preprocessing/__init__.py` — exported RobustScaler.
+- Updated `src/lib/KafeMACHINE/__init__.py` — exported RobustScaler from preprocessing.
 - Updated `src/lib/KafeMACHINE/funciones.py` — factory function `robust_scaler()` with check_sig (with_centering, with_scaling, quantile_low, quantile_high)
 - Created 4 fixture tests under `tests/KafeMACHINE/preprocessing/robust_scaler/`:
   - `test_robust_scaler_basic` — fit/transform/inverse_transform, verify center_, scale_, scaled data, and roundtrip restoration
@@ -119,7 +140,7 @@
 
 **Changes:**
 - Created `src/lib/KafeMACHINE/GradientBoosting.py` — GradientBoostingClassifier and GradientBoostingRegressor from scratch using regression trees, following the scikit-learn API pattern (`fit()`, `predict()`, `score()`)
-- Updated `src/lib/KafeMACHINE/__init__.py` — export de GradientBoostingClassifier, GradientBoostingRegressor
+- Updated `src/lib/KafeMACHINE/__init__.py` — exported GradientBoostingClassifier and GradientBoostingRegressor.
 - Updated `src/lib/KafeMACHINE/funciones.py` — factory functions `gradient_boosting_classifier()` and `gradient_boosting_regressor()` with check_sig
 - Created 6 fixture tests under `tests/KafeMACHINE/boosting/`:
   - `test_gbc_basic` — classify linearly separable 2D data, verify predictions and accuracy
@@ -137,7 +158,7 @@
 
 **Changes:**
 - Created `src/lib/KafeMACHINE/AdaBoost.py` — AdaBoostClassifier from scratch using decision stumps, following the scikit-learn API pattern (`fit()`, `predict()`, `score()`)
-- Updated `src/lib/KafeMACHINE/__init__.py` — export de AdaBoostClassifier
+- Updated `src/lib/KafeMACHINE/__init__.py` — exported AdaBoostClassifier.
 - Updated `src/lib/KafeMACHINE/funciones.py` — factory function `ada_boost_classifier()` with check_sig
 - Updated `tests/test_KafeMACHINE.py` — added "boosting" to SUBDIRS
 - Created 6 fixture tests under `tests/KafeMACHINE/boosting/`:

@@ -1,32 +1,36 @@
-"""Función de pérdida Binary Cross Entropy."""
-from lib.KafeMATH.funciones import log
+"""Binary Cross Entropy loss function."""
+from typing import cast
+
 from lib.KafeGESHA.losses.loss import LossFunction
+from lib.KafeMATH.functions import log
 
 
 class BinaryCrossEntropy(LossFunction):
     """
-    BCE robusta:
-    • Clippea las predicciones al rango (ε, 1-ε).
-    • Acepta probabilidad escalar o lista [probabilidad].
+    Robust BCE:
+    • Clip the predictions to the range (ε, 1-ε).
+    • Accepts scalar or list probability [probability].
     """
 
     def __init__(self, epsilon: float = 1e-8):
         self.epsilon = epsilon
 
-    def _as_scalar(self, yp):
+    def _as_scalar(
+        self, yp: int | float | list[int | float]
+    ) -> int | float | list[int | float]:
         """
-        Convierte yp a escalar si es [escala].
-        Mantiene float si ya lo es.
+        Convert yp to scalar if it is [scale].
+        Maintains float if it already is.
         """
         return yp[0] if isinstance(yp, list) and len(yp) == 1 else yp
 
-    def _clip(self, p):
-        p = self._as_scalar(p)
+    def _clip(self, p: int | float | list[int | float]) -> float:
+        p = cast(float, self._as_scalar(p))
         return max(self.epsilon, min(1.0 - self.epsilon, p))
 
     def compute(self, y_true, y_pred):
         loss = []
-        for yt, yp in zip(y_true, y_pred):
+        for yt, yp in zip(y_true, y_pred, strict=False):
             yp_c = self._clip(yp)
             term = -(yt * log(yp_c) + (1 - yt) * log(1 - yp_c))
             loss.append(term)
@@ -34,7 +38,7 @@ class BinaryCrossEntropy(LossFunction):
 
     def derivative(self, y_true, y_pred):
         grads = []
-        for yt, yp in zip(y_true, y_pred):
+        for yt, yp in zip(y_true, y_pred, strict=False):
             yp_c = self._clip(yp)
             grad = (yp_c - yt) / (yp_c * (1 - yp_c) + self.epsilon)
             grads.append(grad)

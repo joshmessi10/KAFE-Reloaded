@@ -10,89 +10,89 @@ ML preprocessing / feature selection (supervised, wrapper method)
 
 ## Description
 
-Recursive Feature Elimination (RFE) es un método de selección de features que entrena un modelo repetidamente y elimina iterativamente la feature menos importante hasta alcanzar el número deseado de features. A diferencia de VarianceThreshold, RFE considera la relación de cada feature con el target usando un modelo de aprendizaje.
+Recursive Feature Elimination (RFE) is a feature-selection method that repeatedly trains a model and removes the least important feature until the desired number of features remains. Unlike `VarianceThreshold`, RFE uses a learning model to consider each feature's relationship to the target.
 
 ## Mathematical Foundation
 
-RFE es un **wrapper method** que utiliza un estimador base para evaluar la importancia de features:
+RFE is a **wrapper method** that uses a base estimator to evaluate feature importance:
 
-1. Entrenar el estimador con todas las $d$ features activas
-2. Calcular importancia de cada feature: $\text{importance}_j = |w_j|$ para modelos lineales (o `feature_importances_` para árboles)
-3. Encontrar la feature con menor importancia: $j^* = \arg\min_j \text{importance}_j$
-4. Eliminar $j^*$ y asignarle el rank actual
-5. Repetir hasta tener $k$ features
+1. Fit the estimator with all $d$ active features.
+2. Calculate each feature's importance: $\text{importance}_j = |w_j|$ for linear models or `feature_importances_` for trees.
+3. Find the least important feature: $j^* = \arg\min_j \text{importance}_j$.
+4. Remove $j^*$ and assign it the current rank.
+5. Repeat until $k$ features remain.
 
-**Ranking**: Las features eliminadas primero reciben rank alto (menos importantes). Las supervivientes reciben rank 1.
+**Ranking**: Features removed earlier receive higher ranks (less important). The surviving features receive rank 1.
 
-- **Time Complexity**: $O(d \cdot T_{\text{estimator}} \cdot (d - k))$ donde $T_{\text{estimator}}$ es el tiempo de entrenamiento del modelo base
-- **Space Complexity**: $O(d)$ para ranking y soporte
+- **Time Complexity**: $O(d \cdot T_{\text{estimator}} \cdot (d - k))$, where $T_{\text{estimator}}$ is the training time of the base model.
+- **Space Complexity**: $O(d)$ for ranks and the support mask.
 
-**Complejidad total**: RFE entrena el modelo $(d - k)$ veces, lo que puede ser costoso para modelos complejos.
+**Total cost**: RFE trains the model $(d - k)$ times, which may be expensive for complex models.
 
 ## Step-by-Step Algorithm
 
-1. **fit(X, y)**: Iniciar con todas las $d$ features activas
-2. **Para cada iteración**:
-   a. Entrenar el estimador en las features activas
-   b. Calcular importancia de cada feature activa
-   c. Eliminar la feature con menor importancia
-   d. Asignarle un rank decreciente
-3. **Resultado**: Las $k$ features supervivientes reciben rank 1, el resto rank descendente
-4. **transform(X)**: Seleccionar solo las columnas con rank 1
+1. **`fit(X, y)`**: Start with all $d$ features active.
+2. **For each iteration**:
+   a. Fit the estimator using the active features.
+   b. Calculate the importance of each active feature.
+   c. Remove the least important feature.
+   d. Assign it the next rank.
+3. **Result**: The $k$ surviving features receive rank 1; the rest receive progressively higher ranks.
+4. **`transform(X)`**: Select only columns whose rank is 1.
 
 ## Motivation
 
-Los métodos filter (como VarianzaThreshold) evalúan features de forma independiente, ignorando interacciones. Los wrappers como RFE usan un modelo para evaluar el impacto real de cada feature en la predicción, capturando interacciones y redundancia que los métodos filter no detectan.
+Filter methods such as `VarianceThreshold` evaluate features independently and ignore interactions. Wrapper methods such as RFE use a model to evaluate each feature's effect on prediction, capturing interactions and redundancy that filter methods may miss.
 
-RFE es el wrapper method más clásico y ampliamente usado. Fue propuesto por Guyon et al. (2002) para selección de genes en problemas de cancerología.
+RFE is a widely used wrapper method. Guyon et al. (2002) proposed it for gene selection in cancer classification.
 
 ## Advantages
 
-- **Considera la relación con el target**: Usa un modelo supervisado para evaluar importancia
-- **Detecta redundancia**: Si dos features son redundantes, RFE puede eliminar una
-- **Wrapper method**: La evaluación es directamente relevante para el modelo final
-- **Flexible**: Funciona con cualquier modelo que tenga `coef_` o `feature_importances_`
-- **Ranking completo**: Produce un ranking de todas las features, no solo selección binaria
+- **Considers the target relationship**: Uses a supervised model to evaluate importance.
+- **Detects redundancy**: Can remove one of two redundant features.
+- **Model-specific evaluation**: The selection is directly relevant to the estimator.
+- **Flexible**: Works with models that expose `coef_` or `feature_importances_`.
+- **Complete ranking**: Ranks all features instead of returning only a binary selection.
 
 ## Limitations
 
-- **Requiere un modelo**: Necesita un estimador base para evaluar importancia
-- **Costoso computacionalmente**: Entrena el modelo $(d - k)$ veces
-- **Inestable**: Pequeños cambios en los datos pueden cambiar el ranking
-- **Greedy**: La eliminación es irreversible — no reconsidera features eliminadas
-- **Sesgo del modelo**: La selección depende del modelo base elegido
+- **Requires a model**: A base estimator is needed to evaluate importance.
+- **Computationally expensive**: Fits the model $(d - k)$ times.
+- **Unstable**: Small data changes may alter the ranking.
+- **Greedy**: Removal is irreversible; eliminated features are not reconsidered.
+- **Model bias**: Selection depends on the chosen base estimator.
 
 ## When to Use
 
-- Cuando se necesita seleccionar un subconjunto óptimo de features para un modelo específico
-- Cuando las features tienen interacciones relevantes
-- Cuando se dispene de tiempo computacional suficiente
-- Como paso previo a un modelo final (reducir dimensionalidad antes de entrenar)
+- When selecting a subset of features for a specific model.
+- When features have relevant interactions.
+- When sufficient computation time is available.
+- As a preprocessing step to reduce dimensionality before fitting a final model.
 
 ## When NOT to Use
 
-- Cuando el dataset es muy grande (muchas features × muestras)
-- Cuando el modelo base es muy costoso de entrenar
-- Cuando se necesita un método rápido de preselección (usar VarianzaThreshold primero)
-- Cuando no hay un modelo claro para evaluar importancia
+- When the dataset is very large (many features and samples).
+- When the base model is expensive to fit.
+- When a fast preselection method is needed (apply `VarianceThreshold` first).
+- When there is no suitable model for evaluating importance.
 
 ## Dependencies
 
 - BaseMachine
-- LinearRegression (estimador por defecto)
+- LinearRegression (default estimator)
 - PARDOS DataFrame (soporte DataFrames)
 
 ## Related Concepts
 
-- variance-threshold (método filter complementario, no supervisado)
-- lasso-regression (selección de features via regularización L1)
-- pipeline (encadenar RFE con otros pasos)
-- decision-tree (alternativa para feature_importances_)
-- random-forest (alternativa para feature_importances_)
+- variance-threshold (complementary unsupervised filter method)
+- lasso-regression (feature selection through L1 regularization)
+- pipeline (chain RFE with other steps)
+- decision-tree (alternative estimator exposing `feature_importances_`)
+- random-forest (alternative estimator exposing `feature_importances_`)
 
 ## Relationship with KAFE
 
-En KAFE, RFE se implementa como un transformador de preprocessing que extiende BaseMachine. El factory `machine.recursive_feature_elimination(estimator, n_features)` crea una instancia. Por defecto usa LinearRegression como estimador. Soporta modelos con `coef_` (lineales) y `feature_importances_` (árboles). Produce un ranking completo que permite al usuario elegir cuántas features conservar.
+In KAFE, RFE is implemented as a preprocessing transformer that extends `BaseMachine`. The factory `machine.recursive_feature_elimination(estimator, n_features)` creates an instance. It uses `LinearRegression` as the default estimator and supports models with `coef_` (linear models) or `feature_importances_` (trees). It produces a complete ranking so users can choose how many features to retain.
 
 ## Usage Examples
 
@@ -106,13 +106,13 @@ List[List[FLOAT]] X = [[1.0, 0.5, 3.0, 0.1],
                         [5.0, 0.55, 15.0, 0.18]];
 List[FLOAT] y = [2.0, 4.0, 6.0, 8.0, 10.0];
 
--- Seleccionar las 2 mejores features
+-- Select the two top-ranked features
 MACHINE rfe = machine.recursive_feature_elimination(machine.linear_regression(), 2);
 rfe.fit(X, y);
 
-show(rfe.ranking_);          -- [1, 3, 1, 2] (features 0 y 2 son las mejores)
+show(rfe.ranking_);          -- [1, 3, 1, 2] (features 0 and 2 rank highest)
 show(rfe.selected_indices_); -- [0, 2]
-show(rfe.support_);          -- [true, false, true, false]
+show(rfe.support_);          -- [True, False, True, False]
 
 List[List[FLOAT]] X_new = rfe.transform(X);
 show(X_new);  -- [[1.0, 3.0], [2.0, 6.0], [3.0, 9.0], [4.0, 12.0], [5.0, 15.0]]
@@ -124,14 +124,14 @@ show(X_new);  -- [[1.0, 3.0], [2.0, 6.0], [3.0, 9.0], [4.0, 12.0], [5.0, 15.0]]
 
 ## Public API
 
-- `machine.recursive_feature_elimination(estimator, n_features)` — crea RFE con modelo y número de features (default: LinearRegression, 1)
-- `rfe.fit(X, y)` — entrena recursivamente y selecciona features
-- `rfe.transform(X)` — selecciona solo las features elegidas
-- `rfe.fit_transform(X, y)` — fit + transform
-- `rfe.selected_indices_` — índices de features seleccionadas
-- `rfe.ranking_` — ranking de importancia (1 = más importante)
-- `rfe.support_` — mascara booleana de features seleccionadas
-- `rfe.n_features_in_` — número de features de entrada
+- `machine.recursive_feature_elimination(estimator, n_features)` — creates RFE with an estimator and feature count (defaults: `LinearRegression`, 1).
+- `rfe.fit(X, y)` — performs recursive fitting and feature selection.
+- `rfe.transform(X)` — selects the chosen features.
+- `rfe.fit_transform(X, y)` — fits the selector and transforms the data.
+- `rfe.selected_indices_` — indices of the selected features.
+- `rfe.ranking_` — feature-importance ranking (1 is most important).
+- `rfe.support_` — Boolean mask of selected features.
+- `rfe.n_features_in_` — number of input features.
 
 ## References
 

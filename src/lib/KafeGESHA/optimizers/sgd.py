@@ -1,6 +1,8 @@
-"""Optimizadores SGD y RMSprop."""
-from lib.KafeMATH.funciones import pow_, sqrt
+"""SGD and RMSprop optimizers."""
+from typing import cast
+
 from lib.KafeGESHA.optimizers.optimizer import Optimizer
+from lib.KafeMATH.functions import pow_, sqrt
 
 
 class SGD(Optimizer):
@@ -8,7 +10,7 @@ class SGD(Optimizer):
         self.lr = lr
 
     def step(self, params, grads):
-        return [p - self.lr * g for p, g in zip(params, grads)]
+        return [p - self.lr * g for p, g in zip(params, grads, strict=False)]
 
 
 class RMSprop(Optimizer):
@@ -16,14 +18,15 @@ class RMSprop(Optimizer):
         self.lr = lr
         self.rho = rho
         self.epsilon = epsilon
-        self.cache = None
+        self.cache: list[float] | None = None
 
     def step(self, params, grads):
         if self.cache is None:
             self.cache = [0 for _ in grads]
+        cache = cast(list[float], self.cache)
         new_params = []
         for i in range(len(params)):
-            self.cache[i] = self.rho * self.cache[i] + (1 - self.rho) * pow_(grads[i], 2)
-            update = self.lr * grads[i] / (sqrt(self.cache[i]) + self.epsilon)
+            cache[i] = self.rho * cache[i] + (1 - self.rho) * pow_(grads[i], 2)
+            update = self.lr * grads[i] / (sqrt(cache[i]) + self.epsilon)
             new_params.append(params[i] - update)
         return new_params

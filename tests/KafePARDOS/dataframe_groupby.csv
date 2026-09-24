@@ -1,6 +1,6 @@
-id,fecha,evento
-1,2025-01-15,Reunión
-2,2025-02-28,Lanzamiento
-3,2025-03-10,Entrega
-4,2025-04-05,Capacitación
-5,2025-05-20,Conferencia
+id,date,event
+1,2025-01-15,Meeting
+2,2025-02-28,Launch
+3,2025-03-10,Delivery
+4,2025-04-05,Training
+5,2025-05-20,Conference

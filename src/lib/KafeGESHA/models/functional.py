@@ -1,9 +1,9 @@
-"""Modelo Functional — grafo DAG de capas.
+"""Functional Model — layered DAG graph.
 
-La API Functional permite definir modelos como grafos dirigidos acíclicos (DAG),
-habilitando arquitecturas no lineales como skip-connections y múltiples salidas.
+The Functional API allows you to define models as directed acyclic graphs (DAGs),
+enabling non-linear architectures such as skip-connections and multiple outputs.
 
-Uso básico (grafo lineal):
+Basic usage (linear graph):
 
     inputs = Input(shape=(784,))
     x = Dense(128)(inputs)
@@ -12,37 +12,40 @@ Uso básico (grafo lineal):
     outputs = Dense(10)(x)
     model = Functional(inputs=inputs, outputs=outputs)
 
-Uso con skip-connection (dos ramas + merge):
+Usage with skip-connection (two branches + merge):
 
     inputs = Input(shape=(64,))
     branch_a = Dense(32)(inputs)
     branch_a = ReLULayer()(branch_a)
     branch_b = Dense(32)(inputs)
     branch_b = ReLULayer()(branch_b)
-    merged = Add()([branch_a, branch_b])   # capa de merge
+    merged = Add())([branch_a, branch_b]) # merge layer
     outputs = Dense(10)(merged)
     model = Functional(inputs=inputs, outputs=outputs)
 
-Internamente el modelo:
-1. Recorre el grafo desde output hacia input (BFS inverso).
-2. Construye el orden topológico correcto.
-3. En forward: recorre en orden topológico, cacheando salidas por nodo.
-4. En backward: recorre en orden inverso, propagando gradientes.
+Internally the model:
+1. Traverse the graph from output to input (inverse BFS).
+2. Build the correct topological order.
+3. In forward: it goes through in topological order, caching outputs per node.
+4. In backward: runs in reverse order, propagating gradients.
 """
+from typing import cast
+
 from lib.KafeGESHA.core.model import Model
-from lib.KafeGESHA.core.node import Node, InputNode
+from lib.KafeGESHA.core.node import InputNode, Node
 from lib.KafeGESHA.layers.input_layer import Input
+from lib.KafeGESHA.optimizers.optimizer import Optimizer
 
 
 class Add:
-    """Capa de merge que suma element-wise las salidas de múltiples ramas.
+    """Merge layer that sums element-wise the outputs of multiple branches.
 
-    Usada en la API Functional para combinar dos o más ramas:
+    Used in the Functional API to combine two or more branches:
 
         merged = Add().connect([branch_a, branch_b])
 
-    En backward distribuye el gradiente a todas las ramas de entrada
-    (el gradiente de la suma es 1 para cada rama).
+    In backward it distributes the gradient to all input branches
+    (the gradient of the sum is 1 for each branch).
     """
 
     def __init__(self):
@@ -52,13 +55,13 @@ class Add:
         self._output_node = None
 
     def connect(self, input_nodes):
-        """Crea un nodo Add con múltiples entradas.
+        """Create an Add node with multiple entries.
 
         Args:
-            input_nodes: Lista de Node simbólicos a sumar.
+            input_nodes: List of symbolic Nodes to add.
 
         Returns:
-            Node simbólico de salida.
+            Symbolic output node.
         """
         if not isinstance(input_nodes, list):
             input_nodes = [input_nodes]
@@ -67,17 +70,17 @@ class Add:
         return output_node
 
     def forward(self, inputs):
-        """inputs: lista de vectores a sumar element-wise."""
+        """inputs: list of vectors to add element-wise."""
         self._last_inputs = [v[:] for v in inputs]
         n = len(inputs[0])
         result = [sum(inp[i] for inp in inputs) for i in range(n)]
         return result
 
     def backward(self, output_error, learning_rate, regularization_lambda=None):
-        """Distribuye el gradiente a todas las ramas (gradiente de la suma = 1)."""
+        """Distributes the gradient to all branches (sum gradient = 1)."""
         if not isinstance(output_error, list):
             output_error = [output_error]
-        # Devuelve el mismo gradiente para cada rama de entrada
+        # Returns the same gradient for each input branch
         n_inputs = len(self._last_inputs) if self._last_inputs else 1
         return [output_error[:] for _ in range(n_inputs)]
 
@@ -95,32 +98,32 @@ class Add:
 
 
 class Functional(Model):
-    """Modelo basado en grafo DAG de capas.
+    """Model based on layered DAG graph.
 
-    Soporta:
-    - Grafos lineales (equivalente a Sequential).
-    - Skip-connections simples (2 ramas + Add).
-    - Múltiples entradas y salidas (estructura preparada).
+    Supports:
+    - Linear graphs (equivalent to Sequential).
+    - Simple skip connections (2 branches + Add).
+    - Multiple inputs and outputs (prepared structure).
 
-    Internamente construye la topología mediante topological sort (BFS
-    desde los nodos de salida hacia los de entrada).
+    Internally builds the topology using topological sort (BFS
+    from the output nodes to the input nodes).
 
     Attributes:
-        _input_nodes: Lista de InputNode del grafo.
-        _output_nodes: Lista de Node de salida del grafo.
-        _exec_order: Lista de Node en orden topológico de ejecución.
+        _input_nodes: List of InputNodes of the graph.
+        _output_nodes: Graph output Node list.
+        _exec_order: List of Nodes in topological order of execution.
     """
 
     def __init__(self, inputs=None, outputs=None):
-        """Inicializa el modelo Functional.
+        """Initializes the Functional model.
 
         Args:
-            inputs: Input simbólico o lista de Input.
-            outputs: Node simbólico de salida o lista de Node.
+            inputs: Symbolic input or Input list.
+            outputs: Output symbolic Node or Node list.
         """
         super().__init__()
 
-        # Normalizar a listas
+        # Normalize to lists
         if isinstance(inputs, Input):
             self._inputs = [inputs]
         elif isinstance(inputs, list):
@@ -135,10 +138,10 @@ class Functional(Model):
         else:
             self._output_nodes = []
 
-        # Obtener InputNodes desde los objetos Input
+        # Get InputNodes from Input objects
         self._input_nodes = [inp.node for inp in self._inputs]
 
-        # Construir orden de ejecución
+        # Build execution order
         self._exec_order = self._topological_sort()
 
     # ------------------------------------------------------------------
@@ -146,16 +149,16 @@ class Functional(Model):
     # ------------------------------------------------------------------
 
     def _topological_sort(self):
-        """Construye el orden topológico del grafo (Kahn's algorithm).
+        """Build the topological order of the graph (Kahn's algorithm).
 
-        Recorre desde los nodos de salida hacia los nodos de entrada
-        construyendo la lista de dependencias, luego ordena de forma
-        que cada nodo aparece después de todos sus inbound_nodes.
+        Walk from the exit nodes to the entry nodes
+        building the list of dependencies, then ordering
+        that each node appears after all its inbound_nodes.
 
         Returns:
-            Lista de Node en orden de ejecución (input → output).
+            List of Nodes in order of execution (input → output).
         """
-        # Recopilar todos los nodos del grafo mediante BFS desde outputs
+        # Collect all nodes in the graph using BFS from outputs
         visited = set()
         all_nodes = []
         queue = list(self._output_nodes)
@@ -171,7 +174,7 @@ class Functional(Model):
                 if id(inbound) not in visited:
                     queue.append(inbound)
 
-        # Construir mapa de in-degrees para Kahn's algorithm
+        # Build in-degrees map for Kahn's algorithm
         in_degree = {id(n): 0 for n in all_nodes}
         children = {id(n): [] for n in all_nodes}
         node_by_id = {id(n): n for n in all_nodes}
@@ -182,7 +185,7 @@ class Functional(Model):
                     in_degree[id(node)] += 1
                     children[id(inbound)].append(id(node))
 
-        # Kahn's algorithm: procesar nodos con in-degree 0 primero
+        # Kahn's algorithm: process nodes with in-degree 0 first
         zero_q = [nid for nid, deg in in_degree.items() if deg == 0]
         topo_order = []
 
@@ -197,36 +200,36 @@ class Functional(Model):
         return topo_order
 
     # ------------------------------------------------------------------
-    # Interfaz abstracta Model
+    # Abstract Model interface
     # ------------------------------------------------------------------
 
     def forward(self, x):
-        """Propagación hacia adelante recorriendo el grafo en orden topológico.
+        """Forward propagation traversing the graph in topological order.
 
         Args:
-            x: Entrada del modelo (vector o lista de vectores para multi-input).
+            x: Model input (vector or list of vectors for multi-input).
 
         Returns:
-            Salida del modelo (vector del nodo de salida).
+            Model output (output node vector).
         """
-        # Limpiar cachés
+        # Clear caches
         for node in self._exec_order:
             node.clear_cache()
 
-        # Asignar entrada(s) a los InputNodes
+        # Assign input(s) to InputNodes
         if isinstance(x, list) and self._input_nodes and isinstance(x[0], list):
-            # Múltiples inputs
-            for inp_node, xi in zip(self._input_nodes, x):
+            # Multiple inputs
+            for inp_node, xi in zip(self._input_nodes, x, strict=False):
                 inp_node._output_cache = xi
         else:
-            # Un solo input
+            # A single input
             if self._input_nodes:
                 self._input_nodes[0]._output_cache = x
 
-        # Ejecutar en orden topológico
+        # Run in topological order
         for node in self._exec_order:
             if isinstance(node, InputNode):
-                continue  # ya tiene _output_cache asignado
+                continue  # _output_cache is already assigned
 
             layer = node.layer
             inbound = node.inbound_nodes
@@ -234,50 +237,50 @@ class Functional(Model):
             if layer is None:
                 continue
 
-            # Recoger inputs desde los nodos anteriores
+            # Collect inputs from previous nodes
             if isinstance(layer, Add):
-                # Capa de merge: pasa lista de salidas de las ramas
+                # Merge layer: list of branch outputs
                 inputs_list = [ib._output_cache for ib in inbound]
                 node._output_cache = layer.forward(inputs_list)
             elif len(inbound) == 1:
                 node._output_cache = layer.forward(inbound[0]._output_cache)
             else:
-                # Multi-input genérico: concatenar (para extensión futura)
+                # Generic multi-input: concatenate (for future extension)
                 combined = []
                 for ib in inbound:
                     combined.extend(ib._output_cache)
                 node._output_cache = layer.forward(combined)
 
-        # Salida del último nodo de salida
+        # Exit from the last exit node
         if len(self._output_nodes) == 1:
             return self._output_nodes[0]._output_cache
         return [n._output_cache for n in self._output_nodes]
 
     def backward(self, grad):
-        """Propagación hacia atrás en orden topológico inverso.
+        """Backward propagation in reverse topological order.
 
-        Distribuye los gradientes por el grafo. Para nodos con múltiples
-        salidas (skip-connections), acumula gradientes.
+        Distribute the gradients throughout the graph. For nodes with multiple
+        outputs (skip connections), accumulate their gradients.
 
         Args:
-            grad: Gradiente de la loss respecto a la salida del modelo.
+            grad: Gradient of the loss with respect to the model output.
         """
         if not isinstance(grad, list):
             grad = [grad]
 
-        # Mapa nodo_id → gradiente acumulado
+        # Map node ID to accumulated gradient
         grad_map = {}
 
-        # Inicializar gradientes en los nodos de salida
+        # Initialize gradients at output nodes
         if len(self._output_nodes) == 1:
             grad_map[id(self._output_nodes[0])] = grad
         else:
-            for out_node, g in zip(self._output_nodes, grad):
+            for out_node, g in zip(self._output_nodes, grad, strict=False):
                 grad_map[id(out_node)] = g if isinstance(g, list) else [g]
 
-        lr = self._optimizer_obj.lr
+        lr = cast(Optimizer, self._optimizer_obj).lr
 
-        # Recorrer en orden inverso
+        # Go through in reverse order
         for node in reversed(self._exec_order):
             if isinstance(node, InputNode) or node.layer is None:
                 continue
@@ -291,12 +294,12 @@ class Functional(Model):
             inbound = node.inbound_nodes
 
             if isinstance(layer, Add):
-                # Add distribuye el gradiente a cada rama
+                # Add distributes the gradient to each branch
                 branch_grads = layer.backward(node_grad, learning_rate=lr)
-                for ib, bg in zip(inbound, branch_grads):
+                for ib, bg in zip(inbound, branch_grads, strict=False):
                     ib_id = id(ib)
                     if ib_id in grad_map:
-                        # Acumular (para nodos con múltiples consumidores)
+                        # Accumulate (for nodes with multiple consumers)
                         grad_map[ib_id] = [
                             grad_map[ib_id][i] + bg[i]
                             for i in range(len(bg))
@@ -304,7 +307,7 @@ class Functional(Model):
                     else:
                         grad_map[ib_id] = bg
             else:
-                # Capa estándar
+                # Standard layer
                 in_grad = layer.backward(node_grad, learning_rate=lr)
                 for ib in inbound:
                     ib_id = id(ib)
@@ -319,7 +322,7 @@ class Functional(Model):
         return grad_map
 
     def parameters(self):
-        """Devuelve lista plana de todos los parámetros entrenables."""
+        """Returns a flat list of all trainable parameters."""
         params = []
         seen = set()
         for node in self._exec_order:
@@ -329,7 +332,7 @@ class Functional(Model):
         return params
 
     def get_layers(self):
-        """Devuelve las capas en orden topológico (sin duplicados)."""
+        """Returns the layers in topological order (no duplicates)."""
         layers = []
         seen = set()
         for node in self._exec_order:
@@ -343,7 +346,7 @@ class Functional(Model):
     # ------------------------------------------------------------------
 
     def summary(self):
-        """Imprime el resumen del grafo Functional."""
+        """Prints the summary of the Functional network."""
         print("=== Functional ===")
         for i, node in enumerate(self._exec_order, 1):
             if isinstance(node, InputNode):
@@ -352,7 +355,7 @@ class Functional(Model):
                 print(f"  [{i}] ", end="")
                 node.layer.summary()
         total = len(self.parameters())
-        print(f"  Parámetros totales: {total}")
+        print(f"  Total parameters: {total}")
         print("==================")
 
     def __repr__(self):

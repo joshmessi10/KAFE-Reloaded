@@ -1,4 +1,4 @@
--- Modificar un string da error
+-- Modifying a string causes an error
 STR a = "asdf";
 
 a[0] = 'd';

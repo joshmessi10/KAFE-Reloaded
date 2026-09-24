@@ -10,52 +10,52 @@ ML preprocessing
 
 ## Description
 
-MinMaxScaler escala cada feature a un rango fijo, por defecto [0, 1]. Aplica la transformación lineal: $X_{norm} = (X - X_{min}) / (X_{max} - X_{min})$.
+`MinMaxScaler` scales each feature to a fixed range, [0, 1] by default. It applies the linear transformation $X_{norm} = (X - X_{min}) / (X_{max} - X_{min})$.
 
 ## Mathematical Foundation
 
-Para cada feature $j$:
+For each feature $j$:
 
 $$X_{ij}^{norm} = \frac{X_{ij} - \min(X_j)}{\max(X_j) - \min(X_j)}$$
 
-Donde $\min(X_j)$ y $\max(X_j)$ son el mínimo y máximo de la feature $j$ en el conjunto de entrenamiento.
+Here, $\min(X_j)$ and $\max(X_j)$ are the minimum and maximum of feature $j$ in the training set.
 
-- **Time Complexity**: $O(n \cdot d)$ para fit, $O(n \cdot d)$ para transform
-- **Space Complexity**: $O(d)$ para almacenar min y max por feature
+- **Time Complexity**: $O(n \cdot d)$ for `fit` and $O(n \cdot d)$ for `transform`.
+- **Space Complexity**: $O(d)$ to store the minimum and maximum of each feature.
 
 ## Step-by-Step Algorithm
 
-1. **fit(X)**: Para cada feature $j$, calcular $\min(X_j)$ y $\max(X_j)$
-2. **transform(X)**: Para cada feature $j$, aplicar $(X_j - \min_j) / (\max_j - \min_j)$
-3. **inverse_transform(X_norm)**: Para cada feature $j$, aplicar $X_j = X_j^{norm} \cdot (\max_j - \min_j) + \min_j$
+1. **`fit(X)`**: Calculate $\min(X_j)$ and $\max(X_j)$ for each feature $j$.
+2. **`transform(X)`**: Apply $(X_j - \min_j) / (\max_j - \min_j)$ to each feature.
+3. **`inverse_transform(X_norm)`**: Recover each feature using $X_j = X_j^{norm} \cdot (\max_j - \min_j) + \min_j$.
 
 ## Motivation
 
-MinMaxScaler es útil cuando se necesita que los datos estén en un rango fijo, como para redes neuronales que esperan entradas en [0, 1], o cuando la distribución de los datos no es gaussiana.
+`MinMaxScaler` is useful when data must fall within a fixed range, such as inputs expected by a neural network, or when the data distribution is not Gaussian.
 
 ## Advantages
 
-- Preserva la forma de la distribución original
-- Garantiza un rango exacto para los datos escalados
-- Inversión trivial (inverse_transform)
-- Rápido: operaciones element-wise
+- Preserves the shape of the original distribution.
+- Guarantees an exact range for the scaled data.
+- Supports straightforward inversion with `inverse_transform`.
+- Fast element-wise operations.
 
 ## Limitations
 
-- Sensible a outliers (un outlier comprime todos los demás valores)
-- No centraliza los datos (media no es 0)
-- No es robusto a cambios en el rango de datos
+- Sensitive to outliers, which can compress all other values.
+- Does not center the data, so the mean is not necessarily zero.
+- Sensitive to changes in the data range.
 
 ## When to Use
 
-- Cuando se necesita un rango fijo [0, 1] o [-1, 1]
-- Cuando la distribución no es gaussiana
-- Para redes neuronales con activaciones sigmoidales
+- When a fixed range such as [0, 1] or [-1, 1] is required.
+- When the distribution is not Gaussian.
+- For neural networks with sigmoid activations.
 
 ## When NOT to Use
 
-- Cuando hay outliers significativos (usar StandardScaler o RobustScaler)
-- Cuando se necesita media 0 y varianza 1
+- When significant outliers are present (consider `StandardScaler` or `RobustScaler`).
+- When zero mean and unit variance are required.
 
 ## Dependencies
 
@@ -68,7 +68,7 @@ MinMaxScaler es útil cuando se necesita que los datos estén en un rango fijo, 
 
 ## Relationship with KAFE
 
-En KAFE, MinMaxScaler se implementa como una clase que extiende BaseMachine. El factory `machine.minmax_scaler()` crea una instancia sin parámetros.
+In KAFE, `MinMaxScaler` is implemented as a class that extends `BaseMachine`. The factory `machine.minmax_scaler()` creates an instance without parameters.
 
 ## Usage Examples
 
@@ -77,10 +77,10 @@ import machine;
 
 MACHINE mms = machine.minmax_scaler();
 List[List[FLOAT]] scaled = mms.fit_transform(data);
-show(scaled);  -- valores en [0, 1]
+show(scaled);  -- values in [0, 1]
 
 List[List[FLOAT]] original = mms.inverse_transform(scaled);
-show(original);  -- valores originales
+show(original);  -- original values
 ```
 
 ## Implementation Location
@@ -89,14 +89,14 @@ show(original);  -- valores originales
 
 ## Public API
 
-- `machine.minmax_scaler()` — crea MinMaxScaler
-- `mms.fit(X)` — calcula min y max
-- `mms.transform(X)` — escala a [0, 1]
-- `mms.fit_transform(X)` — fit + transform
-- `mms.inverse_transform(X)` — revierte el escalado
-- `mms.data_min_` — mínimo de cada feature
-- `mms.data_max_` — máximo de cada feature
-- `mms.scale_` — escala de cada feature
+- `machine.minmax_scaler()` — creates a `MinMaxScaler` instance.
+- `mms.fit(X)` — computes the minimum and maximum.
+- `mms.transform(X)` — scales features to [0, 1].
+- `mms.fit_transform(X)` — fits the scaler and transforms the data.
+- `mms.inverse_transform(X)` — reverses the scaling.
+- `mms.data_min_` — minimum for each feature.
+- `mms.data_max_` — maximum for each feature.
+- `mms.scale_` — scale for each feature.
 
 ## References
 

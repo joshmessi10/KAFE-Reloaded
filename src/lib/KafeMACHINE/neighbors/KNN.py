@@ -1,9 +1,11 @@
 import copy
-from lib.KafeMATH.funciones import sqrt
+
 from global_utils import check_sig
-from TypeUtils import vector_numeros_t, matriz_numeros_t, entero_t, pardos_t
-from ..metrics import accuracy_score, r2_score
+from lib.KafeMATH.functions import sqrt
+from TypeUtils import numeric_matrix_types, numeric_vector_types, pardos_type
+
 from ..BaseMachine import BaseMachine
+from ..metrics import accuracy_score, r2_score
 
 
 class KNN(BaseMachine):
@@ -20,9 +22,9 @@ class KNN(BaseMachine):
             raise Exception("KNN: k cannot be greater than number of training samples")
 
     def _euclidean_distance(self, a, b):
-        return sqrt(sum((x - y) ** 2 for x, y in zip(a, b)))
+        return sqrt(sum((x - y) ** 2 for x, y in zip(a, b, strict=False)))
 
-    @check_sig([3], [pardos_t] + vector_numeros_t + matriz_numeros_t, vector_numeros_t, is_method=True)
+    @check_sig([3], [pardos_type] + numeric_vector_types + numeric_matrix_types, numeric_vector_types, is_method=True)
     def fit(self, X, y):
         matrix, cols, is_df = self._unwrap_data(X)
         matrix = self._validate_matrix_shape(matrix)
@@ -37,7 +39,7 @@ class KNN(BaseMachine):
         self._is_fitted = True
         return self
 
-    @check_sig([2], vector_numeros_t + matriz_numeros_t, is_method=True)
+    @check_sig([2], numeric_vector_types + numeric_matrix_types, is_method=True)
     def predict(self, X):
         self._check_fitted("predict")
         if not X:
@@ -74,7 +76,7 @@ class KNN(BaseMachine):
                 return self.y_train[i]
         return tied[0]
 
-    @check_sig([2], vector_numeros_t + matriz_numeros_t, is_method=True)
+    @check_sig([2], numeric_vector_types + numeric_matrix_types, is_method=True)
     def predict_proba(self, X):
         self._check_fitted("predict_proba")
         if not X:
@@ -121,22 +123,22 @@ class KNN(BaseMachine):
 
 class KNNRegressor(BaseMachine):
     """
-    KNN Regressor — K-Nearest Neighbors para regresión.
+    KNN Regressor — K-Nearest Neighbors for regression.
 
-    Predice el valor promedio de los k vecinos más cercanos.
+    Predict the average value of the k nearest neighbors.
 
-    Fundamento matemático:
-        1. Calcular distancia a todos los puntos de entrenamiento
-        2. Seleccionar los k vecinos más cercanos
-        3. Predecir: ŷ = (1/k) * Σ y_i (promedio de vecinos)
+    Mathematical foundation:
+        1. Calculate distance to all training points
+        2. Select the k nearest neighbors
+        3. Predict: ŷ = (1/k) * Σ y_i (average of neighbors)
 
-    Parámetros:
-        k: número de vecinos (default 5)
+    Parameters:
+        k: number of neighbors (default 5)
         weights: "uniform" o "distance" (default "uniform")
 
-    Atributos (después de fit):
-        X_train: datos de entrenamiento
-        y_train: etiquetas de entrenamiento
+    Attributes (after fit):
+        X_train: training data
+        y_train: training labels
     """
 
     def __init__(self, k=5, weights="uniform"):
@@ -156,12 +158,12 @@ class KNNRegressor(BaseMachine):
             raise Exception("KNNRegressor: k cannot be greater than number of training samples")
 
     def _euclidean_distance(self, a, b):
-        """Calcula la distancia euclidiana."""
-        return sqrt(sum((x - y) ** 2 for x, y in zip(a, b)))
+        """Calculate the Euclidean distance."""
+        return sqrt(sum((x - y) ** 2 for x, y in zip(a, b, strict=False)))
 
-    @check_sig([3], [pardos_t] + vector_numeros_t + matriz_numeros_t, vector_numeros_t, is_method=True)
+    @check_sig([3], [pardos_type] + numeric_vector_types + numeric_matrix_types, numeric_vector_types, is_method=True)
     def fit(self, X, y):
-        """Ajusta KNNRegressor (almacena datos de entrenamiento)."""
+        """Sets KNNRegressor (stores training data)."""
         matrix, cols, is_df = self._unwrap_data(X)
         matrix = self._validate_matrix_shape(matrix)
 
@@ -175,9 +177,9 @@ class KNNRegressor(BaseMachine):
         self._is_fitted = True
         return self
 
-    @check_sig([2], vector_numeros_t + matriz_numeros_t, is_method=True)
+    @check_sig([2], numeric_vector_types + numeric_matrix_types, is_method=True)
     def predict(self, X):
-        """Predice valores continuos para X."""
+        """Predict continuous values ​​for X."""
         self._check_fitted("predict")
         if not X:
             return []
@@ -193,7 +195,7 @@ class KNNRegressor(BaseMachine):
         return [self._predict_one(x) for x in X]
 
     def _predict_one(self, x):
-        """Predice para una sola muestra."""
+        """Predict for a single sample."""
         distances = [
             (self._euclidean_distance(x, x_train), i)
             for i, x_train in enumerate(self.X_train)
@@ -214,7 +216,7 @@ class KNNRegressor(BaseMachine):
             return weighted_sum / total_weight if total_weight > 0 else 0.0
 
     def score(self, X, y, metric=None):
-        """Score usando R² (default) o una métrica personalizada."""
+        """Score using R² (default) or a custom metric."""
         self._check_fitted("score")
         preds = self.predict(X)
         if metric is None:

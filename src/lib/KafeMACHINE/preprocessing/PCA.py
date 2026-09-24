@@ -1,7 +1,8 @@
-from lib.KafeMATH.funciones import sqrt, pow_, math_round
 from global_utils import check_sig
-from TypeUtils import pardos_t, entero_t, matriz_numeros_t
+from lib.KafeMATH.functions import math_round, pow_, sqrt
 from lib.KafePARDOS.DataFrame import DataFrame
+from TypeUtils import numeric_matrix_types, pardos_type
+
 from ..BaseMachine import BaseMachine
 
 
@@ -70,7 +71,7 @@ class PCA(BaseMachine):
         components = [[eigenvectors[i][j] for i in range(n_features)] for j in range(n_features)]
         return eigenvalues, components
 
-    @check_sig([2], [pardos_t] + matriz_numeros_t, is_method=True)
+    @check_sig([2], [pardos_type] + numeric_matrix_types, is_method=True)
     def fit(self, data):
         matrix, cols, is_df = self._unwrap_data(data)
 
@@ -111,7 +112,7 @@ class PCA(BaseMachine):
     def fit_transform(self, data):
         return self.fit(data).transform(data)
 
-    @check_sig([2], [pardos_t] + matriz_numeros_t, is_method=True)
+    @check_sig([2], [pardos_type] + numeric_matrix_types, is_method=True)
     def transform(self, data):
         self._check_fitted("transform")
         matrix, cols, is_df = self._unwrap_data(data)
@@ -136,7 +137,7 @@ class PCA(BaseMachine):
             return DataFrame(out_cols, transformed_data)
         return transformed_data
 
-    @check_sig([2], [pardos_t] + matriz_numeros_t, is_method=True)
+    @check_sig([2], [pardos_type] + numeric_matrix_types, is_method=True)
     def inverse_transform(self, data):
         self._check_fitted("inverse_transform")
         matrix, _, is_df = self._unwrap_data(data)

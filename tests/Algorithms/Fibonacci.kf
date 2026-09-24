@@ -6,7 +6,7 @@ drip fibonacci(n: INT) => INT:
 ;
 
 INT result = fibonacci(7);
-show("Fibonacci de 7:");
+show("Fibonacci of 7:");
 show(result);
 
 

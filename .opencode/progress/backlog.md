@@ -2,10 +2,15 @@
 
 Candidate items not yet on the roadmap. Add items here during Impact Analysis and planning sessions.
 
-## Machine Learning
+## Repository Policy Alignment — Remaining Deliverables
 
-- Gradient Boosting (ensemble method, combines weak learners sequentially)
-- SVM (Support Vector Machine, kernel methods)
+The policy baseline is integrated locally. The locked uv dependency/setup migration is implemented and locally validated on `build/uv-environment` (`f4e544a`), pushed, and verified by GitHub test CI at `b40965f` (485 passed). The interpreter subprocess quality implementation is complete on the user-approved `test/interpreter-quality-evidence` branch: 497 tests passed in 353.72s with 83.78% coverage and no warnings; independent review passed; commit `6e8edd5` was pushed and GitHub `Run Tests` passed at its exact SHA (run 127). On `refactor/english-repository`, Tasks 1–7 are complete: the 498-test suite passed at 83.78% coverage with no warnings, and the repository-wide English audit passed. See `.opencode/progress/repository-alignment.md` for the approved scope and status. Commits and pushes are authorized when needed. Do not create, rename, or switch branches without explicit authorization.
+
+- **Interpreter quality evidence (complete on `test/interpreter-quality-evidence`):** all 29 fixture launches in 15 test modules use the shared runner; 160 invalid fixtures have complete stderr sidecars and two have explicit stdout sidecars. The final full suite passed 497 tests in 353.72s with 83.78% coverage across 111 tracked Python source files and no warnings. Commit `6e8edd5` was pushed and GitHub `Run Tests` passed at its exact SHA (run 127). The workflow enforces the same 80% gate. Preserve CLI behavior and keep the three generated ANTLR files as the only coverage exclusions.
+- **Complete English migration:** Tasks 1–7 migrated and audited source, identifiers, tests, fixtures, documentation, routes, repository guidance, and project records; only the three approved archived artifacts were removed. The final full suite passed 498 tests at 83.78% coverage with no warnings.
+- **Python quality gates (implementation complete on `chore/python-quality-gates`):** The implementation and workflows are complete; the Task 9 plan gates final branch acceptance on CI for the resulting evidence-update SHA. The branch configures Ruff (`E4,E7,E9,F,B,I`), basedpyright in Python 3.10 basic mode with warnings failing, hidden-file codespell, `uv audit`, a tracked-Python suppression-comment check, and the locked subprocess-aware test/coverage gate. The existing test workflow enforces these gates after ANTLR generation; docs and Nix workflow boundaries are preserved. Local and hosted evidence is recorded in `.opencode/progress/repository-alignment.md`. At exact SHA `c23163de6fee34b8da7d9a25b4f2896b331c22e1`, hosted tests passed (503 tests, 83.86% coverage) and strict docs validation passed; the branch remains unmerged.
+
+## Machine Learning
 
 ## Deep Learning
 

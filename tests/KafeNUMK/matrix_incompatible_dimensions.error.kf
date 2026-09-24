@@ -1,4 +1,4 @@
--- Error Multiplicar Matrices
+-- Error: multiplying matrices
 import numk;
 
 List[List[INT]] A = [[1, 2], [3, 4]];

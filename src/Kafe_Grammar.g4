@@ -27,7 +27,7 @@ block
     : (stmt SEMI)*
     ;
 
-// ======================  LIBRERÍAS ======================
+// ======================  LIBRARIES ======================
 object
     : ID '.' ID LPAREN ( expr ( COMMA expr )* )? RPAREN    # objectFunctionCall
     | ID '.' ID                                            # objectConstant
@@ -50,7 +50,7 @@ indexing
     : (LBRACK expr RBRACK)+
     ;
 
-// ======================  FUNCIONES ======================
+// ======================  FUNCTIONS ======================
 functionDecl
     : DRIP ID '(' paramList? ')' ARROW typeDecl COLON block
     ;
@@ -65,7 +65,7 @@ paramDecl : ID COLON typeDecl   # simpleParam;
 functionParam: FUNC LPAREN paramList_typeDecl? RPAREN ARROW typeDecl;
 paramList_typeDecl : typeDecl (COMMA typeDecl)*;
 
- // Llamadas currificables:   f(args) (args)*
+ // Curryable calls:   f(args) (args)*
 functionCall
     : ID LPAREN argList? RPAREN (LPAREN argList? RPAREN)*
     ;
@@ -98,7 +98,7 @@ removeCall: REMOVE '(' expr ',' expr ')' ;
 lenCall: LEN '(' expr ')' ;
 
 
-// ======================  CONDICIONALES ======================
+// ======================  CONDITIONALS ======================
 ifElseExpr
     : IF LPAREN expr RPAREN COLON block (elifBranch)* (ELSE COLON block)?
     ;
@@ -106,7 +106,7 @@ elifBranch
     : ELIF LPAREN expr RPAREN COLON block
     ;
 
-// ======================  BUCLES ======================
+// ======================  LOOPS ======================
 whileLoop
     : 'while' LPAREN expr RPAREN COLON block
     ;
@@ -114,7 +114,7 @@ forLoop
     : 'for' LPAREN ID 'in' expr RPAREN COLON block
     ;
 
-// ======================  EXPRESIONES ======================
+// ======================  EXPRESSIONS ======================
 expr
     : logicExpr
     ;
@@ -138,8 +138,8 @@ powerExpr
     : unaryExpr (POW unaryExpr)*
     ;
 unaryExpr
-    : (SUB | NOT) unaryExpr    # unaryExpresion
-    | primaryExpr              # primaryExpresion
+    : (SUB | NOT) unaryExpr    # unaryExpression
+    | primaryExpr              # primaryExpression
     ;
 
 // ======================  PRIMARY EXPRESSIONS ======================
@@ -154,13 +154,13 @@ primaryExpr
     | FLOAT_CAST LPAREN expr RPAREN            # floatCastExpr
     | STR_CAST LPAREN expr RPAREN              # strCastExpr
     | BOOL_CAST LPAREN expr RPAREN             # boolCastExpr
-    | lambdaExpr                               # lambdaExpresion
+    | lambdaExpr                               # lambdaExpression
     | literal                                  # literalExpr
     | ID                                       # idExpr
     | LPAREN expr RPAREN                       # parenExpr
     ;
 
-// ======================  LITERALES ======================
+// ======================  LITERALS ======================
 literal
     : INT         # intLiteral
     | FLOAT       # floatLiteral
@@ -173,7 +173,7 @@ listLiteral
     : LBRACK (expr (COMMA expr)*)? RBRACK
     ;
 
-// ======================  TIPOS ======================
+// ======================  TYPES ======================
 typeDecl
     : INT_TYPE
     | FLOAT_TYPE

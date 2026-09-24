@@ -1,0 +1,19 @@
+-- 1. Higher-order function with an inline lambda
+drip apply_function(f: FUNC(INT) => INT, v: INT) => INT:
+    return f(v);
+;
+
+show(apply_function((x: INT) => x * x, 5));   -- 25
+
+-- 2. Store a lambda in a variable
+FUNC(INT) => INT inc = (n: INT) => n + 1;
+show(inc(9));                          -- 10
+
+
+-- 3. Lambda that returns another lambda (curried)
+drip fold2(op: FUNC(INT) => FUNC(INT) => INT, x: INT, y: INT) => INT:
+    return op(x)(y);
+;
+
+
+show(fold2((a: INT) => ((b: INT) => a - b))(10)(3));   -- 7

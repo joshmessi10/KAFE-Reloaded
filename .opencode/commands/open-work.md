@@ -12,7 +12,7 @@ Open a new work item. This is the start-of-work lifecycle step (the counterpart 
 
 1. Confirm the trigger: a new work item is starting.
 2. Verify `.opencode/progress/current.md` is not `Status: in_progress` (single active work item rule). If a work item is still active, finish or abort it (via `/close`) before opening a new one.
-3. Read `.opencode/progress/backlog.md` and `roadmap.md` to confirm priorities. Select the item to open, or accept a directly requested one and add it to the backlog if missing.
+3. Read `.opencode/progress/backlog.md` and `roadmap.md` to confirm priorities. For an existing repository-alignment workstream, also read `.opencode/progress/repository-alignment.md`. Select the item to open, or accept a directly requested one and add it to the backlog if missing. Check current user authorization before recording Git-operation limits; replace superseded task-specific restrictions with the latest authorization, and keep unobserved remote checks marked pending.
 4. Update `.opencode/progress/current.md`:
    - `Feature` — the new work item.
    - `Status` — `planned` or `in_progress`.

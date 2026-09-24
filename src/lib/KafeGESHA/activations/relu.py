@@ -1,4 +1,4 @@
-"""Función de activación ReLU."""
+"""ReLU activation function."""
 from lib.KafeGESHA.activations.activation import ActivationFunction
 
 

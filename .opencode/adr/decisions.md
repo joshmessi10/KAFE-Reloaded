@@ -30,11 +30,11 @@ Source of Truth precedence: **ADRs > Knowledge Layer > History > Progress**.
 
 - Significant changes must be traceable through ADRs, history, and the session log
 - AGENTS.md stays lean; detail lives in `.opencode/knowledge/`
-- Session memory files and bitácora must be updated on close
+- Session memory files and the session log must be updated when closing a session
 
 ---
 
-## ADR-0002: Roles como Subagentes OpenCode (SUPERSEDED)
+## ADR-0002: OpenCode Roles as Subagents (SUPERSEDED)
 
 - **Status**: superseded by ADR-0005
 - **Date**: 2026-08-03
@@ -42,15 +42,15 @@ Source of Truth precedence: **ADRs > Knowledge Layer > History > Progress**.
 
 ### Context (Original)
 
-AGENTS.md define cinco roles de ingeniería que originalmente fueron diferidos como subagentes porque el volumen de trabajo no justificaba la sobrecarga de orquestación.
+AGENTS.md defines five engineering roles that were initially deferred as subagents because the workload did not justify the orchestration overhead.
 
 ### Decision (Original)
 
-Mantener los cinco roles como responsabilidades documentadas y diferir su implementación.
+Keep the five roles as documented responsibilities and defer their implementation.
 
-### Decision (Actualizada — 2026-08-04)
+### Decision (Updated — 2026-08-04)
 
-Los cinco roles ahora están implementados como subagentes OpenCode en `.opencode/agents/`. Reemplazado por ADR-0005.
+The five roles are now implemented as OpenCode subagents in `.opencode/agents/`. Superseded by ADR-0005.
 
 ---
 
@@ -85,7 +85,7 @@ Use explicit local gates through commands instead of CI hooks:
 
 ---
 
-## ADR-0004: Session Lifecycle (Bitácora + `/close`)
+## ADR-0004: Session Lifecycle (Session Log + `/close`)
 
 - **Status**: accepted
 - **Date**: 2026-08-03
@@ -97,7 +97,7 @@ Without an end-of-session lifecycle, `current.md` accumulated state across sessi
 ### Decision
 
 Implement a session lifecycle with two mechanisms:
-- Append-only bitácora `.opencode/progress/session-log.md`
+- Append-only session log at `.opencode/progress/session-log.md`
 - `/close` command with hard gates
 
 ### Rationale
@@ -121,39 +121,39 @@ Implement a session lifecycle with two mechanisms:
 
 ### Context
 
-AGENTS.md define cinco roles de ingeniería que originalmente fueron diferidos como subagentes (ADR-0002). El sistema de ingeniería ha madurado y el volumen de trabajo justifica la implementación.
+AGENTS.md defines five engineering roles that were initially deferred as subagents (ADR-0002). The engineering system has matured, and the workload now justifies implementing them.
 
 ### Decision
 
-Implementar los cinco roles como subagentes OpenCode en `.opencode/agents/`:
+Implement the five roles as OpenCode subagents in `.opencode/agents/`:
 
-| Archivo | Modo | Responsabilidad |
+| File | Mode | Responsibility |
 |---------|------|-----------------|
-| `engineering-lead.md` | primary | Orquestador |
-| `architect.md` | subagent | Diseño + ADR |
-| `builder.md` | subagent | Implementación + tests |
-| `reviewer.md` | subagent | Quality gates + DoD |
+| `engineering-lead.md` | primary | Orchestrator |
+| `architect.md` | subagent | Design + ADR |
+| `builder.md` | subagent | Implementation + tests |
+| `reviewer.md` | subagent | Quality gates + Definition of Done |
 | `historian.md` | subagent | History/knowledge/memory |
 | `tester.md` | subagent | Validation + benchmarks |
 
-Configuración en `opencode.json`:
+Configuration in `opencode.json`:
 - `default_agent: "engineering-lead"`
 - `subagent_depth: 2`
-- Permisos granulares por agente
+- Granular permissions per agent
 
 ### Rationale
 
-- Separación de responsabilidades
-- Orquestación paralela
-- Permisos granulares
-- Enforcement del protocolo anti-telephone
+- Separation of responsibilities
+- Parallel orchestration
+- Granular permissions
+- Enforcement of the anti-telephone protocol
 
 ### Consequences
 
-- 7 skills actualizados con Agent Ownership
+- Seven skills updated with agent ownership
 - ADR-0002 superseded
-- Lead orquesta via Task tool
-- Subagentes siguen protocolo anti-telephone
+- The Lead orchestrates via the Task tool
+- Subagents follow the anti-telephone protocol
 
 ---
 
@@ -320,3 +320,196 @@ Validate hyperparameters in `__init__()`:
 - `max_iter > 0` — zero or negative values prevent training
 
 Fails fast at construction time instead of silently producing a broken model.
+
+---
+
+## ADR-0008: Mirrored Root Policies Govern Project Procedures
+
+- **Status**: accepted
+- **Date**: 2026-09-23
+- **Clarifies**: ADR-0001 (its historical text remains unchanged)
+
+### Context
+
+KAFE's root instructions have adopted applicable repository policies for English, Superpowers, dependency management, and quality gates. `AGENTS.md` and `CLAUDE.md` must express the same substantive rules. Some OpenCode knowledge and review instructions still described themselves as the exclusive review authority, which could exclude those root invariants. The repository also retains legacy setup and unimplemented migration gates that must not be presented as passing checks.
+
+### Decision
+
+1. Applicable runtime and user instructions govern execution. The mirrored `AGENTS.md` and `CLAUDE.md` files define repository invariants. Only their file-identifying introductory text may differ.
+2. `OPENCODE.md`, `.opencode/` procedures and knowledge, and `.kiro/` steering implement the root invariants and cannot waive them. Reviews and `/dod` must consult both root policies and relevant technical knowledge.
+3. ADR-0001's ADR > Knowledge > History > Progress order applies to conflicts among project records only. It does not elevate historical records above current root policies or applicable runtime/user instructions. OpenCode remains the persistent project engineering system with its existing lifecycle, roles, and ML/DL documentation and benchmark duties.
+4. Record verification as PASS, FAIL, PENDING, or N/A with evidence or reasons. Distinguish task acceptance from repository migration debt. Missing gates remain PENDING; a task that promises to implement one is incomplete until its enforcement is demonstrated.
+5. Keep Superpowers specs, plans, and review reports local in the ignored artifact paths. Never stage, force-add, or commit them; persist durable project decisions in ADR/history/knowledge records instead.
+
+### Rationale
+
+- A mirrored policy body prevents agent-specific rule drift.
+- Project knowledge retains its technical role without excluding repository-wide obligations.
+- Evidence and explicit pending status prevent existing pytest success from being mistaken for complete quality-policy enforcement.
+- The clarification preserves historical decisions and KAFE's educational engineering process.
+
+### Consequences
+
+- Root policy changes must remain synchronized and be reflected in affected procedures and steering.
+- English migration, coordinated uv setup, and new quality/CI checks remain separate implementation work. The uv plan must cover runtime, development, docs, Nix's role, and optional integrations while preserving KafeHF's missing-dependency behavior.
+- Child interpreter coverage and full diagnostic observation require explicit implementation and execution evidence; parent pytest-cov/filterwarnings alone do not establish them.
+- Existing applicable full-suite, session-closure, ML/DL artifact, benchmark, and history obligations remain in force.
+
+### Alternatives Considered
+
+- **Mirror only a new policy section:** rejected because substantive rules elsewhere could still diverge.
+- **Keep knowledge as the exclusive review authority:** rejected because it could bypass root invariants.
+- **Rewrite ADR-0001:** rejected to preserve the historical decision and make the clarification traceable.
+
+---
+
+## ADR-0009: Retire Repository-level Kiro Configuration and Steering
+
+- **Status**: accepted
+- **Date**: 2026-09-23
+- **Partially supersedes**: ADR-0008, Decision 2, only its inclusion of `.kiro/` steering
+
+### Context
+
+The preceding policy alignment brought Kiro steering under the mirrored root invariants. A subsequent user-approved retirement removes repository-level Kiro support. The steering's reusable KAFE facts are already represented in the root and OpenCode documentation; its file I/O fixture casing and parser-cleanup details are preserved in canonical verification guidance. The repository-scoped MCP configuration contains no reusable engineering policy.
+
+### Decision
+
+1. Remove `.kiro/settings/mcp.json` and `.kiro/steering/product.md`, `structure.md`, and `tech.md` from this repository. This decision does not authorize changing global/user Kiro configuration or unrelated MCP integrations.
+2. Current subordinate repository procedures are `OPENCODE.md` and `.opencode/`. Remove active Kiro authority references from the mirrored root instructions, the operating manual, and engineering/context records.
+3. Preserve ADR-0008 unchanged as a historical decision. Its inclusion of Kiro steering in Decision 2 is superseded by this retirement; all remaining authority, review, local-artifact, migration-status, and verification requirements stay in force.
+4. Preserve the earlier alignment history and append this retirement event. Keep the reusable `tests/KafeFiles/` casing and `make clean` requirements in `.opencode/knowledge/verifications.md`.
+
+### Rationale
+
+- Retiring a duplicated tool-specific instruction surface reduces maintenance and rule drift.
+- Canonical guidance retains the useful operational details without preserving repository-level Kiro integration.
+- A scoped superseding decision records the changed support boundary without rewriting historical policy.
+
+### Consequences
+
+- The repository no longer supplies Kiro MCP settings or steering; historical Kiro references describe the earlier state and this retirement only.
+- `AGENTS.md` and `CLAUDE.md` remain mirrored. OpenCode retains its operating-manual and persistent-engineering-system roles under the root policies.
+- Runtime behavior, dependency declarations, fixtures, workflows, and pending English/uv/quality migrations are unaffected by the retirement.
+
+### Alternatives Considered
+
+- **Keep duplicate Kiro steering:** rejected because the user approved retiring repository-level support and canonical guidance already covers the project.
+- **Delete historical decisions and events:** rejected because it would erase the reason for the changed authority boundary.
+- **Remove global tools or migrate MCP settings automatically:** outside the authorized repository scope.
+
+---
+
+## ADR-0010: uv Owns Python Dependency Management
+
+- **Status**: accepted
+- **Date**: 2026-09-23
+
+### Context
+
+KAFE's Python runtime, development tools, MkDocs dependencies, optional Hugging Face integration, Nix shell, and CI previously used separate or implicit dependency sources. This made fresh setup and optional-dependency behavior difficult to reproduce. The repository policy requires a committed uv lock while keeping `datasets` absent from the default environment.
+
+### Decision
+
+1. Use the root `pyproject.toml` and committed `uv.lock` as the sole Python dependency definition. Keep this as a non-package project with `requires-python = ">=3.10"` and the uv-required non-release metadata version.
+2. Declare ANTLR runtime in the base project, developer tools and pytest in `dev`, MkDocs dependencies in `docs`, and Hugging Face `datasets` only in the optional `huggingface` extra. Set `tool.uv.exclude-newer = "7 days"`.
+3. Use locked uv sync/run commands for local development, docs, Make targets, OpenCode procedures, and GitHub Actions. Install uv using Astral's official instructions when it is unavailable.
+4. Keep Nix responsible for Python, uv, Java, ANTLR, and system utilities; do not maintain Python library dependencies in Nix. Preserve ANTLR 4.13.2 generation and runtime compatibility.
+5. Remove the legacy `requirements.txt` manifest and point KafeHF's missing-dependency diagnostic to `uv sync --locked --extra huggingface`. Keep the default environment free of `datasets`.
+
+### Rationale
+
+- A single committed lock makes local setup, CI, and docs dependency resolution reproducible.
+- Separate groups keep docs tooling out of the normal project install and preserve KafeHF's deterministic missing-dependency behavior.
+- Nix remains useful for system tools without duplicating Python dependency ownership.
+
+### Consequences
+
+- Developer setup, Make, OpenCode guidance, and both existing Python workflows use the locked uv project.
+- `datasets` is installed only when the Hugging Face extra is selected; the missing-dependency fixture remains part of the default suite.
+- The required quality tools are declared in `dev`, but their lint, typing, spelling, audit, coverage, warning, and suppression-policy gates remain pending for the separate quality-gates work.
+- Nix validation requires a Nix-capable host. Test CI is verified after the authorized feature push; the docs workflow deploys only from `main`.
+
+### Alternatives Considered
+
+- **Keep pip/requirements alongside uv:** rejected because it would retain two dependency authorities.
+- **Keep Python libraries in Nix:** rejected because it would duplicate the uv project and lock.
+- **Make `datasets` a base or development dependency:** rejected because it would invalidate the deterministic missing-dependency environment.
+
+---
+
+## ADR-0011: One-Time English Backfill of Project Records
+
+- **Status**: accepted
+- **Date**: 2026-09-23
+
+### Context
+
+The user requires the current repository content to be in English and approved Task 6 to translate existing project records. The records include append-only session history and accepted ADRs whose Spanish prose predates this requirement. Translating those entries in place is necessary for the current-tree language requirement, but would ordinarily conflict with the record-preservation rules. Their original versions remain in Git history.
+
+### Decision
+
+1. Authorize one faithful English translation pass over existing tracked Spanish prose in repository guidance and `.opencode/` records, including historical session entries and accepted ADR prose. Preserve chronology, dates, identifiers, statuses, measured results, decisions, and substantive meaning; do not rewrite Git history.
+2. For this one backfill only, this ADR supersedes prior append-only or accepted-record immutability rules to the extent they would prevent translating existing prose. It does not authorize deleting or altering historical facts, changing the outcome of a recorded decision, or editing captured contents of retired artifacts.
+3. Keep future session and history entries append-only, write them in English, and do not use this exception for later editorial rewrites.
+4. Remove the PDF and machine-specific logs listed in the approved Task 6 brief from the current tree without modifying their captured contents. Their Git history remains available.
+
+### Rationale
+
+- A faithful current-tree translation satisfies the user's English requirement while preserving the original record meaning and chronology.
+- An explicit, narrowly scoped exception prevents this backfill from weakening future append-only protection.
+- Keeping Git history unchanged preserves the original Spanish wording and the approved retired artifacts for recovery.
+
+### Consequences
+
+- Existing tracked records may receive language-only edits in Task 6; substantive decisions, dates, identifiers, and measured results remain unchanged.
+- Future project records remain append-only and English.
+- The approved retired PDF and logs are absent from the current tree but remain recoverable from Git history.
+
+### Alternatives Considered
+
+- **Leave historical Spanish untouched:** rejected because the user requires English current-tree content and approved the one-time backfill.
+- **Rewrite or filter Git history:** rejected because it is unnecessary for the current-tree requirement and would remove the original record snapshots.
+- **Make all future records freely editable:** rejected because the user authorized only this one-time backfill.
+
+---
+
+## ADR-0012: Python Quality Gates and CI Enforcement
+
+- **Status**: accepted
+- **Date**: 2026-09-24
+
+### Context
+
+The repository now uses a committed uv lock for Python runtime, development, documentation, and optional dependencies. The interpreter fixture suite also verifies child-process diagnostics, warnings, and subprocess coverage. Consistent local and hosted quality gates are needed to check the owned Python code and preserve that evidence without analyzing generated ANTLR outputs or masking authored issues.
+
+### Decision
+
+1. Use the locked `dev` group and existing tools. Ruff targets Python 3.10, enables `E4`, `E7`, `E9`, `F`, `B`, and `I`, and sets `force-exclude = true`. basedpyright analyzes `src/` and `tests/` using Python 3.10, `basic` mode, and `failOnWarnings = true`.
+2. Exclude only `src/Kafe_GrammarLexer.py`, `src/Kafe_GrammarParser.py`, and `src/Kafe_GrammarVisitor.py` from Ruff, basedpyright, and coverage. Keep generated parser outputs ignored and untracked. Regenerate with ANTLR 4.13.2 before interpreter tests or checks when the files are absent or the grammar changes.
+3. Configure codespell to scan hidden files with the exact case-sensitive ignore list `expec,mape,MAPE,FPR,Hart,le`. Skip only justified local/build outputs, root-local `docs/superpowers/`, and generated ANTLR artifacts; keep source, tests, `.opencode/`, and ordinary documentation in scope.
+4. Prohibit authored `# noqa` and `# pyright:` comment tokens. The repository policy checker enumerates tracked `*.py` files with `git ls-files -z`, tokenizes comments, and reports findings with file and line. It must fail on unreadable or invalid tracked Python files; ignored generated parsers need not be tracked.
+5. Enforce locked dependency auditing, Ruff, basedpyright, codespell, the suppression policy checker, and the full pytest/coverage gate through the existing `.github/workflows/tests.yml`, after Java 11 setup and ANTLR generation. Keep `filterwarnings = ["error"]` and `PYTHONWARNINGS=error` for interpreter child processes. Preserve exact stdout/stderr/exit expectations and the 80% minimum coverage for `src/`.
+6. Run `.github/workflows/docs.yml` validation on all pushes, pull requests, and manual dispatches. Deploy only from `main` for documentation-changing pushes or manual dispatches. Serialize eligible deploy jobs by workflow/ref with a non-cancelling queue, explicitly check out `main`, strictly rebuild that snapshot, then run `mkdocs gh-deploy --force`. Keep `NO_MKDOCS_2_WARNING=1` scoped to the strict build that needs the Material for MkDocs upstream MkDocs 2.0 warning exception.
+7. Keep `.github/workflows/main.yml` for weekly/manual Nix lock maintenance; do not add Python quality duties or a generic CI workflow there. Require zero errors and zero warnings for applicable quality gates. Distinguish local verification from hosted CI, and record remote status only after observing the run at the exact pushed commit.
+
+### Rationale
+
+- Locked commands, narrowly selected rule sets, and a fixed Python target make local and CI results reproducible.
+- Explicit generated-file exclusions keep tool output focused on owned code while ensuring no ordinary Python files are silently ignored.
+- Token-based suppression checking catches authored directives without matching the same text inside string literals.
+- The existing workflow boundaries preserve interpreter/ANTLR setup, docs publication, and Nix ownership while making quality checks mandatory.
+- Warning-as-error gates expose regressions; the one upstream documentation advisory exception remains narrow and explained.
+
+### Consequences
+
+- Local commands and exclusions are documented in `.opencode/knowledge/verifications.md`; root guidance remains mirrored in `AGENTS.md` and `CLAUDE.md`.
+- Hosted success is not implied by committed workflow configuration. The quality migration remains open until the authorized branch is pushed and all required remote checks are observed at the resulting exact SHA.
+- Future changes must preserve optional `datasets` behavior, fixture contracts, generated parser exclusions, and the docs/Nix workflow boundaries.
+
+### Alternatives Considered
+
+- **Use broad ignores or blanket suppressions:** rejected because they could hide owned-source defects.
+- **Analyze generated ANTLR modules:** rejected because their output is generated and not project-authored.
+- **Replace existing workflows with a generic Python CI job:** rejected because it would risk dropping Java/ANTLR setup, docs deployment, or Nix ownership.
+- **Mark migration complete after local checks alone:** rejected because hosted CI and deployment behavior must be observed at the exact pushed commit.

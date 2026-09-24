@@ -99,7 +99,7 @@ Categorical data is pervasive in real-world datasets (colors, sizes, labels, sta
 - `src/lib/KafeMACHINE/BaseMachine.py` — base class providing the fit/transform contract, `_is_fitted` guard, and `_check_fitted` method.
 - `src/lib/KafePARDOS/DataFrame.py` — accepts PARDOS DataFrames and returns encoded DataFrames preserving columns.
 - `TypeUtils.py` / `global_utils.py` — `pardos_t`, `lista_cadenas_t`, `check_sig` for signature validation.
-- `src/lib/KafeMACHINE/funciones.py` — `machine.ordinal_encoder()` factory.
+- `src/lib/KafeMACHINE/functions.py` — `machine.ordinal_encoder()` factory.
 
 ## Related Concepts
 
@@ -146,7 +146,7 @@ Guards: calling `transform`/`inverse_transform` before `fit` raises `"OrdinalEnc
 ## Implementation Location
 
 - `src/lib/KafeMACHINE/preprocessing/OrdinalEncoder.py` (class `OrdinalEncoder(BaseMachine)`).
-- Factory: `src/lib/KafeMACHINE/funciones.py` — `ordinal_encoder()`.
+- Factory: `src/lib/KafeMACHINE/functions.py` — `ordinal_encoder()`.
 - Package: `src/lib/KafeMACHINE/preprocessing/__init__.py` — exported as `OrdinalEncoder`.
 - Tests: `tests/KafeMACHINE/preprocessing/test_ordinal_encoder.kf`, `test_ordinal_encoder_inverse.kf`, `test_ordinal_encoder_single_column.kf`.
 - Error fixtures: `test_oe_column_not_found.error.kf`, `test_oe_not_fitted.error.kf`, `test_oe_unseen_category.error.kf`.

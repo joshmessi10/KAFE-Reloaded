@@ -3,6 +3,8 @@
 **Date:** 2026-09-12
 **Scope:** Complete exploration of KAFE libraries, ML/DL state, import mechanism, and Hugging Face integration status.
 
+**Historical snapshot:** This review records the repository as observed on 2026-09-12. Paths, API names, and capability notes below preserve that dated state and are not current operational guidance. Consult `.opencode/knowledge/architecture.md` and `.opencode/knowledge/libraries.md` for the current structure.
+
 ---
 
 ## 1. KafePARDOS (Data Handling Library)

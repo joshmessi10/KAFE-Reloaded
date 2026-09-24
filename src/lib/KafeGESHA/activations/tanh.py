@@ -1,6 +1,6 @@
-"""Función de activación Tangente Hiperbólica."""
-from lib.KafeMATH.funciones import exp
+"""Hyperbolic Tangent activation function."""
 from lib.KafeGESHA.activations.activation import ActivationFunction
+from lib.KafeMATH.functions import exp
 
 
 class Tanh(ActivationFunction):

@@ -33,26 +33,11 @@ where $|G_i|$ is the number of values for parameter $i$, $k$ is the number of fo
 
 ## KAFE Implementation
 
-```kafe
-import machine;
-
-MACHINE lr = machine.logistic_regression(0.01, 1000);
-
--- Define parameter grid as dictionary
-Dict param_grid = {"lr": [0.001, 0.01, 0.1], "iter": [500, 1000, 2000]};
-
--- GridSearchCV with 5-fold CV
-MACHINE gs = machine.grid_search_cv(lr, param_grid, 5, machine.accuracy_score);
-gs.fit(X_train, y_train);
-
-show(gs.best_params_);   -- Best parameter combination
-show(gs.best_score_);    -- Best cross-validation score
-show(gs.best_estimator_); -- Model refit with best params
-```
+The `machine.grid_search_cv(cv, scoring, random_state)` factory currently creates a wrapper with an empty grid and does not expose a KAFE argument for configuring `param_grid`. The Python `GridSearchCV` constructor accepts a grid, but a configured search is not currently available through this KAFE factory.
 
 ## Relationship with KAFE
 
-GridSearchCV in KAFE is implemented from scratch, wrapping the model_selection module (k_fold_cross_validation) with a grid enumeration layer. It provides an educational view of how hyperparameter search works internally.
+GridSearchCV in KAFE is implemented in `src/lib/KafeMACHINE/model_selection/model_selection.py`. It builds shuffled k-fold splits internally and evaluates each parameter combination over those splits.
 
 ## References
 

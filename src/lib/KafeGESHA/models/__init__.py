@@ -1,1 +1,1 @@
-"""Modelos de KafeGESHA."""
+"""KafeGESHA models."""
