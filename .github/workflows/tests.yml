@@ -7,8 +7,15 @@ on:
     branches: [main, master]
   workflow_dispatch: # allows manual triggering
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   test:
+    permissions:
+      contents: read
+    timeout-minutes: 30
     runs-on: ubuntu-latest
 
     steps:
@@ -46,6 +53,21 @@ jobs:
         run: |
           cd src
           java -jar /tmp/antlr-4.13.2-complete.jar -no-listener -visitor -Dlanguage=Python3 Kafe_Grammar.g4
+
+      - name: Audit dependencies
+        run: uv audit --locked --preview-features audit
+
+      - name: Run Ruff
+        run: uv run --locked --group dev ruff check src tests
+
+      - name: Run basedpyright
+        run: uv run --locked --group dev basedpyright
+
+      - name: Run codespell
+        run: uv run --locked --group dev codespell
+
+      - name: Check Python quality policy
+        run: uv run --locked --group dev python scripts/check_quality_policy.py
 
       - name: Run tests
         run: >-
