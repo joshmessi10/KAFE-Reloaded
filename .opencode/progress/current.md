@@ -1,17 +1,17 @@
 # Current Work
 
-Feature: English repository migration — Task 7: final repository-wide audit
-Status: complete locally
-Current step: Tasks 6 and 7 are complete on `refactor/english-repository`; the final change set passed its review and local gates.
-Next step: Continue with the next approved repository-alignment workstream; preserve the existing branch policy for any commit or push.
-Blockers: No independent reviewer could be allocated at the host thread limit; the final read-only self-review is complete.
-Related ADRs: ADR-0009, ADR-0011
+Feature: Python quality gates — Task 1 complete; implementation workstream active
+Status: active on `chore/python-quality-gates`
+Current step: Task 1 recorded the approved configuration, source, workflow, and governance impacts; no application implementation was in scope.
+Next step: Continue with the next task in the approved implementation plan. Do not push.
+Blockers: None.
+Related ADRs: ADR-0012 is planned for the implementation workstream; none is required for this documentation-only task.
 
-## Active Work — English Repository Migration, Task 7 (2026-09-24)
+## Completed Work — English Repository Migration, Task 7 (2026-09-24)
 
 **Status:** Tasks 1–7 are complete on `refactor/english-repository`; the final audit passed against the current branch. ADR-0011 authorizes a one-time faithful English backfill of existing project records; future session/history entries remain append-only and English.
 
-**Authorization:** The user requires all repository-owned content to be in English, approved the one-time archival translation and removal of the PDF and two machine-specific logs, and authorized commits and pushes when needed. Stay on `refactor/english-repository`; do not create, rename, or switch branches.
+**Historical authorization:** The user required all repository-owned content to be in English, approved the one-time archival translation and removal of the PDF and two machine-specific logs, and authorized commits and pushes when needed. At that workstream's completion, `refactor/english-repository` was the active branch; the current approved workstream now uses `chore/python-quality-gates`.
 
 **Scope and preservation:** Translate existing Spanish prose in repository guidance and `.opencode/` while preserving dates, IDs, statuses, chronology, measured results, decisions, formulas, code identifiers, and meaning. Update current operational references to the verified English paths and APIs. Delete only `KAFE LANGUAGE Deep Learning for Dummies .pdf`, `test_results.txt`, and `test_output.txt`; verify their original Git objects remain recoverable.
 

@@ -1,7 +1,7 @@
 # Repository Alignment — Continuity Plan
 
 **Last checked:** 2026-09-24
-**Status:** The active branch is `refactor/english-repository`. Tasks 1–7 of the English repository migration are complete. The final audit passed: 498 tests, 83.78% coverage, no test warnings, strict documentation build, tracked-file spelling check, and repository-wide language scan. Commits and pushes are authorized when needed; do not create, rename, or switch branches without explicit authorization.
+**Status:** The active branch is `chore/python-quality-gates`. Tasks 1–7 of the English repository migration are complete on `refactor/english-repository`; the final audit passed: 498 tests, 83.78% coverage, no test warnings, strict documentation build, tracked-file spelling check, and repository-wide language scan. The Python quality-gates design and plan are approved; Task 1 impact and progress records are complete, and the implementation workstream remains active. Commits are authorized when needed; do not push or switch branches without further authorization.
 
 ## Purpose and Source of Truth
 
@@ -11,10 +11,11 @@ On resume, verify the live branch, `HEAD`, index, and working tree before acting
 
 ## Current Checkout Observation
 
-- **Branch:** `refactor/english-repository`.
+- **Branch:** `chore/python-quality-gates`, created locally from the clean approved baseline `917a176f467e3ac2b60abb86ac79d4bda640d4bf` after verifying `refactor/english-repository` and confirming that the target ref did not exist locally or on `origin`.
+- **Task 1 result:** impact and progress records are complete; no application code or tests changed, so application tests were not applicable. `git diff --check` passed. Do not push.
 - **Task 6 starting state:** the index was empty and the worktree was clean at Task 5 commit `13ca2bf1b84a692780fff0c83106c46fdf6d15d1` before appending ADR-0011. ADR-0011 authorized the one-time faithful backfill; Tasks 6 and 7 are now complete.
 - **Final audit:** the tracked-tree lexicon audit found no remaining Spanish prose after review of its candidates; `AGENTS.md` and `CLAUDE.md` have matching substantive bodies. The full locked suite passed 498 tests in 349.42s at 83.78% coverage, with no test warnings. The shared subprocess harness passed 13 focused tests. Strict MkDocs build and tracked-file codespell both passed; the Material for MkDocs MkDocs 2.0 advisory was printed before the successful build.
-- **Branch policy:** continue on this branch. The user authorized commits and pushes when needed but no branch operations beyond the current branch. The last successful `git ls-remote` returned no `origin/refactor/english-repository` ref; a later refresh could not connect to GitHub on port 443. No push was made because it would create a remote branch; do not create or switch branches without explicit authorization.
+- **Branch policy:** the user explicitly authorized creation and switching to `chore/python-quality-gates` for this workstream. Continue on it; commits are authorized when needed, but pushing and further branch operations are not authorized.
 - **Task 5 evidence:** 36 old-to-new documentation routes were checked; local Markdown links resolved; `uv run --locked --python 3.10 --group docs --no-dev mkdocs build --strict` succeeded. Material for MkDocs printed an upstream MkDocs 2.0 advisory before the successful build; there were no page, navigation, or link errors.
 
 ## Completed and Remaining Sequence
@@ -25,7 +26,7 @@ On resume, verify the live branch, `HEAD`, index, and working tree before acting
 | 1 | `build/uv-environment` | Complete: implementation `f4e544a` and progress commit `b40965f` pushed; GitHub test CI passed with 485 tests | Uses `pyproject.toml` and `uv.lock`; keeps runtime, dev, docs, and optional `datasets` dependencies distinct; preserves Nix system-tool ownership and ANTLR requirements. |
 | 2 | `test/interpreter-quality-evidence` | Complete, pushed, and intentionally unmerged at `6e8edd5565c6c1341697426a2bd0dff4187dc5cc`; GitHub `Run Tests` run 127 passed at that exact SHA | 497 tests passed locally in 353.72s with 83.78% coverage across all 111 tracked Python source files and no warnings. All 29 fixture launches use the shared runner; 160 invalid fixtures have full stderr snapshots and two have stdout snapshots. |
 | 3 | `refactor/english-repository` | Complete locally; Tasks 1–7 audited | Migrates owned runtime names, internal APIs, grammar labels, fixtures, outputs, docs, paths, and project records. Preserves English KAFE syntax and built-in import keys; no Spanish compatibility aliases or old-route redirects are retained. The final test gate passed 498 tests at 83.78% coverage; the tracked-tree language scan, strict docs build, and scoped tracked-file codespell check passed. |
-| 4 | `chore/python-quality-gates` | Planned; not started | Adds and enforces explicit Ruff, basedpyright, codespell, `uv audit`, suppression-policy, test, coverage, warning, and documentation gates using existing workflows. |
+| 4 | `chore/python-quality-gates` | Active: Task 1 complete; implementation remains | Adds and enforces explicit Ruff, basedpyright, codespell, `uv audit`, suppression-policy, test, coverage, warning, and documentation gates using existing workflows. Task 1 completed impact and progress records only; implementation remains for later tasks in the approved plan. |
 
 Do not create a branch per tool or a content-free CI-only branch. Each coherent workstream owns the workflow changes needed for its deliverable. A migration split does not count as complete until every part has been integrated and audited.
 
@@ -47,4 +48,4 @@ Do not create a branch per tool or a content-free CI-only branch. Each coherent 
 
 ## Resume Instructions
 
-Use the same `KAFE-Reloaded` checkout and existing branch. Start by reading `AGENTS.md`, `CLAUDE.md`, `.opencode/progress/current.md`, `.opencode/memory/active-work.md`, `.opencode/progress/roadmap.md`, `.opencode/progress/backlog.md`, and this tracker; then verify the live Git branch, `HEAD`, index, and worktree. Keep local Superpowers specs, plans, briefs, and reports ignored; durable project state belongs in tracked progress files.
+Use the same `KAFE-Reloaded` checkout and continue on `chore/python-quality-gates`. Start by reading `AGENTS.md`, `CLAUDE.md`, `.opencode/progress/current.md`, `.opencode/memory/active-work.md`, `.opencode/progress/roadmap.md`, `.opencode/progress/backlog.md`, and this tracker; then verify the live Git branch, `HEAD`, index, and worktree. Keep local Superpowers specs, plans, briefs, and reports ignored; durable project state belongs in tracked progress files. Do not push or switch branches without further authorization.
