@@ -83,6 +83,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          ref: main
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -100,6 +102,12 @@ jobs:
 
       - name: Install documentation dependencies
         run: uv sync --locked --python 3.10 --group docs --no-dev
+
+      - name: Build current main documentation
+        env:
+          # Material emits this upstream warning for MkDocs 2.0; keep suppression limited to the strict build.
+          NO_MKDOCS_2_WARNING: "1"
+        run: uv run --locked --python 3.10 --group docs --no-dev mkdocs build --strict
 
       - name: Deploy to GitHub Pages
         run: uv run --locked --python 3.10 --group docs --no-dev mkdocs gh-deploy --force
