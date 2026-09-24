@@ -2,25 +2,55 @@ name: Deploy Docs
 
 on:
   push:
-    branches:
-      - main
-    paths:
-      - 'docs/**'
-      - 'mkdocs.yml'
+  pull_request:
   workflow_dispatch:
 
-permissions:
-  contents: write
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
-  deploy:
+  validate:
+    permissions:
+      contents: read
+    timeout-minutes: 15
     runs-on: ubuntu-latest
+    outputs:
+      docs_changed: ${{ steps.path_changes.outputs.docs_changed }}
     steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-python@v5
+      - name: Checkout repository
+        uses: actions/checkout@v4
         with:
-          python-version: '3.10'
+          fetch-depth: 0
+
+      - name: Detect documentation changes
+        id: path_changes
+        env:
+          BEFORE_SHA: ${{ github.event.before }}
+          AFTER_SHA: ${{ github.event.after }}
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          docs_changed=false
+          if [[ "$EVENT_NAME" == "workflow_dispatch" ]]; then
+            docs_changed=true
+          elif [[ "$EVENT_NAME" == "push" ]]; then
+            if [[ "$BEFORE_SHA" =~ ^0+$ ]]; then
+              changed_paths="$(git ls-tree -r --name-only "$AFTER_SHA")"
+            else
+              changed_paths="$(git diff --name-only "$BEFORE_SHA" "$AFTER_SHA")"
+            fi
+
+            if grep -Eq '^(docs/.*|mkdocs\.yml)$' <<< "$changed_paths"; then
+              docs_changed=true
+            fi
+          fi
+
+          echo "docs_changed=$docs_changed" >> "$GITHUB_OUTPUT"
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
 
       - name: Set up uv
         uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
@@ -31,11 +61,45 @@ jobs:
             **/pyproject.toml
             **/uv.lock
 
-      - name: Install dependencies
+      - name: Install documentation dependencies
+        run: uv sync --locked --python 3.10 --group docs --no-dev
+
+      - name: Build documentation
+        env:
+          # Material emits this upstream warning for MkDocs 2.0; keep suppression limited to the strict build.
+          NO_MKDOCS_2_WARNING: "1"
+        run: uv run --locked --python 3.10 --group docs --no-dev mkdocs build --strict
+
+  deploy:
+    needs: validate
+    if: >-
+      ${{ github.ref == 'refs/heads/main' &&
+          (github.event_name == 'workflow_dispatch' ||
+           (github.event_name == 'push' && needs.validate.outputs.docs_changed == 'true')) }}
+    permissions:
+      contents: write
+    timeout-minutes: 15
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+        with:
+          version: "0.11.3"
+          enable-cache: true
+          cache-dependency-glob: |
+            **/pyproject.toml
+            **/uv.lock
+
+      - name: Install documentation dependencies
         run: uv sync --locked --python 3.10 --group docs --no-dev
 
       - name: Deploy to GitHub Pages
-        env:
-          # Material emits this upstream warning for MkDocs 2.0; keep suppression limited to this deployment command.
-          NO_MKDOCS_2_WARNING: "1"
         run: uv run --locked --python 3.10 --group docs --no-dev mkdocs gh-deploy --force
