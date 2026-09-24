@@ -1,5 +1,6 @@
 import json
 import os
+from typing import cast
 
 from errors import raiseFileNotFound
 from global_utils import check_sig
@@ -16,7 +17,7 @@ def read_csv(path):
     if os.path.isfile(path):
         real_path = path
     else:
-        candidate = os.path.join(globals.current_dir, path)
+        candidate = os.path.join(cast(str, globals.current_dir), path)
         if os.path.isfile(candidate):
             real_path = candidate
         else:
@@ -57,7 +58,7 @@ def read_json(path):
     if os.path.isfile(path):
         real_path = path
     else:
-        candidate = os.path.join(globals.current_dir, path)
+        candidate = os.path.join(cast(str, globals.current_dir), path)
         if os.path.isfile(candidate):
             real_path = candidate
         else:

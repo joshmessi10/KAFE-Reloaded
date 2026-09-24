@@ -1,3 +1,5 @@
+from typing import cast
+
 from errors import (
     raiseFunctionAlreadyDefined,
     raiseFunctionNotDefined,
@@ -96,7 +98,7 @@ def functionDecl(self, ctx):
 
                     obtained_signature = getattr(val, "signature", None)
                     if obtained_signature:
-                        act_p, act_r = _parse_signature(obtained_signature)
+                        act_p, act_r = _parse_signature(cast(str, obtained_signature))
                         exp_p, exp_r = _parse_signature(expected)
                         # Allow ANY return type to match any expected return type
                         if not (
@@ -134,7 +136,7 @@ def functionDecl(self, ctx):
                 if sig_ret is None:
                     raiseSignatureMismatch(ret_type, "")
 
-                act_p, act_r = _parse_signature(sig_ret)
+                act_p, act_r = _parse_signature(cast(str, sig_ret))
                 exp_p, exp_r = _parse_signature(ret_type)
 
                 # Allow ANY return type from lambdas to match any expected return type

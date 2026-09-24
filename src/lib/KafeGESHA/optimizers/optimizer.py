@@ -6,6 +6,8 @@ from TypeUtils import numeric_vector_types
 
 
 class Optimizer:
+    lr: float
+
     @abstractmethod
     @check_sig([3], numeric_vector_types, numeric_vector_types, is_method=True)
     def step(self, params, grads):

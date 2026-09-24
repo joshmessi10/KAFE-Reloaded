@@ -10,7 +10,7 @@ line_color = "blue"
 point_color = "red"
 point_size = 3
 show_bar_values = False
-pie_legend = None
+pie_legend: str | None = None
 
 _figure_active = False
 _accumulated_series = []

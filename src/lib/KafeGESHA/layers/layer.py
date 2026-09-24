@@ -1,5 +1,6 @@
 """Abstract base class for neural network layers."""
 from abc import ABC, abstractmethod
+from typing import Any
 
 from global_utils import check_sig
 from TypeUtils import float_type, numeric_vector_types, void_t
@@ -22,17 +23,19 @@ class Layer(ABC):
 
     @abstractmethod
     @check_sig([2], numeric_vector_types, is_method=True)
-    def forward(self, x):
+    def forward(self, x: Any) -> Any:
         """Forward propagation."""
         pass
 
     @abstractmethod
     @check_sig([3, 4], numeric_vector_types + [float_type], [float_type], [float_type, void_t], is_method=True)
-    def backward(self, output_error, learning_rate, regularization_lambda=None):
+    def backward(
+        self, output_error: Any, learning_rate: float, regularization_lambda: float | None = None
+    ) -> Any:
         """Backward propagation."""
         pass
 
-    def parameters(self):
+    def parameters(self) -> list[float]:
         """Returns a flat list of trainable parameters. Sublayers with weights must override this method."""
         return []
 
@@ -44,7 +47,7 @@ class Layer(ABC):
         """Activates evaluation (inference) mode."""
         self._training = False
 
-    def connect(self, input_node):
+    def connect(self, input_node: Any) -> Any:
         """Connect this layer to a symbolic node for the Functional API.
 
         Note: DO NOT use __call__ here to avoid conflict with the system

@@ -16,6 +16,7 @@ Compatibility:
 - GeshaDeep is removed; Sequential replaces it.
 """
 from abc import ABC, abstractmethod
+from typing import Any, cast
 
 from global_utils import check_sig
 from lib.KafeGESHA.losses.binary_crossentropy import BinaryCrossEntropy
@@ -23,8 +24,10 @@ from lib.KafeGESHA.losses.categorical_crossentropy import (
     CategoricalCrossEntropy,
     SparseCategoricalCrossEntropy,
 )
+from lib.KafeGESHA.losses.loss import LossFunction
 from lib.KafeGESHA.losses.mse import MeanAbsoluteError, MeanSquaredError
 from lib.KafeGESHA.optimizers.adam import Adam, AdamW
+from lib.KafeGESHA.optimizers.optimizer import Optimizer
 from lib.KafeGESHA.optimizers.sgd import SGD, RMSprop
 from TypeUtils import (
     float_type,
@@ -102,9 +105,9 @@ class Model(ABC):
     """
 
     def __init__(self):
-        self._loss_fn = None
-        self._optimizer_obj = None
-        self._metrics = []
+        self._loss_fn: LossFunction | None = None
+        self._optimizer_obj: Optimizer | None = None
+        self._metrics: list[str] = []
         self._compiled = False
 
     # ------------------------------------------------------------------
@@ -112,22 +115,22 @@ class Model(ABC):
     # ------------------------------------------------------------------
 
     @abstractmethod
-    def forward(self, x):
+    def forward(self, x: Any) -> Any:
         """Forward propagation. Returns the output of the model."""
         pass
 
     @abstractmethod
-    def backward(self, grad):
+    def backward(self, grad: Any) -> Any:
         """Backward propagation. Receives the gradient of the loss."""
         pass
 
     @abstractmethod
-    def parameters(self):
+    def parameters(self) -> list[float]:
         """Returns a flat list of all trainable parameters."""
         pass
 
     @abstractmethod
-    def get_layers(self):
+    def get_layers(self) -> list[Any]:
         """Returns the model layers in execution order."""
         pass
 
@@ -211,7 +214,7 @@ class Model(ABC):
             for i in range(0, n_samples, batch_size):
                 end = min(i + batch_size, n_samples)
                 bx = x_train[i:end]
-                by = [] if is_unsupervised else y_train[i:end]
+                by = [] if is_unsupervised else cast(Any, y_train)[i:end]
 
                 for j, xi in enumerate(bx):
                     # Forward
@@ -311,7 +314,7 @@ class Model(ABC):
         """Updates the learning rate of the optimizer."""
         if not self._compiled:
             raise AttributeError("Model: compile() must be called before set_lr()")
-        self._optimizer_obj.lr = new_lr
+        cast(Optimizer, self._optimizer_obj).lr = new_lr
 
     def add(self, layer):
         """Add a layer to the model. Only valid for Sequential."""
@@ -346,8 +349,9 @@ class Model(ABC):
         out_list = out if isinstance(out, list) else [out]
         yi_list  = yi  if isinstance(yi,  list) else [yi]
 
-        loss_val = self._loss_fn.compute(yi_list, out_list)
-        grad_raw = self._loss_fn.derivative(yi_list, out_list)
+        loss_fn = cast(LossFunction, self._loss_fn)
+        loss_val = loss_fn.compute(yi_list, out_list)
+        grad_raw = loss_fn.derivative(yi_list, out_list)
 
         # derivative can return list of lists or flat list
         if grad_raw and isinstance(grad_raw[0], list):

@@ -10,6 +10,8 @@ activation occupies its own node in the graph, allowing architectures
 where the same activation block is shared or connected
 nonlinearly (e.g., with skip connections in the Functional API).
 """
+from typing import cast
+
 from lib.KafeGESHA.activations.relu import ReLU as _ReLU
 from lib.KafeGESHA.activations.sigmoid import SigmoidActivation as _SigmoidActivation
 from lib.KafeGESHA.activations.softmax import Softmax as _Softmax
@@ -31,7 +33,7 @@ class ActivationLayer(Layer):
     def __init__(self, activation_fn):
         super().__init__()
         self._fn = activation_fn
-        self._last_input = None
+        self._last_input: list[int | float] | None = None
 
     def forward(self, x):
         """Forward Propagation: Applies element-wise activation."""
@@ -42,8 +44,9 @@ class ActivationLayer(Layer):
         """Backward propagation: multiply by the derivative of the activation."""
         if not isinstance(output_error, list):
             output_error = [output_error]
+        last_input = cast(list[int | float], self._last_input)
         return [
-            output_error[i] * self._fn.derivative(self._last_input[i])
+            output_error[i] * self._fn.derivative(last_input[i])
             for i in range(len(output_error))
         ]
 
@@ -66,7 +69,7 @@ class SoftmaxLayer(Layer):
     def __init__(self):
         super().__init__()
         self._fn = _Softmax()
-        self._last_output = None
+        self._last_output: list[float] | None = None
 
     def forward(self, x):
         """Forward propagation: softmax over the full vector."""

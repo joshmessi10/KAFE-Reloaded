@@ -1,3 +1,5 @@
+from typing import Any, cast
+
 from errors import (
     raiseExpectedHomogeneousList,
     raiseIndexOutOfBounds,
@@ -48,7 +50,7 @@ def varDecl(self, ctx):
         elif data_type == boolean_type:
             val = False
         elif data_type == gesha_type:
-            val = Gesha()
+            val = cast(Any, Gesha)()
         elif data_type == pardos_type:
             from lib.KafePARDOS.DataFrame import DataFrame
             val = DataFrame([], [])

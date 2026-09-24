@@ -1,3 +1,5 @@
+from typing import cast
+
 from ..BaseMachine import BaseMachine
 
 
@@ -127,8 +129,11 @@ class AgglomerativeClustering(BaseMachine):
 
             for i in range(len(clusters)):
                 for j in range(i + 1, len(clusters)):
-                    d = self._compute_linkage_distance(
-                        clusters[i], clusters[j], dist_matrix, matrix
+                    d = cast(
+                        float,
+                        self._compute_linkage_distance(
+                            clusters[i], clusters[j], dist_matrix, matrix
+                        ),
                     )
                     if d < min_dist:
                         min_dist = d

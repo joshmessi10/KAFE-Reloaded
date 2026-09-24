@@ -16,6 +16,7 @@ Each call to layer(node) creates a new Node that registers:
 The Functional model traverses the graph topologically to execute
 forward y backward.
 """
+from typing import Any
 
 
 class Node:
@@ -33,7 +34,7 @@ class Node:
     def __init__(self, layer=None, inbound_nodes=None):
         self.layer = layer
         self.inbound_nodes = inbound_nodes or []
-        self._output_cache = None
+        self._output_cache: Any = None
 
     def clear_cache(self):
         """Clear the forward pass cache (call before each forward)."""

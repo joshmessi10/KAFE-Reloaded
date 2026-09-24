@@ -253,12 +253,12 @@ class RandomForestClassifier(BaseMachine):
 
     def _predict_one_sample(self, x):
         """Predict the class for a single sample using majority voting."""
-        votes = {}
+        votes: dict[int | float | str | bool, int] = {}
         for tree in self.trees_:
             pred = self._predict_one(x, tree)
             votes[pred] = votes.get(pred, 0) + 1
 
-        best_class = max(votes, key=votes.get)
+        best_class = max(votes, key=lambda label: votes[label])
         return best_class
 
     def score(self, X, y, metric=None):

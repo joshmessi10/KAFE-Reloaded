@@ -1,9 +1,16 @@
+from collections.abc import Iterable
+from typing import Protocol, cast
+
 from global_utils import check_sig
 from lib.KafePARDOS.DataFrame import DataFrame
 from TypeUtils import numeric_matrix_types, numeric_vector_types, pardos_type
 
 from ..BaseMachine import BaseMachine
 from ..linear.LinearRegression import LinearRegression
+
+
+class _HasFeatureImportances(Protocol):
+    feature_importances_: Iterable[float]
 
 
 class RecursiveFeatureElimination(BaseMachine):
@@ -48,7 +55,8 @@ class RecursiveFeatureElimination(BaseMachine):
         if hasattr(self.estimator, 'coef_'):
             importances = [abs(c) for c in self.estimator.coef_]
         elif hasattr(self.estimator, 'feature_importances_'):
-            importances = list(self.estimator.feature_importances_)
+            estimator = cast(_HasFeatureImportances, self.estimator)
+            importances = list(estimator.feature_importances_)
         else:
             n = len(X)
             importances = []

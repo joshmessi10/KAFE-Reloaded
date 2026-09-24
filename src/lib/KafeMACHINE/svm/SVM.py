@@ -1,4 +1,5 @@
 from math import exp as pyexp
+from typing import cast
 
 from global_utils import check_sig
 from TypeUtils import numeric_matrix_types, numeric_vector_types, pardos_type
@@ -76,7 +77,7 @@ class SVM(BaseMachine):
         self._dual_coefs = []
         self._sv_indices = []
 
-    def _compute_gamma(self, n_features):
+    def _compute_gamma(self, n_features) -> float:
         """Calculates the gamma value for the RBF kernel."""
         if self.gamma == 'scale':
             if not self._X_train:
@@ -87,7 +88,7 @@ class SVM(BaseMachine):
             return 1.0 / (n_features * var) if var > 0 else 1.0 / n_features
         elif self.gamma == 'auto':
             return 1.0 / n_features
-        return self.gamma
+        return cast(float, self.gamma)
 
     def _kernel_function(self, x1, x2, gamma=None):
         """Calculates the kernel between two vectors."""
@@ -97,7 +98,7 @@ class SVM(BaseMachine):
             if gamma is None:
                 gamma = self._compute_gamma(len(x1))
             dist = sum((a - b) ** 2 for a, b in zip(x1, x2, strict=False))
-            return pyexp(-gamma * dist)
+            return pyexp(-cast(float, gamma) * dist)
         elif self.kernel == 'poly':
             dot = sum(a * b for a, b in zip(x1, x2, strict=False))
             return (dot + 1) ** self.degree

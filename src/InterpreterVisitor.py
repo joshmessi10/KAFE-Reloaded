@@ -1,3 +1,5 @@
+from typing import Any, cast
+
 from Kafe_GrammarVisitor import Kafe_GrammarVisitor
 
 from language_components.libraries.functions import (
@@ -103,7 +105,7 @@ class InterpreterVisitor(Kafe_GrammarVisitor):
     def visitIndexedAssignStmt(self, ctx):
         indexedAssignStmt(self, ctx)
 
-    def visitIndexing(self, ctx):
+    def visitIndexing(self, ctx: Any):
         indexes = [self.visit(expr) for expr in ctx.expr()]
         return indexes
 
@@ -113,24 +115,24 @@ class InterpreterVisitor(Kafe_GrammarVisitor):
     def visitFunctionCall(self, ctx):
         return functionCall(self, ctx)
 
-    def visitAppendCall(self, ctx):
+    def visitAppendCall(self, ctx: Any):
         items = self.visit(ctx.expr(0))
         element = self.visit(ctx.expr(1))
         return visitAppendCall(items, element)
 
-    def visitRemoveCall(self, ctx):
+    def visitRemoveCall(self, ctx: Any):
         items = self.visit(ctx.expr(0))
         element = self.visit(ctx.expr(1))
         return visitRemoveCall(items, element)
 
-    def visitLenCall(self, ctx):
+    def visitLenCall(self, ctx: Any):
         items = self.visit(ctx.expr())
         return visitLenCall(items)
 
     def visitLambdaExpr(self, ctx):
         return lambdaExpr(self, ctx)
 
-    def visitLambdaExpression(self, ctx):
+    def visitLambdaExpression(self, ctx: Any):
         return self.visit(ctx.lambdaExpr())
 
     def visitReturnStmt(self, ctx):
@@ -142,7 +144,7 @@ class InterpreterVisitor(Kafe_GrammarVisitor):
     def visitPourStmt(self, ctx):
         return pourStmt(self, ctx)
 
-    def visitRangeExpr(self, ctx):
+    def visitRangeExpr(self, ctx: Any):
         range_values = [self.visit(expr) for expr in ctx.expr()]
         return rangeExpr(*range_values)
 
@@ -182,7 +184,7 @@ class InterpreterVisitor(Kafe_GrammarVisitor):
     def visitUnaryExpression(self, ctx):
         return unaryExpression(self, ctx)
 
-    def visitParenExpr(self, ctx):
+    def visitParenExpr(self, ctx: Any):
         return self.visitChildren(ctx.expr())
 
     def visitIdExpr(self, ctx):
@@ -224,7 +226,7 @@ class InterpreterVisitor(Kafe_GrammarVisitor):
         else:
             return True
 
-    def visitListLiteral(self, ctx):
+    def visitListLiteral(self, ctx: Any):
         items = []
 
         for expr in ctx.expr():
@@ -233,19 +235,19 @@ class InterpreterVisitor(Kafe_GrammarVisitor):
 
         return items
 
-    def visitStrCastExpr(self, ctx):
+    def visitStrCastExpr(self, ctx: Any):
         return str(self.visit(ctx.expr()))
 
-    def visitBoolCastExpr(self, ctx):
+    def visitBoolCastExpr(self, ctx: Any):
         return bool(self.visit(ctx.expr()))
 
-    def visitFloatCastExpr(self, ctx):
-        return float(self.visit(ctx.expr()))
+    def visitFloatCastExpr(self, ctx: Any):
+        return float(cast(Any, self.visit(ctx.expr())))
 
-    def visitIntCastExpr(self, ctx):
-        return int(self.visit(ctx.expr()))
+    def visitIntCastExpr(self, ctx: Any):
+        return int(cast(Any, self.visit(ctx.expr())))
 
-    def visitObjectFunctionCall(self, ctx):
+    def visitObjectFunctionCall(self, ctx: Any):
         object_name = ctx.ID(0).getText()
         function_name = ctx.ID(1).getText()
         args = [self.visit(e) for e in ctx.expr()]
@@ -255,7 +257,7 @@ class InterpreterVisitor(Kafe_GrammarVisitor):
         try:
             if is_library:
                 return libraryFunctionCall(
-                    self.libraries.get(object_name), function_name, args
+                    self.libraries[object_name], function_name, args
                 )
             elif is_variable:
                 return objectFunctionCall(
@@ -266,14 +268,14 @@ class InterpreterVisitor(Kafe_GrammarVisitor):
         except Exception as e:
             raise Exception(f"{object_name}: {str(e)}") from e
 
-    def visitObjectConstant(self, ctx):
+    def visitObjectConstant(self, ctx: Any):
         object_name = ctx.ID(0).getText()
         constant_name = ctx.ID(1).getText()
 
         is_library = self.libraries.get(object_name) != None
         is_variable = self.variables.get(object_name) != None
         if is_library:
-            return libraryConstant(self.libraries.get(object_name), constant_name)
+            return libraryConstant(self.libraries[object_name], constant_name)
         elif is_variable:
             return objectConstant(self.variables[object_name][1], constant_name)
         else:

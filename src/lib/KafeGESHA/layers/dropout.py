@@ -1,5 +1,6 @@
 """Dropout layer for regularization."""
 import random
+from typing import cast
 
 from lib.KafeGESHA.layers.layer import Layer
 
@@ -23,7 +24,7 @@ class Dropout(Layer):
         self.rate = rate
         self.seed = seed
         self._rng = random.Random(seed) if seed is not None else random
-        self._mask = None
+        self._mask: list[float] | None = None
 
     def forward(self, x):
         """Forward propagation with random mask in training mode."""
@@ -43,7 +44,8 @@ class Dropout(Layer):
         if not self._training or self.rate == 0.0:
             return output_error[:]
 
-        return [output_error[i] * self._mask[i] / (1.0 - self.rate) for i in range(len(output_error))]
+        mask = cast(list[float], self._mask)
+        return [output_error[i] * mask[i] / (1.0 - self.rate) for i in range(len(output_error))]
 
     def summary(self):
         print(f"Dropout(rate={self.rate})")

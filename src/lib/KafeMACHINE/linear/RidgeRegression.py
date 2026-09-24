@@ -52,7 +52,7 @@ class RidgeRegression(BaseMachine):
         m = len(X[0])
 
         Xt = list(zip(*X, strict=False))
-        XtX = [
+        XtX: list[list[float]] = [
             [sum(Xt[i][k] * Xt[j][k] for k in range(n)) for j in range(m)]
             for i in range(m)
         ]

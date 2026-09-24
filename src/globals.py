@@ -1,3 +1,5 @@
-current_dir = None
-program_path = None
-current_visitor = None
+from typing import Any
+
+current_dir: str | None = None
+program_path: str | None = None
+current_visitor: Any = None

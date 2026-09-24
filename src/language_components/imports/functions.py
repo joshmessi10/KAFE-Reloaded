@@ -1,4 +1,5 @@
 import pathlib
+from typing import cast
 
 from antlr4 import CommonTokenStream, FileStream
 
@@ -22,7 +23,7 @@ def importStmt(self, ctx):
 
     candidates = []
     if globals.current_dir:
-        candidates.append(pathlib.Path(globals.current_dir) / f"{module}.kf")
+        candidates.append(pathlib.Path(cast(str, globals.current_dir)) / f"{module}.kf")
     base = pathlib.Path(__file__).parent
     candidates.append(base / f"{module}.kf")
     candidates.append(base.parent / f"{module}.kf")
@@ -35,6 +36,7 @@ def importStmt(self, ctx):
     if filename is None:
         tried = ", ".join(str(p) for p in candidates)
         raiseModuleNotFound(module, tried)
+    filename = cast(pathlib.Path, filename)
 
     prev_dir = globals.current_dir
     globals.current_dir = str(filename.parent)

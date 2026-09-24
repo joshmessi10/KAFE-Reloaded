@@ -1,4 +1,5 @@
 import os
+from typing import cast
 
 import globals
 from global_utils import check_sig
@@ -7,7 +8,7 @@ from TypeUtils import string_type
 
 @check_sig([1], [string_type])
 def create(filename):
-    filename = os.path.join(globals.current_dir, filename)
+    filename = os.path.join(cast(str, globals.current_dir), filename)
     try:
         with open(filename, "x"):
             pass
@@ -17,7 +18,7 @@ def create(filename):
 
 @check_sig([1], [string_type])
 def read(filename):
-    filename = os.path.join(globals.current_dir, filename)
+    filename = os.path.join(cast(str, globals.current_dir), filename)
     try:
         with open(filename, "r", encoding="utf-8") as f:
             content = f.read()
@@ -28,7 +29,7 @@ def read(filename):
 
 @check_sig([2], [string_type], [string_type])
 def write(filename, content):
-    filename = os.path.join(globals.current_dir, filename)
+    filename = os.path.join(cast(str, globals.current_dir), filename)
     try:
         with open(filename, "w", encoding="utf-8") as f:
             f.write(content + "\n")
@@ -38,7 +39,7 @@ def write(filename, content):
 
 @check_sig([1], [string_type])
 def delete(filename):
-    filename = os.path.join(globals.current_dir, filename)
+    filename = os.path.join(cast(str, globals.current_dir), filename)
     try:
         os.remove(filename)
     except FileNotFoundError as e:

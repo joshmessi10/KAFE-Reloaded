@@ -1,3 +1,5 @@
+from typing import cast
+
 from errors import raiseFunctionCantReturnVoid, raiseTypeMismatch
 from global_utils import is_correct_type
 from TypeUtils import void_t
@@ -45,7 +47,7 @@ def check_value_type(value, declared_type: str):
         if obtained_signature is None:
             raiseTypeMismatch(value, declared_type)
 
-        act_params, act_ret = _parse_signature(obtained_signature)
+        act_params, act_ret = _parse_signature(cast(str, obtained_signature))
         exp_params, exp_ret = _parse_signature(decl)
 
         if not (

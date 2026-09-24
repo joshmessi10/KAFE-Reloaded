@@ -1,3 +1,6 @@
+from collections.abc import Callable
+from typing import Any, cast
+
 from errors import (
     raiseFunctionNotDefined,
     raiseLibraryNotImported,
@@ -19,7 +22,7 @@ def libraryFunctionCall(library, function_name, args):
     if func is None:
         raiseFunctionNotDefined(function_name)
 
-    result = func(*args)
+    result = cast(Callable[..., Any], func)(*args)
 
     return result
 

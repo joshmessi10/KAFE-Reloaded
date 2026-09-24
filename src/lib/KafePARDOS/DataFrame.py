@@ -1,5 +1,6 @@
 import json
 import os
+from typing import Any, cast
 
 import lib.KafeMATH.functions as math
 from global_utils import check_sig
@@ -24,8 +25,8 @@ class DataFrame:
             if len(row) != len(columns):
                 raise Exception("pardos: Inconsistent dimensions")
 
-        self.columns = list(columns)
-        self.data = [list(row) for row in data]
+        self.columns: list[str] = list(columns)
+        self.data: list[list[Any]] = [list(row) for row in data]
 
     def __repr__(self):
         content = f"cols: {self.columns}, rows: {self.data}"
@@ -188,7 +189,7 @@ class DataFrame:
         if os.path.isabs(path):
             real_path = path
         else:
-            real_path = os.path.join(globals.current_dir, path)
+            real_path = os.path.join(cast(str, globals.current_dir), path)
 
         with open(real_path, "w", encoding="utf-8") as f:
             # Write header
@@ -216,7 +217,7 @@ class DataFrame:
         if os.path.isabs(path):
             real_path = path
         else:
-            real_path = os.path.join(globals.current_dir, path)
+            real_path = os.path.join(cast(str, globals.current_dir), path)
 
         # Build records format
         records = []
@@ -271,7 +272,7 @@ class DataFrame:
         new_columns = [col for col in self.columns if col != column_name]
 
         # Create new data without the dropped column
-        new_data = []
+        new_data: list[list[Any]] = []
         for row in self.data:
             new_row = [row[i] for i in range(len(row)) if i != col_idx]
             new_data.append(new_row)
@@ -355,7 +356,7 @@ class DataFrame:
         Returns a new DataFrame with NaN values filled using backward fill.
         """
         # Initialize new_data with same structure
-        new_data = [[None] * len(self.columns) for _ in range(len(self.data))]
+        new_data: list[list[Any]] = [[None] * len(self.columns) for _ in range(len(self.data))]
 
         # Process column by column
         for col_idx in range(len(self.columns)):

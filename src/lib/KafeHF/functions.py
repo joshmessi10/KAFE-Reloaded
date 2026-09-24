@@ -19,13 +19,17 @@ Optional external dependency: datasets (Hugging Face).
     uv sync --locked --extra huggingface
 """
 
+from importlib import import_module
+from typing import Any
+
 from global_utils import check_sig
 from TypeUtils import string_type
 
 try:
-    from datasets import load_dataset as hf_load_dataset
+    hf_load_dataset: Any = import_module("datasets").load_dataset
     _HF_AVAILABLE = True
 except ImportError:
+    hf_load_dataset = None
     _HF_AVAILABLE = False
 
 

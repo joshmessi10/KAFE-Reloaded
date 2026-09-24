@@ -30,8 +30,11 @@ Or with separate activation layers (useful for visualizing the graph):
         SoftmaxLayer()
     ])
 """
+from typing import cast
+
 from global_utils import check_sig
 from lib.KafeGESHA.core.model import Model
+from lib.KafeGESHA.optimizers.optimizer import Optimizer
 from TypeUtils import gesha_type
 
 
@@ -97,7 +100,9 @@ class Sequential(Model):
         if not isinstance(grad, list):
             grad = [grad]
         for layer in reversed(self.layers):
-            grad = layer.backward(grad, learning_rate=self._optimizer_obj.lr)
+            grad = layer.backward(
+                grad, learning_rate=cast(Optimizer, self._optimizer_obj).lr
+            )
         return grad
 
     def parameters(self):

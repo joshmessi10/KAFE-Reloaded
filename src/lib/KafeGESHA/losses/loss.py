@@ -1,5 +1,6 @@
 """Abstract base class for loss functions."""
 from abc import ABC, abstractmethod
+from typing import Any
 
 from global_utils import check_sig
 from TypeUtils import (
@@ -13,12 +14,12 @@ from TypeUtils import (
 class LossFunction(ABC):
     @abstractmethod
     @check_sig([3], numeric_vector_types + [float_type, integer_type], numeric_vector_types + numeric_matrix_types + [float_type, integer_type], is_method=True)
-    def compute(self, y_true, y_pred):
+    def compute(self, y_true: Any, y_pred: Any) -> float:
         """Returns the average loss value"""
         pass
 
     @abstractmethod
     @check_sig([3], numeric_vector_types + [float_type, integer_type], numeric_vector_types + numeric_matrix_types + [float_type, integer_type], is_method=True)
-    def derivative(self, y_true, y_pred):
+    def derivative(self, y_true: Any, y_pred: Any) -> list[float]:
         """Returns the gradient ∂L/∂y_pred"""
         pass

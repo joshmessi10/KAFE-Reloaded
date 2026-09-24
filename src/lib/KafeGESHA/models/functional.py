@@ -29,9 +29,12 @@ Internally the model:
 3. In forward: it goes through in topological order, caching outputs per node.
 4. In backward: runs in reverse order, propagating gradients.
 """
+from typing import cast
+
 from lib.KafeGESHA.core.model import Model
 from lib.KafeGESHA.core.node import InputNode, Node
 from lib.KafeGESHA.layers.input_layer import Input
+from lib.KafeGESHA.optimizers.optimizer import Optimizer
 
 
 class Add:
@@ -275,7 +278,7 @@ class Functional(Model):
             for out_node, g in zip(self._output_nodes, grad, strict=False):
                 grad_map[id(out_node)] = g if isinstance(g, list) else [g]
 
-        lr = self._optimizer_obj.lr
+        lr = cast(Optimizer, self._optimizer_obj).lr
 
         # Go through in reverse order
         for node in reversed(self._exec_order):
