@@ -8,11 +8,11 @@ class ElasticNet(BaseMachine):
     """
     Elastic Net Regression — Combined L1 + L2 regularization.
 
-    Minimiza: ||y - Xθ||² + α * l1_ratio * ||θ||₁ + α * (1 - l1_ratio) * ||θ||²
+    Minimizes: ||y - Xθ||² + α * l1_ratio * ||θ||₁ + α * (1 - l1_ratio) * ||θ||²
 
     Combines the advantages of Ridge (L2) and Lasso (L1):
     - L1 can delete features (feature selection)
-    - L2 maneja features correlacionadas
+    - L2 handles correlated features
 
     Parameters:
         alpha: regularization force (default 1.0)

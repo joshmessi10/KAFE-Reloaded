@@ -15,9 +15,9 @@ class LinearDiscriminantAnalysis(BaseMachine):
 
     Mathematical foundation:
         1. Calculate averages per class: μ_k
-        2. Calculate intra-class 散 matrix: S_W = Σ_k Σ_{x∈C_k} (x - μ_k)(x - μ_k)^T
-        3. Calculate inter-class 散 matrix: S_B = Σ_k n_k (μ_k - μ)(μ_k - μ)^T
-        4. Resolver eigenproblema: S_W^{-1} S_B w = λ w
+        2. Calculate the within-class scatter matrix: S_W = Σ_k Σ_{x∈C_k} (x - μ_k)(x - μ_k)^T
+        3. Calculate the between-class scatter matrix: S_B = Σ_k n_k (μ_k - μ)(μ_k - μ)^T
+        4. Solve the eigenproblem: S_W^{-1} S_B w = λ w
         5. Select the k eigenvectors with the highest eigenvalues
 
     Projection: y = W^T x
@@ -32,7 +32,7 @@ class LinearDiscriminantAnalysis(BaseMachine):
         explained_variance_ratio_: proportion of variance explained
         means_: averages per class
         classes_: unique classes
-        prior_: probabilidades a priori
+        prior_: prior probabilities
     """
 
     def __init__(self, n_components=None, solver="svd", store_covariance=False):

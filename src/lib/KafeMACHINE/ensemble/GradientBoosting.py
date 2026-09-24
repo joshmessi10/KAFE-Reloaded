@@ -16,10 +16,10 @@ class GradientBoostingClassifier(BaseMachine):
     Mathematical foundation:
         1. Initialize base prediction: F_0(x) = 0.5 * ln((1-p)/p)
         2. For each iteration t = 1, ..., T:
-           a. Calcular probabilidades: p_i = sigmoid(F_{t-1}(x_i))
-           b. Calcular residuos: r_i = y_i - p_i
+           a. Calculate probabilities: p_i = sigmoid(F_{t-1}(x_i))
+           b. Calculate residuals: r_i = y_i - p_i
            c. Train tree h_t to predict residuals r_i
-           d. Actualizar: F_t(x) = F_{t-1}(x) + η * h_t(x)
+           d. Update: F_t(x) = F_{t-1}(x) + η * h_t(x)
         3. Final prediction: class = classes_[0] if sigmoid(F_T(x)) >= 0.5
 
         For classification with log-loss:
@@ -241,11 +241,11 @@ class GradientBoostingRegressor(BaseMachine):
     the errors of the previous one using gradient descent on the loss function.
 
     Mathematical foundation:
-        1. Inicializar: F_0(x) = mean(y)
+        1. Initialize: F_0(x) = mean(y)
         2. For each iteration t:
-           a. Calcular residuos: r_i = y_i - F_{t-1}(x_i)
+           a. Calculate residuals: r_i = y_i - F_{t-1}(x_i)
            b. Train tree h_t to predict residuals r_i
-           c. Actualizar: F_t(x) = F_{t-1}(x) + η * h_t(x)
+           c. Update: F_t(x) = F_{t-1}(x) + η * h_t(x)
 
     Parameters:
         n_estimators: number of trees (default 100)

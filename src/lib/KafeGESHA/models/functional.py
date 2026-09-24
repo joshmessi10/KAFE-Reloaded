@@ -98,8 +98,8 @@ class Functional(Model):
     """Model based on layered DAG graph.
 
     Supports:
-    - Grafos lineales (equivalente a Sequential).
-    - Skip-connections simples (2 ramas + Add).
+    - Linear graphs (equivalent to Sequential).
+    - Simple skip connections (2 branches + Add).
     - Multiple entrances and exits (prepared structure).
 
     Internally builds the topology using topological sort (BFS
@@ -197,7 +197,7 @@ class Functional(Model):
         return topo_order
 
     # ------------------------------------------------------------------
-    # Interfaz abstracta Model
+    # Abstract Model interface
     # ------------------------------------------------------------------
 
     def forward(self, x):

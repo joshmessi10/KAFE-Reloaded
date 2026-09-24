@@ -6,7 +6,7 @@ Exported public API:
     Functional — DAG network model
     Dense — fully connected layer
     Dropout — dropout regularization
-    Flatten    — aplanar tensores
+    Flatten    — flatten tensors
     Input — symbolic input (Functional API)
     Add — branch merge (Functional API)
     ReLULayer, SigmoidLayer, TanhLayer, SoftmaxLayer — activations as layers

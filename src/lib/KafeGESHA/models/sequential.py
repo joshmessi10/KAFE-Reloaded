@@ -79,7 +79,7 @@ class Sequential(Model):
         return self
 
     # ------------------------------------------------------------------
-    # Interfaz abstracta Model
+    # Abstract Model interface
     # ------------------------------------------------------------------
 
     def forward(self, x):

@@ -272,7 +272,7 @@ class GridSearchCV(BaseMachine):
 
     Attributes (after fit):
         best_params_: best parameters found
-        best_score_: mejor score obtenido
+        best_score_: best score obtained
         cv_results_: detailed results of all combinations
         n_splits_: number of folds used
     """
@@ -380,7 +380,7 @@ class RandomizedSearchCV(BaseMachine):
 
     Attributes (after fit):
         best_params_: best parameters found
-        best_score_: mejor score obtenido
+        best_score_: best score obtained
         cv_results_: detailed results of all combinations evaluated
         n_iter_: number of iterations performed
     """

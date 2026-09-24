@@ -16,8 +16,8 @@ class RobustScaler(BaseMachine):
         X_scaled = (X - median) / IQR
 
         Where:
-            median = Q2 (percentil 50)
-            IQR = Q3 - Q1 (percentil 75 - percentil 25)
+            median = Q2 (50th percentile)
+            IQR = Q3 - Q1 (75th percentile - 25th percentile)
 
     Parameters:
         with_centering: if True, centers using median (default True)

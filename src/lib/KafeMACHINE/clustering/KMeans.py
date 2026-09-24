@@ -60,7 +60,7 @@ class KMeans(BaseMachine):
         2. For each point, calculate D(x)^2 = distance squared
            to the nearest centroid.
         3. Select the next centroid with probability
-           proporcional a D(x)^2.
+           proportional to D(x)^2.
         4. Repeat until you choose k centroids.
 
         Ensures sparsely initialized centroids,
@@ -149,7 +149,7 @@ class KMeans(BaseMachine):
             2. Repeat until convergence or max_iter:
                to. Assign each point to the nearest centroid (E)
                b. Recalculate centroids as average (M)
-            3. Calcular inercia final
+            3. Calculate final inertia
         """
         matrix, cols, is_df = self._unwrap_data(X)
         matrix = self._validate_matrix_shape(matrix)

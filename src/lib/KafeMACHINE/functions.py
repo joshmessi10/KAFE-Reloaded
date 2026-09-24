@@ -439,8 +439,8 @@ def robust_scaler(with_centering=1, with_scaling=1, quantile_low=25.0, quantile_
 
     with_centering: center using median (1=yes, 0=no)
     with_scaling: scale using IQR (1=yes, 0=no)
-    quantile_low: percentil inferior (default: 25.0)
-    quantile_high: percentil superior (default: 75.0)
+    quantile_low: lower percentile (default: 25.0)
+    quantile_high: upper percentile (default: 75.0)
     """
     return RobustScaler(bool(with_centering), bool(with_scaling), (quantile_low, quantile_high))
 

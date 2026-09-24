@@ -244,7 +244,7 @@ def silhouette_score(X, labels):
         Silhouette score = average of s(i) for all points
 
         Interpretation:
-        - s ≈ 1: punto bien clusterizado
+        - s ≈ 1: well clustered point
         - s ≈ 0: point on the border between clusters
         - s < 0: point in incorrect cluster
 
@@ -253,7 +253,7 @@ def silhouette_score(X, labels):
         labels: cluster assignment for each point (List[INT])
 
     Returns:
-        FLOAT: silhouette score promedio (-1 a 1)
+        FLOAT: average silhouette score (-1 to 1)
     """
     if not X or not labels:
         raise Exception("silhouette_score: Empty input data")

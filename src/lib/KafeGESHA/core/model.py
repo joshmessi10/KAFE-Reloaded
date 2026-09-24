@@ -83,7 +83,7 @@ class Model(ABC):
         fit(X, y, epochs, batch_size, x_val, y_val) — generic training.
         predict(x) — inference on a single example.
         predict_proba(x) — exit probability(s).
-        predict_label(x) — etiqueta predicha (argmax o threshold 0.5).
+        predict_label(x) — predicted label (argmax or threshold 0.5).
         evaluate(X, y) — calculates the loss on a data set.
         set_lr(new_lr) — updates the learning rate.
         summary() — prints the architecture.
@@ -381,7 +381,7 @@ class Model(ABC):
             s_sq = sum(p_sq) + eps
             target = [v / s_sq for v in p_sq]
 
-        # MSE entre asignaciones out (p) y targets t
+        # MSE between output assignments (p) and targets t
         loss_val = sum((p[c] - target[c]) ** 2 for c in range(k))
         grad_z = [2.0 * (p[c] - target[c]) / k for c in range(k)]
 
