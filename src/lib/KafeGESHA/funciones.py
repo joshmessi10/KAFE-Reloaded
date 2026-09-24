@@ -48,16 +48,15 @@ from TypeUtils import (
     vector_numeros_t, matriz_numeros_t,
     lista_cadenas_t, lista_cualquiera_t, void_t
 )
-from lib.KafeGESHA.layers.dense import Dense
-from lib.KafeGESHA.layers.dropout import Dropout
-from lib.KafeGESHA.layers.flatten import Flatten
-from lib.KafeGESHA.layers.activation_layers import (
-    ReLULayer, SigmoidLayer, TanhLayer, SoftmaxLayer, LinearLayer
-)
-from lib.KafeGESHA.layers.input_layer import Input
-from lib.KafeGESHA.models.sequential import Sequential
-from lib.KafeGESHA.models.functional import Functional, Add
+from lib.KafeGESHA.layers import Dense, Dropout, Flatten, Input, Add, ActivationLayer
+from lib.KafeGESHA.models import Sequential, Functional
 from lib.KafeNUMK import funciones as numk
+
+def ReLULayer(): return ActivationLayer("relu")
+def SigmoidLayer(): return ActivationLayer("sigmoid")
+def TanhLayer(): return ActivationLayer("tanh")
+def SoftmaxLayer(): return ActivationLayer("softmax")
+def LinearLayer(): return ActivationLayer("linear")
 
 
 # --------------------------------------------------------------------------
@@ -215,26 +214,26 @@ def set_lr(model, new_lr):
 @check_sig([1], vector_numeros_t)
 def tensor_zeros(shape):
     """Crea un tensor de ceros con la forma dada. Delega a KafeNUMK."""
-    from lib.KafeGESHA.core.tensor import tensor_zeros as _tz
+    from lib.KafeGESHA.core import tensor_zeros as _tz
     return _tz(shape)
 
 
 @check_sig([1], vector_numeros_t)
 def tensor_ones(shape):
     """Crea un tensor de unos con la forma dada. Delega a KafeNUMK."""
-    from lib.KafeGESHA.core.tensor import tensor_ones as _to
+    from lib.KafeGESHA.core import tensor_ones as _to
     return _to(shape)
 
 
 @check_sig([1], vector_numeros_t)
 def tensor_random(shape):
     """Crea un tensor con valores aleatorios. Delega a KafeNUMK."""
-    from lib.KafeGESHA.core.tensor import tensor_random as _tr
+    from lib.KafeGESHA.core import tensor_random as _tr
     return _tr(shape)
 
 
 @check_sig([1], lista_cualquiera_t)
 def tensor(data):
     """Crea un tensor desde datos. Delega a KafeNUMK."""
-    from lib.KafeGESHA.core.tensor import Tensor as _Tensor
+    from lib.KafeGESHA.core import Tensor as _Tensor
     return _Tensor(data)
