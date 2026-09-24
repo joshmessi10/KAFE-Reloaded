@@ -5,10 +5,6 @@ on:
   pull_request:
   workflow_dispatch:
 
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: false
-
 jobs:
   validate:
     permissions:
@@ -37,7 +33,7 @@ jobs:
             if [[ "$BEFORE_SHA" =~ ^0+$ ]]; then
               changed_paths="$(git ls-tree -r --name-only "$AFTER_SHA")"
             else
-              changed_paths="$(git diff --name-only "$BEFORE_SHA" "$AFTER_SHA")"
+              changed_paths="$(git diff --no-renames --name-only "$BEFORE_SHA" "$AFTER_SHA")"
             fi
 
             if grep -Eq '^(docs/.*|mkdocs\.yml)$' <<< "$changed_paths"; then
@@ -76,6 +72,10 @@ jobs:
       ${{ github.ref == 'refs/heads/main' &&
           (github.event_name == 'workflow_dispatch' ||
            (github.event_name == 'push' && needs.validate.outputs.docs_changed == 'true')) }}
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}
+      cancel-in-progress: false
+      queue: max
     permissions:
       contents: write
     timeout-minutes: 15
