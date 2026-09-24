@@ -2,15 +2,17 @@
 
 ## Current Feature
 
-Python quality gates — local Tasks 1–8 complete; Task 9 hosted verification remains.
+Python quality-gate implementation and workflow remediation — validated at exact SHA `c23163de6fee34b8da7d9a25b4f2896b331c22e1`; branch remains unmerged.
 
 ## Status
 
-Tasks 1–8 of the approved Python quality-gates plan are complete locally on `chore/python-quality-gates`. Task 1 recorded impact and progress only. Tasks 2–7 implemented Ruff, basedpyright, codespell, the suppression-policy checker, and the test/docs/Nix workflow gates. Task 8 updates this guidance, ADR-0012, and progress/history records.
+The approved Python quality-gates implementation and workflow-warning remediation are complete on `chore/python-quality-gates` and were pushed at implementation/workflow SHA `c23163de6fee34b8da7d9a25b4f2896b331c22e1`. Hosted checks passed at that exact SHA. The plan requires hosted checks on the resulting evidence-update SHA before final branch acceptance. No pull request or merge was created.
 
-The Task 3 locked suite passed 498 tests in 350.67 seconds at 83.86% coverage with no pytest warnings; Ruff passed, and basedpyright reported 0 errors and 0 warnings. Codespell completed with no findings; the policy checker passed its five focused tests and the tracked-source scan. The full suite has not been rerun since Task 5 added those focused policy tests. Task 6–7 workflow checks and Task 8 documentation checks were structural only. The `uv audit` gate is configured in CI, but no local or hosted result for this quality-gates branch is recorded yet.
+At that exact SHA, GitHub `Run Tests` run `35986880627` passed: Ruff, basedpyright (0 errors, 0 warnings, 0 notes), codespell, the Python suppression-policy check, `uv audit`, and the full suite (503 passed in 96.41 seconds, 83.86% coverage, above the 80% threshold). The test run had no pytest warnings. `Deploy Docs` run `35986880658` passed its strict documentation build; its deploy job was skipped by the feature-branch guard. Both relevant check runs had zero GitHub annotations.
 
-The user authorized commits and pushes when needed. Commits are local through implementation/workflow HEAD `0914d6fdd8302321c579fb1a4a12f7b2f98606dd`; Task 9 owns the pending push and exact-SHA hosted verification. No hosted CI result is claimed. Continue on the existing branch; branch changes are outside the remaining task.
+Final local evidence after the Python formatting correction: Ruff and codespell passed with no findings; basedpyright reported 0 errors and 0 warnings; the policy checker and its five focused tests passed; `uv audit` reported no vulnerabilities or adverse statuses; the full suite passed 503 tests in 347.09 seconds at 83.86% coverage with no pytest warnings; and the strict MkDocs build passed. Workflow/configuration parsing and `git diff --check` passed. Generated ANTLR files remain ignored and untracked.
+
+The user authorized commits and pushes when needed. Continue in the existing checkout and branch. The branch remains unmerged; do not create a pull request or merge without an explicit request.
 
 ## Completed Workstream — English Repository Migration
 

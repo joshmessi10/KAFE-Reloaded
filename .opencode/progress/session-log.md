@@ -90,3 +90,13 @@ Format for each entry:
 - **Validation**: Local documentation checks passed: hidden-file codespell, the substantive root guidance mirror, `opencode.json` parsing and permission assertion, `pyproject.toml` and workflow contract assertions, and `git diff --check`. No application tests were run for Task 8. Task 9 will run the final full suite and dependency audit; independent Task 8 review is pending.
 - **Significant history records**: `.opencode/history/2026/2026-09.md`; `.opencode/adr/decisions.md`.
 - **Next step**: Task 9 — run all local gates, push the authorized branch, and observe required hosted checks at the exact pushed SHA.
+
+## 2026-09-24: Python Quality Gates — Task 9 Hosted Verification
+
+- **Author**: KAFE Engineering System
+- **Summary**: Recorded Task 9 hosted verification for the approved Python quality-gates implementation/workflow state, which was pushed to `chore/python-quality-gates` at `c23163de6fee34b8da7d9a25b4f2896b331c22e1`. The evidence update is subject to the plan-required final-SHA check before branch acceptance; no pull request or merge was created.
+- **Hosted test result**: GitHub Actions `Run Tests` run `35986880627` passed at the exact SHA. All configured gates passed, including `uv audit`, Ruff, basedpyright (0 errors, 0 warnings, 0 notes), codespell, and the suppression-policy check. The full suite passed 503 tests in 96.41 seconds at 83.86% coverage; the pytest run reported no warnings. Check run `107591528348` had zero annotations.
+- **Hosted docs result**: `Deploy Docs` run `35986880658` passed at the exact SHA. Its validate job `107591528288` completed the strict MkDocs build successfully; its deploy job was skipped by the feature-branch guard. The validate check run had zero annotations.
+- **Local result**: The final local suite passed 503 tests in 347.09 seconds at 83.86% coverage. Ruff, basedpyright, codespell, the suppression-policy checker, its five focused tests, `uv audit`, and the strict docs build passed. Workflow/configuration validation and `git diff --check` passed.
+- **Warning remediation**: The first hosted attempt annotated deprecated action runtimes, the moving Ubuntu runner image, and setup-uv cache-key contention. The workflow fix pins Ubuntu 24.04, updates active action versions, and separates setup-uv cache keys by job. The corrected hosted check runs above produced zero annotations.
+- **Git state**: The published branch remains unmerged. The active default-branch ruleset requires a pull request and one approving review; no required status-check rule was returned. No PR, merge, branch switch, or Nix workflow change occurred.

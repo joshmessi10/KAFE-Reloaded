@@ -1,10 +1,10 @@
 # Current Work
 
-Feature: Python quality gates — local Tasks 1–8 complete; Task 9 remote verification pending
-Status: active on `chore/python-quality-gates`; hosted CI result for this branch is not yet recorded
-Current step: Task 8 updated canonical quality-gate guidance, ADR-0012, project status records, and the CLAUDE.md edit permission without changing application code, Python tool configuration, tests, or workflows.
-Next step: Task 9 — push the approved branch when ready and verify hosted checks at the exact pushed SHA. Record only observed remote results.
-Blockers: Hosted validation is pending Task 9; no local documentation-task blocker.
+Feature: Python quality-gates implementation and workflows — validated at exact SHA `c23163de6fee34b8da7d9a25b4f2896b331c22e1`
+Status: Implementation/workflow changes passed hosted checks at `c23163de6fee34b8da7d9a25b4f2896b331c22e1`; results are recorded below. The branch remains unmerged.
+Current step: Task 9 records the local gates and exact-SHA hosted results for the implementation/workflow state at `c23163de6fee34b8da7d9a25b4f2896b331c22e1`.
+Next step: Keep the branch unmerged and use the verified implementation as the base for the next repository-alignment deliverable; Task 9 final branch acceptance follows CI for the evidence-update SHA. Do not create a pull request or merge without an explicit request.
+Blockers: The plan requires hosted checks on the resulting evidence-update SHA before final branch acceptance.
 Related ADRs: ADR-0012.
 
 ## Completed Work — English Repository Migration, Task 7 (2026-09-24)
