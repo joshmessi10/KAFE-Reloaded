@@ -1,5 +1,18 @@
 # Current Work
 
+## Test: Perceptron Simple OR gate (KafeGESHA PerceptronSimple)
+
+**Status:** in_progress
+
+**Feature:** Fixture de test `tests/KafeGESHA/PerceptronSimple/or_gate.kf` + `or_gate.expec` — red neuronal (perceptron simple) para la compuerta OR con KafeGESHA, con semilla fija para reprodrucibilidad.
+
+**Current step:** Builder crea fixture y genera .expec determinista
+**Next step:** Tester valida pytest; Reviewer /dod; Historian registra
+**Blockers:** None
+**Related ADRs:** None
+
+---
+
 ## Fix: model_selection test fixtures and test_Algorithms error support
 
 **Status:** Implemented and verified

@@ -1,0 +1,57 @@
+-- ============================================
+-- Perceptron Simple: Compuerta OR
+-- Problema linealmente separable
+-- ============================================
+-- Teoria:
+--   El perceptron simple es una neurona artificial
+--   que aplica una transformacion lineal seguida de
+--   una funcion de activacion.
+--
+--   z = w1*x1 + w2*x2 + b
+--   y = sigmoid(z)
+--
+--   La compuerta OR retorna 1 cuando AL MENOS UNA
+--   entrada es 1. Es linealmente separable porque
+--   existe un hiperplano que separa las clases.
+--
+--   Pesos teoricos para OR:
+--     w1 = 20, w2 = 20, b = -10
+--     sigmoid(20*0 + 20*0 - 10) = sigmoid(-10) ~ 0
+--     sigmoid(20*0 + 20*1 - 10) = sigmoid(10)  ~ 1
+--     sigmoid(20*1 + 20*0 - 10) = sigmoid(10)  ~ 1
+--     sigmoid(20*1 + 20*1 - 10) = sigmoid(30)  ~ 1
+-- ============================================
+
+import geshaDeep;
+
+show("=== Perceptron Simple: Compuerta OR ===");
+
+-- Datos de entrenamiento: todas las combinaciones de 2 bits
+List[List[FLOAT]] x_train = [[0.0, 0.0], [0.0, 1.0], [1.0, 0.0], [1.0, 1.0]];
+List[INT] y_train = [0, 1, 1, 1];
+
+-- Crear modelo: 1 neurona, sigmoid, 2 entradas, semilla fija para reprodrucibilidad
+GESHA layer = geshaDeep.create_dense(1, "sigmoid", [2], 0.0, 42);
+GESHA model = geshaDeep.sequential([layer]);
+
+-- Compilar con SGD y binary crossentropy
+model.compile("sgd", "binary_crossentropy", []);
+
+-- Entrenar durante 1000 epocas
+show("Entrenando perceptron simple...");
+model.fit(x_train, y_train, 1000, 1);
+
+-- Evaluar con todas las entradas
+show("\nResultados:");
+for (p in x_train):
+    List[FLOAT] prob = model.predict(p);
+    INT lbl = model.predict_label(p);
+    show(str(p) + " -> prob=" + str(prob[0]) + ", clase=" + str(lbl));
+;
+
+show("\nEsperado:");
+show("[0, 0] -> clase=0");
+show("[0, 1] -> clase=1");
+show("[1, 0] -> clase=1");
+show("[1, 1] -> clase=1");
+show("\nPerceptron simple entrenado exitosamente.");
