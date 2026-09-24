@@ -2,7 +2,6 @@ import subprocess
 import sys
 from pathlib import Path
 
-
 CHECKER = Path(__file__).resolve().parents[1] / "scripts" / "check_quality_policy.py"
 
 
