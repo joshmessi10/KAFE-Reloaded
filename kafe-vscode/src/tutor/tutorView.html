@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src {{CSP_SOURCE}}; style-src {{CSP_SOURCE}}; script-src 'nonce-{{NONCE}}';">
+  <title>KAFE Tutor</title>
+  <link rel="stylesheet" href="{{STYLE_URI}}">
+</head>
+<body>
+  <main>
+    <header>
+      <h1>KAFE Tutor</h1>
+      <p id="provider-status" role="status">Set a learning goal to begin. Coaching requires a configured provider; KAFE editing and Run remain available.</p>
+    </header>
+
+    <section aria-labelledby="goal-heading">
+      <h2 id="goal-heading">Learning goal</h2>
+      <p id="empty-state">Describe what you want to learn or build in KAFE.</p>
+      <form id="goal-form">
+        <label for="goal-input">Your goal</label>
+        <textarea id="goal-input" rows="3" required></textarea>
+        <button type="submit">Start session</button>
+      </form>
+    </section>
+
+    <section aria-labelledby="milestones-heading">
+      <h2 id="milestones-heading">Proposed milestones</h2>
+      <p id="milestones-empty">Milestones will appear here for your review.</p>
+      <ol id="milestone-list"></ol>
+      <button id="confirm-milestones" type="button" disabled>Confirm milestones</button>
+      <p id="milestone-status" role="status" aria-live="polite" hidden></p>
+    </section>
+
+    <section aria-labelledby="coaching-heading">
+      <h2 id="coaching-heading">Coaching</h2>
+      <p>Start with a hint and a next step. You can ask for a direct answer, example, or proposed change.</p>
+      <div id="message-list" role="log" aria-live="polite"></div>
+      <p id="interaction-status" role="status" aria-live="polite" hidden></p>
+      <form id="message-form">
+        <label for="message-input">Message to tutor</label>
+        <textarea id="message-input" rows="3" required></textarea>
+        <button id="send-message" type="submit" disabled>Send message</button>
+      </form>
+      <button id="retry-message" type="button" hidden>Retry reviewed request</button>
+    </section>
+
+    <section aria-labelledby="context-heading">
+      <h2 id="context-heading">Request context sources</h2>
+      <p>Review what may be included with your next request. Remove optional sources here.</p>
+      <ul id="context-list"></ul>
+      <h3>Exact request payload</h3>
+      <pre id="context-payload">Type a message to preview its context before sending.</pre>
+    </section>
+
+    <section aria-labelledby="evidence-heading">
+      <h2 id="evidence-heading">KAFE machine evidence</h2>
+      <p id="evidence-empty">No learner-started KAFE run has been attached.</p>
+      <div id="evidence-content" hidden>
+        <p id="evidence-summary"></p>
+        <h3>Output</h3><pre id="evidence-stdout"></pre>
+        <h3>Diagnostics</h3><pre id="evidence-stderr"></pre>
+      </div>
+    </section>
+
+    <section aria-labelledby="proposal-heading">
+      <h2 id="proposal-heading">Proposed code change</h2>
+      <p id="proposal-empty">No code change is proposed.</p>
+      <div id="proposal-content" hidden>
+        <p id="proposal-description"></p>
+        <p>Review the native diff before accepting a change.</p>
+        <div class="actions">
+          <button id="accept-proposal" type="button">Accept proposal</button>
+          <button id="reject-proposal" type="button">Reject proposal</button>
+        </div>
+      </div>
+    </section>
+
+    <footer><button id="clear-progress" type="button">Clear progress</button></footer>
+  </main>
+  <script nonce="{{NONCE}}" src="{{SCRIPT_URI}}"></script>
+</body>
+</html>

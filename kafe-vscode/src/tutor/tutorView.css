@@ -1,0 +1,24 @@
+:root { color-scheme: light dark; }
+* { box-sizing: border-box; }
+body { color: var(--vscode-foreground); background: var(--vscode-sideBar-background); font: var(--vscode-font-size) var(--vscode-font-family); margin: 0; }
+main { padding: 12px; max-width: 52rem; }
+h1 { font-size: 1.25rem; margin-top: 0; }
+h2 { font-size: 1rem; margin: 0 0 8px; }
+h3 { font-size: .9rem; }
+section { border-top: 1px solid var(--vscode-panel-border); padding: 14px 0; }
+p { line-height: 1.5; }
+code { font-family: var(--vscode-editor-font-family, monospace); color: var(--vscode-textPreformat-foreground, var(--vscode-foreground)); background: var(--vscode-textCodeBlock-background); padding: 0 2px; border-radius: 2px; }
+label { display: block; margin-bottom: 6px; }
+textarea, input { width: 100%; color: var(--vscode-input-foreground); background: var(--vscode-input-background); border: 1px solid var(--vscode-input-border, var(--vscode-contrastBorder)); border-radius: 2px; padding: 6px; font: inherit; }
+textarea { resize: vertical; }
+button { color: var(--vscode-button-foreground); background: var(--vscode-button-background); border: 1px solid var(--vscode-contrastBorder, transparent); border-radius: 2px; padding: 6px 10px; margin-top: 7px; cursor: pointer; font: inherit; }
+button:hover { background: var(--vscode-button-hoverBackground); }
+button:disabled { opacity: .6; cursor: default; }
+button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px solid var(--vscode-focusBorder); outline-offset: 2px; }
+ol, ul { padding-left: 22px; }
+li { margin: 8px 0; }
+li button { margin-left: 8px; }
+pre { white-space: pre-wrap; overflow-wrap: anywhere; background: var(--vscode-textCodeBlock-background); border: 1px solid var(--vscode-panel-border); padding: 8px; }
+.actions { display: flex; gap: 8px; flex-wrap: wrap; }
+footer { border-top: 1px solid var(--vscode-panel-border); padding-top: 10px; }
+@media (forced-colors: active) { section, pre { border: 1px solid CanvasText; } button, input, textarea { border: 1px solid ButtonText; } }

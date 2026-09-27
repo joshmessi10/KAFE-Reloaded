@@ -1,0 +1,51 @@
+{
+  "runtime": {
+    "version": "0.1.0",
+    "knowledgePackVersion": "0.1.0",
+    "pythonRequirement": ">=3.10",
+    "antlrRuntimeVersion": "4.13.2",
+    "sourceRevision": "857a07dfaecda2583c3f0460d5756ea6893f19d7",
+    "archiveSha256": "5562825771d05a78369d21380fd0ee1acb8ef3adc384f88cb01320c6172f8a30",
+    "releasePublished": false,
+    "archiveUrl": "https://github.com/joshmessi10/KAFE-Reloaded/releases/download/kafe-runtime-v0.1.0/kafe-runtime-0.1.0.zip",
+    "manifestUrl": "https://github.com/joshmessi10/KAFE-Reloaded/releases/download/kafe-runtime-v0.1.0/kafe-runtime-0.1.0.manifest.json"
+  },
+  "uv": {
+    "version": "0.11.3",
+    "releasePage": "https://github.com/astral-sh/uv/releases/tag/0.11.3",
+    "targets": {
+      "win32-x64": {
+        "asset": "uv-x86_64-pc-windows-msvc.zip",
+        "format": "zip",
+        "executable": "uv-x86_64-pc-windows-msvc/uv.exe",
+        "url": "https://releases.astral.sh/github/uv/releases/download/0.11.3/uv-x86_64-pc-windows-msvc.zip",
+        "checksumUrl": "https://releases.astral.sh/github/uv/releases/download/0.11.3/uv-x86_64-pc-windows-msvc.zip.sha256",
+        "sha256": "ae681c0aaec7cc96af184648cb88d73f8393ed60fa5880abdd6bdb910f9b227c"
+      },
+      "darwin-x64": {
+        "asset": "uv-x86_64-apple-darwin.tar.gz",
+        "format": "tar.gz",
+        "executable": "uv-x86_64-apple-darwin/uv",
+        "url": "https://releases.astral.sh/github/uv/releases/download/0.11.3/uv-x86_64-apple-darwin.tar.gz",
+        "checksumUrl": "https://releases.astral.sh/github/uv/releases/download/0.11.3/uv-x86_64-apple-darwin.tar.gz.sha256",
+        "sha256": "b0e05e0b43a000fdc2132ee3f3400ba5dee427bc2337d3ec4eb8cf4f3d5722af"
+      },
+      "darwin-arm64": {
+        "asset": "uv-aarch64-apple-darwin.tar.gz",
+        "format": "tar.gz",
+        "executable": "uv-aarch64-apple-darwin/uv",
+        "url": "https://releases.astral.sh/github/uv/releases/download/0.11.3/uv-aarch64-apple-darwin.tar.gz",
+        "checksumUrl": "https://releases.astral.sh/github/uv/releases/download/0.11.3/uv-aarch64-apple-darwin.tar.gz.sha256",
+        "sha256": "2bc3d0c7bf2bd08325b1e170abac6f7e5b3346e1d4eab3370d17cefec934996f"
+      },
+      "linux-x64": {
+        "asset": "uv-x86_64-unknown-linux-gnu.tar.gz",
+        "format": "tar.gz",
+        "executable": "uv-x86_64-unknown-linux-gnu/uv",
+        "url": "https://releases.astral.sh/github/uv/releases/download/0.11.3/uv-x86_64-unknown-linux-gnu.tar.gz",
+        "checksumUrl": "https://releases.astral.sh/github/uv/releases/download/0.11.3/uv-x86_64-unknown-linux-gnu.tar.gz.sha256",
+        "sha256": "c0f3236f146e55472663cfbcc9be3042a9f1092275bbe3fe2a56a6cbfd3da5ce"
+      }
+    }
+  }
+}

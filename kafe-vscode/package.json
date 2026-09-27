@@ -1,105 +1,164 @@
 {
-    "name": "kafe-neural-suite",
-    "displayName": "KAFE Neural Development Suite ☕️",
-    "description": "Professional DSL for Deep Learning, Functional Programming, and Symbolic Processing. Built for the next generation of AI developers.",
-    "version": "0.0.4",
-    "icon": "icon.png",
-    "publisher": "KAFEGROUP",
-    "main": "./extension.js",
-    "license": "MIT",
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/joshmessi10/KAFE-Reloaded"
-    },
-    "bugs": {
-        "url": "https://github.com/joshmessi10/KAFE-Reloaded/issues"
-    },
-    "engines": {
-        "vscode": "^1.74.0"
-    },
-    "categories": [
-        "Programming Languages",
-        "Data Science",
-        "Education",
-        "Other"
+  "name": "kafe-neural-suite",
+  "displayName": "KAFE Neural Development Suite",
+  "description": "Edit and run KAFE programs with a guided AI tutor.",
+  "version": "0.0.5",
+  "publisher": "KAFEGROUP",
+  "icon": "icon.png",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/joshmessi10/KAFE-Reloaded"
+  },
+  "bugs": {
+    "url": "https://github.com/joshmessi10/KAFE-Reloaded/issues"
+  },
+  "engines": {
+    "vscode": "^1.96.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Data Science",
+    "Education"
+  ],
+  "keywords": [
+    "kafe",
+    "machine-learning",
+    "deep-learning",
+    "education",
+    "dsl"
+  ],
+  "main": "./extension.js",
+  "activationEvents": [
+    "onLanguage:kafe",
+    "onCommand:kafe.runFile",
+    "onCommand:kafe.installRuntime",
+    "onCommand:kafe.openTutor",
+    "onCommand:kafe.configureProvider",
+    "onCommand:kafe.clearProviderKey",
+    "onCommand:kafe.clearTutorProgress",
+    "onView:kafeTutorView"
+  ],
+  "contributes": {
+    "languages": [
+      {
+        "id": "kafe",
+        "aliases": [
+          "KAFE",
+          "Kafe Language"
+        ],
+        "extensions": [
+          ".kf"
+        ],
+        "configuration": "./language-configuration.json"
+      }
     ],
-    "keywords": [
-        "kafe",
-        "deep-learning",
-        "neural-networks",
-        "functional-programming",
-        "symbolic-processing",
-        "ai",
-        "dsl"
+    "grammars": [
+      {
+        "language": "kafe",
+        "scopeName": "source.kafe",
+        "path": "./syntaxes/kafe.tmLanguage.json"
+      }
     ],
-    "galleryBanner": {
-        "color": "#1e1e1e",
-        "theme": "dark"
+    "snippets": [
+      {
+        "language": "kafe",
+        "path": "./snippets/kafe.json"
+      }
+    ],
+    "commands": [
+      {
+        "command": "kafe.runFile",
+        "title": "KAFE: Run File",
+        "icon": "$(play)",
+        "enablement": "editorLangId == kafe && isWorkspaceTrusted"
+      },
+      {
+        "command": "kafe.installRuntime",
+        "title": "KAFE: Install Runtime",
+        "icon": "$(cloud-download)",
+        "enablement": "isWorkspaceTrusted"
+      },
+      {
+        "command": "kafe.openTutor",
+        "title": "KAFE: Open Tutor",
+        "icon": "$(mortar-board)"
+      },
+      {
+        "command": "kafe.configureProvider",
+        "title": "KAFE: Configure Provider Key"
+      },
+      {
+        "command": "kafe.clearProviderKey",
+        "title": "KAFE: Clear Provider Key"
+      },
+      {
+        "command": "kafe.clearTutorProgress",
+        "title": "KAFE: Clear Tutor Progress"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "kafeTutor",
+          "title": "KAFE Tutor",
+          "icon": "media/tutor.svg"
+        }
+      ]
     },
-    "contributes": {
-        "languages": [
-            {
-                "id": "kafe",
-                "aliases": [
-                    "KAFE",
-                    "kafe",
-                    "Kafe Language"
-                ],
-                "extensions": [
-                    ".kf"
-                ],
-                "configuration": "./language-configuration.json"
-            }
-        ],
-        "commands": [
-            {
-                "command": "kafe.installDependencies",
-                "title": "KAFE: Instalar Dependencias del Sistema",
-                "category": "KAFE",
-                "icon": "$(gear)"
-            },
-            {
-                "command": "kafe.runFile",
-                "title": "KAFE: Ejecutar Código (Run)",
-                "category": "KAFE",
-                "icon": "$(play)"
-            }
-        ],
-        "keybindings": [
-            {
-                "command": "kafe.runFile",
-                "key": "ctrl+f5",
-                "mac": "cmd+f5",
-                "when": "editorLangId == kafe"
-            }
-        ],
-        "menus": {
-            "editor/title": [
-                {
-                    "when": "editorLangId == kafe",
-                    "command": "kafe.runFile",
-                    "group": "navigation"
-                }
-            ],
-            "commandPalette": [
-                {
-                    "command": "kafe.installDependencies",
-                    "when": "editorLangId == kafe"
-                }
-            ]
-        },
-        "grammars": [
-            {
-                "language": "kafe",
-                "scopeName": "source.kafe",
-                "path": "./syntaxes/kafe.tmLanguage.json"
-            }
-        ],
-        "snippets": [
-            {
-                "language": "kafe",
-                "path": "./snippets/kafe.json"
-            }
-        ]
+    "views": {
+      "kafeTutor": [
+        {
+          "id": "kafeTutorView",
+          "name": "KAFE Tutor",
+          "type": "webview"
+        }
+      ]
+    },
+    "keybindings": [
+      {
+        "command": "kafe.runFile",
+        "key": "ctrl+f5",
+        "mac": "cmd+f5",
+        "when": "editorLangId == kafe && isWorkspaceTrusted"
+      }
+    ],
+    "menus": {
+      "editor/title": [
+        {
+          "command": "kafe.runFile",
+          "when": "editorLangId == kafe && isWorkspaceTrusted",
+          "group": "navigation"
+        }
+      ],
+      "view/title": [
+        {
+          "command": "kafe.openTutor",
+          "when": "view == kafeTutorView",
+          "group": "navigation"
+        }
+      ]
     }
+  },
+  "scripts": {
+    "test:unit": "node --test test/unit/*.test.js",
+    "test:extension": "node test/run-extension-host-tests.js",
+    "test": "npm run test:unit && npm run test:extension"
+  },
+  "dependencies": {
+    "yauzl": "3.4.0"
+  },
+  "devDependencies": {
+    "@vscode/test-cli": "0.0.15",
+    "@vscode/test-electron": "3.1.0",
+    "@vscode/vsce": "4.0.0"
+  },
+  "overrides": {
+    "@vscode/test-cli": {
+      "mocha": {
+        "diff": "8.0.3",
+        "serialize-javascript": "7.0.5"
+      }
+    }
+  }
 }
