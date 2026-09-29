@@ -1,7 +1,7 @@
 """Capas para KafeGESHA."""
 from abc import ABC, abstractmethod
 from lib.KafeGESHA.core import Parameter, Node
-from lib.KafeGESHA.activations import ActivationFunctionLoader, Identidad
+from lib.KafeGESHA.activations import ActivationFunctionLoader, Identidad, Softmax
 from lib.KafeMATH.funciones import exp
 from random import random
 
@@ -60,6 +60,7 @@ class Dense(Layer):
         self.w = None
         self.b = None
         self._last_input = None
+        self._last_z = None
         
         if seed is not None:
             import random as py_random
@@ -77,14 +78,20 @@ class Dense(Layer):
         
         w_data, b_data = self.w.data, self.b.data
         z = [sum(input_data[i] * w_data[i][j] for i in range(input_dim)) + b_data[j] for j in range(self.units)]
-        return self.activation.activate(z)
+        self._last_z = z
+        if isinstance(self.activation, Softmax):
+            return self.activation.activate(z)
+        return [self.activation.activate(v) for v in z]
 
     def backward(self, output_error, regularization_lambda=0.0):
         w_data = self.w.data
         input_dim = len(self._last_input)
         
         # dL/dz
-        act_grad = self.activation.derivative(None)
+        if isinstance(self.activation, Softmax):
+            act_grad = self.activation.derivative(self._last_z)
+        else:
+            act_grad = [self.activation.derivative(self._last_z[j]) for j in range(self.units)]
         if isinstance(act_grad, list) and isinstance(act_grad[0], list): # Jacobian
             dz = [sum(output_error[i] * act_grad[i][j] for i in range(self.units)) for j in range(self.units)]
         else: # Vector

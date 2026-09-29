@@ -34,10 +34,10 @@ def obtener_tipo_dato(dato):
 
     if type(dato) is list:
         return obtener_tipo_lista(dato)
-    elif callable(dato):
-        return nombre_tipos["func"]
     elif isinstance(dato, (Gesha, Layer, Node, Input)):
         return nombre_tipos["gesha"]
+    elif callable(dato):
+        return nombre_tipos["func"]
     elif isinstance(dato, DataFrame) or "GroupBy" in str(type(dato)):
         return nombre_tipos["pardos"]
     elif isinstance(dato, BaseMachine):

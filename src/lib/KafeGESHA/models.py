@@ -49,8 +49,23 @@ class Model(ABC):
 
     def predict(self, X):
         self._set_training(False)
-        if not isinstance(X[0], list): X = [X]
-        return [self.forward(x) for x in X]
+        if isinstance(X[0], list):
+            return [self.forward(x) for x in X]
+        return self.forward(X)
+
+    def predict_proba(self, X):
+        return self.predict(X)
+
+    def predict_label(self, X):
+        output = self.predict(X)
+        samples = output if (isinstance(output, list) and output and isinstance(output[0], list)) else [output]
+        labels = []
+        for o in samples:
+            if len(o) == 1:
+                labels.append(1 if o[0] >= 0.5 else 0)
+            else:
+                labels.append(o.index(max(o)))
+        return labels if len(labels) > 1 else labels[0]
 
     def fit(self, X, Y, epochs=1, batch_size=1, val_data=None, regularization_lambda=0.0):
         if not self._is_compiled: raise RuntimeError("Modelo no compilado.")
@@ -69,18 +84,21 @@ class Model(ABC):
                 if not isinstance(y, list): y = [y]
                 if not isinstance(y_pred, list): y_pred = [y_pred]
                 
-                loss_val = self._loss.compute([y], [y_pred])
+                loss_val = self._loss.compute(y, y_pred)
                 total_loss += loss_val
                 
                 # Gradients
-                loss_grad = self._loss.derivative([y], [y_pred])[0]
+                loss_grad = self._loss.derivative(y, y_pred)[0]
+                if not isinstance(loss_grad, list):
+                    loss_grad = [loss_grad]
                 self.backward(loss_grad)
                 
                 # Update (SGD estocástico o mini-batch 1)
                 self._optimizer.step(self.parameters())
             
             avg_loss = total_loss / len(X)
-            msg = f"Epoch {epoch+1}/{epochs} - loss: {avg_loss:.4f}"
+            loss_pct = avg_loss * 100.0
+            msg = f"Epoch {epoch+1}/{epochs} — Loss {loss_pct:.2f}%"
             
             if val_data:
                 val_x, val_y = val_data

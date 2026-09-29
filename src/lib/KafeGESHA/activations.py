@@ -31,7 +31,10 @@ class ReLU(ActivationFunction):
         return x if x > 0 else 0
 
     def derivative(self, x):
-        inp = self.last_input if self.last_input is not None else x
+        if x is None:
+            inp = self.last_input if self.last_input is not None else 0
+        else:
+            inp = x
         return 1 if inp > 0 else 0
 
 
@@ -47,10 +50,12 @@ class Sigmoide(ActivationFunction):
         return s
 
     def derivative(self, x):
-        if self.last_output is None:
-            s = 1.0 / (1.0 + exp(-x))
-            return s * (1.0 - s)
-        return self.last_output * (1.0 - self.last_output)
+        if x is None:
+            if self.last_output is None:
+                return 0.25
+            return self.last_output * (1.0 - self.last_output)
+        s = 1.0 / (1.0 + exp(-x))
+        return s * (1.0 - s)
 
 
 class Tanh(ActivationFunction):
@@ -66,10 +71,12 @@ class Tanh(ActivationFunction):
         return t
 
     def derivative(self, x):
-        if self.last_output is None:
-            t = self.activate(x)
-            return 1.0 - t * t
-        return 1.0 - self.last_output * self.last_output
+        if x is None:
+            if self.last_output is None:
+                return 1.0
+            return 1.0 - self.last_output * self.last_output
+        t = self.activate(x)
+        return 1.0 - t * t
 
 
 class Softmax(ActivationFunction):
