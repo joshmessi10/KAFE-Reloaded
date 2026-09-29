@@ -9,14 +9,14 @@ test('router permits only allowlisted reads from learner-selected URI IDs', asyn
   const active = { uri: uri('/work/main.kf'), text: 'show(1)', version: 3 };
   const selectedUris = [uri('/work/extra.kf')];
   const router = new ToolRouter({ documentReader: { readDocument: async selected => ({ uri: selected, text: 'extra content', version: 1 }) }, knowledgeRetriever: { search: async () => [] } });
-  const context = { activeDocument: active, selectedUris, excludedSourceIds: [], runResult: null };
+  const context = { activeDocument: active, candidateUris: selectedUris, includedSourceIds: [selectedSourceId(selectedUris[0])], runResult: null };
   const selectedId = selectedSourceId(selectedUris[0]);
   assert.equal((await router.route({ name: 'readActiveDocument', arguments: '{}' }, context)).text, 'show(1)');
   assert.equal((await router.route({ name: 'readActiveDocument', arguments: { sourceId: selectedId } }, context)).text, 'extra content');
   await assert.rejects(() => router.route({ name: 'readActiveDocument', arguments: '{"path":"/secret"}' }, context), /argument/i);
   await assert.rejects(() => router.route({ name: 'readActiveDocument', arguments: '{"sourceId":"selected:1"}' }, context), /selected/i);
-  await assert.rejects(() => router.route({ name: 'readActiveDocument', arguments: { sourceId: selectedId } }, { ...context, excludedSourceIds: [selectedId] }), /selected/i);
-  await assert.rejects(() => router.route({ name: 'readActiveDocument', arguments: { sourceId: selectedId } }, { ...context, selectedUris: [{ scheme: 'https', path: '/work/extra.kf' }] }), /scheme/i);
+  await assert.rejects(() => router.route({ name: 'readActiveDocument', arguments: { sourceId: selectedId } }, { ...context, includedSourceIds: [] }), /selected/i);
+  await assert.rejects(() => router.route({ name: 'readActiveDocument', arguments: { sourceId: selectedId } }, { ...context, candidateUris: [{ scheme: 'https', path: '/work/extra.kf' }] }), /scheme/i);
 });
 
 test('router binds opaque selected IDs to URI after reorder and denies excluded A', async () => {
@@ -25,23 +25,40 @@ test('router binds opaque selected IDs to URI after reorder and denies excluded 
   const readDocument = async selected => ({ uri: selected, text: selected.toString() === a.toString() ? 'A' : 'B', version: 1 });
   const knowledgeRetriever = { search: async () => [] };
   const composer = new ContextComposer({ documentReader: { readDocument }, knowledgeRetriever });
-  const sources = (await composer.compose({ request: 'Help', selectedUris: [a, b] })).sources;
+  const sources = (await composer.compose({ request: 'Help', candidateUris: [a, b] })).sources;
   const aId = sources.find(source => source.label === a.toString()).id;
   const bId = sources.find(source => source.label === b.toString()).id;
   const router = new ToolRouter({ documentReader: { readDocument }, knowledgeRetriever });
-  const context = { selectedUris: [b, a], excludedSourceIds: [aId] };
+  const context = { candidateUris: [b, a], includedSourceIds: [bId] };
   assert.equal((await router.route({ name: 'readActiveDocument', arguments: { sourceId: bId } }, context)).text, 'B');
   await assert.rejects(() => router.route({ name: 'readActiveDocument', arguments: { sourceId: aId } }, context), /selected/i);
 });
 
 test('router rejects malformed, unknown, oversized and executable operations', async () => {
   const router = new ToolRouter({ documentReader: { readDocument: async selected => ({ uri: selected, text: 'x'.repeat(70000), version: 1 }) }, knowledgeRetriever: { search: async () => [] } });
-  const context = { activeDocument: { uri: uri('/work/main.kf'), text: 'ok', version: 1 }, selectedUris: [uri('/work/large.kf')] };
+  const context = { activeDocument: { uri: uri('/work/main.kf'), text: 'ok', version: 1 }, candidateUris: [uri('/work/large.kf')] };
+  context.includedSourceIds = [selectedSourceId(context.candidateUris[0])];
   for (const call of [
     { name: 'runKafe', arguments: '{}' }, { name: 'shell', arguments: '{"command":"echo"}' },
     { name: 'readActiveDocument', arguments: '{' }, { name: 'searchKafeKnowledge', arguments: '{"query":1}' },
   ]) await assert.rejects(() => router.route(call, context));
-  await assert.rejects(() => router.route({ name: 'readActiveDocument', arguments: { sourceId: selectedSourceId(context.selectedUris[0]) } }, context), /size/i);
+  await assert.rejects(() => router.route({ name: 'readActiveDocument', arguments: { sourceId: selectedSourceId(context.candidateUris[0]) } }, context), /size/i);
+});
+
+test('excluded selected source cannot be read or used as a proposal target', async () => {
+  const selected = uri('/work/extra.kf');
+  const sourceId = selectedSourceId(selected);
+  const router = new ToolRouter({
+    documentReader: { readDocument: async source => ({ uri: source, text: 'extra', version: 1 }) },
+    knowledgeRetriever: { search: async () => [] },
+  });
+  const context = { candidateUris: [selected], includedSourceIds: [] };
+  await assert.rejects(() => router.route({ name: 'readActiveDocument', arguments: { sourceId } }, context), /selected/i);
+  await assert.rejects(() => router.route({ name: 'proposeCodeChange', arguments: { sourceId, newText: 'change' } }, context), /selected/i);
+  assert.equal((await router.route({ name: 'readActiveDocument', arguments: { sourceId } },
+    { ...context, includedSourceIds: [sourceId] })).text, 'extra');
+  assert.equal((await router.route({ name: 'proposeCodeChange', arguments: { sourceId, newText: 'change' } },
+    { ...context, includedSourceIds: [sourceId] })).newText, 'change');
 });
 
 test('proposal targets active document by default and never applies the edit', async () => {

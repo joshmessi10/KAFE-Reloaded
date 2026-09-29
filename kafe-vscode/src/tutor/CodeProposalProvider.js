@@ -10,9 +10,11 @@ class CodeProposalProvider {
   constructor({ vscode }) {
     this.vscode = vscode;
     this.pending = null;
+    this.resetGate = null;
   }
 
   stage(proposal) {
+    if (this.resetGate) throw new Error('A KAFE proposal reset is in progress.');
     if (this.pending?.phase === 'applying') throw new Error('A KAFE proposal edit is in progress.');
     if (!validSourceUri(proposal?.uri) || !Number.isSafeInteger(proposal.documentVersion) ||
       proposal.documentVersion < 0 || !/^[a-f0-9]{64}$/i.test(proposal.contentSha256) ||
@@ -48,25 +50,43 @@ class CodeProposalProvider {
 
   reject(id) {
     if (!this.pending || id !== this.pending.id) return { status: 'invalid' };
-    if (this.pending.phase === 'applying') return { status: 'busy' };
+    if (this.pending.phase === 'applying' || this.resetGate) return { status: 'busy' };
     this.clear(id);
     return { status: 'rejected' };
   }
 
   clear(id) {
     if (id !== undefined && this.pending?.id !== id) return { status: 'invalid' };
-    if (this.pending?.phase === 'applying') return { status: 'busy' };
+    if (this.pending?.phase === 'applying' || this.resetGate) return { status: 'busy' };
     this.pending = null;
     return { status: 'cleared' };
   }
 
+  isResetPending() { return this.resetGate !== null; }
+
+  prepareClear() {
+    if (this.resetGate || this.pending?.phase === 'applying') return { status: 'busy' };
+    let release;
+    const gate = { promise: new Promise(resolve => { release = resolve; }) };
+    this.resetGate = gate;
+    const finish = clear => {
+      if (this.resetGate !== gate) return;
+      if (clear) this.pending = null;
+      this.resetGate = null;
+      release();
+    };
+    return { status: 'ready', commit: () => finish(true), rollback: () => finish(false) };
+  }
+
   async accept(id) {
-    if (!this.pending || id !== this.pending.id || !this.pending.reviewed || this.pending.phase !== 'ready') return { status: 'invalid' };
+    if (this.resetGate || !this.pending || id !== this.pending.id || !this.pending.reviewed ||
+      this.pending.phase !== 'ready') return { status: 'invalid' };
     const proposal = this.pending;
     proposal.phase = 'reading';
     const discard = () => { if (this.pending === proposal) this.clear(); };
     try {
       const document = await this.vscode.workspace.openTextDocument(proposal.uri);
+      if (this.resetGate) await this.resetGate.promise;
       if (this.pending !== proposal || proposal.phase !== 'reading') return { status: 'cancelled' };
       const text = document.getText();
       const hash = createHash('sha256').update(text, 'utf8').digest('hex');

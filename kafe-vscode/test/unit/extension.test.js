@@ -8,6 +8,57 @@ const { createRunFileHandler, createProviderKeyHandlers, createClearProgressHand
 const PINNED_RUNTIME = require('../../src/runtimeManifest').runtime;
 const { MAX_FILE_BYTES } = require('../../src/tutor/DevelopmentKnowledgePack');
 
+test('recordReviewedCheck stores a relative source path only for a KAFE file inside an open workspace', async () => {
+  const root = 'C:\\workspace';
+  const vscode = { Uri: { parse: value => {
+    const parsed = new URL(value);
+    return { scheme: parsed.protocol.slice(0, -1), fsPath: decodeURIComponent(parsed.pathname).replace(/^\/(C:)/, '$1').replaceAll('/', '\\'),
+      toString: () => value };
+  } }, window: {}, workspace: { getWorkspaceFolder: uri =>
+    uri.scheme === 'file' && uri.fsPath.toLowerCase().startsWith(root.toLowerCase()) ?
+      { uri: { fsPath: root } } : undefined } };
+  const host = createTutorHost({ vscode, extensionUri: {}, secrets: {},
+    workspaceState: { values: new Map(), get(key) { return this.values.get(key); },
+      async update(key, value) { if (value === undefined) this.values.delete(key); else this.values.set(key, value); } },
+    runtimeManager: { getReadyRuntime: async () => ({ status: 'missing' }) } });
+  for (const [sourceUri, expected] of [
+    ['file:///C:/workspace/examples/main.kf', 'examples/main.kf'],
+    ['file:///C:/workspace2/outside.kf', undefined],
+  ]) {
+    const sequence = host.coordinator.lastRunSequence + 1;
+    host.coordinator.recordRunResult({ stdout: 'PRIVATE', stderr: '', exitCode: 0, outputTruncated: false,
+      runtimeVersion: '0.1.0', knowledgePackVersion: '0.1.0', sourceUri, runSequence: sequence });
+    const result = await host.coordinator.handleLearnerMessage({ type: 'recordReviewedCheck', runSequence: sequence,
+      label: 'Reviewed', outcome: 'passed' });
+    assert.equal(result.kind, 'coaching');
+    assert.equal(host.coordinator.state.completedChecks.at(-1).sourcePath, expected);
+  }
+  assert.equal(host.coordinator.getWorkspaceRelativeSourcePath('file:///C:/workspace/readme.md'), null);
+  assert.equal(host.coordinator.getWorkspaceRelativeSourcePath('untitled:main.kf'), null);
+});
+
+test('Tutor host tags the transient render produced by a failed reviewed-check response', async () => {
+  const host = createTutorHost({
+    vscode: { window: {}, workspace: {} }, extensionUri: {}, secrets: {},
+    workspaceState: { get() { return undefined; }, async update() { throw new Error('storage unavailable'); } },
+    runtimeManager: {}, provider: { complete: async () => { throw new Error('unexpected provider call'); } },
+  });
+  host.coordinator.recordRunResult({ stdout: 'ok', stderr: '', exitCode: 0, outputTruncated: false,
+    runtimeVersion: null, knowledgePackVersion: null, runtimeMode: 'contributor',
+    sourceUri: 'file:///workspace/main.kf', runSequence: 1 });
+  let rendered;
+  host.tutorView.render = state => { rendered = state; };
+
+  await host.tutorView.onMessage({ type: 'recordReviewedCheck', runSequence: 1,
+    label: 'Loop output', outcome: 'failed' });
+
+  assert.equal(rendered.responseMessageType, 'recordReviewedCheck');
+  assert.match(rendered.interactionStatus, /could not be saved/i);
+  assert.equal(Object.hasOwn(host.coordinator.state, 'responseMessageType'), false,
+    'response metadata is kept off coordinator progress state');
+  assert.deepEqual(host.coordinator.state.completedChecks, []);
+});
+
 function developmentTutorFixture({ runtime = PINNED_RUNTIME, extensionMode = 2, readyRuntime = { status: 'missing' } } = {}) {
   const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'kafe-tutor-dev-pack-'));
   const extensionPath = path.join(temporary, 'kafe-vscode');
@@ -131,6 +182,23 @@ test('Tutor host renders milestone confirmation and managed-pack preview errors 
   await host.tutorView.onMessage({ type: 'sendMessage', phase: 'preview', text: 'Help with lists' });
   assert.match(rendered.at(-1).interactionStatus, /managed KAFE knowledge pack is required/i);
   assert.equal(host.coordinator.state.preview, null);
+});
+
+test('Tutor host keeps a context-review coaching turn visible when it is not in conversation history', async () => {
+  const host = createTutorHost({
+    vscode: { window: {}, workspace: {} }, extensionUri: {}, secrets: {},
+    runtimeManager: { getReadyRuntime: async () => ({ status: 'missing' }) },
+    provider: { complete: async () => { throw new Error('unexpected provider call'); } },
+  });
+  const rendered = [];
+  host.tutorView.render = state => rendered.push(state.interactionStatus);
+  host.coordinator.handleLearnerMessage = async message => {
+    host.coordinator.state.preview = { draft: message.text };
+    return { kind: 'coaching', text: 'Review the updated context preview before sending.' };
+  };
+
+  await host.tutorView.onMessage({ type: 'sendMessage', text: 'Question' });
+  assert.equal(rendered.at(-1), 'Review the updated context preview before sending.');
 });
 
 test('development host builds a matching local pack and previews curated KAFE knowledge without calling the provider', async () => {
@@ -272,7 +340,7 @@ test('development tutor pack rejects oversized learner documentation', async () 
   } finally { removeDevelopmentFixture(fixture); }
 });
 
-test('host previews optional visible KAFE files from the active workspace and removes content before provider send', async () => {
+test('host exposes selected-file candidates from the active workspace and includes only learner-approved content', async () => {
   const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'kafe-tutor-context-'));
   const pack = path.join(temporary, 'knowledge-pack');
   fs.mkdirSync(pack);
@@ -301,13 +369,14 @@ test('host previews optional visible KAFE files from the active workspace and re
     await host.coordinator.handleLearnerMessage({ type: 'sendMessage', phase: 'preview', text: 'Help with lists' });
     assert.equal(calls.length, 0);
     const selectedId = host.coordinator.state.contextSources.find(source => source.category === 'selected-file')?.id;
-    assert.ok(host.coordinator.state.contextSources.some(source => source.id === selectedId && source.included));
+    assert.ok(host.coordinator.state.contextSources.some(source => source.id === selectedId && !source.included));
     assert.equal(host.coordinator.state.contextSources.filter(source => source.category === 'selected-file').length, 1);
-    await host.coordinator.handleLearnerMessage({ type: 'removeContextSource', id: selectedId });
+    assert.equal(JSON.stringify(host.coordinator.state.preview.payload).includes('OPTIONAL_SECRET_MARKER'), false);
+    await host.coordinator.handleLearnerMessage({ type: 'setContextSourceIncluded', id: selectedId, included: true });
     const preview = host.coordinator.state.preview;
     assert.ok(preview);
-    assert.ok(!JSON.stringify(preview.payload).includes('OPTIONAL_SECRET_MARKER'));
-    assert.ok(host.coordinator.state.contextSources.some(source => source.id === selectedId && !source.included));
+    assert.ok(JSON.stringify(preview.payload).includes('OPTIONAL_SECRET_MARKER'));
+    assert.ok(host.coordinator.state.contextSources.some(source => source.id === selectedId && source.included));
     await host.coordinator.handleLearnerMessage({ type: 'sendMessage', text: preview.draft, previewToken: preview.token });
     assert.equal(calls.length, 1);
     assert.deepEqual(calls[0].messages, preview.payload.messages);

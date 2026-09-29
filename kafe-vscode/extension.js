@@ -83,13 +83,27 @@ function createTutorHost({ vscode, extensionUri, secrets, workspaceState, runtim
   const coordinator = new SessionCoordinator({ provider,
     progressStore: workspaceState ? new ProgressStore({ workspaceState }) : undefined,
     proposalProvider,
+    getWorkspaceRelativeSourcePath: sourceUri => {
+      try {
+        if (typeof sourceUri !== 'string' || !vscode.Uri?.parse) return null;
+        const uri = vscode.Uri.parse(sourceUri);
+        if (uri.scheme !== 'file' || typeof uri.fsPath !== 'string' ||
+          path.extname(uri.fsPath).toLowerCase() !== '.kf') return null;
+        const folder = vscode.workspace.getWorkspaceFolder?.(uri);
+        if (typeof folder?.uri?.fsPath !== 'string') return null;
+        const relative = path.relative(folder.uri.fsPath, uri.fsPath);
+        if (!relative || path.isAbsolute(relative) || relative === '..' ||
+          relative.startsWith(`..${path.sep}`)) return null;
+        return relative.split(path.sep).join('/');
+      } catch { return null; }
+    },
     contextComposer: new ContextComposer({ documentReader, knowledgeRetriever }),
     toolRouter: new ToolRouter({ documentReader, knowledgeRetriever }),
     getContext: () => {
       const document = vscode.window.activeTextEditor?.document;
       const activeUri = document?.uri;
       const activeFolder = activeUri?.scheme === 'file' ? vscode.workspace.getWorkspaceFolder?.(activeUri) : undefined;
-      const selectedUris = [];
+      const candidateUris = [];
       const seen = new Set(activeUri && typeof activeUri.toString === 'function' ? [activeUri.toString()] : []);
       if (activeFolder?.uri && typeof activeFolder.uri.toString === 'function') {
         for (const editor of vscode.window.visibleTextEditors || []) {
@@ -99,13 +113,13 @@ function createTutorHost({ vscode, extensionUri, secrets, workspaceState, runtim
             typeof uri.toString !== 'function' || !uri.toString().toLowerCase().endsWith('.kf') ||
             seen.has(uri.toString()) ||
             vscode.workspace.getWorkspaceFolder?.(uri)?.uri?.toString() !== activeFolder.uri.toString()) continue;
-          selectedUris.push(uri);
+          candidateUris.push(uri);
           seen.add(uri.toString());
         }
       }
       return { activeDocument: document?.languageId === 'kafe' && document.uri?.scheme === 'file' ?
         { uri: document.uri, text: document.getText(), version: document.version } : undefined,
-      selectedUris };
+      candidateUris };
     },
   });
   coordinator.restoreProgress();
@@ -117,8 +131,10 @@ function createTutorHost({ vscode, extensionUri, secrets, workspaceState, runtim
         coordinator.state.milestoneStatus = feedback;
         coordinator.state.interactionStatus = '';
       } else {
-        const shownInConversation = (message.type === 'sendMessage' && message.phase === undefined) ||
-          (message.type === 'retryMessage' && turn?.kind !== 'error');
+        const learnerConversationAction = (message.type === 'sendMessage' && message.phase === undefined) || message.type === 'retryMessage';
+        const latestMessage = coordinator.state.messages.at(-1);
+        const shownInConversation = learnerConversationAction && !coordinator.state.preview &&
+          latestMessage?.role === 'tutor' && latestMessage.text === feedback;
         coordinator.state.interactionStatus = turn?.kind === 'error' || !shownInConversation ? feedback : '';
       }
     } catch {
@@ -126,7 +142,7 @@ function createTutorHost({ vscode, extensionUri, secrets, workspaceState, runtim
       if (message.type === 'confirmMilestones') coordinator.state.milestoneStatus = feedback;
       else coordinator.state.interactionStatus = feedback;
     }
-    tutorView.render(coordinator.state);
+    tutorView.render({ ...coordinator.state, responseMessageType: message.type });
   } });
   return { tutorView, coordinator, proposalProvider };
 }

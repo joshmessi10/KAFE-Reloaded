@@ -47,7 +47,7 @@
 
     <section aria-labelledby="context-heading">
       <h2 id="context-heading">Request context sources</h2>
-      <p>Review what may be included with your next request. Remove optional sources here.</p>
+      <p>Review what may be included with your next request. Select optional sources here.</p>
       <ul id="context-list"></ul>
       <h3>Exact request payload</h3>
       <pre id="context-payload">Type a message to preview its context before sending.</pre>
@@ -60,6 +60,25 @@
         <p id="evidence-summary"></p>
         <h3>Output</h3><pre id="evidence-stdout"></pre>
         <h3>Diagnostics</h3><pre id="evidence-stderr"></pre>
+        <form id="reviewed-check-form" hidden>
+          <h3>Record a reviewed check</h3>
+          <label for="reviewed-check-label">What did you check?</label>
+          <input id="reviewed-check-label" type="text" maxlength="120" autocomplete="off">
+          <label for="reviewed-check-outcome">Your outcome</label>
+          <select id="reviewed-check-outcome" required>
+            <option value="">Choose an outcome</option>
+            <option value="passed">Passed</option>
+            <option value="failed">Failed</option>
+            <option value="unknown">Not sure</option>
+          </select>
+          <button id="record-reviewed-check" type="button">Record check</button>
+          <p id="reviewed-check-status" role="status" aria-live="polite" hidden></p>
+        </form>
+      </div>
+      <div id="reviewed-check-history" hidden>
+        <h3>Reviewed check history</h3>
+        <p id="reviewed-check-explanation">Recording a reviewed check is not proof of mastery.</p>
+        <ol id="reviewed-check-list"></ol>
       </div>
     </section>
 

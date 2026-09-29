@@ -2,8 +2,28 @@ const assert = require('node:assert/strict');
 const test = require('node:test');
 const { ContextComposer } = require('../../src/tutor/ContextComposer');
 const { KnowledgeRetriever } = require('../../src/tutor/KnowledgeRetriever');
+const { selectedSourceId } = require('../../src/tutor/ToolRouter');
 
 const uri = (path) => ({ scheme: 'file', path, toString() { return `file://${path}`; } });
+
+test('does not read or include candidate content until its source ID is explicitly included', async () => {
+  const candidate = uri('/work/optional.kf');
+  const reads = [];
+  const composer = new ContextComposer({
+    documentReader: { readDocument: async selected => {
+      reads.push(selected.toString());
+      return { uri: selected, text: 'UNCONSENTED_CANDIDATE_SENTINEL', version: 1 };
+    } },
+    knowledgeRetriever: { search: async () => [] },
+  });
+  const result = await composer.compose({ request: 'Help', candidateUris: [candidate], includedSourceIds: [] });
+
+  assert.deepEqual(reads, []);
+  assert.equal(JSON.stringify(result.payload).includes('UNCONSENTED_CANDIDATE_SENTINEL'), false);
+  assert.deepEqual(result.sources.filter(source => source.category === 'selected-file'), [{
+    id: selectedSourceId(candidate), category: 'selected-file', label: candidate.toString(), included: false,
+  }]);
+});
 
 test('context preview identifies exact payload segments and optional removal removes content', async () => {
   const composer = new ContextComposer({
@@ -15,7 +35,8 @@ test('context preview identifies exact payload segments and optional removal rem
     activeDocument: { uri: uri('/work/main.kf'), text: 'show(1)', version: 2 },
     runResult: { stdout: '1', stderr: '', exitCode: 0, outputTruncated: false, runtimeVersion: '0.1.0', knowledgePackVersion: '0.1.0',
       sourceUri: uri('/work/main.kf').toString(), runSequence: 1 },
-    selectedUris: [uri('/work/extra.kf')],
+    candidateUris: [uri('/work/extra.kf')],
+    includedSourceIds: [selectedSourceId(uri('/work/extra.kf'))],
   };
   const first = await composer.compose(input);
   assert.deepEqual(first.payload.tools.map(tool => tool.function.name), [
@@ -31,13 +52,13 @@ test('context preview identifies exact payload segments and optional removal rem
   assert.ok(!previewedRun.content.includes('runSequence'));
   assert.match(first.sources.find(item => item.id === 'run-result').label, /main\.kf/);
   const selectedId = first.sources.find(item => item.category === 'selected-file').id;
-  const removed = await composer.compose({ ...input, excludedSourceIds: [selectedId] });
+  const removed = await composer.compose({ ...input, includedSourceIds: [] });
   assert.equal(removed.sources.find(item => item.id === selectedId).included, false);
   assert.equal(JSON.stringify(removed.payload).includes('SECRET_OPTIONAL'), false);
   assert.equal(JSON.stringify(removed.payload).includes(selectedId), false);
 });
 
-test('removing optional A remains bound to A after visible-file order changes', async () => {
+test('includes only opted-in candidate content and binds IDs to URI identity', async () => {
   const a = uri('/work/a.kf');
   const b = uri('/work/b.kf');
   const composer = new ContextComposer({
@@ -45,20 +66,22 @@ test('removing optional A remains bound to A after visible-file order changes', 
       text: selected.toString() === a.toString() ? 'CONTENT_A_ONLY' : 'CONTENT_B_ONLY', version: 1 }) },
     knowledgeRetriever: { search: async () => [] },
   });
-  const input = { request: 'Help', session: { confirmed: false }, selectedUris: [a, b] };
+  const input = { request: 'Help', session: { confirmed: false }, candidateUris: [a, b],
+    includedSourceIds: [selectedSourceId(a), selectedSourceId(b)] };
   const initial = await composer.compose(input);
   const aSource = initial.sources.find(source => source.label === a.toString());
   const bSource = initial.sources.find(source => source.label === b.toString());
   assert.ok(aSource?.id.startsWith('selected:'));
   assert.ok(bSource?.id.startsWith('selected:'));
   assert.notEqual(aSource.id, bSource.id);
-  const reordered = await composer.compose({ ...input, selectedUris: [b, a], excludedSourceIds: [aSource.id] });
+  const reordered = await composer.compose({ ...input, candidateUris: [b, a], includedSourceIds: [bSource.id] });
   assert.equal(reordered.sources.find(source => source.label === a.toString()).id, aSource.id);
   assert.equal(reordered.sources.find(source => source.label === a.toString()).included, false);
   assert.equal(reordered.sources.find(source => source.label === b.toString()).id, bSource.id);
   assert.equal(reordered.sources.find(source => source.label === b.toString()).included, true);
   assert.ok(!JSON.stringify(reordered.payload).includes('CONTENT_A_ONLY'));
   assert.ok(JSON.stringify(reordered.payload).includes('CONTENT_B_ONLY'));
+  assert.equal(reordered.payload.messages.filter(message => message.content.includes('CONTENT_B_ONLY')).length, 1);
 });
 
 test('run evidence from another active file is omitted from composed provider payload', async () => {

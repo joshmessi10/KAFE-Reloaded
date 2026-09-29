@@ -98,7 +98,11 @@ suite('KAFE extension host', () => {
       await fixture.host.coordinator.handleLearnerMessage({ type: 'sendMessage', phase: 'preview', text: 'Help with lists' });
       const aId = fixture.host.coordinator.state.contextSources.find(source => source.label === fixture.optional.uri.toString()).id;
       const bId = fixture.host.coordinator.state.contextSources.find(source => source.label === b.uri.toString()).id;
-      await fixture.host.coordinator.handleLearnerMessage({ type: 'removeContextSource', id: aId });
+      assert.ok(fixture.host.coordinator.state.contextSources.some(source => source.id === aId && !source.included));
+      assert.ok(fixture.host.coordinator.state.contextSources.some(source => source.id === bId && !source.included));
+      await fixture.host.coordinator.handleLearnerMessage({ type: 'setContextSourceIncluded', id: aId, included: true });
+      await fixture.host.coordinator.handleLearnerMessage({ type: 'setContextSourceIncluded', id: aId, included: false });
+      await fixture.host.coordinator.handleLearnerMessage({ type: 'setContextSourceIncluded', id: bId, included: true });
       fixture.api.window.visibleTextEditors = [{ document: fixture.active }, { document: b }, { document: fixture.optional }];
       await fixture.host.coordinator.handleLearnerMessage({ type: 'sendMessage', phase: 'preview', text: 'Help with lists' });
       const preview = fixture.host.coordinator.state.preview;
@@ -119,14 +123,16 @@ suite('KAFE extension host', () => {
     } });
     try {
       await startTutor(fixture.host);
-      assert.ok(fixture.state.has('kafeTutor.progress.v1'));
+      assert.ok(fixture.state.has('kafeTutor.progress.v2'));
       const previewTurn = await fixture.host.coordinator.handleLearnerMessage({ type: 'sendMessage',
         phase: 'preview', text: 'How do lists work?' });
       assert.equal(previewTurn.kind, 'coaching');
       assert.equal(requests.length, 0);
       const selectedId = fixture.host.coordinator.state.contextSources.find(source => source.category === 'selected-file')?.id;
-      assert.ok(fixture.host.coordinator.state.contextSources.some(source => source.id === selectedId && source.included));
-      await fixture.host.coordinator.handleLearnerMessage({ type: 'removeContextSource', id: selectedId });
+      assert.ok(fixture.host.coordinator.state.contextSources.some(source => source.id === selectedId && !source.included));
+      await fixture.host.coordinator.handleLearnerMessage({ type: 'setContextSourceIncluded', id: selectedId, included: true });
+      assert.ok(JSON.stringify(fixture.host.coordinator.state.preview.payload).includes('OPTIONAL_MARKER'));
+      await fixture.host.coordinator.handleLearnerMessage({ type: 'setContextSourceIncluded', id: selectedId, included: false });
       const reviewed = fixture.host.coordinator.state.preview;
       assert.ok(!JSON.stringify(reviewed.payload).includes('OPTIONAL_MARKER'));
       await fixture.host.coordinator.handleLearnerMessage({ type: 'sendMessage', text: reviewed.draft,
@@ -153,9 +159,10 @@ suite('KAFE extension host', () => {
       assert.equal(fixture.host.coordinator.state.evidence.knowledgePackVersion, '0.1.0');
       assert.equal(requests.length, 1);
       assert.equal(fixture.writes.length, 0);
-      assert.ok(!JSON.stringify(fixture.state.get('kafeTutor.progress.v1')).includes('How do lists work?'));
+      assert.ok(!JSON.stringify(fixture.state.get('kafeTutor.progress.v2')).includes('How do lists work?'));
       await createClearProgressHandler({ coordinator: fixture.host.coordinator, tutorView: fixture.host.tutorView })();
       assert.equal(fixture.state.has('kafeTutor.progress.v1'), false);
+      assert.equal(fixture.state.has('kafeTutor.progress.v2'), false);
       assert.equal(fixture.host.coordinator.state.goal, '');
       assert.equal(fixture.host.coordinator.state.evidence, null);
     } finally { fixture.dispose(); }
@@ -190,11 +197,15 @@ suite('KAFE extension host', () => {
       assert.equal(latest().goal, '');
       await receiveAndWait({ type: 'startSession', goal: 'Learn KAFE lists' }, state => state.goal === 'Learn KAFE lists');
       await receiveAndWait({ type: 'confirmMilestones', milestones: latest().milestones }, state => state.confirmed);
-      assert.ok(fixture.state.has('kafeTutor.progress.v1'));
+      assert.ok(fixture.state.has('kafeTutor.progress.v2'));
       await receiveAndWait({ type: 'sendMessage', phase: 'preview', text: 'Help with lists' }, state => state.preview?.draft === 'Help with lists');
       const optionalId = latest().contextSources.find(source => source.category === 'selected-file')?.id;
       assert.ok(optionalId);
-      await receiveAndWait({ type: 'removeContextSource', id: optionalId }, state =>
+      assert.ok(latest().contextSources.some(source => source.id === optionalId && !source.included));
+      await receiveAndWait({ type: 'setContextSourceIncluded', id: optionalId, included: true }, state =>
+        state.contextSources.some(source => source.id === optionalId && source.included));
+      assert.ok(JSON.stringify(latest().preview.payload).includes('OPTIONAL_MARKER'));
+      await receiveAndWait({ type: 'setContextSourceIncluded', id: optionalId, included: false }, state =>
         state.contextSources.some(source => source.id === optionalId && !source.included));
       assert.ok(!JSON.stringify(latest().preview.payload).includes('OPTIONAL_MARKER'));
       await receiveAndWait({ type: 'sendMessage', text: 'Help with lists', previewToken: latest().preview.token }, state =>
@@ -228,12 +239,14 @@ suite('KAFE extension host', () => {
 
       await receiveAndWait({ type: 'clearProgress' }, state => state.goal === '' && state.evidence === null);
       assert.equal(fixture.state.has('kafeTutor.progress.v1'), false);
+      assert.equal(fixture.state.has('kafeTutor.progress.v2'), false);
       await receiveAndWait({ type: 'startSession', goal: 'Start again' }, state => state.goal === 'Start again');
       const count = posted.length;
       await createClearProgressHandler({ coordinator: fixture.host.coordinator, tutorView: fixture.host.tutorView })();
       assert.ok(posted.length > count);
       assert.equal(latest().goal, '');
       assert.equal(fixture.state.has('kafeTutor.progress.v1'), false);
+      assert.equal(fixture.state.has('kafeTutor.progress.v2'), false);
     } finally { fixture.dispose(); }
   });
 

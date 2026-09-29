@@ -6,6 +6,181 @@ const { selectedSourceId } = require('../../src/tutor/ToolRouter');
 const { ProviderError } = require('../../src/tutor/providers/DeepSeekProvider');
 const { CodeProposalProvider } = require('../../src/tutor/CodeProposalProvider');
 const { createHash } = require('node:crypto');
+const { ProgressStore, PROGRESS_KEY } = require('../../src/tutor/ProgressStore');
+
+function reviewedProgressFixture() {
+  const values = new Map();
+  const workspaceState = { get: key => values.get(key), update: async (key, value) => {
+    if (value === undefined) values.delete(key); else values.set(key, value);
+  } };
+  const progressStore = new ProgressStore({ workspaceState });
+  const coordinator = new SessionCoordinator({ progressStore,
+    getWorkspaceRelativeSourcePath: source => source === 'file:///work/main.kf' ? 'examples/main.kf' : null });
+  const run = (runSequence, exitCode = 0) => ({ stdout: 'PRIVATE_OUTPUT', stderr: 'PRIVATE_ERROR',
+    exitCode, outputTruncated: false, runtimeVersion: '0.1.0', knowledgePackVersion: '0.1.0',
+    sourceUri: 'file:///work/main.kf', runSequence });
+  return { coordinator, progressStore, workspaceState, values, run };
+}
+
+function holdNextProgressSave(workspaceState) {
+  const update = workspaceState.update;
+  let release;
+  const held = new Promise(resolve => { release = resolve; });
+  let entered;
+  const started = new Promise(resolve => { entered = resolve; });
+  let waiting = true;
+  workspaceState.update = async (key, value) => {
+    if (waiting && key === PROGRESS_KEY && value !== undefined) {
+      waiting = false;
+      entered();
+      await held;
+    }
+    return update(key, value);
+  };
+  return { started, release: () => release() };
+}
+
+test('recordReviewedCheck and clearProgress serialize so a late record cannot reappear', async () => {
+  const { coordinator, progressStore, workspaceState, run } = reviewedProgressFixture();
+  coordinator.recordRunResult(run(1));
+  const gate = holdNextProgressSave(workspaceState);
+  const recording = coordinator.handleLearnerMessage({ type: 'recordReviewedCheck', runSequence: 1,
+    label: 'Review', outcome: 'passed' });
+  await gate.started;
+  const clearing = coordinator.handleLearnerMessage({ type: 'clearProgress' });
+  assert.equal(coordinator.state.evidence.runSequence, 1, 'state remains until clear succeeds');
+  gate.release();
+  assert.equal((await recording).kind, 'coaching');
+  assert.equal((await clearing).kind, 'coaching');
+  assert.deepEqual(coordinator.state.completedChecks, []);
+  assert.deepEqual(progressStore.load().completedChecks, []);
+});
+
+test('recordReviewedCheck and startSession serialize so a new goal retains the recorded check', async () => {
+  const { coordinator, progressStore, workspaceState, run } = reviewedProgressFixture();
+  coordinator.recordRunResult(run(1));
+  const gate = holdNextProgressSave(workspaceState);
+  const recording = coordinator.handleLearnerMessage({ type: 'recordReviewedCheck', runSequence: 1,
+    label: 'Review', outcome: 'passed' });
+  await gate.started;
+  const starting = coordinator.handleLearnerMessage({ type: 'startSession', goal: 'Next goal' });
+  gate.release();
+  assert.equal((await recording).kind, 'coaching');
+  assert.equal((await starting).kind, 'coaching');
+  assert.equal(coordinator.state.goal, 'Next goal');
+  assert.equal(coordinator.state.completedChecks.length, 1);
+  assert.deepEqual(progressStore.load().completedChecks, coordinator.state.completedChecks);
+});
+
+test('recordReviewedCheck serializes distinct evidence records without lost updates', async () => {
+  const { coordinator, progressStore, workspaceState, run } = reviewedProgressFixture();
+  coordinator.recordRunResult(run(1));
+  const gate = holdNextProgressSave(workspaceState);
+  const first = coordinator.handleLearnerMessage({ type: 'recordReviewedCheck', runSequence: 1,
+    label: 'First', outcome: 'passed' });
+  await gate.started;
+  coordinator.recordRunResult(run(2, 1));
+  const second = coordinator.handleLearnerMessage({ type: 'recordReviewedCheck', runSequence: 2,
+    label: 'Second', outcome: 'failed' });
+  gate.release();
+  assert.equal((await first).kind, 'coaching');
+  assert.equal((await second).kind, 'coaching');
+  assert.deepEqual(progressStore.load().completedChecks.map(item => item.label), ['First', 'Second']);
+  assert.deepEqual(coordinator.state.completedChecks.map(item => item.label), ['First', 'Second']);
+});
+
+test('clearProgress failure retains the current session and evidence', async () => {
+  const { coordinator, run } = reviewedProgressFixture();
+  await coordinator.handleLearnerMessage({ type: 'startSession', goal: 'Lists' });
+  coordinator.recordRunResult(run(1));
+  coordinator.progressStore.clear = async () => { throw new Error('storage failed'); };
+  assert.equal((await coordinator.handleLearnerMessage({ type: 'clearProgress' })).kind, 'error');
+  assert.equal(coordinator.state.goal, 'Lists');
+  assert.equal(coordinator.state.evidence.runSequence, 1);
+});
+
+test('recordReviewedCheck requires current evidence', async () => {
+  const { coordinator, progressStore, run } = reviewedProgressFixture();
+  assert.equal((await coordinator.handleLearnerMessage({ type: 'recordReviewedCheck', runSequence: 1,
+    label: 'Inspected output', outcome: 'passed' })).kind, 'error');
+  assert.deepEqual(progressStore.load().completedChecks, []);
+  coordinator.recordRunResult(run(1));
+  coordinator.recordRunResult(run(2));
+  assert.equal((await coordinator.handleLearnerMessage({ type: 'recordReviewedCheck', runSequence: 1,
+    label: 'Inspected output', outcome: 'passed' })).kind, 'error');
+  assert.deepEqual(progressStore.load().completedChecks, []);
+});
+
+test('recordReviewedCheck permits learner-marked fail or unknown without storing output', async () => {
+  for (const outcome of ['failed', 'unknown']) {
+    const { coordinator, progressStore, values, run } = reviewedProgressFixture();
+    coordinator.recordRunResult(run(1, 0));
+    assert.deepEqual(progressStore.load().completedChecks, []);
+    const result = await coordinator.handleLearnerMessage({ type: 'recordReviewedCheck', runSequence: 1,
+      label: '  Reviewed output  ', outcome });
+    assert.equal(result.kind, 'coaching');
+    const [record] = progressStore.load().completedChecks;
+    assert.deepEqual(Object.keys(record), ['id', 'runSequence', 'label', 'outcome', 'recordedAt',
+      'runExitCode', 'sourcePath', 'runtimeVersion', 'knowledgePackVersion']);
+    assert.match(record.id, /^[0-9a-f-]{36}$/i);
+    assert.equal(record.runSequence, 1);
+    assert.equal(record.label, 'Reviewed output');
+    assert.equal(record.outcome, outcome);
+    assert.equal(record.runExitCode, 0);
+    assert.equal(record.sourcePath, 'examples/main.kf');
+    assert.equal(record.runtimeVersion, '0.1.0');
+    assert.equal(record.knowledgePackVersion, '0.1.0');
+    assert.equal(new Date(record.recordedAt).toISOString(), record.recordedAt);
+    assert.equal(coordinator.state.evidence.reviewedCheckId, record.id);
+    assert.equal(JSON.stringify(values.get(PROGRESS_KEY)).includes('PRIVATE_'), false);
+  }
+});
+
+test('recordReviewedCheck rejects stale or duplicate current evidence but accepts a reused sequence after reload', async () => {
+  const { coordinator, progressStore, run } = reviewedProgressFixture();
+  coordinator.recordRunResult(run(1));
+  const message = { type: 'recordReviewedCheck', runSequence: 1, label: 'First review', outcome: 'passed' };
+  assert.equal((await coordinator.handleLearnerMessage(message)).kind, 'coaching');
+  assert.equal((await coordinator.handleLearnerMessage(message)).kind, 'error');
+  coordinator.recordRunResult(run(2));
+  assert.equal((await coordinator.handleLearnerMessage(message)).kind, 'error');
+  const next = new SessionCoordinator({ progressStore });
+  next.restoreProgress();
+  next.recordRunResult(run(1));
+  assert.equal((await next.handleLearnerMessage({ ...message, label: 'After reload' })).kind, 'coaching');
+  assert.deepEqual(progressStore.load().completedChecks.map(item => item.runSequence), [1, 1]);
+});
+
+test('recordReviewedCheck does not expose a record when progress save fails', async () => {
+  const { coordinator, run } = reviewedProgressFixture();
+  coordinator.recordRunResult(run(1));
+  coordinator.progressStore.save = async () => { throw new Error('storage failed'); };
+  assert.equal((await coordinator.handleLearnerMessage({ type: 'recordReviewedCheck', runSequence: 1,
+    label: 'Review', outcome: 'passed' })).kind, 'error');
+  assert.deepEqual(coordinator.state.completedChecks, []);
+  assert.equal(coordinator.state.evidence.reviewedCheckId, undefined);
+});
+
+test('startSession preserves reviewed checks while clearing the prior goal', async () => {
+  const { coordinator, progressStore, run } = reviewedProgressFixture();
+  await coordinator.handleLearnerMessage({ type: 'startSession', goal: 'Old goal' });
+  coordinator.state.legacyCompletedCheckIds = ['legacy-check'];
+  await coordinator.handleLearnerMessage({ type: 'confirmMilestones',
+    milestones: [{ id: 'old', text: 'Old milestone' }] });
+  coordinator.recordRunResult(run(1));
+  await coordinator.handleLearnerMessage({ type: 'recordReviewedCheck', runSequence: 1,
+    label: 'Review', outcome: 'passed' });
+  const [saved] = progressStore.load().completedChecks;
+  await coordinator.handleLearnerMessage({ type: 'startSession', goal: 'New goal' });
+  assert.equal(coordinator.state.goal, 'New goal');
+  assert.equal(coordinator.state.confirmed, false);
+  assert.equal(coordinator.state.evidence, null);
+  assert.deepEqual(coordinator.state.completedChecks, [saved]);
+  assert.deepEqual(coordinator.state.legacyCompletedCheckIds, ['legacy-check']);
+  assert.deepEqual(progressStore.load().completedChecks, [saved]);
+  assert.deepEqual(progressStore.load().legacyCompletedCheckIds, ['legacy-check']);
+  assert.equal(progressStore.load().goal, '');
+});
 
 test('rejecting visible A while newer B diff opens cannot delete B', async () => {
   let openCount = 0;
@@ -87,6 +262,66 @@ function proposalRaceFixture() {
     setGatePhase: value => { gatePhase = value; }, get writes() { return writes; }, get clears() { return clears; } };
 }
 
+function proposalResetFixture() {
+  const uri = { scheme: 'file', toString: () => 'file:///workspace/test.kf' };
+  const document = { uri, languageId: 'kafe', version: 1, getText: () => 'print(1)',
+    positionAt: offset => ({ offset }) };
+  let writes = 0;
+  class WorkspaceEdit { replace() {} }
+  class Range { constructor(start, end) { this.start = start; this.end = end; } }
+  const vscode = { Uri: { parse: value => ({ scheme: 'kafe-proposal', toString: () => value }) },
+    Range, WorkspaceEdit, commands: { executeCommand: async () => {} },
+    workspace: { openTextDocument: async () => document,
+      applyEdit: async () => { writes++; return true; } } };
+  const proposalProvider = new CodeProposalProvider({ vscode });
+  const progressStore = { clear: async () => { throw new Error('storage failed'); },
+    clearSession: async () => { throw new Error('storage failed'); } };
+  const coordinator = new SessionCoordinator({ proposalProvider, progressStore });
+  coordinator.state.goal = 'Saved goal';
+  coordinator.state.confirmed = true;
+  const summary = proposalProvider.stage({ uri, documentVersion: 1,
+    contentSha256: createHash('sha256').update('print(1)').digest('hex'), newText: 'print(2)' });
+  coordinator.state.proposal = summary;
+  return { coordinator, proposalProvider, summary, get writes() { return writes; } };
+}
+
+for (const action of ['clearProgress', 'startSession']) {
+  test(`${action} storage failure keeps the opened proposal usable`, async () => {
+    const f = proposalResetFixture();
+    await f.proposalProvider.open(f.summary.id);
+    const before = f.coordinator.state;
+    const result = await f.coordinator.handleLearnerMessage({ type: action, goal: 'Next goal' });
+    assert.equal(result.kind, 'error');
+    assert.equal(f.coordinator.state, before);
+    assert.equal(f.coordinator.state.goal, 'Saved goal');
+    assert.equal(f.coordinator.state.proposal.id, f.summary.id);
+    assert.equal(f.proposalProvider.pending.id, f.summary.id);
+    assert.equal(f.proposalProvider.provideTextDocumentContent(f.proposalProvider.proposalUri(f.summary.id)), 'print(2)');
+    assert.equal((await f.proposalProvider.accept(f.summary.id)).status, 'applied');
+    assert.equal(f.writes, 1);
+  });
+}
+
+test('accept and reject cannot consume a proposal while Clear Progress storage is pending', async () => {
+  const f = proposalResetFixture();
+  await f.proposalProvider.open(f.summary.id);
+  let entered;
+  const started = new Promise(resolve => { entered = resolve; });
+  let release;
+  const held = new Promise(resolve => { release = resolve; });
+  f.coordinator.progressStore.clear = async () => { entered(); await held; throw new Error('storage failed'); };
+  const clearing = f.coordinator.handleLearnerMessage({ type: 'clearProgress' });
+  await started;
+  assert.equal((await f.coordinator.handleLearnerMessage({ type: 'acceptProposal', id: f.summary.id })).kind, 'error');
+  assert.equal((await f.coordinator.handleLearnerMessage({ type: 'rejectProposal', id: f.summary.id })).kind, 'error');
+  assert.equal(f.coordinator.state.proposal.id, f.summary.id);
+  assert.equal(f.proposalProvider.pending.id, f.summary.id);
+  assert.equal(f.writes, 0);
+  release();
+  assert.equal((await clearing).kind, 'error');
+  assert.equal((await f.proposalProvider.accept(f.summary.id)).status, 'applied');
+});
+
 for (const action of ['rejectProposal', 'clearProgress']) {
   test(`coordinator ${action} during source read cancels before applyEdit`, async () => {
     const f = proposalRaceFixture();
@@ -103,6 +338,22 @@ for (const action of ['rejectProposal', 'clearProgress']) {
     assert.equal(f.clears, action === 'clearProgress' ? 1 : 0);
   });
 }
+
+test('coordinator startSession during source read cancels before applyEdit', async () => {
+  const f = proposalRaceFixture();
+  f.coordinator.progressStore.clearSession = async () => ({ completedChecks: [], legacyCompletedCheckIds: [] });
+  await f.ready;
+  const acceptance = f.coordinator.handleLearnerMessage({ type: 'acceptProposal', id: f.summary.id });
+  await f.readStarted;
+  const started = await f.coordinator.handleLearnerMessage({ type: 'startSession', goal: 'Next goal' });
+  f.releaseRead();
+  const accepted = await acceptance;
+  assert.equal(started.kind, 'coaching');
+  assert.match(accepted.text, /cancelled/);
+  assert.equal(f.writes, 0);
+  assert.equal(f.coordinator.state.goal, 'Next goal');
+  assert.equal(f.coordinator.state.proposal, null);
+});
 
 test('coordinator Reject and Clear stay busy after applyEdit starts and keep progress until result', async () => {
   const f = proposalRaceFixture();
@@ -131,7 +382,8 @@ test('busy Reject and Clear retain the in-flight proposal and persisted progress
   let clears = 0;
   const coordinator = new SessionCoordinator({ provider: {}, contextComposer: {},
     progressStore: { clear: async () => { clears++; } },
-    proposalProvider: { reject: () => ({ status: 'busy' }), clear: () => ({ status: 'busy' }) } });
+    proposalProvider: { reject: () => ({ status: 'busy' }), clear: () => ({ status: 'busy' }),
+      prepareClear: () => ({ status: 'busy' }) } });
   coordinator.state.goal = 'Saved goal';
   coordinator.state.confirmed = true;
   coordinator.state.proposal = { id: 'opaque-1', description: 'Review proposed KAFE change' };
@@ -171,6 +423,8 @@ test('restored summary, confirmation save, new session and clear use progress st
   const writes = [];
   const progressStore = { load: () => ({ goal: 'Saved goal', milestones: [{ id: 'saved', text: 'Saved check' }], completedChecks: ['saved'], confirmed: true }),
     save: async state => writes.push({ type: 'save', state: { goal: state.goal, milestones: state.milestones, completedChecks: state.completedChecks } }),
+    clearSession: async () => { writes.push({ type: 'clearSession' });
+      return { completedChecks: ['saved'], legacyCompletedCheckIds: [] }; },
     clear: async () => writes.push({ type: 'clear' }) };
   const coordinator = new SessionCoordinator({ provider: {}, contextComposer: {}, progressStore });
   coordinator.restoreProgress();
@@ -178,8 +432,9 @@ test('restored summary, confirmation save, new session and clear use progress st
   assert.equal(coordinator.state.confirmed, true);
   assert.deepEqual(coordinator.state.completedChecks, ['saved']);
   await coordinator.handleLearnerMessage({ type: 'startSession', goal: 'New goal' });
-  assert.deepEqual(writes.at(-1), { type: 'clear' });
+  assert.deepEqual(writes.at(-1), { type: 'clearSession' });
   assert.equal(coordinator.state.confirmed, false);
+  assert.deepEqual(coordinator.state.completedChecks, ['saved']);
   await coordinator.handleLearnerMessage({ type: 'confirmMilestones', milestones: [{ id: 'new', text: 'New check' }] });
   assert.equal(writes.at(-1).type, 'save');
   assert.equal(writes.at(-1).state.goal, 'New goal');
@@ -218,7 +473,8 @@ test('reject, stale acceptance and clear discard pending proposal without applyi
   const calls = [];
   const proposalProvider = { reject: id => { calls.push(['reject', id]); return { status: 'rejected' }; },
     accept: async id => { calls.push(['accept', id]); return { status: 'stale' }; },
-    clear: () => calls.push(['clear']) };
+    clear: () => calls.push(['clear']),
+    prepareClear: () => ({ status: 'ready', commit: () => calls.push(['clear']), rollback: () => {} }) };
   const coordinator = new SessionCoordinator({ provider: {}, contextComposer: {}, proposalProvider });
   coordinator.state.proposal = { id: 'opaque-1', description: 'Review proposed KAFE change' };
   assert.equal((await coordinator.handleLearnerMessage({ type: 'rejectProposal', id: 'wrong' })).kind, 'error');
@@ -270,6 +526,37 @@ test('provider failure shows safe retry status and retry reuses the exact review
   assert.equal(coordinator.state.retryAvailable, false);
   assert.equal((await coordinator.handleLearnerMessage({ type: 'retryMessage', previewToken: token })).kind, 'error');
   assert.equal(calls, 2);
+});
+
+test('non-provider failure refreshes the same request preview before another explicit send', async () => {
+  let providerCalls = 0;
+  let composeCalls = 0;
+  const coordinator = new SessionCoordinator({
+    provider: { complete: async () => { providerCalls++; throw new Error('internal failure detail'); } },
+    contextComposer: { compose: async ({ request }) => {
+      composeCalls++;
+      return { payload: { messages: [
+        { role: 'user', content: `REVIEWED_CONTEXT_${composeCalls}` },
+        { role: 'user', content: request },
+      ], tools: [] }, sources: [] };
+    } },
+  });
+  await coordinator.handleLearnerMessage({ type: 'startSession', goal: 'Lists' });
+  await coordinator.handleLearnerMessage({ type: 'confirmMilestones', milestones: [{ id: 'm1', text: 'Index a list' }] });
+  await coordinator.handleLearnerMessage({ type: 'sendMessage', phase: 'preview', text: 'Question' });
+  const firstToken = coordinator.state.preview.token;
+  const turn = await coordinator.handleLearnerMessage({ type: 'sendMessage', text: 'Question', previewToken: firstToken });
+
+  assert.equal(turn.kind, 'error');
+  assert.match(turn.text, /refreshed context preview/i);
+  assert.doesNotMatch(turn.text, /internal failure detail/);
+  assert.equal(providerCalls, 1);
+  assert.equal(composeCalls, 2);
+  assert.notEqual(coordinator.state.preview.token, firstToken);
+  assert.equal(coordinator.state.preview.draft, 'Question');
+  assert.equal(coordinator.state.preview.payload.messages[0].content, 'REVIEWED_CONTEXT_2');
+  assert.notEqual(coordinator.pendingPreview.attempted, true);
+  assert.equal(coordinator.state.retryAvailable, false);
 });
 
 const uri = path => ({ scheme: 'file', path, toString() { return `file://${path}`; } });
@@ -337,19 +624,21 @@ test('coordinator previews run evidence only for its source document after an ac
   assert.equal(coordinator.state.evidence.sourceUri, uri('/work/main.kf').toString());
 });
 
-test('coordinator forwards exactly the composed payload and excludes removed optional sources', async () => {
+test('coordinator forwards exactly the composed payload with optional sources excluded', async () => {
   let sent;
+  const selected = uri('/work/extra.kf');
+  const selectedId = selectedSourceId(selected);
   const coordinator = new SessionCoordinator({
     provider: { complete: async value => { sent = value; return { text: 'Hint', toolCalls: [] }; } },
-    contextComposer: { compose: async ({ excludedSourceIds }) => ({
-      payload: { messages: [{ role: 'user', content: excludedSourceIds.includes('selected:0') ? 'no file' : 'file' }], tools: [] },
-      sources: [{ id: 'selected:0', category: 'selected-file', label: 'extra.kf', included: !excludedSourceIds.includes('selected:0') }],
+    contextComposer: { compose: async ({ includedSourceIds }) => ({
+      payload: { messages: [{ role: 'user', content: includedSourceIds.includes(selectedId) ? 'file' : 'no file' }], tools: [] },
+      sources: [{ id: selectedId, category: 'selected-file', label: 'extra.kf', included: includedSourceIds.includes(selectedId) }],
     }) },
+    getContext: () => ({ candidateUris: [selected] }),
   });
   await coordinator.handleLearnerMessage({ type: 'startSession', goal: 'Lists' });
   await coordinator.handleLearnerMessage({ type: 'confirmMilestones', milestones: [{ id: 'use', text: 'Use a list' }] });
   await coordinator.handleLearnerMessage({ type: 'sendMessage', phase: 'preview', text: 'Help' });
-  await coordinator.handleLearnerMessage({ type: 'removeContextSource', id: 'selected:0' });
   const turn = await coordinator.handleLearnerMessage({ type: 'sendMessage', text: 'Help', previewToken: coordinator.state.preview.token });
   assert.deepEqual(sent.messages, [{ role: 'user', content: 'no file' }]);
   assert.equal(turn.contextSources[0].included, false);
@@ -425,7 +714,7 @@ test('local draft preview precedes provider call and the exact reviewed payload 
   const coordinator = new SessionCoordinator({
     provider: { complete: async payload => { calls.push(payload); return { text: 'Try an index.', toolCalls: [] }; } },
     contextComposer: composer,
-    getContext: () => ({ activeDocument: { uri: uri('/work/main.kf'), text: 'show(1)', version: 2 }, selectedUris: [selected] }),
+    getContext: () => ({ activeDocument: { uri: uri('/work/main.kf'), text: 'show(1)', version: 2 }, candidateUris: [selected] }),
   });
   await coordinator.handleLearnerMessage({ type: 'startSession', goal: 'Lists' });
   await coordinator.handleLearnerMessage({ type: 'confirmMilestones', milestones: [{ id: 'm1', text: 'Index a list' }] });
@@ -434,39 +723,185 @@ test('local draft preview precedes provider call and the exact reviewed payload 
   await coordinator.handleLearnerMessage({ type: 'sendMessage', phase: 'preview', text: 'Help with lists' });
   const first = coordinator.state.preview;
   assert.ok(first.token);
-  assert.ok(first.payload.messages.some(message => message.content.includes('OPTIONAL_SECRET')));
+  assert.equal(JSON.stringify(first.payload).includes('OPTIONAL_SECRET'), false);
   assert.equal(calls.length, 0);
-  await coordinator.handleLearnerMessage({ type: 'removeContextSource', id: selectedSourceId(selected) });
+  await coordinator.handleLearnerMessage({ type: 'setContextSourceIncluded', id: selectedSourceId(selected), included: true });
   const reviewed = coordinator.state.preview;
   assert.notEqual(reviewed.token, first.token);
-  assert.equal(JSON.stringify(reviewed.payload).includes('OPTIONAL_SECRET'), false);
+  assert.ok(JSON.stringify(reviewed.payload).includes('OPTIONAL_SECRET'));
   assert.equal((await coordinator.handleLearnerMessage({ type: 'sendMessage', text: 'Help with lists', previewToken: first.token })).kind, 'error');
   assert.equal(calls.length, 0);
   const turn = await coordinator.handleLearnerMessage({ type: 'sendMessage', text: 'Help with lists', previewToken: reviewed.token });
   assert.equal(turn.text, 'Try an index.');
   assert.equal(calls.length, 1);
   assert.deepEqual({ messages: calls[0].messages, tools: calls[0].tools }, reviewed.payload);
-  assert.equal(JSON.stringify(calls[0]).includes('OPTIONAL_SECRET'), false);
+  assert.ok(JSON.stringify(calls[0]).includes('OPTIONAL_SECRET'));
 });
 
-test('new model-requested knowledge cannot enter an automatic follow-up request', async () => {
+test('new candidates default to excluded; a selected URI stays included after it leaves visible editors', async () => {
+  const retained = uri('/work/retained.kf');
+  const newcomer = uri('/work/new.kf');
+  let candidateUris = [retained];
+  const coordinator = new SessionCoordinator({
+    provider: {},
+    contextComposer: new ContextComposer({
+      documentReader: { readDocument: async source => ({ uri: source, text: source === retained ? 'RETAINED' : 'NEW', version: 1 }) },
+      knowledgeRetriever: { search: async () => [] },
+    }),
+    getContext: () => ({ candidateUris }),
+  });
+  await coordinator.handleLearnerMessage({ type: 'startSession', goal: 'Lists' });
+  await coordinator.handleLearnerMessage({ type: 'confirmMilestones', milestones: [{ id: 'one', text: 'One' }] });
+  await coordinator.handleLearnerMessage({ type: 'sendMessage', phase: 'preview', text: 'Help' });
+  assert.equal(JSON.stringify(coordinator.state.preview.payload).includes('RETAINED'), false);
+  await coordinator.handleLearnerMessage({ type: 'setContextSourceIncluded', id: selectedSourceId(retained), included: true });
+  candidateUris = [newcomer];
+  await coordinator.handleLearnerMessage({ type: 'sendMessage', phase: 'preview', text: 'Help again' });
+  const payload = JSON.stringify(coordinator.state.preview.payload);
+  assert.ok(payload.includes('RETAINED'));
+  assert.equal(payload.includes('NEW'), false);
+  assert.ok(coordinator.state.contextSources.some(source => source.id === selectedSourceId(retained) && source.included));
+  assert.ok(coordinator.state.contextSources.some(source => source.id === selectedSourceId(newcomer) && !source.included));
+});
+
+test('source selection invalidates a reviewed preview and a stale token cannot send', async () => {
+  const selected = uri('/work/extra.kf');
+  let calls = 0;
+  const coordinator = new SessionCoordinator({
+    provider: { complete: async () => { calls++; return { text: 'Hint', toolCalls: [] }; } },
+    contextComposer: new ContextComposer({
+      documentReader: { readDocument: async source => ({ uri: source, text: 'SELECTED_CONTENT', version: 1 }) },
+      knowledgeRetriever: { search: async () => [] },
+    }),
+    getContext: () => ({ candidateUris: [selected] }),
+  });
+  await coordinator.handleLearnerMessage({ type: 'startSession', goal: 'Lists' });
+  await coordinator.handleLearnerMessage({ type: 'confirmMilestones', milestones: [{ id: 'one', text: 'One' }] });
+  await coordinator.handleLearnerMessage({ type: 'sendMessage', phase: 'preview', text: 'Help' });
+  const stale = coordinator.state.preview.token;
+  assert.equal((await coordinator.handleLearnerMessage({ type: 'setContextSourceIncluded', id: selectedSourceId(selected), included: 'true' })).kind, 'error');
+  assert.equal(coordinator.state.preview.token, stale);
+  assert.equal((await coordinator.handleLearnerMessage({ type: 'setContextSourceIncluded', id: 'selected:ABC', included: true })).kind, 'error');
+  assert.equal((await coordinator.handleLearnerMessage({ type: 'setContextSourceIncluded', id: selectedSourceId(selected), included: true })).kind, 'coaching');
+  assert.notEqual(coordinator.state.preview.token, stale);
+  assert.ok(JSON.stringify(coordinator.state.preview.payload).includes('SELECTED_CONTENT'));
+  assert.equal((await coordinator.handleLearnerMessage({ type: 'sendMessage', text: 'Help', previewToken: stale })).kind, 'error');
+  assert.equal(calls, 0);
+});
+
+test('revoking a selected source while provider responds prevents stale proposal routing and preserves the new preview', async () => {
+  const selected = uri('/work/extra.kf');
+  const sourceId = selectedSourceId(selected);
+  let releaseProvider;
+  let providerEntered;
+  const entered = new Promise(resolve => { providerEntered = resolve; });
+  const heldResponse = new Promise(resolve => { releaseProvider = resolve; });
+  let routes = 0;
+  let stages = 0;
+  let opens = 0;
+  const coordinator = new SessionCoordinator({
+    provider: { complete: async () => { providerEntered(); return heldResponse; } },
+    contextComposer: new ContextComposer({
+      documentReader: { readDocument: async source => ({ uri: source, text: 'OPTIONAL_CODE', version: 1 }) },
+      knowledgeRetriever: { search: async () => [] },
+    }),
+    toolRouter: { route: async () => { routes++; return { uri: selected, documentVersion: 1,
+      contentSha256: '0'.repeat(64), newText: 'changed' }; } },
+    proposalProvider: { clear: () => ({ status: 'cleared' }), stage: () => { stages++; return { id: 'proposal' }; },
+      open: async () => { opens++; return { status: 'opened' }; } },
+    getContext: () => ({ candidateUris: [selected] }),
+  });
+  await coordinator.handleLearnerMessage({ type: 'startSession', goal: 'Lists' });
+  await coordinator.handleLearnerMessage({ type: 'confirmMilestones', milestones: [{ id: 'one', text: 'One' }] });
+  await coordinator.handleLearnerMessage({ type: 'sendMessage', phase: 'preview', text: 'Help' });
+  await coordinator.handleLearnerMessage({ type: 'setContextSourceIncluded', id: sourceId, included: true });
+  const oldToken = coordinator.state.preview.token;
+  const sending = coordinator.handleLearnerMessage({ type: 'sendMessage', text: 'Help', previewToken: oldToken });
+  await entered;
+  await coordinator.handleLearnerMessage({ type: 'setContextSourceIncluded', id: sourceId, included: false });
+  const newPreview = coordinator.state.preview;
+  assert.notEqual(newPreview.token, oldToken);
+  assert.equal(JSON.stringify(newPreview.payload).includes('OPTIONAL_CODE'), false);
+  releaseProvider({ text: '', toolCalls: [{ id: 'proposal-call', name: 'proposeCodeChange',
+    arguments: { sourceId, newText: 'changed' } }] });
+  assert.equal((await sending).kind, 'error');
+  assert.equal(routes, 0);
+  assert.equal(stages, 0);
+  assert.equal(opens, 0);
+  assert.equal(coordinator.state.preview?.token, newPreview.token);
+  assert.equal(coordinator.pendingPreview?.token, newPreview.token);
+  assert.equal(coordinator.state.proposal, null);
+});
+
+test('revoking a selected source during tool routing prevents proposal staging', async () => {
+  const selected = uri('/work/extra.kf');
+  const sourceId = selectedSourceId(selected);
+  let routeEntered;
+  const entered = new Promise(resolve => { routeEntered = resolve; });
+  let releaseRoute;
+  const heldRoute = new Promise(resolve => { releaseRoute = resolve; });
+  let stages = 0;
+  let opens = 0;
+  const coordinator = new SessionCoordinator({
+    provider: { complete: async () => ({ text: '', toolCalls: [{ id: 'proposal-call',
+      name: 'proposeCodeChange', arguments: { sourceId, newText: 'changed' } }] }) },
+    contextComposer: new ContextComposer({
+      documentReader: { readDocument: async source => ({ uri: source, text: 'OPTIONAL_CODE', version: 1 }) },
+      knowledgeRetriever: { search: async () => [] },
+    }),
+    toolRouter: { route: async () => { routeEntered(); return heldRoute; } },
+    proposalProvider: { clear: () => ({ status: 'cleared' }), stage: () => { stages++; return { id: 'proposal' }; },
+      open: async () => { opens++; return { status: 'opened' }; } },
+    getContext: () => ({ candidateUris: [selected] }),
+  });
+  await coordinator.handleLearnerMessage({ type: 'startSession', goal: 'Lists' });
+  await coordinator.handleLearnerMessage({ type: 'confirmMilestones', milestones: [{ id: 'one', text: 'One' }] });
+  await coordinator.handleLearnerMessage({ type: 'sendMessage', phase: 'preview', text: 'Help' });
+  await coordinator.handleLearnerMessage({ type: 'setContextSourceIncluded', id: sourceId, included: true });
+  const sending = coordinator.handleLearnerMessage({ type: 'sendMessage', text: 'Help', previewToken: coordinator.state.preview.token });
+  await entered;
+  await coordinator.handleLearnerMessage({ type: 'setContextSourceIncluded', id: sourceId, included: false });
+  const newToken = coordinator.state.preview.token;
+  releaseRoute({ uri: selected, documentVersion: 1, contentSha256: '0'.repeat(64), newText: 'changed' });
+  assert.equal((await sending).kind, 'error');
+  assert.equal(stages, 0);
+  assert.equal(opens, 0);
+  assert.equal(coordinator.state.preview?.token, newToken);
+  assert.equal(coordinator.pendingPreview?.token, newToken);
+});
+
+test('new model-requested knowledge is previewed before any provider follow-up request', async () => {
   const calls = [];
   const coordinator = new SessionCoordinator({
     provider: { complete: async payload => {
       calls.push(payload);
-      return { text: '', toolCalls: [{ id: 'lookup-1', name: 'searchKafeKnowledge', arguments: { query: 'unpreviewed topic' } }] };
+      return calls.length < 3
+        ? { text: '', toolCalls: [{ id: `lookup-${calls.length}`, name: 'searchKafeKnowledge', arguments: { query: 'unpreviewed topic' } }] }
+        : { text: 'Use the reviewed passage as a clue.', toolCalls: [] };
     } },
     contextComposer: { compose: async () => ({ payload: { messages: [{ role: 'user', content: 'Question' }], tools: [] }, sources: [] }) },
     toolRouter: { route: async () => [{ id: 'language/new.md#1', path: 'language/new.md', category: 'language', text: 'UNREVIEWED_CONTENT' }] },
   });
   await coordinator.handleLearnerMessage({ type: 'startSession', goal: 'Lists' });
   await coordinator.handleLearnerMessage({ type: 'confirmMilestones', milestones: [{ id: 'm1', text: 'Index a list' }] });
-  await coordinator.handleLearnerMessage({ type: 'sendMessage', phase: 'preview', text: 'Question' });
-  const turn = await coordinator.handleLearnerMessage({ type: 'sendMessage', text: 'Question', previewToken: coordinator.state.preview.token });
-  assert.equal(turn.kind, 'error');
-  assert.match(turn.text, /preview/i);
-  assert.equal(calls.length, 1);
-  assert.equal(JSON.stringify(calls).includes('UNREVIEWED_CONTENT'), false);
+  const firstTurn = await sendReviewed(coordinator, 'Question');
+  const refreshedPreview = coordinator.state.preview;
+  assert.equal(firstTurn.kind, 'coaching');
+  assert.match(firstTurn.text, /review.*preview/i);
+  assert.equal(calls.length, 1, 'the provider must not receive a follow-up before learner review');
+  assert.match(JSON.stringify(refreshedPreview.payload), /UNREVIEWED_CONTENT/);
+  assert.ok(refreshedPreview.payload.messages.some(message =>
+    message.content === '[Source knowledge:language/new.md#1]\nUNREVIEWED_CONTENT'));
+  assert.ok(coordinator.state.contextSources.some(source => source.id === 'knowledge:language/new.md#1' && source.included));
+
+  const turn = await coordinator.handleLearnerMessage({ type: 'sendMessage', text: 'Question', previewToken: refreshedPreview.token });
+  assert.equal(turn.kind, 'coaching');
+  assert.equal(turn.text, 'Use the reviewed passage as a clue.');
+  assert.equal(calls.length, 3);
+  assert.equal(JSON.stringify(calls[0].messages).includes('UNREVIEWED_CONTENT'), false);
+  assert.ok(JSON.stringify(calls[1].messages).includes('UNREVIEWED_CONTENT'));
+  assert.match(calls[2].messages.at(-1).content, /Source already included: knowledge:language\/new\.md#1/);
+  assert.equal(coordinator.state.preview, null);
 });
 
 test('a model mastery claim based on a passing run and explanation is replaced', async () => {

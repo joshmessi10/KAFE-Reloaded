@@ -80,10 +80,10 @@ class ToolRouter {
 
   async documentFor(sourceId, context) {
     if (sourceId === undefined) return validateDocument(context.activeDocument);
-    if (!/^selected:[a-f0-9]{64}$/.test(sourceId) || context.excludedSourceIds?.includes(sourceId)) {
+    if (!/^selected:[a-f0-9]{64}$/.test(sourceId) || !context.includedSourceIds?.includes(sourceId)) {
       throw new Error('Selected source ID is not allowed.');
     }
-    const selected = context.selectedUris?.find(uri => selectedSourceId(uri) === sourceId);
+    const selected = context.candidateUris?.find(uri => selectedSourceId(uri) === sourceId);
     if (!selected) throw new Error('Selected source ID is not allowed.');
     validateUri(selected);
     const document = validateDocument(await this.documentReader.readDocument(selected));

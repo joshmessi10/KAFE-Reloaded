@@ -1,4 +1,5 @@
 test/**
+diagram/**
 .vscode/**
 node_modules/**
 !node_modules/yauzl

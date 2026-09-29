@@ -1,0 +1,20 @@
+-- ============================================
+-- Hello world - A basic KAFE program
+-- ============================================
+
+-- Print text
+show("Hello, KAFE!");
+
+-- Print numbers
+show(42);
+show(3.14);
+
+-- Print booleans
+show(True);
+
+-- Print lists
+show([1, 2, 3]);
+
+-- Variables
+STR name = "World";
+show("Hello, " + name + "!");

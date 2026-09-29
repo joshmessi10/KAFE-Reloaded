@@ -1,0 +1,50 @@
+-- ============================================
+-- Neural network with KafeGESHA
+-- Binary classification: AND problem
+-- ============================================
+
+import geshaDeep;
+
+show("=== Neural network: AND classification ===");
+
+-- Training data
+List[List[INT]] x_train = [[0,0], [0,1], [1,0], [1,1]];
+List[INT] y_train = [0, 0, 0, 1];
+
+-- Create a sequential model with one dense layer (1 neuron, sigmoid, 2 inputs)
+GESHA layer = geshaDeep.create_dense(1, "sigmoid", [2], 0.0, 42);
+GESHA model = geshaDeep.sequential([layer]);
+
+-- Compile the model
+model.compile("sgd", "binary_crossentropy", []);
+
+-- Train
+show("Training...");
+model.fit(x_train, y_train, 1000, 1);
+
+-- Evaluate
+show("\nResults:");
+for (p in x_train):
+    List[FLOAT] prob = model.predict(p);
+    INT label = model.predict_label(p);
+    show(str(p) + " -> probability=" + str(prob[0]) + ", label=" + str(label));
+;
+
+-- ============================================
+-- Regression with KafeGESHA
+-- ============================================
+show("\n=== Neural network: Regression ===");
+
+-- Data: y = 2x
+List[List[FLOAT]] X = [[1.0], [2.0], [3.0], [4.0]];
+List[FLOAT] Y = [2.0, 4.0, 6.0, 8.0];
+
+GESHA reg_layer = geshaDeep.create_dense(1, "linear", [1], 0.0, 42);
+GESHA reg_model = geshaDeep.sequential([reg_layer]);
+
+reg_model.compile("sgd", "mse", []);
+reg_model.fit(X, Y, 50, 1);
+
+List[FLOAT] pred = reg_model.predict([5.0]);
+show("Prediction for x=5.0: " + str(pred[0]));
+show("Expected: ~10.0");

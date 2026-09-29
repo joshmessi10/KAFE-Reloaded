@@ -8,6 +8,10 @@
   let previewDraft;
   let retryToken;
   let proposalId;
+  let reviewedCheckPending = false;
+  let lastRenderedMessageCount = 0;
+  let reviewedCheckRunSequence;
+  let lastEvidenceRunSequence;
 
   byId('goal-form').addEventListener('submit', event => {
     event.preventDefault();
@@ -23,7 +27,6 @@
     previewDraft = undefined;
     retryToken = undefined;
     byId('send-message').disabled = true;
-    byId('message-input').value = '';
   });
   byId('message-input').addEventListener('input', () => {
     const text = byId('message-input').value.trim();
@@ -47,6 +50,26 @@
   byId('retry-message').addEventListener('click', () => {
     if (retryToken) send({ type: 'retryMessage', previewToken: retryToken });
   });
+  byId('record-reviewed-check').addEventListener('click', () => {
+    const label = byId('reviewed-check-label').value.trim();
+    const outcome = byId('reviewed-check-outcome').value;
+    if (!Number.isSafeInteger(reviewedCheckRunSequence) || reviewedCheckRunSequence < 1 ||
+      !label || label.length > 120 || !['passed', 'failed', 'unknown'].includes(outcome)) {
+      setText('reviewed-check-status', 'Enter a label and choose an outcome before recording.');
+      byId('reviewed-check-status').hidden = false;
+      return;
+    }
+    reviewedCheckPending = true;
+    send({ type: 'recordReviewedCheck', runSequence: reviewedCheckRunSequence, label, outcome });
+    setText('reviewed-check-status', 'Saving reviewed check…');
+    byId('reviewed-check-status').hidden = false;
+  });
+
+  function clearReviewedCheckStatus() {
+    reviewedCheckPending = false;
+    byId('reviewed-check-status').hidden = true;
+    setText('reviewed-check-status', '');
+  }
 
   function renderMilestones(milestones, confirmed) {
     const list = byId('milestone-list');
@@ -117,13 +140,17 @@
       const label = document.createElement('span');
       label.textContent = `${source.included === true ? 'Included' : 'Excluded'} · ${String(source.category ?? 'source')}: ${String(source.label ?? '')}`;
       row.append(label);
-      if (source.category === 'selected-file' && source.included === true) {
-        const button = document.createElement('button');
-        button.type = 'button';
-        button.textContent = 'Remove';
-        button.setAttribute('aria-label', `Remove ${String(source.label ?? 'context source')}`);
-        button.addEventListener('click', () => send({ type: 'removeContextSource', id: source.id }));
-        row.append(button);
+      if (source.category === 'selected-file') {
+        const controlLabel = document.createElement('label');
+        controlLabel.textContent = `Include ${String(source.label ?? 'context source')} in request`;
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.checked = source.included === true;
+        checkbox.addEventListener('change', () => send({
+          type: 'setContextSourceIncluded', id: source.id, included: checkbox.checked,
+        }));
+        controlLabel.append(checkbox);
+        row.append(controlLabel);
       }
       list.append(row);
     }
@@ -132,6 +159,16 @@
   function renderEvidence(evidence) {
     byId('evidence-empty').hidden = Boolean(evidence);
     byId('evidence-content').hidden = !evidence;
+    const runSequence = Number.isSafeInteger(evidence?.runSequence) && evidence.runSequence > 0 ? evidence.runSequence : undefined;
+    if (runSequence !== lastEvidenceRunSequence || evidence?.reviewedCheckId) {
+      byId('reviewed-check-label').value = '';
+      byId('reviewed-check-outcome').value = '';
+      clearReviewedCheckStatus();
+    }
+    lastEvidenceRunSequence = runSequence;
+    const canRecord = runSequence !== undefined && !evidence?.reviewedCheckId;
+    reviewedCheckRunSequence = canRecord ? runSequence : undefined;
+    byId('reviewed-check-form').hidden = !canRecord;
     if (!evidence) return;
     const provenance = evidence.runtimeMode === 'contributor' ? 'Contributor checkout; runtime and knowledge-pack versions unavailable' :
       evidence.runtimeVersion && evidence.knowledgePackVersion ?
@@ -139,6 +176,27 @@
     setText('evidence-summary', `Exit code: ${evidence.exitCode ?? 'unknown'} · Source: ${evidence.sourceUri || 'unattributed'} · ${provenance}${evidence.outputTruncated ? ' · output truncated' : ''}`);
     setText('evidence-stdout', evidence.stdout);
     setText('evidence-stderr', evidence.stderr);
+  }
+
+  function renderReviewedChecks(checks) {
+    const container = byId('reviewed-check-history');
+    const list = byId('reviewed-check-list');
+    setText('reviewed-check-explanation', 'Recording a reviewed check is not proof of mastery.');
+    list.replaceChildren();
+    const records = Array.isArray(checks) ? checks : [];
+    container.hidden = records.length === 0;
+    for (const record of records) {
+      const item = document.createElement('li');
+      const label = document.createElement('span');
+      label.textContent = String(record.label ?? '');
+      const outcome = document.createElement('span');
+      outcome.textContent = `Outcome: ${String(record.outcome ?? 'unknown')}`;
+      const timestamp = document.createElement('time');
+      timestamp.dateTime = String(record.recordedAt ?? '');
+      timestamp.textContent = String(record.recordedAt ?? '');
+      item.append(label, document.createTextNode(' · '), outcome, document.createTextNode(' · '), timestamp);
+      list.append(item);
+    }
   }
 
   function renderProposal(proposal) {
@@ -149,6 +207,9 @@
   }
 
   function render(state = {}) {
+    if (reviewedCheckPending && state.responseMessageType === 'recordReviewedCheck') {
+      clearReviewedCheckStatus();
+    }
     const goal = String(state.goal ?? '');
     setText('provider-status', state.providerStatus || (goal ?
       'Learning goal active. Coaching requires a configured provider; KAFE editing and Run remain available.' :
@@ -163,11 +224,20 @@
     byId('milestone-status').hidden = !state.milestoneStatus;
     setText('interaction-status', state.interactionStatus);
     byId('interaction-status').hidden = !state.interactionStatus;
-    renderMessages(Array.isArray(state.messages) ? state.messages : []);
+    const messages = Array.isArray(state.messages) ? state.messages : [];
+    if (messages.length > lastRenderedMessageCount) {
+      const addedMessages = messages.slice(lastRenderedMessageCount);
+      const submitted = addedMessages[0];
+      const response = addedMessages[1];
+      if (addedMessages.length >= 2 && submitted?.role === 'learner' && response?.role === 'tutor' &&
+        submitted.text === byId('message-input').value.trim()) byId('message-input').value = '';
+    }
+    lastRenderedMessageCount = messages.length;
+    renderMessages(messages);
     renderContext(Array.isArray(state.contextSources) ? state.contextSources : []);
     const preview = state.preview;
     const currentDraft = byId('message-input').value.trim();
-    previewToken = preview?.draft === currentDraft ? preview.token : undefined;
+    previewToken = !state.retryAvailable && preview?.draft === currentDraft ? preview.token : undefined;
     previewDraft = previewToken ? preview.draft : undefined;
     retryToken = state.retryAvailable ? preview?.token : undefined;
     byId('send-message').disabled = !previewToken;
@@ -175,6 +245,7 @@
     setText('context-payload', (previewToken || retryToken) ? JSON.stringify(preview.payload, null, 2) :
       'Type a message to preview its context before sending.');
     renderEvidence(state.evidence);
+    renderReviewedChecks(state.completedChecks);
     renderProposal(state.proposal);
   }
 

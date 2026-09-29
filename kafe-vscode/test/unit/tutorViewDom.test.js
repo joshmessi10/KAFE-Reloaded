@@ -150,8 +150,38 @@ test('context preview identifies included and excluded sources', () => {
   const rows = view.byId('context-list').children;
   assert.match(rows[0].textContent, /Included/);
   assert.match(rows[1].textContent, /Excluded/);
-  assert.equal(rows[0].querySelectorAll('button').length, 1);
-  assert.equal(rows[1].querySelectorAll('button').length, 0);
+  assert.equal(rows[0].querySelectorAll('input')[0].checked, true);
+  assert.equal(rows[1].querySelectorAll('input')[0].checked, false);
+});
+
+test('context candidate control sends explicit inclusion state', () => {
+  const view = loadView();
+  view.render({ contextSources: [
+    { id: 'selected:17', category: 'selected-file', label: 'examples/first.kf', included: false },
+    { id: 'selected:42', category: 'selected-file', label: 'examples/second.kf', included: true },
+    { id: 'active', category: 'active-file', label: 'main.kf', included: true },
+  ] });
+  const rows = view.byId('context-list').children;
+  assert.equal(rows[0].querySelectorAll('label').length, 1);
+  assert.match(rows[0].querySelector('label').textContent, /examples\/first\.kf/);
+  assert.equal(rows[2].querySelectorAll('input').length, 0);
+
+  const first = rows[0].querySelector('input');
+  assert.equal(first.type, 'checkbox');
+  assert.equal(first.checked, false);
+  first.checked = true;
+  first.dispatch('change');
+  assert.equal(JSON.stringify(view.sent.at(-1)), JSON.stringify({
+    type: 'setContextSourceIncluded', id: 'selected:17', included: true,
+  }));
+
+  const second = rows[1].querySelector('input');
+  assert.equal(second.checked, true);
+  second.checked = false;
+  second.dispatch('change');
+  assert.equal(JSON.stringify(view.sent.at(-1)), JSON.stringify({
+    type: 'setContextSourceIncluded', id: 'selected:42', included: false,
+  }));
 });
 
 test('run evidence renders contributor provenance without invented version numbers', () => {
@@ -168,6 +198,73 @@ test('run evidence visibly names its source file', () => {
     runtimeMode: 'managed', runtimeVersion: '0.1.0', knowledgePackVersion: '0.1.0',
     sourceUri: 'file:///workspace/main.kf', runSequence: 2 } });
   assert.match(view.byId('evidence-summary').textContent, /main\.kf/);
+});
+
+test('reviewed-check action requires visible evidence and sends its run sequence', () => {
+  const view = loadView();
+  view.render({ confirmed: false, completedChecks: [] });
+  assert.equal(view.byId('reviewed-check-form').hidden, true);
+
+  const evidence = { stdout: 'ok', stderr: '', exitCode: 0, runSequence: 7 };
+  view.render({ confirmed: false, evidence, completedChecks: [] });
+  assert.equal(view.byId('reviewed-check-form').hidden, false);
+  view.byId('record-reviewed-check').dispatch('click');
+  assert.deepEqual(view.sent, [], 'an outcome must be selected before recording');
+
+  view.byId('reviewed-check-label').value = 'Loop output';
+  view.byId('reviewed-check-outcome').value = 'passed';
+  view.byId('record-reviewed-check').dispatch('click');
+  assert.equal(JSON.stringify(view.sent), JSON.stringify([{ type: 'recordReviewedCheck', runSequence: 7,
+    label: 'Loop output', outcome: 'passed' }]));
+
+  view.render({ confirmed: false, evidence: { ...evidence, reviewedCheckId: 'saved-1' }, completedChecks: [] });
+  assert.equal(view.byId('reviewed-check-form').hidden, true);
+});
+
+test('reviewed-check saving status waits for an updated host response', () => {
+  const view = loadView();
+  const evidence = { stdout: 'ok', stderr: '', exitCode: 0, runSequence: 8 };
+  view.render({ evidence, interactionStatus: '' });
+  view.byId('reviewed-check-label').value = 'Loop output';
+  view.byId('reviewed-check-outcome').value = 'failed';
+  view.byId('record-reviewed-check').dispatch('click');
+
+  const status = view.byId('reviewed-check-status');
+  assert.equal(status.hidden, false);
+  assert.equal(status.textContent, 'Saving reviewed check…');
+
+  view.render({ evidence, interactionStatus: '', providerStatus: 'Ready' });
+  assert.equal(status.hidden, false, 'an unrelated render without a response keeps the pending status');
+  assert.equal(status.textContent, 'Saving reviewed check…');
+
+  view.render({ evidence, interactionStatus: 'Another action failed.', responseMessageType: 'sendMessage' });
+  assert.equal(status.hidden, false, 'a response to another action keeps the pending status');
+  assert.equal(status.textContent, 'Saving reviewed check…');
+
+  const error = 'Tutor progress could not be saved in this workspace.';
+  view.render({ evidence, interactionStatus: error, responseMessageType: 'recordReviewedCheck' });
+  assert.equal(status.hidden, true, 'the rejected save must clear the stale pending message');
+  assert.equal(status.textContent, '');
+  assert.equal(view.byId('interaction-status').hidden, false);
+  assert.equal(view.byId('interaction-status').textContent, error,
+    'the host error remains visible in the separate interaction status');
+});
+
+test('reviewed-check history renders outcome and non-mastery explanation', () => {
+  const view = loadView();
+  const recordedAt = '2026-09-28T15:30:00.000Z';
+  const unsafeLabel = '<img src=x onerror=alert(1)> reviewed';
+  view.render({ completedChecks: [{ id: 'check-1', runSequence: 4, label: unsafeLabel,
+    outcome: 'failed', recordedAt, runExitCode: 1 }] });
+
+  assert.equal(view.byId('reviewed-check-history').hidden, false);
+  assert.match(view.byId('reviewed-check-list').textContent, /failed/i);
+  assert.ok(view.byId('reviewed-check-list').textContent.includes(recordedAt));
+  assert.match(view.byId('reviewed-check-explanation').textContent,
+    /^Recording a reviewed check is not proof of mastery\.$/);
+  const entry = view.byId('reviewed-check-list').children[0];
+  assert.equal(entry.children[0].textContent, unsafeLabel);
+  assert.equal(entry.querySelectorAll('img').length, 0, 'saved labels render as text, not markup');
 });
 
 test('view-generated milestone objects are accepted by the session coordinator', async () => {
@@ -199,6 +296,25 @@ test('view displays exact preview payload and sends its token with one Send acti
   assert.deepEqual(JSON.parse(view.byId('context-payload').textContent), payload);
   view.byId('message-form').dispatch('submit');
   assert.equal(JSON.stringify(view.sent.at(-1)), JSON.stringify({ type: 'sendMessage', text: 'Help with lists', previewToken: 'preview-1' }));
+  assert.equal(view.byId('message-input').value, 'Help with lists', 'keep the draft while the host resolves the request');
+
+  const refreshedPayload = { messages: [...payload.messages, { role: 'user', content: '[Source knowledge:language/new.md#1]\nNEW_REVIEWED_CONTENT' }], tools: [] };
+  view.render({
+    contextSources: [
+      { id: 'selected:0', category: 'selected-file', label: 'extra.kf', included: true },
+      { id: 'knowledge:language/new.md#1', category: 'knowledge', label: 'language: language/new.md', included: true },
+    ],
+    preview: { token: 'preview-2', draft: 'Help with lists', payload: refreshedPayload },
+  });
+  assert.deepEqual(JSON.parse(view.byId('context-payload').textContent), refreshedPayload);
+  assert.equal(view.byId('send-message').disabled, false);
+  view.byId('message-form').dispatch('submit');
+  assert.equal(JSON.stringify(view.sent.at(-1)), JSON.stringify({ type: 'sendMessage', text: 'Help with lists', previewToken: 'preview-2' }));
+  view.render({ messages: [
+    { role: 'learner', text: 'Help with lists' },
+    { role: 'tutor', text: 'Try one small example.' },
+  ] });
+  assert.equal(view.byId('message-input').value, '', 'clear the draft only after a completed tutor response');
 });
 
 test('provider failure exposes a learner-triggered retry using the retained preview token', () => {

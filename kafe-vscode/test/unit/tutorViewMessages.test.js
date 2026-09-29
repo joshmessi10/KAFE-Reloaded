@@ -3,10 +3,10 @@ const test = require('node:test');
 
 const { isTutorMessage, dispatchTutorMessage, TutorViewProvider } = require('../../src/tutor/TutorViewProvider');
 
-test('Tutor host accepts only the eight learner message types', () => {
+test('Tutor host accepts only the nine learner message types', () => {
   for (const type of [
-    'startSession', 'confirmMilestones', 'sendMessage', 'removeContextSource',
-    'acceptProposal', 'rejectProposal', 'clearProgress', 'retryMessage',
+    'startSession', 'confirmMilestones', 'sendMessage', 'setContextSourceIncluded',
+    'acceptProposal', 'rejectProposal', 'clearProgress', 'retryMessage', 'recordReviewedCheck',
   ]) {
     assert.equal(isTutorMessage({ type }), true, `${type} should be accepted`);
   }
@@ -14,6 +14,31 @@ test('Tutor host accepts only the eight learner message types', () => {
     { type: 'readFile' }, { type: 'sendMessage' + ' ' }, { type: 1 }]) {
     assert.equal(isTutorMessage(value), false);
   }
+});
+
+test('reviewed-check message allowlist accepts the learner recording action', () => {
+  const received = [];
+  const message = { type: 'recordReviewedCheck', runSequence: 7, label: 'Loop output', outcome: 'passed' };
+  assert.equal(dispatchTutorMessage(message, value => received.push(value)), true);
+  assert.deepEqual(received, [message]);
+  assert.equal(dispatchTutorMessage({ type: 'recordReviewedCheck ' }, value => received.push(value)), false);
+  assert.deepEqual(received, [message]);
+});
+
+test('context-selection message allowlist accepts only the context-selection message type', () => {
+  const received = [];
+  const select = { type: 'setContextSourceIncluded', id: 'selected:42', included: true };
+  assert.equal(dispatchTutorMessage(select, message => received.push(message)), true);
+  assert.deepEqual(received, [select]);
+  for (const message of [
+    { type: 'removeContextSource', id: 'selected:42' },
+    { type: 'setContextSourceIncluded ' },
+    { type: 42 },
+    { type: null },
+  ]) {
+    assert.equal(dispatchTutorMessage(message, value => received.push(value)), false);
+  }
+  assert.deepEqual(received, [select]);
 });
 
 test('unknown webview messages cause no host action', () => {

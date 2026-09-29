@@ -3,8 +3,8 @@ const { readFileSync } = require('node:fs');
 const path = require('node:path');
 
 const MESSAGE_TYPES = new Set([
-  'startSession', 'confirmMilestones', 'sendMessage', 'removeContextSource',
-  'acceptProposal', 'rejectProposal', 'clearProgress', 'retryMessage',
+  'startSession', 'confirmMilestones', 'sendMessage', 'setContextSourceIncluded',
+  'acceptProposal', 'rejectProposal', 'clearProgress', 'retryMessage', 'recordReviewedCheck',
 ]);
 
 function isTutorMessage(value) {

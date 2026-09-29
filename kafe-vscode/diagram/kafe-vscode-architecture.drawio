@@ -1,0 +1,578 @@
+<mxfile host="65bd71144e">
+    <diagram id="overview" name="1 - Architecture Overview">
+        <mxGraphModel dx="1242" dy="965" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1930" pageHeight="1210" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="overview_title" parent="1" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=wrap;strokeColor=none;fillColor=none;" value="&lt;div style=&quot;font-family:Arial;font-size:23px;font-weight:700;color:#18324B;&quot;&gt;KAFE VS Code Extension - Architecture Overview&lt;/div&gt;&lt;div style=&quot;font-family:Arial;font-size:12px;color:#52616B;&quot;&gt;Current working tree | Code-grounded module map | Tutor and runtime details are expanded on the next pages.&lt;/div&gt;" vertex="1">
+                    <mxGeometry height="58" width="1860" x="35" y="20" as="geometry"/>
+                </mxCell>
+                <mxCell id="overview_surface_bg" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F3F7FB;strokeColor=#4776A8;strokeWidth=1;dashed=1;dashPattern=8 5;opacity=70;" value="" vertex="1">
+                    <mxGeometry height="1065" width="315" x="30" y="100" as="geometry"/>
+                </mxCell>
+                <mxCell id="overview_surface_label" parent="1" style="text;html=1;align=left;verticalAlign=middle;fontFamily=Arial;fontSize=14;fontStyle=1;fontColor=#4776A8;strokeColor=none;fillColor=none;" value="&lt;div style=&quot;font-family:Arial;font-size:14px;font-weight:700;color:#4776A8;&quot;&gt;VS Code surface&lt;/div&gt;" vertex="1">
+                    <mxGeometry height="27" width="291" x="42" y="105" as="geometry"/>
+                </mxCell>
+                <mxCell id="overview_host_bg" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F6F8FC;strokeColor=#4776A8;strokeWidth=1;dashed=1;dashPattern=8 5;opacity=70;" value="" vertex="1">
+                    <mxGeometry height="1065" width="580" x="360" y="100" as="geometry"/>
+                </mxCell>
+                <mxCell id="overview_host_label" parent="1" style="text;html=1;align=left;verticalAlign=middle;fontFamily=Arial;fontSize=14;fontStyle=1;fontColor=#4776A8;strokeColor=none;fillColor=none;" value="&lt;div style=&quot;font-family:Arial;font-size:14px;font-weight:700;color:#4776A8;&quot;&gt;Extension host and composition root&lt;/div&gt;" vertex="1">
+                    <mxGeometry height="27" width="556" x="372" y="105" as="geometry"/>
+                </mxCell>
+                <mxCell id="overview_tutor_bg" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FAF7FD;strokeColor=#8056B3;strokeWidth=1;dashed=1;dashPattern=8 5;opacity=70;" value="" vertex="1">
+                    <mxGeometry height="1065" width="455" x="955" y="100" as="geometry"/>
+                </mxCell>
+                <mxCell id="overview_tutor_label" parent="1" style="text;html=1;align=left;verticalAlign=middle;fontFamily=Arial;fontSize=14;fontStyle=1;fontColor=#8056B3;strokeColor=none;fillColor=none;" value="&lt;div style=&quot;font-family:Arial;font-size:14px;font-weight:700;color:#8056B3;&quot;&gt;Tutor services&lt;/div&gt;" vertex="1">
+                    <mxGeometry height="27" width="431" x="967" y="105" as="geometry"/>
+                </mxCell>
+                <mxCell id="overview_resources_bg" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFAF1;strokeColor=#BA7A19;strokeWidth=1;dashed=1;dashPattern=8 5;opacity=70;" value="" vertex="1">
+                    <mxGeometry height="1065" width="475" x="1425" y="100" as="geometry"/>
+                </mxCell>
+                <mxCell id="overview_resources_label" parent="1" style="text;html=1;align=left;verticalAlign=middle;fontFamily=Arial;fontSize=14;fontStyle=1;fontColor=#BA7A19;strokeColor=none;fillColor=none;" value="&lt;div style=&quot;font-family:Arial;font-size:14px;font-weight:700;color:#BA7A19;&quot;&gt;External systems and local state&lt;/div&gt;" vertex="1">
+                    <mxGeometry height="27" width="451" x="1437" y="105" as="geometry"/>
+                </mxCell>
+                <mxCell id="overview_current" parent="1" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;align=left;verticalAlign=middle;spacingLeft=11;spacingRight=10;spacingTop=8;spacingBottom=7;fontFamily=Arial;fontSize=12;fontColor=#493B12;fillColor=#FFF9D9;strokeColor=#C79A27;strokeWidth=1.5;shadow=1;shape=note;size=16;" value="&lt;div style=&quot;font-family:Arial;font-size:13px;font-weight:700;color:#493B12;&quot;&gt;Scope and live configuration&lt;/div&gt;&lt;div style=&quot;font-family:Arial;font-size:11px;line-height:1.3;color:#26323A;margin-top:4px;&quot;&gt;This diagram reflects the current uncommitted working tree. runtimeManifest.json pins KAFE 0.1.0 / knowledge pack 0.1.0; releasePublished is false at diagram time.&lt;/div&gt;" vertex="1">
+                    <mxGeometry height="58" width="790" x="1100" y="25" as="geometry"/>
+                </mxCell>
+                <mxCell id="overview_manifest" parent="1" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;align=left;verticalAlign=middle;spacingLeft=11;spacingRight=10;spacingTop=8;spacingBottom=7;fontFamily=Arial;fontSize=12;fontColor=#172B4D;fillColor=#EAF2FF;strokeColor=#4776A8;strokeWidth=1.5;shadow=1;" value="&lt;div style=&quot;font-family:Arial;font-size:13px;font-weight:700;color:#172B4D;&quot;&gt;package.json contributions&lt;/div&gt;&lt;div style=&quot;font-family:Arial;font-size:11px;line-height:1.3;color:#26323A;margin-top:4px;&quot;&gt;Declares .kf language, TextMate syntax grammar, snippets, Tutor view, and commands.&lt;/div&gt;" vertex="1">
+                    <mxGeometry height="135" width="275" x="50" y="155" as="geometry"/>
+                </mxCell>
+                <mxCell id="overview_webview" parent="1" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;align=left;verticalAlign=middle;spacingLeft=11;spacingRight=10;spacingTop=8;spacingBottom=7;fontFamily=Arial;fontSize=12;fontColor=#172B4D;fillColor=#EAF2FF;strokeColor=#4776A8;strokeWidth=1.5;shadow=1;" value="&lt;div style=&quot;font-family:Arial;font-size:13px;font-weight:700;color:#172B4D;&quot;&gt;KAFE Tutor webview&lt;/div&gt;&lt;div style=&quot;font-family:Arial;font-size:11px;line-height:1.3;color:#26323A;margin-top:4px;&quot;&gt;tutorView.html / .css / .js&lt;br/&gt;Goal and milestones; coaching; context preview; Run evidence; proposal review.&lt;/div&gt;" vertex="1">
+                    <mxGeometry height="175" width="275" x="50" y="330" as="geometry"/>
+                </mxCell>
+                <mxCell id="overview_editor" parent="1" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;align=left;verticalAlign=middle;spacingLeft=11;spacingRight=10;spacingTop=8;spacingBottom=7;fontFamily=Arial;fontSize=12;fontColor=#172B4D;fillColor=#EAF2FF;strokeColor=#4776A8;strokeWidth=1.5;shadow=1;" value="&lt;div style=&quot;font-family:Arial;font-size:13px;font-weight:700;color:#172B4D;&quot;&gt;VS Code editor and workspace&lt;/div&gt;&lt;div style=&quot;font-family:Arial;font-size:11px;line-height:1.3;color:#26323A;margin-top:4px;&quot;&gt;.kf files, active document, same-workspace visible .kf candidates, workspace trust.&lt;/div&gt;" vertex="1">
+                    <mxGeometry height="145" width="275" x="50" y="555" as="geometry"/>
+                </mxCell>
+                <mxCell id="overview_terminal" parent="1" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;align=left;verticalAlign=middle;spacingLeft=11;spacingRight=10;spacingTop=8;spacingBottom=7;fontFamily=Arial;fontSize=12;fontColor=#172B4D;fillColor=#EAF2FF;strokeColor=#4776A8;strokeWidth=1.5;shadow=1;" value="&lt;div style=&quot;font-family:Arial;font-size:13px;font-weight:700;color:#172B4D;&quot;&gt;KAFE Run terminal&lt;/div&gt;&lt;div style=&quot;font-family:Arial;font-size:11px;line-height:1.3;color:#26323A;margin-top:4px;&quot;&gt;Interactive VS Code pseudoterminal. Streams stdout/stderr and accepts learner input.&lt;/div&gt;" vertex="1">
+                    <mxGeometry height="130" width="275" x="50" y="745" as="geometry"/>
+                </mxCell>
+                <mxCell id="overview_nativeDiff" parent="1" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;align=left;verticalAlign=middle;spacingLeft=11;spacingRight=10;spacingTop=8;spacingBottom=7;fontFamily=Arial;fontSize=12;fontColor=#172B4D;fillColor=#EAF2FF;strokeColor=#4776A8;strokeWidth=1.5;shadow=1;" value="&lt;div style=&quot;font-family:Arial;font-size:13px;font-weight:700;color:#172B4D;&quot;&gt;Native diff review&lt;/div&gt;&lt;div style=&quot;font-family:Arial;font-size:11px;line-height:1.3;color:#26323A;margin-top:4px;&quot;&gt;Learner compares current .kf document with staged proposal before accepting or rejecting.&lt;/div&gt;" vertex="1">
+                    <mxGeometry height="135" width="275" x="50" y="920" as="geometry"/>
+                </mxCell>
+                <mxCell id="overview_activation" parent="1" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;align=left;verticalAlign=middle;spacingLeft=11;spacingRight=10;spacingTop=8;spacingBottom=7;fontFamily=Arial;fontSize=12;fontColor=#172B4D;fillColor=#EAF2FF;strokeColor=#4776A8;strokeWidth=1.5;shadow=1;" value="&lt;div style=&quot;font-family:Arial;font-size:13px;font-weight:700;color:#172B4D;&quot;&gt;extension.js&lt;/div&gt;&lt;div style=&quot;font-family:Arial;font-size:11px;line-height:1.3;color:#26323A;margin-top:4px;&quot;&gt;Activation and composition root.&lt;br/&gt;Registers commands, Tutor view, proposal provider, and wires services.&lt;/div&gt;" vertex="1">
+                    <mxGeometry height="145" width="245" x="385" y="155" as="geometry"/>
+                </mxCell>
+                <mxCell id="overview_viewProvider" parent="1" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;align=left;verticalAlign=middle;spacingLeft=11;spacingRight=10;spacingTop=8;spacingBottom=7;fontFamily=Arial;fontSize=12;fontColor=#172B4D;fillColor=#EAF2FF;strokeColor=#4776A8;strokeWidth=1.5;shadow=1;" value="&lt;div style=&quot;font-family:Arial;font-size:13px;font-weight:700;color:#172B4D;&quot;&gt;TutorViewProvider&lt;/div&gt;&lt;div style=&quot;font-family:Arial;font-size:11px;line-height:1.3;color:#26323A;margin-top:4px;&quot;&gt;Creates webview with CSP nonce and local resource roots; validates messages and posts state.&lt;/div&gt;" vertex="1">
+                    <mxGeometry height="150" width="250" x="660" y="155" as="geometry"/>
+                </mxCell>
+                <mxCell id="overview_coordinator" parent="1" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;align=left;verticalAlign=middle;spacingLeft=11;spacingRight=10;spacingTop=8;spacingBottom=7;fontFamily=Arial;fontSize=12;fontColor=#38245A;fillColor=#F2EAFE;strokeColor=#8056B3;strokeWidth=1.5;shadow=1;" value="&lt;div style=&quot;font-family:Arial;font-size:13px;font-weight:700;color:#38245A;&quot;&gt;SessionCoordinator&lt;/div&gt;&lt;div style=&quot;font-family:Arial;font-size:11px;line-height:1.3;color:#26323A;margin-top:4px;&quot;&gt;Central tutor state machine: goals, milestones, exact preview tokens, send/retry, tool rounds, evidence, proposals.&lt;/div&gt;" vertex="1">
+                    <mxGeometry height="185" width="245" x="385" y="365" as="geometry"/>
+                </mxCell>
+                <mxCell id="overview_progress" parent="1" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;align=left;verticalAlign=middle;spacingLeft=11;spacingRight=10;spacingTop=8;spacingBottom=7;fontFamily=Arial;fontSize=12;fontColor=#56390C;fillColor=#FFF4DF;strokeColor=#BA7A19;strokeWidth=1.5;shadow=1;" value="&lt;div style=&quot;font-family:Arial;font-size:13px;font-weight:700;color:#56390C;&quot;&gt;ProgressStore&lt;/div&gt;&lt;div style=&quot;font-family:Arial;font-size:11px;line-height:1.3;color:#26323A;margin-top:4px;&quot;&gt;Whitelisted summary in workspaceState: confirmed goal, milestones, reviewed checks.&lt;/div&gt;" vertex="1">
+                    <mxGeometry height="125" width="250" x="660" y="385" as="geometry"/>
+                </mxCell>
+                <mxCell id="overview_proposal" parent="1" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;align=left;verticalAlign=middle;spacingLeft=11;spacingRight=10;spacingTop=8;spacingBottom=7;fontFamily=Arial;fontSize=12;fontColor=#38245A;fillColor=#F2EAFE;strokeColor=#8056B3;strokeWidth=1.5;shadow=1;" value="&lt;div style=&quot;font-family:Arial;font-size:13px;font-weight:700;color:#38245A;&quot;&gt;CodeProposalProvider&lt;/div&gt;&lt;div style=&quot;font-family:Arial;font-size:11px;line-height:1.3;color:#26323A;margin-top:4px;&quot;&gt;Stages .kf text; opens native diff; checks URI, document version and hash before explicit WorkspaceEdit.&lt;/div&gt;" vertex="1">
+                    <mxGeometry height="150" width="250" x="660" y="565" as="geometry"/>
+                </mxCell>
+                <mxCell id="overview_runtimeManager" parent="1" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;align=left;verticalAlign=middle;spacingLeft=11;spacingRight=10;spacingTop=8;spacingBottom=7;fontFamily=Arial;fontSize=12;fontColor=#173D26;fillColor=#E8F6ED;strokeColor=#43845D;strokeWidth=1.5;shadow=1;" value="&lt;div style=&quot;font-family:Arial;font-size:13px;font-weight:700;color:#173D26;&quot;&gt;runtimeManager.js&lt;/div&gt;&lt;div style=&quot;font-family:Arial;font-size:11px;line-height:1.3;color:#26323A;margin-top:4px;&quot;&gt;Resolves contributor checkout vs managed runtime; validates pinned metadata and controls install.&lt;/div&gt;" vertex="1">
+                    <mxGeometry height="165" width="245" x="385" y="800" as="geometry"/>
+                </mxCell>
+                <mxCell id="overview_runner" parent="1" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;align=left;verticalAlign=middle;spacingLeft=11;spacingRight=10;spacingTop=8;spacingBottom=7;fontFamily=Arial;fontSize=12;fontColor=#173D26;fillColor=#E8F6ED;strokeColor=#43845D;strokeWidth=1.5;shadow=1;" value="&lt;div style=&quot;font-family:Arial;font-size:13px;font-weight:700;color:#173D26;&quot;&gt;kafeRunner.js&lt;/div&gt;&lt;div style=&quot;font-family:Arial;font-size:11px;line-height:1.3;color:#26323A;margin-top:4px;&quot;&gt;Runs uv with --locked; streams interactive input/output, supports cancel, returns bounded evidence.&lt;/div&gt;" vertex="1">
+                    <mxGeometry height="150" width="250" x="660" y="820" as="geometry"/>
+                </mxCell>
+                <mxCell id="overview_composer" parent="1" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;align=left;verticalAlign=middle;spacingLeft=11;spacingRight=10;spacingTop=8;spacingBottom=7;fontFamily=Arial;fontSize=12;fontColor=#38245A;fillColor=#F2EAFE;strokeColor=#8056B3;strokeWidth=1.5;shadow=1;" value="&lt;div style=&quot;font-family:Arial;font-size:13px;font-weight:700;color:#38245A;&quot;&gt;ContextComposer&lt;/div&gt;&lt;div style=&quot;font-family:Arial;font-size:11px;line-height:1.3;color:#26323A;margin-top:4px;&quot;&gt;Builds the exact local preview from learner request and approved/contextual sources.&lt;/div&gt;" vertex="1">
+                    <mxGeometry height="155" width="195" x="975" y="155" as="geometry"/>
+                </mxCell>
+                <mxCell id="overview_retriever" parent="1" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;align=left;verticalAlign=middle;spacingLeft=11;spacingRight=10;spacingTop=8;spacingBottom=7;fontFamily=Arial;fontSize=12;fontColor=#38245A;fillColor=#F2EAFE;strokeColor=#8056B3;strokeWidth=1.5;shadow=1;" value="&lt;div style=&quot;font-family:Arial;font-size:13px;font-weight:700;color:#38245A;&quot;&gt;KnowledgeRetriever&lt;/div&gt;&lt;div style=&quot;font-family:Arial;font-size:11px;line-height:1.3;color:#26323A;margin-top:4px;&quot;&gt;Checks compatible versions and integrity; ranks local passages for the learning topic.&lt;/div&gt;" vertex="1">
+                    <mxGeometry height="165" width="200" x="1190" y="155" as="geometry"/>
+                </mxCell>
+                <mxCell id="overview_tools" parent="1" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;align=left;verticalAlign=middle;spacingLeft=11;spacingRight=10;spacingTop=8;spacingBottom=7;fontFamily=Arial;fontSize=12;fontColor=#38245A;fillColor=#F2EAFE;strokeColor=#8056B3;strokeWidth=1.5;shadow=1;" value="&lt;div style=&quot;font-family:Arial;font-size:13px;font-weight:700;color:#38245A;&quot;&gt;ToolRouter&lt;/div&gt;&lt;div style=&quot;font-family:Arial;font-size:11px;line-height:1.3;color:#26323A;margin-top:4px;&quot;&gt;Allowlisted tools: read document, search KAFE knowledge, read latest Run result, propose code change.&lt;/div&gt;" vertex="1">
+                    <mxGeometry height="170" width="195" x="975" y="390" as="geometry"/>
+                </mxCell>
+                <mxCell id="overview_provider" parent="1" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;align=left;verticalAlign=middle;spacingLeft=11;spacingRight=10;spacingTop=8;spacingBottom=7;fontFamily=Arial;fontSize=12;fontColor=#542222;fillColor=#FCEAEA;strokeColor=#B94D4D;strokeWidth=1.5;shadow=1;" value="&lt;div style=&quot;font-family:Arial;font-size:13px;font-weight:700;color:#542222;&quot;&gt;DeepSeekProvider&lt;/div&gt;&lt;div style=&quot;font-family:Arial;font-size:11px;line-height:1.3;color:#26323A;margin-top:4px;&quot;&gt;Reads API key from SecretStorage; sends HTTPS chat/tool requests; validates responses.&lt;/div&gt;" vertex="1">
+                    <mxGeometry height="155" width="200" x="1190" y="390" as="geometry"/>
+                </mxCell>
+                <mxCell id="overview_devPack" parent="1" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;align=left;verticalAlign=middle;spacingLeft=11;spacingRight=10;spacingTop=8;spacingBottom=7;fontFamily=Arial;fontSize=12;fontColor=#173D26;fillColor=#E8F6ED;strokeColor=#43845D;strokeWidth=1.5;shadow=1;" value="&lt;div style=&quot;font-family:Arial;font-size:13px;font-weight:700;color:#173D26;&quot;&gt;DevelopmentKnowledgePack&lt;/div&gt;&lt;div style=&quot;font-family:Arial;font-size:11px;line-height:1.3;color:#26323A;margin-top:4px;&quot;&gt;Development extension only. Builds a curated local pack; hashes and caches it.&lt;/div&gt;" vertex="1">
+                    <mxGeometry height="160" width="195" x="975" y="655" as="geometry"/>
+                </mxCell>
+                <mxCell id="overview_knowledgeRoots" parent="1" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;align=left;verticalAlign=middle;spacingLeft=11;spacingRight=10;spacingTop=8;spacingBottom=7;fontFamily=Arial;fontSize=12;fontColor=#173D26;fillColor=#E8F6ED;strokeColor=#43845D;strokeWidth=1.5;shadow=1;" value="&lt;div style=&quot;font-family:Arial;font-size:13px;font-weight:700;color:#173D26;&quot;&gt;Knowledge sources&lt;/div&gt;&lt;div style=&quot;font-family:Arial;font-size:11px;line-height:1.3;color:#26323A;margin-top:4px;&quot;&gt;Managed runtime: packaged knowledge-pack.&lt;br/&gt;Development: curated docs plus ANTLR grammar; marker files also require pyproject.toml, uv.lock, src/Kafe.py.&lt;/div&gt;" vertex="1">
+                    <mxGeometry height="170" width="200" x="1190" y="655" as="geometry"/>
+                </mxCell>
+                <mxCell id="overview_api" parent="1" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;align=left;verticalAlign=middle;spacingLeft=11;spacingRight=10;spacingTop=8;spacingBottom=7;fontFamily=Arial;fontSize=12;fontColor=#542222;fillColor=#FCEAEA;strokeColor=#B94D4D;strokeWidth=1.5;shadow=1;" value="&lt;div style=&quot;font-family:Arial;font-size:13px;font-weight:700;color:#542222;&quot;&gt;DeepSeek API&lt;/div&gt;&lt;div style=&quot;font-family:Arial;font-size:11px;line-height:1.3;color:#26323A;margin-top:4px;&quot;&gt;HTTPS chat completions. Provider owns timeout, cancellation and error categories.&lt;/div&gt;" vertex="1">
+                    <mxGeometry height="130" width="195" x="1445" y="150" as="geometry"/>
+                </mxCell>
+                <mxCell id="overview_secret" parent="1" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;align=left;verticalAlign=middle;spacingLeft=11;spacingRight=10;spacingTop=8;spacingBottom=7;fontFamily=Arial;fontSize=12;fontColor=#56390C;fillColor=#FFF4DF;strokeColor=#BA7A19;strokeWidth=1.5;shadow=1;" value="&lt;div style=&quot;font-family:Arial;font-size:13px;font-weight:700;color:#56390C;&quot;&gt;VS Code SecretStorage&lt;/div&gt;&lt;div style=&quot;font-family:Arial;font-size:11px;line-height:1.3;color:#26323A;margin-top:4px;&quot;&gt;Stores configured DeepSeek key; key is not sent through the webview.&lt;/div&gt;" vertex="1">
+                    <mxGeometry height="130" width="215" x="1660" y="150" as="geometry"/>
+                </mxCell>
+                <mxCell id="overview_pinned" parent="1" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;align=left;verticalAlign=middle;spacingLeft=11;spacingRight=10;spacingTop=8;spacingBottom=7;fontFamily=Arial;fontSize=12;fontColor=#173D26;fillColor=#E8F6ED;strokeColor=#43845D;strokeWidth=1.5;shadow=1;" value="&lt;div style=&quot;font-family:Arial;font-size:13px;font-weight:700;color:#173D26;&quot;&gt;runtimeManifest.json&lt;/div&gt;&lt;div style=&quot;font-family:Arial;font-size:11px;line-height:1.3;color:#26323A;margin-top:4px;&quot;&gt;Pins runtime/knowledge versions, source revision, release URLs, platform uv assets and SHA-256 values.&lt;/div&gt;" vertex="1">
+                    <mxGeometry height="145" width="195" x="1445" y="325" as="geometry"/>
+                </mxCell>
+                <mxCell id="overview_managed" parent="1" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;align=left;verticalAlign=middle;spacingLeft=11;spacingRight=10;spacingTop=8;spacingBottom=7;fontFamily=Arial;fontSize=12;fontColor=#56390C;fillColor=#FFF4DF;strokeColor=#BA7A19;strokeWidth=1.5;shadow=1;" value="&lt;div style=&quot;font-family:Arial;font-size:13px;font-weight:700;color:#56390C;&quot;&gt;VS Code globalStorage&lt;/div&gt;&lt;div style=&quot;font-family:Arial;font-size:11px;line-height:1.3;color:#26323A;margin-top:4px;&quot;&gt;Managed runtime, uv, environment/cache, and development knowledge-pack cache live outside checkout.&lt;/div&gt;" vertex="1">
+                    <mxGeometry height="145" width="215" x="1660" y="325" as="geometry"/>
+                </mxCell>
+                <mxCell id="overview_release" parent="1" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;align=left;verticalAlign=middle;spacingLeft=11;spacingRight=10;spacingTop=8;spacingBottom=7;fontFamily=Arial;fontSize=12;fontColor=#542222;fillColor=#FCEAEA;strokeColor=#B94D4D;strokeWidth=1.5;shadow=1;" value="&lt;div style=&quot;font-family:Arial;font-size:13px;font-weight:700;color:#542222;&quot;&gt;Pinned release assets&lt;/div&gt;&lt;div style=&quot;font-family:Arial;font-size:11px;line-height:1.3;color:#26323A;margin-top:4px;&quot;&gt;KAFE runtime release on GitHub and platform-specific uv distribution from Astral.&lt;/div&gt;" vertex="1">
+                    <mxGeometry height="145" width="195" x="1445" y="520" as="geometry"/>
+                </mxCell>
+                <mxCell id="overview_state" parent="1" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;align=left;verticalAlign=middle;spacingLeft=11;spacingRight=10;spacingTop=8;spacingBottom=7;fontFamily=Arial;fontSize=12;fontColor=#56390C;fillColor=#FFF4DF;strokeColor=#BA7A19;strokeWidth=1.5;shadow=1;" value="&lt;div style=&quot;font-family:Arial;font-size:13px;font-weight:700;color:#56390C;&quot;&gt;workspaceState&lt;/div&gt;&lt;div style=&quot;font-family:Arial;font-size:11px;line-height:1.3;color:#26323A;margin-top:4px;&quot;&gt;Tutor summary and reviewed-check records. Conversation transcript is not persisted.&lt;/div&gt;" vertex="1">
+                    <mxGeometry height="135" width="215" x="1660" y="520" as="geometry"/>
+                </mxCell>
+                <mxCell id="overview_repoFiles" parent="1" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;align=left;verticalAlign=middle;spacingLeft=11;spacingRight=10;spacingTop=8;spacingBottom=7;fontFamily=Arial;fontSize=12;fontColor=#173D26;fillColor=#E8F6ED;strokeColor=#43845D;strokeWidth=1.5;shadow=1;" value="&lt;div style=&quot;font-family:Arial;font-size:13px;font-weight:700;color:#173D26;&quot;&gt;KAFE checkout files&lt;/div&gt;&lt;div style=&quot;font-family:Arial;font-size:11px;line-height:1.3;color:#26323A;margin-top:4px;&quot;&gt;Contributor runtime files and development knowledge inputs: docs lessons/examples and src grammar.&lt;/div&gt;" vertex="1">
+                    <mxGeometry height="155" width="195" x="1445" y="715" as="geometry"/>
+                </mxCell>
+                <mxCell id="overview_workspaceFiles" parent="1" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;align=left;verticalAlign=middle;spacingLeft=11;spacingRight=10;spacingTop=8;spacingBottom=7;fontFamily=Arial;fontSize=12;fontColor=#172B4D;fillColor=#EAF2FF;strokeColor=#4776A8;strokeWidth=1.5;shadow=1;" value="&lt;div style=&quot;font-family:Arial;font-size:13px;font-weight:700;color:#172B4D;&quot;&gt;Learner workspace files&lt;/div&gt;&lt;div style=&quot;font-family:Arial;font-size:11px;line-height:1.3;color:#26323A;margin-top:4px;&quot;&gt;Active/selected .kf sources; latest matching Run result; accepted proposal target.&lt;/div&gt;" vertex="1">
+                    <mxGeometry height="155" width="215" x="1660" y="715" as="geometry"/>
+                </mxCell>
+                <mxCell id="overview_vsix" parent="1" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;align=left;verticalAlign=middle;spacingLeft=11;spacingRight=10;spacingTop=8;spacingBottom=7;fontFamily=Arial;fontSize=12;fontColor=#26323A;fillColor=#F1F3F5;strokeColor=#687580;strokeWidth=1.5;shadow=1;" value="&lt;div style=&quot;font-family:Arial;font-size:13px;font-weight:700;color:#26323A;&quot;&gt;Extension package boundary&lt;/div&gt;&lt;div style=&quot;font-family:Arial;font-size:11px;line-height:1.3;color:#26323A;margin-top:4px;&quot;&gt;vsce packages extension code and contributed assets; package.json / .vscodeignore define VSIX contents.&lt;/div&gt;" vertex="1">
+                    <mxGeometry height="105" width="430" x="1445" y="935" as="geometry"/>
+                </mxCell>
+                <mxCell id="overview_e1" edge="1" parent="1" source="overview_manifest" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#355F91;strokeWidth=1.5;fontFamily=Arial;fontSize=11;fontColor=#26323A;labelBackgroundColor=#FFFFFF;" target="overview_activation" value="command / view declarations">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="overview_e2" edge="1" parent="1" source="overview_activation" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#355F91;strokeWidth=1.5;fontFamily=Arial;fontSize=11;fontColor=#26323A;labelBackgroundColor=#FFFFFF;" target="overview_viewProvider" value="register view">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="overview_e3" edge="1" parent="1" source="overview_webview" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#355F91;strokeWidth=1.5;fontFamily=Arial;fontSize=11;fontColor=#26323A;labelBackgroundColor=#FFFFFF;" target="overview_viewProvider" value="typed UI messages">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="overview_e4" edge="1" parent="1" source="overview_viewProvider" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#8251A4;strokeWidth=1.5;fontFamily=Arial;fontSize=11;fontColor=#26323A;labelBackgroundColor=#FFFFFF;dashed=1;dashPattern=6 4;" target="overview_webview" value="rendered state">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="overview_e5" edge="1" parent="1" source="overview_activation" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#355F91;strokeWidth=1.5;fontFamily=Arial;fontSize=11;fontColor=#26323A;labelBackgroundColor=#FFFFFF;" target="overview_coordinator" value="construct and wire">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="overview_e6" edge="1" parent="1" source="overview_coordinator" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#288052;strokeWidth=1.5;fontFamily=Arial;fontSize=11;fontColor=#26323A;labelBackgroundColor=#FFFFFF;" target="overview_composer" value="prepare reviewed preview">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="overview_e7" edge="1" parent="1" source="overview_composer" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#288052;strokeWidth=1.5;fontFamily=Arial;fontSize=11;fontColor=#26323A;labelBackgroundColor=#FFFFFF;" target="overview_retriever" value="local knowledge search">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="overview_e8" edge="1" parent="1" source="overview_retriever" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#288052;strokeWidth=1.5;fontFamily=Arial;fontSize=11;fontColor=#26323A;labelBackgroundColor=#FFFFFF;" target="overview_runtimeManager" value="resolve managed pack">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="overview_e9" edge="1" parent="1" source="overview_devPack" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#288052;strokeWidth=1.5;fontFamily=Arial;fontSize=11;fontColor=#26323A;labelBackgroundColor=#FFFFFF;" target="overview_repoFiles" value="read curated sources">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="overview_e10" edge="1" parent="1" source="overview_devPack" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#288052;strokeWidth=1.5;fontFamily=Arial;fontSize=11;fontColor=#26323A;labelBackgroundColor=#FFFFFF;" target="overview_managed" value="digest cache">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="overview_e11" edge="1" parent="1" source="overview_runtimeManager" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#288052;strokeWidth=1.5;fontFamily=Arial;fontSize=11;fontColor=#26323A;labelBackgroundColor=#FFFFFF;" target="overview_pinned" value="validate pinned config">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="overview_e12" edge="1" parent="1" source="overview_runtimeManager" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#288052;strokeWidth=1.5;fontFamily=Arial;fontSize=11;fontColor=#26323A;labelBackgroundColor=#FFFFFF;" target="overview_managed" value="install / verify">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="overview_e13" edge="1" parent="1" source="overview_runtimeManager" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#BB7412;strokeWidth=1.5;fontFamily=Arial;fontSize=11;fontColor=#26323A;labelBackgroundColor=#FFFFFF;" target="overview_release" value="download after confirmed install">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="overview_e14" edge="1" parent="1" source="overview_managed" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#288052;strokeWidth=1.5;fontFamily=Arial;fontSize=11;fontColor=#26323A;labelBackgroundColor=#FFFFFF;" target="overview_knowledgeRoots" value="managed runtime pack">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="overview_e15" edge="1" parent="1" source="overview_coordinator" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#355F91;strokeWidth=1.5;fontFamily=Arial;fontSize=11;fontColor=#26323A;labelBackgroundColor=#FFFFFF;" target="overview_tools" value="route validated tool calls">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="overview_e16" edge="1" parent="1" source="overview_tools" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#288052;strokeWidth=1.5;fontFamily=Arial;fontSize=11;fontColor=#26323A;labelBackgroundColor=#FFFFFF;" target="overview_retriever" value="knowledge tool">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="overview_e17" edge="1" parent="1" source="overview_tools" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#288052;strokeWidth=1.5;fontFamily=Arial;fontSize=11;fontColor=#26323A;labelBackgroundColor=#FFFFFF;" target="overview_workspaceFiles" value="read approved .kf source">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="overview_e18" edge="1" parent="1" source="overview_coordinator" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#BB7412;strokeWidth=1.5;fontFamily=Arial;fontSize=11;fontColor=#26323A;labelBackgroundColor=#FFFFFF;" target="overview_provider" value="explicitly reviewed payload">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="overview_e19" edge="1" parent="1" source="overview_provider" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#BB7412;strokeWidth=1.5;fontFamily=Arial;fontSize=11;fontColor=#26323A;labelBackgroundColor=#FFFFFF;" target="overview_api" value="HTTPS request">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="overview_e20" edge="1" parent="1" source="overview_secret" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#BB7412;strokeWidth=1.5;fontFamily=Arial;fontSize=11;fontColor=#26323A;labelBackgroundColor=#FFFFFF;" target="overview_provider" value="API key read">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="overview_e21" edge="1" parent="1" source="overview_coordinator" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#288052;strokeWidth=1.5;fontFamily=Arial;fontSize=11;fontColor=#26323A;labelBackgroundColor=#FFFFFF;" target="overview_progress" value="save / restore summary">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="overview_e22" edge="1" parent="1" source="overview_progress" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#288052;strokeWidth=1.5;fontFamily=Arial;fontSize=11;fontColor=#26323A;labelBackgroundColor=#FFFFFF;" target="overview_state" value="workspace state API">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="overview_e23" edge="1" parent="1" source="overview_coordinator" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#355F91;strokeWidth=1.5;fontFamily=Arial;fontSize=11;fontColor=#26323A;labelBackgroundColor=#FFFFFF;" target="overview_proposal" value="stage after tool result">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="overview_e24" edge="1" parent="1" source="overview_proposal" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#355F91;strokeWidth=1.5;fontFamily=Arial;fontSize=11;fontColor=#26323A;labelBackgroundColor=#FFFFFF;" target="overview_nativeDiff" value="open native diff">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="overview_e25" edge="1" parent="1" source="overview_nativeDiff" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#288052;strokeWidth=1.5;fontFamily=Arial;fontSize=11;fontColor=#26323A;labelBackgroundColor=#FFFFFF;" target="overview_workspaceFiles" value="accept: version/hash checked edit">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="overview_e26" edge="1" parent="1" source="overview_editor" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#355F91;strokeWidth=1.5;fontFamily=Arial;fontSize=11;fontColor=#26323A;labelBackgroundColor=#FFFFFF;" target="overview_runner" value="learner invokes Run File">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="overview_e27" edge="1" parent="1" source="overview_activation" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#355F91;strokeWidth=1.5;fontFamily=Arial;fontSize=11;fontColor=#26323A;labelBackgroundColor=#FFFFFF;" target="overview_runtimeManager" value="install / resolve runtime">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="overview_e28" edge="1" parent="1" source="overview_runtimeManager" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#288052;strokeWidth=1.5;fontFamily=Arial;fontSize=11;fontColor=#26323A;labelBackgroundColor=#FFFFFF;" target="overview_runner" value="resolved mode and paths">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="overview_e29" edge="1" parent="1" source="overview_runner" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#288052;strokeWidth=1.5;fontFamily=Arial;fontSize=11;fontColor=#26323A;labelBackgroundColor=#FFFFFF;" target="overview_terminal" value="interactive PTY">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="overview_e30" edge="1" parent="1" source="overview_terminal" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#8251A4;strokeWidth=1.5;fontFamily=Arial;fontSize=11;fontColor=#26323A;labelBackgroundColor=#FFFFFF;dashed=1;dashPattern=6 4;" target="overview_coordinator" value="completed run evidence">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="overview_e31" edge="1" parent="1" source="overview_activation" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#288052;strokeWidth=1.5;fontFamily=Arial;fontSize=11;fontColor=#26323A;labelBackgroundColor=#FFFFFF;" target="overview_vsix" value="entry point and modules">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+    <diagram id="tutorflow" name="2 - Tutor and Context Flow">
+        <mxGraphModel dx="1600" dy="1000" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1930" pageHeight="1190" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="tutorflow_title" value="&lt;div style=&quot;font-family:Arial;font-size:23px;font-weight:700;color:#18324B;&quot;&gt;Tutor Session, Context Consent, and Tool Flow&lt;/div&gt;&lt;div style=&quot;font-family:Arial;font-size:12px;color:#52616B;&quot;&gt;Preview is local. The provider receives the exact reviewed payload only after explicit Send with a matching draft and preview token.&lt;/div&gt;" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=wrap;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+                    <mxGeometry x="35" y="20" width="1860" height="58" as="geometry"/>
+                </mxCell>
+                <mxCell id="tutorflow_learner_bg" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F3F7FB;strokeColor=#4776A8;strokeWidth=1;dashed=1;dashPattern=8 5;opacity=70;" vertex="1" parent="1">
+                    <mxGeometry x="30" y="100" width="300" height="1045" as="geometry"/>
+                </mxCell>
+                <mxCell id="tutorflow_learner_label" value="&lt;div style=&quot;font-family:Arial;font-size:14px;font-weight:700;color:#4776A8;&quot;&gt;Learner and webview&lt;/div&gt;" style="text;html=1;align=left;verticalAlign=middle;fontFamily=Arial;fontSize=14;fontStyle=1;fontColor=#4776A8;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+                    <mxGeometry x="42" y="105" width="276" height="27" as="geometry"/>
+                </mxCell>
+                <mxCell id="tutorflow_host_bg" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F6F8FC;strokeColor=#4776A8;strokeWidth=1;dashed=1;dashPattern=8 5;opacity=70;" vertex="1" parent="1">
+                    <mxGeometry x="345" y="100" width="335" height="1045" as="geometry"/>
+                </mxCell>
+                <mxCell id="tutorflow_host_label" value="&lt;div style=&quot;font-family:Arial;font-size:14px;font-weight:700;color:#4776A8;&quot;&gt;Extension host orchestration&lt;/div&gt;" style="text;html=1;align=left;verticalAlign=middle;fontFamily=Arial;fontSize=14;fontStyle=1;fontColor=#4776A8;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+                    <mxGeometry x="357" y="105" width="311" height="27" as="geometry"/>
+                </mxCell>
+                <mxCell id="tutorflow_context_bg" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FAF7FD;strokeColor=#8056B3;strokeWidth=1;dashed=1;dashPattern=8 5;opacity=70;" vertex="1" parent="1">
+                    <mxGeometry x="695" y="100" width="350" height="1045" as="geometry"/>
+                </mxCell>
+                <mxCell id="tutorflow_context_label" value="&lt;div style=&quot;font-family:Arial;font-size:14px;font-weight:700;color:#8056B3;&quot;&gt;Context assembly&lt;/div&gt;" style="text;html=1;align=left;verticalAlign=middle;fontFamily=Arial;fontSize=14;fontStyle=1;fontColor=#8056B3;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+                    <mxGeometry x="707" y="105" width="326" height="27" as="geometry"/>
+                </mxCell>
+                <mxCell id="tutorflow_model_bg" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF8F2;strokeColor=#BA7A19;strokeWidth=1;dashed=1;dashPattern=8 5;opacity=70;" vertex="1" parent="1">
+                    <mxGeometry x="1060" y="100" width="365" height="1045" as="geometry"/>
+                </mxCell>
+                <mxCell id="tutorflow_model_label" value="&lt;div style=&quot;font-family:Arial;font-size:14px;font-weight:700;color:#BA7A19;&quot;&gt;Provider and tools&lt;/div&gt;" style="text;html=1;align=left;verticalAlign=middle;fontFamily=Arial;fontSize=14;fontStyle=1;fontColor=#BA7A19;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+                    <mxGeometry x="1072" y="105" width="341" height="27" as="geometry"/>
+                </mxCell>
+                <mxCell id="tutorflow_effects_bg" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFAF1;strokeColor=#BA7A19;strokeWidth=1;dashed=1;dashPattern=8 5;opacity=70;" vertex="1" parent="1">
+                    <mxGeometry x="1440" y="100" width="460" height="1045" as="geometry"/>
+                </mxCell>
+                <mxCell id="tutorflow_effects_label" value="&lt;div style=&quot;font-family:Arial;font-size:14px;font-weight:700;color:#BA7A19;&quot;&gt;Persistence and review effects&lt;/div&gt;" style="text;html=1;align=left;verticalAlign=middle;fontFamily=Arial;fontSize=14;fontStyle=1;fontColor=#BA7A19;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+                    <mxGeometry x="1452" y="105" width="436" height="27" as="geometry"/>
+                </mxCell>
+                <mxCell id="tutorflow_goal" value="&lt;div style=&quot;font-family:Arial;font-size:13px;font-weight:700;color:#172B4D;&quot;&gt;1. Set goal and confirm milestones&lt;/div&gt;&lt;div style=&quot;font-family:Arial;font-size:11px;line-height:1.3;color:#26323A;margin-top:4px;&quot;&gt;Learner edits proposed milestones and confirms them before coaching starts.&lt;/div&gt;" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;align=left;verticalAlign=middle;spacingLeft=11;spacingRight=10;spacingTop=8;spacingBottom=7;fontFamily=Arial;fontSize=12;fontColor=#172B4D;fillColor=#EAF2FF;strokeColor=#4776A8;strokeWidth=1.5;shadow=1;" vertex="1" parent="1">
+                    <mxGeometry x="50" y="150" width="260" height="130" as="geometry"/>
+                </mxCell>
+                <mxCell id="tutorflow_draft" value="&lt;div style=&quot;font-family:Arial;font-size:13px;font-weight:700;color:#172B4D;&quot;&gt;2. Type or edit a request&lt;/div&gt;&lt;div style=&quot;font-family:Arial;font-size:11px;line-height:1.3;color:#26323A;margin-top:4px;&quot;&gt;Input changes trigger local preview preparation. This does not call DeepSeek.&lt;/div&gt;" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;align=left;verticalAlign=middle;spacingLeft=11;spacingRight=10;spacingTop=8;spacingBottom=7;fontFamily=Arial;fontSize=12;fontColor=#172B4D;fillColor=#EAF2FF;strokeColor=#4776A8;strokeWidth=1.5;shadow=1;" vertex="1" parent="1">
+                    <mxGeometry x="50" y="340" width="260" height="130" as="geometry"/>
+                </mxCell>
+                <mxCell id="tutorflow_preview" value="&lt;div style=&quot;font-family:Arial;font-size:13px;font-weight:700;color:#172B4D;&quot;&gt;3. Inspect exact request preview&lt;/div&gt;&lt;div style=&quot;font-family:Arial;font-size:11px;line-height:1.3;color:#26323A;margin-top:4px;&quot;&gt;Shows payload and Included / Excluded source rows. Optional visible .kf files can be excluded.&lt;/div&gt;" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;align=left;verticalAlign=middle;spacingLeft=11;spacingRight=10;spacingTop=8;spacingBottom=7;fontFamily=Arial;fontSize=12;fontColor=#172B4D;fillColor=#EAF2FF;strokeColor=#4776A8;strokeWidth=1.5;shadow=1;" vertex="1" parent="1">
+                    <mxGeometry x="50" y="545" width="260" height="150" as="geometry"/>
+                </mxCell>
+                <mxCell id="tutorflow_send" value="&lt;div style=&quot;font-family:Arial;font-size:13px;font-weight:700;color:#172B4D;&quot;&gt;4. Explicit Send&lt;/div&gt;&lt;div style=&quot;font-family:Arial;font-size:11px;line-height:1.3;color:#26323A;margin-top:4px;&quot;&gt;UI sends unchanged draft and current preview token. Editing or source changes invalidate the token.&lt;/div&gt;" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;align=left;verticalAlign=middle;spacingLeft=11;spacingRight=10;spacingTop=8;spacingBottom=7;fontFamily=Arial;fontSize=12;fontColor=#172B4D;fillColor=#EAF2FF;strokeColor=#4776A8;strokeWidth=1.5;shadow=1;" vertex="1" parent="1">
+                    <mxGeometry x="50" y="765" width="260" height="135" as="geometry"/>
+                </mxCell>
+                <mxCell id="tutorflow_view" value="&lt;div style=&quot;font-family:Arial;font-size:13px;font-weight:700;color:#172B4D;&quot;&gt;TutorViewProvider&lt;/div&gt;&lt;div style=&quot;font-family:Arial;font-size:11px;line-height:1.3;color:#26323A;margin-top:4px;&quot;&gt;Validates message type, dispatches to coordinator, posts updated state to webview.&lt;/div&gt;" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;align=left;verticalAlign=middle;spacingLeft=11;spacingRight=10;spacingTop=8;spacingBottom=7;fontFamily=Arial;fontSize=12;fontColor=#172B4D;fillColor=#EAF2FF;strokeColor=#4776A8;strokeWidth=1.5;shadow=1;" vertex="1" parent="1">
+                    <mxGeometry x="365" y="335" width="295" height="125" as="geometry"/>
+                </mxCell>
+                <mxCell id="tutorflow_coordinator" value="&lt;div style=&quot;font-family:Arial;font-size:13px;font-weight:700;color:#38245A;&quot;&gt;SessionCoordinator&lt;/div&gt;&lt;div style=&quot;font-family:Arial;font-size:11px;line-height:1.3;color:#26323A;margin-top:4px;&quot;&gt;Owns state, preview revision/token, send gate, tool loop, stale-turn checks, retry and response feedback.&lt;/div&gt;" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;align=left;verticalAlign=middle;spacingLeft=11;spacingRight=10;spacingTop=8;spacingBottom=7;fontFamily=Arial;fontSize=12;fontColor=#38245A;fillColor=#F2EAFE;strokeColor=#8056B3;strokeWidth=1.5;shadow=1;" vertex="1" parent="1">
+                    <mxGeometry x="365" y="535" width="295" height="180" as="geometry"/>
+                </mxCell>
+                <mxCell id="tutorflow_progressStore" value="&lt;div style=&quot;font-family:Arial;font-size:13px;font-weight:700;color:#56390C;&quot;&gt;ProgressStore&lt;/div&gt;&lt;div style=&quot;font-family:Arial;font-size:11px;line-height:1.3;color:#26323A;margin-top:4px;&quot;&gt;Writes validated learning summary and reviewed checks to workspaceState.&lt;/div&gt;" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;align=left;verticalAlign=middle;spacingLeft=11;spacingRight=10;spacingTop=8;spacingBottom=7;fontFamily=Arial;fontSize=12;fontColor=#56390C;fillColor=#FFF4DF;strokeColor=#BA7A19;strokeWidth=1.5;shadow=1;" vertex="1" parent="1">
+                    <mxGeometry x="365" y="830" width="295" height="125" as="geometry"/>
+                </mxCell>
+                <mxCell id="tutorflow_inputs" value="&lt;div style=&quot;font-family:Arial;font-size:13px;font-weight:700;color:#38245A;&quot;&gt;Context inputs&lt;/div&gt;&lt;div style=&quot;font-family:Arial;font-size:11px;line-height:1.3;color:#26323A;margin-top:4px;&quot;&gt;System coaching policy; confirmed goal/milestones; active .kf; latest Run only when it matches that file; visible same-workspace .kf candidates with optional inclusion.&lt;/div&gt;" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;align=left;verticalAlign=middle;spacingLeft=11;spacingRight=10;spacingTop=8;spacingBottom=7;fontFamily=Arial;fontSize=12;fontColor=#38245A;fillColor=#F2EAFE;strokeColor=#8056B3;strokeWidth=1.5;shadow=1;" vertex="1" parent="1">
+                    <mxGeometry x="715" y="150" width="310" height="165" as="geometry"/>
+                </mxCell>
+                <mxCell id="tutorflow_composer" value="&lt;div style=&quot;font-family:Arial;font-size:13px;font-weight:700;color:#38245A;&quot;&gt;ContextComposer&lt;/div&gt;&lt;div style=&quot;font-family:Arial;font-size:11px;line-height:1.3;color:#26323A;margin-top:4px;&quot;&gt;Validates source URIs and sizes; emits source-tagged messages and exact payload/source list.&lt;/div&gt;" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;align=left;verticalAlign=middle;spacingLeft=11;spacingRight=10;spacingTop=8;spacingBottom=7;fontFamily=Arial;fontSize=12;fontColor=#38245A;fillColor=#F2EAFE;strokeColor=#8056B3;strokeWidth=1.5;shadow=1;" vertex="1" parent="1">
+                    <mxGeometry x="715" y="360" width="310" height="145" as="geometry"/>
+                </mxCell>
+                <mxCell id="tutorflow_retriever" value="&lt;div style=&quot;font-family:Arial;font-size:13px;font-weight:700;color:#173D26;&quot;&gt;KnowledgeRetriever&lt;/div&gt;&lt;div style=&quot;font-family:Arial;font-size:11px;line-height:1.3;color:#26323A;margin-top:4px;&quot;&gt;Searches local version-matched KAFE knowledge; composer includes returned passages in preview.&lt;/div&gt;" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;align=left;verticalAlign=middle;spacingLeft=11;spacingRight=10;spacingTop=8;spacingBottom=7;fontFamily=Arial;fontSize=12;fontColor=#173D26;fillColor=#E8F6ED;strokeColor=#43845D;strokeWidth=1.5;shadow=1;" vertex="1" parent="1">
+                    <mxGeometry x="715" y="575" width="310" height="145" as="geometry"/>
+                </mxCell>
+                <mxCell id="tutorflow_knowledgeStop" value="&lt;div style=&quot;font-family:Arial;font-size:13px;font-weight:700;color:#493B12;&quot;&gt;Novel knowledge is a consent boundary&lt;/div&gt;&lt;div style=&quot;font-family:Arial;font-size:11px;line-height:1.3;color:#26323A;margin-top:4px;&quot;&gt;A passage absent from the reviewed payload is added to a new preview/token. Processing stops before another provider call.&lt;/div&gt;" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;align=left;verticalAlign=middle;spacingLeft=11;spacingRight=10;spacingTop=8;spacingBottom=7;fontFamily=Arial;fontSize=12;fontColor=#493B12;fillColor=#FFF9D9;strokeColor=#C79A27;strokeWidth=1.5;shadow=1;shape=note;size=16;" vertex="1" parent="1">
+                    <mxGeometry x="715" y="805" width="310" height="155" as="geometry"/>
+                </mxCell>
+                <mxCell id="tutorflow_provider" value="&lt;div style=&quot;font-family:Arial;font-size:13px;font-weight:700;color:#542222;&quot;&gt;DeepSeekProvider&lt;/div&gt;&lt;div style=&quot;font-family:Arial;font-size:11px;line-height:1.3;color:#26323A;margin-top:4px;&quot;&gt;Reads key from SecretStorage; sends HTTPS request with tools; validates response; enforces timeout and abort.&lt;/div&gt;" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;align=left;verticalAlign=middle;spacingLeft=11;spacingRight=10;spacingTop=8;spacingBottom=7;fontFamily=Arial;fontSize=12;fontColor=#542222;fillColor=#FCEAEA;strokeColor=#B94D4D;strokeWidth=1.5;shadow=1;" vertex="1" parent="1">
+                    <mxGeometry x="1080" y="155" width="325" height="155" as="geometry"/>
+                </mxCell>
+                <mxCell id="tutorflow_toolRouter" value="&lt;div style=&quot;font-family:Arial;font-size:13px;font-weight:700;color:#38245A;&quot;&gt;ToolRouter&lt;/div&gt;&lt;div style=&quot;font-family:Arial;font-size:11px;line-height:1.3;color:#26323A;margin-top:4px;&quot;&gt;Checks tool name/arguments, source IDs, URI, document version/size, and Run-result shape before dispatch.&lt;/div&gt;" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;align=left;verticalAlign=middle;spacingLeft=11;spacingRight=10;spacingTop=8;spacingBottom=7;fontFamily=Arial;fontSize=12;fontColor=#38245A;fillColor=#F2EAFE;strokeColor=#8056B3;strokeWidth=1.5;shadow=1;" vertex="1" parent="1">
+                    <mxGeometry x="1080" y="390" width="325" height="160" as="geometry"/>
+                </mxCell>
+                <mxCell id="tutorflow_toolSet" value="&lt;div style=&quot;font-family:Arial;font-size:13px;font-weight:700;color:#38245A;&quot;&gt;Allowlisted tools and loop limits&lt;/div&gt;&lt;div style=&quot;font-family:Arial;font-size:11px;line-height:1.3;color:#26323A;margin-top:4px;&quot;&gt;readActiveDocument&lt;br/&gt;searchKafeKnowledge&lt;br/&gt;getLatestRunResult&lt;br/&gt;proposeCodeChange&lt;br/&gt;At most 4 calls per response and 4 provider rounds.&lt;/div&gt;" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;align=left;verticalAlign=middle;spacingLeft=11;spacingRight=10;spacingTop=8;spacingBottom=7;fontFamily=Arial;fontSize=12;fontColor=#38245A;fillColor=#F2EAFE;strokeColor=#8056B3;strokeWidth=1.5;shadow=1;" vertex="1" parent="1">
+                    <mxGeometry x="1080" y="625" width="325" height="180" as="geometry"/>
+                </mxCell>
+                <mxCell id="tutorflow_final" value="&lt;div style=&quot;font-family:Arial;font-size:13px;font-weight:700;color:#173D26;&quot;&gt;Final tutor response&lt;/div&gt;&lt;div style=&quot;font-family:Arial;font-size:11px;line-height:1.3;color:#26323A;margin-top:4px;&quot;&gt;Coaching text or proposal-ready result returns through the view provider.&lt;/div&gt;" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;align=left;verticalAlign=middle;spacingLeft=11;spacingRight=10;spacingTop=8;spacingBottom=7;fontFamily=Arial;fontSize=12;fontColor=#173D26;fillColor=#E8F6ED;strokeColor=#43845D;strokeWidth=1.5;shadow=1;" vertex="1" parent="1">
+                    <mxGeometry x="1080" y="890" width="325" height="110" as="geometry"/>
+                </mxCell>
+                <mxCell id="tutorflow_workspaceState" value="&lt;div style=&quot;font-family:Arial;font-size:13px;font-weight:700;color:#56390C;&quot;&gt;Saved learning summary&lt;/div&gt;&lt;div style=&quot;font-family:Arial;font-size:11px;line-height:1.3;color:#26323A;margin-top:4px;&quot;&gt;Confirmed goal and milestones; reviewed-check metadata. Conversation messages are not saved.&lt;/div&gt;" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;align=left;verticalAlign=middle;spacingLeft=11;spacingRight=10;spacingTop=8;spacingBottom=7;fontFamily=Arial;fontSize=12;fontColor=#56390C;fillColor=#FFF4DF;strokeColor=#BA7A19;strokeWidth=1.5;shadow=1;" vertex="1" parent="1">
+                    <mxGeometry x="1460" y="150" width="420" height="120" as="geometry"/>
+                </mxCell>
+                <mxCell id="tutorflow_outcome" value="&lt;div style=&quot;font-family:Arial;font-size:13px;font-weight:700;color:#173D26;&quot;&gt;Response outcomes&lt;/div&gt;&lt;div style=&quot;font-family:Arial;font-size:11px;line-height:1.3;color:#26323A;margin-top:4px;&quot;&gt;Coaching appends learner/tutor messages; provider errors offer retry of reviewed payload; unexpected errors refresh preview and keep the draft.&lt;/div&gt;" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;align=left;verticalAlign=middle;spacingLeft=11;spacingRight=10;spacingTop=8;spacingBottom=7;fontFamily=Arial;fontSize=12;fontColor=#173D26;fillColor=#E8F6ED;strokeColor=#43845D;strokeWidth=1.5;shadow=1;" vertex="1" parent="1">
+                    <mxGeometry x="1460" y="350" width="420" height="150" as="geometry"/>
+                </mxCell>
+                <mxCell id="tutorflow_proposalDiff" value="&lt;div style=&quot;font-family:Arial;font-size:13px;font-weight:700;color:#38245A;&quot;&gt;Code proposal review&lt;/div&gt;&lt;div style=&quot;font-family:Arial;font-size:11px;line-height:1.3;color:#26323A;margin-top:4px;&quot;&gt;CodeProposalProvider stages virtual content and opens VS Code native diff. No automatic execution or edit.&lt;/div&gt;" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;align=left;verticalAlign=middle;spacingLeft=11;spacingRight=10;spacingTop=8;spacingBottom=7;fontFamily=Arial;fontSize=12;fontColor=#38245A;fillColor=#F2EAFE;strokeColor=#8056B3;strokeWidth=1.5;shadow=1;" vertex="1" parent="1">
+                    <mxGeometry x="1460" y="585" width="420" height="150" as="geometry"/>
+                </mxCell>
+                <mxCell id="tutorflow_apply" value="&lt;div style=&quot;font-family:Arial;font-size:13px;font-weight:700;color:#56390C;&quot;&gt;Explicit accept or reject&lt;/div&gt;&lt;div style=&quot;font-family:Arial;font-size:11px;line-height:1.3;color:#26323A;margin-top:4px;&quot;&gt;Accept reopens source and checks URI, document version and SHA-256 before WorkspaceEdit. Reject discards.&lt;/div&gt;" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;align=left;verticalAlign=middle;spacingLeft=11;spacingRight=10;spacingTop=8;spacingBottom=7;fontFamily=Arial;fontSize=12;fontColor=#56390C;fillColor=#FFF4DF;strokeColor=#BA7A19;strokeWidth=1.5;shadow=1;" vertex="1" parent="1">
+                    <mxGeometry x="1460" y="810" width="420" height="130" as="geometry"/>
+                </mxCell>
+                <mxCell id="tutorflow_safety" value="&lt;div style=&quot;font-family:Arial;font-size:13px;font-weight:700;color:#542222;&quot;&gt;Stale request protection&lt;/div&gt;&lt;div style=&quot;font-family:Arial;font-size:11px;line-height:1.3;color:#26323A;margin-top:4px;&quot;&gt;New draft/context invalidates old token. Late provider/tool results are discarded, not applied to new context.&lt;/div&gt;" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;align=left;verticalAlign=middle;spacingLeft=11;spacingRight=10;spacingTop=8;spacingBottom=7;fontFamily=Arial;fontSize=12;fontColor=#542222;fillColor=#FCEAEA;strokeColor=#B94D4D;strokeWidth=1.5;shadow=1;" vertex="1" parent="1">
+                    <mxGeometry x="1460" y="985" width="420" height="120" as="geometry"/>
+                </mxCell>
+                <mxCell id="tutorflow_e1" value="startSession / confirmMilestones" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#355F91;strokeWidth=1.5;fontFamily=Arial;fontSize=11;fontColor=#26323A;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="tutorflow_goal" target="tutorflow_coordinator">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="tutorflow_e2" value="save confirmed summary / checks" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#288052;strokeWidth=1.5;fontFamily=Arial;fontSize=11;fontColor=#26323A;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="tutorflow_coordinator" target="tutorflow_progressStore">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="tutorflow_e3" value="workspaceState.update" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#288052;strokeWidth=1.5;fontFamily=Arial;fontSize=11;fontColor=#26323A;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="tutorflow_progressStore" target="tutorflow_workspaceState">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="tutorflow_e4" value="preview message" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#355F91;strokeWidth=1.5;fontFamily=Arial;fontSize=11;fontColor=#26323A;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="tutorflow_draft" target="tutorflow_view">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="tutorflow_e5" value="validated message" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#355F91;strokeWidth=1.5;fontFamily=Arial;fontSize=11;fontColor=#26323A;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="tutorflow_view" target="tutorflow_coordinator">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="tutorflow_e6" value="compose preview" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#288052;strokeWidth=1.5;fontFamily=Arial;fontSize=11;fontColor=#26323A;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="tutorflow_coordinator" target="tutorflow_composer">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="tutorflow_e7" value="source material" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#288052;strokeWidth=1.5;fontFamily=Arial;fontSize=11;fontColor=#26323A;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="tutorflow_inputs" target="tutorflow_composer">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="tutorflow_e8" value="topic + confirmed learning context" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#288052;strokeWidth=1.5;fontFamily=Arial;fontSize=11;fontColor=#26323A;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="tutorflow_composer" target="tutorflow_retriever">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="tutorflow_e9" value="exact payload + source list" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#8251A4;strokeWidth=1.5;fontFamily=Arial;fontSize=11;fontColor=#26323A;labelBackgroundColor=#FFFFFF;dashed=1;dashPattern=6 4;" edge="1" parent="1" source="tutorflow_composer" target="tutorflow_preview">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="tutorflow_e10" value="review, then send" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#355F91;strokeWidth=1.5;fontFamily=Arial;fontSize=11;fontColor=#26323A;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="tutorflow_preview" target="tutorflow_send">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="tutorflow_e11" value="draft + previewToken" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#355F91;strokeWidth=1.5;fontFamily=Arial;fontSize=11;fontColor=#26323A;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="tutorflow_send" target="tutorflow_coordinator">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="tutorflow_e12" value="matching reviewed payload only" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#BB7412;strokeWidth=1.5;fontFamily=Arial;fontSize=11;fontColor=#26323A;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="tutorflow_coordinator" target="tutorflow_provider">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="tutorflow_e13" value="text or validated tool calls" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#8251A4;strokeWidth=1.5;fontFamily=Arial;fontSize=11;fontColor=#26323A;labelBackgroundColor=#FFFFFF;dashed=1;dashPattern=6 4;" edge="1" parent="1" source="tutorflow_provider" target="tutorflow_coordinator">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="tutorflow_e14" value="route tool call" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#355F91;strokeWidth=1.5;fontFamily=Arial;fontSize=11;fontColor=#26323A;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="tutorflow_coordinator" target="tutorflow_toolRouter">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="tutorflow_e15" value="allowlisted operation" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#288052;strokeWidth=1.5;fontFamily=Arial;fontSize=11;fontColor=#26323A;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="tutorflow_toolRouter" target="tutorflow_toolSet">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="tutorflow_e16" value="local knowledge lookup" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#288052;strokeWidth=1.5;fontFamily=Arial;fontSize=11;fontColor=#26323A;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="tutorflow_toolRouter" target="tutorflow_retriever">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="tutorflow_e17" value="tool result" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#8251A4;strokeWidth=1.5;fontFamily=Arial;fontSize=11;fontColor=#26323A;labelBackgroundColor=#FFFFFF;dashed=1;dashPattern=6 4;" edge="1" parent="1" source="tutorflow_toolRouter" target="tutorflow_coordinator">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="tutorflow_e18" value="new passage check" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#B84747;strokeWidth=1.5;fontFamily=Arial;fontSize=11;fontColor=#26323A;labelBackgroundColor=#FFFFFF;dashed=1;dashPattern=6 4;" edge="1" parent="1" source="tutorflow_retriever" target="tutorflow_knowledgeStop">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="tutorflow_e19" value="new preview; stop provider loop" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#B84747;strokeWidth=1.5;fontFamily=Arial;fontSize=11;fontColor=#26323A;labelBackgroundColor=#FFFFFF;dashed=1;dashPattern=6 4;" edge="1" parent="1" source="tutorflow_knowledgeStop" target="tutorflow_composer">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="tutorflow_e20" value="accepted final turn" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#8251A4;strokeWidth=1.5;fontFamily=Arial;fontSize=11;fontColor=#26323A;labelBackgroundColor=#FFFFFF;dashed=1;dashPattern=6 4;" edge="1" parent="1" source="tutorflow_coordinator" target="tutorflow_final">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="tutorflow_e21" value="render conversation / status" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#8251A4;strokeWidth=1.5;fontFamily=Arial;fontSize=11;fontColor=#26323A;labelBackgroundColor=#FFFFFF;dashed=1;dashPattern=6 4;" edge="1" parent="1" source="tutorflow_final" target="tutorflow_outcome">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="tutorflow_e22" value="proposeCodeChange result" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#355F91;strokeWidth=1.5;fontFamily=Arial;fontSize=11;fontColor=#26323A;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="tutorflow_toolRouter" target="tutorflow_proposalDiff">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="tutorflow_e23" value="learner reviews diff" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#355F91;strokeWidth=1.5;fontFamily=Arial;fontSize=11;fontColor=#26323A;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="tutorflow_proposalDiff" target="tutorflow_apply">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="tutorflow_e24" value="accepted / rejected" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#8251A4;strokeWidth=1.5;fontFamily=Arial;fontSize=11;fontColor=#26323A;labelBackgroundColor=#FFFFFF;dashed=1;dashPattern=6 4;" edge="1" parent="1" source="tutorflow_apply" target="tutorflow_outcome">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="tutorflow_e25" value="invalidate token / discard late result" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#B84747;strokeWidth=1.5;fontFamily=Arial;fontSize=11;fontColor=#26323A;labelBackgroundColor=#FFFFFF;dashed=1;dashPattern=6 4;" edge="1" parent="1" source="tutorflow_safety" target="tutorflow_coordinator">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+    <diagram id="runtime" name="3 - Runtime, Run, and Knowledge">
+        <mxGraphModel dx="1600" dy="1000" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1930" pageHeight="1280" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="runtime_title" value="&lt;div style=&quot;font-family:Arial;font-size:23px;font-weight:700;color:#18324B;&quot;&gt;Runtime Selection, Installation, Run, and Knowledge&lt;/div&gt;&lt;div style=&quot;font-family:Arial;font-size:12px;color:#52616B;&quot;&gt;Contributor checkout and managed profile runtime are distinct. Only learner-initiated Run executes a .kf program.&lt;/div&gt;" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=wrap;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+                    <mxGeometry x="35" y="20" width="1860" height="58" as="geometry"/>
+                </mxCell>
+                <mxCell id="runtime_entry_bg" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F3F7FB;strokeColor=#4776A8;strokeWidth=1;dashed=1;dashPattern=8 5;opacity=70;" vertex="1" parent="1">
+                    <mxGeometry x="30" y="100" width="350" height="755" as="geometry"/>
+                </mxCell>
+                <mxCell id="runtime_entry_label" value="&lt;div style=&quot;font-family:Arial;font-size:14px;font-weight:700;color:#4776A8;&quot;&gt;Command and workspace gate&lt;/div&gt;" style="text;html=1;align=left;verticalAlign=middle;fontFamily=Arial;fontSize=14;fontStyle=1;fontColor=#4776A8;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+                    <mxGeometry x="42" y="105" width="326" height="27" as="geometry"/>
+                </mxCell>
+                <mxCell id="runtime_resolve_bg" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F1FAF3;strokeColor=#43845D;strokeWidth=1;dashed=1;dashPattern=8 5;opacity=70;" vertex="1" parent="1">
+                    <mxGeometry x="395" y="100" width="430" height="755" as="geometry"/>
+                </mxCell>
+                <mxCell id="runtime_resolve_label" value="&lt;div style=&quot;font-family:Arial;font-size:14px;font-weight:700;color:#43845D;&quot;&gt;Runtime resolution&lt;/div&gt;" style="text;html=1;align=left;verticalAlign=middle;fontFamily=Arial;fontSize=14;fontStyle=1;fontColor=#43845D;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+                    <mxGeometry x="407" y="105" width="406" height="27" as="geometry"/>
+                </mxCell>
+                <mxCell id="runtime_install_bg" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFAF1;strokeColor=#BA7A19;strokeWidth=1;dashed=1;dashPattern=8 5;opacity=70;" vertex="1" parent="1">
+                    <mxGeometry x="840" y="100" width="525" height="755" as="geometry"/>
+                </mxCell>
+                <mxCell id="runtime_install_label" value="&lt;div style=&quot;font-family:Arial;font-size:14px;font-weight:700;color:#BA7A19;&quot;&gt;Pinned managed installation&lt;/div&gt;" style="text;html=1;align=left;verticalAlign=middle;fontFamily=Arial;fontSize=14;fontStyle=1;fontColor=#BA7A19;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+                    <mxGeometry x="852" y="105" width="501" height="27" as="geometry"/>
+                </mxCell>
+                <mxCell id="runtime_execute_bg" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FAF7FD;strokeColor=#8056B3;strokeWidth=1;dashed=1;dashPattern=8 5;opacity=70;" vertex="1" parent="1">
+                    <mxGeometry x="1380" y="100" width="520" height="755" as="geometry"/>
+                </mxCell>
+                <mxCell id="runtime_execute_label" value="&lt;div style=&quot;font-family:Arial;font-size:14px;font-weight:700;color:#8056B3;&quot;&gt;Execution and learner evidence&lt;/div&gt;" style="text;html=1;align=left;verticalAlign=middle;fontFamily=Arial;fontSize=14;fontStyle=1;fontColor=#8056B3;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+                    <mxGeometry x="1392" y="105" width="496" height="27" as="geometry"/>
+                </mxCell>
+                <mxCell id="runtime_knowledge_bg" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F8F8FA;strokeColor=#687580;strokeWidth=1;dashed=1;dashPattern=8 5;opacity=70;" vertex="1" parent="1">
+                    <mxGeometry x="30" y="880" width="1870" height="330" as="geometry"/>
+                </mxCell>
+                <mxCell id="runtime_knowledge_label" value="&lt;div style=&quot;font-family:Arial;font-size:14px;font-weight:700;color:#687580;&quot;&gt;Knowledge path used by Tutor context&lt;/div&gt;" style="text;html=1;align=left;verticalAlign=middle;fontFamily=Arial;fontSize=14;fontStyle=1;fontColor=#687580;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+                    <mxGeometry x="42" y="885" width="1846" height="27" as="geometry"/>
+                </mxCell>
+                <mxCell id="runtime_releaseState" value="&lt;div style=&quot;font-family:Arial;font-size:13px;font-weight:700;color:#493B12;&quot;&gt;Current pinned release state&lt;/div&gt;&lt;div style=&quot;font-family:Arial;font-size:11px;line-height:1.3;color:#26323A;margin-top:4px;&quot;&gt;runtimeManifest.json says releasePublished: false for KAFE 0.1.0. Install returns unavailable until that release is published.&lt;/div&gt;" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;align=left;verticalAlign=middle;spacingLeft=11;spacingRight=10;spacingTop=8;spacingBottom=7;fontFamily=Arial;fontSize=12;fontColor=#493B12;fillColor=#FFF9D9;strokeColor=#C79A27;strokeWidth=1.5;shadow=1;shape=note;size=16;" vertex="1" parent="1">
+                    <mxGeometry x="855" y="710" width="495" height="105" as="geometry"/>
+                </mxCell>
+                <mxCell id="runtime_runCommand" value="&lt;div style=&quot;font-family:Arial;font-size:13px;font-weight:700;color:#172B4D;&quot;&gt;KAFE: Run File&lt;/div&gt;&lt;div style=&quot;font-family:Arial;font-size:11px;line-height:1.3;color:#26323A;margin-top:4px;&quot;&gt;Learner starts execution from the active .kf editor.&lt;/div&gt;" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;align=left;verticalAlign=middle;spacingLeft=11;spacingRight=10;spacingTop=8;spacingBottom=7;fontFamily=Arial;fontSize=12;fontColor=#172B4D;fillColor=#EAF2FF;strokeColor=#4776A8;strokeWidth=1.5;shadow=1;" vertex="1" parent="1">
+                    <mxGeometry x="50" y="155" width="300" height="125" as="geometry"/>
+                </mxCell>
+                <mxCell id="runtime_runGate" value="&lt;div style=&quot;font-family:Arial;font-size:13px;font-weight:700;color:#172B4D;&quot;&gt;extension.js preflight&lt;/div&gt;&lt;div style=&quot;font-family:Arial;font-size:11px;line-height:1.3;color:#26323A;margin-top:4px;&quot;&gt;Requires trusted workspace, saved .kf inside a workspace, ready runtime, and generated parser files.&lt;/div&gt;" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;align=left;verticalAlign=middle;spacingLeft=11;spacingRight=10;spacingTop=8;spacingBottom=7;fontFamily=Arial;fontSize=12;fontColor=#172B4D;fillColor=#EAF2FF;strokeColor=#4776A8;strokeWidth=1.5;shadow=1;" vertex="1" parent="1">
+                    <mxGeometry x="50" y="345" width="300" height="180" as="geometry"/>
+                </mxCell>
+                <mxCell id="runtime_installCommand" value="&lt;div style=&quot;font-family:Arial;font-size:13px;font-weight:700;color:#56390C;&quot;&gt;KAFE: Install Runtime&lt;/div&gt;&lt;div style=&quot;font-family:Arial;font-size:11px;line-height:1.3;color:#26323A;margin-top:4px;&quot;&gt;Requires workspace trust. First download also requires explicit user confirmation.&lt;/div&gt;" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;align=left;verticalAlign=middle;spacingLeft=11;spacingRight=10;spacingTop=8;spacingBottom=7;fontFamily=Arial;fontSize=12;fontColor=#56390C;fillColor=#FFF4DF;strokeColor=#BA7A19;strokeWidth=1.5;shadow=1;" vertex="1" parent="1">
+                    <mxGeometry x="50" y="590" width="300" height="170" as="geometry"/>
+                </mxCell>
+                <mxCell id="runtime_manager" value="&lt;div style=&quot;font-family:Arial;font-size:13px;font-weight:700;color:#173D26;&quot;&gt;runtimeManager.resolveWorkspace()&lt;/div&gt;&lt;div style=&quot;font-family:Arial;font-size:11px;line-height:1.3;color:#26323A;margin-top:4px;&quot;&gt;Checks contributor markers; otherwise verifies the pinned managed runtime in VS Code globalStorage.&lt;/div&gt;" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;align=left;verticalAlign=middle;spacingLeft=11;spacingRight=10;spacingTop=8;spacingBottom=7;fontFamily=Arial;fontSize=12;fontColor=#173D26;fillColor=#E8F6ED;strokeColor=#43845D;strokeWidth=1.5;shadow=1;" vertex="1" parent="1">
+                    <mxGeometry x="420" y="155" width="380" height="155" as="geometry"/>
+                </mxCell>
+                <mxCell id="runtime_contributor" value="&lt;div style=&quot;font-family:Arial;font-size:13px;font-weight:700;color:#173D26;&quot;&gt;Contributor mode&lt;/div&gt;&lt;div style=&quot;font-family:Arial;font-size:11px;line-height:1.3;color:#26323A;margin-top:4px;&quot;&gt;pyproject.toml + uv.lock + src/Kafe.py exist; uv --version succeeds.&lt;br/&gt;Runtime root is checkout.&lt;/div&gt;" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;align=left;verticalAlign=middle;spacingLeft=11;spacingRight=10;spacingTop=8;spacingBottom=7;fontFamily=Arial;fontSize=12;fontColor=#173D26;fillColor=#E8F6ED;strokeColor=#43845D;strokeWidth=1.5;shadow=1;" vertex="1" parent="1">
+                    <mxGeometry x="420" y="380" width="180" height="170" as="geometry"/>
+                </mxCell>
+                <mxCell id="runtime_managedReady" value="&lt;div style=&quot;font-family:Arial;font-size:13px;font-weight:700;color:#173D26;&quot;&gt;Managed mode&lt;/div&gt;&lt;div style=&quot;font-family:Arial;font-size:11px;line-height:1.3;color:#26323A;margin-top:4px;&quot;&gt;Ready marker, versions, sidecar, archive hashes, expected files, and extracted tree are verified.&lt;/div&gt;" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;align=left;verticalAlign=middle;spacingLeft=11;spacingRight=10;spacingTop=8;spacingBottom=7;fontFamily=Arial;fontSize=12;fontColor=#173D26;fillColor=#E8F6ED;strokeColor=#43845D;strokeWidth=1.5;shadow=1;" vertex="1" parent="1">
+                    <mxGeometry x="620" y="380" width="180" height="170" as="geometry"/>
+                </mxCell>
+                <mxCell id="runtime_installGate" value="&lt;div style=&quot;font-family:Arial;font-size:13px;font-weight:700;color:#56390C;&quot;&gt;installRuntime()&lt;/div&gt;&lt;div style=&quot;font-family:Arial;font-size:11px;line-height:1.3;color:#26323A;margin-top:4px;&quot;&gt;If cache is missing: check releasePublished, request confirmation, acquire and validate pinned assets.&lt;/div&gt;" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;align=left;verticalAlign=middle;spacingLeft=11;spacingRight=10;spacingTop=8;spacingBottom=7;fontFamily=Arial;fontSize=12;fontColor=#56390C;fillColor=#FFF4DF;strokeColor=#BA7A19;strokeWidth=1.5;shadow=1;" vertex="1" parent="1">
+                    <mxGeometry x="420" y="610" width="380" height="155" as="geometry"/>
+                </mxCell>
+                <mxCell id="runtime_manifest" value="&lt;div style=&quot;font-family:Arial;font-size:13px;font-weight:700;color:#173D26;&quot;&gt;Pinned runtime manifest&lt;/div&gt;&lt;div style=&quot;font-family:Arial;font-size:11px;line-height:1.3;color:#26323A;margin-top:4px;&quot;&gt;Pins KAFE/knowledge versions, source revision, archive hash, release URLs and uv target checksums.&lt;/div&gt;" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;align=left;verticalAlign=middle;spacingLeft=11;spacingRight=10;spacingTop=8;spacingBottom=7;fontFamily=Arial;fontSize=12;fontColor=#173D26;fillColor=#E8F6ED;strokeColor=#43845D;strokeWidth=1.5;shadow=1;" vertex="1" parent="1">
+                    <mxGeometry x="860" y="155" width="220" height="145" as="geometry"/>
+                </mxCell>
+                <mxCell id="runtime_assets" value="&lt;div style=&quot;font-family:Arial;font-size:13px;font-weight:700;color:#542222;&quot;&gt;Download assets&lt;/div&gt;&lt;div style=&quot;font-family:Arial;font-size:11px;line-height:1.3;color:#26323A;margin-top:4px;&quot;&gt;KAFE runtime zip + sidecar; OS-specific uv archive from Astral.&lt;/div&gt;" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;align=left;verticalAlign=middle;spacingLeft=11;spacingRight=10;spacingTop=8;spacingBottom=7;fontFamily=Arial;fontSize=12;fontColor=#542222;fillColor=#FCEAEA;strokeColor=#B94D4D;strokeWidth=1.5;shadow=1;" vertex="1" parent="1">
+                    <mxGeometry x="1110" y="155" width="230" height="145" as="geometry"/>
+                </mxCell>
+                <mxCell id="runtime_stage" value="&lt;div style=&quot;font-family:Arial;font-size:13px;font-weight:700;color:#56390C;&quot;&gt;Verify and stage&lt;/div&gt;&lt;div style=&quot;font-family:Arial;font-size:11px;line-height:1.3;color:#26323A;margin-top:4px;&quot;&gt;Validate HTTPS hosts, metadata, SHA-256, archive members, path safety and required files; extract to staging.&lt;/div&gt;" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;align=left;verticalAlign=middle;spacingLeft=11;spacingRight=10;spacingTop=8;spacingBottom=7;fontFamily=Arial;fontSize=12;fontColor=#56390C;fillColor=#FFF4DF;strokeColor=#BA7A19;strokeWidth=1.5;shadow=1;" vertex="1" parent="1">
+                    <mxGeometry x="860" y="375" width="220" height="175" as="geometry"/>
+                </mxCell>
+                <mxCell id="runtime_sync" value="&lt;div style=&quot;font-family:Arial;font-size:13px;font-weight:700;color:#56390C;&quot;&gt;Prepare environment&lt;/div&gt;&lt;div style=&quot;font-family:Arial;font-size:11px;line-height:1.3;color:#26323A;margin-top:4px;&quot;&gt;Verify pinned uv version; run uv sync --locked --no-dev against staged runtime.&lt;/div&gt;" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;align=left;verticalAlign=middle;spacingLeft=11;spacingRight=10;spacingTop=8;spacingBottom=7;fontFamily=Arial;fontSize=12;fontColor=#56390C;fillColor=#FFF4DF;strokeColor=#BA7A19;strokeWidth=1.5;shadow=1;" vertex="1" parent="1">
+                    <mxGeometry x="1110" y="375" width="230" height="175" as="geometry"/>
+                </mxCell>
+                <mxCell id="runtime_promote" value="&lt;div style=&quot;font-family:Arial;font-size:13px;font-weight:700;color:#173D26;&quot;&gt;Atomic promotion&lt;/div&gt;&lt;div style=&quot;font-family:Arial;font-size:11px;line-height:1.3;color:#26323A;margin-top:4px;&quot;&gt;Write ready metadata, promote staged runtime, re-verify installed tree.&lt;/div&gt;" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;align=left;verticalAlign=middle;spacingLeft=11;spacingRight=10;spacingTop=8;spacingBottom=7;fontFamily=Arial;fontSize=12;fontColor=#173D26;fillColor=#E8F6ED;strokeColor=#43845D;strokeWidth=1.5;shadow=1;" vertex="1" parent="1">
+                    <mxGeometry x="980" y="590" width="240" height="100" as="geometry"/>
+                </mxCell>
+                <mxCell id="runtime_invocation" value="&lt;div style=&quot;font-family:Arial;font-size:13px;font-weight:700;color:#173D26;&quot;&gt;Run invocation&lt;/div&gt;&lt;div style=&quot;font-family:Arial;font-size:11px;line-height:1.3;color:#26323A;margin-top:4px;&quot;&gt;uv run --locked python src/Kafe.py &amp;lt;file&amp;gt;&lt;br/&gt;Managed mode adds --no-dev.&lt;/div&gt;" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;align=left;verticalAlign=middle;spacingLeft=11;spacingRight=10;spacingTop=8;spacingBottom=7;fontFamily=Arial;fontSize=12;fontColor=#173D26;fillColor=#E8F6ED;strokeColor=#43845D;strokeWidth=1.5;shadow=1;" vertex="1" parent="1">
+                    <mxGeometry x="1400" y="155" width="220" height="165" as="geometry"/>
+                </mxCell>
+                <mxCell id="runtime_runner" value="&lt;div style=&quot;font-family:Arial;font-size:13px;font-weight:700;color:#173D26;&quot;&gt;kafeRunner.js&lt;/div&gt;&lt;div style=&quot;font-family:Arial;font-size:11px;line-height:1.3;color:#26323A;margin-top:4px;&quot;&gt;Spawns without a shell; passes interactive stdin; streams output; cancel sends SIGTERM.&lt;/div&gt;" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;align=left;verticalAlign=middle;spacingLeft=11;spacingRight=10;spacingTop=8;spacingBottom=7;fontFamily=Arial;fontSize=12;fontColor=#173D26;fillColor=#E8F6ED;strokeColor=#43845D;strokeWidth=1.5;shadow=1;" vertex="1" parent="1">
+                    <mxGeometry x="1645" y="155" width="225" height="165" as="geometry"/>
+                </mxCell>
+                <mxCell id="runtime_terminalProcess" value="&lt;div style=&quot;font-family:Arial;font-size:13px;font-weight:700;color:#172B4D;&quot;&gt;VS Code pseudoterminal&lt;/div&gt;&lt;div style=&quot;font-family:Arial;font-size:11px;line-height:1.3;color:#26323A;margin-top:4px;&quot;&gt;Shows live stdout/stderr and accepts learner input while KAFE.py runs.&lt;/div&gt;" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;align=left;verticalAlign=middle;spacingLeft=11;spacingRight=10;spacingTop=8;spacingBottom=7;fontFamily=Arial;fontSize=12;fontColor=#172B4D;fillColor=#EAF2FF;strokeColor=#4776A8;strokeWidth=1.5;shadow=1;" vertex="1" parent="1">
+                    <mxGeometry x="1400" y="390" width="220" height="160" as="geometry"/>
+                </mxCell>
+                <mxCell id="runtime_evidence" value="&lt;div style=&quot;font-family:Arial;font-size:13px;font-weight:700;color:#38245A;&quot;&gt;Run evidence&lt;/div&gt;&lt;div style=&quot;font-family:Arial;font-size:11px;line-height:1.3;color:#26323A;margin-top:4px;&quot;&gt;Retains stdout/stderr up to 1 MiB total; records truncation, exit code, source URI, sequence, mode and versions.&lt;/div&gt;" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;align=left;verticalAlign=middle;spacingLeft=11;spacingRight=10;spacingTop=8;spacingBottom=7;fontFamily=Arial;fontSize=12;fontColor=#38245A;fillColor=#F2EAFE;strokeColor=#8056B3;strokeWidth=1.5;shadow=1;" vertex="1" parent="1">
+                    <mxGeometry x="1645" y="390" width="225" height="180" as="geometry"/>
+                </mxCell>
+                <mxCell id="runtime_evidenceHost" value="&lt;div style=&quot;font-family:Arial;font-size:13px;font-weight:700;color:#38245A;&quot;&gt;SessionCoordinator&lt;/div&gt;&lt;div style=&quot;font-family:Arial;font-size:11px;line-height:1.3;color:#26323A;margin-top:4px;&quot;&gt;Accepts validated, increasing Run sequences; associates evidence with source.&lt;/div&gt;" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;align=left;verticalAlign=middle;spacingLeft=11;spacingRight=10;spacingTop=8;spacingBottom=7;fontFamily=Arial;fontSize=12;fontColor=#38245A;fillColor=#F2EAFE;strokeColor=#8056B3;strokeWidth=1.5;shadow=1;" vertex="1" parent="1">
+                    <mxGeometry x="1400" y="625" width="220" height="155" as="geometry"/>
+                </mxCell>
+                <mxCell id="runtime_reviewCheck" value="&lt;div style=&quot;font-family:Arial;font-size:13px;font-weight:700;color:#56390C;&quot;&gt;Learner-reviewed check&lt;/div&gt;&lt;div style=&quot;font-family:Arial;font-size:11px;line-height:1.3;color:#26323A;margin-top:4px;&quot;&gt;Optional label/outcome linked to a Run; saved to workspaceState. Passing run alone does not prove mastery.&lt;/div&gt;" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;align=left;verticalAlign=middle;spacingLeft=11;spacingRight=10;spacingTop=8;spacingBottom=7;fontFamily=Arial;fontSize=12;fontColor=#56390C;fillColor=#FFF4DF;strokeColor=#BA7A19;strokeWidth=1.5;shadow=1;" vertex="1" parent="1">
+                    <mxGeometry x="1645" y="625" width="225" height="155" as="geometry"/>
+                </mxCell>
+                <mxCell id="runtime_devPack" value="&lt;div style=&quot;font-family:Arial;font-size:13px;font-weight:700;color:#173D26;&quot;&gt;DevelopmentKnowledgePack&lt;/div&gt;&lt;div style=&quot;font-family:Arial;font-size:11px;line-height:1.3;color:#26323A;margin-top:4px;&quot;&gt;Development extension only. Requires marker files pyproject.toml, uv.lock, src/Kafe.py. Packages six curated docs sections plus src grammar; hashes and caches the pack.&lt;/div&gt;" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;align=left;verticalAlign=middle;spacingLeft=11;spacingRight=10;spacingTop=8;spacingBottom=7;fontFamily=Arial;fontSize=12;fontColor=#173D26;fillColor=#E8F6ED;strokeColor=#43845D;strokeWidth=1.5;shadow=1;" vertex="1" parent="1">
+                    <mxGeometry x="50" y="950" width="300" height="205" as="geometry"/>
+                </mxCell>
+                <mxCell id="runtime_managedPack" value="&lt;div style=&quot;font-family:Arial;font-size:13px;font-weight:700;color:#173D26;&quot;&gt;Managed knowledge pack&lt;/div&gt;&lt;div style=&quot;font-family:Arial;font-size:11px;line-height:1.3;color:#26323A;margin-top:4px;&quot;&gt;Shipped in verified runtime archive; runtime and knowledge versions must match. Preferred when managed runtime is ready.&lt;/div&gt;" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;align=left;verticalAlign=middle;spacingLeft=11;spacingRight=10;spacingTop=8;spacingBottom=7;fontFamily=Arial;fontSize=12;fontColor=#173D26;fillColor=#E8F6ED;strokeColor=#43845D;strokeWidth=1.5;shadow=1;" vertex="1" parent="1">
+                    <mxGeometry x="420" y="950" width="300" height="205" as="geometry"/>
+                </mxCell>
+                <mxCell id="runtime_retriever" value="&lt;div style=&quot;font-family:Arial;font-size:13px;font-weight:700;color:#38245A;&quot;&gt;KnowledgeRetriever&lt;/div&gt;&lt;div style=&quot;font-family:Arial;font-size:11px;line-height:1.3;color:#26323A;margin-top:4px;&quot;&gt;Validates root, paths, sizes, versions and dev digest; ranks local passages and selects up to 5 (max 2 per file).&lt;/div&gt;" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;align=left;verticalAlign=middle;spacingLeft=11;spacingRight=10;spacingTop=8;spacingBottom=7;fontFamily=Arial;fontSize=12;fontColor=#38245A;fillColor=#F2EAFE;strokeColor=#8056B3;strokeWidth=1.5;shadow=1;" vertex="1" parent="1">
+                    <mxGeometry x="790" y="950" width="300" height="205" as="geometry"/>
+                </mxCell>
+                <mxCell id="runtime_composer" value="&lt;div style=&quot;font-family:Arial;font-size:13px;font-weight:700;color:#38245A;&quot;&gt;ContextComposer&lt;/div&gt;&lt;div style=&quot;font-family:Arial;font-size:11px;line-height:1.3;color:#26323A;margin-top:4px;&quot;&gt;Adds retrieved passages as source-tagged messages to the exact preview; UI shows the source list.&lt;/div&gt;" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;align=left;verticalAlign=middle;spacingLeft=11;spacingRight=10;spacingTop=8;spacingBottom=7;fontFamily=Arial;fontSize=12;fontColor=#38245A;fillColor=#F2EAFE;strokeColor=#8056B3;strokeWidth=1.5;shadow=1;" vertex="1" parent="1">
+                    <mxGeometry x="1160" y="950" width="300" height="205" as="geometry"/>
+                </mxCell>
+                <mxCell id="runtime_consent" value="&lt;div style=&quot;font-family:Arial;font-size:13px;font-weight:700;color:#493B12;&quot;&gt;Reviewed request boundary&lt;/div&gt;&lt;div style=&quot;font-family:Arial;font-size:11px;line-height:1.3;color:#26323A;margin-top:4px;&quot;&gt;A tool-discovered passage not in the payload creates a new preview/token and halts. Learner reviews and explicitly resends before a follow-up provider call.&lt;/div&gt;" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;align=left;verticalAlign=middle;spacingLeft=11;spacingRight=10;spacingTop=8;spacingBottom=7;fontFamily=Arial;fontSize=12;fontColor=#493B12;fillColor=#FFF9D9;strokeColor=#C79A27;strokeWidth=1.5;shadow=1;" vertex="1" parent="1">
+                    <mxGeometry x="1530" y="950" width="330" height="205" as="geometry"/>
+                </mxCell>
+                <mxCell id="runtime_e1" value="command" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#355F91;strokeWidth=1.5;fontFamily=Arial;fontSize=11;fontColor=#26323A;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="runtime_runCommand" target="runtime_runGate">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="runtime_e2" value="resolve after trust/save checks" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#355F91;strokeWidth=1.5;fontFamily=Arial;fontSize=11;fontColor=#26323A;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="runtime_runGate" target="runtime_manager">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="runtime_e3" value="explicit setup command" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#355F91;strokeWidth=1.5;fontFamily=Arial;fontSize=11;fontColor=#26323A;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="runtime_installCommand" target="runtime_installGate">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="runtime_e4" value="checkout markers + uv" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#288052;strokeWidth=1.5;fontFamily=Arial;fontSize=11;fontColor=#26323A;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="runtime_manager" target="runtime_contributor">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="runtime_e5" value="verified cache" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#288052;strokeWidth=1.5;fontFamily=Arial;fontSize=11;fontColor=#26323A;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="runtime_manager" target="runtime_managedReady">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="runtime_e6" value="cache missing / invalid" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#B84747;strokeWidth=1.5;fontFamily=Arial;fontSize=11;fontColor=#26323A;labelBackgroundColor=#FFFFFF;dashed=1;dashPattern=6 4;" edge="1" parent="1" source="runtime_manager" target="runtime_installGate">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="runtime_e7" value="published + confirmed" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#BB7412;strokeWidth=1.5;fontFamily=Arial;fontSize=11;fontColor=#26323A;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="runtime_installGate" target="runtime_manifest">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="runtime_e8" value="pinned URLs / checksums" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#288052;strokeWidth=1.5;fontFamily=Arial;fontSize=11;fontColor=#26323A;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="runtime_manifest" target="runtime_assets">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="runtime_e9" value="downloaded bytes" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#BB7412;strokeWidth=1.5;fontFamily=Arial;fontSize=11;fontColor=#26323A;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="runtime_assets" target="runtime_stage">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="runtime_e10" value="validated staged files" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#288052;strokeWidth=1.5;fontFamily=Arial;fontSize=11;fontColor=#26323A;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="runtime_stage" target="runtime_sync">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="runtime_e11" value="locked environment ready" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#288052;strokeWidth=1.5;fontFamily=Arial;fontSize=11;fontColor=#26323A;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="runtime_sync" target="runtime_promote">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="runtime_e12" value="install complete" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#8251A4;strokeWidth=1.5;fontFamily=Arial;fontSize=11;fontColor=#26323A;labelBackgroundColor=#FFFFFF;dashed=1;dashPattern=6 4;" edge="1" parent="1" source="runtime_promote" target="runtime_managedReady">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="runtime_e13" value="current releasePublished=false" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#B84747;strokeWidth=1.5;fontFamily=Arial;fontSize=11;fontColor=#26323A;labelBackgroundColor=#FFFFFF;dashed=1;dashPattern=6 4;" edge="1" parent="1" source="runtime_manifest" target="runtime_releaseState">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="runtime_e14" value="workspace runtime" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#288052;strokeWidth=1.5;fontFamily=Arial;fontSize=11;fontColor=#26323A;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="runtime_contributor" target="runtime_invocation">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="runtime_e15" value="globalStorage runtime" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#288052;strokeWidth=1.5;fontFamily=Arial;fontSize=11;fontColor=#26323A;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="runtime_managedReady" target="runtime_invocation">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="runtime_e16" value="args + resolved paths" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#355F91;strokeWidth=1.5;fontFamily=Arial;fontSize=11;fontColor=#26323A;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="runtime_invocation" target="runtime_runner">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="runtime_e17" value="spawn + stream" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#288052;strokeWidth=1.5;fontFamily=Arial;fontSize=11;fontColor=#26323A;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="runtime_runner" target="runtime_terminalProcess">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="runtime_e18" value="completion" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#288052;strokeWidth=1.5;fontFamily=Arial;fontSize=11;fontColor=#26323A;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="runtime_terminalProcess" target="runtime_evidence">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="runtime_e19" value="result with provenance" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#8251A4;strokeWidth=1.5;fontFamily=Arial;fontSize=11;fontColor=#26323A;labelBackgroundColor=#FFFFFF;dashed=1;dashPattern=6 4;" edge="1" parent="1" source="runtime_evidence" target="runtime_evidenceHost">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="runtime_e20" value="learner may record review" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#355F91;strokeWidth=1.5;fontFamily=Arial;fontSize=11;fontColor=#26323A;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="runtime_evidenceHost" target="runtime_reviewCheck">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="runtime_e21" value="development source mode" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#288052;strokeWidth=1.5;fontFamily=Arial;fontSize=11;fontColor=#26323A;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="runtime_devPack" target="runtime_retriever">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="runtime_e22" value="managed source mode" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#288052;strokeWidth=1.5;fontFamily=Arial;fontSize=11;fontColor=#26323A;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="runtime_managedPack" target="runtime_retriever">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="runtime_e23" value="ranked local passages" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#288052;strokeWidth=1.5;fontFamily=Arial;fontSize=11;fontColor=#26323A;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="runtime_retriever" target="runtime_composer">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="runtime_e24" value="source-tagged payload preview" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#288052;strokeWidth=1.5;fontFamily=Arial;fontSize=11;fontColor=#26323A;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="runtime_composer" target="runtime_consent">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="runtime_e25" value="Run only when active .kf matches" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#8251A4;strokeWidth=1.5;fontFamily=Arial;fontSize=11;fontColor=#26323A;labelBackgroundColor=#FFFFFF;dashed=1;dashPattern=6 4;" edge="1" parent="1" source="runtime_evidenceHost" target="runtime_composer">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>
