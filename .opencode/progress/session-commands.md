@@ -7,3 +7,4 @@ Track custom commands executed during this session.
 | /init | Validate engineering system | done |
 | /resume | Reconstruct project state | done |
 | /open-work | Test OR gate perceptron (KafeGESHA) | done |
+| /impact | GESHA type regression + KafeGESHA auth-back | done |

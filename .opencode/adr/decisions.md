@@ -320,3 +320,63 @@ Validate hyperparameters in `__init__()`:
 - `max_iter > 0` — zero or negative values prevent training
 
 Fails fast at construction time instead of silently producing a broken model.
+
+---
+
+## ADR-0008: Restaurar el Tipo GESHA y el Contrato Público de KafeGESHA tras el Refactor
+
+- **Status**: accepted
+- **Date**: 2026-09-24
+
+### Context
+
+El refactor "Clean Gesha Architecture" reestructuró KafeGESHA aplanando el paquete en `src/lib/KafeGESHA/{layers,models,core,activations,losses,optimizers}.py` y añadió `Layer.__call__ = connect` para soportar la API Functional. Este refactor introdujo una regresión de contrato público:
+
+- El usuario reportó `TypeError: Expected GESHA, obtained FUNC` en `python Kafe.py Ejemplo.kf` en la línea `GESHA layer = geshaDeep.create_dense(1, "sigmoid", [2]);`.
+- **Causa raíz**: `TypeUtils.obtener_tipo_dato()` evaluaba `callable(dato)` **antes** de `isinstance(dato, (Gesha, Layer, Node, Input))`. Con `Layer.__call__ = connect`, toda capa es callable, por lo que cualquier capa/modelo GESHA se clasificaba como `FUNC` en lugar de `GESHA`.
+- `TypeUtils` es un módulo compartido por todo el lenguaje: regresión, asignación de tipos, dispatch de librerías y la gramática dependen de la clasificación correcta del tipo GESHA.
+
+Además, se observaron otras desviaciones del contrato pre-refactor: `Model.fit` emitía un formato de salida distinto, `predict`/`predict_label`/`predict_proba` cambiaron la semántica de muestras, el entrenamiento fijaba semillas ad-hoc y los fixtures `.expec` de las compuertas quedaron desalineados con la salida real (suite KafeGESHA en rojo: baseline 2 failed).
+
+### Decision
+
+Restaurar el contrato público pre-refactor de KafeGESHA:
+
+1. **Orden del chequeo GESHA en `TypeUtils.obtener_tipo_dato()`** — decisión central del ADR: validar `isinstance(dato, (Gesha, Layer, Node, Input))` **antes** del chequeo `callable(dato)`. Así `Layer.__call__ = connect` no interfiere con la clasificación de tipos de capas, nodos ni modelos como `GESHA`.
+2. **`Dense.forward`** — activación aplicada por elemento (con caché de `_last_z`); Softmax conserva la excepción vectorial (requiere el vector completo).
+3. **`Dense.backward`** — derivada por elemento recuperada desde `_last_z` (con manejo de Jacobiana para Softmax), corrigiendo el gradiente propagado.
+4. **`activations.py`** — `derivative(x)` calcula a partir de `x` cuando se provee; la caché (`last_input`/`last_output`) queda solo como fallback para `None`.
+5. **`Model.predict`** — vector → `forward(X)` directo; matriz → batch con `forward` por muestra.
+6. **`predict_label`/`predict_proba`** — restaurados (threshold 0.5 para salida unitaria, argmax multiclase; `INT` para muestra única, `List[INT]` para batch).
+7. **`Model.fit`** — formato `Epoch N/M — Loss X.XX%` (em-dash) restaurado, gradiente por unidad, shapes de loss planas.
+8. **Fixtures deterministas** — `and_gate.kf` y `or_gate.kf` fijados con seed `42` en `create_dense` (reproducible) y `.expec` regenerados desde stdout real (`or_gate.expec` bit-a-bit idéntico al contrato pre-refactor).
+
+### Rationale
+
+- **Consistencia de contrato**: los programas educativos (`Ejemplo.kf`, `and_gate.kf`, `or_gate.kf`) y la documentación asumen el tipo `GESHA` y el formato de salida pre-refactor. Restaurar el contrato preserva compatibilidad sin migrar documentación ni ejemplos.
+- **Corrección del chequeo de tipos**: la causalidad es estructural — `callable` es un superconjunto de "es una capa GESHA" desde que `Layer` es callable. El chequeo específico debe preceder al genérico.
+- **Determinismo**: la semilla 42 hace que los tests de compuertas sean reproducibles entre ejecuciones y máquinas, condición necesaria para fixtures estables.
+- `TypeUtils` es compartido por todo el lenguaje; restaurarlo sin tocar otras clasificaciones minimiza el riesgo colateral.
+
+### Consequences
+
+**Positivas:**
+
+- `src/Ejemplo.kf` ya no produce `TypeError` y el perceptrón AND aprende (loss decreciente hasta ~26.42%).
+- Contrato público de KafeGESHA restaurado: tipo `GESHA`, `predict`/`predict_label`/`predict_proba` y formato de `fit` consistentes con los ejemplos y documentación.
+- Determinismo con seed 42: fixtures `and_gate.expec`/`or_gate.expec` reproducibles.
+- Suite KafeGESHA en verde: `pytest tests/test_KafeGESHA.py` → 2 passed, 1 skipped; suite completa 464 passed, 1 skipped.
+
+**Riesgos y consideraciones:**
+
+- `TypeUtils.obtener_tipo_dato()` es compartido por todo el lenguaje; el reordenamiento afecta la clasificación global de tipos. Cualquier futuro objeto introducido en KafeGESHA que sea callable debe mantener esta precedencia (GESHA → PARDOS → MACHINE → callable → ...).
+- `Layer.__call__ = connect` sigue presente: es intencional para la API Functional, pero cualquier código que dependa de `callable()` para detectar funciones debe blindarse contra tipos GESHA.
+- Los `.expec` fueron regenerados desde stdout real; cambios futuros en el formato numérico, la semilla o el orden de entrenamiento romperán los fixtures (a diferencia de los fixtures de texto es determinista con seed 42).
+
+### Alternatives Considered
+
+**Mantener la semántica batch nueva + migrar fixtures y documentación.** Se evaluó quedarse con el comportamiento del refactor (predict/predict_label batch, formato nuevo de fit) y actualizar `Ejemplo.kf`, las compuertas y la documentación al nuevo contrato.
+
+- **Rechazado** porque: (a) rompería la compatibilidad con los ejemplos educativos publicados y el material didáctico que enseñan `GESHA`, comprometiendo el valor educativo; (b) exigiría migrar documentación y todos los ejemplos existentes; (c) la causa funcional primaria (`TypeError: Expected GESHA, obtained FUNC`) es un bug de clasificación de tipos, no una mejora intencional del refactor. La decisión de restaurar el contrato pre-refactor es la de menor costo y mayor consistencia.
+
+Mantener `callable` antes de `isinstance` y corregir solo `Layer` (eliminar `__call__`). Se descartó porque la API Functional depende de la callability de las capas (`layer(inbound)`), y eliminar `__call__` rompería el patrón added por el refactor; el reordenamiento en `TypeUtils` resuelve la colisión sin sacrificar la API.

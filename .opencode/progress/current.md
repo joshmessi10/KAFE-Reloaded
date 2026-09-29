@@ -1,5 +1,18 @@
 # Current Work
 
+## Fix: Tipo GESHA + contrato público KafeGESHA tras refactor
+
+**Status:** in_progress
+
+**Feature:** Reparar la clasificación del tipo GESHA en TypeUtils (rota por `Layer.__call__ = connect` que hacía callable a toda capa) y restaurar la cadena de regresiones del refactor de KafeGESHA: activación por elemento en Dense, backward con `_last_z`, semántica de sample único en predict, predict_label/predict_proba, formato de fit y entrenamiento convergente.
+
+**Current step:** Builder implementa fixes y valida pytest
+**Next step:** Tester valida pytest; Reviewer /dod; Historian registra
+**Blockers:** None
+**Related ADRs:** ADR-0008
+
+---
+
 ## Test: Perceptron Simple OR gate (KafeGESHA PerceptronSimple)
 
 **Status:** in_progress

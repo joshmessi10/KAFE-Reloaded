@@ -2,20 +2,20 @@
 
 ## Current Feature
 
-Test Perceptron Simple OR gate (KafeGESHA)
+Fix: Tipo GESHA + contrato público KafeGESHA tras refactor (ADR-0008)
 
 ## Status
 
-in_progress
+completed — Implementation, Validation, Documentation, History, Review (APPROVED) and DoD all done. Session closure (`/close`, `current.md` reset) is handled by the engineering lead.
 
 ## Current Step
 
-Builder: crear tests/KafeGESHA/PerceptronSimple/or_gate.kf + .expec determinista (seed 42)
+Historian: persistido el veredicto del Reviewer, actualizado `knowledge/dl-library.md`, `history/2026/2026-09.md`, `current-state.md`, `known-issues.md`.
 
 ## Next Step
 
-Tester: validar pytest; Reviewer: /dod; Historian: history
+Engineering Lead: cerrar la sesión (`/close`) y fijar el siguiente work item del roadmap — KafeGESHA Conv2D (usar `/open-work` + `/impact` + la skill `add-dl-layer`).
 
 ## Summary
 
-Compuerta OR = problema linealmente separable resuelto con perceptron simple (1 neurona sigmoid, SGD, binary_crossentropy, 1000 epocas). A diferencia del and_gate existente (no determinista y con .expec corrupto), or_gate usa semilla fija 42 en create_dense para que el .expec sea reproducible.
+Regresión `TypeError: Expected GESHA, obtained FUNC` causada por `Layer.__call__ = connect` combinado con `callable(dato)` chequeado antes del `isinstance` GESHA en `TypeUtils.obtener_tipo_dato()`. Se restauró el contrato público pre-refactor de KafeGESHA (`predict` sample único, `predict_proba`, `predict_label`, `fit` con em-dash) y los fixtures de compuertas quedaron deterministas con seed 42. Resultado: `pytest tests/ -q` — 464 passed, 1 skipped.

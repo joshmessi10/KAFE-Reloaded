@@ -30,8 +30,8 @@ show("=== Perceptron Simple: Compuerta AND ===");
 List[List[FLOAT]] x_train = [[0.0, 0.0], [0.0, 1.0], [1.0, 0.0], [1.0, 1.0]];
 List[INT] y_train = [0, 0, 0, 1];
 
--- Crear modelo: 1 neurona, sigmoid, 2 entradas
-GESHA layer = geshaDeep.create_dense(1, "sigmoid", [2]);
+-- Crear modelo: 1 neurona, sigmoid, 2 entradas, semilla fija para reprodrucibilidad
+GESHA layer = geshaDeep.create_dense(1, "sigmoid", [2], 0.0, 42);
 GESHA model = geshaDeep.sequential([layer]);
 
 -- Compilar con SGD y binary crossentropy
