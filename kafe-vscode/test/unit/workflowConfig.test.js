@@ -43,11 +43,13 @@ test('workflow configuration asserts extension-only triggers, read-only permissi
   const unitJob = workflow.slice(workflow.indexOf('\n  unit:'), workflow.indexOf('\n  windows-extension:'));
   const windowsJob = workflow.slice(workflow.indexOf('\n  windows-extension:'));
   assert.match(unitJob, /^    defaults:\r?\n      run:\r?\n        working-directory: kafe-vscode$/m);
-  assert.match(unitJob, /^      - uses: actions\/setup-node@v4\r?\n        with:\r?\n          node-version: 20$/m);
+  assert.match(unitJob, /^      - uses: actions\/checkout@v7$/m);
+  assert.match(unitJob, /^      - uses: actions\/setup-node@v7\r?\n        with:\r?\n          node-version: 20$/m);
   assert.match(unitJob, /^      - run: npm ci$/m);
   assert.match(unitJob, /^      - run: npm run test:unit$/m);
   assert.match(windowsJob, /^    defaults:\r?\n      run:\r?\n        working-directory: kafe-vscode$/m);
-  assert.match(windowsJob, /^      - uses: actions\/setup-node@v4\r?\n        with:\r?\n          node-version: 20$/m);
+  assert.match(windowsJob, /^      - uses: actions\/checkout@v7$/m);
+  assert.match(windowsJob, /^      - uses: actions\/setup-node@v7\r?\n        with:\r?\n          node-version: 20$/m);
 
   const windowsCommands = [
     '      - run: npm ci',

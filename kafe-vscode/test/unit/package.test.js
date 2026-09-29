@@ -36,7 +36,7 @@ test('manifest exposes the runner, runtime installer, and tutor view', () => {
   const views = Object.values(pkg.contributes.views).flat();
   assert.ok(views.some((item) => item.id === 'kafeTutorView'));
   assert.ok(pkg.activationEvents.includes('onView:kafeTutorView'));
-  assert.equal(pkg.scripts['test:unit'], 'node --test test/unit/*.test.js');
+  assert.equal(pkg.scripts['test:unit'], 'node test/run-unit-tests.js');
   assert.deepEqual(pkg.dependencies, { yauzl: '3.4.0' });
 });
 

@@ -141,7 +141,7 @@
     }
   },
   "scripts": {
-    "test:unit": "node --test test/unit/*.test.js",
+    "test:unit": "node test/run-unit-tests.js",
     "test:extension": "node test/run-extension-host-tests.js",
     "test": "npm run test:unit && npm run test:extension"
   },

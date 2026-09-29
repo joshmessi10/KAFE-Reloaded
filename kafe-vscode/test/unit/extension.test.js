@@ -3,27 +3,33 @@ const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const test = require('node:test');
+const { fileURLToPath, pathToFileURL } = require('node:url');
 
 const { createRunFileHandler, createProviderKeyHandlers, createClearProgressHandler, createTutorHost, ANTLR_COMMAND } = require('../../extension');
 const PINNED_RUNTIME = require('../../src/runtimeManifest').runtime;
 const { MAX_FILE_BYTES } = require('../../src/tutor/DevelopmentKnowledgePack');
 
 test('recordReviewedCheck stores a relative source path only for a KAFE file inside an open workspace', async () => {
-  const root = 'C:\\workspace';
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'kafe-reviewed-check-workspace-'));
+  const outside = path.join(path.dirname(root), `${path.basename(root)}-outside.kf`);
   const vscode = { Uri: { parse: value => {
     const parsed = new URL(value);
-    return { scheme: parsed.protocol.slice(0, -1), fsPath: decodeURIComponent(parsed.pathname).replace(/^\/(C:)/, '$1').replaceAll('/', '\\'),
+    const scheme = parsed.protocol.slice(0, -1);
+    return { scheme, fsPath: scheme === 'file' ? fileURLToPath(parsed) : '',
       toString: () => value };
-  } }, window: {}, workspace: { getWorkspaceFolder: uri =>
-    uri.scheme === 'file' && uri.fsPath.toLowerCase().startsWith(root.toLowerCase()) ?
-      { uri: { fsPath: root } } : undefined } };
+  } }, window: {}, workspace: { getWorkspaceFolder: uri => {
+    const relative = path.relative(root, uri.fsPath);
+    const isInside = relative === '' || (!relative.startsWith(`..${path.sep}`) &&
+      relative !== '..' && !path.isAbsolute(relative));
+    return uri.scheme === 'file' && isInside ? { uri: { fsPath: root } } : undefined;
+  } } };
   const host = createTutorHost({ vscode, extensionUri: {}, secrets: {},
     workspaceState: { values: new Map(), get(key) { return this.values.get(key); },
       async update(key, value) { if (value === undefined) this.values.delete(key); else this.values.set(key, value); } },
     runtimeManager: { getReadyRuntime: async () => ({ status: 'missing' }) } });
   for (const [sourceUri, expected] of [
-    ['file:///C:/workspace/examples/main.kf', 'examples/main.kf'],
-    ['file:///C:/workspace2/outside.kf', undefined],
+    [pathToFileURL(path.join(root, 'examples', 'main.kf')).toString(), 'examples/main.kf'],
+    [pathToFileURL(outside).toString(), undefined],
   ]) {
     const sequence = host.coordinator.lastRunSequence + 1;
     host.coordinator.recordRunResult({ stdout: 'PRIVATE', stderr: '', exitCode: 0, outputTruncated: false,
@@ -33,7 +39,8 @@ test('recordReviewedCheck stores a relative source path only for a KAFE file ins
     assert.equal(result.kind, 'coaching');
     assert.equal(host.coordinator.state.completedChecks.at(-1).sourcePath, expected);
   }
-  assert.equal(host.coordinator.getWorkspaceRelativeSourcePath('file:///C:/workspace/readme.md'), null);
+  assert.equal(host.coordinator.getWorkspaceRelativeSourcePath(
+    pathToFileURL(path.join(root, 'readme.md')).toString()), null);
   assert.equal(host.coordinator.getWorkspaceRelativeSourcePath('untitled:main.kf'), null);
 });
 
