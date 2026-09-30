@@ -6,6 +6,7 @@
 """
 from abc import ABC, abstractmethod
 from lib.KafeMATH.funciones import exp
+from lib.KafeNUMK import funciones as numk
 
 
 class ActivationFunction(ABC):
@@ -19,6 +20,18 @@ class ActivationFunction(ABC):
     def derivative(self, x):
         pass
 
+    # Contrato de composición usado por Layer. Los métodos activate y
+    # derivative se conservan para compatibilidad con la API histórica.
+    def forward(self, z):
+        self.z_cache = numk.tensor(z)
+        return numk.map_elements(self.activate, self.z_cache)
+
+    def backward(self, output_gradient):
+        if not hasattr(self, "z_cache"):
+            raise RuntimeError("Activation.backward requiere forward")
+        local = numk.map_elements(self.derivative, self.z_cache)
+        return numk.emul(output_gradient, local)
+
 
 class ReLU(ActivationFunction):
     """f(x) = max(0, x)"""
@@ -28,7 +41,7 @@ class ReLU(ActivationFunction):
 
     def activate(self, x):
         self.last_input = x
-        return x if x > 0 else 0
+        return x if x > 0 else type(x)(0)
 
     def derivative(self, x):
         if x is None:
@@ -86,13 +99,35 @@ class Softmax(ActivationFunction):
         self.last_output = None
 
     def activate(self, vec):
-        exp_vec = [exp(v) for v in vec]
-        s = sum(exp_vec)
-        self.last_output = [v / s for v in exp_vec]
-        return self.last_output[:]
+        shape = numk.shape(vec)
+        if len(shape) not in (1, 2) or 0 in shape:
+            raise ValueError("Softmax requiere un vector o una matriz no vacia")
+        rows = [vec] if len(shape) == 1 else vec
+        maxima = numk.reshape(numk.max_axis(rows, 1), [len(rows), 1])
+        exponentials = numk.exp_tensor(numk.broadcast_sub(rows, maxima))
+        totals = numk.reshape(numk.sum_axis(exponentials, 1), [len(rows), 1])
+        probabilities = numk.broadcast_div(exponentials, totals)
+        self.last_output = probabilities[0] if len(shape) == 1 else probabilities
+        return numk.tensor(self.last_output)
+
+    def forward(self, z):
+        self.z_cache = numk.tensor(z)
+        self.output_cache = self.activate(z)
+        return numk.tensor(self.output_cache)
+
+    def backward(self, output_gradient):
+        if not hasattr(self, "output_cache"):
+            raise RuntimeError("Softmax.backward requiere forward")
+        probabilities = self.output_cache
+        product = numk.emul(output_gradient, probabilities)
+        if len(numk.shape(probabilities)) == 1:
+            projection = numk.sum_all(product)
+        else:
+            projection = numk.reshape(numk.sum_axis(product, 1), [len(product), 1])
+        return numk.emul(probabilities, numk.broadcast_sub(output_gradient, projection))
 
     def derivative(self, vec):
-        s = self.activate(vec)
+        s = self.last_output if vec is None else self.activate(vec)
         n = len(s)
         return [
             [s[i] * (1.0 - s[i]) if i == j else -s[i] * s[j] for j in range(n)]
@@ -128,6 +163,8 @@ class ActivationFunctionLoader:
 
     @staticmethod
     def get(name):
+        if isinstance(name, ActivationFunction):
+            return name
         if not name:
             return Identidad()
         klass = ActivationFunctionLoader._REGISTRY.get(name.lower())
@@ -136,3 +173,7 @@ class ActivationFunctionLoader:
             warn(f"Activación '{name}' no reconocida. Se usará Identidad.", stacklevel=2)
             return Identidad()
         return klass()
+
+
+# Nombre conceptual del contrato definido en la propuesta arquitectónica.
+Activation = ActivationFunction

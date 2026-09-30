@@ -1,0 +1,14 @@
+import geshaDeep;
+import numk;
+
+-- Datos NUMK: listas KAFE normales, sin clase Tensor.
+List[List[FLOAT]] x = numk.tensor([[1.0, 0.0], [0.0, 1.0], [1.0, 1.0]]);
+List[List[FLOAT]] y = [[1.0, 0.0], [0.0, 1.0], [1.0, 0.0]];
+GESHA hidden = geshaDeep.create_dense(4, "relu", [2], 0.0, 42);
+GESHA output = geshaDeep.create_dense(2, "softmax", [], 0.0, 43);
+GESHA model = geshaDeep.sequential([hidden, output]);
+model.compile("adam", "categorical_crossentropy", []);
+-- El último lote tiene una sola muestra.
+model.fit(x, y, 10, 2);
+List[List[FLOAT]] probabilities = model.predict(x);
+show(probabilities);

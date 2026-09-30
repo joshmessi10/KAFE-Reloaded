@@ -7,21 +7,8 @@
     AdamW      — Adam con weight decay desacoplado
 """
 from abc import ABC, abstractmethod
-from lib.KafeMATH.funciones import pow_, sqrt
-
-
-def _apply_op(p, g, op):
-    """Aplica una operación recursivamente a dos estructuras (listas o escalares)."""
-    if isinstance(p, list):
-        return [_apply_op(pi, gi, op) for pi, gi in zip(p, g)]
-    return op(p, g)
-
-
-def _apply_unary(g, op):
-    """Aplica una operación unaria recursivamente a una estructura."""
-    if isinstance(g, list):
-        return [_apply_unary(gi, op) for gi in g]
-    return op(g)
+from lib.KafeMATH.funciones import sqrt
+from lib.KafeNUMK import funciones as numk
 
 
 class Optimizer(ABC):
@@ -39,6 +26,17 @@ class Optimizer(ABC):
         """
         raise NotImplementedError()
 
+    def update(self, layers):
+        """Actualiza capas entrenables usando el contrato público de Layer."""
+        parameters = []
+        seen = set()
+        for layer in layers:
+            for parameter in layer.parameters():
+                if id(parameter) not in seen:
+                    parameters.append(parameter)
+                    seen.add(id(parameter))
+        self.step(parameters)
+
 
 class SGD(Optimizer):
     def __init__(self, lr=0.01):
@@ -50,7 +48,7 @@ class SGD(Optimizer):
                 continue
             def op(p_val, g_val):
                 return p_val - self.lr * g_val
-            param.data = _apply_op(param.data, param.grad, op)
+            param.data = numk.map_elements(op, param.data, param.grad)
 
 
 class RMSprop(Optimizer):
@@ -66,23 +64,16 @@ class RMSprop(Optimizer):
                 continue
             pid = id(param)
             if pid not in self.cache:
-                self.cache[pid] = _apply_unary(param.grad, lambda x: 0.0)
+                self.cache[pid] = numk.zeros_nd(list(numk.shape(param.grad)))
             
             def cache_op(c_val, g_val):
-                return self.rho * c_val + (1 - self.rho) * pow_(g_val, 2)
+                return self.rho * c_val + (1 - self.rho) * g_val ** 2
             
-            self.cache[pid] = _apply_op(self.cache[pid], param.grad, cache_op)
+            self.cache[pid] = numk.map_elements(cache_op, self.cache[pid], param.grad)
             
-            def update_op(args):
-                p_val, g_val, c_val = args
+            def update_op(p_val, g_val, c_val):
                 return p_val - self.lr * g_val / (sqrt(c_val) + self.epsilon)
-            
-            def recursive_update(p, g, c):
-                if isinstance(p, list):
-                    return [recursive_update(pi, gi, ci) for pi, gi, ci in zip(p, g, c)]
-                return update_op((p, g, c))
-            
-            param.data = recursive_update(param.data, param.grad, self.cache[pid])
+            param.data = numk.map_elements(update_op, param.data, param.grad, self.cache[pid])
 
 
 class Adam(Optimizer):
@@ -102,23 +93,23 @@ class Adam(Optimizer):
                 continue
             pid = id(param)
             if pid not in self.m:
-                self.m[pid] = _apply_unary(param.grad, lambda x: 0.0)
-                self.v[pid] = _apply_unary(param.grad, lambda x: 0.0)
+                self.m[pid] = numk.zeros_nd(list(numk.shape(param.grad)))
+                self.v[pid] = numk.zeros_nd(list(numk.shape(param.grad)))
             
             def m_op(m_val, g_val): return self.beta1 * m_val + (1 - self.beta1) * g_val
-            def v_op(v_val, g_val): return self.beta2 * v_val + (1 - self.beta2) * pow_(g_val, 2)
+            def v_op(v_val, g_val): return self.beta2 * v_val + (1 - self.beta2) * g_val ** 2
             
-            self.m[pid] = _apply_op(self.m[pid], param.grad, m_op)
-            self.v[pid] = _apply_op(self.v[pid], param.grad, v_op)
+            self.m[pid] = numk.map_elements(m_op, self.m[pid], param.grad)
+            self.v[pid] = numk.map_elements(v_op, self.v[pid], param.grad)
             
-            def recursive_update(p, m_val, v_val):
-                if isinstance(p, list):
-                    return [recursive_update(pi, mi, vi) for pi, mi, vi in zip(p, m_val, v_val)]
-                m_hat = m_val / (1 - pow_(self.beta1, self.t))
-                v_hat = v_val / (1 - pow_(self.beta2, self.t))
+            def update_op(p, m_val, v_val):
+                # Los exponentes son enteros: no usar exp(t * log(beta)),
+                # cuya aproximación puede volver negativo el denominador.
+                m_hat = m_val / (1 - self.beta1 ** self.t)
+                v_hat = v_val / (1 - self.beta2 ** self.t)
                 return p - self.lr * m_hat / (sqrt(v_hat) + self.epsilon)
             
-            param.data = recursive_update(param.data, self.m[pid], self.v[pid])
+            param.data = numk.map_elements(update_op, param.data, self.m[pid], self.v[pid])
 
 
 class AdamW(Adam):
@@ -130,4 +121,5 @@ class AdamW(Adam):
         super().step(parameters)
         for param in parameters:
             def decay_op(p_val): return p_val - self.lr * self.weight_decay * p_val
-            param.data = _apply_unary(param.data, decay_op)
+            if param.grad is not None:
+                param.data = numk.map_elements(decay_op, param.data)

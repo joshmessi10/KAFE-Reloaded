@@ -1,83 +1,63 @@
-# KafeGESHA Library (Deep Learning)
+# KafeGESHA — backend sobre NUMK
 
-## Overview
+Estado 2026-09-30. ADR-0008 conserva el tipo y la API de modelos; ADR-0010
+retira expresamente el wrapper Tensor y centraliza operaciones ND en NUMK.
 
-Deep learning and neural network components, implemented from scratch inside KAFE.
+## Estructura y contratos
 
-## Structure
+- `core.py`: Parameter, Node, InputNode; estado, sin aritmética.
+- `layers.py`: Layer, Dense, Input, Dropout, Flatten, Add, ActivationLayer.
+- `activations.py`: ActivationFunction/Activation con forward/backward y
+  activate/derivative históricos. Caché completa por instancia.
+- `losses.py`: LossFunction/Loss; forward(predicho, real), backward() y
+  compute/derivative(real, predicho) compatibles.
+- `optimizers.py`: Optimizer.step(parameters), update(layers); SGD, Adam,
+  RMSprop, AdamW. NUMK recorre parámetros; GESHA define las fórmulas escalares.
+- `models.py`: Model (exportado como Gesha), Sequential y Functional.
+- `funciones.py`: fábricas públicas y delegación de tensor_* a NUMK.
 
-Flat layout (post "Clean Gesha Architecture" refactor, ADR-0008). There is no
-`GeshaDeep.py` / `Gesha.py` / `Dense.py` / `LossFunction.py` / `Optimizer.py` /
-`ActivationFunction.py` anymore:
+## Datos y tipo GESHA
 
-- `src/lib/KafeGESHA/__init__.py` — public exports (`Model as Gesha`, `Model`, `Sequential`, `Functional`, `Dense`, `Dropout`, `Flatten`, `Input`, `Add`, `ActivationLayer` + `ReLULayer`/`SigmoidLayer`/`TanhLayer`/`SoftmaxLayer`/`LinearLayer` aliases).
-- `src/lib/KafeGESHA/funciones.py` — public functions (the `geshaDeep` API).
-- `src/lib/KafeGESHA/core.py` — `Tensor` (shape validation over KafeMATH tensors), `Node`.
-- `src/lib/KafeGESHA/layers.py` — `Layer` (base), `Input`, `Dense`, `Dropout`, `Flatten`, `Add`, `ActivationLayer`.
-- `src/lib/KafeGESHA/models.py` — `Model` (base contract), `Sequential` (linear graph), `Functional` (DAG graph).
-- `src/lib/KafeGESHA/activations.py` — `ReLU`, `Sigmoide`, `Tanh`, `Softmax`, `Identidad`, `Escalonada`, `ActivationFunctionLoader`.
-- `src/lib/KafeGESHA/losses.py` — loss functions.
-- `src/lib/KafeGESHA/optimizers.py` — optimizers.
+Las estructuras numéricas son listas validadas por `numk.tensor`, no una clase.
+`geshaDeep.tensor*` devuelve listas. No importar Tensor desde core ni acceder
+a .data/.shape/.ndim en esos resultados. Parameter.data sigue existiendo.
 
-## Type GESHA
+`TypeUtils.obtener_tipo_dato` verifica Model/Layer/Node/Input antes de
+`callable`; no alterar ese orden. Las capas siguen siendo conectables.
 
-`GESHA` is a first-class type of the language. It is resolved in
-`src/TypeUtils.py` → `obtener_tipo_dato()`:
+## Dense y gradientes
 
-1. `type(dato) is list` → `List[...]`
-2. `isinstance(dato, (Gesha, Layer, Node, Input))` → **GESHA** (checked FIRST)
-3. `callable(dato)` → `FUNC`
-4. DataFrame / GroupBy → PARDOS
-5. `BaseMachine` → MACHINE
-6. `None` → VOID
+Dense usa dot_matrix, transpose, broadcast_add, sum_axis y random_tensor.
+Acepta muestra [I] y matriz [B,I]. Conserva w/b como Parameter y expone
+weights/biases/d_weights/d_biases/input_cache como propiedades sin duplicar estado.
+Cada activación recibe todo Z una vez. Softmax usa máximo por fila y JVP O(BC).
 
-Step 2 must stay **before** step 3: `Layer.__call__ = connect` (Functional API,
-`layers.py`) makes every layer callable, so a `callable` check first would
-classify any GESHA layer/model as `FUNC` and raise
-`TypeError: Expected GESHA, obtained FUNC` on declarations like
-`GESHA layer = geshaDeep.create_dense(1, "sigmoid", [2]);`. Plain KAFE functions
-are not `Layer`/`Model` instances, so they still resolve to `FUNC`
-(48 tests in `test_bucles.py` + `test_funciones.py` cover this). See ADR-0008.
+CCE devuelve -Y/(P+epsilon), dividido por muestras para entrada matricial.
+Softmax aplica la regla de la cadena una sola vez. MSE/MAE/BCE promedian por
+componentes. Sparse CCE reutiliza CCE mediante etiquetas one-hot.
+BCE conserva el gradiente estabilizado anterior para reproducibilidad.
 
-## Functional API
+## Entrenamiento y predicción
 
-`Layer.__call__ = connect` — calling a layer with inbound nodes wires the graph
-(Functional/DAG model). This is what makes layers callable in Python terms; it
-must not leak into the type classifier.
+Fit acumula por muestra, promedia una sola vez por el tamaño real del lote
+y actualiza una vez por lote. Recoge parámetros después del forward lazy.
+El modo entrenamiento se restaura después de validación.
+Adam usa potencias enteras para corregir momentos; evita pow_ aproximado.
 
-## Public Model contract (ADR-0008)
+predict/predict_proba: vector → vector; matriz → matriz.
+predict_label: INT por muestra, List[INT] por lote incluso de una muestra.
+Formato de fit: `Epoch N/M — Loss X.XX%`; fixtures AND/OR no regenerados.
 
-- `predict(X)` — single sample semantics: if `X[0]` is scalar (a vector = one
-  sample) returns `forward(X)` (the output vector); if `X[0]` is a list (matrix
-  = batch) returns `[forward(x) for x in X]`.
-- `predict_proba(X)` — alias of `predict(X)`.
-- `predict_label(X)` — `0/1` by threshold `0.5` for single-unit output, `argmax`
-  for multi-unit; returns `INT` for a single sample and `List[INT]` for a batch
-  (both pass KAFE type-checking).
-- `fit(X, Y, epochs, batch_size, val_data, regularization_lambda)` — prints
-  `Epoch {n}/{epochs} — Loss {pct:.2f}%` (em-dash U+2014, capital "Loss",
-  percentage) with `pct = avg_loss * 100.0`. Loss gradients are per unit (scalar
-  wrapped in a list) and loss shapes are flat per sample (`y=[0]`, `y_pred=[σ]`),
-  not nested.
+## Verificación y límites
 
-## Deterministic fixtures
+Fixtures KAFE: tests/KafeGESHA y tests/KafeNUMK.
+Pruebas numéricas: tests/test_gesha_numk_backend.py y test_numk_nd_backend.py.
+Ejemplo: docs/ejemplos/gesha-numk.kf.
+Cinco escenarios reproducibles: .opencode/benchmarks/gesha_numk.py.
 
-Gate fixtures (`tests/KafeGESHA/PerceptronSimple/and_gate.kf`, `or_gate.kf`) pin
-the RNG with `seed = 42` in `geshaDeep.create_dense(...)` so `.expec` files are
-byte-reproducible. `.expec` files are regenerated from real interpreter stdout
-(1000 epochs + results, ~1016 lines).
-
-## Rules
-
-- New DL components require: documentation, tests, examples, and benchmarks.
-- Impact Analysis is mandatory before adding DL components.
-- Do not import external DL frameworks (no TensorFlow/PyTorch layer implementations) — implement and teach inside KAFE.
-- Benchmark generation is mandatory for DL components (see `.opencode/knowledge/engineering.md` — Benchmark Process).
-- KafeGESHA falls under the KafeMACHINE development priorities when not otherwise specified (see `.opencode/knowledge/ml-library.md` — KafeMACHINE Priorities).
-
-## Tests
-
-- Fixtures under `tests/KafeGESHA/`, wired in `tests/test_KafeGESHA.py`.
-- Run the suite as `pytest tests/ -q` (from the repo root). A bare `pytest` at the
-  root aborts collection on the legacy `test_output.txt` / `test_results.txt`
-  files (UTF-16), see `.opencode/memory/known-issues.md`.
+Functional: probado grafo simple y acumulación de ramas con capas distintas;
+no prometer capas compartidas entre varios nodos ni entrenamiento multi-salida.
+NUMK admite listas ND; Dense/pérdidas son rango 1/2. Las aproximaciones KafeMATH
+y la estabilización histórica BCE limitan precisión extrema.
+Nuevos componentes DL requieren impacto, ADR si aplica, tests, conceptos,
+documentación, historia y cinco mediciones reales.

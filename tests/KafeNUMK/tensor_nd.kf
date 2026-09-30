@@ -1,0 +1,6 @@
+import numk;
+
+List[List[List[FLOAT]]] data = numk.tensor([[[1.0, 2.0]], [[3.0, 4.0]]]);
+show(numk.broadcast_add(data, [10.0, 20.0]));
+show(numk.emul(data, data));
+show(numk.sum_axis(data, -1));

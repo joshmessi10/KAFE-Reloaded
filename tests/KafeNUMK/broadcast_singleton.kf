@@ -1,0 +1,5 @@
+import numk;
+
+show(numk.broadcast_add([[1.0, 2.0]], [3.0, 4.0]));
+show(numk.broadcast_div([[2.0, 4.0], [6.0, 9.0]], [[2.0], [3.0]]));
+show(numk.exp_tensor([[[0.0]]]));

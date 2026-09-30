@@ -35,15 +35,29 @@ def operar_matrices(matriz1, matriz2, operacion):
 # --- N-D helpers ---
 
 def _shape_nd(obj):
-    """Calcula la forma de una estructura N-D recursivamente."""
-    dims = []
-    current = obj
-    while isinstance(current, list):
-        dims.append(len(current))
-        if len(current) == 0:
-            break
-        current = current[0]
-    return tuple(dims)
+    """Calcula la forma completa y rechaza listas irregulares."""
+    if not isinstance(obj, list):
+        return ()
+    if not obj:
+        return (0,)
+    child_shape = _shape_nd(obj[0])
+    if any(_shape_nd(child) != child_shape for child in obj[1:]):
+        raise ValueError("NUMK: tensor irregular")
+    return (len(obj),) + child_shape
+
+
+def _map_nd(operation, *values):
+    """Recorrido compartido; las formas se validan antes de entrar aquí."""
+    if isinstance(values[0], list):
+        return [_map_nd(operation, *items) for items in zip(*values)]
+    if any(type(value) not in (int, float) for value in values):
+        raise ValueError("NUMK: se requieren valores numericos")
+    return operation(*values)
+
+
+def _validate_dimensions(dimensions):
+    if any(type(d) is not int or d < 0 for d in dimensions):
+        raise ValueError("NUMK: las dimensiones deben ser enteros no negativos")
 
 
 def _depth(obj):
@@ -81,38 +95,29 @@ def _broadcastable(s1, s2):
 
 
 def _broadcast_to_nd(tensor, target_shape, src_shape=None):
-    """Expande un tensor N-D a la forma objetivo usando broadcasting."""
+    """Expande dimensiones de tamaño uno, incluidas las iniciales implícitas."""
     if src_shape is None:
         src_shape = _shape_nd(tensor)
+    if not target_shape:
+        return tensor
+    if len(src_shape) < len(target_shape):
+        return [_broadcast_to_nd(tensor, target_shape[1:], src_shape)
+                for _ in range(target_shape[0])]
+    return [_broadcast_to_nd(tensor[0 if src_shape[0] == 1 else i],
+                             target_shape[1:], src_shape[1:])
+            for i in range(target_shape[0])]
 
-    # Scalar case
-    if not isinstance(tensor, list):
-        # Build nested list of target_shape filled with tensor
-        def _fill(shape, val):
-            if len(shape) == 0:
-                return val
-            return [_fill(shape[1:], val) for _ in range(shape[0])]
-        return _fill(target_shape, tensor)
 
-    # Pad source shape with 1s on the left
-    max_len = max(len(src_shape), len(target_shape))
-    src_padded = (1,) * (max_len - len(src_shape)) + src_shape
-    tgt_padded = (1,) * (max_len - len(target_shape)) + target_shape
-
-    # If current dim is 1 but target is larger, replicate
-    if src_padded[0] == 1 and tgt_padded[0] > 1:
-        if isinstance(tensor, list) and len(tensor) == 1:
-            inner = _broadcast_to_nd(tensor[0], target_shape[1:])
-        else:
-            inner = tensor
-        return [inner for _ in range(tgt_padded[0])]
-
-    # If they match, recurse into children
-    if isinstance(tensor, list):
-        new_inner_shape = target_shape[1:] if len(target_shape) > 0 else ()
-        return [_broadcast_to_nd(item, new_inner_shape) if isinstance(item, list) else item for item in tensor]
-
-    return tensor
+def _broadcast_op(a, b, operation):
+    s1, s2 = _shape_nd(a), _shape_nd(b)
+    if not _broadcastable(s1, s2):
+        raise ValueError(f"NUMK: shapes {s1} and {s2} are not broadcastable")
+    rank = max(len(s1), len(s2))
+    padded1 = (1,) * (rank - len(s1)) + s1
+    padded2 = (1,) * (rank - len(s2)) + s2
+    target = tuple(y if x == 1 else x for x, y in zip(padded1, padded2))
+    return _map_nd(operation, _broadcast_to_nd(a, target, s1),
+                   _broadcast_to_nd(b, target, s2))
 
 
 def _sum_nd(tensor, axis):
@@ -191,6 +196,8 @@ def _reshape_nd(tensor, new_shape):
 
     # Build nested structure from flat list
     def _build(shape, idx):
+        if not shape:
+            return flat[0]
         if len(shape) == 1:
             result = flat[idx[0]:idx[0] + shape[0]]
             idx[0] += shape[0]

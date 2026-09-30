@@ -380,3 +380,28 @@ Restaurar el contrato público pre-refactor de KafeGESHA:
 - **Rechazado** porque: (a) rompería la compatibilidad con los ejemplos educativos publicados y el material didáctico que enseñan `GESHA`, comprometiendo el valor educativo; (b) exigiría migrar documentación y todos los ejemplos existentes; (c) la causa funcional primaria (`TypeError: Expected GESHA, obtained FUNC`) es un bug de clasificación de tipos, no una mejora intencional del refactor. La decisión de restaurar el contrato pre-refactor es la de menor costo y mayor consistencia.
 
 Mantener `callable` antes de `isinstance` y corregir solo `Layer` (eliminar `__call__`). Se descartó porque la API Functional depende de la callability de las capas (`layer(inbound)`), y eliminar `__call__` rompería el patrón added por el refactor; el reordenamiento en `TypeUtils` resuelve la colisión sin sacrificar la API.
+
+## ADR-0009: Contratos incrementales para el backend GESHA
+
+- **Status**: accepted
+- **Date**: 2026-09-30
+
+### Context
+
+GESHA ya tenía implementaciones operativas y una API pública utilizada por los
+fixtures KAFE. Reemplazar sus clases habría roto `Gesha`, la API Functional y
+los resultados deterministas.
+
+### Decision
+
+Se añaden contratos compatibles sobre las clases existentes: `forward` y
+`backward` para activaciones y pérdidas, `update(layers)` para optimizadores,
+validación lazy de Dense y Softmax estable. Los métodos históricos permanecen
+como adaptadores. No se añade un motor tensorial nuevo.
+
+### Consequences
+
+La arquitectura puede evolucionar hacia capas y entrenamiento por contratos
+sin migrar los programas KAFE existentes. Las formas de lote completo,
+minibatches y la fusión especializada Softmax-entropía cruzada quedan como
+siguiente fase y requieren pruebas matemáticas específicas.

@@ -126,7 +126,7 @@ def check_sig(*args, **kwargs):
                 tipos_definidos = tipos_a_validar[i]
                 if isinstance(tipos_definidos, str):
                     tipos_definidos = [tipos_definidos]
-                coincidencias = [esTipoCorrecto(arg, tipo_definido) for tipo_definido in tipos_definidos]
+                coincidencias = (esTipoCorrecto(arg, tipo_definido) for tipo_definido in tipos_definidos)
 
                 if not any(coincidencias):
                     # Manejo especial para lista_cualquiera_t para mostrar "lists" en el error

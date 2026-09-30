@@ -2,6 +2,7 @@
 from abc import ABC, abstractmethod
 from lib.KafeGESHA.losses import MeanSquaredError, MeanAbsoluteError, BinaryCrossEntropy, CategoricalCrossEntropy, SparseCategoricalCrossEntropy
 from lib.KafeGESHA.optimizers import SGD, RMSprop, Adam, AdamW
+from lib.KafeNUMK import funciones as numk
 
 def _get_loss(name):
     losses = {
@@ -48,6 +49,8 @@ class Model(ABC):
         pass # Implemented in subclasses
 
     def predict(self, X):
+        if not X:
+            raise ValueError("predict requiere datos no vacios")
         self._set_training(False)
         if isinstance(X[0], list):
             return [self.forward(x) for x in X]
@@ -65,36 +68,45 @@ class Model(ABC):
                 labels.append(1 if o[0] >= 0.5 else 0)
             else:
                 labels.append(o.index(max(o)))
-        return labels if len(labels) > 1 else labels[0]
+        return labels if isinstance(X[0], list) else labels[0]
 
     def fit(self, X, Y, epochs=1, batch_size=1, val_data=None, regularization_lambda=0.0):
         if not self._is_compiled: raise RuntimeError("Modelo no compilado.")
-        self._set_training(True)
+        if not X or len(X) != len(Y):
+            raise ValueError("fit requiere X e Y no vacios con igual numero de muestras")
+        if type(batch_size) is not int or batch_size <= 0:
+            raise ValueError("batch_size debe ser entero positivo")
+        if type(epochs) is not int or epochs < 0:
+            raise ValueError("epochs debe ser entero no negativo")
         
         for epoch in range(epochs):
+            self._set_training(True)
             total_loss = 0.0
-            
-            for i in range(len(X)):
-                x, y = X[i], Y[i]
-                
-                # Forward
-                y_pred = self.forward(x)
-                
-                # Loss
-                if not isinstance(y, list): y = [y]
-                if not isinstance(y_pred, list): y_pred = [y_pred]
-                
-                loss_val = self._loss.compute(y, y_pred)
-                total_loss += loss_val
-                
-                # Gradients
-                loss_grad = self._loss.derivative(y, y_pred)[0]
-                if not isinstance(loss_grad, list):
-                    loss_grad = [loss_grad]
-                self.backward(loss_grad)
-                
-                # Update (SGD estocástico o mini-batch 1)
-                self._optimizer.step(self.parameters())
+            for batch_start in range(0, len(X), batch_size):
+                batch_end = min(batch_start + batch_size, len(X))
+                accumulated = {}
+                for i in range(batch_start, batch_end):
+                    x, y = X[i], Y[i]
+                    y_pred = self.forward(x)
+                    if not isinstance(y, list):
+                        y = [y]
+                    if not isinstance(y_pred, list):
+                        y_pred = [y_pred]
+                    total_loss += self._loss.forward(y_pred, y)
+                    self.backward(self._loss.backward(), regularization_lambda)
+                    # El forward construye las capas lazy antes de recoger parámetros.
+                    batch_parameters = list(dict.fromkeys(self.parameters()))
+                    for parameter in batch_parameters:
+                        if parameter.grad is not None:
+                            accumulated[parameter] = (
+                                numk.tensor(parameter.grad) if parameter not in accumulated
+                                else numk.map_elements(lambda a, b: a + b,
+                                                       accumulated[parameter], parameter.grad))
+
+                # El optimizador se aplica una vez por minibatch.
+                for parameter, gradient in accumulated.items():
+                    parameter.grad = numk.scalar_mul(1.0 / (batch_end - batch_start), gradient)
+                self._optimizer.step(batch_parameters)
             
             avg_loss = total_loss / len(X)
             loss_pct = avg_loss * 100.0
@@ -102,10 +114,12 @@ class Model(ABC):
             
             if val_data:
                 val_x, val_y = val_data
+                if not val_x or len(val_x) != len(val_y):
+                    raise ValueError("val_data requiere X e Y no vacios de igual longitud")
                 val_preds = self.predict(val_x)
-                if not isinstance(val_y[0], list): val_y = [[y] for y in val_y]
-                if not isinstance(val_preds[0], list): val_preds = [[p] for p in val_preds]
-                val_loss = self._loss.compute(val_y, val_preds)
+                val_loss = sum(self._loss.compute(y if isinstance(y, list) else [y], p)
+                               for y, p in zip(val_y, val_preds)) / len(val_x)
+                self._set_training(True)
                 msg += f" - val_loss: {val_loss:.4f}"
                 
             print(msg)
@@ -130,10 +144,10 @@ class Sequential(Model):
             out = layer.forward(out)
         return out
 
-    def backward(self, grad_output):
+    def backward(self, grad_output, regularization_lambda=0.0):
         grad = grad_output[:]
         for layer in reversed(self.layers):
-            grad = layer.backward(grad)
+            grad = layer.backward(grad, regularization_lambda)
         return grad
 
     def parameters(self):
@@ -211,21 +225,22 @@ class Functional(Model):
         for node in self._nodes: node.clear_cache()
         return results[0] if len(self.outputs) == 1 else results
 
-    def backward(self, grad_output):
+    def backward(self, grad_output, regularization_lambda=0.0):
         grads = {out_node: grad_output[:] for out_node in self.outputs}
         
         for node in reversed(self._nodes):
             if node in self.inputs: continue
             current_grad = grads[node]
-            local_grad = node.layer.backward(current_grad)
+            local_grad = node.layer.backward(current_grad, regularization_lambda)
             
             if len(node.inbound_nodes) == 1:
                 in_node = node.inbound_nodes[0]
-                grads[in_node] = local_grad
+                grads[in_node] = (local_grad if in_node not in grads else
+                                  numk.map_elements(lambda a, b: a + b, grads[in_node], local_grad))
             else:
                 for in_node, g in zip(node.inbound_nodes, local_grad):
-                    if in_node not in grads: grads[in_node] = [0.0]*len(g)
-                    grads[in_node] = [grads[in_node][i] + g[i] for i in range(len(g))]
+                    grads[in_node] = (g if in_node not in grads else
+                                      numk.map_elements(lambda a, b: a + b, grads[in_node], g))
 
     def parameters(self):
         params = []

@@ -1,12 +1,48 @@
 from .errores import raiseDifferentDimension, raiseNonUniformMatrix
 from .utils import (
     es_misma_dimension, es_uniforme, operar_matrices,
-    _shape_nd, _op_nd, _broadcastable, _broadcast_to_nd,
-    _sum_nd, _max_nd, _reshape_nd, _is_scalar, _depth
+    _shape_nd,
+    _sum_nd, _max_nd, _reshape_nd, _map_nd, _broadcast_op,
+    _validate_dimensions
 )
 from TypeUtils import matriz_cualquiera_t, matriz_numeros_t, vector_numeros_t, entero_t, flotante_t, lista_cualquiera_t
 from global_utils import check_sig
 import random as _random_module
+
+_numeric_nd = [entero_t, flotante_t] + lista_cualquiera_t
+
+
+def map_elements(operation, *values):
+    """API Python para aplicar una operación escalar a listas de igual forma.
+
+    Centraliza el recorrido N-dimensional usado por las bibliotecas. No hace
+    broadcasting ni acepta truncamientos implícitos entre formas diferentes.
+    """
+    if not values:
+        raise ValueError("NUMK: map_elements requiere datos")
+    expected = _shape_nd(values[0])
+    if any(_shape_nd(value) != expected for value in values[1:]):
+        raise ValueError("NUMK: formas incompatibles")
+    return _map_nd(operation, *values)
+
+
+@check_sig([1], _numeric_nd)
+def tensor(data):
+    """Valida y copia datos numéricos; devuelve listas, nunca un wrapper."""
+    return map_elements(lambda value: value, data)
+
+
+@check_sig([1], _numeric_nd)
+def exp_tensor(data):
+    """Exponencial elemento a elemento mediante KafeMATH."""
+    from lib.KafeMATH.funciones import exp
+    return map_elements(exp, data)
+
+
+@check_sig([2], _numeric_nd, _numeric_nd)
+def broadcast_div(a, b):
+    """División con broadcasting; divisor cero produce ZeroDivisionError."""
+    return _broadcast_op(a, b, lambda x, y: x / y)
 
 @check_sig([2], matriz_numeros_t, matriz_numeros_t)
 def add(matriz1, matriz2):
@@ -138,6 +174,7 @@ def zeros_nd(shape):
     zeros_nd([2, 3]) → [[0,0,0],[0,0,0]]
     zeros_nd([2, 2, 2]) → [[[0,0],[0,0]],[[0,0],[0,0]]]
     """
+    _validate_dimensions(shape)
     def _create(s):
         if len(s) == 0:
             return 0.0
@@ -148,20 +185,14 @@ def zeros_nd(shape):
 
 @check_sig([1], lista_cualquiera_t)
 def shape(obj):
-    dimensiones = []
-    while isinstance(obj, list):
-        dimensiones.append(len(obj))
-        if len(obj) == 0:
-            break
-        obj = obj[0]
-    return tuple(dimensiones)
+    return _shape_nd(obj)
 
 
 # ============================================================
 # N-D EXTENSIONS — Element-wise operations
 # ============================================================
 
-@check_sig([2], matriz_numeros_t + vector_numeros_t, matriz_numeros_t + vector_numeros_t)
+@check_sig([2], _numeric_nd, _numeric_nd)
 def emul(a, b):
     """
     Multiplicación elemento a elemento (Hadamard product).
@@ -170,14 +201,14 @@ def emul(a, b):
     emul([1,2,3], [4,5,6]) → [4, 10, 18]
     emul([[1,2],[3,4]], [[5,6],[7,8]]) → [[5,12],[21,32]]
     """
-    return _op_nd(a, b, lambda x, y: x * y)
+    return map_elements(lambda x, y: x * y, a, b)
 
 
 # ============================================================
 # N-D EXTENSIONS — Broadcasting
 # ============================================================
 
-@check_sig([2], matriz_numeros_t + vector_numeros_t, matriz_numeros_t + vector_numeros_t)
+@check_sig([2], _numeric_nd, _numeric_nd)
 def broadcast_add(a, b):
     """
     Suma con soporte de broadcasting.
@@ -186,69 +217,30 @@ def broadcast_add(a, b):
     broadcast_add([[1,2],[3,4]], [0.1, 0.2]) → [[1.1,2.2],[3.1,4.2]]
     broadcast_add([[1,2],[3,4]], [[10],[20]]) → [[11,12],[23,24]]
     """
-    s1 = _shape_nd(a)
-    s2 = _shape_nd(b)
-    if not _broadcastable(s1, s2):
-        raise ValueError(
-            f"broadcast_add: Shapes {s1} and {s2} are not broadcastable"
-        )
-    # Pad to same length
-    max_len = max(len(s1), len(s2))
-    s1_padded = (1,) * (max_len - len(s1)) + s1
-    s2_padded = (1,) * (max_len - len(s2)) + s2
-
-    # Broadcast both to target shape
-    target = tuple(max(d1, d2) for d1, d2 in zip(s1_padded, s2_padded))
-    a_bc = _broadcast_to_nd(a, target, s1)
-    b_bc = _broadcast_to_nd(b, target, s2)
-    return _op_nd(a_bc, b_bc, lambda x, y: x + y)
+    return _broadcast_op(a, b, lambda x, y: x + y)
 
 
-@check_sig([2], matriz_numeros_t + vector_numeros_t, matriz_numeros_t + vector_numeros_t)
+@check_sig([2], _numeric_nd, _numeric_nd)
 def broadcast_sub(a, b):
     """
     Resta con soporte de broadcasting.
     """
-    s1 = _shape_nd(a)
-    s2 = _shape_nd(b)
-    if not _broadcastable(s1, s2):
-        raise ValueError(
-            f"broadcast_sub: Shapes {s1} and {s2} are not broadcastable"
-        )
-    max_len = max(len(s1), len(s2))
-    s1_padded = (1,) * (max_len - len(s1)) + s1
-    s2_padded = (1,) * (max_len - len(s2)) + s2
-    target = tuple(max(d1, d2) for d1, d2 in zip(s1_padded, s2_padded))
-    a_bc = _broadcast_to_nd(a, target, s1)
-    b_bc = _broadcast_to_nd(b, target, s2)
-    return _op_nd(a_bc, b_bc, lambda x, y: x - y)
+    return _broadcast_op(a, b, lambda x, y: x - y)
 
 
-@check_sig([2], matriz_numeros_t + vector_numeros_t, matriz_numeros_t + vector_numeros_t)
+@check_sig([2], _numeric_nd, _numeric_nd)
 def broadcast_mul(a, b):
     """
     Multiplicación con soporte de broadcasting.
     """
-    s1 = _shape_nd(a)
-    s2 = _shape_nd(b)
-    if not _broadcastable(s1, s2):
-        raise ValueError(
-            f"broadcast_mul: Shapes {s1} and {s2} are not broadcastable"
-        )
-    max_len = max(len(s1), len(s2))
-    s1_padded = (1,) * (max_len - len(s1)) + s1
-    s2_padded = (1,) * (max_len - len(s2)) + s2
-    target = tuple(max(d1, d2) for d1, d2 in zip(s1_padded, s2_padded))
-    a_bc = _broadcast_to_nd(a, target, s1)
-    b_bc = _broadcast_to_nd(b, target, s2)
-    return _op_nd(a_bc, b_bc, lambda x, y: x * y)
+    return _broadcast_op(a, b, lambda x, y: x * y)
 
 
 # ============================================================
 # N-D EXTENSIONS — Axis reduction
 # ============================================================
 
-@check_sig([2], matriz_numeros_t + vector_numeros_t, [entero_t])
+@check_sig([2], lista_cualquiera_t, [entero_t])
 def sum_axis(a, axis):
     """
     Suma a lo largo del eje especificado.
@@ -257,10 +249,12 @@ def sum_axis(a, axis):
     sum_axis([[1,2],[3,4]], 1) → [3, 7]       (suma columnas)
     sum_axis([[[1,2],[3,4]],[[5,6],[7,8]]], 0) → [[6,8],[10,12]]
     """
+    if not -len(shape(a)) <= axis < len(shape(a)):
+        raise ValueError("NUMK: eje fuera de rango")
     return _sum_nd(a, axis)
 
 
-@check_sig([2], matriz_numeros_t + vector_numeros_t, [entero_t])
+@check_sig([2], lista_cualquiera_t, [entero_t])
 def max_axis(a, axis):
     """
     Máximo a lo largo del eje especificado.
@@ -268,6 +262,8 @@ def max_axis(a, axis):
     max_axis([[1,2],[3,4]], 0) → [3, 4]       (max de filas)
     max_axis([[1,2],[3,4]], 1) → [2, 4]       (max de columnas)
     """
+    if not -len(shape(a)) <= axis < len(shape(a)):
+        raise ValueError("NUMK: eje fuera de rango")
     return _max_nd(a, axis)
 
 
@@ -275,7 +271,7 @@ def max_axis(a, axis):
 # N-D EXTENSIONS — Reshape
 # ============================================================
 
-@check_sig([2], matriz_numeros_t + vector_numeros_t, lista_cualquiera_t)
+@check_sig([2], _numeric_nd, lista_cualquiera_t)
 def reshape(a, new_shape):
     """
     Reorganiza un tensor a una nueva forma.
@@ -284,6 +280,8 @@ def reshape(a, new_shape):
     reshape([[1,2],[3,4]], [4]) → [1,2,3,4]
     reshape([1,2,3,4,5,6], [3,2]) → [[1,2],[3,4],[5,6]]
     """
+    _shape_nd(a)
+    _validate_dimensions(new_shape)
     shape_tuple = tuple(new_shape)
     return _reshape_nd(a, shape_tuple)
 
@@ -301,6 +299,7 @@ def ones(shape):
     ones([2, 3]) → [[1, 1, 1], [1, 1, 1]]
     ones([2, 2, 2]) → [[[1, 1], [1, 1]], [[1, 1], [1, 1]]]
     """
+    _validate_dimensions(shape)
     def _create(shape, val):
         if len(shape) == 0:
             return val
@@ -310,22 +309,26 @@ def ones(shape):
     return _create(list(shape), 1.0)
 
 
-@check_sig([1, 3], vector_numeros_t, [flotante_t, entero_t], [flotante_t, entero_t])
-def random_tensor(shape, low=-0.5, high=0.5):
+@check_sig([1, 3, 4], vector_numeros_t, [flotante_t, entero_t], [flotante_t, entero_t], [entero_t, "VOID"])
+def random_tensor(shape, low=-0.5, high=0.5, seed=None):
     """
     Crea un tensor con valores aleatorios en el rango [low, high].
     
     random_tensor([3]) → [0.12, -0.34, 0.56]
     random_tensor([2, 2], -1.0, 1.0) → [[...], [...]]
     """
+    _validate_dimensions(shape)
+    rng = _random_module if seed is None else _random_module.Random(seed)
     def _rand(shape):
+        if not shape:
+            return rng.uniform(low, high)
         if len(shape) == 1:
-            return [_random_module.uniform(low, high) for _ in range(shape[0])]
+            return [rng.uniform(low, high) for _ in range(shape[0])]
         return [_rand(shape[1:]) for _ in range(shape[0])]
     return _rand(list(shape))
 
 
-@check_sig([2], [flotante_t, entero_t], matriz_numeros_t + vector_numeros_t)
+@check_sig([2], [flotante_t, entero_t], _numeric_nd)
 def scalar_mul(scalar, tensor):
     """
     Multiplica un tensor por un escalar.
@@ -333,14 +336,10 @@ def scalar_mul(scalar, tensor):
     scalar_mul(3.0, [1, 2, 3]) → [3.0, 6.0, 9.0]
     scalar_mul(2.0, [[1,2],[3,4]]) → [[2.0,4.0],[6.0,8.0]]
     """
-    def _mul(t):
-        if isinstance(t, list):
-            return [_mul(item) for item in t]
-        return scalar * t
-    return _mul(tensor)
+    return map_elements(lambda value: scalar * value, tensor)
 
 
-@check_sig([1], matriz_numeros_t + vector_numeros_t)
+@check_sig([1], _numeric_nd)
 def sum_all(tensor):
     """
     Suma todos los elementos de un tensor.
@@ -348,6 +347,7 @@ def sum_all(tensor):
     sum_all([[1,2],[3,4]]) → 10
     sum_all([1, 2, 3]) → 6
     """
+    _shape_nd(tensor)
     total = 0.0
     def _sum(t):
         nonlocal total
@@ -355,18 +355,16 @@ def sum_all(tensor):
             for item in t:
                 _sum(item)
         else:
+            if type(t) not in (int, float):
+                raise ValueError("NUMK: se requieren valores numericos")
             total += t
     _sum(tensor)
     return total
 
 
-@check_sig([1], matriz_numeros_t + vector_numeros_t)
+@check_sig([1], _numeric_nd)
 def abs_tensor(tensor):
     """
     Valor absoluto de cada elemento.
     """
-    def _abs(t):
-        if isinstance(t, list):
-            return [_abs(item) for item in t]
-        return t if t >= 0 else -t
-    return _abs(tensor)
+    return map_elements(abs, tensor)
