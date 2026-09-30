@@ -24,6 +24,8 @@ env/
 output.txt
 temp_output.txt
 archivo_*.txt
+kafe-vscode/.vscode-test/
+
 
 # Coverage reports
 .coverage
