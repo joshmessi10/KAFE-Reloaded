@@ -7,16 +7,23 @@ function validSourceUri(uri) {
 }
 
 class CodeProposalProvider {
-  constructor({ vscode }) {
+  constructor({ vscode, authorizeUri = () => true }) {
     this.vscode = vscode;
+    this.authorizeUri = authorizeUri;
     this.pending = null;
     this.resetGate = null;
   }
 
-  stage(proposal) {
+  stage(proposal, { isCurrent = () => true } = {}) {
+    if (!isCurrent()) throw new Error('KAFE proposal is no longer current.');
+    if (typeof proposal?.uri === 'string') {
+      const uri = this.vscode.Uri.parse(proposal.uri);
+      if (uri.toString() !== proposal.uri) throw new Error('Non-canonical KAFE proposal URI.');
+      proposal = { ...proposal, uri };
+    }
     if (this.resetGate) throw new Error('A KAFE proposal reset is in progress.');
     if (this.pending?.phase === 'applying') throw new Error('A KAFE proposal edit is in progress.');
-    if (!validSourceUri(proposal?.uri) || !Number.isSafeInteger(proposal.documentVersion) ||
+    if (!validSourceUri(proposal?.uri) || !this.authorizeUri(proposal.uri) || !Number.isSafeInteger(proposal.documentVersion) ||
       proposal.documentVersion < 0 || !/^[a-f0-9]{64}$/i.test(proposal.contentSha256) ||
       typeof proposal.newText !== 'string' || Buffer.byteLength(proposal.newText, 'utf8') > MAX_FILE_BYTES) {
       throw new Error('Invalid KAFE code proposal.');
@@ -35,11 +42,15 @@ class CodeProposalProvider {
     return this.pending.newText;
   }
 
-  async open(id) {
+  async open(id, { isCurrent = () => true } = {}) {
+    if (!isCurrent()) return { status: 'cancelled' };
     if (!this.pending || id !== this.pending.id) return { status: 'invalid' };
+    if (!this.authorizeUri(this.pending.uri)) { this.clear(id); return { status: 'stale' }; }
     try {
       await this.vscode.commands.executeCommand('vscode.diff', this.pending.uri, this.proposalUri(id), 'KAFE Tutor Proposal');
+      if (!isCurrent()) { this.clear(id); return { status: 'cancelled' }; }
       if (!this.pending || this.pending.id !== id) return { status: 'invalid' };
+      if (!this.authorizeUri(this.pending.uri)) { this.clear(id); return { status: 'stale' }; }
       this.pending.reviewed = true;
       return { status: 'opened' };
     } catch {
@@ -90,7 +101,7 @@ class CodeProposalProvider {
       if (this.pending !== proposal || proposal.phase !== 'reading') return { status: 'cancelled' };
       const text = document.getText();
       const hash = createHash('sha256').update(text, 'utf8').digest('hex');
-      if (!validSourceUri(document.uri) || document.uri.toString() !== proposal.sourceId ||
+      if (!validSourceUri(document.uri) || !this.authorizeUri(document.uri) || document.uri.toString() !== proposal.sourceId ||
         document.languageId !== 'kafe' || document.version !== proposal.documentVersion ||
         hash !== proposal.contentSha256 || Buffer.byteLength(text, 'utf8') > MAX_FILE_BYTES ||
         Buffer.byteLength(proposal.newText, 'utf8') > MAX_FILE_BYTES) {

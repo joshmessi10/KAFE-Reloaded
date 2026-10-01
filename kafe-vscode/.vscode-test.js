@@ -3,6 +3,8 @@ const os = require('node:os');
 const path = require('node:path');
 const { defineConfig } = require('@vscode/test-cli');
 
+const cachedExecutable = path.join(__dirname, '.vscode-test/vscode-win32-x64-archive-1.96.0/Code.exe');
+if (!fs.existsSync(cachedExecutable)) throw Error('Cached VS Code 1.96.0 is required; downloads are disabled.');
 const workspacePrefix = 'kafe-vscode-trust-fixtures-';
 const workspaceRoot = fs.mkdtempSync(path.join(os.tmpdir(), workspacePrefix));
 const untrustedUserDataDir = path.join(workspaceRoot, 'user-data-untrusted');
@@ -11,7 +13,9 @@ process.once('exit', () => {
   const resolvedRoot = path.resolve(workspaceRoot);
   if (path.dirname(resolvedRoot) === path.resolve(os.tmpdir()) &&
     path.basename(resolvedRoot).startsWith(workspacePrefix)) {
-    fs.rmSync(resolvedRoot, { recursive: true, force: true });
+    const cp = require('node:child_process');
+    const safeRoot = resolvedRoot.replaceAll("'", "''");
+    cp.execFileSync('powershell', ['-NoProfile', '-Command', `$owned=@(Get-CimInstance Win32_Process -Filter "Name='Code.exe'" | Where-Object { $_.CommandLine -and $_.CommandLine.Contains('${safeRoot}') }); if ($owned.Count) { throw 'Owned host process still running; retaining profile' }; Remove-Item -LiteralPath '${safeRoot}' -Recurse -Force`], { windowsHide: true });
   }
 });
 function prepareWorkspace(name) {
@@ -27,6 +31,7 @@ function prepareWorkspace(name) {
 const common = {
   files: 'test/suite/**/*.test.js',
   version: '1.96.0',
+  useInstallation: { fromPath: cachedExecutable },
   extensionDevelopmentPath: __dirname,
   mocha: {
     timeout: 30000,
@@ -41,7 +46,7 @@ module.exports = defineConfig([
     launchArgs: [
       '--disable-workspace-trust',
       '--user-data-dir',
-      path.join(__dirname, '.vscode-test', 'user-data-trusted'),
+      path.join(workspaceRoot, 'user-data-trusted'),
     ],
   },
   {

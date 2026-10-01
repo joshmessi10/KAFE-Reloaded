@@ -6,11 +6,14 @@ const { TutorViewProvider } = require('./src/tutor/TutorViewProvider');
 const { DeepSeekProvider, SECRET_KEY } = require('./src/tutor/providers/DeepSeekProvider');
 const { SessionCoordinator } = require('./src/tutor/SessionCoordinator');
 const { ContextComposer } = require('./src/tutor/ContextComposer');
-const { KnowledgeRetriever } = require('./src/tutor/KnowledgeRetriever');
+const { KnowledgeRetriever, KnowledgeUnavailable, KnowledgeIntegrityError } = require('./src/tutor/KnowledgeRetriever');
 const { DevelopmentKnowledgePack } = require('./src/tutor/DevelopmentKnowledgePack');
 const { ToolRouter } = require('./src/tutor/ToolRouter');
 const { ProgressStore } = require('./src/tutor/ProgressStore');
 const { CodeProposalProvider } = require('./src/tutor/CodeProposalProvider');
+const { TutorHostActions } = require('./src/tutor/TutorHostActions');
+const { isTutorMessage } = require('./src/tutor/TutorViewProvider');
+const { metadataLineage } = require('./src/tutor/ToolRouter');
 
 const ANTLR_COMMAND = 'java -jar antlr-4.13.2-complete.jar -no-listener -visitor -Dlanguage=Python3 Kafe_Grammar.g4';
 const REQUIRED_PARSER = ['Kafe_GrammarLexer.py', 'Kafe_GrammarParser.py', 'Kafe_GrammarVisitor.py'];
@@ -20,9 +23,11 @@ function createProviderKeyHandlers({ vscode, secrets }) {
     async configure() {
       const key = await vscode.window.showInputBox({ title: 'KAFE: Configure Provider Key',
         prompt: 'Enter your DeepSeek API key', password: true, ignoreFocusOut: true });
-      if (!key?.trim()) return;
-      await secrets.store(SECRET_KEY, key.trim());
+      if (!key?.trim()) return { status: 'cancelled' };
+      try { await secrets.store(SECRET_KEY, key.trim()); }
+      catch { return { status: 'failed', code: 'credential_store_failed' }; }
       await vscode.window.showInformationMessage('DeepSeek API key saved in VS Code SecretStorage.');
+      return { status: 'completed' };
     },
     async clear() {
       await secrets.delete(SECRET_KEY);
@@ -31,187 +36,386 @@ function createProviderKeyHandlers({ vscode, secrets }) {
   };
 }
 
-function createClearProgressHandler({ coordinator, tutorView }) {
-  return async () => {
-    const result = await coordinator.handleLearnerMessage({ type: 'clearProgress' });
-    tutorView.render(coordinator.state);
-    return result;
+function createClearProgressHandler({ vscode, progressStore }) {
+  let pending;
+  return () => {
+    if (pending) return pending;
+    pending = (async () => {
+      try {
+        const choice = await vscode.window.showWarningMessage('Clear legacy KAFE Tutor progress records?',
+          { modal: true }, 'Clear legacy progress');
+        if (choice !== 'Clear legacy progress') return { status: 'cancelled' };
+        await progressStore?.clear(); return { status: progressStore ? 'completed' : 'unavailable' };
+      } catch { return { status: 'failed', code: 'legacy_clear_failed' }; }
+    })().finally(() => { pending = undefined; });
+    return pending;
   };
 }
 
 function createTutorHost({ vscode, extensionUri, secrets, workspaceState, runtimeManager,
-  extensionMode, extensionPath, provider = new DeepSeekProvider({ secretStorage: secrets }) }) {
-  const documentReader = { async readDocument(uri) {
-    const document = await vscode.workspace.openTextDocument(uri);
-    return { uri: document.uri, text: document.getText(), version: document.version };
-  } };
+  extensionMode, extensionPath, provider = new DeepSeekProvider({ secretStorage: secrets }),
+  runFile: injectedRunFile, configureProvider: injectedConfigure, getReadiness: injectedReadiness }) {
+  const safeError = code => Object.assign(new Error(code === 'trust_unavailable' ? 'Trusted workspace context is unavailable.' : 'KAFE knowledge is unavailable.'), { code });
+  const parseUri = uri => typeof uri === 'string' ? vscode.Uri.parse(uri) : uri;
+  let sourceRevision = 0;
+  let hostDisposed = false;
+  const unavailableSources = new Set();
+  const advanceSource = () => { sourceRevision++; };
+  const folderId = folder => folder?.uri?.toString?.() || folder?.uri?.fsPath;
+  const authorize = uri => {
+    try {
+      uri = parseUri(uri);
+      if (unavailableSources.has(uri?.toString?.()) || !vscode.workspace.isTrusted || uri?.scheme !== 'file' || typeof uri.fsPath !== 'string' || path.extname(uri.fsPath).toLowerCase() !== '.kf') return false;
+      const folder = vscode.workspace.getWorkspaceFolder?.(uri);
+      if (!folder?.uri?.fsPath) return false;
+      const relative = path.relative(folder.uri.fsPath, uri.fsPath);
+      if (!relative || path.isAbsolute(relative) || relative === '..' || relative.startsWith(`..${path.sep}`)) return false;
+      const active = vscode.window.activeTextEditor?.document;
+      const activeFolder = active?.uri?.scheme === 'file' ? vscode.workspace.getWorkspaceFolder?.(active.uri) : null;
+      return !activeFolder || folderId(activeFolder) === folderId(folder);
+    } catch { return false; }
+  };
+  const documentReader = {
+    validateUri: uri => authorize(uri),
+    displayLabel: uri => {
+      const target = parseUri(uri), folder = vscode.workspace.getWorkspaceFolder?.(target);
+      if (!folder?.uri?.fsPath) return target.toString();
+      const relative = path.relative(folder.uri.fsPath, target.fsPath).split(path.sep).join('/');
+      if (!relative || relative === '..' || relative.startsWith('../') || path.isAbsolute(relative)) return target.toString();
+      return (vscode.workspace.workspaceFolders?.length > 1 ? `${folder.name || path.basename(folder.uri.fsPath)}/` : '') + relative;
+    },
+    async readDocument(uri) {
+      if (!authorize(uri)) throw safeError('trust_unavailable');
+      const document = await vscode.workspace.openTextDocument(parseUri(uri));
+      if (!authorize(document.uri) || document.uri.toString() !== uri.toString() || document.languageId !== 'kafe') throw safeError('trust_unavailable');
+      return { uri: document.uri, text: document.getText(), version: document.version };
+    },
+  };
   const pinnedRuntime = runtimeManager.manifest?.runtime;
   const developmentKnowledgePack = extensionMode !== undefined && extensionMode === vscode.ExtensionMode?.Development ?
     new DevelopmentKnowledgePack({ extensionPath, storageRoot: runtimeManager.storageRoot,
       runtimeVersion: pinnedRuntime?.version, knowledgePackVersion: pinnedRuntime?.knowledgePackVersion,
       sourceRevision: pinnedRuntime?.sourceRevision }) : undefined;
-  const retrieveFromReadyPack = async (ready, sourceMode, query, relatedContext) => {
-    if (!ready.runtimeVersion || !ready.knowledgePackVersion ||
-      ready.runtimeVersion !== ready.knowledgePackVersion ||
+  /** @returns {Promise<{status:'ready',metadata:object}|{status:'unavailable',code:string}>} */
+  const resolveKnowledge = async () => {
+    if (!vscode.workspace.isTrusted) return { status: 'unavailable', code: 'trust_unavailable' };
+    let ready;
+    try { ready = await runtimeManager.getReadyKnowledgePack?.(); }
+    catch { return { status: 'unavailable', code: 'knowledge_integrity_failed' }; }
+    let sourceMode = 'managed';
+    if (ready?.status !== 'ready') {
+      if (!developmentKnowledgePack) return { status: 'unavailable', code: ready?.code || 'knowledge_missing' };
+      try { ready = await developmentKnowledgePack.getReadyPack(); }
+      catch { return { status: 'unavailable', code: 'knowledge_unavailable' }; }
+      sourceMode = 'development';
+    }
+    if (!vscode.workspace.isTrusted) return { status: 'unavailable', code: 'trust_unavailable' };
+    if (!ready.runtimeVersion || ready.runtimeVersion !== ready.knowledgePackVersion ||
       (pinnedRuntime?.version && ready.runtimeVersion !== pinnedRuntime.version) ||
       (pinnedRuntime?.knowledgePackVersion && ready.knowledgePackVersion !== pinnedRuntime.knowledgePackVersion)) {
-      throw new Error('KAFE runtime and knowledge-pack versions are missing or mismatched.');
+      return { status: 'unavailable', code: 'knowledge_integrity_failed' };
     }
     const knowledgeRoot = ready.knowledgeRoot || path.join(ready.runtimeRoot, 'knowledge-pack');
-    const passages = await new KnowledgeRetriever({ knowledgeRoot,
-      runtimeVersion: ready.runtimeVersion, knowledgePackVersion: ready.knowledgePackVersion,
-      expectedRuntimeVersion: pinnedRuntime?.version || ready.runtimeVersion,
-      expectedKnowledgePackVersion: pinnedRuntime?.knowledgePackVersion || ready.knowledgePackVersion,
-      expectedContentSha256: sourceMode === 'development' ? ready.contentSha256 : undefined,
-      expectedFileCount: sourceMode === 'development' ? ready.fileCount : undefined }).search(query, relatedContext);
-    return passages.map(passage => ({ ...passage, sourceMode, runtimeVersion: ready.runtimeVersion,
-      knowledgePackVersion: ready.knowledgePackVersion }));
+    const metadata = { sourceMode, runtimeVersion: ready.runtimeVersion, knowledgePackVersion: ready.knowledgePackVersion,
+      knowledgeRoot, packIdentity: ready.packIdentity || knowledgeRoot,
+      expectedContentSha256: sourceMode === 'development' ? ready.contentSha256 : ready.expectedContentSha256,
+      expectedFileCount: sourceMode === 'development' ? ready.fileCount : ready.expectedFileCount,
+      ...(sourceMode === 'managed' ? { archiveSha256: pinnedRuntime?.archiveSha256 } : {}) };
+    if (!/^[a-f0-9]{64}$/.test(metadata.expectedContentSha256 || '') ||
+      !Number.isSafeInteger(metadata.expectedFileCount) || metadata.expectedFileCount < 1) {
+      return { status: 'unavailable', code: 'knowledge_integrity_failed' };
+    }
+    return { status: 'ready', metadata };
   };
-  const knowledgeRetriever = { async search(query, relatedContext) {
-    const ready = await runtimeManager.getReadyRuntime();
-    if (ready.status === 'ready') {
-      if (ready.runtimeMode !== 'managed') throw new Error('A managed KAFE knowledge pack is required for tutor context.');
-      return retrieveFromReadyPack(ready, 'managed', query, relatedContext);
+  const knowledgeRetriever = {
+    async getKnowledgeLineage() {
+      const availability = await resolveKnowledge();
+      return availability.status === 'ready' ? metadataLineage(availability.metadata) : null;
+    },
+    async search(query, relatedContext) {
+      const captured = await resolveKnowledge();
+      if (captured.status !== 'ready') throw new KnowledgeUnavailable(captured.code);
+      const { metadata } = captured;
+      let passages;
+      try {
+        passages = await new KnowledgeRetriever({ knowledgeRoot: metadata.knowledgeRoot,
+          runtimeVersion: metadata.runtimeVersion, knowledgePackVersion: metadata.knowledgePackVersion,
+          expectedRuntimeVersion: pinnedRuntime?.version || metadata.runtimeVersion,
+          expectedKnowledgePackVersion: pinnedRuntime?.knowledgePackVersion || metadata.knowledgePackVersion,
+          expectedContentSha256: metadata.expectedContentSha256,
+          expectedFileCount: metadata.expectedFileCount }).search(query, relatedContext);
+      } catch (error) {
+        if (error instanceof KnowledgeIntegrityError ||
+          ['ENOENT', 'ENOTDIR', 'EACCES', 'EPERM', 'ELOOP', 'ESTALE', 'EIO'].includes(error?.code)) {
+          throw new KnowledgeUnavailable('knowledge_integrity_failed');
+        }
+        throw error;
+      }
+      const after = await resolveKnowledge();
+      if (after.status !== 'ready' || metadataLineage(after.metadata) !== metadataLineage(metadata)) {
+        throw new KnowledgeUnavailable(after.status === 'ready' ? 'knowledge_integrity_failed' : after.code);
+      }
+      return passages.map(passage => ({ ...passage, ...metadata }));
+    },
+  };
+  const proposalProvider = new CodeProposalProvider({ vscode, authorizeUri: authorize });
+  const progressStore = workspaceState ? new ProgressStore({ workspaceState }) : undefined;
+  const getContext = () => {
+    if (!vscode.workspace.isTrusted) return { restricted: true, candidateUris: [] };
+    const document = vscode.window.activeTextEditor?.document;
+    const activeDocument = document?.languageId === 'kafe' && authorize(document.uri) ?
+      { uri: document.uri, text: document.getText(), version: document.version } : undefined;
+    const candidateUris = [];
+    const seen = new Set(activeDocument ? [activeDocument.uri.toString()] : []);
+    for (const editor of vscode.window.visibleTextEditors || []) {
+      const candidate = editor.document;
+      if (!activeDocument || candidate?.languageId !== 'kafe' || !authorize(candidate.uri) || seen.has(candidate.uri.toString())) continue;
+      candidateUris.push(candidate.uri); seen.add(candidate.uri.toString());
     }
-    if (developmentKnowledgePack) {
-      const developmentReady = await developmentKnowledgePack.getReadyPack();
-      return retrieveFromReadyPack(developmentReady, 'development', query, relatedContext);
-    }
-    throw new Error('A managed KAFE knowledge pack is required for tutor context.');
-  } };
-  const proposalProvider = new CodeProposalProvider({ vscode });
-  const coordinator = new SessionCoordinator({ provider,
-    progressStore: workspaceState ? new ProgressStore({ workspaceState }) : undefined,
-    proposalProvider,
+    return { restricted: false, activeDocument, candidateUris };
+  };
+  const coordinator = new SessionCoordinator({ provider, proposalProvider, getKnowledgeAvailability: resolveKnowledge, getSourceRevision: () => getSourceRevision(),
+    contextComposer: new ContextComposer({ documentReader, knowledgeRetriever }),
+    toolRouter: new ToolRouter({ documentReader, knowledgeRetriever }), getContext,
     getWorkspaceRelativeSourcePath: sourceUri => {
       try {
-        if (typeof sourceUri !== 'string' || !vscode.Uri?.parse) return null;
-        const uri = vscode.Uri.parse(sourceUri);
-        if (uri.scheme !== 'file' || typeof uri.fsPath !== 'string' ||
-          path.extname(uri.fsPath).toLowerCase() !== '.kf') return null;
+        const uri = parseUri(sourceUri);
+        if (uri.scheme !== 'file' || path.extname(uri.fsPath).toLowerCase() !== '.kf') return null;
         const folder = vscode.workspace.getWorkspaceFolder?.(uri);
-        if (typeof folder?.uri?.fsPath !== 'string') return null;
+        if (!folder?.uri?.fsPath) return null;
         const relative = path.relative(folder.uri.fsPath, uri.fsPath);
-        if (!relative || path.isAbsolute(relative) || relative === '..' ||
-          relative.startsWith(`..${path.sep}`)) return null;
-        return relative.split(path.sep).join('/');
+        return relative && !path.isAbsolute(relative) && relative !== '..' && !relative.startsWith(`..${path.sep}`) ? relative.split(path.sep).join('/') : null;
       } catch { return null; }
     },
-    contextComposer: new ContextComposer({ documentReader, knowledgeRetriever }),
-    toolRouter: new ToolRouter({ documentReader, knowledgeRetriever }),
-    getContext: () => {
-      const document = vscode.window.activeTextEditor?.document;
-      const activeUri = document?.uri;
-      const activeFolder = activeUri?.scheme === 'file' ? vscode.workspace.getWorkspaceFolder?.(activeUri) : undefined;
-      const candidateUris = [];
-      const seen = new Set(activeUri && typeof activeUri.toString === 'function' ? [activeUri.toString()] : []);
-      if (activeFolder?.uri && typeof activeFolder.uri.toString === 'function') {
-        for (const editor of vscode.window.visibleTextEditors || []) {
-          const candidate = editor?.document;
-          const uri = candidate?.uri;
-          if (candidate?.languageId !== 'kafe' || uri?.scheme !== 'file' ||
-            typeof uri.toString !== 'function' || !uri.toString().toLowerCase().endsWith('.kf') ||
-            seen.has(uri.toString()) ||
-            vscode.workspace.getWorkspaceFolder?.(uri)?.uri?.toString() !== activeFolder.uri.toString()) continue;
-          candidateUris.push(uri);
-          seen.add(uri.toString());
-        }
-      }
-      return { activeDocument: document?.languageId === 'kafe' && document.uri?.scheme === 'file' ?
-        { uri: document.uri, text: document.getText(), version: document.version } : undefined,
-      candidateUris };
-    },
   });
-  coordinator.restoreProgress();
-  const tutorView = new TutorViewProvider({ vscode, extensionUri, getState: () => coordinator.state, onMessage: async message => {
-    try {
-      const turn = await coordinator.handleLearnerMessage(message);
-      const feedback = turn?.text || '';
-      if (message.type === 'confirmMilestones') {
-        coordinator.state.milestoneStatus = feedback;
-        coordinator.state.interactionStatus = '';
-      } else {
-        const learnerConversationAction = (message.type === 'sendMessage' && message.phase === undefined) || message.type === 'retryMessage';
-        const latestMessage = coordinator.state.messages.at(-1);
-        const shownInConversation = learnerConversationAction && !coordinator.state.preview &&
-          latestMessage?.role === 'tutor' && latestMessage.text === feedback;
-        coordinator.state.interactionStatus = turn?.kind === 'error' || !shownInConversation ? feedback : '';
-      }
-    } catch {
-      const feedback = 'The tutor could not complete the request. Please review the context and try again.';
-      if (message.type === 'confirmMilestones') coordinator.state.milestoneStatus = feedback;
-      else coordinator.state.interactionStatus = feedback;
+  let actions;
+  const runFile = injectedRunFile || createRunFileHandler({ vscode, runtimeManager,
+    getRunOwner: ({ sourceUri }) => actions.captureRunOwner(sourceUri),
+    onRunState: event => actions.recordRunState(event), onRunResult: result => actions.recordRunResult(result) });
+  const keyHandlers = createProviderKeyHandlers({ vscode, secrets });
+  const getReadiness = injectedReadiness || (async () => {
+    const keyPresent = Boolean(await secrets.get?.(SECRET_KEY));
+    let knowledgeReady = false;
+    if (vscode.workspace.isTrusted) knowledgeReady = (await resolveKnowledge()).status === 'ready';
+    let runtimeStatus = runtimeManager.manifest?.runtime?.releasePublished === false ? 'unavailable' : 'missing';
+    if (vscode.workspace.isTrusted) {
+      try {
+        const runtime = await runtimeManager.getReadyRuntime?.();
+        if (runtime?.status === 'ready') runtimeStatus = 'ready';
+        else if (runtime?.status === 'missing') runtimeStatus = 'missing';
+        else if (['unsupported', 'unavailable'].includes(runtime?.status)) runtimeStatus = 'unavailable';
+      } catch { /* unavailable runtime metadata cannot claim execution readiness */ }
     }
-    tutorView.render({ ...coordinator.state, responseMessageType: message.type });
-  } });
-  return { tutorView, coordinator, proposalProvider };
+    const document = vscode.window.activeTextEditor?.document;
+    return { keyPresent, trusted: vscode.workspace.isTrusted === true, knowledgeReady,
+      runtimeStatus,
+      ...(document?.languageId === 'kafe' && authorize(document.uri) ? { targetUri: document.uri.toString(), targetLabel: documentReader.displayLabel(document.uri) } : {}) };
+  });
+  actions = new TutorHostActions({ session: coordinator.session, controller: coordinator.controller, coordinator,
+    proposalProvider, runtimeManager, configureProvider: injectedConfigure || keyHandlers.configure,
+    runFile, getReadiness, authorizeRunTarget: authorize });
+  const onMessage = async message => {
+    if (!isTutorMessage(message, coordinator.session)) return { status: 'stale' };
+    try {
+      if (message.type === 'invokeAction') return await actions.dispatch(message);
+      if (message.type === 'setDraft') return await coordinator.handleLearnerMessage({ type: 'setDraft', text: message.text });
+      if (message.type === 'submitMessage') return await actions.submitMessage(message);
+      if (message.type === 'stopTurn') return await coordinator.handleLearnerMessage({ type: 'stopTurn', turnId: message.turnId, turnGeneration: message.turnGeneration });
+      if (message.type === 'setSourceIncluded') return await coordinator.handleLearnerMessage({ type: 'setSourceIncluded', sourceId: message.sourceId, included: message.included, contextRevision: message.contextRevision });
+    } catch { coordinator.turn('error', 'The host action could not complete.'); return { status: 'failed' }; }
+  };
+  const tutorView = new TutorViewProvider({ vscode, extensionUri, conversationSession: coordinator.session,
+    onMessage });
+  // Source authority is independent of chat/draft revisions and never resets with a conversation.
+  let observedTrust = vscode.workspace.isTrusted === true;
+  let observedActive = vscode.window.activeTextEditor?.document?.uri?.toString() || null;
+  const observedVersions = new Map();
+  const observedAuthorization = new Map();
+  const admitted = uri => {
+    const id = uri?.toString?.();
+    return !!id && (id === vscode.window.activeTextEditor?.document?.uri?.toString() || id === coordinator.snapshot().context.activeSource?.uri ||
+      coordinator.snapshot().context.sources.some(s => s.included && s.uri === id) ||
+      [...coordinator.includedSourceUris.values()].some(u => u.toString() === id));
+  };
+  const getSourceRevision = () => {
+    if (hostDisposed) return Number.isSafeInteger(sourceRevision) ? sourceRevision : null;
+    const trusted = vscode.workspace.isTrusted === true;
+    const active = vscode.window.activeTextEditor?.document;
+    const activeId = active?.uri?.toString() || null;
+    if (trusted !== observedTrust || activeId !== observedActive) {
+      observedTrust = trusted; observedActive = activeId; advanceSource();
+    }
+    // Version sampling also covers events queued behind host work. It reads no optional bytes.
+    for (const document of new Set([active, ...(vscode.workspace.textDocuments || []),
+      ...(vscode.window.visibleTextEditors || []).map(e => e.document)])) {
+      if (!document || (!admitted(document.uri) && document !== active)) continue;
+      const id = document.uri.toString(), version = document.version;
+      if (observedVersions.has(id) && observedVersions.get(id) !== version) advanceSource();
+      observedVersions.set(id, version);
+    }
+    for (const id of new Set([coordinator.snapshot().context.activeSource?.uri,
+      ...coordinator.snapshot().context.sources.filter(s => s.included).map(s => s.uri)].filter(Boolean))) {
+      const authorized = authorize(id);
+      if (observedAuthorization.has(id) && observedAuthorization.get(id) !== authorized) advanceSource();
+      observedAuthorization.set(id, authorized);
+    }
+    return Number.isSafeInteger(sourceRevision) ? sourceRevision : null;
+  };
+  const subscriptions = [];
+  const refresh = () => { if (!hostDisposed) void actions.refreshContext().catch(() => {}); };
+  const revoke = uri => {
+    const id = uri?.toString?.();
+    if (!id) return;
+    coordinator.controller.revokeSource(id);
+    if (proposalProvider.pending?.sourceId === id) proposalProvider.clear();
+  };
+  const sourceEvent = (uri, deleted = false) => {
+    if (hostDisposed) return;
+    if (deleted) {
+      unavailableSources.add(uri.toString());
+      coordinator.session.invalidateActions(a => a.type === 'runFile' && a.args.targetUri === uri.toString());
+    }
+    // A settled proposal may outlive the context that produced it. Observe all of
+    // its dependencies for revocation without admitting them to the current request.
+    if (!admitted(uri) && proposalProvider.pending?.sourceId !== uri?.toString?.() &&
+      !coordinator.controller.pendingProposal?.fileUris.includes(uri?.toString?.())) return;
+    advanceSource();
+    if (deleted) unavailableSources.add(uri.toString());
+    revoke(uri); refresh();
+  };
+  const authorizationEvent = () => {
+    if (hostDisposed) return;
+    advanceSource(); getSourceRevision();
+    const uris = new Set([coordinator.snapshot().context.activeSource?.uri,
+      ...coordinator.snapshot().context.sources.filter(s => s.included).map(s => s.uri),
+      ...coordinator.session.historyPairs().flatMap(pair => pair.dependencies.fileUris),
+      ...(coordinator.controller.pendingProposal?.fileUris || []), proposalProvider.pending?.sourceId].filter(Boolean));
+    for (const uri of uris) if (!authorize(uri)) revoke(parseUri(uri));
+    coordinator.session.invalidateActions(a => a.type === 'runFile' && !authorize(a.args.targetUri));
+    coordinator.controller.invalidate('context-changed'); refresh();
+  };
+  const listen = (owner, name, callback) => { if (owner[name]) subscriptions.push(owner[name](callback)); };
+  listen(vscode.window, 'onDidChangeActiveTextEditor', authorizationEvent);
+  listen(vscode.window, 'onDidChangeVisibleTextEditors', refresh);
+  listen(vscode.workspace, 'onDidChangeWorkspaceFolders', authorizationEvent);
+  listen(vscode.workspace, 'onDidGrantWorkspaceTrust', authorizationEvent);
+  listen(vscode.workspace, 'onDidChangeTextDocument', event => sourceEvent(event.document?.uri));
+  listen(vscode.workspace, 'onDidOpenTextDocument', document => { unavailableSources.delete(document.uri.toString()); sourceEvent(document.uri); });
+  listen(vscode.workspace, 'onDidCloseTextDocument', document => sourceEvent(document.uri));
+  const watcher = vscode.workspace.createFileSystemWatcher?.('**/*.kf');
+  if (watcher) {
+    subscriptions.push(watcher);
+    subscriptions.push(watcher.onDidChange(uri => sourceEvent(uri)));
+    subscriptions.push(watcher.onDidCreate(uri => { unavailableSources.delete(uri.toString()); sourceEvent(uri); refresh(); }));
+    subscriptions.push(watcher.onDidDelete(uri => sourceEvent(uri, true)));
+  }
+  const readiness = actions.refreshContext();
+  return { tutorView, coordinator, proposalProvider, progressStore, actions, runFile, keyHandlers, readiness,
+    resolveKnowledge, knowledgeRetriever,
+    dispose() { hostDisposed = true; actions.dispose(); coordinator.dispose(); tutorView.dispose(); for (const subscription of subscriptions) subscription.dispose(); } };
 }
 
 function createRunFileHandler({ vscode, runtimeManager, fs: fileSystem = fs, path: paths = path,
-  startKafeFile: run = startKafeFile, onRunResult = () => {} }) {
+  startKafeFile: run = startKafeFile, onRunResult = () => {}, onRunState = () => {},
+  getRunOwner = () => ({ isCurrent: () => true }) }) {
   let runSequence = 0;
-  return async function runFile() {
+  return async function runFile({ targetUri, runOwner } = {}) {
     const editor = vscode.window.activeTextEditor;
+    let sourceUri = targetUri ?? editor?.document?.uri?.toString();
+    let documentVersion, startedSequence;
+    const owner = runOwner || getRunOwner({ sourceUri });
+    const current = () => owner?.isCurrent?.() === true;
+    const ownerData = owner?.requestId ? { sessionId: owner.sessionId, generation: owner.generation, requestId: owner.requestId } : undefined;
+    const state = (status, extra = {}) => {
+      if (current()) onRunState({ status, ...(sourceUri ? { sourceUri } : {}),
+        ...(documentVersion !== undefined ? { documentVersion } : {}),
+        ...(startedSequence !== undefined ? { runSequence: startedSequence } : {}),
+        ...(ownerData ? { owner: ownerData } : {}), ...extra });
+    };
+    const finish = (status, code) => { state(status); return { status, ...(code ? { code } : {}) }; };
+    if (!current()) return finish('cancelled');
     if (!vscode.workspace.isTrusted) {
       await vscode.window.showErrorMessage('Trust this workspace before running KAFE code.');
-      return;
+      return finish('unavailable', 'trust_unavailable');
     }
-    if (!editor || editor.document.languageId !== 'kafe' ||
-      !editor.document.uri.fsPath.toLowerCase().endsWith('.kf')) {
+    let document;
+    try {
+      if (targetUri !== undefined) {
+        if (typeof targetUri !== 'string') return finish('unavailable', 'target_unavailable');
+        const target = vscode.Uri.parse(targetUri);
+        if (target.scheme !== 'file' || target.toString() !== targetUri || path.extname(target.fsPath).toLowerCase() !== '.kf' || !vscode.workspace.getWorkspaceFolder(target)) return finish('unavailable', 'target_unavailable');
+        document = await vscode.workspace.openTextDocument(target);
+      } else document = editor?.document;
+    }
+    catch { return finish('unavailable', 'target_unavailable'); }
+    if (!current()) return finish('cancelled');
+    if (!document || document.languageId !== 'kafe' || document.uri?.scheme !== 'file' ||
+      !document.uri.fsPath.toLowerCase().endsWith('.kf') || (targetUri !== undefined && document.uri.toString() !== targetUri)) {
       await vscode.window.showInformationMessage('Open a KAFE .kf file to run it.');
-      return;
+      return finish('unavailable', 'target_unavailable');
     }
-    const document = editor.document;
     const folder = vscode.workspace.getWorkspaceFolder(document.uri);
     if (!folder) {
       await vscode.window.showErrorMessage('Open this KAFE file inside a workspace folder before running it.');
-      return;
+      return finish('unavailable', 'target_unavailable');
     }
     if (document.isDirty) {
       const choice = await vscode.window.showWarningMessage('Save this KAFE file before running it?', 'Save', 'Cancel');
-      if (choice !== 'Save') return;
-      if (!await document.save() || document.isDirty) {
+      if (!current()) return finish('cancelled');
+      if (choice !== 'Save') return finish('cancelled');
+      const saved = await document.save();
+      if (!current()) return finish('cancelled');
+      if (!saved || document.isDirty) {
         await vscode.window.showErrorMessage('The KAFE file was not saved. Run cancelled.');
-        return;
+        return finish('cancelled');
       }
     }
     let runtime;
     try {
       runtime = await runtimeManager.resolveWorkspace(folder.uri.fsPath);
     } catch (error) {
+      if (!current()) return finish('cancelled');
       await vscode.window.showErrorMessage(`Unable to resolve the KAFE runtime: ${error.message}`);
-      return;
+      return finish('failed');
     }
+    if (!current()) return finish('cancelled');
     if (runtime.status !== 'ready') {
       await vscode.window.showInformationMessage(runtime.message ?? 'The KAFE runtime is not ready. Run KAFE: Install Runtime after the pinned release is published.');
-      return;
+      const code = runtime.runtimeMode === 'contributor' ? 'contributor_runtime_unavailable' :
+        runtime.status === 'unsupported' ? 'runtime_unsupported' :
+          ['missing', 'unavailable'].includes(runtime.status) ? 'runtime_unavailable' : undefined;
+      return finish('unavailable', code);
     }
     const runtimeRoot = runtime.runtimeRoot;
     const missingParser = REQUIRED_PARSER.filter(name => !fileSystem.existsSync(paths.join(runtimeRoot, 'src', name)));
     if (missingParser.length) {
       await vscode.window.showErrorMessage(`Missing generated parser files: ${missingParser.join(', ')}. From src/, run: ${ANTLR_COMMAND}`);
-      return;
+      return finish('unavailable');
     }
 
     const onDidWrite = new vscode.EventEmitter();
     const onDidClose = new vscode.EventEmitter();
     let activeRun;
     let terminalClosed = false;
-    let startedSequence;
+    let terminal;
+    sourceUri = document.uri.toString();
+    documentVersion = document.version;
     const pty = {
       onDidWrite: onDidWrite.event,
       onDidClose: onDidClose.event,
       open() {
         if (terminalClosed || activeRun) return;
         const write = text => onDidWrite.fire(text.replace(/\r?\n/g, '\r\n'));
-        if (!vscode.workspace.isTrusted) {
-          write('[Trust this workspace before running KAFE code.]\n');
+        if (!current() || !vscode.workspace.isTrusted || document.isDirty || document.uri.toString() !== sourceUri || document.version !== documentVersion || document.languageId !== 'kafe' || !vscode.workspace.getWorkspaceFolder(document.uri)) {
+          state('cancelled');
+          write('[KAFE run cancelled before launch: context is no longer current.]\n');
           onDidClose.fire();
           terminalClosed = true;
           return;
         }
         try {
           startedSequence = ++runSequence;
+          state('running', { terminal });
           activeRun = run({
             filePath: document.uri.fsPath,
             runtimeRoot,
@@ -222,20 +426,23 @@ function createRunFileHandler({ vscode, runtimeManager, fs: fileSystem = fs, pat
           });
           activeRun.completion.then(result => {
             if (terminalClosed) return;
-            onRunResult({ ...result, runtimeMode: runtime.runtimeMode,
+            if (current()) onRunResult({ ...result, runtimeMode: runtime.runtimeMode,
               runtimeVersion: runtime.runtimeMode === 'contributor' ? null : runtime.runtimeVersion,
               knowledgePackVersion: runtime.runtimeMode === 'contributor' ? null : runtime.knowledgePackVersion,
-              sourceUri: document.uri.toString(), runSequence: startedSequence });
+              sourceUri, runSequence: startedSequence, ...(ownerData ? { owner: ownerData } : {}) });
             if (result.outputTruncated) write('\n[Output evidence truncated at 1 MiB; terminal output was streamed in full.]\n');
             write(`\n[KAFE exited with code ${result.exitCode === null ? 'unknown' : result.exitCode}.]\n`);
+            terminalClosed = true;
             onDidClose.fire(result.exitCode === null ? undefined : result.exitCode);
-            terminalClosed = true;
           }).catch(error => {
+            if (terminalClosed) return;
+            state('failed');
             write(`\n[KAFE run failed: ${error.message}]\n`);
-            onDidClose.fire();
             terminalClosed = true;
+            onDidClose.fire();
           });
         } catch (error) {
+          state('failed');
           write(`\n[Unable to start KAFE: ${error.message}]\n`);
           onDidClose.fire();
           terminalClosed = true;
@@ -243,14 +450,17 @@ function createRunFileHandler({ vscode, runtimeManager, fs: fileSystem = fs, pat
       },
       handleInput(data) { if (activeRun) activeRun.sendInput(data.replace(/\r/g, '\n')); },
       close() {
+        if (!terminalClosed) state('cancelled');
         terminalClosed = true;
         if (activeRun) activeRun.cancel();
         onDidWrite.dispose();
         onDidClose.dispose();
       },
     };
-    const terminal = vscode.window.createTerminal({ name: 'KAFE Run', pty });
+    if (!current() || !vscode.workspace.isTrusted || document.isDirty) return finish('cancelled');
+    terminal = vscode.window.createTerminal({ name: 'KAFE Run', pty });
     terminal.show();
+    return { status: 'completed' };
   };
 }
 
@@ -267,15 +477,15 @@ function activate(context) {
       return selected === 'Download';
     },
   });
-  const { tutorView, coordinator, proposalProvider } = createTutorHost({ vscode, extensionUri: context.extensionUri,
+  const host = createTutorHost({ vscode, extensionUri: context.extensionUri,
     secrets: context.secrets, workspaceState: context.workspaceState, runtimeManager,
     extensionMode: context.extensionMode, extensionPath: context.extensionPath });
-  const keyHandlers = createProviderKeyHandlers({ vscode, secrets: context.secrets });
+  const { tutorView, proposalProvider, progressStore, runFile, keyHandlers, coordinator } = host;
   context.subscriptions.push(
+    host,
     vscode.window.registerWebviewViewProvider('kafeTutorView', tutorView),
     vscode.workspace.registerTextDocumentContentProvider('kafe-proposal', proposalProvider),
-    vscode.commands.registerCommand('kafe.runFile', createRunFileHandler({ vscode, runtimeManager,
-      onRunResult: result => { coordinator.recordRunResult(result); tutorView.render(coordinator.state); } })),
+    vscode.commands.registerCommand('kafe.runFile', () => runFile()),
     vscode.commands.registerCommand('kafe.installRuntime', async () => {
       if (!vscode.workspace.isTrusted) {
         const message = 'Trust this workspace before installing the KAFE runtime.';
@@ -295,7 +505,8 @@ function activate(context) {
       vscode.commands.executeCommand('workbench.view.extension.kafeTutor')),
     vscode.commands.registerCommand('kafe.configureProvider', keyHandlers.configure),
     vscode.commands.registerCommand('kafe.clearProviderKey', keyHandlers.clear),
-    vscode.commands.registerCommand('kafe.clearTutorProgress', createClearProgressHandler({ coordinator, tutorView })),
+    vscode.commands.registerCommand('kafe.clearTutorProgress', createClearProgressHandler({ vscode, progressStore })),
+    vscode.commands.registerCommand('kafe.newConversation', () => coordinator.newConversation()),
   );
 }
 

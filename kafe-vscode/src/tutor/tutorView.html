@@ -8,95 +8,30 @@
   <link rel="stylesheet" href="{{STYLE_URI}}">
 </head>
 <body>
-  <main>
-    <header>
-      <h1>KAFE Tutor</h1>
-      <p id="provider-status" role="status">Set a learning goal to begin. Coaching requires a configured provider; KAFE editing and Run remain available.</p>
-    </header>
-
-    <section aria-labelledby="goal-heading">
-      <h2 id="goal-heading">Learning goal</h2>
-      <p id="empty-state">Describe what you want to learn or build in KAFE.</p>
-      <form id="goal-form">
-        <label for="goal-input">Your goal</label>
-        <textarea id="goal-input" rows="3" required></textarea>
-        <button type="submit">Start session</button>
-      </form>
-    </section>
-
-    <section aria-labelledby="milestones-heading">
-      <h2 id="milestones-heading">Proposed milestones</h2>
-      <p id="milestones-empty">Milestones will appear here for your review.</p>
-      <ol id="milestone-list"></ol>
-      <button id="confirm-milestones" type="button" disabled>Confirm milestones</button>
-      <p id="milestone-status" role="status" aria-live="polite" hidden></p>
-    </section>
-
-    <section aria-labelledby="coaching-heading">
-      <h2 id="coaching-heading">Coaching</h2>
-      <p>Start with a hint and a next step. You can ask for a direct answer, example, or proposed change.</p>
-      <div id="message-list" role="log" aria-live="polite"></div>
-      <p id="interaction-status" role="status" aria-live="polite" hidden></p>
-      <form id="message-form">
-        <label for="message-input">Message to tutor</label>
-        <textarea id="message-input" rows="3" required></textarea>
-        <button id="send-message" type="submit" disabled>Send message</button>
-      </form>
-      <button id="retry-message" type="button" hidden>Retry reviewed request</button>
-    </section>
-
-    <section aria-labelledby="context-heading">
-      <h2 id="context-heading">Request context sources</h2>
-      <p>Review what may be included with your next request. Select optional sources here.</p>
-      <ul id="context-list"></ul>
-      <h3>Exact request payload</h3>
-      <pre id="context-payload">Type a message to preview its context before sending.</pre>
-    </section>
-
-    <section aria-labelledby="evidence-heading">
-      <h2 id="evidence-heading">KAFE machine evidence</h2>
-      <p id="evidence-empty">No learner-started KAFE run has been attached.</p>
-      <div id="evidence-content" hidden>
-        <p id="evidence-summary"></p>
-        <h3>Output</h3><pre id="evidence-stdout"></pre>
-        <h3>Diagnostics</h3><pre id="evidence-stderr"></pre>
-        <form id="reviewed-check-form" hidden>
-          <h3>Record a reviewed check</h3>
-          <label for="reviewed-check-label">What did you check?</label>
-          <input id="reviewed-check-label" type="text" maxlength="120" autocomplete="off">
-          <label for="reviewed-check-outcome">Your outcome</label>
-          <select id="reviewed-check-outcome" required>
-            <option value="">Choose an outcome</option>
-            <option value="passed">Passed</option>
-            <option value="failed">Failed</option>
-            <option value="unknown">Not sure</option>
-          </select>
-          <button id="record-reviewed-check" type="button">Record check</button>
-          <p id="reviewed-check-status" role="status" aria-live="polite" hidden></p>
-        </form>
+  <main id="tutor">
+    <div id="timeline" role="log" aria-label="Tutor conversation" aria-live="off" tabindex="0"></div>
+    <button id="new-content" type="button" hidden>Go to latest</button>
+    <p id="conversation-status" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></p>
+    <form id="composer-form" class="composer-form">
+      <div id="context-row" class="context-row" aria-label="Request context">
+        <span id="active-context"></span>
+        <details id="context-selector" hidden>
+          <summary>Other files</summary>
+          <div id="context-sources"></div>
+        </details>
+        <button id="context-run" type="button" hidden></button>
       </div>
-      <div id="reviewed-check-history" hidden>
-        <h3>Reviewed check history</h3>
-        <p id="reviewed-check-explanation">Recording a reviewed check is not proof of mastery.</p>
-        <ol id="reviewed-check-list"></ol>
+      <label for="composer" class="sr-only">Message to KAFE Tutor</label>
+      <textarea id="composer" rows="3" aria-describedby="composer-help" placeholder="Ask a question or describe what you want to build."></textarea>
+      <div class="composer-controls">
+        <p id="composer-help">Enter to send. Shift+Enter for a new line.</p>
+        <button id="stop" type="button" aria-label="Stop the current response" hidden>Stop</button>
+        <button id="send" type="submit" aria-label="Send message to KAFE Tutor" disabled>Send</button>
       </div>
-    </section>
-
-    <section aria-labelledby="proposal-heading">
-      <h2 id="proposal-heading">Proposed code change</h2>
-      <p id="proposal-empty">No code change is proposed.</p>
-      <div id="proposal-content" hidden>
-        <p id="proposal-description"></p>
-        <p>Review the native diff before accepting a change.</p>
-        <div class="actions">
-          <button id="accept-proposal" type="button">Accept proposal</button>
-          <button id="reject-proposal" type="button">Reject proposal</button>
-        </div>
-      </div>
-    </section>
-
-    <footer><button id="clear-progress" type="button">Clear progress</button></footer>
+    </form>
   </main>
+  <script id="initial-state" type="application/json" nonce="{{NONCE}}">{{INITIAL_STATE}}</script>
+  <script nonce="{{NONCE}}" src="{{TIMELINE_URI}}"></script>
   <script nonce="{{NONCE}}" src="{{SCRIPT_URI}}"></script>
 </body>
 </html>

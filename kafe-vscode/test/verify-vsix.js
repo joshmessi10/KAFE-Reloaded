@@ -6,6 +6,14 @@ const REQUIRED_ENTRIES = [
   'extension/extension.js',
   'extension/LICENSE.txt',
   'extension/src/tutor/TutorViewProvider.js',
+  ...['ConversationSession.js', 'ConversationHistory.js', 'RequestSnapshot.js', 'TurnController.js',
+    'TutorHostActions.js', 'SessionCoordinator.js', 'ContextComposer.js', 'ToolRouter.js', 'ProgressStore.js',
+    'CodeProposalProvider.js', 'KnowledgeRetriever.js', 'DevelopmentKnowledgePack.js',
+    'tutorTimeline.js', 'tutorView.js', 'tutorView.html', 'tutorView.css',
+    'providers/DeepSeekProvider.js', 'providers/CompletionStream.js', 'providers/ProviderError.js']
+    .map(name => `extension/src/tutor/${name}`),
+  'extension/src/runtimeManager.js',
+  'extension/src/kafeRunner.js',
   'extension/src/runtimeManifest.json',
   'extension/media/tutor.svg',
   'extension/node_modules/yauzl/index.js',
@@ -53,6 +61,7 @@ function verifyEntries(entries) {
     }
 
     const normalizedPath = segments.join('/');
+    if (['extension/src/tutor/ReviewedRequest.js', 'extension/src/tutor/TutorPanel.js'].includes(normalizedPath)) errors.push(`retired asset is not allowed: ${entry}`);
     const lowerSegments = segments.map((segment) => segment.toLowerCase());
     const secretSegment = lowerSegments.find((segment) =>
       segment.startsWith('.env') || segment.includes('credentials') ||

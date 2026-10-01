@@ -29,6 +29,12 @@
     "dsl"
   ],
   "main": "./extension.js",
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": "limited",
+      "description": "Message-only conversation is available. Workspace files, edits and Run require workspace trust."
+    }
+  },
   "activationEvents": [
     "onLanguage:kafe",
     "onCommand:kafe.runFile",
@@ -37,6 +43,7 @@
     "onCommand:kafe.configureProvider",
     "onCommand:kafe.clearProviderKey",
     "onCommand:kafe.clearTutorProgress",
+    "onCommand:kafe.newConversation",
     "onView:kafeTutorView"
   ],
   "contributes": {
@@ -95,6 +102,10 @@
       {
         "command": "kafe.clearTutorProgress",
         "title": "KAFE: Clear Tutor Progress"
+      },
+      {
+        "command": "kafe.newConversation",
+        "title": "KAFE: New Conversation"
       }
     ],
     "viewsContainers": {
@@ -136,6 +147,11 @@
           "command": "kafe.openTutor",
           "when": "view == kafeTutorView",
           "group": "navigation"
+        },
+        {
+          "command": "kafe.newConversation",
+          "when": "view == kafeTutorView",
+          "group": "2_conversation"
         }
       ]
     }

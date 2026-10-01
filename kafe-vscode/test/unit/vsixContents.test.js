@@ -8,6 +8,14 @@ const requiredEntries = [
   'extension/extension.js',
   'extension/LICENSE.txt',
   'extension/src/tutor/TutorViewProvider.js',
+  ...['ConversationSession.js', 'ConversationHistory.js', 'RequestSnapshot.js', 'TurnController.js',
+    'TutorHostActions.js', 'SessionCoordinator.js', 'ContextComposer.js', 'ToolRouter.js', 'ProgressStore.js',
+    'CodeProposalProvider.js', 'KnowledgeRetriever.js', 'DevelopmentKnowledgePack.js',
+    'tutorTimeline.js', 'tutorView.js', 'tutorView.html', 'tutorView.css',
+    'providers/DeepSeekProvider.js', 'providers/CompletionStream.js', 'providers/ProviderError.js']
+    .map(name => `extension/src/tutor/${name}`),
+  'extension/src/runtimeManager.js',
+  'extension/src/kafeRunner.js',
   'extension/src/runtimeManifest.json',
   'extension/media/tutor.svg',
   'extension/node_modules/yauzl/index.js',
@@ -17,6 +25,13 @@ const requiredEntries = [
   'extension/node_modules/pend/index.js',
   'extension/node_modules/pend/package.json',
 ];
+
+test('VSIX content rejects removal of each required runtime or browser asset', () => {
+  for (const missing of requiredEntries) {
+    assert.throws(() => verifyEntries(requiredEntries.filter(entry => entry !== missing)),
+      error => error.message.includes(`required VSIX entry is missing: ${missing}`), missing);
+  }
+});
 
 test('VSIX content accepts required extension files and runtime dependency', () => {
   assert.doesNotThrow(() => verifyEntries([
@@ -83,4 +98,8 @@ test('VSIX content rejects tests, diagrams, host caches, secrets, and missing li
     /extension\/node_modules\/pend\/index\.js/,
     'expected verifier to require the runtime dependency subtree',
   );
+});
+
+test('VSIX rejects retired request and learning assets', () => {
+  for (const name of ['ReviewedRequest.js', 'TutorPanel.js']) assert.throws(() => verifyEntries([...requiredEntries, `extension/src/tutor/${name}`]), /retired/);
 });

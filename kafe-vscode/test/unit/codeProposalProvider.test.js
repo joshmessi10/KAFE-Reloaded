@@ -3,6 +3,27 @@ const { createHash } = require('node:crypto');
 const test = require('node:test');
 const { CodeProposalProvider } = require('../../src/tutor/CodeProposalProvider');
 
+test('canonical provider URI strings stage natively and cancellation while diff opens never marks reviewed', async () => {
+  const f = fixture();
+  const p = f.proposal();
+  const { id } = f.provider.stage({ ...p, uri: p.uri.toString() });
+  let current = true;
+  f.vscode.commands.executeCommand = async () => { current = false; };
+  assert.equal((await f.provider.open(id, { isCurrent: () => current })).status, 'cancelled');
+  assert.equal((await f.provider.accept(id)).status, 'invalid');
+  assert.deepEqual(f.edits, []);
+});
+
+test('native source authorization is rechecked after async document open before edit', async () => {
+  const f = fixture();
+  let authorized = true;
+  const provider = new CodeProposalProvider({ vscode: f.vscode, authorizeUri: () => authorized });
+  const { id } = provider.stage(f.proposal()); await provider.open(id);
+  f.vscode.workspace.openTextDocument = async () => { authorized = false; return f.document; };
+  assert.equal((await provider.accept(id)).status, 'stale');
+  assert.deepEqual(f.edits, []);
+});
+
 function fixture() {
   const original = { scheme: 'file', path: '/workspace/example.kf', toString() { return 'file:///workspace/example.kf'; } };
   let document = { uri: original, languageId: 'kafe', version: 7, text: 'print(1)',

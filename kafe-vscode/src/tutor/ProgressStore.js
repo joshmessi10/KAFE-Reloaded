@@ -89,22 +89,6 @@ function normalizedV2(value) {
     completedChecks: checks, legacyCompletedCheckIds: [...legacyIds] };
 }
 
-function whitelistedSummary(state) {
-  const confirmed = state?.confirmed === true;
-  const summary = { schemaVersion: 2, goal: confirmed ? state.goal : '',
-    milestones: confirmed && Array.isArray(state.milestones)
-      ? state.milestones.map(item => ({ id: item?.id, text: item?.text })) : [],
-    completedChecks: Array.isArray(state?.completedChecks)
-      ? state.completedChecks.map(item => {
-        if (!isObject(item)) return item;
-        const record = {};
-        for (const key of RECORD_KEYS) if (Object.hasOwn(item, key)) record[key] = item[key];
-        return record;
-      }) : state?.completedChecks,
-    legacyCompletedCheckIds: state?.legacyCompletedCheckIds ?? [] };
-  return normalizedV2(summary);
-}
-
 class ProgressStore {
   constructor({ workspaceState }) { this.workspaceState = workspaceState; }
 
@@ -115,24 +99,6 @@ class ProgressStore {
         legacyCompletedCheckIds: v2.legacyCompletedCheckIds, confirmed: !!v2.goal };
       return normalizedV1(this.workspaceState.get(V1_KEY)) || EMPTY_PROGRESS();
     } catch { return EMPTY_PROGRESS(); }
-  }
-
-  async save(state) {
-    const summary = whitelistedSummary(state);
-    if (!summary) throw new Error('Tutor progress summary is invalid.');
-    await this.workspaceState.update(PROGRESS_KEY, summary);
-    try { await this.workspaceState.update(V1_KEY, undefined); }
-    catch { /* A valid v2 summary is already durable and takes precedence on load. */ }
-  }
-
-  async clearSession() {
-    const { completedChecks, legacyCompletedCheckIds } = this.load();
-    if (completedChecks.length || legacyCompletedCheckIds.length) {
-      await this.save({ confirmed: false, completedChecks, legacyCompletedCheckIds });
-    } else {
-      await this.clear();
-    }
-    return { completedChecks, legacyCompletedCheckIds };
   }
 
   async clear() {

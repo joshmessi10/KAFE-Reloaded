@@ -59,57 +59,11 @@ test('v2 rejects unbounded, duplicate, malformed, and path-traversing records', 
   ];
   for (const summary of bad) {
     assert.deepEqual(fixture({ [V2_KEY]: summary }).store.load(), EMPTY);
-    await assert.rejects(fixture().store.save({ ...summary, confirmed: false }), /invalid/i);
   }
   for (const summary of [v2({ completedChecks: [{ ...CHECK, stdout: 'private output' }] }),
     v2({ milestones: [{ id: 'm1', text: 'Unexpected goal' }] })]) {
     assert.deepEqual(fixture({ [V2_KEY]: summary }).store.load(), EMPTY);
   }
-});
-
-test('save accepts check-only progress without persisting an unconfirmed goal', async () => {
-  const { store, values } = fixture();
-  await store.save({ confirmed: false, goal: 'Draft goal', milestones: [{ id: 'm1', text: 'Draft' }],
-    completedChecks: [CHECK], legacyCompletedCheckIds: ['old'] });
-  assert.deepEqual(values.get(V2_KEY), v2({ legacyCompletedCheckIds: ['old'] }));
-  assert.deepEqual(store.load(), { goal: '', milestones: [], completedChecks: [CHECK],
-    legacyCompletedCheckIds: ['old'], confirmed: false });
-});
-
-test('save persists only a JSON-safe progress whitelist in workspaceState', async () => {
-  const { store, values } = fixture();
-  await store.save({ goal: 'Lists', confirmed: true, milestones: [{ id: 'm1', text: 'Index a list', secret: 'omit' }],
-    completedChecks: [{ ...CHECK, sourcePath: 'lesson/main.kf', runtimeVersion: '1.2', knowledgePackVersion: '3.4',
-      stdout: 'private output', messages: 'private transcript', payload: 'private payload', apiKey: 'fake-secret', proposal: 'private proposal', sourceContent: 'private source' }],
-    legacyCompletedCheckIds: ['old'], messages: [{ text: 'private transcript' }], providerRequest: 'private payload',
-    apiKey: 'fake-secret', evidence: { stdout: 'private output' }, proposal: { newText: 'private proposal' } });
-  assert.deepEqual(values.get(V2_KEY), { schemaVersion: 2, goal: 'Lists', milestones: [{ id: 'm1', text: 'Index a list' }],
-    completedChecks: [{ ...CHECK, sourcePath: 'lesson/main.kf', runtimeVersion: '1.2', knowledgePackVersion: '3.4' }],
-    legacyCompletedCheckIds: ['old'] });
-  const serialized = JSON.stringify(values.get(V2_KEY));
-  for (const privateText of ['private transcript', 'private payload', 'fake-secret', 'private output',
-    'private proposal', 'private source']) assert.ok(!serialized.includes(privateText));
-});
-
-test('save migrates and removes v1 after a v2 save', async () => {
-  const { store, values } = fixture({ [V1_KEY]: { schemaVersion: 1, goal: 'Old',
-    milestones: [{ id: 'm1', text: 'Old step' }], completedChecks: ['m1'] } });
-  await store.save({ ...store.load(), completedChecks: [CHECK] });
-  assert.equal(values.has(V1_KEY), false);
-  assert.deepEqual(values.get(V2_KEY).legacyCompletedCheckIds, ['m1']);
-});
-
-test('save succeeds when v2 is durable but legacy v1 cleanup fails', async () => {
-  const { store, values } = fixture({ [V1_KEY]: { schemaVersion: 1, goal: 'Old',
-    milestones: [{ id: 'm1', text: 'Old step' }], completedChecks: ['m1'] } });
-  const update = store.workspaceState.update;
-  store.workspaceState.update = async (key, value) => {
-    if (key === V1_KEY) throw new Error('legacy cleanup failed');
-    return update(key, value);
-  };
-  await store.save({ confirmed: false, completedChecks: [CHECK], legacyCompletedCheckIds: ['m1'] });
-  assert.deepEqual(values.get(V2_KEY), v2({ legacyCompletedCheckIds: ['m1'] }));
-  assert.deepEqual(store.load().completedChecks, [CHECK]);
 });
 
 test('clear keeps canonical v2 loadable when its deletion fails', async () => {
@@ -140,16 +94,6 @@ test('clear keeps valid v1-only progress loadable when v2 deletion fails', async
   assert.equal(values.has(V1_KEY), true);
 });
 
-test('clearSession preserves check history while clearing the active goal', async () => {
-  const { store, values } = fixture({ [V1_KEY]: { schemaVersion: 1, goal: 'Old',
-    milestones: [{ id: 'm1', text: 'Old step' }], completedChecks: ['m1'] },
-  [V2_KEY]: v2({ goal: 'Lists', milestones: [{ id: 'm2', text: 'New step' }], legacyCompletedCheckIds: ['old'] }) });
-  assert.deepEqual(await store.clearSession(), { completedChecks: [CHECK], legacyCompletedCheckIds: ['old'] });
-  assert.deepEqual(values.get(V2_KEY), v2({ legacyCompletedCheckIds: ['old'] }));
-  assert.equal(values.has(V1_KEY), false);
-  assert.equal(store.load().confirmed, false);
-});
-
 test('clear removes both workspace summaries', async () => {
   const { store, values } = fixture({ [V1_KEY]: { old: true }, [V2_KEY]: v2() });
   await store.clear();
@@ -165,3 +109,5 @@ test('load rejects malformed or unsupported summaries', () => {
     assert.deepEqual(fixture({ [V2_KEY]: value }).store.load(), EMPTY);
   }
 });
+
+test('legacy store cannot save or mutate a new learning session', () => { const f = fixture({ [V2_KEY]: v2() }); assert.equal(typeof f.store.save, 'undefined'); assert.equal(typeof f.store.clearSession, 'undefined'); assert.deepEqual(f.writes, []); });

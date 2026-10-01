@@ -1,92 +1,115 @@
 const assert = require('node:assert/strict');
 const test = require('node:test');
-const { ToolRouter, selectedSourceId } = require('../../src/tutor/ToolRouter');
+const { createHash } = require('node:crypto');
+const { ToolRouter, TOOL_NAMES, selectedSourceId } = require('../../src/tutor/ToolRouter');
 const { ContextComposer } = require('../../src/tutor/ContextComposer');
-
 const uri = path => ({ scheme: 'file', path, toString() { return `file://${path}`; } });
+const sha = text => createHash('sha256').update(text, 'utf8').digest('hex');
+const snapshot = (id, path, text = 'reviewed buffer', version = 3) => ({ id, category: id === 'active-file' ? 'active-file' : 'selected-file', uri: uri(path).toString(), text, version, contentSha256: sha(text), provenance: { uri: uri(path).toString() } });
+const review = sources => ({ sources });
+const reader = { readDocument: async () => { throw Error('Live read forbidden'); } };
 
-test('router permits only allowlisted reads from learner-selected URI IDs', async () => {
-  const active = { uri: uri('/work/main.kf'), text: 'show(1)', version: 3 };
-  const selectedUris = [uri('/work/extra.kf')];
-  const router = new ToolRouter({ documentReader: { readDocument: async selected => ({ uri: selected, text: 'extra content', version: 1 }) }, knowledgeRetriever: { search: async () => [] } });
-  const context = { activeDocument: active, candidateUris: selectedUris, includedSourceIds: [selectedSourceId(selectedUris[0])], runResult: null };
-  const selectedId = selectedSourceId(selectedUris[0]);
-  assert.equal((await router.route({ name: 'readActiveDocument', arguments: '{}' }, context)).text, 'show(1)');
-  assert.equal((await router.route({ name: 'readActiveDocument', arguments: { sourceId: selectedId } }, context)).text, 'extra content');
-  await assert.rejects(() => router.route({ name: 'readActiveDocument', arguments: '{"path":"/secret"}' }, context), /argument/i);
-  await assert.rejects(() => router.route({ name: 'readActiveDocument', arguments: '{"sourceId":"selected:1"}' }, context), /selected/i);
-  await assert.rejects(() => router.route({ name: 'readActiveDocument', arguments: { sourceId: selectedId } }, { ...context, includedSourceIds: [] }), /selected/i);
-  await assert.rejects(() => router.route({ name: 'readActiveDocument', arguments: { sourceId: selectedId } }, { ...context, candidateUris: [{ scheme: 'https', path: '/work/extra.kf' }] }), /scheme/i);
+test('tools read reviewed bytes after buffer changes without any live reader call', async () => {
+  let liveReaderCalls = 0;
+  const router = new ToolRouter({ documentReader: { readDocument: async () => { liveReaderCalls++; return { text: 'live buffer' }; } }, knowledgeRetriever: { search: async () => [] } });
+  const context = { snapshot: review([snapshot('active-file', '/work/main.kf')]), activeDocument: { uri: uri('/work/main.kf'), text: 'later live buffer', version: 4 } };
+  assert.deepEqual(await router.route({ name: 'readActiveDocument', arguments: {} }, context), { uri: 'file:///work/main.kf', text: 'reviewed buffer', version: 3 });
+  assert.equal(liveReaderCalls, 0);
 });
 
-test('router binds opaque selected IDs to URI after reorder and denies excluded A', async () => {
-  const a = uri('/work/a.kf');
-  const b = uri('/work/b.kf');
-  const readDocument = async selected => ({ uri: selected, text: selected.toString() === a.toString() ? 'A' : 'B', version: 1 });
-  const knowledgeRetriever = { search: async () => [] };
-  const composer = new ContextComposer({ documentReader: { readDocument }, knowledgeRetriever });
-  const sources = (await composer.compose({ request: 'Help', candidateUris: [a, b] })).sources;
-  const aId = sources.find(source => source.label === a.toString()).id;
-  const bId = sources.find(source => source.label === b.toString()).id;
-  const router = new ToolRouter({ documentReader: { readDocument }, knowledgeRetriever });
-  const context = { candidateUris: [b, a], includedSourceIds: [bId] };
+test('router selected IDs resolve only immutable included snapshots after reorder', async () => {
+  const a = uri('/work/a.kf'), b = uri('/work/b.kf'), aId = selectedSourceId(a), bId = selectedSourceId(b);
+  const router = new ToolRouter({ documentReader: reader, knowledgeRetriever: { search: async () => [] } });
+  const context = { snapshot: review([snapshot(bId, '/work/b.kf', 'B')]), candidateUris: [b, a], includedSourceIds: [aId, bId] };
   assert.equal((await router.route({ name: 'readActiveDocument', arguments: { sourceId: bId } }, context)).text, 'B');
-  await assert.rejects(() => router.route({ name: 'readActiveDocument', arguments: { sourceId: aId } }, context), /selected/i);
+  for (const name of ['readActiveDocument', 'proposeCodeChange']) await assert.rejects(() => router.route({ name, arguments: { sourceId: aId, ...(name === 'proposeCodeChange' ? { newText: 'change' } : {}) } }, context), /selected/i);
+  await assert.rejects(() => router.route({ name: 'readActiveDocument', arguments: {} }, { activeDocument: { uri: a, text: 'LIVE', version: 1 } }), /snapshot/i);
 });
 
-test('router rejects malformed, unknown, oversized and executable operations', async () => {
-  const router = new ToolRouter({ documentReader: { readDocument: async selected => ({ uri: selected, text: 'x'.repeat(70000), version: 1 }) }, knowledgeRetriever: { search: async () => [] } });
-  const context = { activeDocument: { uri: uri('/work/main.kf'), text: 'ok', version: 1 }, candidateUris: [uri('/work/large.kf')] };
-  context.includedSourceIds = [selectedSourceId(context.candidateUris[0])];
-  for (const call of [
-    { name: 'runKafe', arguments: '{}' }, { name: 'shell', arguments: '{"command":"echo"}' },
-    { name: 'readActiveDocument', arguments: '{' }, { name: 'searchKafeKnowledge', arguments: '{"query":1}' },
-  ]) await assert.rejects(() => router.route(call, context));
-  await assert.rejects(() => router.route({ name: 'readActiveDocument', arguments: { sourceId: selectedSourceId(context.candidateUris[0]) } }, context), /size/i);
+test('router preserves four-tool allowlist and rejects malformed executable and oversized operations', async () => {
+  const router = new ToolRouter({ documentReader: reader, knowledgeRetriever: { search: async () => [] } });
+  const context = { snapshot: review([snapshot('active-file', '/work/main.kf')]) };
+  assert.deepEqual(TOOL_NAMES, ['readActiveDocument', 'searchKafeKnowledge', 'getLatestRunResult', 'proposeCodeChange']);
+  for (const call of [{ name: 'runKafe', arguments: {} }, { name: 'shell', arguments: {} }, { name: 'readActiveDocument', arguments: '{' }, { name: 'searchKafeKnowledge', arguments: { query: 1 } }, { name: 'readActiveDocument', arguments: { path: '/secret' } }, { name: 'proposeCodeChange', arguments: { newText: 'x'.repeat(64 * 1024 + 1) } }]) await assert.rejects(() => router.route(call, context));
+  await assert.rejects(() => router.route({ name: 'readActiveDocument', arguments: {} }, { snapshot: review([snapshot('active-file', '/work/main.kf', 'x'.repeat(64 * 1024 + 1))]) }), /size/i);
 });
 
-test('excluded selected source cannot be read or used as a proposal target', async () => {
-  const selected = uri('/work/extra.kf');
-  const sourceId = selectedSourceId(selected);
-  const router = new ToolRouter({
-    documentReader: { readDocument: async source => ({ uri: source, text: 'extra', version: 1 }) },
-    knowledgeRetriever: { search: async () => [] },
-  });
-  const context = { candidateUris: [selected], includedSourceIds: [] };
-  await assert.rejects(() => router.route({ name: 'readActiveDocument', arguments: { sourceId } }, context), /selected/i);
-  await assert.rejects(() => router.route({ name: 'proposeCodeChange', arguments: { sourceId, newText: 'change' } }, context), /selected/i);
-  assert.equal((await router.route({ name: 'readActiveDocument', arguments: { sourceId } },
-    { ...context, includedSourceIds: [sourceId] })).text, 'extra');
-  assert.equal((await router.route({ name: 'proposeCodeChange', arguments: { sourceId, newText: 'change' } },
-    { ...context, includedSourceIds: [sourceId] })).newText, 'change');
+test('proposal guards use reviewed URI version hash and never apply or reread an edit', async () => {
+  const router = new ToolRouter({ documentReader: reader, knowledgeRetriever: { search: async () => [] } });
+  const result = await router.route({ name: 'proposeCodeChange', arguments: { newText: 'show(2)' } }, { snapshot: review([snapshot('active-file', '/work/main.kf', 'show(1)', 4)]) });
+  assert.equal(result.uri, 'file:///work/main.kf'); assert.equal(result.documentVersion, 4); assert.equal(result.contentSha256, sha('show(1)')); assert.equal(result.newText, 'show(2)');
+  await assert.rejects(() => router.route({ name: 'proposeCodeChange', arguments: { newText: 'x' } }, { snapshot: review([snapshot('active-file', '/work/main.txt')]) }), /KAFE/i);
 });
 
-test('proposal targets active document by default and never applies the edit', async () => {
-  const active = { uri: uri('/work/main.kf'), text: 'show(1)', version: 4 };
-  const router = new ToolRouter({ documentReader: { readDocument: async () => { throw Error('unexpected'); } }, knowledgeRetriever: { search: async () => [] } });
-  const result = await router.route({ name: 'proposeCodeChange', arguments: JSON.stringify({ newText: 'show(2)' }) }, { activeDocument: active, selectedUris: [] });
-  assert.equal(result.uri, active.uri);
-  assert.equal(result.documentVersion, 4);
-  assert.equal(result.newText, 'show(2)');
-  assert.match(result.contentSha256, /^[a-f0-9]{64}$/);
-  await assert.rejects(() => router.route({ name: 'proposeCodeChange', arguments: '{"newText":"x","path":"/work/other.kf"}' }, { activeDocument: active, selectedUris: [] }), /argument/i);
+test('reviewed run evidence decodes through validator with explicit source and sequence provenance', async () => {
+  const composer = new ContextComposer({ documentReader: reader, knowledgeRetriever: { search: async () => [] } });
+  const activeDocument = { uri: uri('/work/main.kf'), text: 'show(1)', version: 1 };
+  const runResult = { stdout: 'reviewed output', stderr: '', exitCode: 0, outputTruncated: false, runtimeVersion: '1', knowledgePackVersion: '1', sourceUri: activeDocument.uri.toString(), runSequence: 7 };
+  const composed = await composer.compose({ request: 'Help', activeDocument, runResult });
+  const router = new ToolRouter({ documentReader: reader, knowledgeRetriever: { search: async () => [] } });
+  const context = { snapshot: review(composed.snapshots), runResult: { ...runResult, stdout: 'later run output', runSequence: 8 } };
+  assert.equal((await router.route({ name: 'getLatestRunResult', arguments: {} }, context)).stdout, 'reviewed output');
+  const run = composed.snapshots.find(source => source.id === 'run-result');
+  assert.equal(run.provenance.runSequence, 7); assert.equal(run.provenance.sourceUri, activeDocument.uri.toString());
+  assert.equal(await router.route({ name: 'getLatestRunResult', arguments: {} }, { snapshot: review([]) }), null);
+  const invalid = { ...run, text: JSON.stringify({ stdout: 'x', stderr: '', exitCode: 0, outputTruncated: false }) };
+  await assert.rejects(() => router.route({ name: 'getLatestRunResult', arguments: {} }, { snapshot: review([composed.snapshots[0], invalid]) }), /shape|snapshot/i);
 });
 
-test('latest run result accepts only bounded learner evidence with complete version fields', async () => {
-  const router = new ToolRouter({ documentReader: {}, knowledgeRetriever: { search: async () => [] } });
-  const call = { name: 'getLatestRunResult', arguments: '{}' };
-  const valid = { stdout: 'ok', stderr: '', exitCode: 0, outputTruncated: false, runtimeVersion: '0.1.0', knowledgePackVersion: '0.1.0',
-    sourceUri: uri('/work/main.kf').toString(), runSequence: 1 };
-  const activeDocument = { uri: uri('/work/main.kf') };
-  const { sourceUri, runSequence, ...shareable } = valid;
-  assert.deepEqual(await router.route(call, { runResult: valid, activeDocument }), shareable);
-  assert.equal(await router.route(call, { runResult: valid, activeDocument: { uri: uri('/work/other.kf') } }), null);
-  await assert.rejects(() => router.route(call, { runResult: { ...valid, knowledgePackVersion: null }, activeDocument }), /result shape/i);
-  await assert.rejects(() => router.route(call, { runResult: { ...valid, stdout: 'x'.repeat(1024 * 1024 + 1) }, activeDocument }), /size/i);
-  const contributor = { ...valid, runtimeMode: 'contributor', runtimeVersion: null, knowledgePackVersion: null };
-  assert.deepEqual(await router.route(call, { runResult: contributor, activeDocument }),
-    { ...shareable, runtimeMode: 'contributor', runtimeVersion: null, knowledgePackVersion: null });
-  await assert.rejects(() => router.route(call, { runResult: { ...contributor, runtimeVersion: '0.1.0' }, activeDocument }), /result shape/i);
-  await assert.rejects(() => router.route(call, { runResult: { ...valid, runtimeMode: 'managed', knowledgePackVersion: null }, activeDocument }), /result shape/i);
-  await assert.rejects(() => router.route(call, { runResult: { ...valid, sourceUri: 'https://unsafe' }, activeDocument }), /result shape/i);
+test('knowledge tool crossing a pack replacement cannot return refreshable bytes under the new pack', async () => {
+  const { metadataLineage } = require('../../src/tutor/ContextComposer');
+  const packA = { sourceMode: 'managed', runtimeVersion: '1', knowledgePackVersion: '1', packIdentity: 'pack-A', contentSha256: 'a'.repeat(64) };
+  let currentPack = packA;
+  const router = new ToolRouter({ documentReader: reader, knowledgeRetriever: { getKnowledgeLineage: async () => metadataLineage(currentPack), search: async () => {
+    const passage = { id: 'language/x.md#1', path: 'language/x.md', category: 'language', text: 'PACK_A_BYTES', ...currentPack };
+    currentPack = { ...packA, packIdentity: 'pack-B', contentSha256: 'b'.repeat(64) };
+    return [passage];
+  } } });
+  await assert.rejects(() => router.route({ name: 'searchKafeKnowledge', arguments: { query: 'lists' } }, { snapshot: { sources: [], dependencies: { fileUris: [], knowledgeLineage: metadataLineage(packA) } } }), error => error.code === 'KNOWLEDGE_LINEAGE_CHANGED' && error.passages === undefined);
+});
+
+test('A-B-A search cannot stamp A bytes as B', async () => {
+  const { metadataLineage } = require('../../src/tutor/ContextComposer');
+  const packA = { sourceMode: 'managed', runtimeVersion: '1', knowledgePackVersion: '1', packIdentity: 'pack-A', contentSha256: 'a'.repeat(64) };
+  const packB = { ...packA, packIdentity: 'pack-B', contentSha256: 'b'.repeat(64) };
+  const router = new ToolRouter({ documentReader: reader, knowledgeRetriever: {
+    getKnowledgeLineage: async () => metadataLineage(packB),
+    search: async () => [{ id: 'language/x.md#1', path: 'language/x.md', category: 'language', text: 'PACK_A_BYTES', ...packA }],
+  } });
+  await assert.rejects(() => router.route({ name: 'searchKafeKnowledge', arguments: { query: 'lists' } },
+    { snapshot: { sources: [], dependencies: { fileUris: [], knowledgeLineage: metadataLineage(packB) } } }),
+  error => error.code === 'KNOWLEDGE_LINEAGE_CHANGED');
+});
+
+test('knowledge availability error becomes a typed tool result', async () => {
+  const { KnowledgeUnavailable } = require('../../src/tutor/KnowledgeRetriever');
+  const router = new ToolRouter({ documentReader: reader, knowledgeRetriever: {
+    getKnowledgeLineage: async () => 'pack',
+    search: async () => { throw new KnowledgeUnavailable('knowledge_missing'); },
+  } });
+  assert.deepEqual(await router.route({ name: 'searchKafeKnowledge', arguments: { query: 'lists' } },
+    { snapshot: { sources: [], dependencies: { fileUris: [], knowledgeLineage: 'pack' } } }),
+  { status: 'unavailable', code: 'knowledge_missing' });
+});
+
+
+test('same authorized pack returns new validated passage bytes without a second Send', async () => {
+  const passage = { id: 'new', path: 'language/new.md', category: 'language', text: 'NEW BYTES', knowledgeLineage: 'pack' };
+  const router = new ToolRouter({ documentReader: reader, knowledgeRetriever: { getKnowledgeLineage: async () => 'pack', search: async () => [passage] } });
+  const result = await router.route({ name: 'searchKafeKnowledge', arguments: { query: 'new' } }, { snapshot: { sources: [], dependencies: { fileUris: [], knowledgeLineage: 'pack' } } });
+  assert.deepEqual(result, [passage]); result[0].text = 'mutated'; assert.equal(passage.text, 'NEW BYTES');
+});
+
+test('unavailable snapshot never authorizes a newly appearing pack or file tools in restricted mode', async () => {
+  const router = new ToolRouter({ documentReader: reader, knowledgeRetriever: { search: async () => { throw Error('must not search'); } } });
+  const context = { snapshot: { sources: [], submission: { context: { restricted: true } }, dependencies: { fileUris: [], knowledgeLineage: null } } };
+  assert.equal((await router.route({ name: 'searchKafeKnowledge', arguments: { query: 'new' } }, context)).status, 'unavailable');
+  for (const name of ['readActiveDocument', 'getLatestRunResult', 'proposeCodeChange']) await assert.rejects(() => router.route({ name, arguments: {} }, context), /restricted/i);
+});
+
+
+test('knowledge tool results cannot exceed the retriever five-passage bound', async () => {
+  const router = new ToolRouter({ documentReader: reader, knowledgeRetriever: { getKnowledgeLineage: async () => 'pack',
+    search: async () => Array.from({ length: 6 }, (_, i) => ({ id: String(i), path: 'x.md', category: 'language', text: 'x', knowledgeLineage: 'pack' })) } });
+  await assert.rejects(() => router.route({ name: 'searchKafeKnowledge', arguments: { query: 'x' } }, { snapshot: { sources: [], dependencies: { fileUris: [], knowledgeLineage: 'pack' } } }), /passage|size/i);
 });

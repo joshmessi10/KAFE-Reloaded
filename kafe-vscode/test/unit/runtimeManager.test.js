@@ -288,6 +288,19 @@ test('unpublished pinned release reports unavailable without prompting or downlo
   assert.deepEqual(fixture.processCalls, []);
 });
 
+test('runtime install emits coarse progress stages only and unpublished setup emits no download stage', async () => {
+  const f = makeFixture();
+  const stages = [];
+  assert.equal((await f.manager.installRuntime({ onProgress: e => stages.push(e) })).status, 'ready');
+  assert.deepEqual(stages.map(e => e.stage), ['checking', 'confirming', 'downloading', 'validating', 'extracting', 'syncing', 'ready']);
+  assert.ok(stages.every(e => Object.keys(e).length === 1));
+  const unpublished = makeFixture({ published: false });
+  const unavailableStages = [];
+  await unpublished.manager.installRuntime({ onProgress: e => unavailableStages.push(e.stage) });
+  assert.deepEqual(unavailableStages, ['checking']);
+  assert.deepEqual(unpublished.requests, []);
+});
+
 test('unsupported managed target returns actionable guidance without consent or transport', async () => {
   const fixture = makeFixture({ published: true });
   fixture.manager.platform = 'freebsd';
@@ -335,6 +348,46 @@ test('cache reuse validates metadata and avoids downloads and sync', async () =>
   const cached = await fixture.manager.getReadyRuntime();
   assert.equal(cached.status, 'ready');
   assert.equal(cached.runtimeRoot, first.runtimeRoot);
+  assert.deepEqual(fixture.requests, []);
+  assert.deepEqual(fixture.processCalls, []);
+});
+
+test('cached knowledge remains usable without uv', async () => {
+  const fixture = makeFixture();
+  await fixture.manager.installRuntime();
+  fixture.requests.length = 0;
+  fixture.processCalls.length = 0;
+  await fixture.fs.rm(fixture.manager.paths.uvRoot, { recursive: true });
+  const knowledge = await fixture.manager.getReadyKnowledgePack();
+  assert.equal(knowledge.status, 'ready');
+  assert.equal(knowledge.knowledgeRoot, path.join(fixture.manager.paths.runtimeRoot, 'knowledge-pack'));
+  assert.equal(knowledge.runtimeVersion, fixture.manifest.runtime.version);
+  assert.equal(knowledge.knowledgePackVersion, fixture.manifest.runtime.knowledgePackVersion);
+  assert.match(knowledge.expectedContentSha256, /^[a-f0-9]{64}$/);
+  assert.equal(knowledge.expectedFileCount, 8);
+  assert.equal((await fixture.manager.getReadyRuntime()).status, 'missing');
+  assert.deepEqual(fixture.requests, []);
+  assert.deepEqual(fixture.processCalls, []);
+});
+
+test('invalid cached pack is not missing-success', async () => {
+  const fixture = makeFixture();
+  await fixture.manager.installRuntime();
+  await fixture.fs.writeFile(path.join(fixture.manager.paths.runtimeRoot, 'knowledge-pack', 'language', 'index.md'), 'tampered');
+  const knowledge = await fixture.manager.getReadyKnowledgePack();
+  assert.deepEqual(knowledge, { status: 'unavailable', code: 'knowledge_integrity_failed' });
+});
+
+test('knowledge paths do not depend on uv target', async () => {
+  const fixture = makeFixture();
+  await fixture.manager.installRuntime();
+  fixture.manager.platform = 'freebsd';
+  fixture.requests.length = 0;
+  fixture.processCalls.length = 0;
+  const knowledge = await fixture.manager.getReadyKnowledgePack();
+  assert.equal(knowledge.status, 'ready');
+  assert.equal(knowledge.knowledgeRoot, path.join(fixture.manager.storageRoot, 'kafe-runtime', 'runtime-0.1.0', 'knowledge-pack'));
+  assert.equal((await fixture.manager.getReadyRuntime()).status, 'unsupported');
   assert.deepEqual(fixture.requests, []);
   assert.deepEqual(fixture.processCalls, []);
 });

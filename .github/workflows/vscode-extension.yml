@@ -44,6 +44,7 @@ jobs:
         with:
           node-version: 20
       - run: npm ci
+      - run: node test/provision-vscode.js
       - run: npm run test:extension
       - run: npx vsce package --out "$env:RUNNER_TEMP\kafe-neural-suite.vsix"
       - run: node test/verify-vsix.js "$env:RUNNER_TEMP\kafe-neural-suite.vsix"

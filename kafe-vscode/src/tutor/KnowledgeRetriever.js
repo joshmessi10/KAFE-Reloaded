@@ -12,6 +12,7 @@ const KAFE_SYNTAX_KEYWORDS = new Set(['for', 'if', 'in', 'while']);
 const SYNTAX_INTENT_WORDS = new Set(['code', 'condition', 'conditional', 'expression', 'grammar', 'keyword', 'loop', 'loops', 'operator', 'statement', 'syntax']);
 const ALLOWED_EXTENSIONS = new Set(['.md', '.kf', '.g4', '.txt']);
 const WINDOWS_RESERVED_NAME = /^(con|prn|aux|nul|com[1-9¹²³]|lpt[1-9¹²³])(?:\.|$)/i;
+const AVAILABILITY_CODES = new Set(['knowledge_missing', 'knowledge_integrity_failed', 'knowledge_unavailable', 'trust_unavailable']);
 const STOP_WORDS = new Set([
   'a', 'about', 'after', 'all', 'also', 'am', 'an', 'and', 'any', 'are', 'as', 'at', 'be', 'because', 'been', 'before',
   'being', 'between', 'both', 'but', 'by', 'can', 'could', 'did', 'do', 'does', 'doing', 'down', 'during', 'each', 'few',
@@ -37,6 +38,42 @@ function validateSegment(name) {
   if (name.normalize('NFC') !== name) throw new Error(`Non-canonical KAFE development knowledge-pack path segment: ${name}`);
   return name.toLowerCase();
 }
+
+// Canonical knowledge-tree identity shared by verified archive members and retrieval.
+function knowledgeContentDigest(files) {
+  if (!Array.isArray(files) || files.length < 1 || files.length > MAX_FILES) throw new Error('KAFE knowledge-pack file count is invalid.');
+  const hash = createHash('sha256');
+  let totalBytes = 0;
+  const seen = new Set();
+  const ordered = [...files].sort((a, b) => a.relative < b.relative ? -1 : a.relative > b.relative ? 1 : 0);
+  for (const file of ordered) {
+    if (typeof file.relative !== 'string' || !file.relative || !Buffer.isBuffer(file.bytes)) throw new Error('KAFE knowledge member is invalid.');
+    const segments = file.relative.split('/');
+    const folded = segments.map(validateSegment).join('/');
+    if (seen.has(folded) || !ALLOWED_EXTENSIONS.has(path.extname(file.relative).toLowerCase()) ||
+      file.bytes.length > MAX_FILE_BYTES) throw new Error('KAFE knowledge member is invalid.');
+    seen.add(folded);
+    totalBytes += file.bytes.length;
+    if (totalBytes > MAX_TOTAL_BYTES) throw new Error('KAFE knowledge-pack total size exceeds the limit.');
+    const length = Buffer.alloc(8);
+    length.writeBigUInt64BE(BigInt(file.bytes.length));
+    hash.update(Buffer.from(file.relative, 'utf8'));
+    hash.update(Buffer.from([0]));
+    hash.update(length);
+    hash.update(file.bytes);
+  }
+  return { contentSha256: hash.digest('hex'), fileCount: ordered.length };
+}
+
+class KnowledgeUnavailable extends Error {
+  constructor(code) {
+    super('KAFE knowledge is unavailable.');
+    this.name = 'KnowledgeUnavailable';
+    this.code = AVAILABILITY_CODES.has(code) ? code : 'knowledge_unavailable';
+  }
+}
+
+class KnowledgeIntegrityError extends Error {}
 
 class KnowledgeRetriever {
   constructor({ knowledgeRoot, runtimeVersion, knowledgePackVersion, expectedRuntimeVersion,
@@ -66,7 +103,7 @@ class KnowledgeRetriever {
       throw new Error('Invalid KAFE knowledge search context.');
     }
     const rootInfo = await this.fileSystem.lstat(this.knowledgeRoot);
-    if (!rootInfo.isDirectory() || rootInfo.isSymbolicLink?.()) throw new Error('KAFE knowledge-pack root is unavailable.');
+    if (!rootInfo.isDirectory() || rootInfo.isSymbolicLink?.()) throw new KnowledgeIntegrityError('KAFE knowledge-pack root is unavailable.');
     const verifyIntegrity = this.expectedContentSha256 !== undefined || this.expectedFileCount !== undefined;
     const files = [];
     const seenPaths = new Map();
@@ -74,11 +111,13 @@ class KnowledgeRetriever {
       let prefix = '';
       let foldedPrefix = '';
       for (const segment of relative.split('/')) {
-        const foldedSegment = validateSegment(segment);
+        let foldedSegment;
+        try { foldedSegment = validateSegment(segment); }
+        catch (error) { throw new KnowledgeIntegrityError(error.message); }
         prefix = prefix ? `${prefix}/${segment}` : segment;
         foldedPrefix = foldedPrefix ? `${foldedPrefix}/${foldedSegment}` : foldedSegment;
         const existing = seenPaths.get(foldedPrefix);
-        if (existing && existing !== prefix) throw new Error(`KAFE development knowledge-pack has duplicate paths: ${prefix}`);
+        if (existing && existing !== prefix) throw new KnowledgeIntegrityError(`KAFE development knowledge-pack has duplicate paths: ${prefix}`);
         seenPaths.set(foldedPrefix, prefix);
       }
     };
@@ -88,31 +127,31 @@ class KnowledgeRetriever {
         if (verifyIntegrity) reservePath(relative);
         else if (!entry.name || entry.name === '.' || entry.name === '..' || entry.name.includes('/') || entry.name.includes('\\')) continue;
         if (entry.isSymbolicLink?.()) {
-          if (verifyIntegrity) throw new Error(`KAFE development knowledge pack contains a symbolic link: ${relative}`);
+          if (verifyIntegrity) throw new KnowledgeIntegrityError(`KAFE development knowledge pack contains a symbolic link: ${relative}`);
           continue;
         }
         const absolute = path.join(directory, entry.name);
         const info = await this.fileSystem.lstat(absolute);
         if (info.isSymbolicLink?.()) {
-          if (verifyIntegrity) throw new Error(`KAFE development knowledge pack contains a symbolic link: ${relative}`);
+          if (verifyIntegrity) throw new KnowledgeIntegrityError(`KAFE development knowledge pack contains a symbolic link: ${relative}`);
           continue;
         }
         if (info.isDirectory()) await visit(absolute, relative);
         else if (info.isFile()) {
           const extension = path.extname(entry.name).toLowerCase();
           if (!ALLOWED_EXTENSIONS.has(extension)) {
-            if (verifyIntegrity) throw new Error(`KAFE development knowledge pack contains an unexpected file: ${relative}`);
+            if (verifyIntegrity) throw new KnowledgeIntegrityError(`KAFE development knowledge pack contains an unexpected file: ${relative}`);
             continue;
           }
           if (!Number.isSafeInteger(info.size) || info.size < 0 || info.size > MAX_FILE_BYTES) {
-            if (verifyIntegrity) throw new Error(`KAFE development knowledge file exceeds the ${MAX_FILE_BYTES} byte size limit: ${relative}`);
+            if (verifyIntegrity) throw new KnowledgeIntegrityError(`KAFE development knowledge file exceeds the ${MAX_FILE_BYTES} byte size limit: ${relative}`);
             continue;
           }
           files.push({ absolute, relative, size: info.size });
         } else if (verifyIntegrity) {
-          throw new Error(`KAFE development knowledge pack contains an unsupported special file: ${relative}`);
+          throw new KnowledgeIntegrityError(`KAFE development knowledge pack contains an unsupported special file: ${relative}`);
         }
-        if (files.length > MAX_FILES) throw new Error('KAFE knowledge-pack file limit exceeded.');
+        if (files.length > MAX_FILES) throw new KnowledgeIntegrityError('KAFE knowledge-pack file limit exceeded.');
       }
     };
     await visit(this.knowledgeRoot);
@@ -126,35 +165,27 @@ class KnowledgeRetriever {
       MAX_QUERY_TERMS - queryWords.length);
     const minimumContextScore = relatedWords.length >= 6 ? 2 : 1;
     files.sort((left, right) => left.relative < right.relative ? -1 : left.relative > right.relative ? 1 : 0);
-    const hash = createHash('sha256');
     const hydratedFiles = [];
     let totalBytes = 0;
     for (const file of files) {
       const read = await this.fileSystem.readFile(file.absolute);
       const bytes = Buffer.isBuffer(read) ? read : Buffer.from(read, 'utf8');
       if (bytes.length > MAX_FILE_BYTES) {
-        if (verifyIntegrity) throw new Error(`KAFE development knowledge file exceeds the ${MAX_FILE_BYTES} byte size limit: ${file.relative}`);
+        if (verifyIntegrity) throw new KnowledgeIntegrityError(`KAFE development knowledge file exceeds the ${MAX_FILE_BYTES} byte size limit: ${file.relative}`);
         continue;
       }
       if (verifyIntegrity && bytes.length !== file.size) {
-        throw new Error(`KAFE development knowledge file changed while being read: ${file.relative}`);
+        throw new KnowledgeIntegrityError(`KAFE development knowledge file changed while being read: ${file.relative}`);
       }
       totalBytes += bytes.length;
-      if (totalBytes > MAX_TOTAL_BYTES) throw new Error(`KAFE knowledge-pack total size exceeds the ${MAX_TOTAL_BYTES} byte limit.`);
-      const name = Buffer.from(file.relative, 'utf8');
-      const length = Buffer.alloc(8);
-      length.writeBigUInt64BE(BigInt(bytes.length));
-      hash.update(name);
-      hash.update(Buffer.from([0]));
-      hash.update(length);
-      hash.update(bytes);
-      hydratedFiles.push({ relative: file.relative, text: bytes.toString('utf8') });
+      if (totalBytes > MAX_TOTAL_BYTES) throw new KnowledgeIntegrityError(`KAFE knowledge-pack total size exceeds the ${MAX_TOTAL_BYTES} byte limit.`);
+      hydratedFiles.push({ relative: file.relative, text: bytes.toString('utf8'), bytes });
     }
     if (verifyIntegrity) {
       if (!/^[a-f0-9]{64}$/.test(this.expectedContentSha256 || '') ||
         !Number.isSafeInteger(this.expectedFileCount) || this.expectedFileCount < 1 ||
-        hydratedFiles.length !== this.expectedFileCount || hash.digest('hex') !== this.expectedContentSha256) {
-        throw new Error('KAFE development knowledge-pack integrity or digest mismatch.');
+        hydratedFiles.length !== this.expectedFileCount || knowledgeContentDigest(hydratedFiles).contentSha256 !== this.expectedContentSha256) {
+        throw new KnowledgeIntegrityError('KAFE development knowledge-pack integrity or digest mismatch.');
       }
     }
     const queryRanked = [];
@@ -190,4 +221,4 @@ class KnowledgeRetriever {
   }
 }
 
-module.exports = { KnowledgeRetriever };
+module.exports = { KnowledgeRetriever, KnowledgeUnavailable, KnowledgeIntegrityError, knowledgeContentDigest };

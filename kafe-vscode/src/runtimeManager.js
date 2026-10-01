@@ -5,6 +5,7 @@ const path = require('node:path');
 const { spawn } = require('node:child_process');
 const { gunzipSync } = require('node:zlib');
 const yauzl = require('yauzl');
+const { knowledgeContentDigest } = require('./tutor/KnowledgeRetriever');
 
 const PINNED_MANIFEST = require('./runtimeManifest.json');
 const MAX_DOWNLOAD_BYTES = 64 * 1024 * 1024;
@@ -289,7 +290,7 @@ async function inspectZip(buffer) {
   return entries;
 }
 
-async function inspectZipWithHashes(buffer) {
+async function inspectZipWithHashes(buffer, { captureKnowledgeBytes = false } = {}) {
   const entries = await inspectZip(buffer);
   const filesByName = new Map(entries.filter(entry => !entry.isDirectory).map(entry => [entry.safeName, entry]));
   const zipfile = await openZip(buffer);
@@ -319,6 +320,7 @@ async function inspectZipWithHashes(buffer) {
         readZipEntry(zipfile, entry).then(contents => {
           expected.sha256 = sha256(contents);
           expected.archiveSize = contents.length;
+          if (captureKnowledgeBytes && safe.name.startsWith('knowledge-pack/')) expected.data = contents;
           next();
         }, finish);
       } catch (error) {
@@ -743,6 +745,40 @@ function createRuntimeManager({
     }
   }
 
+  /** @returns {Promise<{status:'ready',knowledgeRoot:string,runtimeVersion:string,knowledgePackVersion:string,packIdentity:string,expectedContentSha256:string,expectedFileCount:number}|{status:'unavailable',code:string}>} */
+  async function readReadyKnowledgePack() {
+    const runtime = manifest.runtime;
+    const root = pathApi.join(storageRoot, 'kafe-runtime');
+    const runtimeRoot = pathApi.join(root, `runtime-${runtime.version}`);
+    const artifactRoot = pathApi.join(root, 'artifacts', runtime.version);
+    const knowledgeRoot = pathApi.join(runtimeRoot, 'knowledge-pack');
+    const archivePath = pathApi.join(artifactRoot, `kafe-runtime-${runtime.version}.zip`);
+    const sidecarPath = pathApi.join(artifactRoot, `kafe-runtime-${runtime.version}.manifest.json`);
+    const unavailable = code => ({ status: 'unavailable', code });
+    if (!await exists(runtimeRoot, 'directory') || !await exists(knowledgeRoot, 'directory') ||
+      !await exists(archivePath, 'file') || !await exists(sidecarPath, 'file')) return unavailable('knowledge_missing');
+    try {
+      const sidecar = JSON.parse((await readBoundedRegularFile(fileSystem, sidecarPath, MAX_METADATA_BYTES)).toString('utf8'));
+      validateRuntimeSidecar(sidecar, runtime);
+      const archive = await readBoundedRegularFile(fileSystem, archivePath, MAX_DOWNLOAD_BYTES);
+      if (sha256(archive) !== runtime.archiveSha256) return unavailable('knowledge_integrity_failed');
+      const entries = await inspectZipWithHashes(archive, { captureKnowledgeBytes: true });
+      if (!hasRequiredRuntimeMembers(entries)) return unavailable('knowledge_integrity_failed');
+      const knowledgeEntries = entries.filter(entry => entry.safeName.startsWith('knowledge-pack/') && entry.safeName !== 'knowledge-pack/');
+      const relativeEntries = knowledgeEntries.map(entry => ({ ...entry,
+        safeName: entry.safeName.slice('knowledge-pack/'.length),
+        pathParts: entry.pathParts.slice(1) }));
+      const files = relativeEntries.filter(entry => !entry.isDirectory).map(entry => ({ relative: entry.safeName, bytes: entry.data }));
+      const digest = knowledgeContentDigest(files);
+      if (!await matchesExtractedTree(knowledgeRoot, relativeEntries, fileSystem, pathApi)) return unavailable('knowledge_integrity_failed');
+      return { status: 'ready', knowledgeRoot, runtimeVersion: runtime.version,
+        knowledgePackVersion: runtime.knowledgePackVersion, packIdentity: knowledgeRoot,
+        expectedContentSha256: digest.contentSha256, expectedFileCount: digest.fileCount };
+    } catch {
+      return unavailable('knowledge_integrity_failed');
+    }
+  }
+
   async function isContributorRoot(workspaceRoot) {
     const required = ['pyproject.toml', 'uv.lock', pathApi.join('src', 'Kafe.py')];
     for (const name of required) if (!await exists(pathApi.join(workspaceRoot, name), 'file')) return false;
@@ -825,7 +861,9 @@ function createRuntimeManager({
     }
   }
 
-  async function installRuntime({ signal } = {}) {
+  async function installRuntime({ signal, onProgress = () => {} } = {}) {
+    const progress = stage => { try { onProgress({ stage }); } catch { /* presentation must not change runtime validation */ } };
+    progress('checking');
     let paths;
     try {
       paths = getPaths();
@@ -845,6 +883,7 @@ function createRuntimeManager({
     }
     let confirmed = false;
     try {
+      progress('confirming');
       confirmed = await manager.confirmDownload({ runtimeVersion: manifest.runtime.version, uvVersion: manifest.uv.version });
     } catch (error) {
       return { status: 'cancelled', message: error.message };
@@ -859,6 +898,7 @@ function createRuntimeManager({
       await fileSystem.mkdir(paths.pythonInstallDir, { recursive: true });
       await fileSystem.mkdir(paths.uvCacheDir, { recursive: true });
 
+      progress('downloading');
       const manifestDownload = await downloadPinnedAsset(manifest.runtime.manifestUrl, { transport: manager.transport, signal, maxBytes: 64 * 1024 });
       const remoteManifest = parseJson(manifestDownload.bytes, 'KAFE runtime release manifest');
       validateRuntimeSidecar(remoteManifest, manifest.runtime);
@@ -875,6 +915,8 @@ function createRuntimeManager({
       if (sha256(uvDownload.bytes) !== uvTarget.sha256) throw new Error(`uv ${manifest.uv.version} archive SHA-256 mismatch.`);
       await fileSystem.writeFile(paths.uvArchive, uvDownload.bytes);
 
+      progress('validating');
+      progress('extracting');
       await fileSystem.mkdir(paths.stagingRoot, { recursive: true });
       await extractZip(runtimeDownload.bytes, paths.stagingRoot, fileSystem, pathApi, {
         required: REQUIRED_RUNTIME_MEMBERS,
@@ -886,6 +928,7 @@ function createRuntimeManager({
       await checkUvVersion(paths.uvStagePath, paths, signal);
       await fileSystem.rename(paths.uvStageRoot, paths.uvRoot);
 
+      progress('syncing');
       const sync = await processRunner(paths.uvPath, ['sync', '--locked', '--no-dev', '--project', paths.stagingRoot], {
         cwd: paths.stagingRoot,
         env: makeUvEnvironment(paths),
@@ -910,6 +953,7 @@ function createRuntimeManager({
       await fileSystem.rename(paths.stagingRoot, paths.runtimeRoot);
       const ready = await readReadyRuntime();
       if (ready.status !== 'ready') throw new Error('KAFE runtime setup completed without valid ready metadata.');
+      progress('ready');
       return ready;
     } catch (error) {
       await cleanup(paths);
@@ -919,6 +963,7 @@ function createRuntimeManager({
   }
 
   manager.getReadyRuntime = readReadyRuntime;
+  manager.getReadyKnowledgePack = readReadyKnowledgePack;
   manager.resolveWorkspace = resolveWorkspace;
   manager.installRuntime = installRuntime;
   return manager;
