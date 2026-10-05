@@ -19,6 +19,14 @@ exports.activate = async function activate(context) {
     const body = JSON.stringify(request); counters.observations.push({ roles: request.messages.map(m => m.role), optionalOneSources: request.messages.filter(m => m.content.startsWith('[Source ') && m.content.includes('OPTIONAL_ONE_SENTINEL')).length, helloHistory: body.includes('Hello native answer'), sourceHistoryLearner: body.includes('NATIVE_SOURCE_LINEAGE_QUESTION'), sourceHistoryAnswer: body.includes('NATIVE_SOURCE_LINEAGE_ANSWER'), optionalOne: body.includes('OPTIONAL_ONE_SENTINEL'), optionalTwo: body.includes('OPTIONAL_TWO_SENTINEL'), main: body.includes('MAIN_SENTINEL'), legacy: body.includes('LEGACY_PRIVATE_GOAL'), knowledgeUnavailable: /knowledge.{0,80}unavailable/i.test(body), tools: request.tools?.map(t => t.function?.name || t.name) || [] });
     const scenario = nextScenario;
     if (scenario.missingKey) throw new ProviderError('missing_key');
+    if (scenario.checkpoint) {
+      const priorDecisionIds = scenario.withPrior ? host.coordinator.learningSession.snapshot().decisions.slice(-1).map(d => d.id) : [];
+      yield { type: 'complete', text: 'Compare the ordered-list approach before preparing code.', toolCalls: [{ id: 'native-checkpoint', name: 'proposeLearningCheckpoint', arguments: {
+        kind: scenario.checkpoint, name: 'Keep an ordered list', learnerProposalSummary: 'I would keep one list in insertion order.',
+        tutorProposedAdditions: ['Start with one value before extending the program.'], scopeSummary: 'Replace the active file with one list assignment.',
+        tradeoffs: ['A list preserves order but lookup scans values.'], unresolvedChoices: [], sourceIds: ['active-file'], priorDecisionIds
+      } }], finishReason: 'tool_calls' }; return;
+    }
     if (scenario.proposal) { yield { type: 'complete', text: '', toolCalls: [{ id: 'native-proposal', name: 'proposeCodeChange', arguments: { newText: 'items <- [42]\n', ...(scenario.sourceId ? { sourceId: scenario.sourceId } : {}) } }], finishReason: 'tool_calls' }; return; }
     const queue = [scenario.text]; let wake, done = !scenario.hold;
     stream = { chunk(text) { queue.push(text); wake?.(); }, finish() { done = true; wake?.(); } };
@@ -81,6 +89,7 @@ exports.activate = async function activate(context) {
       pending: !!host.proposalProvider.pending, reviewed: host.proposalProvider.pending?.reviewed === true, turnStatus: host.coordinator.snapshot().turn?.status || null })),
     vscode.commands.registerCommand('kafe.runFile', () => runFile()),
     vscode.commands.registerCommand('kafe.newConversation', () => host.coordinator.newConversation()),
+    vscode.commands.registerCommand('kafe.learningPreferences', () => host.openLearningPreferences()),
     vscode.commands.registerCommand('kafe.configureProvider', () => host.keyHandlers.configure()),
     vscode.commands.registerCommand('kafe.clearTutorProgress', createClearProgressHandler({ vscode: api, progressStore: host.progressStore }))];
   function register() {
@@ -95,13 +104,13 @@ exports.activate = async function activate(context) {
     });
   }
   register();
-  const current = () => ({ snapshot: host.coordinator.snapshot(), counters, trusted: vscode.workspace.isTrusted,
+  const current = () => ({ snapshot: host.coordinator.snapshot(), learning: host.coordinator.learningSession.snapshot(), counters, trusted: vscode.workspace.isTrusted,
     optionalEditorVisible: vscode.window.visibleTextEditors.some(editor => path.basename(editor.document.uri.fsPath) === 'optional-one-with-a-long-workspace-file-name.kf'),
     version: vscode.version, pendingProposal: host.proposalProvider.pending?.id || null, pendingProposalReviewed: host.proposalProvider.pending?.reviewed === true,
     pendingProposalInfo: host.proposalProvider.pending ? { target: path.basename(vscode.Uri.parse(host.proposalProvider.pending.sourceId).fsPath),
       dependencies: (host.coordinator.controller.pendingProposal?.fileUris || []).map(uri => path.basename(vscode.Uri.parse(uri).fsPath)) } : null,
     optionalTargetText: vscode.workspace.textDocuments.find(doc => doc.uri.fsPath === path.join(config.workspace, 'optional-one-with-a-long-workspace-file-name.kf'))?.getText(),
-    documentText: document.getText(), documentVersion: document.version, summary: memory.get('kafeTutor.progress.v2') || null, barrierEntered: captureBarrier?.entered === true, historyCount: host.coordinator.session.historyPairs().length, clearOperation, keyState: { count: secrets.size, stores: counters.secrets, fixtureCredentialIntact: [...secrets.values()].every(value=>value==='fixture-only-dummy-credential') }, dialogStyle: vscode.workspace.getConfiguration('window').get('dialogStyle') });
+    documentText: document.getText(), documentDirty: document.isDirty, documentVersion: document.version, summary: memory.get('kafeTutor.progress.v2') || null, barrierEntered: captureBarrier?.entered === true, historyCount: host.coordinator.session.historyPairs().length, clearOperation, keyState: { count: secrets.size, stores: counters.secrets, fixtureCredentialIntact: [...secrets.values()].every(value=>value==='fixture-only-dummy-credential') }, dialogStyle: vscode.workspace.getConfiguration('window').get('dialogStyle') });
   const server = http.createServer(async (request, response) => {
     if (request.headers.authorization !== `Bearer ${config.token}`) { response.writeHead(403); response.end(); return; }
     let body = ''; for await (const chunk of request) body += chunk;
@@ -110,6 +119,7 @@ exports.activate = async function activate(context) {
       switch (command.type) {
         case 'show': await vscode.commands.executeCommand('workbench.view.extension.kafeNativeTutor'); await vscode.commands.executeCommand('kafeNativeTutorView.focus'); break;
         case 'runtimeReady': runtimeReady = true; break;
+        case 'resetRunCounters': if (host.coordinator.snapshot().entries.some(e=>e.kind==='run'&&e.status==='running')) throw Error('Owned Run still active'); counters.launches=[]; counters.closed=0; break;
         case 'newConversation': await vscode.commands.executeCommand('kafe.newConversation'); break;
         case 'clearLegacy': clearOperation = { status: 'pending' }; void vscode.commands.executeCommand('kafe.clearTutorProgress').then(result => { clearOperation = { status: 'settled', result }; }, () => { clearOperation = { status: 'failed' }; }); break;
         case 'configure': void vscode.commands.executeCommand('kafe.configureProvider'); break;
@@ -142,6 +152,13 @@ exports.activate = async function activate(context) {
         }
         case 'readiness': await host.actions.refreshContext(); break;
         case 'singleEditor': await vscode.commands.executeCommand('workbench.action.joinAllGroups'); await vscode.window.showTextDocument(document); break;
+        case 'closeProposalEditors': {
+          const tabs=vscode.window.tabGroups.all.flatMap(group=>group.tabs).filter(tab=>
+            (tab.input instanceof vscode.TabInputTextDiff && tab.input.modified?.scheme==='kafe-proposal') ||
+            (tab.input instanceof vscode.TabInputText && tab.input.uri?.scheme==='kafe-proposal'));
+          if(tabs.length && !await vscode.window.tabGroups.close(tabs,true)) throw Error('Owned proposal tabs did not close');
+          await vscode.window.showTextDocument(document); await host.actions.refreshContext(); break;
+        }
         case 'target': {
           const target = ['optional', 'third'].includes(command.target) ? await vscode.workspace.openTextDocument(vscode.Uri.file(path.join(config.workspace, command.target === 'optional' ? 'optional-one-with-a-long-workspace-file-name.kf' : 'optional-two-with-another-long-workspace-file-name.kf'))) : await vscode.workspace.openTextDocument({ language: 'plaintext', content: 'Not a KAFE target' });
           await vscode.window.showTextDocument(target); await host.actions.refreshContext(); break;

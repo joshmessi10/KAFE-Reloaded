@@ -4,33 +4,146 @@ const { selectHistory } = require('./ConversationHistory');
 const { ConversationSession } = require('./ConversationSession');
 const { TurnController } = require('./TurnController');
 const { createRequestSnapshot, isSnapshotCurrent, sha256 } = require('./RequestSnapshot');
+const { checkpointDependencies } = require('./LearningCheckpoint');
+const { randomUUID } = require('node:crypto');
+const { LearningSession } = require('./LearningSession');
+const { ActionEvidence } = require('./ActionEvidence');
 
-/** Single host context owner. No learning state or reviewed-request capabilities. */
+/** Host context and memory-only learning owner. No reviewed-request capabilities. */
 class SessionCoordinator {
   constructor({ provider, contextComposer, toolRouter, proposalProvider,
-    session = new ConversationSession(), getContext = () => ({}),
+    session = new ConversationSession(), learningSession = new LearningSession(), getContext = () => ({}),
     getKnowledgeAvailability = async () => ({ status: 'unavailable', code: 'knowledge_unavailable' }),
     getSourceRevision = () => null,
-    getWorkspaceRelativeSourcePath = () => null } = {}) {
-    Object.assign(this, { provider, contextComposer, toolRouter, proposalProvider, session,
+    getWorkspaceRelativeSourcePath = () => null, diagnostic } = {}) {
+    Object.assign(this, { provider, contextComposer, toolRouter, proposalProvider, session, learningSession,
       getContext, getKnowledgeAvailability, getSourceRevision, getWorkspaceRelativeSourcePath });
     this.sourceRevisions = new WeakMap();
+    this.actionEvidence = new ActionEvidence();
+    this.evidenceRevisions = new WeakMap();
+    this.proposalEvidenceGenerations = new Map();
+    if (proposalProvider) {
+      proposalProvider.validateAuthority = proposal => this.validateProposalAuthority(proposal);
+      proposalProvider.onAuthorityRevoked = proposal => this.revokeProposalAuthority(proposal);
+    }
+    if (proposalProvider) proposalProvider.onEvidence = event => {
+      if (this.disposed) return;
+      if (event.outcome === 'staged') this.proposalEvidenceGenerations.set(event.proposal.id, this.session.snapshot().generation);
+      if (this.proposalEvidenceGenerations.get(event.proposal.id) !== this.session.snapshot().generation) return;
+      if (event.outcome === 'staged') this.actionEvidence.recordStage(event.proposal);
+      else this.actionEvidence.recordApply(event.proposal, event.outcome, event.observedFile);
+      if (event.outcome !== 'staged') this.proposalEvidenceGenerations.delete(event.proposal.id);
+    };
+    this.learningListeners = new Set();
+    this.learningDisplayRevision = 0; this.preferenceChangeQueued = false;
     this.evidence = null; this.lastRunSequence = 0; this.includedSourceUris = new Map();
+    this.evidenceGeneration = session.snapshot().generation;
+    this.unsubscribeEvidence = session.subscribe(snapshot => {
+      if (snapshot.generation === this.evidenceGeneration) return;
+      this.evidenceGeneration = snapshot.generation;
+      this.actionEvidence.reset(); this.proposalEvidenceGenerations.clear(); this.evidence = null;
+    });
     this.acceptingProposalId = null; this.disposed = false; this.contextRefresh = 0;
-    this.controller = new TurnController({ session, provider, contextComposer, toolRouter, proposalProvider,
+    this.controller = new TurnController({ session, learningSession, provider, contextComposer, toolRouter, proposalProvider,
+      diagnostic,
+      onSettled: () => this.settleLearningPreferences(),
       captureSubmission: submission => this.captureSubmission(submission),
       validateSubmission: snapshot => this.validateSubmission(snapshot),
-      isSubmissionAuthorized: snapshot => this.isSubmissionAuthorized(snapshot), refreshContext: () => this.refreshContext() });
+      isSubmissionAuthorized: (snapshot, settlement) => this.isSubmissionAuthorized(snapshot, settlement), refreshContext: () => this.refreshContext() });
   }
-  snapshot() { return this.session.snapshot(); }
-  subscribe(listener) { return this.session.subscribe(listener); }
-  dispose() { this.controller.dispose(); this.disposed = true; this.contextRefresh++; }
+  snapshot() {
+    const { policyVersion, revision, preferences } = this.learningSession.snapshot();
+    return { ...this.session.snapshot(), learning: { policyVersion, revision, preferences, displayRevision: this.learningDisplayRevision, preferenceChangeQueued: this.preferenceChangeQueued } };
+  }
+  subscribe(listener) {
+    this.learningListeners.add(listener);
+    const unsubscribe = this.session.subscribe(() => listener(this.snapshot()));
+    return () => { this.learningListeners.delete(listener); unsubscribe(); };
+  }
+  settleLearningPreferences() {
+    if (this.controller.isBusy()) return;
+    const result = this.learningSession.settlePreferences(), queued = this.preferenceChangeQueued;
+    this.preferenceChangeQueued = false;
+    if (result.status === 'updated' || queued) this.publishLearning();
+  }
+
+  revokeProposalAuthority(proposal) {
+    const generation = this.proposalEvidenceGenerations.get(proposal.id);
+    if (this.disposed || generation !== this.snapshot().generation) return;
+    this.controller.clearProposalId(proposal.id);
+    if (this.disposed || generation !== this.snapshot().generation) return;
+    this.session.invalidateActions(action => action.args.id === proposal.id);
+    for (const entry of this.session.snapshot().entries.filter(e => e.kind === 'proposal' && e.data.proposalId === proposal.id)) {
+      this.session.updateEntry(entry.id, { status: 'stale' });
+    }
+    // A consumed preparation grant is never reconstructed by this cleanup.
+    const dependencies = proposal.preparation?.dependencies;
+    if (dependencies && generation === this.snapshot().generation) {
+      const affected = record => record.dependencies.files.some(file => dependencies.files.some(old => old.uri === file.uri)) ||
+        (dependencies.knowledgeLineage !== null && record.dependencies.knowledgeLineage === dependencies.knowledgeLineage);
+      this.controller.invalidateScopes(affected); this.controller.invalidateCheckpoints(affected);
+    }
+  }
+
+  /** Fresh native closure receipt. The native provider calls it synchronously after every final await. */
+  async validateProposalAuthority(proposal) {
+    const generation = this.proposalEvidenceGenerations.get(proposal.id), provider = this.proposalProvider;
+    const owned = () => !this.disposed && this.snapshot().generation === generation &&
+      provider?.pending === proposal && !provider.isResetPending();
+    try {
+      if (!owned()) return null;
+      const dependencies = proposal.preparation?.dependencies;
+      if (!dependencies || !dependencies.files.some(file => file.uri === proposal.sourceId &&
+        file.version === proposal.documentVersion && file.contentSha256 === proposal.contentSha256)) return null;
+      const revision = this.getSourceRevision();
+      if (!Number.isSafeInteger(revision) || revision < 0) return null;
+      let knowledgeAuthority = null;
+      const matchesKnowledge = async () => {
+        if (dependencies.knowledgeLineage === null) return true;
+        const availability = await this.getKnowledgeAvailability();
+        knowledgeAuthority = availability.authority;
+        return availability.status === 'ready' && metadataLineage(availability.metadata) === dependencies.knowledgeLineage &&
+          typeof knowledgeAuthority?.isCurrent === 'function';
+      };
+      if (!await matchesKnowledge() || !owned()) return null;
+      const documents = [];
+      for (const file of dependencies.files) {
+        const uri = provider.vscode.Uri.parse(file.uri);
+        if (uri.toString() !== file.uri || !provider.authorizeUri(uri)) return null;
+        const document = await provider.vscode.workspace.openTextDocument(uri);
+        if (!owned()) return null;
+        documents.push({ file, document });
+      }
+      if (!await matchesKnowledge() || !owned()) return null;
+      const current = () => {
+        try {
+          if (!owned() || this.getSourceRevision() !== revision) return false;
+          for (const { file, document } of documents) {
+            if (!document || document.uri.toString() !== file.uri || document.languageId !== 'kafe' ||
+              !provider.authorizeUri(document.uri) || document.version !== file.version || sha256(document.getText()) !== file.contentSha256) return false;
+            // A closed native document may retain cached text; saved bytes then provide the fresh identity.
+            if (document.isClosed === true && this.contextComposer.documentReader.readSavedIdentity?.(file.uri) !== file.contentSha256) return false;
+          }
+          if (dependencies.knowledgeLineage !== null && knowledgeAuthority?.isCurrent() !== true) return false;
+          return this.getSourceRevision() === revision && owned();
+        } catch { return false; }
+      };
+      // Only the caller can check the consequential boundary after this promise resumes.
+      // Do not duplicate bounded knowledge hashing before returning the same receipt.
+      return current;
+    } catch { return null; }
+  }
+  publishLearning() { this.learningDisplayRevision++; for (const listener of [...this.learningListeners]) listener(this.snapshot()); }
+  dispose() { this.controller.dispose(); this.disposed = true; this.contextRefresh++; this.learningListeners.clear(); this.unsubscribeEvidence(); }
 
   /** Reset conversation memory; independent native processes and legacy storage remain owned elsewhere. */
   newConversation() {
     if (this.disposed) return;
     this.contextRefresh++;
     this.includedSourceUris.clear(); this.evidence = null;
+    this.actionEvidence.reset(); this.proposalEvidenceGenerations.clear();
+    this.learningSession.reset();
+    this.preferenceChangeQueued = false; this.learningDisplayRevision++;
     this.session.reset();
     this.proposalProvider?.clear(); this.proposal = null;
     void this.refreshContext().catch(() => {});
@@ -66,15 +179,53 @@ class SessionCoordinator {
     this.session.setContext({ revision: previous.revision, restricted,
       activeSource: activeDocument ? choice(activeDocument.uri, 'active-file', true) : null, sources });
     this.includedSourceUris = new Map(candidateUris.filter(uri => sources.some(s => s.id === selectedSourceId(uri) && s.included)).map(uri => [selectedSourceId(uri), uri]));
+    const admitted = new Set([activeDocument?.uri.toString(), ...sources.filter(s => s.included).map(s => s.uri)].filter(Boolean));
+    this.controller.invalidateScopes(record => record.dependencies.files.some(file => !admitted.has(file.uri)) ||
+      (activeDocument && record.dependencies.files.some(file => file.uri === activeDocument.uri.toString() &&
+        (file.version !== activeDocument.version || file.contentSha256 !== sha256(activeDocument.text)))));
+    this.controller.invalidateCheckpoints(record => record.dependencies.files.some(file => !admitted.has(file.uri)) ||
+      (activeDocument && record.dependencies.files.some(file => file.uri === activeDocument.uri.toString() &&
+        (file.version !== activeDocument.version || file.contentSha256 !== sha256(activeDocument.text)))));
+    const proposal = this.proposalProvider?.pending;
+    if ([...this.controller.publishedCheckpoints(), ...this.controller.preparationScopes(),
+      ...(proposal?.preparation ? [proposal.preparation] : [])].some(record => record.dependencies.knowledgeLineage !== null)) {
+      const availability = await this.getKnowledgeAvailability();
+      if (this.disposed || ticket !== this.contextRefresh || generation !== this.snapshot().generation) return null;
+      const lineage = availability.status === 'ready' ? metadataLineage(availability.metadata) : null;
+      this.controller.invalidateScopes(record => record.dependencies.knowledgeLineage !== null && record.dependencies.knowledgeLineage !== lineage);
+      this.controller.invalidateCheckpoints(record => record.dependencies.knowledgeLineage !== null && record.dependencies.knowledgeLineage !== lineage);
+      if (proposal?.preparation && this.proposalProvider?.pending === proposal && proposal.preparation.dependencies.knowledgeLineage !== null &&
+        proposal.preparation.dependencies.knowledgeLineage !== lineage) this.proposalProvider.discardStale(proposal);
+    }
     return { activeDocument, candidateUris, restricted,
-      runResult: !restricted && this.evidence?.sourceUri === activeDocument?.uri.toString() ? this.evidence : null };
+      runResult: !restricted && this.evidence?.sourceUri === activeDocument?.uri.toString() ? this.evidence : null,
+      actionEvidence: this.actionEvidence };
+  }
+
+  /** Fresh action authorization samples retained source identities and actual current teaching state. */
+  async validateLearningAction(record, reservation, text) {
+    try {
+      if (!this.controller.ownsReservation(reservation) || record.generation !== this.snapshot().generation) return null;
+      const state = this.session.snapshot();
+      const submission = { submissionId: randomUUID(), text, inputRevision: state.inputRevision, context: state.context };
+      const snapshot = await this.captureSubmission(submission);
+      if (!this.controller.ownsReservation(reservation) || !await this.validateSubmission(snapshot) || !this.isSubmissionAuthorized(snapshot)) return null;
+      const dependencies = checkpointDependencies(snapshot);
+      if (record.dependencies.files.some(file => !dependencies.files.some(current => isDeepStrictEqual(current, file))) ||
+        (record.dependencies.knowledgeLineage !== null && record.dependencies.knowledgeLineage !== dependencies.knowledgeLineage)) return null;
+      if (record.decisionId) {
+        const decision = snapshot.learning.decisions.find(d => d.id === record.decisionId);
+        if (!decision || (record.checkpoint && !isDeepStrictEqual(decision.checkpoint, record.checkpoint)) || !isDeepStrictEqual(decision.dependencies, record.dependencies)) return null;
+      }
+      return snapshot;
+    } catch { return null; }
   }
 
   parameters() { return this.provider?.getRequestParameters?.() || { model: 'deepseek-flash', thinking: { type: 'disabled' }, stream: true }; }
 
   /** @param {import('./ConversationSession').Submission} submission @returns {Promise<import('./RequestSnapshot').RequestSnapshot>} */
   async captureSubmission(submission) {
-    const identity = this.snapshot(), runSequence = this.lastRunSequence, sourceRevision = this.getSourceRevision();
+    const identity = this.snapshot(), runSequence = this.lastRunSequence, sourceRevision = this.getSourceRevision(), evidenceRevision = this.actionEvidence.revision;
     const context = await this.refreshContext();
     if (!context || !isDeepStrictEqual(submission.context, this.snapshot().context)) throw Object.assign(new Error(), { code: 'stale_context' });
     const availability = await this.getKnowledgeAvailability();
@@ -82,11 +233,13 @@ class SessionCoordinator {
       activeDocument: context.activeDocument ? { ...context.activeDocument } : undefined, runResult: context.runResult ? structuredClone(context.runResult) : null,
       candidateUris: context.candidateUris.filter(uri => uri.toString() !== context.activeDocument?.uri.toString() && submission.context.sources.some(s => s.id === selectedSourceId(uri) && s.included)),
       includedSourceIds: submission.context.sources.filter(s => s.included).map(s => s.id), history: this.session.historyPairs(),
+      learningSession: this.learningSession, actionEvidence: context.restricted ? undefined : this.actionEvidence,
       providerParameters: this.parameters(), knowledgeAvailability: availability });
-    const request = context.restricted ? { ...composed.payload, tools: TOOL_DEFINITIONS.filter(t => t.function.name === 'searchKafeKnowledge') } : composed.payload;
+    const request = context.restricted ? { ...composed.payload, tools: TOOL_DEFINITIONS.filter(t => ['searchKafeKnowledge', 'proposeLearningCheckpoint'].includes(t.function.name)) } : composed.payload;
     const snapshot = createRequestSnapshot({ submission, sessionId: identity.sessionId, generation: identity.generation,
-      runSequence, sources: composed.snapshots, history: composed.history, dependencies: composed.dependencies, request });
+      runSequence, sources: composed.snapshots, history: composed.history, learning: composed.learning, dependencies: composed.dependencies, request });
     this.sourceRevisions.set(snapshot, sourceRevision);
+    this.evidenceRevisions.set(snapshot, evidenceRevision);
     return snapshot;
   }
 
@@ -97,10 +250,15 @@ class SessionCoordinator {
    * cover closed-but-included documents too. Draft/token changes must not advance it.
    * Missing/invalid host fences fail closed for file-bearing snapshots.
    */
-  isSubmissionAuthorized(snapshot) {
+  isSubmissionAuthorized(snapshot, { learningRevision = snapshot.learning?.revision } = {}) {
     try {
       if (this.disposed) return false;
       const live = this.snapshot();
+      if (this.evidenceRevisions.get(snapshot) !== this.actionEvidence.revision) return false;
+      // Host checkpoint settlement may have just committed one learning revision.
+      // All original context/source fences still use the original snapshot identity.
+      const actualLearning = { policyVersion: live.learning.policyVersion, revision: live.learning.revision, preferences: live.learning.preferences };
+      if (!isDeepStrictEqual(actualLearning, { policyVersion: snapshot.learning?.policyVersion, revision: learningRevision, preferences: snapshot.learning?.preferences })) return false;
       if (live.sessionId !== snapshot.sessionId || live.generation !== snapshot.generation ||
         !isDeepStrictEqual(live.context, snapshot.submission.context) || this.lastRunSequence !== snapshot.runSequence ||
         !isDeepStrictEqual(this.parameters(), { model: snapshot.request.model, thinking: snapshot.request.thinking, stream: snapshot.request.stream })) return false;
@@ -143,9 +301,10 @@ class SessionCoordinator {
       const lineage = availability.status === 'ready' ? metadataLineage(availability.metadata) : null;
       const fileUris = [live.context.activeSource?.uri, ...live.context.sources.filter(s => s.included).map(s => s.uri)].filter(Boolean);
       const history = selectHistory({ pairs: this.session.historyPairs(), authorizedFileUris: fileUris, knowledgeLineage: lineage });
+      const learning = this.learningSession.selectContext({ authorizedFiles: sources.filter(source => source.uri !== null).map(({ uri, version, contentSha256 }) => ({ uri, version, contentSha256 })), knowledgeLineage: lineage });
       return this.isSubmissionAuthorized(snapshot) && isSnapshotCurrent(snapshot, { ...snapshot, sessionId: live.sessionId, generation: live.generation,
         submission: { ...snapshot.submission, context: live.context }, runSequence: this.lastRunSequence,
-        sources, history, dependencies: { ...snapshot.dependencies, knowledgeLineage: lineage },
+        sources, history, learning, dependencies: { ...snapshot.dependencies, knowledgeLineage: lineage },
         request: { ...snapshot.request, ...this.parameters() } });
     } catch { return false; }
   }
@@ -167,12 +326,14 @@ class SessionCoordinator {
     if (this.disposed) return false;
     if (!result) throw new Error('Invalid learner-started KAFE run result.');
     validateRunResult(result);
+    try { this.actionEvidence.recordRun(result); } catch { /* Preserve actual native result if evidence fails. */ }
     if (result.runSequence <= this.lastRunSequence) return false;
     this.lastRunSequence = result.runSequence;
     this.evidence = { stdout: result.stdout, stderr: result.stderr, exitCode: result.exitCode,
       outputTruncated: result.outputTruncated, runtimeVersion: result.runtimeVersion,
       knowledgePackVersion: result.knowledgePackVersion, sourceUri: result.sourceUri,
       runSequence: result.runSequence,
+      ...(result.sourceIdentity ? { sourceIdentity: structuredClone(result.sourceIdentity) } : {}),
       ...(result.runtimeMode ? { runtimeMode: result.runtimeMode } : {}) };
     const sourcePath = this.getWorkspaceRelativeSourcePath(result.sourceUri);
     if (typeof sourcePath === 'string' && sourcePath.length <= 500 && sourcePath.trim() === sourcePath &&
@@ -191,6 +352,14 @@ class SessionCoordinator {
   async handleLearnerMessage(message) {
     if (this.disposed) return { status: 'cancelled' };
     if (!message || typeof message.type !== 'string') return { status: 'unavailable' };
+    if (message.type === 'setLearningPreferences') {
+      try {
+        const result = this.learningSession.setPreferences(message.preferences, { busy: this.controller.isBusy() });
+        if (result.status === 'queued') this.preferenceChangeQueued = true;
+        if (['updated', 'queued'].includes(result.status)) this.publishLearning();
+        return result;
+      } catch { return { status: 'unavailable', code: 'invalid_learning_preferences' }; }
+    }
     if (message.type === 'rejectProposal') {
       if (!this.proposal || message.id !== this.proposal.id) return this.turn('error', 'No matching proposal is available.');
       let result;

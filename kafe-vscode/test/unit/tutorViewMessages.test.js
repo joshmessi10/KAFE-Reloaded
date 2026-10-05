@@ -4,6 +4,24 @@ const { isTutorMessage, dispatchTutorMessage, TutorViewProvider } = require('../
 const { loadView } = require('../helpers/tutorViewHarness');
 const { ConversationSession } = require('../../src/tutor/ConversationSession');
 const command = (session, type, fields = {}) => ({ type, sessionId: session.snapshot().sessionId, generation: session.snapshot().generation, ...fields });
+test('native source reveal resolves only included host identity and exact current metadata revision', () => {
+  const s = new ConversationSession();
+  s.setContext({ restricted: false, activeSource: { id: 'active-file', uri: 'file:///main.kf', label: 'main.kf', included: true, category: 'active-file' }, sources: [{ id: 'optional', uri: 'file:///extra.kf', label: 'extra.kf', included: false, category: 'selected-file' }] });
+  const issued = command(s, 'revealSource', { sourceId: 'active-file', contextRevision: s.snapshot().context.revision });
+  assert.equal(isTutorMessage(issued, s), true);
+  for (const forged of [{ ...issued, uri: 'file:///private.kf' }, { ...issued, sourceId: 'optional' }, { ...issued, sourceId: 'unknown' }, { ...issued, contextRevision: 0 }]) assert.equal(isTutorMessage(forged, s), false);
+  s.setContext({ restricted: true, activeSource: null, sources: [] }); assert.equal(isTutorMessage(issued, s), false);
+});
+test('native preferences route has no webview preference mutation fields', () => {
+  const s = new ConversationSession(); assert.equal(isTutorMessage(command(s, 'openLearningPreferences'), s), true);
+  for (const extra of [{ preferences: { mode: 'paused' } }, { command: 'kafe.runFile' }, { actionId: 'fake' }]) assert.equal(isTutorMessage(command(s, 'openLearningPreferences', extra), s), false);
+});
+test('source reveal fails closed for malformed context projections without throwing', () => {
+  for (const context of [{ restricted: false, activeSource: null, sources: null, revision: 1 }, { restricted: false, activeSource: { id: 'active-file', included: true }, sources: [] }]) {
+    const state = { sessionId: 'session', generation: 1, context };
+    assert.equal(isTutorMessage({ type: 'revealSource', sessionId: 'session', generation: 1, sourceId: 'active-file', contextRevision: context.revision }, state), false);
+  }
+});
 test('old prepare and learning messages with a live generation are rejected', () => {
   const session = new ConversationSession(), received = [];
   for (const type of ['prepareRequest', 'sendReviewed', 'reviewContext', 'useLearningGoal', 'newSession', 'reviseMilestones', 'confirmMilestones', 'recordReviewedCheck', 'showProgress', 'clearProgress', 'cancelPendingInput']) {
@@ -38,6 +56,14 @@ function nativeFixture(session) {
   const view = makeView(posted); provider.resolveWebviewView(view);
   return { provider, view, vscode, received, opened, posted, makeView, takeReceiver: () => receive, receive: message => receive(message), close: () => disposed(), messageDisposals: () => messageDisposals };
 }
+test('learning projection owner retains session capability authority through actual native view callback', () => {
+  const s = new ConversationSession(), issued = capability(s);
+  const owner = { session: s, snapshot: () => ({ ...s.snapshot(), learning: { revision: 0, preferences: { mode: 'guided' } } }), subscribe: listener => s.subscribe(() => listener(owner.snapshot())) };
+  const f = nativeFixture(owner);
+  assert.equal(f.receive(issued), true); assert.deepEqual(f.received, [issued]);
+  assert.equal(f.posted[0].state.learning.preferences.mode, 'guided');
+  f.provider.dispose();
+});
 test('legacy and no-session messages fail closed and cause no action', () => {
   const received = [];
   for (const type of ['startSession', 'confirmMilestones', 'sendMessage', 'setContextSourceIncluded', 'acceptProposal', 'rejectProposal', 'clearProgress', 'retryMessage', 'recordReviewedCheck', 'prepareRequest']) {

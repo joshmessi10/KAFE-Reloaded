@@ -8,6 +8,148 @@ const pack = { sourceMode: 'managed', runtimeVersion: '1', knowledgePackVersion:
 const availability = { status: 'ready', metadata: pack };
 const uri = (path) => ({ scheme: 'file', path, toString() { return `file://${path}`; } });
 
+test('bare greetings omit incidental real error catalogue retrieval while retaining current lineage and exact learner text', async t => {
+  const fs = require('node:fs/promises'), os = require('node:os'), path = require('node:path');
+  const { knowledgeContentDigest } = require('../../src/tutor/KnowledgeRetriever');
+  const { ToolRouter } = require('../../src/tutor/ToolRouter');
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), 'kafe-greeting-context-'));
+  t.after(() => fs.rm(root, { recursive: true, force: true }));
+  const knowledgeRoot = path.join(root, 'knowledge-pack'); await fs.mkdir(knowledgeRoot);
+  const bytes = Buffer.from('Error catalogue: show("Hello\\qworld"); invalid escape sequence. Hello world strings, lists and loops.');
+  await fs.writeFile(path.join(knowledgeRoot, 'errors.md'), bytes);
+  const digest = knowledgeContentDigest([{ relative: 'errors.md', bytes }]);
+  const metadata = { ...pack, knowledgeRoot, expectedContentSha256: digest.contentSha256, expectedFileCount: 1 };
+  const retriever = new KnowledgeRetriever({ knowledgeRoot, runtimeVersion: '1', knowledgePackVersion: '1', expectedRuntimeVersion: '1', expectedKnowledgePackVersion: '1', expectedContentSha256: digest.contentSha256, expectedFileCount: 1 });
+  assert.ok((await retriever.search('Hello')).length > 0, 'actual catalogue matches the incidental string');
+  let searches = 0; const original = retriever.search.bind(retriever); retriever.search = async (...args) => { searches++; return original(...args); };
+  const composer = new ContextComposer({ documentReader: { readDocument() { throw Error('No optional reads'); } }, knowledgeRetriever: retriever });
+  const lineage = metadataLineage(metadata), history = [{ id: 'prior', learnerText: 'Explain strings', assistantText: 'A string contains text.', dependencies: { fileUris: [], knowledgeLineage: lineage } }];
+  for (const request of ['Hello', '  Hello!  ', 'hi', 'Hey.', 'Hola!']) {
+    const result = await composer.compose({ request, history, candidateUris: [uri('/private/optional.kf')], knowledgeAvailability: { status: 'ready', metadata } });
+    assert.equal(result.snapshots.some(s => s.category === 'knowledge'), false);
+    assert.equal(result.dependencies.knowledgeLineage, lineage);
+    assert.deepEqual(result.payload.messages.slice(1, 3), [{ role: 'user', content: history[0].learnerText }, { role: 'assistant', content: history[0].assistantText }]);
+    assert.deepEqual(result.payload.messages.at(-1), { role: 'user', content: request });
+    assert.doesNotMatch(JSON.stringify(result.payload), /Error catalogue|invalid escape|optional\.kf/);
+  }
+  assert.equal(searches, 0);
+  for (const request of ['Hello world', 'Explain "Hello" strings', 'Hello, explain loops', 'show("Hello")', 'What is a list?', 'Hello again, continue']) {
+    const result = await composer.compose({ request, knowledgeAvailability: { status: 'ready', metadata } });
+    assert.equal(result.payload.messages.at(-1).content, request);
+  }
+  assert.equal(searches, 6);
+  const explicit = await new ToolRouter({ knowledgeRetriever: retriever }).route({ name: 'searchKafeKnowledge', arguments: { query: 'Hello' } }, { snapshot: { sources: [], dependencies: { knowledgeLineage: lineage } } });
+  assert.ok(explicit.length > 0); assert.equal(searches, 7);
+});
+
+test('host reference attribution identifies source category and safe provenance without impersonating learner input', async () => {
+  const { LearningSession } = require('../../src/tutor/LearningSession');
+  const retriever = { search: async () => [{ id: 'errors/catalogue.md#1', path: 'errors/catalogue.md', category: 'errors', text: 'REFERENCE_SENTINEL show("Hello")', sourceMode: 'managed', runtimeVersion: '1', knowledgePackVersion: '1', packIdentity: 'PRIVATE_PACK_ID' }] };
+  const metadata = { ...pack, packIdentity: 'PRIVATE_PACK_ID' };
+  const composer = new ContextComposer({ documentReader: {}, knowledgeRetriever: retriever });
+  for (const mode of ['guided', 'paused']) {
+    const learning = new LearningSession(); learning.setPreferences({ mode });
+    const result = await composer.compose({ request: 'Explain this syntax exactly.\n', learningSession: learning, knowledgeAvailability: { status: 'ready', metadata } });
+    const reference = result.payload.messages.find(m => m.content.includes('REFERENCE_SENTINEL'));
+    assert.match(reference.content, /Host-provided reference context/);
+    assert.match(reference.content, /not learner-pasted/); assert.match(reference.content, /untrusted data/i);
+    assert.match(reference.content, /"category":"knowledge"/); assert.match(reference.content, /errors\/catalogue\.md/);
+    assert.doesNotMatch(reference.content, /PRIVATE_PACK_ID/);
+    assert.match(result.payload.messages[0].content, /latest literal learner request/);
+    assert.match(result.payload.messages[0].content, /pure greeting.*briefly/i);
+    assert.deepEqual(result.payload.messages.at(-1), { role: 'user', content: 'Explain this syntax exactly.\n' });
+  }
+});
+
+test('greeting search suppression still rejects changed current knowledge lineage', async () => {
+  let searches = 0;
+  const composer = new ContextComposer({ documentReader: {}, knowledgeRetriever: {
+    getKnowledgeLineage: async () => metadataLineage({ ...pack, packIdentity: 'changed-pack' }),
+    search: async () => { searches++; return []; },
+  } });
+  await assert.rejects(composer.compose({ request: 'Hello', knowledgeAvailability: availability }), /Knowledge pack changed/);
+  assert.equal(searches, 0);
+});
+
+test('composer projects only real host facts and preserves historical Run attribution across same URI edits', async () => {
+  const { ActionEvidence } = require('../../src/tutor/ActionEvidence'), { sha256 } = require('../../src/tutor/RequestSnapshot');
+  const ledger = new ActionEvidence(), a = uri('/work/a.kf');
+  const result = { sourceUri: a.toString(), runSequence: 1, stdout: 'HISTORICAL_OUTPUT', stderr: '', exitCode: 0, outputTruncated: false,
+    runtimeVersion: '1', knowledgePackVersion: '1', sourceIdentity: { launch: sha256('OLD'), completion: sha256('OLD') } };
+  ledger.recordRun(result);
+  const composer = new ContextComposer({ documentReader: { readSavedIdentity: () => sha256('NEW') }, knowledgeRetriever: {} });
+  const composition = await composer.compose({ request: 'Explain', activeDocument: { uri: a, version: 2, text: 'NEW' }, runResult: result, actionEvidence: ledger });
+  assert.equal(composition.actionEvidence.records[0].sourceRelationship, 'changed');
+  const output = composition.snapshots.find(s => s.id === 'run-result'); assert.equal(JSON.parse(output.text).sourceRelationship, 'changed');
+  assert.match(JSON.stringify(composition.payload), /exactExecutedBytes.*unknown/);
+  const denied = await composer.compose({ request: 'Explain', actionEvidence: ledger, runResult: result });
+  assert.doesNotMatch(JSON.stringify(denied.payload), /HISTORICAL_OUTPUT/); assert.equal(denied.actionEvidence.records.length, 0);
+  const forged = await composer.compose({ request: 'Explain', actionEvidence: { selectContext: () => ({ records: [{ outcome: 'applied' }] }) } });
+  assert.equal(forged.actionEvidence.records.length, 0);
+});
+
+test('revoked transitive Apply dependency suppresses matching Run output in real composition', async () => {
+  const { ActionEvidence } = require('../../src/tutor/ActionEvidence'), { sha256 } = require('../../src/tutor/RequestSnapshot');
+  const ledger = new ActionEvidence(), a = uri('/work/a.kf'), b = uri('/work/b.kf');
+  const observed = { uri: a.toString(), version: 2, contentSha256: sha256('APPLIED') };
+  ledger.recordApply({ id: 'private-native', sourceId: a.toString(), preparation: { grantId: 'host', scopeSummary: 'TRANSITIVE_SCOPE', dependencies: {
+    files: [{ ...observed, version: 1 }, { uri: b.toString(), version: 1, contentSha256: sha256('helper') }], knowledgeLineage: null } } }, 'applied', observed);
+  const result = { sourceUri: a.toString(), runSequence: 1, stdout: 'TRANSITIVE_RUN_OUTPUT', stderr: '', exitCode: 0, outputTruncated: false,
+    runtimeVersion: '1', knowledgePackVersion: '1', sourceIdentity: { launch: sha256('APPLIED'), completion: sha256('APPLIED') } };
+  ledger.recordRun(result);
+  const composer = new ContextComposer({ documentReader: {}, knowledgeRetriever: {} });
+  const composed = await composer.compose({ request: 'Explain', activeDocument: { uri: a, version: 2, text: 'APPLIED' }, runResult: result, actionEvidence: ledger });
+  assert.doesNotMatch(JSON.stringify(composed.payload), /TRANSITIVE_RUN_OUTPUT|TRANSITIVE_SCOPE/);
+  assert.ok(composed.actionEvidence.omissions.every(o => o.reason === 'source-revoked'));
+});
+
+test('teaching request fixtures carry direct concepts, learner-owned decisions, requested help and optional setup without hint-first defaults', async () => {
+  const composer = new ContextComposer({ documentReader: {}, knowledgeRetriever: {} });
+  for (const request of ['What is a loop?', 'Design storage for my program', 'Show a worked example', 'Skip this question', 'Use defaults']) {
+    const result = await composer.compose({ request });
+    const policy = result.payload.messages[0].content;
+    assert.match(policy, /concept or syntax question.*explain directly/i);
+    assert.match(policy, /meaningful engineering choice.*learner.*approach/i);
+    assert.match(policy, /hints, options.*worked examples.*requested/i);
+    assert.match(policy, /skip.*named reasoning step/i);
+    assert.match(policy, /onboarding.*optional.*one question/i);
+    assert.doesNotMatch(policy, /Start with a hint/i);
+    assert.equal(result.payload.messages.at(-1).content, request);
+    assert.equal(result.learning.preferences.familiarity, 'unknown');
+  }
+});
+
+test('paused teaching removes reasoning prerequisite while retaining scoped preparation and native authorities', async () => {
+  const { LearningSession } = require('../../src/tutor/LearningSession');
+  const learning = new LearningSession(); learning.setPreferences({ mode: 'paused' });
+  const composer = new ContextComposer({ documentReader: {}, knowledgeRetriever: {} });
+  const result = await composer.compose({ request: 'Prepare the change', learningSession: learning });
+  assert.match(result.payload.messages[0].content, /paused.*do not require.*reasoning/i);
+  assert.match(result.payload.messages[0].content, /scoped.*confirmation/i);
+  assert.match(result.payload.messages[0].content, /Help.*Skip.*Pause.*never authorize.*writes.*Run/i);
+  assert.equal(result.learning.preferences.mode, 'paused');
+});
+
+test('learning records join context dependency union and revoked transitive records never reach provider', async () => {
+  const { LearningSession } = require('../../src/tutor/LearningSession');
+  const { sha256 } = require('../../src/tutor/RequestSnapshot');
+  const learning = new LearningSession(), a = uri('/work/a.kf');
+  const parent = learning.addDecision({ kind: 'design', name: 'List', learnerProposalSummary: 'A list', tutorProposedAdditions: [],
+    scopeSummary: 'Use source', tradeoffs: [], unresolvedChoices: [], sourceIds: ['active-file'], priorDecisionIds: [] },
+  { files: [{ uri: a.toString(), version: 1, contentSha256: sha256('A') }], knowledgeLineage: null });
+  learning.confirmDecision(parent.id);
+  learning.addObservation({ kind: 'reasoning', text: 'TRANSITIVE_LEARNER_DATA', attribution: 'learner', uncertainty: 'Unknown', status: 'observed', priorDecisionIds: [parent.id] }, { files: [], knowledgeLineage: null });
+  const composer = new ContextComposer({ documentReader: { validateUri: async () => true }, knowledgeRetriever: {} });
+  const admitted = await composer.compose({ request: 'Explain', activeDocument: { uri: a, version: 1, text: 'A' }, learningSession: learning });
+  assert.match(JSON.stringify(admitted.payload), /TRANSITIVE_LEARNER_DATA/);
+  assert.deepEqual(admitted.dependencies.fileUris, ['file:///work/a.kf']);
+  for (const activeDocument of [undefined, { uri: a, version: 2, text: 'A' }, { uri: a, version: 1, text: 'changed' }]) {
+    const filtered = await composer.compose({ request: 'Explain', activeDocument, learningSession: learning });
+    assert.doesNotMatch(JSON.stringify(filtered.payload), /TRANSITIVE_LEARNER_DATA/);
+    assert.equal(filtered.learning.decisions.length, 0);
+  }
+});
+
 test('long ordinary messages reach actual ready knowledge retrieval intact and integrity failures stay fatal', async t => {
   const fs = require('node:fs/promises'), os = require('node:os'), path = require('node:path');
   const { knowledgeContentDigest } = require('../../src/tutor/KnowledgeRetriever');
@@ -116,7 +258,7 @@ test('context preview identifies exact payload segments and optional removal rem
   };
   const first = await composer.compose(input);
   assert.deepEqual(first.payload.tools.map(tool => tool.function.name), [
-    'readActiveDocument', 'searchKafeKnowledge', 'getLatestRunResult', 'proposeCodeChange',
+    'readActiveDocument', 'searchKafeKnowledge', 'getLatestRunResult', 'proposeCodeChange', 'proposeLearningCheckpoint',
   ]);
   for (const source of first.sources.filter(item => item.included)) {
     assert.equal(first.payload.messages.filter(message => message.content.startsWith(`[Source ${source.id}]\n`)).length, 1);
@@ -222,7 +364,7 @@ test('unavailable knowledge omits dependent history and never calls retrieval', 
 test('learning state cannot enter composition or knowledge search', async () => {
   let found;
   const composer = new ContextComposer({ documentReader: {}, knowledgeRetriever: { search: async (...args) => { found = args; return []; } } });
-  const result = await composer.compose({ request: 'Hello', knowledgeAvailability: availability,
+  const result = await composer.compose({ request: 'Explain lists', knowledgeAvailability: availability,
     session: { confirmed: true, goal: 'PRIVATE_GOAL', milestones: [{ text: 'PRIVATE_MILESTONE' }] } });
-  assert.deepEqual(found, ['Hello', []]); assert.equal(JSON.stringify(result.payload).includes('PRIVATE_'), false);
+  assert.deepEqual(found, ['Explain lists', []]); assert.equal(JSON.stringify(result.payload).includes('PRIVATE_'), false);
 });

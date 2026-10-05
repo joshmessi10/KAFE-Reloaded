@@ -36,4 +36,8 @@ function isRenderedSettlement(host, rendered) {
     rendered.entryIds.includes(turn.learnerEntryId) && (!turn.assistantEntryId ||
       (rendered.entryIds.includes(turn.assistantEntryId) && rendered.lastAssistantEntryId === turn.assistantEntryId)));
 }
-module.exports = { ContextRegistry, identity, assertReachableGeometry, isRenderedSettlement };
+function projectedEntryIds(snapshot) {
+  return snapshot.entries.filter(entry => ['learner', 'assistant', 'checkpoint', 'proposal', 'run', 'error'].includes(entry.kind) ||
+    (entry.kind === 'host' && Boolean(entry.data?.scopeSummary))).map(entry => entry.id);
+}
+module.exports = { ContextRegistry, identity, assertReachableGeometry, isRenderedSettlement, projectedEntryIds };

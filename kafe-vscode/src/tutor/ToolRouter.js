@@ -1,26 +1,33 @@
 const { createHash } = require('node:crypto');
 const { validateSnapshot } = require('./RequestSnapshot');
 const { KnowledgeUnavailable } = require('./KnowledgeRetriever');
+const { CHECKPOINT_SCHEMA, validateCheckpoint } = require('./LearningCheckpoint');
+const { runObservation } = require('./ActionEvidence');
 
 const MAX_FILE_BYTES = 64 * 1024;
 const MAX_RUN_BYTES = 1024 * 1024;
 const TOOL_NAMES = Object.freeze([
-  'readActiveDocument', 'searchKafeKnowledge', 'getLatestRunResult', 'proposeCodeChange',
+  'readActiveDocument', 'searchKafeKnowledge', 'getLatestRunResult', 'proposeCodeChange', 'proposeLearningCheckpoint',
 ]);
 const TOOL_DEFINITIONS = Object.freeze([
   { type: 'function', function: { name: 'readActiveDocument', description: 'Read the active KAFE document or a learner-selected source ID.', parameters: { type: 'object', properties: { sourceId: { type: 'string' } }, additionalProperties: false } } },
   { type: 'function', function: { name: 'searchKafeKnowledge', description: 'Search the local version-matched KAFE knowledge pack.', parameters: { type: 'object', properties: { query: { type: 'string' } }, required: ['query'], additionalProperties: false } } },
   { type: 'function', function: { name: 'getLatestRunResult', description: 'Read the latest learner-started KAFE run result.', parameters: { type: 'object', properties: {}, additionalProperties: false } } },
   { type: 'function', function: { name: 'proposeCodeChange', description: 'Prepare a code change for learner review without applying it.', parameters: { type: 'object', properties: { newText: { type: 'string' }, sourceId: { type: 'string' } }, required: ['newText'], additionalProperties: false } } },
+  { type: 'function', function: { name: 'proposeLearningCheckpoint', description: 'Propose one bounded learning decision. Tutor summaries remain unconfirmed; this grants no implementation authority.', parameters: CHECKPOINT_SCHEMA } },
 ]);
+
+function routingError(reason, message) {
+  return Object.assign(new Error(message), { diagnosticReason: reason });
+}
 
 function parseArguments(value, allowed, required = []) {
   let args;
   try { args = typeof value === 'string' ? JSON.parse(value) : value; }
-  catch { throw new Error('Tool arguments are malformed JSON.'); }
+  catch { throw routingError('invalid-arguments', 'Tool arguments are malformed JSON.'); }
   if (!args || typeof args !== 'object' || Array.isArray(args) ||
     Object.keys(args).some(key => !allowed.includes(key)) || required.some(key => !Object.hasOwn(args, key))) {
-    throw new Error('Tool arguments are invalid.');
+    throw routingError('invalid-arguments', 'Tool arguments are invalid.');
   }
   return args;
 }
@@ -126,7 +133,11 @@ function providerRunResult(result) {
   return { stdout: valid.stdout, stderr: valid.stderr, exitCode: valid.exitCode,
     outputTruncated: valid.outputTruncated, runtimeVersion: valid.runtimeVersion,
     knowledgePackVersion: valid.knowledgePackVersion,
-    ...(valid.runtimeMode ? { runtimeMode: valid.runtimeMode } : {}) };
+    ...(valid.runtimeMode ? { runtimeMode: valid.runtimeMode } : {}),
+    ...runObservation(valid),
+    ...(valid.sourceObservation ? { sourceIdentity: valid.sourceObservation.sourceIdentity,
+      sourceRelationship: valid.sourceObservation.sourceRelationship, currentDocumentRelationship: valid.sourceObservation.currentDocumentRelationship,
+      knowledgeLineage: valid.sourceObservation.knowledgeLineage ?? null } : {}) };
 }
 
 class ToolRouter {
@@ -138,10 +149,10 @@ class ToolRouter {
   async documentFor(sourceId, context) {
     const id = sourceId ?? 'active-file';
     if (sourceId !== undefined && !/^selected:[a-f0-9]{64}$/.test(sourceId)) {
-      throw new Error('Selected source ID is not allowed.');
+      throw routingError('invalid-source-id', 'Selected source ID is not allowed.');
     }
     const source = context.snapshot.sources.find(item => item.id === id && ['active-file', 'selected-file'].includes(item.category));
-    if (!source) throw new Error(sourceId === undefined ? 'Captured active document is unavailable.' : 'Selected source ID is not allowed.');
+    if (!source) throw routingError('source-unavailable', sourceId === undefined ? 'Captured active document is unavailable.' : 'Selected source ID is not allowed.');
     validateSnapshot(source);
     if (typeof source.uri !== 'string' || !Number.isSafeInteger(source.version)) throw new Error('Captured document snapshot is invalid.');
     return source;
@@ -149,18 +160,22 @@ class ToolRouter {
 
   /** @param {object} call @param {{snapshot:import('./RequestSnapshot').RequestSnapshot}} context */
   async route(call, context = {}) {
-    if (!call || !TOOL_NAMES.includes(call.name)) throw new Error('Unknown tutor tool.');
-    if (!context.snapshot || !Array.isArray(context.snapshot.sources)) throw new Error('An immutable request snapshot is required for tutor tools.');
-    if (context.snapshot.submission?.context.restricted && call.name !== 'searchKafeKnowledge') throw new Error('Restricted workspace tools are unavailable.');
+    if (!call || !TOOL_NAMES.includes(call.name)) throw routingError('unknown-tool', 'Unknown tutor tool.');
+    if (!context.snapshot || !Array.isArray(context.snapshot.sources)) throw routingError('invalid-snapshot', 'An immutable request snapshot is required for tutor tools.');
+    if (call.name === 'proposeLearningCheckpoint') return validateCheckpoint(call.arguments, context);
+    if (context.snapshot.submission?.context.restricted && call.name !== 'searchKafeKnowledge') throw routingError('restricted-tool', 'Restricted workspace tools are unavailable.');
     if (call.name === 'readActiveDocument') {
       const args = parseArguments(call.arguments, ['sourceId']);
-      if (args.sourceId !== undefined && typeof args.sourceId !== 'string') throw new Error('Invalid source ID argument.');
+      if (args.sourceId !== undefined && typeof args.sourceId !== 'string') throw routingError('invalid-source-id', 'Invalid source ID argument.');
+      if (args.sourceId === undefined && !context.snapshot.sources.some(source => source?.id === 'active-file' || source?.category === 'active-file')) {
+        return { status: 'unavailable', code: 'no_active_document' };
+      }
       const document = await this.documentFor(args.sourceId, context);
       return { uri: document.uri, text: document.text, version: document.version };
     }
     if (call.name === 'searchKafeKnowledge') {
       const args = parseArguments(call.arguments, ['query'], ['query']);
-      if (typeof args.query !== 'string' || !args.query.trim() || args.query.length > 300) throw new Error('Invalid knowledge query argument.');
+      if (typeof args.query !== 'string' || !args.query.trim() || args.query.length > 300) throw routingError('invalid-query', 'Invalid knowledge query argument.');
       if (context.snapshot.dependencies?.knowledgeLineage === null) return { status: 'unavailable', code: 'knowledge_unavailable' };
       let passages, lineage;
       try { ({ passages, lineage } = await retrieveKnowledge(this.knowledgeRetriever, args.query, [], context.snapshot.dependencies?.knowledgeLineage)); }
@@ -180,13 +195,14 @@ class ToolRouter {
       try { decoded = JSON.parse(source.text); } catch { throw new Error('Captured run result shape is invalid.'); }
       const result = validateRunResult({ ...decoded, sourceUri: source.provenance.sourceUri, runSequence: source.provenance.runSequence });
       const active = context.snapshot.sources.find(item => item.id === 'active-file' && item.category === 'active-file');
-      return result?.sourceUri === active?.uri ? providerRunResult(result) : null;
+      return result?.sourceUri === active?.uri ? providerRunResult({ ...result, sourceObservation: decoded }) : null;
     }
     const args = parseArguments(call.arguments, ['newText', 'sourceId'], ['newText']);
-    if (typeof args.newText !== 'string' || Buffer.byteLength(args.newText, 'utf8') > MAX_FILE_BYTES) throw new Error('Invalid proposal text size.');
-    if (args.sourceId !== undefined && typeof args.sourceId !== 'string') throw new Error('Invalid source ID argument.');
+    if (typeof args.newText !== 'string' || Buffer.byteLength(args.newText, 'utf8') > MAX_FILE_BYTES) throw routingError('invalid-proposal', 'Invalid proposal text size.');
+    if (args.sourceId !== undefined && typeof args.sourceId !== 'string') throw routingError('invalid-source-id', 'Invalid source ID argument.');
     const document = await this.documentFor(args.sourceId, context);
-    if (!document.uri.toLowerCase().endsWith('.kf')) throw new Error('Code proposal target must be a KAFE document.');
+    if (!document.uri.toLowerCase().endsWith('.kf')) throw routingError('invalid-target', 'Code proposal target must be a KAFE document.');
+    if (typeof context.authorizePreparation !== 'function' || !context.authorizePreparation(document)) throw Object.assign(routingError('invalid-proposal', 'Scoped preparation authorization is required.'), { code: 'preparation_required' });
     return {
       uri: document.uri, documentVersion: document.version,
       contentSha256: createHash('sha256').update(document.text, 'utf8').digest('hex'),

@@ -6,8 +6,8 @@ const REQUIRED_ENTRIES = [
   'extension/extension.js',
   'extension/LICENSE.txt',
   'extension/src/tutor/TutorViewProvider.js',
-  ...['ConversationSession.js', 'ConversationHistory.js', 'RequestSnapshot.js', 'TurnController.js',
-    'TutorHostActions.js', 'SessionCoordinator.js', 'ContextComposer.js', 'ToolRouter.js', 'ProgressStore.js',
+  ...['ConversationSession.js', 'ConversationHistory.js', 'ActionEvidence.js', 'LearningSession.js', 'LearningCheckpoint.js', 'TeachingPolicy.js', 'RequestSnapshot.js', 'TurnController.js',
+    'TutorHostActions.js', 'TutorDiagnostics.js', 'SessionCoordinator.js', 'ContextComposer.js', 'ToolRouter.js', 'ProgressStore.js',
     'CodeProposalProvider.js', 'KnowledgeRetriever.js', 'DevelopmentKnowledgePack.js',
     'tutorTimeline.js', 'tutorView.js', 'tutorView.html', 'tutorView.css',
     'providers/DeepSeekProvider.js', 'providers/CompletionStream.js', 'providers/ProviderError.js']

@@ -1,5 +1,12 @@
 const assert = require('node:assert/strict');
 const test = require('node:test');
+
+test('provider cannot manufacture host evidence through a tool name or Run arguments', async () => {
+  const { ToolRouter } = require('../../src/tutor/ToolRouter');
+  const router = new ToolRouter({ documentReader: {}, knowledgeRetriever: {} }), context = { snapshot: { sources: [] } };
+  await assert.rejects(router.route({ name: 'recordActionEvidence', arguments: { outcome: 'applied' } }, context), /Unknown tutor tool/);
+  await assert.rejects(router.route({ name: 'getLatestRunResult', arguments: { sourceObservation: { sourceRelationship: 'unchanged-at-observed-boundaries' } } }, context), /arguments are invalid/);
+});
 const { createHash } = require('node:crypto');
 const { ToolRouter, TOOL_NAMES, selectedSourceId } = require('../../src/tutor/ToolRouter');
 const { ContextComposer } = require('../../src/tutor/ContextComposer');
@@ -8,6 +15,17 @@ const sha = text => createHash('sha256').update(text, 'utf8').digest('hex');
 const snapshot = (id, path, text = 'reviewed buffer', version = 3) => ({ id, category: id === 'active-file' ? 'active-file' : 'selected-file', uri: uri(path).toString(), text, version, contentSha256: sha(text), provenance: { uri: uri(path).toString() } });
 const review = sources => ({ sources });
 const reader = { readDocument: async () => { throw Error('Live read forbidden'); } };
+
+test('absent captured active document is recoverable only for valid default reads', async () => {
+  let reads = 0;
+  const router = new ToolRouter({ documentReader: { readDocument: async () => { reads++; throw Error('Live read forbidden'); } }, knowledgeRetriever: {} });
+  const context = { snapshot: review([]), activeDocument: { uri: uri('/live.kf'), text: 'LIVE', version: 1 } };
+  assert.deepEqual(await router.route({ name: 'readActiveDocument', arguments: {} }, context), { status: 'unavailable', code: 'no_active_document' });
+  for (const args of ['{', { path: '/secret' }, { sourceId: null }, { sourceId: 'active-file' }, { sourceId: `selected:${'a'.repeat(64)}` }]) await assert.rejects(router.route({ name: 'readActiveDocument', arguments: args }, context));
+  await assert.rejects(router.route({ name: 'proposeCodeChange', arguments: { newText: 'change' } }, context), /unavailable/);
+  for (const captured of [{ ...snapshot('active-file', '/work/main.kf'), contentSha256: 'invalid' }, { ...snapshot('active-file', '/work/main.kf'), category: 'knowledge' }, { ...snapshot('active-file', '/work/main.kf'), id: 'wrong-id' }]) await assert.rejects(router.route({ name: 'readActiveDocument', arguments: {} }, { snapshot: review([captured]) }));
+  assert.equal(reads, 0);
+});
 
 test('tools read reviewed bytes after buffer changes without any live reader call', async () => {
   let liveReaderCalls = 0;
@@ -26,17 +44,17 @@ test('router selected IDs resolve only immutable included snapshots after reorde
   await assert.rejects(() => router.route({ name: 'readActiveDocument', arguments: {} }, { activeDocument: { uri: a, text: 'LIVE', version: 1 } }), /snapshot/i);
 });
 
-test('router preserves four-tool allowlist and rejects malformed executable and oversized operations', async () => {
+test('router preserves five-tool allowlist and rejects malformed executable and oversized operations', async () => {
   const router = new ToolRouter({ documentReader: reader, knowledgeRetriever: { search: async () => [] } });
   const context = { snapshot: review([snapshot('active-file', '/work/main.kf')]) };
-  assert.deepEqual(TOOL_NAMES, ['readActiveDocument', 'searchKafeKnowledge', 'getLatestRunResult', 'proposeCodeChange']);
+  assert.deepEqual(TOOL_NAMES, ['readActiveDocument', 'searchKafeKnowledge', 'getLatestRunResult', 'proposeCodeChange', 'proposeLearningCheckpoint']);
   for (const call of [{ name: 'runKafe', arguments: {} }, { name: 'shell', arguments: {} }, { name: 'readActiveDocument', arguments: '{' }, { name: 'searchKafeKnowledge', arguments: { query: 1 } }, { name: 'readActiveDocument', arguments: { path: '/secret' } }, { name: 'proposeCodeChange', arguments: { newText: 'x'.repeat(64 * 1024 + 1) } }]) await assert.rejects(() => router.route(call, context));
   await assert.rejects(() => router.route({ name: 'readActiveDocument', arguments: {} }, { snapshot: review([snapshot('active-file', '/work/main.kf', 'x'.repeat(64 * 1024 + 1))]) }), /size/i);
 });
 
 test('proposal guards use reviewed URI version hash and never apply or reread an edit', async () => {
   const router = new ToolRouter({ documentReader: reader, knowledgeRetriever: { search: async () => [] } });
-  const result = await router.route({ name: 'proposeCodeChange', arguments: { newText: 'show(2)' } }, { snapshot: review([snapshot('active-file', '/work/main.kf', 'show(1)', 4)]) });
+  const result = await router.route({ name: 'proposeCodeChange', arguments: { newText: 'show(2)' } }, { snapshot: review([snapshot('active-file', '/work/main.kf', 'show(1)', 4)]), authorizePreparation: target => target.uri === 'file:///work/main.kf' && target.version === 4 && target.contentSha256 === sha('show(1)') });
   assert.equal(result.uri, 'file:///work/main.kf'); assert.equal(result.documentVersion, 4); assert.equal(result.contentSha256, sha('show(1)')); assert.equal(result.newText, 'show(2)');
   await assert.rejects(() => router.route({ name: 'proposeCodeChange', arguments: { newText: 'x' } }, { snapshot: review([snapshot('active-file', '/work/main.txt')]) }), /KAFE/i);
 });

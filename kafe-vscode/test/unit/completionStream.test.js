@@ -11,6 +11,17 @@ const done = 'data: [DONE]\r\n\r\n';
 const tool = (index, name, args, id = `call-${index}`) => ({ index, id, type: 'function', function: { name, arguments: args } });
 const malformed = error => error.code === 'malformed_response';
 
+test('checkpoint arrays and nested limits validate in fragmented completion and reject malformed authority', async () => {
+  const args = { kind: 'design', name: 'Choice', learnerProposalSummary: '', tutorProposedAdditions: ['Use a loop'], scopeSummary: '', tradeoffs: [], unresolvedChoices: [], sourceIds: [] };
+  const serialized = JSON.stringify(args), middle = Math.floor(serialized.length / 2);
+  const wire = event({ tool_calls: [tool(0, 'proposeLearningCheckpoint', serialized.slice(0, middle))] }) +
+    event({ tool_calls: [{ index: 0, function: { arguments: serialized.slice(middle) } }] }) + event({}, 'tool_calls') + done;
+  assert.deepEqual((await collect(decodeCompletionStream(bytes(wire), { tools })))[0].toolCalls[0].arguments, args);
+  for (const bad of [{ ...args, confirmed: true }, { ...args, kind: 'run' }, { ...args, name: 'x'.repeat(121) }, { ...args, tradeoffs: [42] }, { ...args, sourceIds: Array(9).fill('x') }, { ...args, priorDecisionIds: null }]) {
+    assert.throws(() => parseToolCalls([{ id: 'c', type: 'function', function: { name: 'proposeLearningCheckpoint', arguments: JSON.stringify(bad) } }], tools), malformed);
+  }
+});
+
 test('UTF-8 characters and CRLF delimiters survive arbitrary byte boundaries', async () => {
   const wire = Buffer.from(': heartbeat\r\n\r\n' + event({ role: 'assistant', content: 'Español ☕' }) +
     'data: {"choices":[],"usage":{"total_tokens":2}}\r\n\r\n' + event({}, 'stop') + done);

@@ -243,6 +243,62 @@ function makeFixture({ runtimeBytes = makeZip(runtimeEntries), uvBytes = makeZip
   return { manager, fs, manifest, requests, processCalls, runtimeBytes, uvBytes, remoteManifest };
 }
 
+for (const mutation of ['same-size-pack', 'same-size-archive', 'sidecar-deleted', 'extra-file', 'configuration']) test(`managed knowledge authority rechecks actual current ${mutation} after readiness`, async () => {
+  const nativeFs = require('node:fs'), promises = require('node:fs/promises'), os = require('node:os');
+  const storageRoot = nativeFs.mkdtempSync(path.join(os.tmpdir(), 'kafe-authority-managed-')), f = makeFixture();
+  try {
+    const runtimeRoot = path.join(storageRoot, 'kafe-runtime', `runtime-${f.manifest.runtime.version}`), artifactRoot = path.join(storageRoot, 'kafe-runtime/artifacts', f.manifest.runtime.version);
+    for (const [name, text] of Object.entries(runtimeEntries)) { const filename = path.join(runtimeRoot, name); nativeFs.mkdirSync(path.dirname(filename), { recursive: true }); nativeFs.writeFileSync(filename, text); }
+    nativeFs.mkdirSync(artifactRoot, { recursive: true });
+    const archive = path.join(artifactRoot, `kafe-runtime-${f.manifest.runtime.version}.zip`), sidecar = path.join(artifactRoot, `kafe-runtime-${f.manifest.runtime.version}.manifest.json`);
+    nativeFs.writeFileSync(archive, f.runtimeBytes); nativeFs.writeFileSync(sidecar, JSON.stringify(f.remoteManifest));
+    const manager = createRuntimeManager({ storageRoot, fileSystem: promises, manifest: f.manifest, transport: async () => { throw Error('No network'); }, processRunner: async () => { throw Error('No execution'); } });
+    const ready = await manager.getReadyKnowledgePack(); assert.equal(ready.status, 'ready');
+    const start = performance.now(); assert.equal(ready.authority?.isCurrent(), true); const milliseconds = performance.now() - start;
+    if (mutation === 'same-size-pack') { const member = path.join(ready.knowledgeRoot, 'language/index.md'); const before = nativeFs.statSync(member); nativeFs.writeFileSync(member, 'language.\n'); nativeFs.utimesSync(member, before.atime, before.mtime); }
+    if (mutation === 'same-size-archive') { const before = nativeFs.statSync(archive), bytes = Buffer.from(f.runtimeBytes); bytes[0] ^= 1; nativeFs.writeFileSync(archive, bytes); nativeFs.utimesSync(archive, before.atime, before.mtime); }
+    if (mutation === 'sidecar-deleted') nativeFs.unlinkSync(sidecar);
+    if (mutation === 'extra-file') nativeFs.writeFileSync(path.join(ready.knowledgeRoot, 'extra.md'), 'new knowledge');
+    if (mutation === 'configuration') manager.manifest = { ...f.manifest, runtime: { ...f.manifest.runtime, sourceRevision: 'b'.repeat(40) } };
+    assert.equal(ready.authority.isCurrent(), false);
+    assert.deepEqual(f.requests, []); assert.deepEqual(f.processCalls, []);
+    if (mutation === 'same-size-pack') console.log(JSON.stringify({ authorityValidation: 'owned managed fixture', archiveBytes: f.runtimeBytes.length, files: ready.expectedFileCount, milliseconds }));
+  } finally { nativeFs.rmSync(storageRoot, { recursive: true, force: true }); }
+});
+
+for (const mutation of ['unchanged', 'extra-empty', 'missing-declared-empty', 'nested-empty']) test(`managed knowledge receipt and native Review preserve exact archive inventory with ${mutation}`, async () => {
+  const nativeFs = require('node:fs'), promises = require('node:fs/promises'), os = require('node:os');
+  const { CodeProposalProvider } = require('../../src/tutor/CodeProposalProvider');
+  const members = Object.entries(runtimeEntries).map(([name, contents]) => ({ name, contents }));
+  members.push({ name: 'knowledge-pack/declared/empty/', directory: true });
+  const f = makeFixture({ runtimeBytes: makeZip(members) });
+  const storageRoot = nativeFs.mkdtempSync(path.join(os.tmpdir(), 'kafe-inventory-managed-'));
+  try {
+    const runtimeRoot = path.join(storageRoot, 'kafe-runtime', `runtime-${f.manifest.runtime.version}`), artifactRoot = path.join(storageRoot, 'kafe-runtime/artifacts', f.manifest.runtime.version);
+    for (const [name, text] of Object.entries(runtimeEntries)) { const filename = path.join(runtimeRoot, name); nativeFs.mkdirSync(path.dirname(filename), { recursive: true }); nativeFs.writeFileSync(filename, text); }
+    nativeFs.mkdirSync(path.join(runtimeRoot, 'knowledge-pack/declared/empty'), { recursive: true });
+    nativeFs.mkdirSync(artifactRoot, { recursive: true });
+    nativeFs.writeFileSync(path.join(artifactRoot, `kafe-runtime-${f.manifest.runtime.version}.zip`), f.runtimeBytes);
+    nativeFs.writeFileSync(path.join(artifactRoot, `kafe-runtime-${f.manifest.runtime.version}.manifest.json`), JSON.stringify(f.remoteManifest));
+    const manager = createRuntimeManager({ storageRoot, fileSystem: promises, manifest: f.manifest, transport: async () => { throw Error('No network'); }, processRunner: async () => { throw Error('No execution'); } });
+    const captured = await manager.getReadyKnowledgePack(); assert.equal(captured.status, 'ready'); assert.equal(captured.authority.isCurrent(), true);
+    const uri = { scheme: 'file', toString: () => 'file:///owned/main.kf' }; let revoked = 0;
+    const provider = new CodeProposalProvider({ vscode: { Uri: { parse: text => ({ toString: () => text }) }, commands: { executeCommand: async () => {
+      if (mutation === 'extra-empty') nativeFs.mkdirSync(path.join(captured.knowledgeRoot, 'extra-empty'));
+      if (mutation === 'missing-declared-empty') nativeFs.rmdirSync(path.join(captured.knowledgeRoot, 'declared/empty'));
+      if (mutation === 'nested-empty') nativeFs.mkdirSync(path.join(captured.knowledgeRoot, 'language/nested/empty'), { recursive: true });
+    } } } });
+    provider.validateAuthority = async () => () => captured.authority.isCurrent();
+    provider.onAuthorityRevoked = () => { revoked++; };
+    const { id } = provider.stage({ uri, documentVersion: 1, contentSha256: digest(Buffer.from('print(1)')), newText: 'print(2)', preparation: { grantId: 'owned' } });
+    const review = await provider.open(id);
+    const fresh = await manager.getReadyKnowledgePack();
+    if (mutation === 'unchanged') { assert.equal(fresh.status, 'ready'); assert.equal(captured.authority.isCurrent(), true); assert.equal(review.status, 'opened'); assert.equal(provider.pending.reviewed, true); assert.equal(revoked, 0); }
+    else { assert.deepEqual(fresh, { status: 'unavailable', code: 'knowledge_integrity_failed' }); assert.equal(captured.authority.isCurrent(), false); assert.equal(review.status, 'stale'); assert.equal(provider.pending, null); assert.equal(revoked, 1); }
+    assert.deepEqual(f.requests, []); assert.deepEqual(f.processCalls, []);
+  } finally { nativeFs.rmSync(storageRoot, { recursive: true, force: true }); }
+});
+
 test('maps only the four pinned uv platforms and rejects unsupported targets', () => {
   assert.equal(getRuntimeTarget('win32', 'x64').asset, 'uv-x86_64-pc-windows-msvc.zip');
   assert.equal(getRuntimeTarget('darwin', 'x64').asset, 'uv-x86_64-apple-darwin.tar.gz');

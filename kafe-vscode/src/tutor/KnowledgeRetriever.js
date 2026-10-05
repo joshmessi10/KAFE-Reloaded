@@ -1,5 +1,6 @@
 const { createHash } = require('node:crypto');
 const defaultFileSystem = require('node:fs/promises');
+const nativeFileSystem = require('node:fs');
 const path = require('node:path');
 
 const MAX_FILES = 512;
@@ -63,6 +64,84 @@ function knowledgeContentDigest(files) {
     hash.update(file.bytes);
   }
   return { contentSha256: hash.digest('hex'), fileCount: ordered.length };
+}
+
+/** Owner-issued native boundary proof, re-reading current bytes synchronously, never a cached epoch.
+ * Trees retain the retrieval limits (512 files, 256 KiB/file, 8 MiB total) and cap all nodes at 4096.
+ * Integrity artifacts are streamed in 64 KiB chunks up to their owner's explicit bound.
+ */
+function createKnowledgeAuthority({ knowledgeRoot, expectedContentSha256, expectedFileCount,
+  expectedKnowledgeTree, sourceTrees = [], sourceFiles = [], requiredPaths = [], integrityFiles = [], configurationCurrent = () => true,
+  fileSystem = nativeFileSystem }) {
+  // Managed readiness owns exact archive membership, including declared empty directories.
+  const knowledgeTree = expectedKnowledgeTree && new Map([...expectedKnowledgeTree].map(([relative, entry]) => [relative, entry.type]));
+  const readFile = (filename, maximum, consume) => {
+    const info = fileSystem.lstatSync(filename);
+    if (!info.isFile() || info.isSymbolicLink() || !Number.isSafeInteger(info.size) || info.size < 0 || info.size > maximum) throw new Error('Unavailable knowledge authority file.');
+    const fd = fileSystem.openSync(filename, fileSystem.constants.O_RDONLY | (fileSystem.constants.O_NOFOLLOW || 0));
+    try {
+      const opened = fileSystem.fstatSync(fd);
+      if (!opened.isFile() || opened.size !== info.size) throw new Error('Knowledge authority file changed.');
+      const chunk = Buffer.alloc(Math.min(64 * 1024, Math.max(1, info.size)));
+      let bytes = 0;
+      for (;;) {
+        const count = fileSystem.readSync(fd, chunk, 0, chunk.length, null);
+        if (!count) break;
+        bytes += count;
+        if (bytes > maximum || bytes > info.size) throw new Error('Knowledge authority read exceeded its bound.');
+        consume(chunk.subarray(0, count));
+      }
+      if (bytes !== info.size || fileSystem.fstatSync(fd).size !== info.size) throw new Error('Knowledge authority file changed.');
+    } finally { fileSystem.closeSync(fd); }
+  };
+  const readTree = (trees, fixedFiles = [], expectedTree) => {
+    const files = [], seen = new Set(); let nodes = 0, total = 0;
+    const add = (filename, relative) => {
+      if (files.length >= MAX_FILES) throw new Error('Knowledge authority file limit.');
+      const chunks = []; readFile(filename, MAX_FILE_BYTES, chunk => { total += chunk.length; if (total > MAX_TOTAL_BYTES) throw new Error('Knowledge authority byte limit.'); chunks.push(Buffer.from(chunk)); });
+      files.push({ relative, bytes: Buffer.concat(chunks) });
+    };
+    const visit = (root, prefix, extensions) => {
+      const info = fileSystem.lstatSync(root);
+      if (!info.isDirectory() || info.isSymbolicLink()) throw new Error('Unavailable knowledge authority tree.');
+      for (const item of fileSystem.readdirSync(root, { withFileTypes: true })) {
+        if (++nodes > 4096) throw new Error('Knowledge authority node limit.');
+        const relative = prefix ? `${prefix}/${item.name}` : item.name;
+        const folded = relative.split('/').map(validateSegment).join('/');
+        if (seen.has(folded)) throw new Error('Duplicate knowledge authority path.');
+        seen.add(folded);
+        const filename = path.join(root, item.name), stat = fileSystem.lstatSync(filename);
+        if (stat.isSymbolicLink() || item.isSymbolicLink()) throw new Error('Linked knowledge authority input.');
+        if (expectedTree && expectedTree.get(relative) !== (stat.isDirectory() ? 'directory' : stat.isFile() ? 'file' : undefined)) throw new Error('Knowledge authority inventory changed.');
+        if (stat.isDirectory()) visit(filename, relative, extensions);
+        else if (stat.isFile() && (!extensions || extensions.includes(path.extname(item.name).toLowerCase()))) add(filename, relative);
+        else throw new Error('Unsupported knowledge authority input.');
+      }
+    };
+    for (const tree of trees) visit(tree.root, tree.prefix || '', tree.extensions);
+    for (const file of fixedFiles) add(file.path, file.relative);
+    if (expectedTree && seen.size !== expectedTree.size) throw new Error('Knowledge authority inventory changed.');
+    return knowledgeContentDigest(files);
+  };
+  const matches = digest => digest.fileCount === expectedFileCount && digest.contentSha256 === expectedContentSha256;
+  return Object.freeze({ isCurrent() {
+    try {
+      if (configurationCurrent() !== true) return false;
+      for (const required of requiredPaths) {
+        const info = fileSystem.lstatSync(required.path);
+        if (info.isSymbolicLink() || (required.directory ? !info.isDirectory() : !info.isFile())) return false;
+      }
+      if (!matches(readTree([{ root: knowledgeRoot }], [], knowledgeTree))) return false;
+      if (sourceTrees.length && !matches(readTree(sourceTrees, sourceFiles))) return false;
+      for (const input of integrityFiles) {
+        const hash = createHash('sha256'), chunks = [];
+        readFile(input.path, input.maxBytes, chunk => { hash.update(chunk); if (input.validate) chunks.push(Buffer.from(chunk)); });
+        if (input.sha256 && hash.digest('hex') !== input.sha256) return false;
+        if (input.validate && input.validate(Buffer.concat(chunks)) !== true) return false;
+      }
+      return configurationCurrent() === true;
+    } catch { return false; }
+  } });
 }
 
 class KnowledgeUnavailable extends Error {
@@ -221,4 +300,4 @@ class KnowledgeRetriever {
   }
 }
 
-module.exports = { KnowledgeRetriever, KnowledgeUnavailable, KnowledgeIntegrityError, knowledgeContentDigest };
+module.exports = { KnowledgeRetriever, KnowledgeUnavailable, KnowledgeIntegrityError, knowledgeContentDigest, createKnowledgeAuthority };

@@ -10,6 +10,22 @@ const { MAX_FILE_BYTES } = require('../../src/tutor/DevelopmentKnowledgePack');
 const { knowledgeContentDigest } = require('../../src/tutor/KnowledgeRetriever');
 const { randomUUID } = require('node:crypto');
 
+for (const change of ['unchanged', 'during-run', 'read-failure']) test(`Run captures saved launch/completion bytes with original execution path: ${change}`, async () => {
+  const fixture = setup(); let saved = 'SAVED_LAUNCH', finish; const results = [], reads = [];
+  const handler = createRunFileHandler({ vscode: fixture.vscode, fs: { existsSync: () => true, readFileSync: target => {
+    reads.push(target); if (change === 'read-failure') throw new Error('PRIVATE_PATH'); return Buffer.from(saved);
+  } }, runtimeManager: { resolveWorkspace: async () => ({ status: 'ready', runtimeMode: 'managed', runtimeRoot: 'C:/runtime', runtimeVersion: '1', knowledgePackVersion: '1', uvPath: 'uv' }) }, startKafeFile: options => {
+    assert.equal(options.filePath, fixture.doc.uri.fsPath); return { completion: new Promise(resolve => { finish = resolve; }), sendInput() {}, cancel() {} };
+  }, onRunResult: result => results.push(result) });
+  await handler(); fixture.calls.terminals[0].pty.open();
+  if (change === 'during-run') saved = 'SAVED_CHANGED';
+  finish({ stdout: 'ok', stderr: '', exitCode: 0, outputTruncated: false }); await new Promise(r => setImmediate(r));
+  const { sha256 } = require('../../src/tutor/RequestSnapshot');
+  assert.deepEqual(results[0].sourceIdentity, { launch: change === 'read-failure' ? null : sha256('SAVED_LAUNCH'), completion: change === 'read-failure' ? null : sha256(saved) });
+  assert.deepEqual(reads, [fixture.doc.uri.fsPath, fixture.doc.uri.fsPath]);
+});
+
+const deferred = () => { let resolve; const promise = new Promise(r => { resolve = r; }); return { promise, resolve }; };
 function conversationHostFixture() {
   const listeners = {}, calls = [], reads = [], watcher = {}, disposals = [];
   const uri = name => ({ scheme: 'file', fsPath: `C:/workspace/${name}`, toString: () => `file:///C:/workspace/${name}` });
@@ -41,6 +57,51 @@ function contextRunEnvelope(host) {
   return { type: 'invokeAction', sessionId: s.sessionId, generation: s.generation,
     entryId: s.contextActions.entryId, actionId: action.id, args: action.args };
 }
+
+test('actual host tool failure reaches bounded diagnostic channel and disposes it', async () => {
+  const f = conversationHostFixture(), lines = []; let disposed = 0, streams = 0;
+  f.vscode.window.createOutputChannel = name => { assert.equal(name, 'KAFE Tutor Diagnostics'); return { appendLine: line => lines.push(line), clear() {}, dispose() { disposed++; } }; };
+  f.host.coordinator.controller.provider = { async *stream() {
+    streams++; yield { type: 'complete', text: 'PRIVATE_PROVIDER', finishReason: 'tool_calls',
+      toolCalls: [{ id: 'PRIVATE_CALL', name: 'readActiveDocument', arguments: { sourceId: `selected:${'a'.repeat(64)}` } }] };
+  } };
+  try {
+    f.vscode.window.activeTextEditor = undefined; f.vscode.window.visibleTextEditors = [];
+    await f.host.readiness; await f.host.actions.refreshContext();
+    const state = f.host.coordinator.snapshot();
+    assert.equal((await f.host.coordinator.controller.submit({ submissionId: randomUUID(), text: 'PRIVATE_PROMPT', contextRevision: state.context.revision })).status, 'failed');
+    const records = lines.map(line => JSON.parse(line));
+    assert.equal(records.find(r => r.event === 'tool-failed')?.reason, 'source-unavailable');
+    assert.equal(records.at(-1).event, 'turn-settled');
+    assert.equal(records.at(-1).busy, false); assert.equal(streams, 1);
+    assert.doesNotMatch(lines.join(''), /PRIVATE|file:\/\/|sourceId|arguments|stack/);
+  } finally { f.host.dispose(); }
+  assert.equal(disposed, 1);
+});
+
+test('production no-file greeting recovers a default read and search without optional reads or implicit actions', async () => {
+  const f = conversationHostFixture(); let streams = 0, edits = 0, runs = 0, opened = 0;
+  f.vscode.window.activeTextEditor = undefined;
+  f.vscode.workspace.applyEdit = async () => { edits++; throw Error('No edits'); };
+  f.vscode.window.createTerminal = () => { runs++; throw Error('No Run'); };
+  f.vscode.workspace.openTextDocument = async () => { opened++; throw Error('No implicit file reads'); };
+  f.host.coordinator.controller.provider = { async *stream({ request }) {
+    streams++;
+    if (streams === 1) yield { type: 'complete', text: '', finishReason: 'tool_calls', toolCalls: [{ id: 'read', name: 'readActiveDocument', arguments: {} }, { id: 'knowledge', name: 'searchKafeKnowledge', arguments: { query: 'KAFE introduction' } }] };
+    else {
+      if (streams === 2) assert.deepEqual(JSON.parse(request.messages.find(m => m.role === 'tool').content), { status: 'unavailable', code: 'no_active_document' });
+      yield { type: 'complete', text: 'Hello. I can explain KAFE.', finishReason: 'stop', toolCalls: [] };
+    }
+  } };
+  try {
+    await f.host.readiness; await f.host.actions.refreshContext(); f.reads.length = 0;
+    assert.equal((await submit(f, 'Hello')).status, 'completed'); assert.equal(streams, 2);
+    assert.equal(f.host.coordinator.snapshot().turn.status, 'completed'); assert.equal(f.host.coordinator.controller.current.busy, false);
+    assert.equal((await submit(f, 'Explain a concept')).status, 'completed'); assert.equal(streams, 3);
+    assert.deepEqual(f.reads, []); assert.equal(opened, 0); assert.equal(edits, 0); assert.equal(runs, 0);
+    assert.equal(f.host.coordinator.snapshot().entries.some(e => ['proposal', 'checkpoint'].includes(e.kind)), false);
+  } finally { f.host.dispose(); }
+});
 
 test('production contextual Run names its target and launches that file after focus changes without readiness work', async () => {
   const f = conversationHostFixture(), terminals = [], launched = []; let cancels = 0, finish, knowledge = 0, closes = 0;
@@ -136,8 +197,10 @@ async function includeOptional(f) {
   const optional = context.sources.find(s => s.uri === f.optional.uri.toString());
   return f.host.tutorView.onMessage(commandEnvelope(f.host, 'setSourceIncluded', { sourceId: optional.id, included: true, contextRevision: context.revision }));
 }
-function submit(f, text = 'Question') {
-  return f.host.tutorView.onMessage(commandEnvelope(f.host, 'submitMessage', { submissionId: randomUUID(), text, contextRevision: f.host.coordinator.snapshot().context.revision }));
+async function submit(f, text = 'Question') {
+  const result = await f.host.tutorView.onMessage(commandEnvelope(f.host, 'submitMessage', { submissionId: randomUUID(), text, contextRevision: f.host.coordinator.snapshot().context.revision }));
+  if (f.scopedProposal && result.status === 'failed') return f.host.tutorView.onMessage(actionEnvelope(f.host, 'prepareChange'));
+  return result;
 }
 
 function proposalHostFixture({ optionalTarget = false } = {}) {
@@ -160,8 +223,332 @@ function proposalHostFixture({ optionalTarget = false } = {}) {
     boundaries.push({ stage: 'after-active-event', pending: !!f.host.proposalProvider.pending });
     assert.equal(f.host.proposalProvider.provideTextDocumentContent(proposed), 'items <- [42]', JSON.stringify(boundaries));
   } };
-  return Object.assign(f, { diffs, edits, boundaries });
+  return Object.assign(f, { diffs, edits, boundaries, scopedProposal: true });
 }
+
+const proposalKnowledge = { sourceMode: 'managed', runtimeVersion: '1', knowledgePackVersion: '1', packIdentity: 'pack-a', expectedContentSha256: 'a'.repeat(64) };
+function bindProposalKnowledge(f) {
+  let availability = { status: 'ready', metadata: proposalKnowledge };
+  f.host.coordinator.getKnowledgeAvailability = async () => {
+    const captured = availability;
+    return { ...captured, authority: { isCurrent: () => availability.status === 'ready' && captured.status === 'ready' &&
+      require('../../src/tutor/ToolRouter').metadataLineage(availability.metadata) === require('../../src/tutor/ToolRouter').metadataLineage(captured.metadata) } };
+  };
+  f.host.knowledgeRetriever.getKnowledgeLineage = async () => availability.status === 'ready' ? require('../../src/tutor/ToolRouter').metadataLineage(availability.metadata) : null;
+  f.host.knowledgeRetriever.search = async () => [];
+  return value => { availability = value; };
+}
+for (const boundary of ['before-review', 'between-review-apply', 'awaited-read', 'awaited-diff']) for (const change of ['changed', 'unavailable']) {
+  test(`full preparation knowledge authority rejects ${change} at ${boundary}`, async () => {
+    const f = proposalHostFixture(), setKnowledge = bindProposalKnowledge(f), entered = deferred(), release = deferred();
+    try {
+      await f.host.readiness; await submit(f, 'Repair');
+      const proposal = f.host.proposalProvider.pending, grant = proposal.preparation.grantId;
+      assert.ok(proposal.preparation.dependencies.knowledgeLineage);
+      let issued, action;
+      if (boundary !== 'before-review' && boundary !== 'awaited-diff') {
+        assert.equal((await f.host.tutorView.onMessage(actionEnvelope(f.host, 'reviewProposal'))).status, 'completed');
+        issued = actionEnvelope(f.host, 'acceptProposal');
+      } else issued = actionEnvelope(f.host, 'reviewProposal');
+      if (boundary === 'awaited-read') {
+        const open = f.vscode.workspace.openTextDocument;
+        f.vscode.workspace.openTextDocument = async uri => { const doc = await open(uri); entered.resolve(); await release.promise; return doc; };
+      }
+      if (boundary === 'awaited-diff') {
+        const open = f.vscode.commands.executeCommand;
+        f.vscode.commands.executeCommand = async (...args) => { await open(...args); entered.resolve(); await release.promise; };
+      }
+      if (boundary.startsWith('awaited')) { action = f.host.tutorView.onMessage(issued); await entered.promise; }
+      setKnowledge(change === 'changed' ? { status: 'ready', metadata: { ...proposalKnowledge, packIdentity: 'pack-b' } } : { status: 'unavailable', code: 'knowledge_missing' });
+      if (boundary === 'before-review') await f.host.coordinator.refreshContext();
+      release.resolve();
+      const result = await (action || f.host.tutorView.onMessage(issued));
+      assert.ok(['stale', 'cancelled', 'failed'].includes(result.status), result.status);
+      assert.equal(f.edits.length, 0); assert.equal(f.active.text, 'ACTIVE'); assert.equal(f.host.proposalProvider.pending, null);
+      assert.ok(!f.host.coordinator.snapshot().entries.flatMap(e => e.actions).some(a => ['reviewProposal', 'acceptProposal', 'prepareChange'].includes(a.type) && a.enabled));
+      assert.equal(f.host.coordinator.controller.current.grant, null, grant);
+      setKnowledge({ status: 'ready', metadata: proposalKnowledge }); await f.host.actions.refreshContext();
+      assert.equal((await f.host.tutorView.onMessage(issued)).status, 'stale'); assert.equal(f.host.proposalProvider.pending, null);
+    } finally { release.resolve(); f.host.dispose(); }
+  });
+}
+for (const boundary of ['before-review', 'between-review-apply', 'awaited-read', 'awaited-knowledge']) for (const closed of [false, true]) {
+  test(`full preparation source authority rejects undelivered non-target mutation at ${boundary}, closed=${closed}`, async () => {
+    const f = proposalHostFixture(), entered = deferred(), release = deferred();
+    try {
+      if (boundary === 'awaited-knowledge') bindProposalKnowledge(f);
+      await includeOptional(f);
+      if (closed) { f.vscode.window.visibleTextEditors = [{ document: f.active }]; f.listeners.close(f.optional); await f.host.actions.refreshContext(); }
+      await submit(f, 'Repair');
+      let issued, action;
+      if (boundary !== 'before-review') { await f.host.tutorView.onMessage(actionEnvelope(f.host, 'reviewProposal')); issued = actionEnvelope(f.host, 'acceptProposal'); }
+      else issued = actionEnvelope(f.host, 'reviewProposal');
+      if (boundary === 'awaited-read') {
+        const open = f.vscode.workspace.openTextDocument;
+        f.vscode.workspace.openTextDocument = async uri => { const doc = await open(uri); if (uri.toString() === f.active.uri.toString()) { entered.resolve(); await release.promise; } return doc; };
+      }
+      if (boundary === 'awaited-knowledge') {
+        // A fresh dependency validation must finish its file checks after this await.
+        const get = f.host.coordinator.getKnowledgeAvailability;
+        f.host.coordinator.getKnowledgeAvailability = async () => { entered.resolve(); await release.promise; return get(); };
+      }
+      if (boundary.startsWith('awaited')) { action = f.host.tutorView.onMessage(issued); await entered.promise; }
+      f.optional.text = 'HELPER_CHANGED_WITHOUT_EVENT'; f.optional.version++;
+      release.resolve();
+      const result = await (action || f.host.tutorView.onMessage(issued));
+      assert.ok(['stale', 'cancelled', 'failed'].includes(result.status), result.status);
+      assert.equal(f.edits.length, 0); assert.equal(f.host.proposalProvider.pending, null);
+      assert.ok(!f.host.coordinator.snapshot().entries.flatMap(e => e.actions).some(a => ['reviewProposal', 'acceptProposal'].includes(a.type) && a.enabled));
+      assert.equal(f.host.coordinator.controller.current.grant, null);
+    } finally { release.resolve(); f.host.dispose(); }
+  });
+}
+test('complete native dependency validation preserves unchanged source-bound proposal after authorized focus', async () => {
+  const f = proposalHostFixture({ optionalTarget: true });
+  try {
+    await includeOptional(f); await submit(f, 'Repair');
+    f.vscode.window.activeTextEditor = { document: f.excluded }; f.listeners.active(); await f.host.actions.refreshContext();
+    assert.equal((await f.host.tutorView.onMessage(actionEnvelope(f.host, 'reviewProposal'))).status, 'completed');
+    assert.equal((await f.host.tutorView.onMessage(actionEnvelope(f.host, 'acceptProposal'))).status, 'completed');
+    assert.equal(f.edits.length, 1); assert.equal(f.optional.text, 'items <- [42]');
+  } finally { f.host.dispose(); }
+});
+for (const mutation of ['hash-without-version', 'authorization', 'unavailable', 'reentrant-edit', 'reset-during-validation']) {
+  test(`native final closure fence rejects non-target ${mutation} without restoring consumed authority`, async () => {
+    const f = proposalHostFixture(), entered = deferred(), release = deferred();
+    try {
+      await includeOptional(f); await submit(f, 'Repair');
+      await f.host.tutorView.onMessage(actionEnvelope(f.host, 'reviewProposal'));
+      const issued = actionEnvelope(f.host, 'acceptProposal');
+      if (mutation === 'hash-without-version') f.optional.text = 'CHANGED_SAME_VERSION';
+      if (mutation === 'authorization') { const get = f.vscode.workspace.getWorkspaceFolder; f.vscode.workspace.getWorkspaceFolder = uri => uri.toString() === f.optional.uri.toString() ? undefined : get(uri); }
+      if (mutation === 'unavailable') { const open = f.vscode.workspace.openTextDocument; f.vscode.workspace.openTextDocument = uri => uri.toString() === f.optional.uri.toString() ? Promise.reject(new Error('missing helper')) : open(uri); }
+      if (mutation === 'reentrant-edit') f.vscode.WorkspaceEdit = class { replace(uri, range, text) { this.change = { uri, range, text }; f.optional.text = 'REENTRANT_HELPER'; } };
+      let pending;
+      if (mutation === 'reset-during-validation') {
+        const open = f.vscode.workspace.openTextDocument;
+        f.vscode.workspace.openTextDocument = async uri => { const doc = await open(uri); if (uri.toString() === f.optional.uri.toString()) { entered.resolve(); await release.promise; } return doc; };
+        pending = f.host.tutorView.onMessage(issued); await entered.promise; f.host.coordinator.newConversation(); release.resolve();
+      }
+      assert.ok(['stale', 'failed', 'cancelled'].includes((await (pending || f.host.tutorView.onMessage(issued))).status));
+      assert.equal(f.edits.length, 0); assert.equal(f.host.proposalProvider.pending, null);
+      assert.equal((await f.host.tutorView.onMessage(issued)).status, 'stale');
+      assert.ok(!f.host.coordinator.snapshot().entries.flatMap(e => e.actions).some(a => ['reviewProposal', 'acceptProposal', 'prepareChange'].includes(a.type) && a.enabled));
+    } finally { release.resolve(); f.host.dispose(); }
+  });
+}
+for (const sample of [1, 2]) for (const change of ['changed', 'unavailable']) test(`native knowledge authority rejects ${change} behind captured old availability sample ${sample}`, async () => {
+  const f = proposalHostFixture(), setKnowledge = bindProposalKnowledge(f), entered = deferred(), release = deferred();
+  try {
+    await f.host.readiness; await submit(f, 'Repair'); await f.host.tutorView.onMessage(actionEnvelope(f.host, 'reviewProposal'));
+    const issued = actionEnvelope(f.host, 'acceptProposal'), get = f.host.coordinator.getKnowledgeAvailability; let calls = 0;
+    f.host.coordinator.getKnowledgeAvailability = async () => { const captured = await get(); if (++calls === sample) { entered.resolve(); await release.promise; } return captured; };
+    const pending = f.host.tutorView.onMessage(issued); await entered.promise;
+    setKnowledge(change === 'changed' ? { status: 'ready', metadata: { ...proposalKnowledge, packIdentity: 'pack-b' } } : { status: 'unavailable', code: 'knowledge_missing' });
+    release.resolve(); assert.ok(['stale', 'failed', 'cancelled'].includes((await pending).status));
+    assert.equal(f.edits.length, 0); assert.equal(f.host.proposalProvider.pending, null); assert.equal(f.host.coordinator.controller.current.grant, null);
+  } finally { release.resolve(); f.host.dispose(); }
+});
+test('native knowledge-bound proposal fails closed without a synchronous authority receipt', async () => {
+  const f = proposalHostFixture(), setKnowledge = bindProposalKnowledge(f);
+  try {
+    await f.host.readiness; await submit(f, 'Repair');
+    f.host.coordinator.getKnowledgeAvailability = async () => ({ status: 'ready', metadata: proposalKnowledge });
+    const result = await f.host.tutorView.onMessage(actionEnvelope(f.host, 'reviewProposal'));
+    assert.equal(result.status, 'stale'); assert.equal(f.host.proposalProvider.pending, null); assert.equal(f.diffs.length, 0); assert.equal(f.edits.length, 0);
+  } finally { f.host.dispose(); }
+});
+test('healthy unchanged bound knowledge receipt retains native Review and Apply', async () => {
+  const f = proposalHostFixture(); bindProposalKnowledge(f);
+  try {
+    await f.host.readiness; await submit(f, 'Repair');
+    assert.equal((await f.host.tutorView.onMessage(actionEnvelope(f.host, 'reviewProposal'))).status, 'completed');
+    assert.equal((await f.host.tutorView.onMessage(actionEnvelope(f.host, 'acceptProposal'))).status, 'completed');
+    assert.equal(f.edits.length, 1);
+  } finally { f.host.dispose(); }
+});
+for (const outcome of ['failed', 'cancelled']) test(`settled ${outcome} implementation checkpoint presents historical preparation authorization`, async () => {
+  const f = proposalHostFixture(), { loadView } = require('../helpers/tutorViewHarness'), entered = deferred(), release = deferred(); let calls = 0;
+  f.scopedProposal = false;
+  f.host.coordinator.controller.provider = { async *stream() {
+    if (++calls === 1) yield { type: 'complete', text: '', finishReason: 'tool_calls', toolCalls: [{ id: 'checkpoint', name: 'proposeLearningCheckpoint', arguments: { kind: 'implementation', name: 'One change', learnerProposalSummary: 'Use one list', tutorProposedAdditions: [], scopeSummary: 'Replace the active file', tradeoffs: [], unresolvedChoices: [], sourceIds: ['active-file'] } }] };
+    else { entered.resolve(); if (outcome === 'cancelled') await release.promise; throw new Error('preparation failed'); }
+  } };
+  try {
+    await f.host.readiness; await submit(f, 'Teach');
+    const action = actionEnvelope(f.host, 'implementCheckpoint'), pending = f.host.tutorView.onMessage(action); await entered.promise;
+    if (outcome === 'cancelled') { const turn = f.host.coordinator.snapshot().turn; f.host.coordinator.controller.stop({ turnId: turn.id, turnGeneration: turn.turnGeneration }); release.resolve(); }
+    assert.equal((await pending).status, outcome);
+    const view = loadView(); view.render(f.host.coordinator.snapshot());
+    assert.match(view.byId('timeline').textContent, /Adopted.*Preparation was authorized/); assert.doesNotMatch(view.byId('timeline').textContent, /Preparing one change/);
+    assert.equal(f.host.coordinator.learningSession.snapshot().decisions[0].disposition, 'confirmed');
+    assert.equal(f.host.proposalProvider.pending, null); assert.equal(f.edits.length, 0);
+    assert.equal((await f.host.tutorView.onMessage(action)).status, 'stale'); view.dispose();
+  } finally { release.resolve(); f.host.dispose(); }
+});
+
+test('native source reveal uses included canonical target, refuses revoked trust, and reads no optional content', async () => {
+  const f = conversationHostFixture(), opened = [];
+  f.vscode.window.showTextDocument = async uri => { opened.push(uri.toString()); };
+  try {
+    await f.host.readiness;
+    const initial = f.host.coordinator.snapshot(), id = initial.context.sources.find(s => s.uri === f.optional.uri.toString()).id;
+    await f.host.coordinator.handleLearnerMessage({ type: 'setSourceIncluded', sourceId: id, included: true, contextRevision: initial.context.revision });
+    const context = f.host.coordinator.snapshot().context;
+    const message = commandEnvelope(f.host, 'revealSource', { sourceId: id, contextRevision: context.revision });
+    const reads = [...f.reads];
+    assert.equal((await f.host.tutorView.onMessage(message)).status, 'completed');
+    assert.deepEqual(opened, ['file:///C:/workspace/optional.kf']); assert.deepEqual(f.reads, reads);
+    f.vscode.workspace.isTrusted = false;
+    assert.equal((await f.host.tutorView.onMessage(message)).status, 'stale'); assert.equal(opened.length, 1);
+  } finally { f.host.dispose(); }
+});
+
+test('native learning preferences preserve draft and queue changes under an admitted response', async () => {
+  const f = conversationHostFixture(), finish = deferred(), started = deferred(); let picks = 0;
+  f.vscode.window.showQuickPick = async options => ++picks % 2 ? options.find(o => o.key === 'mode') : options.find(o => o.value === 'paused');
+  f.host.coordinator.controller.provider = { async *stream() { started.resolve(); await finish.promise; yield { type: 'complete', text: 'Done', toolCalls: [], finishReason: 'stop' }; } };
+  try {
+    await f.host.readiness; f.host.coordinator.session.setDraft('Next private draft');
+    const pending = f.host.actions.submitMessage({ submissionId: randomUUID(), text: 'Current request', contextRevision: f.host.coordinator.snapshot().context.revision });
+    await started.promise;
+    const result = await f.host.tutorView.onMessage(commandEnvelope(f.host, 'openLearningPreferences'));
+    assert.equal(result.status, 'queued'); assert.equal(f.host.coordinator.learningSession.snapshot().preferences.mode, 'guided');
+    assert.equal(f.host.coordinator.snapshot().draft, 'Next private draft');
+    finish.resolve(); await pending; assert.equal(f.host.coordinator.learningSession.snapshot().preferences.mode, 'paused');
+    assert.equal(f.host.coordinator.snapshot().draft, 'Next private draft');
+  } finally { finish.resolve(); f.host.dispose(); }
+});
+
+test('controlled learning flow uses rendered host capabilities through design adoption, preparation, native review, Apply and separate Run', async () => {
+  const f = proposalHostFixture(), { loadView } = require('../helpers/tutorViewHarness');
+  const { isTutorMessage } = require('../../src/tutor/TutorViewProvider');
+  let responses = 0, runs = 0; const requests = [], terminals = [], view = loadView();
+  const complete = (text, toolCalls = []) => ({ type: 'complete', text, toolCalls, finishReason: toolCalls.length ? 'tool_calls' : 'stop' });
+  const checkpoint = kind => ({ id: `checkpoint-${kind}`, name: 'proposeLearningCheckpoint', arguments: { kind, name: 'Build a list', learnerProposalSummary: 'Keep one ordered list', tutorProposedAdditions: ['Start with one item'], scopeSummary: 'Replace the active file with one list assignment', tradeoffs: ['Keep insertion order'], unresolvedChoices: [], sourceIds: ['active-file'],
+    ...(kind === 'implementation' ? { priorDecisionIds: [f.host.coordinator.learningSession.snapshot().decisions[0].id] } : {}) } });
+  f.host.coordinator.controller.provider = { async *stream({ request }) {
+    requests.push(request); responses++;
+    if (responses === 1) yield complete('A list holds an ordered sequence of values.');
+    else if (responses === 2) yield complete('The proposed approach is displayed below.', [checkpoint('design')]);
+    else if (responses === 3) yield complete('Review the implementation scope.', [checkpoint('implementation')]);
+    else if (responses === 4) yield complete('', [{ id: 'proposal', name: 'proposeCodeChange', arguments: { newText: 'items <- [42]' } }]);
+    else yield complete('The host observed an exit; correctness and understanding remain unestablished.');
+  } };
+  f.vscode.EventEmitter = class { constructor() { this.event = () => {}; } fire() {} dispose() {} };
+  f.vscode.window.createTerminal = options => { terminals.push(options); return { show() {} }; };
+  f.host.actions.runFile = createRunFileHandler({ vscode: f.vscode, fs: { existsSync: () => true, readFileSync: () => Buffer.from(f.active.text) },
+    runtimeManager: { resolveWorkspace: async () => ({ status: 'ready', runtimeMode: 'contributor', runtimeRoot: 'C:/runtime', runtimeVersion: 'test-runtime' }) },
+    onRunState: e => f.host.actions.recordRunState(e), onRunResult: r => f.host.actions.recordRunResult(r),
+    startKafeFile: options => { runs++; assert.equal(options.filePath, f.active.uri.fsPath); return { completion: Promise.resolve({ stdout: '42', stderr: '', exitCode: 0, outputTruncated: false }), cancel() {}, sendInput() {} }; } });
+  const send = text => { const s = f.host.coordinator.snapshot(); return f.host.tutorView.onMessage(commandEnvelope(f.host, 'submitMessage', { submissionId: randomUUID(), text, contextRevision: s.context.revision })); };
+  const click = async type => {
+    view.render(f.host.coordinator.snapshot());
+    const button = view.byId('timeline').querySelector(`[data-action-type="${type}"]`); assert.ok(button, type); button.dispatch('click');
+    const message = view.sent.at(-1); assert.equal(isTutorMessage(message, f.host.coordinator.session), true);
+    return f.host.tutorView.onMessage(message);
+  };
+  try {
+    await f.host.readiness;
+    await send('What is a list?'); assert.equal(f.host.coordinator.snapshot().entries.some(e => e.kind === 'checkpoint'), false);
+    await send('I would keep one ordered list. Help compare options.');
+    f.host.coordinator.session.setDraft('Independent next reasoning');
+    view.render(f.host.coordinator.snapshot());
+    assert.match(view.byId('timeline').textContent, /Tutor summary, unconfirmed/);
+    assert.equal(view.byId('response-dock').getAttribute('data-state'), 'waiting-learner'); assert.equal(view.byId('stop').hidden, true);
+    assert.equal((await click('confirmCheckpoint')).status, 'completed');
+    assert.equal(f.host.proposalProvider.pending, null); assert.equal(f.edits.length, 0); assert.equal(runs, 0);
+    assert.equal(f.host.coordinator.learningSession.snapshot().decisions[0].disposition, 'confirmed');
+    assert.equal((await click('implementCheckpoint')).status, 'completed');
+    assert.equal(f.host.proposalProvider.pending.preparation.scopeSummary, 'Replace the active file with one list assignment');
+    assert.equal(f.host.proposalProvider.pending.reviewed, false); assert.equal(f.edits.length, 0); assert.equal(runs, 0);
+    view.render(f.host.coordinator.snapshot()); assert.match(view.byId('timeline').textContent, /Staged.*not applied/);
+    assert.doesNotMatch(view.byId('timeline').textContent, /Preparing one change/);
+    assert.match(view.byId('timeline').textContent, /Preparation was authorized/);
+    assert.equal((await click('reviewProposal')).status, 'completed'); assert.equal(f.diffs.length, 1); assert.equal(f.edits.length, 0);
+    assert.equal((await click('acceptProposal')).status, 'completed'); assert.equal(f.edits.length, 1); assert.equal(runs, 0);
+    f.vscode.window.activeTextEditor = { document: f.active }; f.listeners.active(); await f.host.actions.refreshContext();
+    view.render(f.host.coordinator.snapshot()); assert.match(view.byId('timeline').textContent, /Applied.*Run.*correctness/);
+    view.byId('context-run').dispatch('click'); const run = view.sent.at(-1); assert.equal(isTutorMessage(run, f.host.coordinator.session), true);
+    assert.equal((await f.host.tutorView.onMessage(run)).status, 'completed'); assert.equal(runs, 0);
+    terminals[0].pty.open(); await new Promise(resolve => setImmediate(resolve)); assert.equal(runs, 1);
+    view.render(f.host.coordinator.snapshot());
+    assert.match(view.byId('timeline').textContent, /Exit code: 0/); assert.match(view.byId('timeline').textContent, /Exact executed bytes: unknown\. Correctness: not established/);
+    assert.match(view.byId('timeline').textContent, /Current editor: unknown/);
+    assert.equal(f.host.coordinator.snapshot().draft, 'Independent next reasoning');
+    await send('Explain the observed output');
+    assert.ok(requests.at(-1).messages.some(m => m.content.includes('"outcome":"applied"')));
+    assert.ok(requests.at(-1).messages.some(m => m.content.includes('"correctness":"not-established"')));
+    const recreated = loadView(); recreated.render(f.host.coordinator.snapshot()); assert.match(recreated.byId('timeline').textContent, /Tutor summary, unconfirmed/);
+    assert.equal(f.host.coordinator.learningSession.snapshot().decisions.length, 2);
+    f.host.coordinator.newConversation(); await f.host.actions.refreshContext(); recreated.render(f.host.coordinator.snapshot());
+    assert.equal(recreated.byId('timeline').children.length, 0); assert.equal(f.host.coordinator.snapshot().learning.preferenceChangeQueued, false);
+    assert.deepEqual(f.host.coordinator.learningSession.snapshot().decisions, []); assert.equal(f.host.coordinator.snapshot().learning.preferences.mode, 'guided');
+    assert.deepEqual(view.persisted, []); assert.equal(responses, 5);
+  } finally { view.dispose(); f.host.dispose(); }
+});
+
+for (const restricted of [true, false]) test(`production host supports message-only learning with unavailable runtime and Restricted Mode ${restricted}`, async () => {
+  const f = conversationHostFixture(), { loadView } = require('../helpers/tutorViewHarness'); let calls = 0;
+  f.vscode.workspace.isTrusted = !restricted;
+  f.host.coordinator.controller.provider = { async *stream({ request }) {
+    calls++; if (restricted) assert.doesNotMatch(JSON.stringify(request), /ACTIVE|OPTIONAL_OLD|EXCLUDED|file:\/\//);
+    yield { type: 'complete', text: 'A list preserves insertion order.', toolCalls: [{ id: 'decision', name: 'proposeLearningCheckpoint', arguments: { kind: 'design', name: 'List choice', learnerProposalSummary: 'Keep an ordered list', tutorProposedAdditions: [], scopeSummary: '', tradeoffs: [], unresolvedChoices: [], sourceIds: [] } }], finishReason: 'tool_calls' };
+  } };
+  try {
+    await f.host.readiness; await f.host.actions.refreshContext(); const state = f.host.coordinator.snapshot();
+    assert.equal((await f.host.tutorView.onMessage(commandEnvelope(f.host, 'submitMessage', { submissionId: randomUUID(), text: 'Explain lists', contextRevision: state.context.revision }))).status, 'completed');
+    const v = loadView(); v.render(f.host.coordinator.snapshot());
+    assert.match(v.byId('timeline').textContent, /A list preserves insertion order/);
+    assert.equal(v.byId('timeline').querySelector('[data-action-type="implementCheckpoint"]'), null);
+    assert.equal(v.byId('stop').hidden, true); assert.equal(v.byId('response-dock').getAttribute('aria-busy'), 'false');
+    if (restricted) assert.match(v.byId('timeline').textContent, /Message-only proposal.*not verified/);
+    assert.equal(f.host.proposalProvider.pending, null); assert.equal(calls, 1);
+  } finally { f.host.dispose(); }
+});
+
+test('native preferences opened before New conversation cannot change the reset generation', async () => {
+  const f = conversationHostFixture(), picked = deferred(); let picks = 0;
+  f.vscode.window.showQuickPick = async options => ++picks === 1 ? options.find(o => o.key === 'mode') : picked.promise;
+  try {
+    await f.host.readiness;
+    const pending = f.host.tutorView.onMessage(commandEnvelope(f.host, 'openLearningPreferences'));
+    await new Promise(resolve => setImmediate(resolve)); assert.equal(picks, 2); f.host.coordinator.newConversation();
+    picked.resolve({ value: 'paused' }); assert.equal((await pending).status, 'stale');
+    assert.equal(f.host.coordinator.learningSession.snapshot().preferences.mode, 'guided');
+  } finally { picked.resolve(); f.host.dispose(); }
+});
+
+for (const applied of [true, false]) test(`actual native host preserves action facts in subsequent dialogue after Apply ${applied}`, async () => {
+  const f = proposalHostFixture(), { sha256 } = require('../../src/tutor/RequestSnapshot');
+  if (!applied) f.vscode.workspace.applyEdit = async () => false;
+  try {
+    await f.host.readiness; await submit(f, 'Repair');
+    assert.deepEqual(f.host.coordinator.actionEvidence.selectContext({ authorizedFiles: [{ uri: f.active.uri.toString(), version: 1, contentSha256: sha256('ACTIVE') }] }).records.map(r => r.outcome), ['staged']);
+    await f.host.tutorView.onMessage(actionEnvelope(f.host, 'reviewProposal'));
+    await f.host.tutorView.onMessage(actionEnvelope(f.host, 'acceptProposal'));
+    f.vscode.window.activeTextEditor = { document: f.active }; f.listeners.active(); await f.host.actions.refreshContext();
+    f.host.coordinator.controller.provider = { async *stream({ request }) { f.calls.push(request); yield { type: 'complete', text: 'Explain facts', toolCalls: [], finishReason: 'stop' }; } };
+    await submit(f, 'Explain outcome');
+    const message = f.calls.at(-1).messages.find(m => m.content.includes('[Source action-evidence]'));
+    assert.ok(message); assert.match(message.content, applied ? /"outcome":"applied"/ : /"outcome":"failed"/);
+    assert.doesNotMatch(message.content, /"tested":true/);
+    f.host.coordinator.newConversation(); await f.host.actions.refreshContext();
+    assert.equal(f.host.coordinator.actionEvidence.selectContext().records.length, 0);
+  } finally { f.host.dispose(); }
+});
+
+test('native Run evidence callback failure preserves terminal exit outcome', async () => {
+  const f = setup(), written = [], closed = [];
+  f.vscode.EventEmitter = class { constructor() { this.event = fn => { this.listener = fn; }; } fire(value) { this.listener?.(value); } dispose() {} };
+  const handler = createRunFileHandler({ vscode: f.vscode, fs: { existsSync: () => true },
+    runtimeManager: { resolveWorkspace: async () => ({ status: 'ready', runtimeMode: 'contributor', runtimeRoot: 'original' }) },
+    startKafeFile: () => ({ completion: Promise.resolve({ stdout: '', stderr: '', exitCode: 7, outputTruncated: false }), sendInput() {}, cancel() {} }),
+    onRunResult: () => { throw new Error('PRIVATE_EVIDENCE_FAILURE'); } });
+  await handler(); const pty = f.calls.terminals[0].pty; pty.onDidWrite(v => written.push(v)); pty.onDidClose(v => closed.push(v)); pty.open();
+  await new Promise(r => setImmediate(r));
+  assert.deepEqual(closed, [7]); assert.match(written.join(''), /exited with code 7/); assert.doesNotMatch(written.join(''), /PRIVATE_EVIDENCE_FAILURE/);
+});
 
 test('provider submission stages a target-bound proposal without native diff or Apply; explicit Review survives its active-editor event', async () => {
   const f = proposalHostFixture();
@@ -622,6 +1009,82 @@ function developmentTutorFixture({ runtime = PINNED_RUNTIME, extensionMode = 2, 
   return { host: createHost(extensionMode), createHost, temporary, storageRoot, providerCalls, vscode };
 }
 
+test('production greeting omits incidental catalogue references while technical Hello requests retain attributed local context', async () => {
+  const f = developmentTutorFixture(); let streams = 0, searches = 0;
+  try {
+    await f.host.readiness;
+    fs.writeFileSync(path.join(f.temporary, 'docs/errors/hello.md'), 'ERROR_CATALOGUE_SENTINEL show("Hello\\qworld"); invalid escape sequence.');
+    assert.equal((await f.host.resolveKnowledge()).status, 'ready');
+    const search = f.host.knowledgeRetriever.search.bind(f.host.knowledgeRetriever);
+    assert.ok((await search('Hello')).some(p => p.text.includes('ERROR_CATALOGUE_SENTINEL')));
+    f.host.knowledgeRetriever.search = async (...args) => { searches++; return search(...args); };
+    f.host.coordinator.controller.provider = { async *stream({ request }) {
+      streams++;
+      assert.match(request.messages[0].content, /latest literal learner request/);
+      if (streams === 1) {
+        assert.deepEqual(request.messages.at(-1), { role: 'user', content: 'Hello' });
+        assert.equal(request.messages.some(m => m.content.startsWith('[Source knowledge:')), false);
+        assert.doesNotMatch(JSON.stringify(request), /ERROR_CATALOGUE_SENTINEL/);
+      } else {
+        assert.deepEqual(request.messages.at(-1), { role: 'user', content: 'Explain the "Hello" string error' });
+        const reference = request.messages.find(m => m.content.includes('ERROR_CATALOGUE_SENTINEL'));
+        assert.match(reference.content, /Host-provided reference context; not learner-pasted/);
+        assert.match(reference.content, /errors\/hello\.md/);
+      }
+      yield { type: 'complete', text: streams === 1 ? 'Hello.' : 'The reference describes an invalid escape sequence.', finishReason: 'stop', toolCalls: [] };
+    } };
+    assert.equal((await submit(f, 'Hello')).status, 'completed'); assert.equal(searches, 0);
+    assert.equal((await submit(f, 'Explain the "Hello" string error')).status, 'completed'); assert.equal(searches, 1);
+    assert.equal(streams, 2); assert.equal(f.host.proposalProvider.pending, null);
+  } finally { f.host.dispose(); fs.rmSync(f.temporary, { recursive: true, force: true }); fs.rmSync(f.storageRoot, { recursive: true, force: true }); }
+});
+
+test('production knowledge-only greeting continues read and search with real local knowledge', async () => {
+  const f = developmentTutorFixture(); let calls = 0;
+  f.host.coordinator.controller.provider = { async *stream({ request }) {
+    calls++;
+    if (calls === 1) {
+      assert.equal(request.messages.some(m => m.content.startsWith('[Source active-file]')), false);
+      yield { type: 'complete', text: '', finishReason: 'tool_calls', toolCalls: [{ id: 'read', name: 'readActiveDocument', arguments: {} }, { id: 'search', name: 'searchKafeKnowledge', arguments: { query: 'KAFE lesson' } }] };
+    } else {
+      const results = request.messages.filter(m => m.role === 'tool').map(m => JSON.parse(m.content));
+      assert.deepEqual(results[0], { status: 'unavailable', code: 'no_active_document' });
+      assert.ok(Array.isArray(results[1]) && results[1].length > 0);
+      yield { type: 'complete', text: 'Hello. KAFE supports learning programming concepts.', finishReason: 'stop', toolCalls: [] };
+    }
+  } };
+  try {
+    await f.host.readiness;
+    assert.equal((await f.host.resolveKnowledge()).status, 'ready');
+    assert.equal((await submit(f, 'Hello')).status, 'completed'); assert.equal(calls, 2);
+    assert.equal(f.host.coordinator.controller.current.busy, false);
+    assert.equal(f.host.proposalProvider.pending, null);
+  } finally { f.host.dispose(); fs.rmSync(f.temporary, { recursive: true, force: true }); fs.rmSync(f.storageRoot, { recursive: true, force: true }); }
+});
+
+for (const mutation of ['unchanged', 'source-changed', 'cache-deleted']) test(`production development knowledge receipt fences final captured-old sample with ${mutation}`, async () => {
+  const development = developmentTutorFixture(), f = proposalHostFixture(), entered = deferred(), release = deferred();
+  try {
+    await development.host.readiness;
+    const initial = await development.host.resolveKnowledge(); assert.equal(initial.status, 'ready');
+    assert.equal(initial.authority?.isCurrent(), true);
+    f.host.coordinator.getKnowledgeAvailability = () => development.host.resolveKnowledge();
+    f.host.coordinator.contextComposer.knowledgeRetriever = development.host.knowledgeRetriever;
+    f.host.coordinator.toolRouter.knowledgeRetriever = development.host.knowledgeRetriever;
+    await f.host.readiness; await submit(f, 'Repair');
+    assert.equal((await f.host.tutorView.onMessage(actionEnvelope(f.host, 'reviewProposal'))).status, 'completed');
+    const issued = actionEnvelope(f.host, 'acceptProposal'); let calls = 0;
+    f.host.coordinator.getKnowledgeAvailability = async () => { const captured = await development.host.resolveKnowledge(); if (++calls === 2) { entered.resolve(); await release.promise; } return captured; };
+    const applying = f.host.tutorView.onMessage(issued); await entered.promise;
+    if (mutation === 'source-changed') fs.writeFileSync(path.join(development.temporary, 'docs/language/lesson.md'), 'Current lesson changed after capture');
+    if (mutation === 'cache-deleted') fs.unlinkSync(path.join(initial.metadata.knowledgeRoot, 'language/lesson.md'));
+    release.resolve(); const result = await applying;
+    assert.equal(result.status, mutation === 'unchanged' ? 'completed' : 'failed');
+    assert.equal(f.edits.length, mutation === 'unchanged' ? 1 : 0); assert.equal(f.host.proposalProvider.pending, null);
+    assert.equal((await f.host.tutorView.onMessage(issued)).status, 'stale');
+  } finally { release.resolve(); f.host.dispose(); development.host.dispose(); fs.rmSync(development.temporary, { recursive: true, force: true }); fs.rmSync(development.storageRoot, { recursive: true, force: true }); }
+});
+
 test('missing knowledge has null lineage and a typed search error', async () => {
   let runtimeChecks = 0;
   const host = createTutorHost({
@@ -941,7 +1404,7 @@ test('learner Run completion records versioned evidence in the injected tutor ho
   await new Promise(resolve => setImmediate(resolve));
   assert.deepEqual(host.coordinator.evidence, { stdout: '2\n', stderr: '', exitCode: 0, runtimeMode: 'managed',
     outputTruncated: false, runtimeVersion: '0.1.0', knowledgePackVersion: '0.1.0',
-    sourceUri: fixture.doc.uri.toString(), runSequence: 1 });
+    sourceUri: fixture.doc.uri.toString(), runSequence: 1, sourceIdentity: { launch: null, completion: null } });
   assert.equal(providerCalls, 0);
 });
 

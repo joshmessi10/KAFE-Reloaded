@@ -1,6 +1,8 @@
 const { createHash } = require('node:crypto');
 const defaultFileSystem = require('node:fs/promises');
 const path = require('node:path');
+const { isDeepStrictEqual } = require('node:util');
+const { createKnowledgeAuthority } = require('./KnowledgeRetriever');
 
 const KNOWLEDGE_SECTIONS = ['getting-started', 'language', 'libraries', 'specification', 'errors', 'examples'];
 const REQUIRED_MARKERS = ['pyproject.toml', 'uv.lock', 'src/Kafe.py'];
@@ -229,8 +231,21 @@ class DevelopmentKnowledgePack {
     if (actualEntries.length !== expectedMetadata.fileCount || digestEntries(actualEntries) !== expectedMetadata.contentSha256) {
       throw new Error('KAFE development knowledge-pack cache integrity or digest mismatch.');
     }
-    return { status: 'ready', knowledgeRoot: this.pathApi.join(targetRoot, 'knowledge-pack'),
-      ...expectedMetadata, sourceMode: 'development' };
+    const { sourceRoot, storageRoot } = this.validateConfiguration(), captured = structuredClone(expectedMetadata);
+    const knowledgeRoot = this.pathApi.join(targetRoot, 'knowledge-pack');
+    const authority = createKnowledgeAuthority({ knowledgeRoot, expectedContentSha256: captured.contentSha256, expectedFileCount: captured.fileCount,
+      sourceTrees: KNOWLEDGE_SECTIONS.map(section => ({ root: this.pathApi.join(sourceRoot, 'docs', section), prefix: section, extensions: section === 'examples' ? ['.md', '.kf'] : ['.md'] })),
+      sourceFiles: GRAMMAR_FILES.map(name => ({ path: this.pathApi.join(sourceRoot, 'src', name), relative: `grammar/${name}` })),
+      requiredPaths: [{ path: sourceRoot, directory: true }, { path: storageRoot, directory: true }, { path: targetRoot, directory: true },
+        { path: this.pathApi.join(sourceRoot, 'docs'), directory: true }, { path: this.pathApi.join(sourceRoot, 'src'), directory: true },
+        { path: this.extensionPath, directory: true }, ...REQUIRED_MARKERS.map(name => ({ path: this.pathApi.join(sourceRoot, name) }))],
+      integrityFiles: [{ path: metadataPath, maxBytes: 16 * 1024, validate: bytes => isDeepStrictEqual(JSON.parse(bytes.toString('utf8')), captured) }],
+      configurationCurrent: () => {
+        const current = this.validateConfiguration();
+        return current.sourceRoot === sourceRoot && current.storageRoot === storageRoot && this.runtimeVersion === captured.runtimeVersion &&
+          this.knowledgePackVersion === captured.knowledgePackVersion && this.sourceRevision === captured.sourceRevision;
+      } });
+    return { status: 'ready', knowledgeRoot, ...expectedMetadata, sourceMode: 'development', authority };
   }
 
   async getReadyPack() {

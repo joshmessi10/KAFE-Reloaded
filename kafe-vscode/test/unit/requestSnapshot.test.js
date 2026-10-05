@@ -11,6 +11,26 @@ function reviewInputs() {
     request: { messages: [{ role: 'user', content: 'Help' }], tools: [], model: 'deepseek-flash', thinking: { type: 'disabled' }, stream: true } };
 }
 
+test('source identity projection validates captured bytes and rejects unknown file versions', () => {
+  const { sourceIdentities } = api();
+  assert.equal(typeof sourceIdentities, 'function');
+  const input = reviewInputs();
+  assert.deepEqual(sourceIdentities(input), [{ uri: 'file:///work/main.kf', version: 1, contentSha256: sha('reviewed buffer') }]);
+  input.sources[0].text = 'tampered'; assert.throws(() => sourceIdentities(input), /snapshot/i);
+  input.sources[0].text = 'reviewed buffer'; input.sources[0].version = null;
+  assert.throws(() => sourceIdentities(input), /identity/i);
+});
+
+test('request snapshot freezes teaching preferences and includes their revision in freshness', () => {
+  const { createRequestSnapshot, isSnapshotCurrent } = api();
+  const input = { ...reviewInputs(), learning: { policyVersion: 'kafe-guided-1', revision: 1, preferences: { mode: 'guided' }, decisions: [], observations: [], dependencies: { fileUris: [], knowledgeLineage: null } } };
+  const captured = createRequestSnapshot(input);
+  input.learning.preferences.mode = 'paused';
+  assert.equal(captured.learning?.preferences.mode, 'guided');
+  assert.ok(Object.isFrozen(captured.learning.preferences));
+  assert.equal(isSnapshotCurrent(captured, input), false);
+});
+
 test('review deeply copies and freezes exact source and initial provider request data', () => {
   const { createRequestSnapshot } = api();
   const input = reviewInputs(), review = createRequestSnapshot(input);

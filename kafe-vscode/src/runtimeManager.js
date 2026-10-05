@@ -5,7 +5,8 @@ const path = require('node:path');
 const { spawn } = require('node:child_process');
 const { gunzipSync } = require('node:zlib');
 const yauzl = require('yauzl');
-const { knowledgeContentDigest } = require('./tutor/KnowledgeRetriever');
+const { knowledgeContentDigest, createKnowledgeAuthority } = require('./tutor/KnowledgeRetriever');
+const { isDeepStrictEqual } = require('node:util');
 
 const PINNED_MANIFEST = require('./runtimeManifest.json');
 const MAX_DOWNLOAD_BYTES = 64 * 1024 * 1024;
@@ -771,7 +772,15 @@ function createRuntimeManager({
       const files = relativeEntries.filter(entry => !entry.isDirectory).map(entry => ({ relative: entry.safeName, bytes: entry.data }));
       const digest = knowledgeContentDigest(files);
       if (!await matchesExtractedTree(knowledgeRoot, relativeEntries, fileSystem, pathApi)) return unavailable('knowledge_integrity_failed');
-      return { status: 'ready', knowledgeRoot, runtimeVersion: runtime.version,
+      const capturedRuntime = structuredClone(runtime);
+      const authority = createKnowledgeAuthority({ knowledgeRoot, expectedContentSha256: digest.contentSha256,
+        expectedKnowledgeTree: archiveTree(relativeEntries),
+        expectedFileCount: digest.fileCount, configurationCurrent: () => isDeepStrictEqual(manager.manifest.runtime, capturedRuntime),
+        requiredPaths: [{ path: runtimeRoot, directory: true }, { path: artifactRoot, directory: true }], integrityFiles: [
+          { path: archivePath, maxBytes: MAX_DOWNLOAD_BYTES, sha256: capturedRuntime.archiveSha256 },
+          { path: sidecarPath, maxBytes: MAX_METADATA_BYTES, validate: bytes => { validateRuntimeSidecar(JSON.parse(bytes.toString('utf8')), capturedRuntime); return true; } },
+        ] });
+      return { status: 'ready', knowledgeRoot, runtimeVersion: runtime.version, authority,
         knowledgePackVersion: runtime.knowledgePackVersion, packIdentity: knowledgeRoot,
         expectedContentSha256: digest.contentSha256, expectedFileCount: digest.fileCount };
     } catch {

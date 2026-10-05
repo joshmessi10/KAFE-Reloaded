@@ -1,26 +1,93 @@
 (() => {
-  const labels = { learner: "You", assistant: "KAFE Tutor", proposal: "Proposed change", run: "Run", error: "Unable to complete" };
-  const actionTypes = new Set(["configureProviderKey", "installRuntime", "retryTurn", "reviewProposal", "acceptProposal", "rejectProposal", "runFile", "openTerminal"]);
+  const labels = { learner: "You", assistant: "KAFE Tutor", checkpoint: "Learning decision", host: "KAFE", proposal: "Proposed change", run: "Run", error: "Unable to complete" };
+  const actionTypes = new Set(["configureProviderKey", "installRuntime", "retryTurn", "reviewProposal", "acceptProposal", "rejectProposal", "runFile", "openTerminal", "confirmCheckpoint", "implementCheckpoint", "discussCheckpoint", "skipCheckpoint", "prepareChange"]);
   function externalUrl(value) {
     if (typeof value !== 'string' || !/^https?:\/\//i.test(value) || /[\s\u0000-\u001f\u007f\\]/.test(value)) return null;
     try { const url = new URL(value); return ['https:', 'http:'].includes(url.protocol) && !url.username && !url.password ? value : null; } catch { return null; }
   }
   const text = (value, sourceStart) => ({ text: String(value ?? ''), sourceStart });
   const element = (tag, children = [], attrs = {}, key) => ({ tag, children, attrs, key });
-  function inline(value, sourceStart = 0) {
-    const result = [], pattern = /\*\*([^*\n]+)\*\*|`([^`\n]+)`|\*([^*\n]+)\*|\[([^\]\n]+)\]\(([^)\n]+)\)/g;
+  function codeSpan(value, start) {
+    const marker = value.slice(start).match(/^`+/)?.[0];
+    if (!marker) return null;
+    const runs = /`+/g; runs.lastIndex = start + marker.length;
+    let match;
+    while ((match = runs.exec(value))) {
+      if (value.slice(start + marker.length, match.index).includes('\n')) return null;
+      if (match[0].length === marker.length) return { start: start + marker.length, end: match.index, next: runs.lastIndex };
+    }
+    return null;
+  }
+  // Escaped punctuation stays text; each source segment retains its actual offset.
+  function escapedText(value, sourceStart, code = false) {
+    const result = [], pattern = code ? /\\\|/g : /\\[\\`*{}\[\]()#+\-.!_|>]/g;
     let cursor = 0, match;
     while ((match = pattern.exec(value))) {
       if (match.index > cursor) result.push(text(value.slice(cursor, match.index), sourceStart + cursor));
-      if (match[1] !== undefined) result.push(element('strong', [text(match[1], sourceStart + match.index + 2)]));
-      else if (match[2] !== undefined) result.push(element('code', [text(match[2], sourceStart + match.index + 1)]));
-      else if (match[3] !== undefined) result.push(element('em', [text(match[3], sourceStart + match.index + 1)]));
-      else if (externalUrl(match[5])) result.push(element('a', [text(match[4], sourceStart + match.index + 1)], { href: match[5], rel: 'noopener noreferrer', title: 'Open external link' }));
-      else result.push(text(match[0], sourceStart + match.index));
-      cursor = pattern.lastIndex;
+      result.push(text(match[0].slice(1), sourceStart + match.index + 1)); cursor = pattern.lastIndex;
     }
     if (cursor < value.length) result.push(text(value.slice(cursor), sourceStart + cursor));
     return result;
+  }
+  function inline(value, sourceStart = 0, { tableCell = false } = {}) {
+    const result = [], pattern = /^(?:\*\*([^*\n]+)\*\*|\*([^*\n]+)\*|\[([^\]\n]+)\]\(([^)\n]+)\))/;
+    let cursor = 0, plainStart = 0;
+    function flush() { if (plainStart < cursor) result.push(...escapedText(value.slice(plainStart, cursor), sourceStart + plainStart)); }
+    while (cursor < value.length) {
+      if (value[cursor] === '\\' && /[\\`*{}\[\]()#+\-.!_|>]/.test(value[cursor + 1] || '')) { cursor += 2; continue; }
+      if (value[cursor] === '`') {
+        const span = codeSpan(value, cursor);
+        if (span) {
+          flush();
+          const code = value.slice(span.start, span.end), start = sourceStart + span.start;
+          result.push(element('code', tableCell ? escapedText(code, start, true) : [text(code, start)]));
+          cursor = span.next; plainStart = cursor; continue;
+        }
+        cursor += value.slice(cursor).match(/^`+/)[0].length; continue;
+      }
+      const match = ['*', '['].includes(value[cursor]) ? value.slice(cursor).match(pattern) : null;
+      if (!match) { cursor++; continue; }
+      flush();
+      if (match[1] !== undefined) result.push(element('strong', escapedText(match[1], sourceStart + cursor + 2)));
+      else if (match[2] !== undefined) result.push(element('em', escapedText(match[2], sourceStart + cursor + 1)));
+      else if (externalUrl(match[4])) result.push(element('a', escapedText(match[3], sourceStart + cursor + 1), { href: match[4], rel: 'noopener noreferrer', title: 'Open external link' }));
+      else result.push(text(match[0], sourceStart + cursor));
+      cursor += match[0].length; plainStart = cursor;
+    }
+    flush();
+    return result;
+  }
+  function heading(line) {
+    const match = line.match(/^ {0,3}(#{1,6})(?:[ \t]+(.*)|$)/);
+    if (!match) return null;
+    const content = match[2] || '';
+    return { level: match[1].length, value: content.replace(/[ \t]+#+[ \t]*$/, '').trimEnd(), start: line.length - content.length };
+  }
+  function tableCells(line) {
+    const pipes = [];
+    for (let i = 0; i < line.length;) {
+      if (line[i] === '\\') { i += 2; continue; }
+      if (line[i] === '`') {
+        const span = codeSpan(line, i);
+        i = span ? span.next : i + line.slice(i).match(/^`+/)[0].length; continue;
+      }
+      if (line[i] === '|') pipes.push(i);
+      i++;
+    }
+    if (!pipes.length) return null;
+    const cells = [], boundaries = [-1, ...pipes, line.length];
+    for (let i = 1; i < boundaries.length; i++) {
+      const start = boundaries[i - 1] + 1, value = line.slice(start, boundaries[i]);
+      // Optional outside pipes delimit the row, rather than empty cells.
+      if (!value.trim() && (i === 1 || i === boundaries.length - 1)) continue;
+      cells.push({ value: value.trim(), start: start + value.length - value.trimStart().length });
+    }
+    return cells.length ? cells : null;
+  }
+  function tableHeader(lines, index) {
+    const cells = tableCells(lines[index]), separators = tableCells(lines[index + 1] || '');
+    if (!cells || !separators || cells.length !== separators.length || !separators.every(cell => /^:?-{3,}:?$/.test(cell.value))) return null;
+    return { cells, alignment: separators.map(cell => cell.value.startsWith(':') ? (cell.value.endsWith(':') ? 'center' : 'left') : (cell.value.endsWith(':') ? 'right' : 'left')) };
   }
   function markdown(value) {
     const normalized = String(value).replaceAll('\r\n', '\n'), lines = normalized.split('\n'), blocks = [], offsets = [];
@@ -34,6 +101,19 @@
         if (i < lines.length) i++;
         blocks.push(element('pre', [element('code', [text(code.join('\n'), sourceStart)])], language ? { 'aria-label': `${language} code` } : {})); continue;
       }
+      const title = heading(lines[i]);
+      if (title) { blocks.push(element(`h${title.level}`, inline(title.value, offsets[i] + title.start))); i++; continue; }
+      const table = tableHeader(lines, i);
+      if (table) {
+        const cells = (values, tag, lineIndex) => values.map((cell, column) => element(tag, inline(cell.value, offsets[lineIndex] + cell.start, { tableCell: true }), { class: `align-${table.alignment[column]}`, ...(tag === 'th' ? { scope: 'col' } : {}) }));
+        const header = element('thead', [element('tr', cells(table.cells, 'th', i))]), rows = []; i += 2;
+        while (i < lines.length && lines[i].trim() && !heading(lines[i]) && !/^```/.test(lines[i])) {
+          const values = tableCells(lines[i]);
+          if (!values || values.length !== table.cells.length) break;
+          rows.push(element('tr', cells(values, 'td', i++)));
+        }
+        blocks.push(element('div', [element('table', [header, element('tbody', rows)])], { class: 'markdown-table', tabindex: '0', role: 'region', 'aria-label': 'Table' })); continue;
+      }
       const list = lines[i].match(/^(?:([-*]) |(\d+)\. )(.*)$/);
       if (list) {
         const ordered = Boolean(list[2]), items = [];
@@ -45,25 +125,78 @@
         blocks.push(element(ordered ? 'ol' : 'ul', items)); continue;
       }
       const sourceStart = offsets[i], paragraph = [lines[i++]];
-      while (i < lines.length && lines[i].trim() && !/^```/.test(lines[i]) && !/^(?:[-*] |\d+\. )/.test(lines[i])) paragraph.push(lines[i++]);
+      while (i < lines.length && lines[i].trim() && !/^```/.test(lines[i]) && !/^(?:[-*] |\d+\. )/.test(lines[i]) && !heading(lines[i]) && !tableHeader(lines, i)) paragraph.push(lines[i++]);
       blocks.push(element('p', inline(paragraph.join('\n'), sourceStart)));
     }
     return blocks;
   }
   function prose(value, key) { return element('p', [text(value)], {}, key); }
   function details(label, children, key) { return element('details', [element('summary', [text(label)]), ...children], {}, key); }
+  function field(label, value, key) { return element('div', [element('h3', [text(label)]), prose(value)], { class: 'learning-field' }, key); }
+  function listField(label, values, key) { return values?.length ? [element('div', [element('h3', [text(label)]), element('ul', values.map(value => element('li', [text(value)])))], { class: 'learning-field' }, key)] : []; }
+  const recovery = {
+    learning_limit: 'Learning records were retained. Continue message-only discussion, or use New conversation in the view title; it clears this conversation and its memory-only learning state. Retrying cannot free the limit.',
+    invalid_checkpoint: 'Send a new request with current context to replace the invalid checkpoint. No decision or preparation permission was added.',
+    stale_context: 'Check the included files and send a new request with current context. A new displayed scope needs fresh confirmation.',
+    context_unavailable: 'Check the included files and send a new request with current context.',
+    stale_proposal: 'Request a fresh preparation scope before reviewing another change.',
+    trust_unavailable: 'Message-only learning remains available. Workspace files, preparation and Run require a trusted workspace.',
+    runtime_unavailable: 'Message-only learning remains available. Run requires an available KAFE runtime.',
+    knowledge_unavailable: 'Message-only discussion remains available. Local KAFE guidance is unverified while knowledge is unavailable.',
+    missing_key: 'Configure the provider key using the native action, then send explicitly. Configuration does not resend a request.',
+    auth: 'Update the provider key using the native action, then send explicitly. Configuration does not resend a request.',
+    preparation_required: 'Review the exact target and scope, then confirm Prepare change. Preparation does not Apply or Run.',
+    tool_limit: 'Send a smaller new request. The Tutor will not retry automatically.',
+  };
   function structured(entry) {
     const data = entry.data || {}, out = [];
     const filename = uri => typeof uri === 'string' ? uri.split('/').at(-1) : '';
-    if (entry.kind === 'proposal' && data.targetUri) out.push(prose(filename(data.targetUri), 'target'));
+    if (entry.kind === 'checkpoint' && data.checkpoint) {
+      const c = data.checkpoint;
+      out.push(prose(`${c.kind === 'implementation' ? 'Implementation' : 'Design'} checkpoint`, 'kind'));
+      const adopted = data.disposition === 'confirmed' || entry.status === 'confirmed';
+      const outcome = entry.status === 'stale' ? 'Stale: context changed or became unavailable. Request a current checkpoint before acting.' :
+        ({ ready: 'Proposed: waiting for your reasoning or a displayed action.', preparing: 'Preparation was authorized for one change. Native Review and Apply remain separate; Run requires its own action.', discussed: 'Returned to discussion; no preparation permission granted.', skipped: 'Question skipped; no preparation permission granted.', confirmed: 'Design confirmed.' }[entry.status] || 'Checkpoint unavailable.');
+      out.push(prose(`${adopted ? 'Adopted. ' : ''}${outcome}`, 'decision-outcome'));
+      out.push(field('Learner proposal — Tutor summary, unconfirmed', c.learnerProposalSummary || 'No learner proposal summarized.', 'learner-summary'));
+      out.push(...listField('Tutor additions', c.tutorProposedAdditions, 'additions'));
+      out.push(field('Preparation scope', c.scopeSummary || 'No preparation scope proposed.', 'scope'));
+      if (data.targetUri) out.push(field('Preparation target', data.targetUri, 'preparation-target'));
+      else if (c.kind === 'implementation') out.push(prose('No eligible authorized preparation target. Message-only discussion remains available.', 'no-target'));
+      out.push(...listField('Tradeoffs', c.tradeoffs, 'tradeoffs'), ...listField('Unresolved choices — preparation is unavailable', c.unresolvedChoices, 'choices'));
+      out.push(prose(data.grounding === 'source-linked-proposal' ? 'Source-linked Tutor proposal; source availability does not verify the proposed design.' : 'Message-only proposal; not verified KAFE guidance.', 'grounding'));
+      out.push(prose('Confirmation records adoption of this displayed decision. It does not establish independent authorship, understanding or mastery. Preparation, native Review and Apply, and learner-started Run are separate actions.', 'authority'));
+      const references = [...listField('Admitted source IDs', c.sourceIds, 'source-ids'), ...listField('Prior decision IDs', c.priorDecisionIds, 'prior-ids')];
+      if (references.length) out.push(details('Decision references', references, 'references'));
+    }
+    if (data.scopeSummary) out.push(field('Preparation scope', data.scopeSummary, 'preparation-scope'));
+    if (data.targetUri && entry.kind === 'host') {
+      out.push(field('Preparation target', data.targetUri, 'preparation-target'));
+      out.push(prose(entry.status === 'stale' ? 'Stale scope. Request a current scope and confirm it again.' : 'Confirm this displayed scope to prepare one change. Native Review and Apply remain separate; Run starts only by your action.', 'scope-authority'));
+    }
+    if (entry.kind === 'proposal') {
+      if (data.targetUri) out.push(field('Target', data.targetUri, 'target'));
+      const outcome = { ready: 'Staged for native review; not applied. Review change must precede Apply. Run remains a separate learner action.', applied: 'Applied by the native host. Run remains a separate learner action; program correctness is not established.', stale: 'Stale proposal. Request a fresh preparation scope before reviewing another change.', rejected: 'Rejected; not applied.', cancelled: 'Cancelled; not confirmed as applied.', failed: 'The change was not confirmed as applied. Request a fresh preparation scope.', unavailable: 'The change is unavailable; not confirmed as applied.' }[entry.status];
+      if (outcome) out.push(prose(outcome, 'proposal-outcome'));
+    }
+    if (entry.kind === 'error' && recovery[data.code]) out.push(prose(recovery[data.code], 'recovery'));
     if (entry.kind === 'run') {
       if (data.sourceUri) out.push(prose(filename(data.sourceUri), 'source'));
+      if (!Number.isSafeInteger(data.exitCode) && data.exitCode !== null) {
+        out.push(prose('Run has no completed exit result. Saved source: unknown. Current editor: unknown.', 'run-pending'));
+        out.push(prose(`Runtime: ${data.runtimeVersion || 'unknown'}. Knowledge: ${data.knowledgePackVersion || 'unknown'}. Exact executed bytes: unknown. Correctness: not established.`, 'run-pending-evidence'));
+        if (['failed', 'unavailable', 'cancelled'].includes(entry.status)) out.push(prose(recovery[data.code] || 'Check the current target and KAFE runtime before starting Run again. Message-only learning remains available.', 'run-recovery'));
+      }
       if (Number.isSafeInteger(data.exitCode) || data.exitCode === null) {
         out.push(prose('Exit code: ' + (data.exitCode === null ? 'unknown' : data.exitCode) + (data.outputTruncated ? ' · Output truncated' : ''), 'result'));
         const output = [];
         if (data.stdout) output.push(element('pre', [text(data.stdout)], { 'aria-label': 'Program output' }, 'stdout'));
         if (data.stderr) output.push(element('pre', [text(data.stderr)], { 'aria-label': 'Program errors' }, 'stderr'));
         if (output.length) out.push(details('Output', output, 'output'));
+        const saved = { 'unchanged-at-observed-boundaries': 'unchanged at observed boundaries', changed: 'changed', unknown: 'unknown' }[data.sourceRelationship] || 'unknown';
+        const editor = { 'same-content': 'same content', changed: 'changed', unknown: 'unknown' }[data.currentDocumentRelationship] || 'unknown';
+        out.push(prose(`Saved source: ${saved}. Current editor: ${editor}.`, 'source-comparison'));
+        out.push(details('Run evidence', [prose('Exact executed bytes: unknown. Correctness: not established.', 'limits'), prose(`Runtime: ${data.runtimeVersion || 'unknown'}. Runtime mode: ${data.runtimeMode || 'unknown'}. Knowledge: ${data.knowledgePackVersion || 'unknown'}. Knowledge lineage: ${data.knowledgeLineage || 'unknown'}.`, 'versions')], 'run-evidence'));
       }
     }
     return out;
@@ -156,7 +289,7 @@
       render(snapshot) {
         if (disposed) return; current = snapshot;
         const ids = new Set();
-        snapshot.entries.filter(entry => Object.hasOwn(labels, entry.kind)).forEach((entry, index) => {
+        snapshot.entries.filter(entry => Object.hasOwn(labels, entry.kind) && (entry.kind !== 'host' || Boolean(entry.data?.scopeSummary))).forEach((entry, index) => {
           ids.add(entry.id); let record = records.get(entry.id);
           if (!record) {
             const node = document.createElement('article'); node.className = 'entry'; node.setAttribute('data-entry-id', entry.id);

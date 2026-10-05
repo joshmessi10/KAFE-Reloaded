@@ -5,7 +5,9 @@
   let state = null, composing = false, disposed = false, beforeHydration = false;
   let localRevision = 0, pending = [], lastPostedDraft, submission = null;
   let contentSignature, announcedTurn, lastAnnouncement = '';
-  const announcedOutcomes = new Map(), listeners = [], sourceNodes = new Map();
+  const announcedOutcomes = new Map(), listeners = [], sourceNodes = new Map(), indicatorNodes = new Map();
+  let announcedLearning;
+  let stopping = null;
   let runBinding = null;
   const activeStates = ['preparing', 'responding', 'processing-tools'];
   const record = value => value !== null && typeof value === 'object' && !Array.isArray(value);
@@ -25,11 +27,36 @@
   function send(type, fields = {}) { if (!disposed && state) vscode.postMessage({ type, sessionId: state.sessionId, generation: state.generation, ...fields }); }
   const renderer = window.KafeTutorTimeline.createRenderer({ document, root: timeline, onAction: fields => send('invokeAction', fields), onOpenLink: url => send('openLink', { url }) });
   function busy() { return activeStates.includes(state?.turn?.status) || Boolean(submission && !submission.admitted && !submission.guardReleased); }
+  function growComposer() {
+    const scroll = composer.scrollTop;
+    composer.style.height = 'auto';
+    const metrics = window.getComputedStyle(composer), line = parseFloat(metrics.lineHeight) || 20;
+    const minimum = line * 2 + (parseFloat(metrics.paddingTop) || 0) + (parseFloat(metrics.paddingBottom) || 0);
+    const maximum = Math.min(200, window.innerHeight * .25);
+    composer.style.height = `${Math.min(maximum, Math.max(Math.min(minimum, maximum), composer.scrollHeight))}px`;
+    composer.scrollTop = scroll;
+  }
+  function renderDock() {
+    const status = state?.turn?.status;
+    const waiting = !activeStates.includes(status) && state?.entries.some(e => e.kind === 'checkpoint' && e.status === 'ready' && e.actions.some(a => a.enabled));
+    const key = state?.turn && `${state.turn.id}:${state.turn.turnGeneration}`;
+    if (!activeStates.includes(status) || stopping !== key) stopping = null;
+    const dockState = stopping ? 'stopping' : activeStates.includes(status) ? 'responding' : status === 'cancelled' ? 'stopped' : status === 'failed' ? 'failed' : waiting ? 'waiting-learner' : 'idle';
+    const words = { responding: status === 'processing-tools' ? 'Checking context' : status === 'preparing' ? 'Preparing response' : 'Responding', stopping: 'Stopping response', stopped: 'Response stopped', failed: 'Response unavailable', 'waiting-learner': 'Waiting for your reasoning', idle: state?.entries.length ? 'Response complete' : '' };
+    byId('response-dock').setAttribute('data-state', dockState);
+    byId('response-dock').setAttribute('aria-busy', String(['responding', 'stopping'].includes(dockState)));
+    if (byId('response-state').textContent !== words[dockState]) byId('response-state').textContent = words[dockState];
+  }
   function updateControls() {
     const active = activeStates.includes(state?.turn?.status);
     const focused = document.activeElement;
     byId('send').hidden = active; byId('send').disabled = !state || busy() || !composer.value.trim();
-    byId('stop').hidden = !active; byId('stop').disabled = !active;
+    renderDock();
+    byId('stop').hidden = !active; byId('stop').disabled = !active || Boolean(stopping);
+    const paused = state?.learning?.preferences?.mode === 'paused';
+    byId('guided-learning').textContent = paused ? 'Learning paused' : 'Guided learning';
+    const learningState = state?.learning?.preferenceChangeQueued ? 'Preference change queued until this response settles; the current response keeps its admitted preferences.' : paused ? 'Paused. Direct preparation still requires a displayed scope confirmation.' : 'Guided learning. Preferences are optional; continue chatting without setup.';
+    if (byId('learning-state').textContent !== learningState) byId('learning-state').textContent = learningState;
     if (active && focused === byId('send')) byId('stop').focus();
     else if (!active && focused === byId('stop')) {
       if (!byId('send').disabled) byId('send').focus();
@@ -45,7 +72,7 @@
     }
     updateControls();
   }
-  function input() { localRevision++; postDraft(); }
+  function input() { localRevision++; growComposer(); postDraft(); }
   function submit(event) {
     event.preventDefault();
     if (composing || !state || busy() || !composer.value.trim()) return;
@@ -62,7 +89,19 @@
     if (event.key === 'Enter' && !event.shiftKey && !event.isComposing && event.keyCode !== 229 && !composing) submit(event);
   });
   listen(byId('composer-form'), 'submit', submit);
-  listen(byId('stop'), 'click', () => { if (activeStates.includes(state?.turn?.status)) send('stopTurn', { turnId: state.turn.id, turnGeneration: state.turn.turnGeneration }); });
+  listen(byId('stop'), 'click', () => { if (activeStates.includes(state?.turn?.status) && !stopping) { stopping = `${state.turn.id}:${state.turn.turnGeneration}`; send('stopTurn', { turnId: state.turn.id, turnGeneration: state.turn.turnGeneration }); updateControls(); } });
+  listen(byId('guided-learning'), 'click', () => send('openLearningPreferences'));
+  listen(byId('add-context'), 'click', () => { if (state && !state.context.restricted) { byId('context-selector').open = !byId('context-selector').open; byId('add-context').setAttribute('aria-expanded', String(byId('context-selector').open)); } });
+  listen(byId('context-selector'), 'toggle', () => byId('add-context').setAttribute('aria-expanded', String(byId('context-selector').open)));
+  listen(window, 'resize', growComposer);
+  listen(byId('included-context'), 'click', event => {
+    const control = event.target.closest?.('button'), row = control?.closest('[data-source-id]');
+    if (!control || !row || !state || state.context.restricted) return;
+    const id = row.getAttribute('data-source-id'), source = [state.context.activeSource, ...state.context.sources].find(s => s?.id === id && s.included);
+    if (!source) return;
+    if (control.getAttribute('data-context-command') === 'reveal') send('revealSource', { sourceId: id, contextRevision: state.context.revision });
+    else if (control.getAttribute('data-context-command') === 'remove' && source.category === 'selected-file') send('setSourceIncluded', { sourceId: id, included: false, contextRevision: state.context.revision });
+  });
   listen(byId('context-run'), 'click', () => { if (runBinding && !byId('context-run').hidden) send('invokeAction', runBinding); });
   listen(byId('context-sources'), 'change', event => {
     const sourceId = event.target.getAttribute?.('data-source-id');
@@ -70,9 +109,31 @@
   });
   function renderContext() {
     const context = state.context, sources = context.restricted ? [] : context.sources.filter(source => source.uri !== context.activeSource?.uri);
-    const active = context.restricted ? 'Files excluded in Restricted Mode.' : context.activeSource?.included ? context.activeSource.label : 'No file included.';
+    const included = context.restricted ? [] : [context.activeSource?.included ? context.activeSource : null, ...sources.filter(s => s.included)].filter(Boolean);
+    const active = context.restricted ? 'Files excluded in Restricted Mode.' : included.length ? '' : 'No file included.';
     if (byId('active-context').textContent !== active) byId('active-context').textContent = active;
     byId('context-selector').hidden = sources.length === 0;
+    byId('add-context').hidden = context.restricted || sources.length === 0;
+    const includedIds = new Set(); let includedIndex = 0;
+    for (const source of included) {
+      includedIds.add(source.id); let item = indicatorNodes.get(source.id);
+      if (!item) {
+        const node = document.createElement('div'), reveal = document.createElement('button'), origin = document.createElement('span'), remove = document.createElement('button');
+        node.className = 'context-indicator'; node.setAttribute('data-source-id', source.id);
+        reveal.type = remove.type = 'button'; reveal.className = 'context-file'; remove.className = 'context-remove'; origin.className = 'context-origin';
+        reveal.setAttribute('data-context-command', 'reveal'); remove.setAttribute('data-context-command', 'remove'); remove.textContent = 'Remove';
+        node.append(reveal, origin, remove); item = { node, reveal, origin, remove }; indicatorNodes.set(source.id, item);
+      }
+      const identity = `${source.label} (${source.uri})`;
+      if (item.reveal.textContent !== source.label) item.reveal.textContent = source.label;
+      item.reveal.setAttribute('aria-label', `Reveal whole file ${identity}`); item.reveal.setAttribute('title', identity);
+      item.remove.setAttribute('aria-label', `Remove whole file ${identity} from request`); item.remove.hidden = source.category === 'active-file';
+      const origin = source.category === 'active-file' ? 'Active file' : 'Whole file';
+      if (item.origin.textContent !== origin) item.origin.textContent = origin;
+      if (byId('included-context').children[includedIndex] !== item.node) byId('included-context').insertBefore(item.node, byId('included-context').children[includedIndex] || null);
+      includedIndex++;
+    }
+    for (const [id, item] of indicatorNodes) if (!includedIds.has(id)) { if (item.node.contains(document.activeElement)) composer.focus(); item.node.remove(); indicatorNodes.delete(id); }
     const ids = new Set(); let index = 0;
     for (const source of sources) {
       ids.add(source.id); let item = sourceNodes.get(source.id);
@@ -82,15 +143,15 @@
         node.append(checkbox, label); item = { node, checkbox, label }; sourceNodes.set(source.id, item);
       }
       if (item.label.textContent !== source.label) item.label.textContent = source.label;
-      item.checkbox.setAttribute('aria-label', `Include ${source.label} in request`); item.checkbox.checked = source.included;
+      item.checkbox.setAttribute('aria-label', `Include whole file ${source.label} (${source.uri}) in request`); item.checkbox.checked = source.included;
       if (byId('context-sources').children[index] !== item.node) byId('context-sources').insertBefore(item.node, byId('context-sources').children[index] || null);
       index++;
     }
-    for (const [id,item] of sourceNodes) if (!ids.has(id)) { item.node.remove(); sourceNodes.delete(id); }
+    for (const [id,item] of sourceNodes) if (!ids.has(id)) { if (item.node.contains(document.activeElement)) composer.focus(); item.node.remove(); sourceNodes.delete(id); }
     const action = !context.restricted && state.contextActions.actions.find(a=>a.type==='runFile' && a.enabled);
     const button = byId('context-run'); button.hidden = !action;
     runBinding = action ? { entryId: state.contextActions.entryId, actionId: action.id, args: action.args } : null;
-    if (action) { if (button.textContent !== action.label) button.textContent = action.label; button.setAttribute('aria-label', action.label); }
+    if (action) { if (button.textContent !== action.label) button.textContent = action.label; button.setAttribute('aria-label', `Run saved file: ${action.label} (${action.args.targetUri})`); button.setAttribute('title', `Runs saved bytes. ${action.label} (${action.args.targetUri})`); }
     else if (button.textContent) button.textContent = '';
   }
   function hydrate(next, fresh) {
@@ -133,7 +194,15 @@
       updates.push(words[next.turn.status]);
     }
     announcedTurn = key;
+    const learningSignature = JSON.stringify([next.learning?.preferences?.mode, next.learning?.preferenceChangeQueued]);
+    if (!fresh && learningSignature !== announcedLearning) updates.push(next.learning?.preferenceChangeQueued ? 'Preference change queued until this response settles.' : next.learning?.preferences?.mode === 'paused' ? 'Guided learning paused.' : 'Guided learning active.');
+    announcedLearning = learningSignature;
     for (const e of next.entries) {
+      if (e.kind === 'checkpoint') {
+        const outcome = `${e.status}:${e.text}`;
+        if (announcedOutcomes.get(e.id) !== outcome) updates.push(e.status === 'ready' ? `Waiting for your reasoning on ${e.text}.` : e.status === 'stale' ? `Learning decision ${e.text} is stale. Request a current checkpoint.` : `Learning decision ${e.text}: ${e.status}.`);
+        announcedOutcomes.set(e.id, outcome); continue;
+      }
       if (!['run','proposal','error'].includes(e.kind) || ['preparing','running','responding','processing-tools','ready'].includes(e.status)) continue;
       const outcome = `${e.status}:${e.text}`;
       if (announcedOutcomes.get(e.id) !== outcome) updates.push(e.text);
@@ -144,13 +213,13 @@
   }
   function render(next) {
     if (disposed || !validSnapshot(next)) return;
-    if (state && next.sessionId === state.sessionId && (next.generation < state.generation || (next.generation === state.generation && next.revision <= state.revision))) return;
+    if (state && next.sessionId === state.sessionId && (next.generation < state.generation || (next.generation === state.generation && (next.revision < state.revision || (next.revision === state.revision && !(counter(next.learning?.revision) && next.learning.revision > (state.learning?.revision ?? -1)) && !(counter(next.learning?.displayRevision) && next.learning.displayRevision > (state.learning?.displayRevision ?? -1))))))) return;
     const fresh = !state || state.sessionId !== next.sessionId || state.generation !== next.generation;
     const nearBottom = timeline.scrollHeight - timeline.clientHeight - timeline.scrollTop <= 48, scrollTop = timeline.scrollTop;
     hydrate(next, fresh); state = next;
     if (beforeHydration) { beforeHydration = false; postDraft(); }
     const signature = JSON.stringify(next.entries), contentChanged = fresh || signature !== contentSignature; contentSignature = signature;
-    renderer.render(next); renderContext(); updateControls();
+    renderer.render(next); renderContext(); updateControls(); growComposer();
     if (contentChanged) {
       if (fresh || nearBottom) { timeline.scrollTop = timeline.scrollHeight; byId('new-content').hidden = true; }
       else { timeline.scrollTop = scrollTop; byId('new-content').hidden = false; }
@@ -160,6 +229,6 @@
   listen(window, 'message', event => { if (event.data?.type === 'render') render(event.data.state); });
   listen(byId('new-content'), 'click', () => { timeline.scrollTop = timeline.scrollHeight; byId('new-content').hidden = true; });
   listen(timeline, 'scroll', () => { if (timeline.scrollHeight - timeline.clientHeight - timeline.scrollTop <= 48) byId('new-content').hidden = true; });
-  listen(window, 'pagehide', () => { disposed = true; listeners.splice(0).forEach(remove=>remove()); renderer.dispose(); sourceNodes.clear(); state = null; pending = []; submission = null; runBinding = null; });
+  listen(window, 'pagehide', () => { disposed = true; listeners.splice(0).forEach(remove=>remove()); renderer.dispose(); sourceNodes.clear(); indicatorNodes.clear(); state = null; pending = []; submission = null; runBinding = null; stopping = null; });
   try { render(JSON.parse(byId('initial-state').textContent)); } catch { /* Await a valid host projection. */ }
 })();

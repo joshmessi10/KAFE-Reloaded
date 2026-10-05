@@ -7,7 +7,7 @@ const { createHash } = require('node:crypto');
  * @typedef {{submission:import('./ConversationSession').Submission, sessionId:string, generation:number, runSequence:number, sources:SourceSnapshot[], history:object, dependencies:object, request:ProviderRequest, fingerprint:string}} RequestSnapshot
  * @typedef {Omit<RequestSnapshot,'fingerprint'>} SnapshotInputs
  */
-const FIELDS = ['submission', 'sessionId', 'generation', 'runSequence', 'sources', 'history', 'dependencies', 'request'];
+const FIELDS = ['submission', 'sessionId', 'generation', 'runSequence', 'sources', 'history', 'learning', 'dependencies', 'request'];
 const sha256 = text => createHash('sha256').update(text, 'utf8').digest('hex');
 
 function canonical(value) {
@@ -42,6 +42,16 @@ function validateSnapshot(source) {
   return source;
 }
 
+/** Identity projection only; aggregate unions can exceed the stored learning-record bound. */
+function sourceIdentities(snapshot) {
+  if (!snapshot || !Array.isArray(snapshot.sources)) throw new TypeError('Invalid source snapshot.');
+  return snapshot.sources.filter(source => source.uri !== null).map(source => {
+    validateSnapshot(source);
+    if (!Number.isSafeInteger(source.version)) throw new TypeError('Unknown source identity version.');
+    return { uri: source.uri, version: source.version, contentSha256: source.contentSha256 };
+  });
+}
+
 function validateRequest(request) {
   if (!request || Object.keys(request).some(key => !['messages', 'tools', 'model', 'thinking', 'stream'].includes(key)) ||
     typeof request.model !== 'string' || !request.model.trim() || request.stream !== true ||
@@ -73,6 +83,9 @@ function createRequestSnapshot(input) {
     ['generation', 'runSequence'].some(field => !Number.isSafeInteger(input[field]) || input[field] < 0) ||
     !Array.isArray(input.sources) || !input.history || !input.dependencies || !Array.isArray(input.dependencies.fileUris)) throw new Error('Snapshot inputs are invalid.');
   input.sources.forEach(validateSnapshot);
+  if (input.learning !== undefined && (!input.learning || typeof input.learning.policyVersion !== 'string' || !input.learning.policyVersion ||
+    !Number.isSafeInteger(input.learning.revision) || input.learning.revision < 0 || !input.learning.preferences ||
+    !Array.isArray(input.learning.decisions) || !Array.isArray(input.learning.observations))) throw new Error('Snapshot learning context is invalid.');
   validateRequest(input.request);
   const data = structuredClone(snapshotData(input));
   return deepFreeze({ ...data, fingerprint: fingerprint(data) });
@@ -84,4 +97,4 @@ function isSnapshotCurrent(snapshot, current) {
   catch { return false; }
 }
 
-module.exports = { createRequestSnapshot, isSnapshotCurrent, validateSnapshot, sha256 };
+module.exports = { createRequestSnapshot, isSnapshotCurrent, validateSnapshot, sourceIdentities, sha256 };

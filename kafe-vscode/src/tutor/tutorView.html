@@ -10,24 +10,41 @@
 <body>
   <main id="tutor">
     <div id="timeline" role="log" aria-label="Tutor conversation" aria-live="off" tabindex="0"></div>
-    <button id="new-content" type="button" hidden>Go to latest</button>
+    <div id="response-dock" class="response-dock" data-state="idle" aria-busy="false">
+      <span id="response-state"></span>
+      <button id="new-content" type="button" hidden>Go to latest</button>
+    </div>
     <p id="conversation-status" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></p>
     <form id="composer-form" class="composer-form">
-      <div id="context-row" class="context-row" aria-label="Request context">
+      <div id="context-row" class="context-row" aria-label="Whole files included in request">
         <span id="active-context"></span>
-        <details id="context-selector" hidden>
-          <summary>Other files</summary>
-          <div id="context-sources"></div>
-        </details>
-        <button id="context-run" type="button" hidden></button>
+        <div id="included-context"></div>
       </div>
       <label for="composer" class="sr-only">Message to KAFE Tutor</label>
-      <textarea id="composer" rows="3" aria-describedby="composer-help" placeholder="Ask a question or describe what you want to build."></textarea>
+      <textarea id="composer" rows="2" aria-describedby="composer-help" placeholder="Ask a question or describe what you want to build."></textarea>
       <div class="composer-controls">
-        <p id="composer-help">Enter to send. Shift+Enter for a new line.</p>
-        <button id="stop" type="button" aria-label="Stop the current response" hidden>Stop</button>
-        <button id="send" type="submit" aria-label="Send message to KAFE Tutor" disabled>Send</button>
+        <button id="guided-learning" class="quiet-control" type="button" aria-label="Open native learning preferences">Guided learning</button>
+        <div class="submit-controls">
+          <button id="add-context" class="quiet-control" type="button" aria-expanded="false" aria-controls="context-selector" hidden>Add context</button>
+          <button id="stop" type="button" aria-label="Stop the current response" hidden>Stop</button>
+          <button id="send" type="submit" aria-label="Send message to KAFE Tutor" disabled>Send</button>
+        </div>
       </div>
+      <details id="context-selector" hidden>
+        <summary>Available whole files</summary>
+        <p class="context-note">File contents enter the request only after inclusion. The active KAFE file is included by default.</p>
+        <div id="context-sources"></div>
+      </details>
+      <div class="composer-support">
+        <p id="composer-help">Enter to send. Shift+Enter for a new line.</p>
+        <button id="context-run" class="quiet-control" type="button" hidden></button>
+      </div>
+      <details id="learning-help">
+        <summary>Learning controls</summary>
+        <p id="learning-state"></p>
+        <p>Concept questions can be answered directly. Write your own reasoning in this composer, request options or help, or use Discuss and Skip on a checkpoint. Neither grants preparation permission.</p>
+        <p>Pause or resume guided learning in native learning preferences. Preferences are optional and stay in memory. New conversation clears teaching state; reopening this view retains it.</p>
+      </details>
     </form>
   </main>
   <script id="initial-state" type="application/json" nonce="{{NONCE}}">{{INITIAL_STATE}}</script>

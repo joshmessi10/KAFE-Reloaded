@@ -6,7 +6,7 @@ const cp = require('node:child_process');
 const net = require('node:net');
 const crypto = require('node:crypto');
 const assert = require('node:assert/strict');
-const { ContextRegistry, identity, assertReachableGeometry, isRenderedSettlement } = require('./harness.cjs');
+const { ContextRegistry, identity, assertReachableGeometry, isRenderedSettlement, projectedEntryIds } = require('./harness.cjs');
 
 const extensionRoot = path.resolve(__dirname, '../..');
 const productionManifest = require(path.join(extensionRoot, 'package.json'));
@@ -70,10 +70,12 @@ async function discover({ previousIdentity, previousNonce } = {}) {
   registry.select(candidate); stage('discover-live');
   // Passive test observer: production still owns every render/message handler.
   await evaluate('(()=>{if(!window.__nativeSnapshotObserver){window.__nativeSnapshotObserver=true;window.addEventListener("message",event=>{if(event.data?.type==="render"){const s=event.data.state;window.__nativeSnapshotAck={sessionId:s.sessionId,generation:s.generation,revision:s.revision};}});}window.__nativeSnapshotAck=null;})()');
-  const expected = (await control('renderSnapshot')).snapshot;
+  let expected = (await control('renderSnapshot')).snapshot;
   await waitFor(async () => {
-    const rendered = await evaluate('({ack:window.__nativeSnapshotAck,draft:document.getElementById("composer").value,entries:[...document.querySelectorAll("#timeline article")].map(e=>e.dataset.entryId),context:document.getElementById("active-context").textContent})');
-    return rendered.ack?.sessionId === expected.sessionId && rendered.ack.generation === expected.generation && rendered.ack.revision >= expected.revision && rendered.draft === expected.draft && JSON.stringify(rendered.entries) === JSON.stringify(expected.entries.map(e=>e.id)) && rendered.context && rendered;
+    const rendered = await evaluate('({ack:window.__nativeSnapshotAck,draft:document.getElementById("composer").value,entries:[...document.querySelectorAll("#timeline article")].map(e=>e.dataset.entryId),context:document.getElementById("context-row").textContent})');
+    expected = (await control('state')).snapshot;
+    evidence.lastDiscovery = {expected:{sessionId:expected.sessionId,generation:expected.generation,revision:expected.revision,draft:expected.draft,entries:expected.entries.map(e=>e.id)},rendered};
+    return rendered.ack?.sessionId === expected.sessionId && rendered.ack.generation === expected.generation && rendered.ack.revision >= expected.revision && rendered.draft === expected.draft && JSON.stringify(rendered.entries) === JSON.stringify(projectedEntryIds(expected)) && rendered.context && rendered;
   }, 'fresh host snapshot received and projected');
   stage('snapshot-ack', { sessionId: expected.sessionId, generation: expected.generation, revision: expected.revision });
   return evaluate('({width:innerWidth,height:innerHeight,ratio:devicePixelRatio,theme:document.body.className,entries:document.querySelectorAll("#timeline article").length,draft:document.getElementById("composer").value,nonce:document.getElementById("initial-state").nonce})');
@@ -143,6 +145,17 @@ async function oneSend(text, scenario, useButton = false) {
   assert.equal(after.snapshot.entries.filter(e => e.kind === 'learner').length, before.snapshot.entries.filter(e => e.kind === 'learner').length + 1);
   assert.equal(after.snapshot.entries.filter(e => e.kind === 'assistant').length, before.snapshot.entries.filter(e => e.kind === 'assistant').length + 1);
   assert.ok(!after.snapshot.entries.some(e => ['review', 'progress', 'readiness', 'learning'].includes(e.kind)));
+  if (scenario.proposal) {
+    await settledTurn(); const ungranted = await control('state');
+    assert.equal(ungranted.pendingProposal, null, 'ordinary prose does not grant preparation');
+    assert.equal(ungranted.counters.nativeEdits, before.counters.nativeEdits);
+    assert.equal(ungranted.counters.launches.length, before.counters.launches.length);
+    const action = await evaluate('[...document.querySelectorAll("button[data-action-type=prepareChange]:not(:disabled)")].at(-1)?.getAttribute("data-action-id")');
+    assert.ok(action, 'fresh exact preparation scope is rendered');
+    await click(`button[data-action-id="${action}"]`);
+    await waitFor(async () => (await control('state')).counters.provider === before.counters.provider + 2, 'explicit fresh scope admits preparation');
+    evidence.freshScopeAdmissions ||= []; evidence.freshScopeAdmissions.push({action, providerBefore:before.counters.provider, providerAfter:(await control('state')).counters.provider});
+  }
   return after;
 }
 const settledTurn = () => waitFor(async () => {
@@ -260,7 +273,7 @@ async function main() {
   await gate('empty-boot-unavailable-runtime-knowledge-and-legacy', async () => {
     const state = await control('state'); assert.equal(state.trusted, true); assert.equal(state.snapshot.entries.length, 0);
     assert.equal(state.counters.provider, 0); assert.equal(state.counters.knowledge, 0); assert.equal(state.counters.resolves, 0); assert.equal(state.counters.installs, 0); assert.equal(state.summary.goal, 'LEGACY_PRIVATE_GOAL');
-    assert.match(await evaluate('document.getElementById("active-context").textContent'), /main.kf/);
+    assert.match(await evaluate('document.getElementById("included-context").textContent'), /main.kf/);
     const info = await evaluate('({csp:document.querySelector("meta[http-equiv=Content-Security-Policy]").content,scripts:[...document.scripts].filter(e=>e.src).map(e=>({src:e.src,nonce:!!e.nonce})),forms:document.forms.length})');
     assert.equal(info.forms, 1); assert.ok(info.scripts.every(x => x.nonce && x.src.includes('vscode'))); assert.match(info.csp, /default-src 'none'/); await screenshot('empty-boot'); return info;
   });
@@ -270,7 +283,7 @@ async function main() {
     assert.equal(state.counters.observations[1].helloHistory, true); assert.ok(state.counters.observations.every(o => o.knowledgeUnavailable && !o.legacy && !o.optionalOne && !o.optionalTwo));
     assert.equal(state.counters.envelopes.filter(e => e.type === 'submitMessage').length, 2); await screenshot('hello-followup'); return state.counters.observations;
   });
-  for (const [theme, css] of [['Default Light Modern', 'vscode-light'], ['Default Dark Modern', 'vscode-dark'], ['Default High Contrast', 'vscode-high-contrast']]) await gate(`theme-${css}`, async () => {
+  for (const [theme, css] of [['Default Light Modern', 'vscode-light'], ['Default Dark Modern', 'vscode-dark'], ['Default High Contrast', 'vscode-high-contrast'], ['Default High Contrast Light', 'vscode-high-contrast-light']]) await gate(`theme-${css}`, async () => {
     await control('theme', { theme }); await waitFor(() => evaluate(`document.body.classList.contains(${JSON.stringify(css)})`), theme); assert.equal(await evaluate('document.documentElement.scrollWidth>innerWidth'), false); return screenshot(css);
   });
   await control('theme', { theme: 'Default Dark Modern' });
@@ -287,6 +300,26 @@ async function main() {
   });
   await control('singleEditor');
   await gate('actual-280-css-width', async () => { await resizeSidebar(280); const m = await settledLayout(); assert.equal(m.width, 280); assert.ok(m.scrollWidth <= m.width); await sequentialTraversal('280'); return screenshot('280-css'); });
+  for (const width of [360, 600]) await gate(`actual-${width}-css-width`, async () => {
+    resizeOwnedWindow(1440,900); await settledLayout(); await resizeSidebar(width); const m=await settledLayout();
+    assertReachableGeometry(m,await nativeMetrics(),{physicalWidth:1440,physicalHeight:900,width,ratio:1});
+    return screenshot(`${width}-css`);
+  });
+  await gate('short-panel-enlarged-text-reduced-motion', async () => {
+    resizeOwnedWindow(1024,520); await settledLayout(); await resizeSidebar(360);
+    await call('Emulation.setEmulatedMedia',{features:[{name:'prefers-reduced-motion',value:'reduce'}]},registry.selected.sessionId);
+    await evaluate('document.body.style.setProperty("--vscode-font-size","20px")');
+    try {
+      const m=await settledLayout(); assertReachableGeometry(m,await nativeMetrics(),{physicalWidth:1024,physicalHeight:520,width:360,ratio:1});
+      const options=await evaluate('({reduced:matchMedia("(prefers-reduced-motion: reduce)").matches,font:getComputedStyle(document.getElementById("composer")).fontSize})');
+      assert.equal(options.reduced,true); assert.equal(options.font,'20px'); await screenshot('short-enlarged-reduced');
+      return {metrics:m,options,enlargement:'test-owned CSS variable; no installed preference claim'};
+    } finally {
+      await evaluate('document.body.style.removeProperty("--vscode-font-size")');
+      await call('Emulation.setEmulatedMedia',{features:[]},registry.selected.sessionId);
+    }
+  });
+  resizeOwnedWindow(1024,768); await settledLayout(); await resizeSidebar(280);
   await gate('same-small-window-200-percent', async () => {
     const before = await nativeMetrics(); await control('zoom', { level: Math.log(2) / Math.log(1.2) }); const m = await settledLayout(m => m.ratio >= 1.98);
     const after = await nativeMetrics(); assert.equal(after.outerWidth, before.outerWidth); assert.equal(after.outerHeight, before.outerHeight); assert.ok(m.scrollWidth <= m.width); assert.ok(m.timeline.height > 0); return screenshot('same-small-200');
@@ -305,9 +338,11 @@ async function main() {
   await control('zoom', { level: 0 }); await settledLayout(m => m.ratio === 1); await resizeSidebar(360);
   await gate('Stop-retry-live-draft-and-recreation', async () => {
     await oneSend('Original stopped question', { text: 'Partial original answer.', hold: true }); await typeComposer('Keep next draft');
+    await screenshot('responding');
     const before = await control('state'); await recreateView(); await waitFor(() => evaluate('document.getElementById("composer").value === "Keep next draft"'), 'recreated draft');
     assert.equal((await control('state')).snapshot.entries.length, before.snapshot.entries.length); await sequentialTraversal('streaming-Stop', { busy: true });
     await typeComposer('Keep next draft'); await click('#stop'); await settledTurn(); assert.equal((await control('state')).snapshot.turn.status, 'cancelled');
+    await screenshot('stopped');
     await control('chunk', { text: 'LATE_FORBIDDEN' }); await control('finish'); assert.ok(!(await control('state')).snapshot.entries.some(e => e.text.includes('LATE_FORBIDDEN')));
     await control('scenario', { scenario: { text: 'Recovered answer.' } }); await click('button[data-action-type=retryTurn]:not(:disabled)'); await waitFor(async()=>(await control('state')).counters.provider===before.counters.provider+1,'explicit Retry provider admission'); await settledTurn();
     const after = await control('state'); assert.equal(after.counters.provider, before.counters.provider + 1); assert.equal(after.snapshot.draft, 'Keep next draft');
@@ -347,6 +382,7 @@ async function main() {
   });
   await gate('cancelled-masked-key-preserves-live-draft-no-success-entry', async () => {
     await oneSend('Missing credential', { missingKey: true }); await settledTurn(); await typeComposer('Live credential draft'); const before = await control('state');
+    await screenshot('failed');
     await click('button[data-action-type=configureProviderKey]:not(:disabled)'); await waitFor(() => evaluate('Boolean(document.querySelector(".quick-input-widget input[type=password]"))', true), 'masked input');
     await call('Input.insertText', { text: 'fixture-only-dummy-credential' }); await screenshot('masked-input'); await key('Escape', true);
     await waitFor(() => evaluate('!document.querySelector(".quick-input-widget input[type=password]") || document.querySelector(".quick-input-widget").style.display === "none"', true), 'input closed'); const after = await control('state');
@@ -358,8 +394,57 @@ async function main() {
     evidence.hostileMarkdownSamples ||= []; evidence.hostileMarkdownSamples.push({settlement,result});
     assert.equal(result.executable, 0); assert.deepEqual(result.links, ['https://example.com/']); return {settlement,result};
   });
+  await gate('native-guided-learning-confirm-prepare-review-Apply-separate-Run', async () => {
+    await control('newConversation'); await control('editor'); await resizeSidebar(600);
+    await control('theme',{theme:'Default Light Modern'}); await waitFor(()=>evaluate('document.body.classList.contains("vscode-light")'),'light learning');
+    await oneSend('What is an ordered list?',{text:'A list keeps values in insertion order. Which tradeoff matters for your design?'}); await settledTurn();
+    assert.equal((await control('state')).learning.decisions.length,0); await screenshot('learning-question');
+    await oneSend('I would keep one ordered list. Compare my options.',{checkpoint:'design'}); await settledTurn();
+    assert.equal(await evaluate('document.getElementById("response-dock").dataset.state'),'waiting-learner');
+    assert.equal(await evaluate('document.getElementById("stop").hidden'),true);
+    await control('theme',{theme:'Default High Contrast'}); await waitFor(()=>evaluate('document.body.classList.contains("vscode-high-contrast")'),'HC checkpoint');
+    await resizeSidebar(280); await screenshot('learning-checkpoint'); await typeComposer('Independent next reasoning');
+    await control('scenario',{scenario:{checkpoint:'implementation',withPrior:true}}); await keyboardActivate('confirmCheckpoint'); await settledTurn();
+    const confirmed=await control('state'); assert.equal(confirmed.learning.decisions[0].disposition,'confirmed'); assert.equal(confirmed.pendingProposal,null);
+    assert.equal(confirmed.counters.nativeEdits,0); assert.equal(confirmed.counters.launches.length,0);
+    await control('scenario',{scenario:{proposal:true}}); await keyboardActivate('implementCheckpoint'); await settledTurn();
+    const staged=await control('state'); assert.ok(staged.pendingProposal); assert.equal(staged.pendingProposalReviewed,false);
+    assert.equal(staged.snapshot.draft,'Independent next reasoning'); assert.equal(staged.counters.nativeEdits,0); assert.equal(staged.counters.launches.length,0);
+    await resizeSidebar(360); await control('theme',{theme:'Default High Contrast Light'}); await waitFor(()=>evaluate('document.body.classList.contains("vscode-high-contrast-light")'),'HC light proposal');
+    await screenshot('learning-proposal'); await keyboardActivate('reviewProposal'); await waitFor(async()=>(await control('state')).pendingProposalReviewed,'learning native diff');
+    await keyboardActivate('acceptProposal'); await waitFor(async()=>(await control('state')).documentText==='items <- [42]\n','learning Apply');
+    const applied=await control('state'); assert.equal(applied.counters.nativeEdits,1); assert.equal(applied.counters.launches.length,0);
+    await control('runtimeReady'); await control('editor'); await key('s',true,2);
+    await waitFor(async()=>(await control('state')).documentDirty===false,'owned applied file saved');
+    await keyboardActivate('context-run',{byId:true});
+    await waitFor(async()=>(await control('state')).counters.launches.length===1,'separate explicit learning Run'); await control('finishRun');
+    await waitFor(async()=>(await control('state')).counters.closed===1,'learning Run closed'); await control('hideTerminal'); await control('show');
+    await waitFor(()=>evaluate('document.querySelector("article[data-kind=run]")?.textContent.includes("Exact executed bytes: unknown")'),'learning Run unknowns');
+    await control('theme',{theme:'Default Dark Modern'}); await waitFor(()=>evaluate('document.body.classList.contains("vscode-dark")'),'dark Run');
+    await click('article[data-kind=run] details > summary'); await screenshot('learning-run');
+    const retained=(await control('state')).learning; await recreateView(); assert.deepEqual((await control('state')).learning,retained);
+    await control('newConversation'); assert.equal((await control('state')).learning.decisions.length,0);
+    return {designAdopted:true,scopeClicked:true,nativeReviewed:true,ApplyDidNotRun:true,separateRun:true,viewRetainsLearning:true,newConversationClearsLearning:true};
+  });
+  await gate('native-preferences-queued-pause-and-resume', async () => {
+    async function chooseMode(value) {
+      await click('#guided-learning');
+      await waitFor(()=>evaluate('document.querySelector(".quick-input-widget .quick-input-title")?.textContent.includes("KAFE learning preferences")',true),'native preference fields');
+      await call('Input.insertText',{text:'Guided learning'}); await key('Enter',true);
+      await waitFor(()=>evaluate('document.querySelector(".quick-input-widget .quick-input-title")?.textContent==="Guided learning"',true),'native mode values');
+      await call('Input.insertText',{text:value}); await key('Enter',true);
+    }
+    await oneSend('Hold response while preferences change',{text:'Partial preference answer.',hold:true});
+    await chooseMode('Pause teaching');
+    await waitFor(async()=>(await control('state')).snapshot.learning.preferenceChangeQueued,'native busy preference queue');
+    assert.equal((await control('state')).learning.preferences.mode,'guided'); await control('finish'); await settledTurn();
+    assert.equal((await control('state')).learning.preferences.mode,'paused'); await screenshot('native-paused-preferences');
+    await chooseMode('Guided learning'); await waitFor(async()=>(await control('state')).learning.preferences.mode==='guided','native resumed');
+    const state=await control('state'); assert.equal(state.learning.decisions.length,0); assert.equal(state.pendingProposal,null);
+    await control('newConversation'); return {queuedWhileBusy:true,pausedAfterSettlement:true,resumedNatively:true,noPreparationGrant:true};
+  });
   await gate('native-diff-stale-rejection-and-reviewed-Apply', async () => {
-    await control('editor'); const initial = await control('state'); await oneSend('Propose native diff', { proposal: true }); await settledTurn();
+    await control('closeProposalEditors'); const initial = await control('state'); await oneSend('Propose native diff', { proposal: true }); await settledTurn();
     const staged = await control('state'); assert.ok(staged.pendingProposal); assert.equal(staged.pendingProposalReviewed, false); assert.equal(staged.counters.diffOpens, initial.counters.diffOpens);
     assert.equal(await evaluate('Boolean(document.querySelector("button[data-action-type=acceptProposal]:not(:disabled)"))'), false);
     await sequentialTraversal('proposal-before-review',{requiredActions:['reviewProposal','rejectProposal']});
@@ -369,15 +454,16 @@ async function main() {
     await waitFor(async () => !(await control('state')).pendingProposal, 'changed source revokes proposal');
     // A source event may proactively revoke Apply before a click; both paths must deny the stale edit.
     if (await evaluate('Boolean(document.querySelector("button[data-action-type=acceptProposal]:not(:disabled)"))')) await keyboardActivate('acceptProposal');
-    assert.equal((await control('state')).documentText, before); await control('editor'); await oneSend('Fresh native proposal', { proposal: true }); await settledTurn();
+    assert.equal((await control('state')).documentText, before); await control('closeProposalEditors'); await oneSend('Fresh native proposal', { proposal: true }); await settledTurn();
     await keyboardActivate('reviewProposal'); await waitFor(async () => (await control('state')).pendingProposalReviewed, 'fresh reviewed'); await keyboardActivate('acceptProposal');
-    await waitFor(async () => (await control('state')).documentText === 'items <- [42]\n', 'edit applied'); assert.equal((await control('state')).counters.launches.length, 0); await screenshot('native-Apply');
-    await control('editor'); await oneSend('Dismiss native proposal', { proposal: true }); await settledTurn(); const beforeDismiss = await control('state');
+    await waitFor(async () => (await control('state')).documentText === 'items <- [42]\n', 'edit applied'); assert.equal((await control('state')).counters.launches.length, initial.counters.launches.length); await screenshot('native-Apply');
+    await control('closeProposalEditors'); await oneSend('Dismiss native proposal', { proposal: true }); await settledTurn(); const beforeDismiss = await control('state');
     await keyboardActivate('rejectProposal'); await waitFor(async () => !(await control('state')).pendingProposal, 'explicit Dismiss');
     const dismissed = await control('state'); assert.equal(dismissed.documentText, beforeDismiss.documentText); assert.equal(dismissed.counters.diffOpens, beforeDismiss.counters.diffOpens);
     return { staleDenied: true, reviewedApply: true, explicitDismiss: true, implicitRun: false, diffOpens: dismissed.counters.diffOpens-initial.counters.diffOpens, proposalEvents: dismissed.counters.proposalEvents };
   });
   await gate('native-Run-PTY-two-renewed-openings-and-reset-cleanup', async () => {
+    await control('resetRunCounters');
     await control('runtimeReady'); await control('editor'); await key('s', true, 2); await pause(200); await keyboardActivate('context-run',{byId:true});
     await waitFor(async () => (await control('state')).counters.launches.length === 1, 'PTY launched');
     const ids = []; const baseline = await control('state');

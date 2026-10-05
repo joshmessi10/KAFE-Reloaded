@@ -44,6 +44,7 @@
     "onCommand:kafe.clearProviderKey",
     "onCommand:kafe.clearTutorProgress",
     "onCommand:kafe.newConversation",
+    "onCommand:kafe.learningPreferences",
     "onView:kafeTutorView"
   ],
   "contributes": {
@@ -106,6 +107,11 @@
       {
         "command": "kafe.newConversation",
         "title": "KAFE: New Conversation"
+      },
+      {
+        "command": "kafe.learningPreferences",
+        "title": "KAFE: Learning Preferences",
+        "icon": "$(settings-gear)"
       }
     ],
     "viewsContainers": {
@@ -150,6 +156,11 @@
         },
         {
           "command": "kafe.newConversation",
+          "when": "view == kafeTutorView",
+          "group": "2_conversation"
+        },
+        {
+          "command": "kafe.learningPreferences",
           "when": "view == kafeTutorView",
           "group": "2_conversation"
         }

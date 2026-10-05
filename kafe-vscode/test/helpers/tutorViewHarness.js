@@ -41,6 +41,7 @@ function loadView({ html = fs.readFileSync(path.join(tutorRoot, 'tutorView.html'
       this.childNodes = []; this.parentNode = null; this.listeners = new Map(); this.attributes = new Map(); this.dataset = {};
       this.value = ''; this.hidden = false; this.disabled = false; this.scrollTop = 0; this.scrollHeight = 500; this.clientHeight = 500; this.attributeWrites = 0;
       this.selectionStart = 0; this.selectionEnd = 0;
+      this.style = {};
     }
     get children() { return this.childNodes.filter(n => n.nodeType === 1); }
     get firstChild() { return this.childNodes[0] || null; }
@@ -96,6 +97,8 @@ function loadView({ html = fs.readFileSync(path.join(tutorRoot, 'tutorView.html'
   }
   document.body = root.querySelector('body'); document.getElementById = id => root.querySelector(`#${id}`);
   const window = new Node('window'); window.document = document; window.getSelection = () => selection;
+  window.innerHeight = 800;
+  window.getComputedStyle = () => ({ lineHeight: '20', paddingTop: '8', paddingBottom: '8' });
   const context = vm.createContext({ document, window, URL, crypto: require('node:crypto').webcrypto, acquireVsCodeApi: () => ({ postMessage: m => sent.push(structuredClone(m)), setState: s => persisted.push(s) }) });
   const timeline = path.join(tutorRoot, 'tutorTimeline.js'); if (fs.existsSync(timeline)) vm.runInContext(fs.readFileSync(timeline, 'utf8'), context);
   vm.runInContext(fs.readFileSync(path.join(tutorRoot, 'tutorView.js'), 'utf8'), context);

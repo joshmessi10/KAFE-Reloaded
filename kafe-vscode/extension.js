@@ -1,11 +1,13 @@
 const fs = require('node:fs');
 const path = require('node:path');
+const { isDeepStrictEqual } = require('node:util');
 const { startKafeFile } = require('./src/kafeRunner');
 const { createRuntimeManager } = require('./src/runtimeManager');
 const { TutorViewProvider } = require('./src/tutor/TutorViewProvider');
 const { DeepSeekProvider, SECRET_KEY } = require('./src/tutor/providers/DeepSeekProvider');
 const { SessionCoordinator } = require('./src/tutor/SessionCoordinator');
 const { ContextComposer } = require('./src/tutor/ContextComposer');
+const { LearningSession } = require('./src/tutor/LearningSession');
 const { KnowledgeRetriever, KnowledgeUnavailable, KnowledgeIntegrityError } = require('./src/tutor/KnowledgeRetriever');
 const { DevelopmentKnowledgePack } = require('./src/tutor/DevelopmentKnowledgePack');
 const { ToolRouter } = require('./src/tutor/ToolRouter');
@@ -14,6 +16,8 @@ const { CodeProposalProvider } = require('./src/tutor/CodeProposalProvider');
 const { TutorHostActions } = require('./src/tutor/TutorHostActions');
 const { isTutorMessage } = require('./src/tutor/TutorViewProvider');
 const { metadataLineage } = require('./src/tutor/ToolRouter');
+const { createTutorDiagnostics } = require('./src/tutor/TutorDiagnostics');
+const { savedSourceHash } = require('./src/tutor/ActionEvidence');
 
 const ANTLR_COMMAND = 'java -jar antlr-4.13.2-complete.jar -no-listener -visitor -Dlanguage=Python3 Kafe_Grammar.g4';
 const REQUIRED_PARSER = ['Kafe_GrammarLexer.py', 'Kafe_GrammarParser.py', 'Kafe_GrammarVisitor.py'];
@@ -55,6 +59,7 @@ function createClearProgressHandler({ vscode, progressStore }) {
 function createTutorHost({ vscode, extensionUri, secrets, workspaceState, runtimeManager,
   extensionMode, extensionPath, provider = new DeepSeekProvider({ secretStorage: secrets }),
   runFile: injectedRunFile, configureProvider: injectedConfigure, getReadiness: injectedReadiness }) {
+  const diagnostics = createTutorDiagnostics(vscode.window);
   const safeError = code => Object.assign(new Error(code === 'trust_unavailable' ? 'Trusted workspace context is unavailable.' : 'KAFE knowledge is unavailable.'), { code });
   const parseUri = uri => typeof uri === 'string' ? vscode.Uri.parse(uri) : uri;
   let sourceRevision = 0;
@@ -77,6 +82,7 @@ function createTutorHost({ vscode, extensionUri, secrets, workspaceState, runtim
   };
   const documentReader = {
     validateUri: uri => authorize(uri),
+    readSavedIdentity: uri => authorize(uri) ? savedSourceHash(fs, parseUri(uri).fsPath) : null,
     displayLabel: uri => {
       const target = parseUri(uri), folder = vscode.workspace.getWorkspaceFolder?.(target);
       if (!folder?.uri?.fsPath) return target.toString();
@@ -125,7 +131,12 @@ function createTutorHost({ vscode, extensionUri, secrets, workspaceState, runtim
       !Number.isSafeInteger(metadata.expectedFileCount) || metadata.expectedFileCount < 1) {
       return { status: 'unavailable', code: 'knowledge_integrity_failed' };
     }
-    return { status: 'ready', metadata };
+    // The pack owner proves actual current filesystem/configuration inputs synchronously.
+    // Cached async metadata alone cannot authorize a native edit after an awaited read.
+    const capturedRuntime = structuredClone(runtimeManager.manifest?.runtime);
+    const authority = ready.authority && typeof ready.authority.isCurrent === 'function' ? Object.freeze({ isCurrent: () =>
+      !hostDisposed && vscode.workspace.isTrusted === true && isDeepStrictEqual(runtimeManager.manifest?.runtime, capturedRuntime) && ready.authority.isCurrent() === true }) : null;
+    return { status: 'ready', metadata, authority };
   };
   const knowledgeRetriever = {
     async getKnowledgeLineage() {
@@ -174,7 +185,8 @@ function createTutorHost({ vscode, extensionUri, secrets, workspaceState, runtim
     }
     return { restricted: false, activeDocument, candidateUris };
   };
-  const coordinator = new SessionCoordinator({ provider, proposalProvider, getKnowledgeAvailability: resolveKnowledge, getSourceRevision: () => getSourceRevision(),
+  const coordinator = new SessionCoordinator({ provider, proposalProvider, learningSession: new LearningSession(), getKnowledgeAvailability: resolveKnowledge, getSourceRevision: () => getSourceRevision(),
+    diagnostic: record => diagnostics.record(record),
     contextComposer: new ContextComposer({ documentReader, knowledgeRetriever }),
     toolRouter: new ToolRouter({ documentReader, knowledgeRetriever }), getContext,
     getWorkspaceRelativeSourcePath: sourceUri => {
@@ -214,6 +226,21 @@ function createTutorHost({ vscode, extensionUri, secrets, workspaceState, runtim
   actions = new TutorHostActions({ session: coordinator.session, controller: coordinator.controller, coordinator,
     proposalProvider, runtimeManager, configureProvider: injectedConfigure || keyHandlers.configure,
     runFile, getReadiness, authorizeRunTarget: authorize });
+  // Native choices only: the webview can open this route but supplies no preference patch.
+  const openLearningPreferences = async () => {
+    const { sessionId, generation } = coordinator.snapshot();
+    const current = () => !hostDisposed && coordinator.snapshot().sessionId === sessionId && coordinator.snapshot().generation === generation;
+    const labels = { mode: 'Guided learning', frequency: 'Decision frequency', reasoningStyle: 'Reasoning style', codingPreference: 'Code preparation', familiarity: 'Self-reported familiarity' };
+    const choices = { mode: [['guided', 'Guided learning'], ['paused', 'Pause teaching']], frequency: [['light', 'Light'], ['normal', 'Normal'], ['frequent', 'Frequent']], reasoningStyle: [['open-ended', 'Open-ended'], ['multiple-choice', 'Multiple choice'], ['mixed', 'Mixed']], codingPreference: [['ai', 'AI prepares agreed code'], ['mixed', 'Mixed preparation'], ['hands-on', 'Learner prepares code']], familiarity: [['unknown', 'Unknown'], ['beginner', 'Beginner'], ['intermediate', 'Intermediate'], ['advanced', 'Advanced']] };
+    const preferences = coordinator.learningSession.snapshot().preferences;
+    const section = await vscode.window.showQuickPick(Object.entries(labels).map(([key, label]) => ({ key, label, description: preferences[key] })), { title: 'KAFE learning preferences', placeHolder: 'Memory-only preferences; changes during a response take effect after it settles.' });
+    if (!current()) return { status: 'stale' };
+    if (!section || !Object.hasOwn(choices, section.key)) return { status: 'cancelled' };
+    const picked = await vscode.window.showQuickPick(choices[section.key].map(([value, label]) => ({ value, label, description: value === preferences[section.key] ? 'Current' : undefined })), { title: labels[section.key], placeHolder: 'Learning preferences do not authorize file edits or Run.' });
+    if (!current()) return { status: 'stale' };
+    if (!picked || !choices[section.key].some(([value]) => value === picked.value)) return { status: 'cancelled' };
+    return coordinator.handleLearnerMessage({ type: 'setLearningPreferences', preferences: { [section.key]: picked.value } });
+  };
   const onMessage = async message => {
     if (!isTutorMessage(message, coordinator.session)) return { status: 'stale' };
     try {
@@ -222,9 +249,17 @@ function createTutorHost({ vscode, extensionUri, secrets, workspaceState, runtim
       if (message.type === 'submitMessage') return await actions.submitMessage(message);
       if (message.type === 'stopTurn') return await coordinator.handleLearnerMessage({ type: 'stopTurn', turnId: message.turnId, turnGeneration: message.turnGeneration });
       if (message.type === 'setSourceIncluded') return await coordinator.handleLearnerMessage({ type: 'setSourceIncluded', sourceId: message.sourceId, included: message.included, contextRevision: message.contextRevision });
+      if (message.type === 'openLearningPreferences') return await openLearningPreferences();
+      if (message.type === 'revealSource') {
+        const state = coordinator.snapshot(), source = [state.context.activeSource, ...state.context.sources].find(s => s?.id === message.sourceId && s.included);
+        if (!source || state.context.restricted || message.contextRevision !== state.context.revision || !authorize(parseUri(source.uri))) return { status: 'stale' };
+        await vscode.window.showTextDocument(parseUri(source.uri), { preview: true, preserveFocus: true });
+        return { status: 'completed' };
+      }
     } catch { coordinator.turn('error', 'The host action could not complete.'); return { status: 'failed' }; }
   };
-  const tutorView = new TutorViewProvider({ vscode, extensionUri, conversationSession: coordinator.session,
+  const tutorView = new TutorViewProvider({ vscode, extensionUri, conversationSession: coordinator,
+    diagnostic: record => diagnostics.record(record),
     onMessage });
   // Source authority is independent of chat/draft revisions and never resets with a conversation.
   let observedTrust = vscode.workspace.isTrusted === true;
@@ -278,7 +313,8 @@ function createTutorHost({ vscode, extensionUri, secrets, workspaceState, runtim
     // A settled proposal may outlive the context that produced it. Observe all of
     // its dependencies for revocation without admitting them to the current request.
     if (!admitted(uri) && proposalProvider.pending?.sourceId !== uri?.toString?.() &&
-      !coordinator.controller.pendingProposal?.fileUris.includes(uri?.toString?.())) return;
+      !coordinator.controller.pendingProposal?.fileUris.includes(uri?.toString?.()) &&
+      !coordinator.controller.checkpointFileUris().includes(uri?.toString?.())) return;
     advanceSource();
     if (deleted) unavailableSources.add(uri.toString());
     revoke(uri); refresh();
@@ -289,7 +325,7 @@ function createTutorHost({ vscode, extensionUri, secrets, workspaceState, runtim
     const uris = new Set([coordinator.snapshot().context.activeSource?.uri,
       ...coordinator.snapshot().context.sources.filter(s => s.included).map(s => s.uri),
       ...coordinator.session.historyPairs().flatMap(pair => pair.dependencies.fileUris),
-      ...(coordinator.controller.pendingProposal?.fileUris || []), proposalProvider.pending?.sourceId].filter(Boolean));
+      ...(coordinator.controller.pendingProposal?.fileUris || []), ...coordinator.controller.checkpointFileUris(), proposalProvider.pending?.sourceId].filter(Boolean));
     for (const uri of uris) if (!authorize(uri)) revoke(parseUri(uri));
     coordinator.session.invalidateActions(a => a.type === 'runFile' && !authorize(a.args.targetUri));
     coordinator.controller.invalidate('context-changed'); refresh();
@@ -310,9 +346,9 @@ function createTutorHost({ vscode, extensionUri, secrets, workspaceState, runtim
     subscriptions.push(watcher.onDidDelete(uri => sourceEvent(uri, true)));
   }
   const readiness = actions.refreshContext();
-  return { tutorView, coordinator, proposalProvider, progressStore, actions, runFile, keyHandlers, readiness,
+  return { tutorView, coordinator, proposalProvider, progressStore, actions, runFile, keyHandlers, readiness, openLearningPreferences,
     resolveKnowledge, knowledgeRetriever,
-    dispose() { hostDisposed = true; actions.dispose(); coordinator.dispose(); tutorView.dispose(); for (const subscription of subscriptions) subscription.dispose(); } };
+    dispose() { hostDisposed = true; actions.dispose(); coordinator.dispose(); tutorView.dispose(); diagnostics.dispose(); for (const subscription of subscriptions) subscription.dispose(); } };
 }
 
 function createRunFileHandler({ vscode, runtimeManager, fs: fileSystem = fs, path: paths = path,
@@ -322,15 +358,15 @@ function createRunFileHandler({ vscode, runtimeManager, fs: fileSystem = fs, pat
   return async function runFile({ targetUri, runOwner } = {}) {
     const editor = vscode.window.activeTextEditor;
     let sourceUri = targetUri ?? editor?.document?.uri?.toString();
-    let documentVersion, startedSequence;
+    let documentVersion, startedSequence, launchIdentity = null;
     const owner = runOwner || getRunOwner({ sourceUri });
     const current = () => owner?.isCurrent?.() === true;
     const ownerData = owner?.requestId ? { sessionId: owner.sessionId, generation: owner.generation, requestId: owner.requestId } : undefined;
     const state = (status, extra = {}) => {
-      if (current()) onRunState({ status, ...(sourceUri ? { sourceUri } : {}),
+      if (current()) try { onRunState({ status, ...(sourceUri ? { sourceUri } : {}),
         ...(documentVersion !== undefined ? { documentVersion } : {}),
         ...(startedSequence !== undefined ? { runSequence: startedSequence } : {}),
-        ...(ownerData ? { owner: ownerData } : {}), ...extra });
+        ...(ownerData ? { owner: ownerData } : {}), ...extra }); } catch { /* Evidence observers cannot alter native execution. */ }
     };
     const finish = (status, code) => { state(status); return { status, ...(code ? { code } : {}) }; };
     if (!current()) return finish('cancelled');
@@ -416,6 +452,7 @@ function createRunFileHandler({ vscode, runtimeManager, fs: fileSystem = fs, pat
         try {
           startedSequence = ++runSequence;
           state('running', { terminal });
+          launchIdentity = savedSourceHash(fileSystem, document.uri.fsPath);
           activeRun = run({
             filePath: document.uri.fsPath,
             runtimeRoot,
@@ -426,10 +463,11 @@ function createRunFileHandler({ vscode, runtimeManager, fs: fileSystem = fs, pat
           });
           activeRun.completion.then(result => {
             if (terminalClosed) return;
-            if (current()) onRunResult({ ...result, runtimeMode: runtime.runtimeMode,
+            const sourceIdentity = { launch: launchIdentity, completion: savedSourceHash(fileSystem, document.uri.fsPath) };
+            if (current()) try { onRunResult({ ...result, runtimeMode: runtime.runtimeMode,
               runtimeVersion: runtime.runtimeMode === 'contributor' ? null : runtime.runtimeVersion,
               knowledgePackVersion: runtime.runtimeMode === 'contributor' ? null : runtime.knowledgePackVersion,
-              sourceUri, runSequence: startedSequence, ...(ownerData ? { owner: ownerData } : {}) });
+              sourceUri, runSequence: startedSequence, sourceIdentity, ...(ownerData ? { owner: ownerData } : {}) }); } catch { /* Retain the actual terminal outcome. */ }
             if (result.outputTruncated) write('\n[Output evidence truncated at 1 MiB; terminal output was streamed in full.]\n');
             write(`\n[KAFE exited with code ${result.exitCode === null ? 'unknown' : result.exitCode}.]\n`);
             terminalClosed = true;
@@ -507,6 +545,7 @@ function activate(context) {
     vscode.commands.registerCommand('kafe.clearProviderKey', keyHandlers.clear),
     vscode.commands.registerCommand('kafe.clearTutorProgress', createClearProgressHandler({ vscode, progressStore })),
     vscode.commands.registerCommand('kafe.newConversation', () => coordinator.newConversation()),
+    vscode.commands.registerCommand('kafe.learningPreferences', () => host.openLearningPreferences()),
   );
 }
 

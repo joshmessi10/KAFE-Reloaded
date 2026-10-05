@@ -155,10 +155,10 @@ test('reissued relevant capability retains focused button and unavailable Apply 
   v.render(snapshot({revision:2,entries:[{...a,actions:[action('old','reviewProposal',{proposalId:'p'},false),action('new','reviewProposal',{proposalId:'p'}),action('disabled','acceptProposal',{proposalId:'p'},false),action('obsolete','showProgress')]}]}));
   assert.equal(row(v,'p').querySelectorAll('button').length,1); assert.equal(row(v,'p').querySelector('button'),b); assert.equal(v.document.activeElement,b); b.dispatch('click'); assert.equal(v.sent.at(-1).actionId,'new');
 });
-test('Run output disclosure remains compact, retains expansion, and omits technical provenance', () => {
+test('Run output disclosure retains expansion and attributes available runtime with unknown comparisons', () => {
   const v=loadView(), run=entry('run','run','Run completed',{data:{sourceUri:'file:///workspace/main.kf',exitCode:0,stdout:'ok',stderr:'diagnostic',outputTruncated:true,runtimeVersion:'SECRET_VERSION'}});
   v.render(snapshot({entries:[run,entry('a','assistant','A')]})); const d=row(v,'run').querySelector('details'); d.open=true;
-  v.render(snapshot({revision:2,entries:[run,entry('a','assistant','AB')]})); assert.equal(row(v,'run').querySelector('details'),d); assert.equal(d.open,true); assert.match(row(v,'run').textContent,/main\.kf.*Exit code: 0/s); assert.doesNotMatch(row(v,'run').textContent,/SECRET_VERSION|provenance|Document version/);
+  v.render(snapshot({revision:2,entries:[run,entry('a','assistant','AB')]})); assert.equal(row(v,'run').querySelector('details'),d); assert.equal(d.open,true); assert.match(row(v,'run').textContent,/main\.kf.*Exit code: 0/s); assert.match(row(v,'run').textContent,/Runtime: SECRET_VERSION/); assert.match(row(v,'run').textContent,/Saved source: unknown/); assert.doesNotMatch(row(v,'run').textContent,/Document version/);
 });
 test('status announces response and settlement once without speaking streaming tokens or lifecycle suffixes', () => {
   const v=loadView(), t=turn('id','responding'), a=entry('a','assistant','First',{status:'responding'}); v.render(snapshot({turn:t,entries:[a]})); const status=v.byId('conversation-status').textContent;

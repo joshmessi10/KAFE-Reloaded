@@ -43,6 +43,32 @@ function removeFixture(value) {
   fs.rmSync(value.storageRoot, { recursive: true, force: true });
 }
 
+for (const mutation of ['source-bytes', 'cache-bytes', 'extra-file', 'metadata', 'deleted']) test(`synchronous development knowledge authority rejects ${mutation} after asynchronous readiness`, async () => {
+  const f = fixture();
+  try {
+    const pack = await f.createPack().getReadyPack();
+    assert.equal(pack.authority?.isCurrent(), true);
+    if (mutation === 'source-bytes') fs.writeFileSync(path.join(f.temporary, 'docs/language/lesson.md'), 'changed source lesson');
+    if (mutation === 'cache-bytes') fs.writeFileSync(path.join(pack.knowledgeRoot, 'language/lesson.md'), 'changed cached lesson');
+    if (mutation === 'extra-file') fs.writeFileSync(path.join(pack.knowledgeRoot, 'extra.md'), 'extra file');
+    if (mutation === 'metadata') fs.writeFileSync(path.join(path.dirname(pack.knowledgeRoot), 'pack-metadata.json'), '{}');
+    if (mutation === 'deleted') fs.unlinkSync(path.join(pack.knowledgeRoot, 'language/lesson.md'));
+    assert.equal(pack.authority.isCurrent(), false);
+  } finally { removeFixture(f); }
+});
+
+test('development knowledge readiness and receipt retain empty directory compatibility', async () => {
+  const f = fixture();
+  try {
+    const owner = f.createPack(), captured = await owner.getReadyPack();
+    fs.mkdirSync(path.join(captured.knowledgeRoot, 'language/extra/empty'), { recursive: true });
+    fs.mkdirSync(path.join(f.temporary, 'docs/language/extra/empty'), { recursive: true });
+    assert.equal(captured.authority.isCurrent(), true);
+    const fresh = await owner.getReadyPack();
+    assert.equal(fresh.status, 'ready'); assert.equal(fresh.authority.isCurrent(), true);
+  } finally { removeFixture(f); }
+});
+
 function verifiedRetriever(pack, overrides = {}) {
   return new KnowledgeRetriever({ ...pack, expectedRuntimeVersion: '0.1.0',
     expectedKnowledgePackVersion: '0.1.0', expectedContentSha256: pack.contentSha256,

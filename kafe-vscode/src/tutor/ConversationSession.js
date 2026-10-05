@@ -18,8 +18,8 @@ const { isDeepStrictEqual } = require('node:util');
  * @typedef {{id:string, turnGeneration:number, status:TurnState, learnerEntryId:string, assistantEntryId:string|null, submissionId:string}} Turn
  */
 
-const ENTRY_KINDS = new Set(['learner', 'assistant', 'host', 'proposal', 'run', 'error']);
-const ACTION_TYPES = new Set(['configureProviderKey', 'installRuntime', 'stopTurn', 'retryTurn', 'reviewProposal', 'acceptProposal', 'rejectProposal', 'runFile', 'openTerminal']);
+const ENTRY_KINDS = new Set(['learner', 'assistant', 'host', 'proposal', 'checkpoint', 'run', 'error']);
+const ACTION_TYPES = new Set(['configureProviderKey', 'installRuntime', 'stopTurn', 'retryTurn', 'reviewProposal', 'acceptProposal', 'rejectProposal', 'runFile', 'openTerminal', 'confirmCheckpoint', 'implementCheckpoint', 'discussCheckpoint', 'skipCheckpoint', 'prepareChange']);
 const TURN_STATES = new Set(['preparing', 'responding', 'processing-tools', 'completed', 'cancelled', 'failed']);
 const ENVELOPE_KEYS = ['type', 'sessionId', 'generation', 'entryId', 'actionId', 'args'];
 
@@ -89,7 +89,8 @@ class ConversationSession {
 
   #publish() {
     this.#revision += 1;
-    for (const listener of [...this.#listeners]) listener(this.snapshot());
+    // Display observers cannot change an owned host settlement or leave partial authority.
+    for (const listener of [...this.#listeners]) { try { listener(this.snapshot()); } catch {} }
   }
 
   setDraft(text) {
@@ -198,6 +199,14 @@ class ConversationSession {
     this.#actions.set(registered.id, { action: registered, entryId, generation: this.#generation, contextual });
     this.#publish();
     return structuredClone(registered);
+  }
+
+  /** Host presentation only: preserve identity, arguments, generation and enabled state. */
+  updateActionLabel(actionId, label) {
+    requireText(label, 'action label', true);
+    const registered = this.#actions.get(actionId);
+    if (!registered || registered.generation !== this.#generation || !registered.action.enabled || registered.action.label === label) return false;
+    registered.action.label = label; this.#publish(); return true;
   }
 
   /** @param {ActionEnvelope} envelope @returns {Action|null} */

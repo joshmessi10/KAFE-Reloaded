@@ -4,6 +4,15 @@ const MAX_BUFFER_BYTES = 2 * 1024 * 1024;
 const malformed = () => new ProviderError('malformed_response');
 const object = value => value !== null && typeof value === 'object' && !Array.isArray(value);
 
+// Only the types and bounds used by KAFE's controlled function schemas.
+function matchesSchema(value, schema) {
+  if (schema.type === 'array') return Array.isArray(value) && value.length <= schema.maxItems && value.every(item => matchesSchema(item, schema.items));
+  if (schema.type === 'string') return typeof value === 'string' &&
+    (schema.minLength === undefined || Array.from(value).length >= schema.minLength) &&
+    (schema.maxLength === undefined || Array.from(value).length <= schema.maxLength) && (!schema.enum || schema.enum.includes(value));
+  return !schema.type || typeof value === schema.type;
+}
+
 /** Validate raw calls for both completion APIs; arguments leave the provider as parsed objects. */
 function parseToolCalls(calls, tools) {
   if (calls == null) return [];
@@ -22,8 +31,9 @@ function parseToolCalls(calls, tools) {
     const schema = permitted.get(name) || {};
     const properties = schema.properties || {};
     if (!object(args) || Object.keys(args).some(key => !Object.hasOwn(properties, key) ||
-        (properties[key]?.type && typeof args[key] !== properties[key].type)) ||
+        !matchesSchema(args[key], properties[key])) ||
       (schema.required || []).some(key => !Object.hasOwn(args, key))) throw malformed();
+    if (name === 'proposeLearningCheckpoint' && Buffer.byteLength(call.function.arguments, 'utf8') > 16 * 1024) throw malformed();
     return { id: call.id, name, arguments: args };
   });
 }

@@ -91,6 +91,8 @@ test('Run completion patches one initiating entry and keeps terminal handles out
   assert.equal(runs.length, 1);
   assert.equal(runs[0].data.documentVersion, 4);
   assert.equal(runs[0].data.stdout, 'bounded output');
+  assert.equal(runs[0].data.sourceRelationship, 'unknown');
+  assert.equal(runs[0].data.exactExecutedBytes, 'unknown');
   assert.ok(!Object.hasOwn(runs[0].data, 'terminal'));
   assert.ok(runs[0].actions.some(a => a.type === 'openTerminal' && a.enabled));
 });

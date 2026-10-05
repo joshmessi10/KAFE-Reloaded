@@ -139,7 +139,11 @@ suite('KAFE extension host', () => {
   });
   test('native proposals retain Review, Reject, Apply and stale-buffer guards without Run', async () => {
     const f = fixture({ async *stream() { yield { type: 'complete', text: '', toolCalls: [{ id: 'proposal', name: 'proposeCodeChange', arguments: { newText: 'items <- [3]' } }], finishReason: 'tool_calls' }; } });
-    try { for (const action of ['rejectProposal', 'stale', 'acceptProposal']) { const diffCount = f.diffs.length; await submit(f, `Repair ${action}`); assert.ok(f.host.proposalProvider.pending);
+    try { for (const action of ['rejectProposal', 'stale', 'acceptProposal']) { const diffCount = f.diffs.length, writeCount = f.writes.length; await submit(f, `Repair ${action}`);
+      assert.equal(f.host.proposalProvider.pending, null, 'ordinary text cannot grant preparation');
+      assert.equal(f.writes.length, writeCount); assert.equal(f.terminals.length, 0);
+      const scope = envelope(f, 'prepareChange'); assert.equal(scope.args.targetUri, f.active.uri.toString()); assert.ok(scope.args.scopeSummary.trim());
+      assert.equal((await f.host.tutorView.onMessage(scope)).status, 'completed'); assert.ok(f.host.proposalProvider.pending);
       assert.equal(f.diffs.length, diffCount); assert.equal(f.host.proposalProvider.pending.reviewed, false);
       assert.ok(!snapshot(f).entries.flatMap(e => e.actions).some(a => a.type === 'acceptProposal' && a.enabled));
       await act(f, 'reviewProposal'); assert.equal(f.diffs.at(-1)[0].toString(), f.active.uri.toString());

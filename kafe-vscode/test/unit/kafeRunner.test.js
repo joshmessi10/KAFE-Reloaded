@@ -16,6 +16,17 @@ function fakeChild() {
   return child;
 }
 
+test('Run evidence stays within UTF-8 byte budget at multibyte and invalid-byte boundaries', async () => {
+  const { startKafeFile, MAX_EVIDENCE_BYTES } = require('../../src/kafeRunner');
+  for (const ending of [Buffer.from('界'), Buffer.from([255, 255])]) {
+    const child = fakeChild(), run = startKafeFile({ filePath: 'original.kf', runtimeRoot: '.', runtimeMode: 'managed', uvPath: 'uv', spawnProcess: () => child });
+    child.stdout.emit('data', Buffer.alloc(MAX_EVIDENCE_BYTES - 1, 'a')); child.stderr.emit('data', ending); child.emit('close', null);
+    const result = await run.completion;
+    assert.ok(Buffer.byteLength(result.stdout) + Buffer.byteLength(result.stderr) <= MAX_EVIDENCE_BYTES);
+    assert.equal(result.outputTruncated, true); assert.equal(result.exitCode, null);
+  }
+});
+
 test('runner passes tricky absolute file path as one argument, with no shell', async () => {
   const { startKafeFile } = require('../../src/kafeRunner');
   const child = fakeChild();

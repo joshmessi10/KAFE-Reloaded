@@ -1,6 +1,7 @@
 const { randomBytes } = require('node:crypto');
 const { readFileSync } = require('node:fs');
 const path = require('node:path');
+const { sanitize } = require('./TutorDiagnostics');
 
 function isRecord(value) {
   return value !== null && typeof value === 'object' && !Array.isArray(value);
@@ -24,6 +25,10 @@ function isTutorMessage(value, session) {
       typeof value.text === 'string' && Boolean(value.text.trim()) && Number.isSafeInteger(value.contextRevision) && value.contextRevision >= 0;
     case 'setSourceIncluded': return exact(['sourceId', 'included', 'contextRevision']) &&
       typeof value.sourceId === 'string' && Boolean(value.sourceId.trim()) && typeof value.included === 'boolean' && Number.isSafeInteger(value.contextRevision) && value.contextRevision >= 0;
+    case 'openLearningPreferences': return exact([]);
+    case 'revealSource': return exact(['sourceId', 'contextRevision']) &&
+      snapshot.context?.restricted === false && Array.isArray(snapshot.context.sources) && Number.isSafeInteger(value.contextRevision) && value.contextRevision >= 0 && value.contextRevision === snapshot.context.revision &&
+      typeof value.sourceId === 'string' && [snapshot.context.activeSource, ...snapshot.context.sources].some(source => source?.included === true && source.id === value.sourceId);
     case 'invokeAction': return typeof session.resolveAction === 'function' && Boolean(session.resolveAction(value));
     case 'openLink': return exact(['url']) && isExternalLink(value.url);
     case 'stopTurn': return exact(['turnId', 'turnGeneration']) && snapshot.turn !== null &&
@@ -49,11 +54,13 @@ function dispatchTutorMessage(message, onMessage, session) {
 }
 
 class TutorViewProvider {
-  constructor({ vscode, extensionUri, onMessage = () => {}, conversationSession }) {
+  constructor({ vscode, extensionUri, onMessage = () => {}, conversationSession, diagnostic = () => {} }) {
     this.vscode = vscode;
     this.extensionUri = extensionUri;
     this.onMessage = onMessage;
     this.conversationSession = conversationSession;
+    this.actionSession = conversationSession?.session || conversationSession;
+    this.diagnostic = diagnostic;
     this.view = undefined;
     this.releaseView = undefined;
   }
@@ -84,14 +91,14 @@ class TutorViewProvider {
     let disposalSubscription, released = false;
     const messageSubscription = webview.onDidReceiveMessage(message => {
       if (released || this.view !== view) return false;
-      if (!isTutorMessage(message, this.conversationSession)) return false;
+      if (!isTutorMessage(message, this.actionSession)) return false;
       if (message.type === 'openLink') {
         // Explicit external navigation is the only model-link effect. Internal native
         // diff/source/terminal actions still require host-issued capabilities.
         try { return Promise.resolve(this.vscode.env?.openExternal(this.vscode.Uri.parse(message.url))).catch(() => false); }
         catch { return false; }
       }
-      return dispatchTutorMessage(message, this.onMessage, this.conversationSession);
+      return dispatchTutorMessage(message, this.onMessage, this.actionSession);
     });
     const unsubscribe = this.conversationSession?.subscribe(state => this.render(state));
     this.releaseView = () => {
@@ -109,7 +116,14 @@ class TutorViewProvider {
   dispose() { this.releaseView?.(); this.releaseView = undefined; }
 
   render(state) {
-    return this.view?.webview.postMessage({ type: 'render', state });
+    if (!this.view) return;
+    const trace = delivered => {
+      try { this.diagnostic(sanitize({ event: 'view-posted', revision: state?.revision, status: state?.turn?.status, delivered })); } catch {}
+    };
+    const result = this.view.webview.postMessage({ type: 'render', state });
+    // VS Code's posting result is not a browser-render acknowledgement.
+    void Promise.resolve(result).then(delivered => trace(delivered === true), () => trace(false));
+    return result;
   }
 }
 

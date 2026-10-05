@@ -52,9 +52,20 @@ function startKafeFile({ filePath, runtimeRoot, runtimeMode, uvPath, env, spawnP
       const tail = decoders[channel].end();
       if (tail) (channel === 'stdout' ? onStdout : onStderr)(tail);
     }
+    let decodedBytes = 0;
+    const boundedText = channel => {
+      const text = Buffer.concat(evidence[channel]).toString('utf8');
+      const bytes = Buffer.from(text, 'utf8'), room = MAX_EVIDENCE_BYTES - decodedBytes;
+      // Replacement characters can expand invalid raw bytes. Do not retain a cut code point.
+      const kept = new StringDecoder('utf8').write(bytes.subarray(0, room));
+      decodedBytes += Buffer.byteLength(kept, 'utf8');
+      if (bytes.length > room) outputTruncated = true;
+      return kept;
+    };
+    const stdout = boundedText('stdout'), stderr = boundedText('stderr');
     finish({
-      stdout: Buffer.concat(evidence.stdout).toString('utf8'),
-      stderr: Buffer.concat(evidence.stderr).toString('utf8'),
+      stdout,
+      stderr,
       exitCode: typeof exitCode === 'number' ? exitCode : null,
       outputTruncated,
     });

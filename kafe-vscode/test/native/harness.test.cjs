@@ -3,6 +3,23 @@ const assert = require('node:assert/strict');
 const { ContextRegistry, identity, assertReachableGeometry } = require('./harness.cjs');
 const { isRenderedSettlement } = require('./harness.cjs');
 
+test('native recreation expects visible production entries while retaining unrendered host adoption notes', () => {
+  const { projectedEntryIds } = require('./harness.cjs');
+  const { loadView, snapshot } = require('../helpers/tutorViewHarness');
+  const view = loadView(), state = snapshot({entries:[
+    {id:'learner',kind:'learner',status:'completed',text:'Reasoning',data:null,actions:[]},
+    {id:'adoption',kind:'host',status:'completed',text:'Decision adopted',data:null,actions:[]},
+    {id:'scope',kind:'host',status:'ready',text:'Prepare one change',data:{scopeSummary:'One assignment'},actions:[]},
+    {id:'answer',kind:'assistant',status:'completed',text:'Explanation',data:null,actions:[]},
+  ]});
+  try {
+    view.render(state);
+    assert.deepEqual([...view.byId('timeline').children].map(e=>e.getAttribute('data-entry-id')),['learner','scope','answer']);
+    assert.deepEqual(projectedEntryIds(state),['learner','scope','answer']);
+    assert.equal(state.entries.length,4,'projection does not discard stored adoption history');
+  } finally {view.dispose();}
+});
+
 test('settled host cannot authorize assertions against an older or different rendered turn', () => {
   const host = {sessionId:'session',generation:2,revision:20,turn:{status:'completed',learnerEntryId:'question',assistantEntryId:'answer'}};
   const rendered = {ack:{sessionId:'session',generation:2,revision:20},entryIds:['question','answer'],lastAssistantEntryId:'answer'};

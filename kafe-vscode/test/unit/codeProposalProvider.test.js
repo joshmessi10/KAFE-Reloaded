@@ -3,6 +3,45 @@ const { createHash } = require('node:crypto');
 const test = require('node:test');
 const { CodeProposalProvider } = require('../../src/tutor/CodeProposalProvider');
 
+test('native evidence observes stage then actual Apply identity despite synchronous source revocation', async () => {
+  const { ActionEvidence } = require('../../src/tutor/ActionEvidence');
+  const f = fixture(), ledger = new ActionEvidence(); let authorized = true;
+  const p = f.proposal(), original = { uri: p.uri.toString(), version: p.documentVersion, contentSha256: p.contentSha256 };
+  p.preparation = { grantId: 'host', scopeSummary: 'scope', dependencies: { files: [original], knowledgeLineage: null } };
+  const provider = new CodeProposalProvider({ vscode: f.vscode, authorizeUri: () => authorized, onEvidence: event => {
+    if (event.outcome === 'staged') ledger.recordStage(event.proposal); else ledger.recordApply(event.proposal, event.outcome, event.observedFile);
+  } });
+  provider.validateAuthority = async () => () => authorized;
+  const { id } = provider.stage(p); await provider.open(id);
+  f.vscode.workspace.applyEdit = async () => { authorized = false; provider.clear(id); f.document.text = 'actual-host-content'; f.document.version++; return true; };
+  assert.equal((await provider.accept(id)).status, 'applied');
+  const current = { ...original, version: 8, contentSha256: createHash('sha256').update('actual-host-content').digest('hex') };
+  const facts = ledger.selectContext({ authorizedFiles: [current] }).records;
+  assert.deepEqual(facts.map(r => r.outcome), ['staged', 'applied']);
+  assert.equal(facts[1].observedFile.contentSha256, current.contentSha256);
+  assert.equal(facts[1].sourceRelationship, 'current');
+});
+
+test('native evidence observer failure cannot change actual Apply outcome', async () => {
+  const f = fixture(), provider = new CodeProposalProvider({ vscode: f.vscode, onEvidence: () => { throw new Error('PRIVATE_OBSERVER'); } });
+  const { id } = provider.stage(f.proposal()); await provider.open(id);
+  assert.equal((await provider.accept(id)).status, 'applied'); assert.equal(f.document.text, 'print(2)');
+});
+
+test('native staging replacement records the previous proposal as cleared before its replacement', () => {
+  const f = fixture(), events = [];
+  const provider = new CodeProposalProvider({ vscode: f.vscode, onEvidence: event => events.push({ id: event.proposal.id, outcome: event.outcome }) });
+  const first = provider.stage(f.proposal()), second = provider.stage(f.proposal());
+  assert.deepEqual(events, [{ id: first.id, outcome: 'staged' }, { id: first.id, outcome: 'cleared' }, { id: second.id, outcome: 'staged' }]);
+});
+
+test('native staging rechecks turn ownership after synchronous target authorization', () => {
+  const f = fixture(); let current = true;
+  const provider = new CodeProposalProvider({ vscode: f.vscode, authorizeUri: () => { current = false; return true; } });
+  assert.throws(() => provider.stage(f.proposal(), { isCurrent: () => current }), /current/);
+  assert.equal(provider.pending, null);
+});
+
 test('canonical provider URI strings stage natively and cancellation while diff opens never marks reviewed', async () => {
   const f = fixture();
   const p = f.proposal();
@@ -210,6 +249,7 @@ test('a failed older diff open cannot clear a newer staged proposal', async () =
   f.vscode.commands.executeCommand = () => new Promise((resolve, reject) => { failOlderOpen = reject; });
   const first = f.provider.stage(f.proposal());
   const openingFirst = f.provider.open(first.id);
+  await new Promise(resolve => setImmediate(resolve));
   const second = f.provider.stage({ ...f.proposal(), newText: 'print(3)' });
   failOlderOpen(new Error('private failure details'));
   assert.equal((await openingFirst).status, 'failed');
