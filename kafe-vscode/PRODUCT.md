@@ -12,7 +12,7 @@ Learners writing, understanding and validating KAFE programs in VS Code.
 
 ## Product Purpose
 
-KAFE is an educational DevKit with `.kf` editing, highlighting, snippets, explicit native execution and a conversational Tutor. Hints, goals, explanations, requested summaries and direct answers belong in dialogue.
+KAFE is an educational DevKit with `.kf` editing, highlighting, snippets, explicit native execution and a conversational Tutor. Concept explanations, learner reasoning and requested options belong in dialogue. Typed checkpoints support learner-first design, one scoped proposal preparation, native Review/Apply and separate Run.
 
 ## Operating Context
 
@@ -25,12 +25,15 @@ One sidebar conversation and one composer. Enter or Send submits once and stream
 - Restricted Mode permits message-only chat while excluding workspace files, edits and Run. Provider tools cannot execute programs or apply edits.
 - Missing executable runtime or knowledge does not block ordinary configured-provider conversation; unavailable knowledge is disclosed. Validated cached knowledge has independent availability.
 - DeepSeek configuration, SecretStorage, bounded context/output and native diff guards remain. Apply requires a reviewed current proposal and never starts Run.
-- Conversation, draft, source selection, requests and output are memory-only. New conversation and host restart discard ephemeral state. Existing legacy progress is preserved without entering chat or model context; confirmed legacy clearing is independent of live chat and credentials.
+- Confirmation adopts a Tutor-proposed checkpoint; it does not establish authorship, understanding or mastery. Discuss/Skip confer no grant. Native optional preferences pause/resume teaching; busy changes queue until settlement.
+- Exact target/scope permission admits one proposal preparation. Missing keys, failure or cancellation require fresh permission; Review, Apply and Run remain separate.
+- Host-observed staging, Apply and Run facts retain source/knowledge dependencies. Saved-source boundary equality and zero exit do not prove executed bytes or correctness; unavailable comparisons remain unknown.
+- Conversation, draft, source selection, teaching preferences/records, requests and action/output evidence are memory-only. View recreation retains its owner. New conversation and host restart discard ephemeral state and reset teaching defaults. Existing legacy progress is preserved without entering chat or model context; confirmed legacy clearing is independent of live chat and credentials.
 - The managed runtime release remains unpublished. Deterministic services do not prove real-provider or release readiness, physical IME, screen-reader speech or learning efficacy.
 
 ## Brand Commitments
 
-Preserve KAFE identity. Kilo is a behavior reference for composer, context and conversation boundaries; its framework, branding, assets, services, telemetry and autonomous features are outside scope.
+Preserve KAFE identity. The pinned Kilo extension is the visual and interaction authority for the conversation layout, reading lane, inset composer and status dock. The pinned VibeWise learning policy supplies learner-first engineering decisions, direct concept explanations and optional onboarding. Pinned references: Kilo `ccb6673bf501b1d64ed3711e97d8572128298fa7`; VibeWise `1135f4ae8205da78404a71e85f567d5911da4e4d`. Kilo source inspection supplies composition guidance; its mapped `vscode-bridge.css` is absent at this revision. The sibling clone has no dependencies, build or installed extension, so actual paired reference captures remain unavailable. Rendered similarity and teaching efficacy remain unverified.
 
 ## Evidence on Hand
 

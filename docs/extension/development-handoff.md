@@ -1,6 +1,21 @@
 # VS Code extension development handoff
 
-Checkpoint: 2026-10-01, America/Bogota. Continue on `feature/vsc-extension`, not `main`. The user authorized committing and pushing the completed work for continuation on another PC. This is a source-development checkpoint, not Marketplace or managed-runtime release approval.
+Current transfer checkpoint: 2026-10-04, America/Bogota. Continue on `feature/vsc-extension`, not `main`. The user confirmed the corrected Tutor works and authorized scoped commits and a push for continuation on another PC. Resolve the final branch tip with `git rev-parse HEAD` and compare it with `git ls-remote origin refs/heads/feature/vsc-extension`. This is a source-development transfer, not merge, installation, runtime-release or Marketplace approval.
+
+Implementation commit: `926cc97` (`feat(vscode): add guided tutor learning and conversation safeguards`). The documentation/transfer commit follows it; resolve that final tip rather than using the historical October 1 hashes below.
+
+All seven implementation tasks, the broad review and subsequent scoped corrections have independent accepted reviews. Guided learning is the default; concept explanations and typed reasoning stay in one conversation/composer. Inline checkpoints distinguish unconfirmed Tutor summaries, adoption, exact scoped proposal preparation, native Review/Apply and separate Run. Native memory-only preferences queue during a response and pause/resume teaching without granting edits. New conversation and host restart clear teaching/action evidence and defaults; view recreation retains the current owner. Legacy progress and credentials remain independent. Five tools retain four calls per response/four rounds; learning and evidence enforce their documented byte/count limits. Run source-boundary comparisons, current editor comparisons, exit outcome and unknown exact executed bytes/correctness are distinct.
+
+Proposal admission now checks the complete captured dependency closure and current local knowledge bytes/inventory before native consequences. Managed knowledge inventory includes empty-directory/path-type changes; development knowledge retains its documented compatibility. No-file default reads return an explicit unavailable result without reading another editor. Bare greetings omit automatic catalogue retrieval while preserving lineage; technical requests and explicit searches retain retrieval. Host excerpts identify their reference origin instead of implying learner-pasted text. The conversation renders safe ATX headings and pipe tables with local keyboard scrolling, and ordinary inline code preserves literal backslashes.
+
+Pinned Kilo HEAD is ccb6673bf501b1d64ed3711e97d8572128298fa7. Its mapped vscode-bridge.css is absent; other mapped sources were inspected. The local sibling clone has no dependencies/build/installed extension. Actual paired visual comparison remains unverified and is not replaced by source-derived mock captures. VibeWise policy reference remains 1135f4ae8205da78404a71e85f567d5911da4e4d. No separate real DeepSeek consent was given; provider behavior and teaching efficacy remain unverified.
+
+The final correction passed 655 unit tests, with zero failures and one existing Windows symlink-creation skip; 91 focused renderer/surface checks passed. Before the transfer commits, a fresh complete `npm test` repeated the 655 unit passes and confirmed 12 trusted plus 12 genuinely restricted host checks at the current source bytes. Its fresh VSIX had 51 entries, with all 49 shipped source files byte-equal. The package is a local inspection artifact, not a published release. Earlier native surface captures are separate historical evidence. Native Markdown streamed selection failed its fixture precondition before streaming and remains unverified; stale success notes in the preserved receipts are explicitly superseded by a separate amendment. Physical IME, screen-reader speech, ordinary installed trust activation, OS SecretStorage and managed runtime release remain separate gates. Read GitHub Actions at the actual pushed HEAD; do not treat local checks as hosted CI.
+
+Local review and failed-run evidence remains in ignored `.superpowers/sdd/2026-10-04-kafe-kilo-vibewise-implementation/`; it does not travel with Git. The controlling local summaries are `implementation-completion.md`, `greeting-markdown-completion.md`, `greeting-markdown-fix1-review.md`, `greeting-markdown-fix1-package-report.md` and `markdown-native-evidence-amendment.md`. This tracked handoff, PRODUCT.md, source and tests provide the portable continuation baseline. The historical October 1 sections below describe earlier bytes, counts and bounds; current source and the October 4 checkpoint take precedence.
+
+
+Historical checkpoint: 2026-10-01, America/Bogota. Continue on `feature/vsc-extension`, not `main`. The user authorized committing and pushing the completed work for continuation on another PC. This is a source-development checkpoint, not Marketplace or managed-runtime release approval.
 
 ## Repository and commits
 
@@ -30,7 +45,7 @@ Validated cached knowledge is independent of executable runtime readiness. An un
 
 Retained bounds: eight eligible whole history pairs within 32 KiB UTF-8, 64 KiB per source snapshot, 1 MiB Run evidence, four tools, four calls per round and four rounds per turn. Source revision fencing covers awaited capture and immediate provider admission. Secrets, source bytes, requests, transcripts and raw transport errors are not persisted or logged by the Tutor.
 
-See [PRODUCT.md](../../kafe-vscode/PRODUCT.md), [extension README](../../kafe-vscode/README.md) and [extension guide](vscode.md). Kilo was behavioral guidance, without copying its framework/assets/services. Reference repository: `https://github.com/kilo-org/kilocode`, inspected revision `ccb6673bf501b1d64ed3711e97d8572128298fa7`. The sibling clone is outside this repository and is not pushed here.
+See [PRODUCT.md](../../kafe-vscode/PRODUCT.md), [extension README](../../kafe-vscode/README.md) and [extension guide](vscode.md). The 2026-10-04 approved design now uses Kilo as visual and interaction authority, without copying its framework/assets/services. Reference repository: `https://github.com/kilo-org/kilocode`, inspected revision `ccb6673bf501b1d64ed3711e97d8572128298fa7`. The sibling clone is outside this repository and is not pushed here.
 
 ## Verification evidence
 
@@ -70,6 +85,10 @@ npm.cmd run test:unit
 ```
 
 Use Node compatible with the workflow's Node 20 baseline; the original local verification used Node 24.15.0. `package-lock.json` is tracked. Dependencies, keys and VS Code's SecretStorage do not travel with Git.
+
+For development, open this checkout in VS Code and launch the existing Extension Development Host. Configure the provider key through **KAFE: Configure Provider Key** on the new PC. Conversation, learning and action evidence are intentionally memory-only and do not migrate.
+
+Keep the reference clones as siblings of `KAFE-Reloaded` if continuing comparison work. Their verified local origins are `https://github.com/kilo-org/kilocode.git` and `https://github.com/nykooi1/vibe-wise.git`. The authoritative comparison revisions are listed in the current checkpoint above. Reference clone dependencies, cached VS Code, generated artifacts and ignored agent plans/logs are not included in this branch.
 
 Local host/native tests are Windows-specific and require an independently supplied cached VS Code **1.96.0 win32-x64 archive**, with executable at `kafe-vscode/.vscode-test/vscode-win32-x64-archive-1.96.0/Code.exe`. They fail closed when absent and do not download automatically. Do not fake GitHub CI environment variables to bypass the local boundary. Obtain/cache that pinned host only as an explicitly authorized setup step before executing:
 
