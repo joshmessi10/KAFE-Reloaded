@@ -1,0 +1,57 @@
+-- ============================================
+-- Red Neuronal Multicapa: Compuerta XOR
+-- Problema NO linealmente separable
+-- ============================================
+-- Teoria:
+--   La compuerta XOR no puede resolverse con una
+--   sola neurona (perceptron simple) porque sus
+--   clases no son linealmente separables:
+--     (0,0) -> 0    (1,1) -> 0
+--     (0,1) -> 1    (1,0) -> 1
+--   Cualquier hiperplano que separe las clases 1
+--   agrupa mal (0,0) o (1,1).
+--
+--   La solucion es una red multicapa (MLP):
+--     z = tanh(W1*x + b1)     capa oculta (rasgos)
+--     y = sigmoid(W2*z + b2)  salida (probabilidad)
+--
+--   La capa oculta proyecta las entradas a un espacio
+--   donde las clases SI son linealmente separables.
+--
+--   Arquitectura: 2 entradas -> 4 ocultas (tanh) -> 1 salida (sigmoid)
+-- ============================================
+
+import geshaDeep;
+
+show("=== Red Multicapa: Compuerta XOR ===");
+
+-- Datos de entrenamiento: XOR logico
+List[List[FLOAT]] x_train = [[0.0, 0.0], [0.0, 1.0], [1.0, 0.0], [1.0, 1.0]];
+List[INT] y_train = [0, 1, 1, 0];
+
+-- Capa oculta: 4 neuronas con tanh (salida en [-1, 1])
+GESHA hidden = geshaDeep.create_dense(4, "tanh", [2], 0.0, 42);
+-- Capa de salida: 1 neurona con sigmoid (probabilidad)
+GESHA output = geshaDeep.create_dense(1, "sigmoid", [4], 0.0, 43);
+GESHA model = geshaDeep.sequential([hidden, output]);
+
+-- SGD + binary crossentropy, learning rate 0.1 para convergencia
+model.compile("sgd", "binary_crossentropy", []);
+model.set_lr(0.1);
+
+show("Entrenando red multicapa (2 -> 4 -> 1)...");
+model.fit(x_train, y_train, 1000, 1);
+
+show("\nResultados:");
+for (p in x_train):
+    List[FLOAT] prob = model.predict(p);
+    INT lbl = model.predict_label(p);
+    show(str(p) + " -> prob=" + str(prob[0]) + ", clase=" + str(lbl));
+;
+
+show("\nEsperado:");
+show("[0, 0] -> clase=0");
+show("[0, 1] -> clase=1");
+show("[1, 0] -> clase=1");
+show("[1, 1] -> clase=0");
+show("\nXOR resuelto: se requiere al menos una capa oculta (no lineal).");

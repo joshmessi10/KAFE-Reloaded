@@ -1,0 +1,104 @@
+-- ============================================
+-- Deep Clustering No Supervisado:
+-- Autoencoder + KMeans sobre el Espacio Latente
+-- ============================================
+-- Teoria:
+--   Aprendizaje NO supervisado: no hay etiquetas.
+--   1) ENCODER: 6 caracteristicas -> 4 -> 2.
+--      Comprime los datos paso a paso.
+--   2) ESPACIO LATENTE (cuello de botella): la capa
+--      mas pequena; conserva solo los patrones
+--      esenciales y elimina el ruido.
+--   3) DECODER: 2 -> 4 -> 6, ensancha para
+--      reconstruir los datos originales.
+--   4) ENTRENAMIENTO: salida deseada = entrada
+--      (autoencoder). La perdida MSE mide la
+--      diferencia reconstruccion vs original.
+--   5) CLUSTERING: se descarta el decoder; los
+--      datos pasan solo por el encoder y K-Means
+--      agrupa el espacio latente limpio y comprimido.
+--
+--   Autoencoder: 6 -> 4 -> 2 (tanh) -> 4 -> 6 (linear)
+--   Perdida: MSE
+-- ============================================
+
+import geshaDeep;
+import machine;
+import plot;
+
+show("=== Deep Clustering: Autoencoder + KMeans ===");
+
+-- 8 muestras sin etiquetas, 6 features, dos grupos naturales
+List[List[FLOAT]] X = [[0.0, 0.1, 0.0, 0.1, 0.0, 0.1], [0.1, 0.0, 0.1, 0.0, 0.1, 0.0], [0.2, 0.2, 0.1, 0.1, 0.2, 0.1], [0.1, 0.1, 0.2, 0.2, 0.1, 0.2], [1.0, 1.1, 1.0, 1.1, 1.0, 1.1], [1.1, 1.0, 1.1, 1.0, 1.1, 1.0], [1.2, 1.2, 1.1, 1.1, 1.2, 1.1], [1.1, 1.1, 1.2, 1.2, 1.1, 1.2]];
+
+-- === ENCODER (codificador) ===
+GESHA enc1 = geshaDeep.create_dense(4, "tanh", [6], 0.0, 42);
+GESHA enc2 = geshaDeep.create_dense(2, "tanh", [4], 0.0, 43);
+
+-- === DECODER (decodificador) ===
+GESHA dec1 = geshaDeep.create_dense(4, "tanh", [2], 0.0, 44);
+GESHA dec2 = geshaDeep.create_dense(6, "linear", [4], 0.0, 45);
+
+-- Autoencoder completo: se entrena sin etiquetas
+GESHA autoencoder = geshaDeep.sequential([enc1, enc2, dec1, dec2]);
+autoencoder.compile("sgd", "mse", []);
+autoencoder.set_lr(0.5);
+
+show("Entrenando autoencoder (6 -> 4 -> 2 -> 4 -> 6)...");
+autoencoder.fit(X, X, 500, 1);
+
+-- Reconstruccion de la primera muestra
+List[FLOAT] recon = autoencoder.predict(X[0]);
+show("\nReconstruccion de la muestra 0:");
+show(X[0]);
+show(recon);
+
+-- === CODIFICADOR SOLO: mismas capas (pesos compartidos) ===
+GESHA encoder = geshaDeep.sequential([enc1, enc2]);
+List[List[FLOAT]] Z = encoder.predict(X);
+
+show("\nEspacio latente (2D):");
+show(Z);
+
+-- === K-MEANS sobre el espacio latente ===
+MACHINE km = machine.kmeans(2, 100, 42);
+km.fit(Z);
+List[INT] labels = km.labels();
+List[List[FLOAT]] centers = km.cluster_centers();
+
+show("\nLabels (K-Means en el latente):");
+show(labels);
+show("Centros:");
+show(centers);
+
+-- Separa las coordenadas del latente por cluster
+List[FLOAT] xs0 = [];
+List[FLOAT] ys0 = [];
+List[FLOAT] xs1 = [];
+List[FLOAT] ys1 = [];
+List[INT] indices = [0, 1, 2, 3, 4, 5, 6, 7];
+for (i in indices):
+    FLOAT xi = Z[i][0];
+    FLOAT yi = Z[i][1];
+    INT label = labels[i];
+    if (label == 0):
+        append(xs0, xi);
+        append(ys0, yi);
+    else:
+        append(xs1, xi);
+        append(ys1, yi);
+    ;
+;
+
+-- Grafica el espacio latente coloreado por cluster
+plot.figure();
+plot.xlabel("Latente 1");
+plot.ylabel("Latente 2");
+plot.title("Espacio latente: Autoencoder + K-Means");
+plot.pointColor("blue");
+plot.graph(xs0, ys0, "point");
+plot.pointColor("red");
+plot.graph(xs1, ys1, "point");
+plot.render();
+
+show("\nClustering completado sin etiquetas: encoder + K-Means.");

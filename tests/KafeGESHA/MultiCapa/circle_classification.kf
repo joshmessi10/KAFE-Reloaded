@@ -30,17 +30,17 @@ List[List[FLOAT]] x_train = [[0.0, 0.0], [0.2, 0.1], [-0.15, 0.1], [0.1, -0.2], 
 List[INT] y_train = [1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0];
 
 -- Primera capa oculta: 4 neuronas relu
-GESHA hidden1 = geshaDeep.create_dense(4, "relu", [2]);
+GESHA hidden1 = geshaDeep.create_dense(4, "relu", [2], 0.0, 42);
 -- Segunda capa oculta: 4 neuronas relu
-GESHA hidden2 = geshaDeep.create_dense(4, "relu", [4]);
+GESHA hidden2 = geshaDeep.create_dense(4, "relu", [4], 0.0, 43);
 -- Salida: sigmoid (probabilidad de estar dentro)
-GESHA output = geshaDeep.create_dense(1, "sigmoid", [4]);
+GESHA output = geshaDeep.create_dense(1, "sigmoid", [4], 0.0, 44);
 GESHA model = geshaDeep.sequential([hidden1, hidden2, output]);
 
 model.compile("sgd", "binary_crossentropy", []);
-model.set_lr(0.5);
+model.set_lr(0.05);
 
-show("Entrenando red multicapa (2 -> 5 -> 6 -> 2)...");
+show("Entrenando red multicapa (2 -> 4 -> 4 -> 1)...");
 model.fit(x_train, y_train, 1000, 1);
 
 -- Puntos de prueba: dentro y fuera del circulo

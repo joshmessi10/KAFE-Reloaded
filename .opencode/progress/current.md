@@ -1,5 +1,24 @@
 # Current Work
 
+## Test: Redes Neuronales Multicapa (KafeGESHA MultiCapa)
+
+**Status:** Implemented and verified
+
+**Feature:** Fixtures de test `tests/KafeGESHA/MultiCapa/` — red multicapa para XOR (2→4 tanh→1 sigmoid) y clasificación de círculos concentricos (2→4 relu→4 relu→1 sigmoid) con KafeGESHA, semillas fijas para reproducibilidad.
+
+**Changes:**
+- Created `tests/KafeGESHA/MultiCapa/xor_gate.kf` + `xor_gate.expec` — MLP resuelve XOR (clases 0,1,1,0 correctas), loss final 0.48%
+- Created `tests/KafeGESHA/MultiCapa/circle_classification.kf` + `circle_classification.expec` — MLP con 2 capas ocultas aprende frontera circular (4/4 puntos de prueba correctos)
+- Ajuste de lr tras diagnóstico: lr=0.5 (indicado originalmente) colapsaba los pesos a ~0 (predicciones constantes ≈0.5, no converge con más epochs); se usó lr=0.1 (XOR) y lr=0.05 (círculo). Gradientes verificados por diferencias finitas: backprop de KafeGESHA correcto, solo el lr era demasiado alto
+
+**Test results:** `pytest tests/test_KafeGESHA.py -q` → 7 passed, 1 skipped (skip preexistente: sin `.error.kf`). Suite completa `pytest tests/ -q` → 526 passed, 1 skipped. Determinismo verificado (2 corridas idénticas = `.expec`).
+
+**Next step:** Tester valida pytest; Reviewer /dod; Historian registra
+**Blockers:** None
+**Related ADRs:** None
+
+---
+
 ## Fix: Tipo GESHA + contrato público KafeGESHA tras refactor
 
 **Status:** in_progress
