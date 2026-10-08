@@ -1,59 +1,80 @@
--- ============================================
--- Red Neuronal Multicapa: Circulos Concentricos
--- Frontera de decision NO lineal (curva)
--- ============================================
--- Teoria:
---   Clasificar puntos dentro/fuera de un circulo de
---   radio 0.5 centrado en el origen requiere aprender
---   la frontera x^2 + y^2 = 0.25 — una CURVA, no una
---   linea. Ninguna red sin activaciones no lineales
---   puede resolverlo (todo seria lineal).
---
---   Con dos capas ocultas la red combina activaciones:
---     h1 = relu(W1*x + b1)  detecta sectores del plano
---     h2 = relu(W2*h1 + b2) combina sectores en formas
---     y  = sigmoid(W3*h2 + b3)
---
---   Esto ilustra el teorema de aproximacion universal:
---   con activaciones no lineales, redes suficientemente
---   anchas aproximan cualquier frontera continua.
---
---   Arquitectura: 2 -> 4 (relu) -> 4 (relu) -> 1 (sigmoid)
--- ============================================
+-- Ejemplo extenso: Hugging Face -> GESHA -> K-Means
 
+
+import huggingface;
 import geshaDeep;
+import machine;
+import plot;
 
-show("=== Red Multicapa: Circulos Concentricos ===");
-
--- Puntos de entrenamiento: 6 dentro del circulo (clase 1), 6 fuera (clase 0)
-List[List[FLOAT]] x_train = [[0.0, 0.0], [0.2, 0.1], [-0.15, 0.1], [0.1, -0.2], [-0.1, -0.2], [0.15, 0.15], [0.8, 0.0], [0.0, 0.9], [-0.7, -0.5], [0.6, 0.6], [-0.9, 0.3], [0.4, -0.8]];
-List[INT] y_train = [1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0];
-
--- Primera capa oculta: 4 neuronas relu
-GESHA hidden1 = geshaDeep.create_dense(4, "relu", [2]);
--- Segunda capa oculta: 4 neuronas relu
-GESHA hidden2 = geshaDeep.create_dense(4, "relu", [4]);
--- Salida: sigmoid (probabilidad de estar dentro)
-GESHA output = geshaDeep.create_dense(1, "sigmoid", [4]);
-GESHA model = geshaDeep.sequential([hidden1, hidden2, output]);
-
-model.compile("sgd", "binary_crossentropy", []);
-model.set_lr(0.5);
-
-show("Entrenando red multicapa (2 -> 5 -> 6 -> 2)...");
-model.fit(x_train, y_train, 1000, 1);
-
--- Puntos de prueba: dentro y fuera del circulo
-List[List[FLOAT]] x_test = [[0.0, 0.0], [0.3, 0.3], [0.7, 0.0], [0.9, 0.9]];
-show("\nPredicciones de prueba:");
-for (p in x_test):
-    INT lbl = model.predict_label(p);
-    show(str(p) + " -> clase=" + str(lbl));
+show("=== Clustering de Iris descargado desde Hugging Face ===");
+List[STR] columnas = ["SepalLengthCm", "SepalWidthCm", "PetalLengthCm", "PetalWidthCm"];
+List[List[FLOAT]] X = huggingface.load_dataset_matrix("scikit-learn/iris", columnas, "train", 0);
+show("Muestras cargadas:");
+show(len(X));
+-- Estandarización aproximada de Iris: centra cada variable y la divide por
+-- su desviación estándar. Esto evita saturación y conserva variación 2D.
+List[List[FLOAT]] Xn = [];
+for (i in range(0, len(X))):
+    append(Xn, [(X[i][0] - 5.84) / 0.83, (X[i][1] - 3.06) / 0.44, (X[i][2] - 3.76) / 1.76, (X[i][3] - 1.20) / 0.76]);
 ;
 
-show("\nEsperado:");
-show("[0.0, 0.0] -> clase=1");
-show("[0.3, 0.3] -> clase=1");
-show("[0.7, 0.0] -> clase=0");
-show("[0.9, 0.9] -> clase=0");
-show("\nFrontera circular aprendida con 2 capas ocultas.");
+-- Autoencoder 4 -> 3 -> 2 -> 3 -> 4.
+GESHA encoder1 = geshaDeep.create_dense(3, "tanh", [4], 0.0, 11);
+GESHA encoder2 = geshaDeep.create_dense(2, "tanh", [3], 0.0, 12);
+GESHA decoder1 = geshaDeep.create_dense(3, "tanh", [2], 0.0, 13);
+GESHA decoder2 = geshaDeep.create_dense(4, "linear", [3], 0.0, 14);
+GESHA autoencoder = geshaDeep.sequential([encoder1, encoder2, decoder1, decoder2]);
+autoencoder.compile("adam", "mse", []);
+autoencoder.set_lr(0.01);
+autoencoder.fit(Xn, Xn, 25, 16);
+
+-- Se reutiliza el encoder para obtener el espacio latente.
+GESHA encoder = geshaDeep.sequential([encoder1, encoder2]);
+List[List[FLOAT]] Z = encoder.predict(Xn);
+
+MACHINE model = machine.kmeans(3, 100, 42);
+model.fit(Z);
+List[INT] labels = model.labels();
+show("Etiquetas:");
+show(labels);
+show("Centros latentes:");
+show(model.cluster_centers());
+show("Inercia:");
+show(model.inertia());
+
+-- Grafica los tres clusters en el espacio latente (KafePLOT).
+List[FLOAT] x0 = [0.0];
+List[FLOAT] y0 = [0.0];
+List[FLOAT] x1 = [0.0];
+List[FLOAT] y1 = [0.0];
+List[FLOAT] x2 = [0.0];
+List[FLOAT] y2 = [0.0];
+-- Se recorren las muestras sin conocer de antemano su distribución.
+for (i in range(0, len(Z))):
+    INT cluster = labels[i];
+    if (cluster == 0):
+        append(x0, Z[i][0]);
+        append(y0, Z[i][1]);
+    else:
+        if (cluster == 1):
+            append(x1, Z[i][0]);
+            append(y1, Z[i][1]);
+        else:
+            append(x2, Z[i][0]);
+            append(y2, Z[i][1]);
+        ;
+    ;
+;
+plot.figure();
+plot.title("Iris: clusters en el espacio latente GESHA");
+plot.xlabel("Latente 1");
+plot.ylabel("Latente 2");
+plot.pointColor("blue");
+plot.graph(x0, y0, "point");
+plot.pointColor("red");
+plot.graph(x1, y1, "point");
+plot.pointColor("green");
+plot.graph(x2, y2, "point");
+
+-- render() guarda la figura SVG junto al programa KAFE.
+plot.render();

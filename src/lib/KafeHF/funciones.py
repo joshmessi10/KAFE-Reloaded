@@ -20,21 +20,41 @@ Dependencia externa opcional: datasets (Hugging Face).
 """
 
 from global_utils import check_sig
-from TypeUtils import cadena_t
+from TypeUtils import cadena_t, lista_cadenas_t, entero_t
+import subprocess
+import sys
 
 try:
     from datasets import load_dataset as hf_load_dataset
     _HF_AVAILABLE = True
 except ImportError:
+    hf_load_dataset = None
     _HF_AVAILABLE = False
 
 
 def _require_hf():
-    """Verifica que la librería datasets de Hugging Face esté instalada."""
-    if not _HF_AVAILABLE:
-        raise Exception(
-            "Para usar huggingface, instala: pip install datasets"
+    """Instala ``datasets`` bajo demanda cuando no está disponible."""
+    global hf_load_dataset, _HF_AVAILABLE
+    if _HF_AVAILABLE:
+        return
+    try:
+        subprocess.run(
+            [sys.executable, "-m", "pip", "install", "datasets"],
+            check=True,
+            timeout=120,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
         )
+        from datasets import load_dataset as imported_load_dataset
+        hf_load_dataset = imported_load_dataset
+        _HF_AVAILABLE = True
+    except Exception as error:
+        raise Exception(
+            "huggingface: no se pudo instalar automáticamente 'datasets'. "
+            "Comprueba la conexión o ejecuta 'pip install datasets'. "
+            f"Detalle: {error}"
+        ) from error
 
 
 @check_sig([1], [cadena_t])
@@ -119,6 +139,63 @@ def load_dataset_split(dataset_name, split):
         )
 
     return _convert_to_pardos(dataset_dict, dataset_name)
+
+
+
+@check_sig([1, 2, 3, 4], [cadena_t], [lista_cadenas_t], [cadena_t], [entero_t])
+def load_dataset_matrix(dataset_name, columns=None, split="train", limit=0):
+    """Carga columnas numéricas de Hugging Face como matriz para NUMK/GESHA.
+
+    La conversión evita crear un DataFrame de PARDOS y recorre el dataset de
+    forma iterable, por lo que también funciona con datasets grandes o
+    ``IterableDataset``. ``limit=0`` procesa todas las filas.
+    """
+    _require_hf()
+    try:
+        ds = hf_load_dataset(dataset_name, split=split)
+    except Exception as e:
+        raise Exception(f"huggingface: Error cargando split '{split}' del dataset '{dataset_name}': {e}")
+
+    available = list(getattr(ds, "column_names", []))
+    if columns is None or len(columns) == 0:
+        if not available:
+            raise Exception("huggingface: No se pudieron determinar las columnas del dataset.")
+        first = next(iter(ds), None)
+        if first is None:
+            return []
+        columns = [name for name in available if _is_number(first.get(name))]
+        iterator = iter([first])
+    else:
+        missing = [name for name in columns if name not in available]
+        if missing:
+            raise Exception(f"huggingface: Columnas inexistentes: {missing}")
+        iterator = iter(ds)
+
+    if not columns:
+        raise Exception("huggingface: No se encontraron columnas numéricas.")
+    if hasattr(ds, "select_columns"):
+        try:
+            ds = ds.select_columns(columns)
+            iterator = iter(ds)
+        except Exception:
+            pass
+
+    matrix = []
+    for row in iterator:
+        values = []
+        for name in columns:
+            value = row.get(name)
+            if not _is_number(value):
+                raise Exception(f"huggingface: La columna '{name}' contiene valores no numéricos o nulos.")
+            values.append(float(value))
+        matrix.append(values)
+        if limit > 0 and len(matrix) >= limit:
+            break
+    return matrix
+
+
+def _is_number(value):
+    return isinstance(value, (int, float)) and not isinstance(value, bool)
 
 
 def _convert_to_pardos(ds, dataset_name):

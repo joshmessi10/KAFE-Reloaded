@@ -6,9 +6,11 @@ del modelo, las capas, los parámetros y el grafo.
 from global_utils import check_sig
 from TypeUtils import (
     entero_t, cadena_t, flotante_t, gesha_t, vector_numeros_t,
-    lista_cadenas_t, lista_cualquiera_t, void_t,
+    lista_cadenas_t, lista_cualquiera_t, void_t, booleano_t,
 )
-from lib.KafeGESHA.layers import Dense, Dropout, Flatten, Input, Add, ActivationLayer
+from lib.KafeGESHA.layers import (
+    Dense, Conv2D, SimpleRNN, Dropout, Flatten, Input, Add, ActivationLayer,
+)
 from lib.KafeGESHA.models import Sequential, Functional
 from lib.KafeNUMK import funciones as numk
 
@@ -18,6 +20,22 @@ from lib.KafeNUMK import funciones as numk
 def create_dense(units, activation, input_shape, regularization_lambda=0.0, seed=None):
     """Crea Dense; [] infiere features al primer forward; reg penaliza pesos L2."""
     return Dense(units, activation, input_shape, regularization_lambda, seed=seed)
+
+
+@check_sig([3, 4, 5, 6, 7], [entero_t], vector_numeros_t, [cadena_t],
+           vector_numeros_t + [void_t], [entero_t], [cadena_t], [entero_t, void_t])
+def create_conv2d(filters, kernel_size, activation="linear", input_shape=None,
+                  stride=1, padding="valid", seed=None):
+    """Crea Conv2D para entradas [canales, alto, ancho]."""
+    return Conv2D(filters, kernel_size, activation, input_shape, stride, padding, seed)
+
+
+@check_sig([1, 2, 3, 4, 5], [entero_t], [cadena_t],
+           vector_numeros_t + [void_t], [booleano_t], [entero_t, void_t])
+def create_rnn(units, activation="tanh", input_shape=None,
+               return_sequences=False, seed=None):
+    """Crea SimpleRNN para entradas [timesteps, features]."""
+    return SimpleRNN(units, activation, input_shape, return_sequences, seed)
 
 
 @check_sig([0, 1], lista_cualquiera_t + ["List[GESHA]", void_t])

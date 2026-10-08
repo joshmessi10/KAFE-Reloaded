@@ -236,6 +236,76 @@ def broadcast_mul(a, b):
     return _broadcast_op(a, b, lambda x, y: x * y)
 
 
+def conv2d_chw(input_data, kernels, bias, stride=1, padding="valid"):
+    """Convolución 2D para CHW y kernels [F,C,KH,KW]."""
+    in_shape = shape(input_data)
+    kernel_shape = shape(kernels)
+    if len(in_shape) != 3 or len(kernel_shape) != 4:
+        raise ValueError("NUMK: conv2d_chw requiere CHW y kernels FCHW")
+    channels, height, width = in_shape
+    filters, kernel_channels, kh, kw = kernel_shape
+    if channels != kernel_channels or len(bias) != filters:
+        raise ValueError("NUMK: canales o bias incompatibles en conv2d")
+    if type(stride) is not int or stride <= 0:
+        raise ValueError("NUMK: stride debe ser entero positivo")
+    if padding not in ("valid", "same"):
+        raise ValueError("NUMK: padding debe ser valid o same")
+    pad_h = (kh - 1) // 2 if padding == "same" else 0
+    pad_w = (kw - 1) // 2 if padding == "same" else 0
+    out_h = (height + 2 * pad_h - kh) // stride + 1
+    out_w = (width + 2 * pad_w - kw) // stride + 1
+    if out_h <= 0 or out_w <= 0:
+        raise ValueError("NUMK: kernel mayor que la entrada")
+    output = zeros_nd([filters, out_h, out_w])
+    for f in range(filters):
+        for oy in range(out_h):
+            for ox in range(out_w):
+                value = bias[f]
+                for c in range(channels):
+                    for ky in range(kh):
+                        iy = oy * stride + ky - pad_h
+                        if iy < 0 or iy >= height:
+                            continue
+                        for kx in range(kw):
+                            ix = ox * stride + kx - pad_w
+                            if 0 <= ix < width:
+                                value += input_data[c][iy][ix] * kernels[f][c][ky][kx]
+                output[f][oy][ox] = value
+    return output
+
+
+def conv2d_chw_backward(input_data, kernels, grad_output, stride=1, padding="valid"):
+    """Gradientes (entrada, kernels, bias) de :func:`conv2d_chw`."""
+    channels, height, width = shape(input_data)
+    filters, kernel_channels, kh, kw = shape(kernels)
+    if channels != kernel_channels:
+        raise ValueError("NUMK: canales incompatibles en backward conv2d")
+    expected = shape(conv2d_chw(input_data, kernels, [0.0] * filters, stride, padding))
+    if shape(grad_output) != expected:
+        raise ValueError("NUMK: grad_output incompatible en backward conv2d")
+    pad_h = (kh - 1) // 2 if padding == "same" else 0
+    pad_w = (kw - 1) // 2 if padding == "same" else 0
+    dx = zeros_nd([channels, height, width])
+    dw = zeros_nd([filters, channels, kh, kw])
+    db = zeros_nd([filters])
+    for f in range(filters):
+        for oy in range(expected[1]):
+            for ox in range(expected[2]):
+                grad = grad_output[f][oy][ox]
+                db[f] += grad
+                for c in range(channels):
+                    for ky in range(kh):
+                        iy = oy * stride + ky - pad_h
+                        if iy < 0 or iy >= height:
+                            continue
+                        for kx in range(kw):
+                            ix = ox * stride + kx - pad_w
+                            if 0 <= ix < width:
+                                dw[f][c][ky][kx] += input_data[c][iy][ix] * grad
+                                dx[c][iy][ix] += kernels[f][c][ky][kx] * grad
+    return dx, dw, db
+
+
 # ============================================================
 # N-D EXTENSIONS — Axis reduction
 # ============================================================
