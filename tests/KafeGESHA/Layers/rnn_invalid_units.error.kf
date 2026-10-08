@@ -1,0 +1,2 @@
+import geshaDeep;
+GESHA rnn = geshaDeep.create_rnn(0, "tanh", [3, 1], False, 1);

@@ -111,3 +111,32 @@ GESHA no añade un nuevo tipo al intérprete.
   reducción de argumento; BCE conserva su gradiente estabilizado histórico.
 - Dense y las pérdidas aceptan rango 1/2; NUMK y Flatten admiten listas ND.
 - No hay autograd ni kernels acelerados externos. No se añadieron dependencias.
+
+## Conv2D
+
+`geshaDeep.create_conv2d(filters, kernel_size, activation, input_shape,
+stride, padding, seed)` crea una capa convolucional entrenable. La entrada usa
+formato `[canales][alto][ancho]`; los kernels usan
+`[filtros][canales][kernel_alto][kernel_ancho]`. Admite padding `valid` y
+`same` (kernel impar), activación y retropropagación.
+
+```kafe
+GESHA conv = geshaDeep.create_conv2d(8, [3, 3], "relu", [1, 28, 28], 1, "same", 42);
+```
+
+Su costo es `O(F*C*Ho*Wo*Kh*Kw)`. El ejemplo completo está en
+`docs/ejemplos/gesha-conv2d.kf`.
+
+## SimpleRNN
+
+`geshaDeep.create_rnn(units, activation, input_shape, return_sequences, seed)`
+crea una RNN de Elman. Recibe `[timesteps][features]`; con
+`return_sequences=False` devuelve el último estado y con `True` devuelve todos.
+Entrena mediante backpropagation through time completo.
+
+```kafe
+GESHA recurrent = geshaDeep.create_rnn(16, "tanh", [20, 4], False, 42);
+```
+
+Su costo es `O(T*(F*U+U²))`. El ejemplo completo está en
+`docs/ejemplos/gesha-rnn.kf`.

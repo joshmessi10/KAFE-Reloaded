@@ -1214,3 +1214,21 @@ Within this file, use this format for each benchmark:
 - Tests: `tests/KafeMACHINE/clustering/`
 - Knowledge: `.opencode/knowledge/concepts/gaussian-mixture.md`
 - Implementation: `src/lib/KafeMACHINE/GaussianMixture.py`
+
+### 2026-10-08 — GESHA Conv2D y SimpleRNN
+
+Mediana de 3 ejecuciones de forward+backward, medida con `perf_counter` y
+`tracemalloc`; script `.opencode/benchmarks/gesha_conv_rnn.py`.
+
+| Componente | Escenario | Tiempo | Pico |
+|---|---:|---:|---:|
+| Conv2D | C1, 8x8, F2, K3 | 0.005348 s | 19.70 KiB |
+| Conv2D | C1, 16x16, F4, K3 | 0.045101 s | 130.34 KiB |
+| Conv2D | C3, 16x16, F4, K3 | 0.104972 s | 135.02 KiB |
+| Conv2D | C3, 24x24, F8, K3 | 0.510385 s | 562.50 KiB |
+| Conv2D | C3, 32x32, F8, K5 | 1.580877 s | 901.70 KiB |
+| SimpleRNN | T5, F2, U4 | 0.010060 s | 13.85 KiB |
+| SimpleRNN | T10, F4, U8 | 0.034415 s | 34.21 KiB |
+| SimpleRNN | T20, F8, U16 | 0.144150 s | 95.05 KiB |
+| SimpleRNN | T40, F8, U16 | 0.291254 s | 142.52 KiB |
+| SimpleRNN | T60, F16, U32 | 1.064947 s | 390.92 KiB |

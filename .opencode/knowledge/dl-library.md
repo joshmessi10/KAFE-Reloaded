@@ -6,7 +6,8 @@ retira expresamente el wrapper Tensor y centraliza operaciones ND en NUMK.
 ## Estructura y contratos
 
 - `core.py`: Parameter, Node, InputNode; estado, sin aritmética.
-- `layers.py`: Layer, Dense, Input, Dropout, Flatten, Add, ActivationLayer.
+- `layers.py`: Layer, Dense, Conv2D, SimpleRNN, Input, Dropout, Flatten, Add,
+  ActivationLayer.
 - `activations.py`: ActivationFunction/Activation con forward/backward y
   activate/derivative históricos. Caché completa por instancia.
 - `losses.py`: LossFunction/Loss; forward(predicho, real), backward() y
@@ -59,5 +60,9 @@ Functional: probado grafo simple y acumulación de ramas con capas distintas;
 no prometer capas compartidas entre varios nodos ni entrenamiento multi-salida.
 NUMK admite listas ND; Dense/pérdidas son rango 1/2. Las aproximaciones KafeMATH
 y la estabilización histórica BCE limitan precisión extrema.
+Conv2D recibe CHW y delega convolución/gradientes a NUMK. SimpleRNN recibe
+`[timesteps, features]`, devuelve el último estado o la secuencia y usa BPTT.
+Fábricas públicas: `create_conv2d` y `create_rnn`.
+
 Nuevos componentes DL requieren impacto, ADR si aplica, tests, conceptos,
 documentación, historia y cinco mediciones reales.

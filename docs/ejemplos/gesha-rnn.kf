@@ -1,0 +1,22 @@
+-- RNN mínima para clasificar secuencias
+import geshaDeep;
+
+List[List[List[FLOAT]]] X = [
+    [[0.0], [0.0], [1.0]],
+    [[1.0], [1.0], [0.0]],
+    [[0.0], [1.0], [0.0]],
+    [[1.0], [0.0], [1.0]]
+];
+show("X RNN listo");
+List[List[FLOAT]] Y = [[1.0], [0.0], [1.0], [0.0]];
+show("Y RNN listo");
+
+GESHA recurrent = geshaDeep.create_rnn(4, "tanh", [3, 1], False, 21);
+GESHA output = geshaDeep.create_dense(1, "sigmoid", [4], 0.0, 22);
+GESHA model = geshaDeep.sequential();
+model.add(recurrent);
+model.add(output);
+show("Modelo RNN construido");
+model.compile("adam", "bce", []);
+model.fit(X, Y, 30, 2);
+show(model.predict(X));
