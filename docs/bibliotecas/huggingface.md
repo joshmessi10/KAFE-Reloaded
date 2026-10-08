@@ -12,7 +12,8 @@ import machine;
 
 LIST[STR] columnas = ["sepal_length", "sepal_width"];
 LIST[LIST[FLOAT]] datos = huggingface.load_dataset_matrix("mstz/iris", columnas, "train", 0);
-machine.kmeans(datos, 3);
+MACHINE model = machine.kmeans(3);
+model.fit(datos);
 ```
 
 `columns` selecciona características y `limit` limita filas; `0` procesa todo

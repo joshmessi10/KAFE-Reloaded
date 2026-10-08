@@ -1,0 +1,33 @@
+-- Ejemplo: Kaggle -> matriz numerica -> K-Means
+-- Requiere: pip install kaggle y credenciales de Kaggle
+--   (~/.kaggle/kaggle.json o KAGGLE_USERNAME/KAGGLE_KEY)
+-- El dataset uciml/iris trae un unico archivo Iris.csv con 150 muestras
+-- y cuatro caracteristicas numericas; las etiquetas de especie no se usan:
+-- el clustering es completamente no supervisado.
+
+import kaggle;
+import machine;
+
+show("=== Clustering de Iris descargado desde Kaggle ===");
+
+List[STR] columnas = ["SepalLengthCm", "SepalWidthCm", "PetalLengthCm", "PetalWidthCm"];
+List[List[FLOAT]] X = kaggle.load_dataset_matrix("uciml/iris", columnas, "Iris", 0);
+show("Muestras cargadas:");
+show(len(X));
+show("Primera muestra:");
+show(X[0]);
+
+-- K-Means con tres grupos y semilla fija para reproducibilidad.
+MACHINE model = machine.kmeans(3, 100, 42);
+model.fit(X);
+show("Etiquetas (primeras muestras):");
+show(model.labels());
+show("Centros:");
+show(model.cluster_centers());
+show("Inercia:");
+show(model.inertia());
+
+-- Variante tabular: el mismo dataset como DataFrame de PARDOS.
+PARDOS df = kaggle.load_dataset("uciml/iris", "Iris.csv");
+show("Primeras filas del DataFrame:");
+show(df.head(5));

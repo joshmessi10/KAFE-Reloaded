@@ -1,0 +1,3 @@
+import kaggle;
+List[List[FLOAT]] X = kaggle.load_dataset_matrix("uciml/iris", ["SepalLengthCm", "PetalLengthCm"], "Iris.csv", 3);
+show(X);

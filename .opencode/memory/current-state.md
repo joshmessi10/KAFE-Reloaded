@@ -21,10 +21,17 @@ KafeGESHA restored after the "Clean Gesha Architecture" refactor (2026-09-24, AD
 - Gate fixtures deterministic (seed 42); `.expec` regenerated from real stdout — `or_gate.expec` bit-identical to the pre-refactor contract
 - KafeGESHA operational: `pytest tests/ -q` — 464 passed, 1 skipped (28.89s); `src/Ejemplo.kf` runs error-free and AND learns (70.13% → 25.53%)
 
+Dataset ingestion libraries (2026-10-08, ADR-0010 / ADR-0012):
+- KafeHF (Hugging Face) and KafeKaggle (Kaggle) registered in `EvalVisitorPrimitivo.py`; optional deps with auto-install (`datasets`, `kaggle`), stdlib `csv`/`zipfile` parsing (no pandas), return `PARDOS` or `LIST[LIST[FLOAT]]`.
+- KafeKaggle: credentials via `~/.kaggle/kaggle.json` or `KAGGLE_USERNAME`/`KAGGLE_KEY`; `_download_dataset()` isolated for monkeypatch; network scenarios live in `*.kf.example` (out of suite).
+- DoD APPROVED by Reviewer 2026-10-08 (`progress/review-kafekaggle.md`).
+- Full suite at close of 2026-10-08: **577 passed, 1 skipped** (baseline 545/1 before session fixes: missing autoencoder fixtures + short `ids=` for Windows env-var limit).
+
 ## Current Milestone
 
 KafeMACHINE machine learning library — ✔ Complete. 11 models, preprocessing, metrics, model selection.
-KafeGESHA deep learning library — ◐ In Progress. Dense (operational, contract restored 2026-09-24), activations, optimizers; Conv2D/LSTM/Transformer pending.
+KafeGESHA deep learning library — ◐ In Progress. Dense (operational, contract restored 2026-09-24), activations, optimizers; LSTM/Transformer pending (Conv2D y SimpleRNN ✔ 2026-10-08).
+KafeHF / KafeKaggle dataset ingestion — ✔ Complete (2026-10-08).
 
 ## Current Priorities
 

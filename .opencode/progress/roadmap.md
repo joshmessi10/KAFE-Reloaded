@@ -60,6 +60,7 @@ Active project planning. Do not move this content into AGENTS.md (see AGENTS.md 
 - ✔ CI Test Suite Fixes — pre-existing broken tests fixed, CrossValScore architecture fix (2026-09-21)
 - ✔ KafeGESHA clustering test — platform-independence fix (2026-09-21)
 - ✔ GESHA — Conv2D y SimpleRNN sobre NUMK (2026-10-08)
+- ✔ KafeKAGGLE — librería de ingesta de datasets de Kaggle (2026-10-08)
 - ☐ Harness Engineering — Actualizar reglas (5 benchmarks, conceptos enriquecidos, verificación de contexto)
 - ☐ Engineering Lead Permissions — Permisos edit/write para docs y records
 

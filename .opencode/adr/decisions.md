@@ -405,3 +405,68 @@ La arquitectura puede evolucionar hacia capas y entrenamiento por contratos
 sin migrar los programas KAFE existentes. Las formas de lote completo,
 minibatches y la fusión especializada Softmax-entropía cruzada quedan como
 siguiente fase y requieren pruebas matemáticas específicas.
+
+---
+
+## ADR-0012: Ingesta de datasets de Kaggle con la librería oficial `kaggle`
+
+- **Status**: accepted
+- **Date**: 2026-10-08
+
+### Context
+
+KafeHF ya permitía importar datasets de Hugging Face (`huggingface.load_dataset*`,
+ADR-0010). Se solicitó una capac análoga para Kaggle. Kaggle no usa splits sino
+archivos (normalmente un CSV dentro de un ZIP) y su API exige credenciales,
+lo que diferencia el caso de uso de Hugging Face.
+
+### Decision
+
+Se añade la librería integrada `src/lib/KafeKaggle/` con clave de import
+`kaggle`, espejo de KafeHF: `load_dataset`, `load_dataset_split` y
+`load_dataset_matrix` con retorno PARDOS/matriz numérica, dependencia opcional
+`kaggle` con auto-instalación (`pip install kaggle` vía `subprocess`) y
+validación previa de credenciales en español (`~/.kaggle/kaggle.json` o
+`KAGGLE_USERNAME`/`KAGGLE_KEY`). Los CSV se leen con la librería estándar
+`csv` (ZIP con `zipfile`), sin pandas. El parámetro `split` se interpreta como
+**selector de archivo con forma de split** (`"train"` → `train.csv`) para
+mantener la simetría de API con KafeHF. El paso de descarga queda aislado en
+`_download_dataset()` para poder sustituirlo en tests sin red ni credenciales.
+
+### Rationale
+
+- La librería oficial `kaggle` es la API mantenida por la plataforma; usarla
+  evita reimplementar autenticación y endpoints (la política de dependencias
+  prohíbe implementaciones de algoritmos ML externos, no clientes de datos;
+  precedente: `datasets` en ADR-0010).
+- `csv`/`zipfile` de la estándar evitan añadir pandas como dependencia propia
+  y cumplen la política de dependencias.
+- La simetría con KafeHF reduce la carga cognitiva: un programa con forma
+  Hugging Face se porta a Kaggle cambiando el import y el nombre del dataset.
+- Los tests de red/credenciales viven en `*.kf.example` (fuera del
+  discovery de pytest) y la suite se cubre con `monkeypatch`, de modo que CI
+  nunca toca red.
+
+### Consequences
+
+- API pública nueva sin breaking changes; gramática sin cambios.
+- Cada llamada descarga el dataset completo a un directorio temporal; para
+  datasets grandes debe usarse `limit` o `load_dataset_matrix`.
+- Solo se admiten archivos CSV.
+- `docs/bibliotecas/kaggle.md`, concept record
+  `kaggle-dataset-ingestion.md` y fixtures `tests/KafeKaggle/` acompañan la
+  decisión.
+
+### Alternatives Considered
+
+- **Descarga directa por HTTP con urllib contra `kaggle.com/api/v1`**: elimina
+  la dependencia pip pero reimplementa autenticación y manejo de errores de la
+  API; más código propio que mantener y peor para un proyecto educativo.
+- **pandas para leer los CSV**: añade una dependencia propia pesada; se descarta
+  por la política de dependencias (la estándar `csv` es suficiente).
+- **Rechazar `split` con un error educativo ("Kaggle no tiene splits")**:
+  se descarta porque rompe la simetría con KafeHF sin ganancia pedagógica;
+  en su lugar `split` actúa como selector de archivo y el docstring explica la
+  diferencia de modelado.
+- **`kagglehub`**: cliente alternativo de comunidad; se descarta por usar la
+  librería oficial solicitada.

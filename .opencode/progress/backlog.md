@@ -18,6 +18,10 @@ Candidate items not yet on the roadmap. Add items here during Impact Analysis an
 - Vectorization (batch operations for performance)
 - Parallel execution (multi-threading support)
 
+## Libraries
+
+- [x] KafeKAGGLE — importación de datasets de Kaggle (patrón KafeHF / ADR-0012) — completado 2026-10-08
+
 ## Documentation
 
 - Review tasks for legacy implementations (BaseMachine, LinearRegression, LogisticRegression, KNN, Metrics)

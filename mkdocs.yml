@@ -58,6 +58,8 @@ nav:
       - GeshaDeep (Deep Learning): bibliotecas/gesha.md
       - PARDOS (DataFrames): bibliotecas/pardos.md
       - MACHINE (ML Utilities): bibliotecas/machine.md
+      - Hugging Face (Datasets): bibliotecas/huggingface.md
+      - Kaggle (Datasets): bibliotecas/kaggle.md
   - Especificación:
       - Gramática Formal (EBNF): especificacion/gramatica-ebnf.md
       - Semántica Operacional: especificacion/semantica-operacional.md
@@ -76,6 +78,7 @@ nav:
       - Regresión Lineal: ejemplos/regresion-lineal.kf
       - Red Neuronal: ejemplos/red-neuronal.kf
       - Decision Tree: ejemplos/decision-tree.kf
+      - Kaggle Iris Clustering: ejemplos/kaggle-iris-clustering.kf
   - Acerca de:
       - Créditos: about/creditos.md
       - Licencia: about/licencia.md

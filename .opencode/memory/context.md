@@ -17,6 +17,6 @@ KAFE is an educational DSL focused on Machine Learning and Deep Learning, implem
 ## Engineering Notes
 
 - KafeMACHINE (ML) and KafeGESHA (DL) are implemented from scratch inside KAFE.
-- `self.libraries` uses lowercase import keys: `numk`, `math`, `files`, `plot`, `geshaDeep`, `pardos`, `machine`.
+- `self.libraries` uses lowercase import keys: `numk`, `math`, `files`, `plot`, `geshaDeep`, `pardos`, `machine`, `huggingface`, `kaggle`.
 - Source of Truth precedence: ADRs > Knowledge Layer > History > Progress (see AGENTS.md — Source of Truth).
 - Test fixtures: `<name>.kf` + `<name>.expec` (expected stdout), optional `<name>.in`, invalid `<name>.error.kf` + `<name>.error.expec`.

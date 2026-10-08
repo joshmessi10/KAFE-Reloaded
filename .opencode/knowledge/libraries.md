@@ -13,6 +13,8 @@ self.libraries = {
     "geshaDeep": [lib.KafeGESHA.funciones,  False],
     "pardos":    [lib.KafePARDOS.funciones, False],
     "machine":   [lib.KafeMACHINE.funciones, False],
+    "huggingface": [lib.KafeHF.funciones,   False],
+    "kaggle":    [lib.KafeKaggle.funciones, False],
 }
 ```
 
@@ -30,6 +32,8 @@ self.libraries = {
 - `KafeGESHA` — deep learning (see `.opencode/knowledge/dl-library.md`).
 - `KafePARDOS` — DataFrames / CSV. Modules: `funciones.py`, `DataFrame.py`.
 - `KafeMACHINE` — ML models and metrics (see `.opencode/knowledge/ml-library.md`).
+- `KafeHF` — datasets from Hugging Face Hub (`load_dataset`, `load_dataset_split`, `load_dataset_matrix`). Optional dependency `datasets` with auto-install; returns PARDOS DataFrames or numeric matrices. Docs: `docs/bibliotecas/huggingface.md`, ADR-0010.
+- `KafeKaggle` — datasets from Kaggle via the official `kaggle` package (`load_dataset`, `load_dataset_split`, `load_dataset_matrix`). Optional dependency `kaggle` with auto-install; requires credentials (`~/.kaggle/kaggle.json` or `KAGGLE_USERNAME`/`KAGGLE_KEY`). CSV is read with stdlib `csv` (no pandas); `split` acts as a file selector because Kaggle has no splits. Docs: `docs/bibliotecas/kaggle.md`, ADR-0012.
 
 ## Adding a New Library
 

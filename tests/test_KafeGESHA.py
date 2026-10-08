@@ -13,9 +13,13 @@ from utils import (
 )
 
 
+_VALID_PARAMS = list(obtener_parametros(get_programs("../tests/KafeGESHA")))
+
+
 @pytest.mark.parametrize(
     "programa, entrada, salida_esperada",
-    list(obtener_parametros(get_programs("../tests/KafeGESHA"))),
+    _VALID_PARAMS,
+    ids=[os.path.relpath(programa, os.path.dirname(__file__)) for programa, _, _ in _VALID_PARAMS],
 )
 def test_valid_programs(programa, entrada, salida_esperada):
     result = subprocess.run(
@@ -58,9 +62,13 @@ def test_valid_programs(programa, entrada, salida_esperada):
     assert result.stdout == salida_esperada, f"Incorrect output for {programa}"
 
 
+_INVALID_PARAMS = list(obtener_parametros(get_invalid_programs("../tests/KafeGESHA")))
+
+
 @pytest.mark.parametrize(
     "programa, entrada, salida_esperada",
-    list(obtener_parametros(get_invalid_programs("../tests/KafeGESHA"))),
+    _INVALID_PARAMS,
+    ids=[os.path.relpath(programa, os.path.dirname(__file__)) for programa, _, _ in _INVALID_PARAMS],
 )
 def test_invalid_programs(programa, entrada, salida_esperada):
     result = subprocess.run(

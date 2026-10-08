@@ -49,6 +49,7 @@ import lib.KafeGESHA.funciones as gesha_funcs_module
 import lib.KafePARDOS.funciones as pardos_funcs_module
 import lib.KafeMACHINE.funciones as machine_funcs_module
 import lib.KafeHF.funciones as hf_funcs_module
+import lib.KafeKaggle.funciones as kaggle_funcs_module
 
 
 class EvalVisitorPrimitivo(Kafe_GrammarVisitor):
@@ -64,6 +65,7 @@ class EvalVisitorPrimitivo(Kafe_GrammarVisitor):
             "pardos": [pardos_funcs_module, False],
             "machine": [machine_funcs_module, False],
             "huggingface": [hf_funcs_module, False],
+            "kaggle": [kaggle_funcs_module, False],
         }
         self.imported = set()
         import globals

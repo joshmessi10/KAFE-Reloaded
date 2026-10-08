@@ -2,20 +2,26 @@
 
 ## Current Feature
 
-Fix: Tipo GESHA + contrato público KafeGESHA tras refactor (ADR-0008)
+None — session closed.
 
 ## Status
 
-completed — Implementation, Validation, Documentation, History, Review (APPROVED) and DoD all done. Session closure (`/close`, `current.md` reset) is handled by the engineering lead.
+Closed (2026-10-08). Work item completed: KafeKAGGLE — importación de datos de Kaggle (DoD APPROVED, `progress/review-kafekaggle.md`).
 
 ## Current Step
 
-Historian: persistido el veredicto del Reviewer, actualizado `knowledge/dl-library.md`, `history/2026/2026-09.md`, `current-state.md`, `known-issues.md`.
+Session closed via `/close`.
 
 ## Next Step
 
-Engineering Lead: cerrar la sesión (`/close`) y fijar el siguiente work item del roadmap — KafeGESHA Conv2D (usar `/open-work` + `/impact` + la skill `add-dl-layer`).
+Open the next session with `/init` + `/resume` and pick the next roadmap item: KafeGESHA LSTM/Transformer (`.opencode/progress/roadmap.md` → Deep Learning) or the KafeMACHINE Review Tasks backlog.
 
-## Summary
+## Expected Outcome
 
-Regresión `TypeError: Expected GESHA, obtained FUNC` causada por `Layer.__call__ = connect` combinado con `callable(dato)` chequeado antes del `isinstance` GESHA en `TypeUtils.obtener_tipo_dato()`. Se restauró el contrato público pre-refactor de KafeGESHA (`predict` sample único, `predict_proba`, `predict_label`, `fit` con em-dash) y los fixtures de compuertas quedaron deterministas con seed 42. Resultado: `pytest tests/ -q` — 464 passed, 1 skipped.
+N/A (no active work item).
+
+## Notes
+
+- Session artifacts: `progress/impact-kafekaggle.md`, `progress/report-kafekaggle.md`, `progress/review-kafekaggle.md`.
+- Suite baseline for the next session: **577 passed, 1 skipped** — run `pytest tests/` (a bare `pytest` aborts on legacy UTF-16 files at the root).
+- Environment caveats recorded in `memory/known-issues.md` (subagents cannot run pytest; PowerShell mangles UTF-8; `uv` not installed).

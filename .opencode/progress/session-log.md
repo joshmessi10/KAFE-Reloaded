@@ -68,3 +68,16 @@ Format for each entry:
 - **Files modified**: BaseMachine.py, LinearRegression.py, LogisticRegression.py, KNN.py, DecisionTree.py, KMeans.py, StandardScaler.py, MinMaxScaler.py, PCA.py, SimpleImputer.py, LabelEncoder.py
 - **Tests**: 344 passed, 0 failed
 - **Key decisions**: Flexible fit() contract, centralized _validate_matrix_shape(), score() reuses metrics.py, fit_transform() removed from base
+
+---
+
+## 2026-10-08 — KafeKAGGLE (datasets de Kaggle) + reparación de la suite
+
+- **Feature**: KafeKAGGLE — importación de datasets de Kaggle (nueva librería integrada, espejo de KafeHF)
+- **Status**: done
+- **Commands executed**: /init, /resume, /open-work, /impact, /dod
+- **Summary**: Nueva librería `src/lib/KafeKaggle/` con auto-install de `kaggle`, validación de credenciales (kaggle.json o `KAGGLE_USERNAME`/`KAGGLE_KEY`), descarga aislada monkeypacheable (`_download_dataset`), lectura CSV/ZIP con stdlib (sin pandas) y API `load_dataset`, `load_dataset_split`, `load_dataset_matrix` retornando PARDOS o `LIST[LIST[FLOAT]]` (`split` = selector de archivo con forma de split; decisión documentada en ADR-0012). Además: suite reparada (fixtures `autoencoder_clustering` faltantes regenerados con determinismo verificado; `ids=` cortos por el límite de 32767 caracteres del env de Windows), docs `docs/bibliotecas/kaggle.md` + nav mkdocs (incluida la entrada Hugging Face que faltaba), ADR-0012, concept record enriquecido, benchmark de 6 escenarios locales, ejemplo `kaggle-iris-clustering.kf`, tabla de librerías de CLAUDE.md, y corrección de snippets inválidos `machine.kmeans(datos,3)` en kaggle.md/huggingface.md/concept record. `/dod` aprobado por el Reviewer tras 2 rondas (snippets y cifras reconciliadas).
+- **Tests**: 577 passed, 1 skipped (`pytest tests/ -q`, 103s); KafeKAGGLE enfocado: 32 passed (5 fixtures + 27 unit)
+- **Validation**: `/init` green al cierre (suite + consistencia de progreso); hygiene OK — sin archivos temporales, sin TODOs, el único `print()` de tests es intencional (FakeApi simula la salida real del cliente y `test_download_dataset_uses_api_and_quiets_output` prueba que `_download_dataset` la silencia)
+- **Significant history records**: `.opencode/history/2026/2026-10.md` (entrada KafeKAGGLE + entrada reparación de suite); `.opencode/history/2026/2026-09.md` (entrada backdated del fix de `check_sig` preservado desde current.md)
+- **Next step**: Reanudar por roadmap: KafeGESHA LSTM/Transformer (Deep Learning) o Review Tasks de KafeMACHINE; abrir con `/init` + `/resume`
