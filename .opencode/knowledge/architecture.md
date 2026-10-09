@@ -20,7 +20,7 @@ Source layout:
 - `src/Kafe_Grammar.g4` + `src/Kafe_Lexer.g4` — ANTLR grammar (parser + lexer). The generated `Kafe_GrammarLexer.py`, `Kafe_GrammarParser.py`, `Kafe_GrammarVisitor.py`, `*.tokens`, `*.interp` are **gitignored**; regenerate after grammar edits.
 - `src/EvalVisitorPrimitivo.py` — the main visitor: walks the AST with a scope stack, dispatches to language components and libraries.
 - `src/componentes_lenguaje/` — language features: `base`, `bucles`, `condicionales`, `funciones`, `importar`, `librerias`, `method_calling`.
-- `src/lib/` — built-in libraries: `KafeNUMK`, `KafeMATH`, `KafeFILES`, `KafePLOT`, `KafeGESHA`, `KafePARDOS`, `KafeMACHINE`.
+- `src/lib/` — built-in libraries: `KafeNUMK`, `KafeMATH`, `KafeFILES`, `KafePLOT`, `KafeGESHA`, `KafePARDOS`, `KafeMACHINE`, `KafeHF`, `KafeKaggle`.
 - `src/TypeUtils.py` — type system. `src/errores.py` — error raising helpers. `src/global_utils.py` — shared helpers. `src/globals.py` — global interpreter state (`current_dir`, `ruta_programa`, `current_visitor`), imported as `import globals` (module import, never `from ... import`).
 
 ## Execution Flow

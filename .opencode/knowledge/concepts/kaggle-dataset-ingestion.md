@@ -11,8 +11,9 @@ Library utility — data ingestion (KAFE built-in library).
 ## Description
 
 Kaggle is a platform for ML competitions and shared datasets. Each dataset is
-published as a set of files (usually one CSV inside a ZIP) that can be
-downloaded through the official API. KafeKAGGLE (`import kaggle;`) downloads a
+published as a set of files (usually CSV) that can be downloaded through the
+official `kagglehub` client — anonymously for public datasets, exactly like in
+Google Colab. KafeKAGGLE (`import kaggle;`) downloads a
 dataset, selects a CSV, parses it with the standard-library `csv` reader, and
 returns either a KafePARDOS `DataFrame` (tabular view) or a
 `List[List[FLOAT]]` matrix (numeric view for NUMK/GESHA).
@@ -41,9 +42,10 @@ Dataset ingestion is a parsing and type-inference problem rather than a model:
   constant factor (no type-object wrapping for non-selected columns).
 
 - **Time Complexity**: $O(n \cdot c)$ per load (network download excluded,
-  which is $O(\text{dataset bytes})$).
-- **Space Complexity**: $O(n \cdot c)$ for the table; temporary ZIP extraction
-  is $O(\text{dataset bytes})$ and is deleted after each call.
+  which is $O(\text{dataset bytes})$ and happens only on the first access).
+- **Space Complexity**: $O(n \cdot c)$ for the table; `kagglehub` keeps the
+  extracted dataset in a persistent cache (`~/.cache/kagglehub`),
+  $O(\text{dataset bytes})$ on disk, shared across calls.
 - **Key Formulas**: numeric-cell predicate
   $N(v) = \big[v \in \mathbb{R}\big] \wedge \big[v \neq ""\big]$ applied per
   selected column.
@@ -52,25 +54,25 @@ Dataset ingestion is a parsing and type-inference problem rather than a model:
 
 1. Validate `dataset_name` (non-empty, `dueno/conjunto` format) before any
    network call.
-2. Check the optional dependency `kaggle`; auto-install with
-   `pip install kaggle` through the current interpreter if missing.
-3. Check credentials (`~/.kaggle/kaggle.json` or `KAGGLE_USERNAME` +
-   `KAGGLE_KEY`); raise a Spanish error explaining how to configure them.
-4. Download the dataset ZIP to a temporary directory with `KaggleApi`
-   (suppressing the API's informational stdout so program output stays
-   deterministic).
-5. Select the CSV: explicit `file_name` > `split` selector (`"train"` →
-   `train.csv`, exact path allowed) > single CSV (error listing candidates
-   otherwise).
-6. Parse the CSV with `csv.reader` using `utf-8-sig` (BOM tolerance); the
+2. Check the optional dependency `kagglehub`; auto-install with
+   `pip install kagglehub` through the current interpreter if missing.
+3. Download and extract the dataset with `kagglehub.dataset_download(handle)`
+   (anonymous for public datasets; credentials are optional and only used for
+   private ones). Client chatter is redirected away from program stdout and
+   the result lands in the `~/.cache/kagglehub` cache. If the download fails
+   and no credentials are configured, append a Spanish hint explaining how to
+   set them (private datasets only).
+4. Walk the extracted directory recursively and select the CSV: explicit
+   `file_name` > `split` selector (`"train"` → `train.csv`, exact path
+   allowed) > single CSV (error listing candidates otherwise).
+5. Parse the CSV with `csv.reader` using `utf-8-sig` (BOM tolerance); the
    first row is the header; blank rows are dropped and short rows are padded
    (same rules as `pardos.read_csv`).
-7. Return the result:
+6. Return the result:
    - `load_dataset`/`load_dataset_split` → cells typed with `inferir_tipo`
      into a PARDOS `DataFrame`;
    - `load_dataset_matrix` → each selected cell converted with `float()`,
      rejecting nulls/non-numeric cells, stopping at `limit` rows.
-8. Delete the temporary directory (context manager).
 
 ## Motivation
 
@@ -86,23 +88,27 @@ encounter constantly in production code.
 - **Same mental model as KafeHF**: three functions, three return shapes;
   switching data source changes only the import and the dataset identifier.
 - **No hidden dependencies**: parsing uses the Python standard library, so
-  installing `kaggle` (only when used) does not drag pandas into the runtime.
-- **Deterministic output**: API chatter is redirected away from program
+  installing `kagglehub` (only when used) does not drag pandas into the runtime.
+- **No credentials for public datasets**: anonymous download removes the
+  classroom setup step — the same behavior students see in Google Colab.
+- **Deterministic output**: client chatter is redirected away from program
   stdout, so `.expec` fixtures stay byte-stable.
-- **Fail-fast diagnostics**: credential/format/column errors are raised in
-  Spanish *before* touching the network or allocating large buffers.
+- **Fail-fast diagnostics**: name/format/column errors are raised in
+  Spanish *before* touching the network or allocating large buffers, and
+  download failures include a credential hint when none are configured.
 - **Educational visibility**: the split-vs-file difference is documented at
   the API level, teaching how data organization differs across platforms.
 
 ## Limitations
 
-- **Credentials required**: even public datasets need a Kaggle API key, so
-  classroom setups require a one-time configuration step.
-- **Whole-dataset download per call**: each call re-downloads the ZIP to a
-  temporary directory; there is no caching layer (mitigate with `limit` or by
-  loading once into a variable).
-- **CSV only**: ZIP archives must contain the selected file as CSV; other
-  formats (parquet, JSON) are rejected with an explicit error.
+- **Private datasets still need credentials**: only private datasets require
+  `~/.kaggle/kaggle.json` or `KAGGLE_USERNAME`/`KAGGLE_KEY`; public ones are
+  anonymous.
+- **Disk cache growth**: `kagglehub` caches every downloaded version under
+  `~/.cache/kagglehub` (fast repeat access) and does not evict it
+  automatically; long-term use may require manual cleanup.
+- **CSV only**: the selected file must be CSV; other formats (parquet, JSON)
+  are rejected with an explicit error.
 - **In-memory tables**: $O(n \cdot c)$ residency makes huge datasets
   impractical; use `load_dataset_matrix` with `limit`, sampling, or split the
   work outside KAFE.
@@ -125,10 +131,10 @@ encounter constantly in production code.
 
 ## Dependencies
 
-- Optional Python dependency: `kaggle` (auto-installed on first use).
+- Optional Python dependency: `kagglehub` (auto-installed on first use).
 - KAFE: `KafePARDOS.DataFrame` (lazy import), `TypeUtils` (`cadena_t`,
   `lista_cadenas_t`, `entero_t`), `global_utils.check_sig`.
-- Standard library: `csv`, `zipfile`, `tempfile`, `subprocess`, `io`, `os`.
+- Standard library: `csv`, `subprocess`, `importlib`, `io`, `os`.
 
 ## Related Concepts
 
@@ -147,7 +153,8 @@ encounter constantly in production code.
   instead of split name) — the KAFE-level compromise that preserves API
   symmetry; documented in the function docstrings and ADR-0012.
 - The download step is isolated in `_download_dataset()` so tests replace it
-  with fakes: the CI suite never needs credentials or network.
+  with fakes: the CI suite never needs credentials or network. Credentials are
+  never a precondition — they only enrich error messages for private datasets.
 
 ## Usage Examples
 
@@ -169,7 +176,7 @@ model.fit(X);
 ## Implementation Location
 
 - `src/lib/KafeKaggle/funciones.py` — public functions and helpers
-  (`_require_kaggle`, `_check_credentials`, `_download_dataset`,
+  (`_require_kagglehub`, `_tiene_credenciales`, `_download_dataset`,
   `_resolve_file`/`_select_file`, `_parse_csv`, `_convert_to_pardos`).
 - `src/lib/KafeKaggle/__init__.py` — package exports.
 - `src/EvalVisitorPrimitivo.py` — import + `self.libraries["kaggle"]`.
@@ -182,7 +189,8 @@ model.fit(X);
 
 ## References
 
-- Kaggle API documentation: https://github.com/Kaggle/kaggle-api
+- kagglehub client documentation: https://github.com/Kaggle/kagglehub
 - Kaggle datasets: https://www.kaggle.com/datasets
-- ADR-0012 (`.opencode/adr/decisions.md`), ADR-0010 (Hugging Face ingestion).
-- Python standard library: `csv`, `zipfile`.
+- ADR-0012 (`.opencode/adr/decisions.md`), ADR-0013 (kagglehub client),
+  ADR-0010 (Hugging Face ingestion).
+- Python standard library: `csv`.

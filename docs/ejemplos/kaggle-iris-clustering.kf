@@ -1,6 +1,8 @@
 -- Ejemplo: Kaggle -> matriz numerica -> K-Means
--- Requiere: pip install kaggle y credenciales de Kaggle
---   (~/.kaggle/kaggle.json o KAGGLE_USERNAME/KAGGLE_KEY)
+-- Requiere: la libreria kagglehub (se instala sola en el primer import).
+-- Los datasets publicos NO requieren credenciales; solo necesitas
+--   credenciales (~/.kaggle/kaggle.json o KAGGLE_USERNAME/KAGGLE_KEY)
+--   para datasets privados.
 -- El dataset uciml/iris trae un unico archivo Iris.csv con 150 muestras
 -- y cuatro caracteristicas numericas; las etiquetas de especie no se usan:
 -- el clustering es completamente no supervisado.

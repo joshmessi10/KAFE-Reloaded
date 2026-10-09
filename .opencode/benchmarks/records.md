@@ -1236,32 +1236,38 @@ Mediana de 3 ejecuciones de forward+backward, medida con `perf_counter` y
 ### 2026-10-08 — KafeKAGGLE (ingesta de datasets de Kaggle)
 
 Mediana de 3 ejecuciones con `perf_counter` y `tracemalloc`; script
-`.opencode/benchmarks/kafekaggle.py`. El paso de red se sustituye por una
-copia local (`_download_dataset` falso), así que se mide la parte
-determinista: selección de archivo, parseo CSV (stdlib) y construcción de
-PARDOS/matriz. 6 escenarios, ejecución estable entre corridas.
+`.opencode/benchmarks/kafekaggle.py`. El paso de red se sustituye por un
+archivo o directorio local (`_download_dataset` falso), así que se mide la
+parte determinista: selección de archivo (directorio con subdirectorios),
+parseo CSV (stdlib) y construcción de PARDOS/matriz. 6 escenarios,
+ejecución estable entre corridas. **Actualizado el mismo día tras el swap
+de cliente `kaggle` → `kagglehub` (v2)**: S5 ahora es directorio en vez de
+ZIP y todos los escenarios pasan por la extracción sobre directorio.
 
 | Escenario | Tiempo | Pico |
 |---|---:|---:|
-| S1 small: 50x4 `load_dataset` (PARDOS) | 0.002651 s | 259.52 KiB |
-| S2 medium: 1000x8 `load_dataset` (PARDOS) | 0.059578 s | 932.50 KiB |
-| S3 large: 10000x10 `load_dataset_matrix` (todas) | 0.216063 s | 10242.30 KiB |
-| S4 large: 10000x10 `load_dataset_matrix` `limit=100` | 0.096804 s | 8105.21 KiB |
-| S5 ZIP: 500x6 selector `data/train.csv` (PARDOS) | 0.024362 s | 415.67 KiB |
-| S6 edge: CSV vacío `load_dataset` | 0.001203 s | 258.35 KiB |
+| S1 small: 50x4 `load_dataset` (PARDOS) | 0.002751 s | 165.54 KiB |
+| S2 medium: 1000x8 `load_dataset` (PARDOS) | 0.088246 s | 932.36 KiB |
+| S3 large: 10000x10 `load_dataset_matrix` (todas) | 0.338025 s | 10242.36 KiB |
+| S4 large: 10000x10 `load_dataset_matrix` `limit=100` | 0.157276 s | 8104.45 KiB |
+| S5 dir: 500x6 selector `data/train.csv` (PARDOS) | 0.038166 s | 385.82 KiB |
+| S6 edge: CSV vacío `load_dataset` | 0.000295 s | 154.09 KiB |
 
 Lecturas:
-- `load_dataset_matrix` es ~1.8x más rápido que `load_dataset` a igual
-  volumen (S2 vs S3) y usa menos memoria por celda: evita el DataFrame de
+- `load_dataset_matrix` sigue siendo la vía de menor sobrecarga por fila
+  frente a `load_dataset` a igual volumen (S2 vs S3): evita el DataFrame de
   PARDOS y la inferencia de tipos.
 - `limit` acorta la construcción de la matriz pero NO el parseo CSV ni la
   descarga (S4 sigue parseando las 10000 filas): la reducción es de memoria
   del resultado, no de E/S. Limitación documentada en el concept record.
-- Los ZIP (S5) agregan unos ms de extracción e inflado sobre un CSV equivalente.
-- El CSV vacío (S6) y los casos borde se manejan sin errores en <2 ms.
+- S5 (selección por ruta dentro de un directorio con subdirectorios,
+  `data/train.csv`) cuesta unos ms más que un CSV suelto equivalente: walk
+  recursivo + apertura, sin extracción de ZIP.
+- El CSV vacío (S6) y los casos borde se manejan sin errores en <1 ms.
 
 #### Related
 
-- Tests: `tests/test_KafeKaggle_backend.py` (27 unit tests)
+- Tests: `tests/test_KafeKaggle_backend.py` (35 unit tests) + 5 fixtures = 40
 - Knowledge: `.opencode/knowledge/concepts/kaggle-dataset-ingestion.md`
 - Implementation: `src/lib/KafeKaggle/funciones.py`
+- ADR: ADR-0013 (cliente kagglehub)

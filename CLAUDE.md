@@ -104,7 +104,7 @@ Modular implementations called by the visitor:
 | `KafeFILES` | File I/O |
 | `KafeMACHINE` | ML models: LinearRegression, LogisticRegression, KNN, StandardScaler, MinMaxScaler, SimpleImputer, LabelEncoder, OneHotEncoder, PCA; plus classification and regression metrics |
 | `KafeHF` | Datasets from Hugging Face Hub (optional `datasets` dependency) |
-| `KafeKaggle` | Datasets from Kaggle (optional `kaggle` dependency, credentials required) |
+| `KafeKaggle` | Datasets from Kaggle via `kagglehub` (public datasets anonymous, no credentials; optional `kagglehub` dependency) |
 
 ### KAFE language keywords
 

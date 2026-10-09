@@ -410,7 +410,7 @@ siguiente fase y requieren pruebas matemáticas específicas.
 
 ## ADR-0012: Ingesta de datasets de Kaggle con la librería oficial `kaggle`
 
-- **Status**: accepted
+- **Status**: partially superseded by ADR-0013 (2026-10-08: cliente `kagglehub`, credenciales opcionales)
 - **Date**: 2026-10-08
 
 ### Context
@@ -469,4 +469,95 @@ mantener la simetría de API con KafeHF. El paso de descarga queda aislado en
   en su lugar `split` actúa como selector de archivo y el docstring explica la
   diferencia de modelado.
 - **`kagglehub`**: cliente alternativo de comunidad; se descarta por usar la
-  librería oficial solicitada.
+  librería oficial solicitada. *(Actualización: `kagglehub` resultó ser el
+  cliente oficial moderno de Kaggle y sustituyó a `kaggle` en ADR-0013.)*
+
+## ADR-0013: KafeKAGGLE usa `kagglehub` como cliente (datasets públicos sin credenciales)
+
+- **Status**: accepted
+- **Date**: 2026-10-08
+
+### Context
+
+Durante la validación en vivo de KafeKAGGLE (ADR-0012) se comprobó que:
+
+1. El gate de credenciales de ADR-0012 bloquea datasets **públicos** que en
+   realidad se descargan de forma anónima: GET anónimo a
+   `https://www.kaggle.com/api/v1/datasets/download/uciml/iris` → HTTP 200
+   `application/zip`, y `kagglehub.dataset_download('uciml/iris')` sin
+   `KAGGLE_USERNAME`/`KAGGLE_KEY`/`kaggle.json` descarga y extrae
+   correctamente (verificado en este entorno).
+2. `kaggle 2.2.4` imprime una ayuda en inglés ("Authentication required…")
+   a stdout al importar sin credenciales, contaminando la salida del
+   programa KAFE.
+3. El flujo educativo de referencia (Google Colab) usa `kagglehub`, que
+   además soporta las mismas fuentes de credenciales (`kaggle.json`, env
+   vars `KAGGLE_USERNAME`/`KAGGLE_KEY` y secrets de Colab — verificado en
+   `kagglehub/config.py`).
+
+La premisa de ADR-0012 ("su API exige credenciales") y su descarte de
+`kagglehub` ("cliente de comunidad") resultaron incorrectas: `kagglehub` es
+el cliente oficial moderno (`github.com/Kaggle/kagglehub`).
+
+### Decision
+
+Reemplazar el cliente por debajo de KafeKAGGLE — `kaggle`/`KaggleApi` →
+`kagglehub` — manteniendo intacta la API pública KAFE:
+
+- Descarga **anónima** para datasets públicos: se elimina el gate previo de
+  credenciales; `_check_credentials()` pasa a ser el predicado
+  `_tiene_credenciales()`, usado solo para enriquecer el mensaje de error
+  cuando la descarga falla sin credenciales (datasets privados).
+- `_download_dataset(dataset_name)` retorna el **directorio extraído** por
+  `kagglehub.dataset_download()` (caché persistente en
+  `~/.cache/kagglehub`) en vez de un ZIP en un directorio temporal; la
+  salida de progreso del cliente se redirige con `redirect_stdout`.
+- `_extract_table` recorre el directorio recursivamente (skip
+  `__MACOSX`/dotfiles); se eliminan `zipfile` y `tempfile`.
+- Auto-instalación vía `_require_kagglehub()` (mismo patrón que
+  `_require_hf`).
+- `import kaggle;`, las tres funciones públicas, `@check_sig` y la semántica
+  de `split` como selector de archivo **no cambian**.
+
+**Supresión parcial de ADR-0012**: se conserva todo lo demás (lectura con
+`csv` estándar sin pandas, retorno PARDOS/matriz, selector de split con
+forma de split, seam `_download_dataset()` para tests offline); se
+reemplazan la elección del cliente y el gate de credenciales.
+
+### Rationale
+
+- `kagglehub` es el cliente oficial de Kaggle y el que usan los ejemplos de
+  Colab: paridad con el flujo que encuentran los estudiantes.
+- Habilita el requisito verificado empíricamente: datasets públicos sin
+  credenciales (elimina la configuración única de aula).
+- Elimina el texto de autenticación que `kaggle` imprimía al importar.
+- Caché persistente: el segundo acceso es instantáneo (mejora respecto a la
+  re-descarga por llamada de ADR-0012).
+- Cumple la política de dependencias: cliente oficial de datos, dependencia
+  opcional con auto-install; no es una implementación ML externa.
+
+### Consequences
+
+- Los datasets **privados** siguen requiriendo credenciales (mensaje en
+  español con las tres fuentes al fallar la descarga).
+- La caché de `kagglehub` crece en disco sin evicción automática (limitación
+  documentada en el concept record).
+- Los 35 unit tests de `tests/test_KafeKaggle_backend.py` se reescribieron
+  para el nuevo seam; los 5 fixtures `.kf` no cambiaron; el benchmark S5
+  pasó de ZIP a directorio (registro actualizado en `records.md`).
+- `docs/bibliotecas/kaggle.md`, concept record `kaggle-dataset-ingestion.md`,
+  `libraries.md`, `CLAUDE.md` y history actualizados.
+
+### Alternatives Considered
+
+- **Mantener `kaggle` con el gate de credenciales**: descartado porque
+  bloquea datasets públicos sin razón técnica (la API los sirve anónimos) y
+  añade una configuración innecesaria al aula.
+- **Soportar ambos clientes (`kagglehub` primario + `kaggle` fallback)**:
+  descartado por complejidad: `kagglehub` ya cubre públicos y privados con
+  las mismas fuentes de credenciales.
+- **HTTP directo con `urllib` contra el endpoint de descarga**: descartado
+  por las mismas razones que en ADR-0012 (reimplementar versionado,
+  extracción, caché y manejo de errores).
+- **Leer credenciales desde el programa KAFE**: descartado: expondría
+  secretos en código educativo; las gestiona el cliente como en Colab.

@@ -33,7 +33,7 @@ self.libraries = {
 - `KafePARDOS` — DataFrames / CSV. Modules: `funciones.py`, `DataFrame.py`.
 - `KafeMACHINE` — ML models and metrics (see `.opencode/knowledge/ml-library.md`).
 - `KafeHF` — datasets from Hugging Face Hub (`load_dataset`, `load_dataset_split`, `load_dataset_matrix`). Optional dependency `datasets` with auto-install; returns PARDOS DataFrames or numeric matrices. Docs: `docs/bibliotecas/huggingface.md`, ADR-0010.
-- `KafeKaggle` — datasets from Kaggle via the official `kaggle` package (`load_dataset`, `load_dataset_split`, `load_dataset_matrix`). Optional dependency `kaggle` with auto-install; requires credentials (`~/.kaggle/kaggle.json` or `KAGGLE_USERNAME`/`KAGGLE_KEY`). CSV is read with stdlib `csv` (no pandas); `split` acts as a file selector because Kaggle has no splits. Docs: `docs/bibliotecas/kaggle.md`, ADR-0012.
+- `KafeKaggle` — datasets from Kaggle via the official `kagglehub` client (`load_dataset`, `load_dataset_split`, `load_dataset_matrix`). Optional dependency `kagglehub` with auto-install; public datasets download anonymously with NO credentials (same as Google Colab), credentials (`~/.kaggle/kaggle.json` or `KAGGLE_USERNAME`/`KAGGLE_KEY`, also Colab secrets) are optional and only needed for private datasets; downloads are cached under `~/.cache/kagglehub`. CSV is read with stdlib `csv` (no pandas); `split` acts as a file selector because Kaggle has no splits. Docs: `docs/bibliotecas/kaggle.md`, ADR-0012, ADR-0013.
 
 ## Adding a New Library
 

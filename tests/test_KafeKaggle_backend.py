@@ -1,6 +1,6 @@
 import io
+import logging
 import sys
-import zipfile
 from pathlib import Path
 
 import pytest
@@ -12,46 +12,60 @@ from lib.KafePARDOS.DataFrame import DataFrame
 
 
 @pytest.fixture(autouse=True)
-def _kaggle_disponible(monkeypatch):
+def _kagglehub_disponible(monkeypatch):
     """Los tests unitarios nunca deben intentar pip install (sin red)."""
-    monkeypatch.setattr(kaggle, "_KAGGLE_AVAILABLE", True)
+    monkeypatch.setattr(kaggle, "_KAGGLEHUB_AVAILABLE", True)
 
 
-def _crear_zip(tmp_path, archivos, nombre="dataset.zip"):
-    """Crea un ZIP real con {nombre_archivo: contenido} y retorna su ruta."""
-    ruta = tmp_path / nombre
-    with zipfile.ZipFile(ruta, "w") as zfu:
-        for nombre_archivo, contenido in archivos.items():
-            zfu.writestr(nombre_archivo, contenido)
-    return str(ruta)
+def _crear_dataset(tmp_path, archivos, nombre="dataset"):
+    """Crea un directorio con {ruta_relativa: contenido} y retorna su ruta."""
+    directorio = tmp_path / nombre
+    for ruta_relativa, contenido in archivos.items():
+        destino = directorio / ruta_relativa
+        destino.parent.mkdir(parents=True, exist_ok=True)
+        destino.write_text(contenido, encoding="utf-8")
+    return str(directorio)
 
 
-def _descarga_simulada(monkeypatch, ruta_zip):
-    """Reemplaza el paso de descarga por la devolución de un ZIP ya creado."""
+def _descarga_simulada(monkeypatch, directorio):
+    """Reemplaza require+descarga por un directorio ya preparado (sin red)."""
     llamadas = []
 
-    def _download(dataset_name, dest_dir):
+    def _download(dataset_name):
         llamadas.append(dataset_name)
-        return ruta_zip
+        return directorio
 
+    monkeypatch.setattr(kaggle, "_require_kagglehub", lambda: None)
     monkeypatch.setattr(kaggle, "_download_dataset", _download)
     return llamadas
 
 
-class FakeApi:
-    """KaggleApi falso: escribe un ZIP real sin tocar red ni credenciales."""
+def _sin_credenciales(monkeypatch, tmp_path):
+    """Elimina toda fuente de credenciales apuntando a un config inexistente."""
+    monkeypatch.delenv("KAGGLE_USERNAME", raising=False)
+    monkeypatch.delenv("KAGGLE_KEY", raising=False)
+    monkeypatch.setenv("KAGGLE_CONFIG_DIR", str(tmp_path / "sin_config"))
 
-    autenticado = False
 
-    def authenticate(self):
-        FakeApi.autenticado = True
+class KaggleHubFalso:
+    """kagglehub falso: imprime como el real y retorna un directorio preparado."""
 
-    def dataset_download_files(self, dataset, path=None, **kwargs):
-        print(f"Dataset URL: https://www.kaggle.com/datasets/{dataset}")
-        ruta = Path(path) / "conjunto.zip"
-        with zipfile.ZipFile(ruta, "w") as zfu:
-            zfu.writestr("data.csv", "x,y\n1,2\n3,4\n")
-        return None
+    def __init__(self, directorio):
+        self.directorio = directorio
+        self.handle = None
+
+    def dataset_download(self, dataset):
+        self.handle = dataset
+        print(f"Downloading from {dataset}...")
+        print(f"Extracting files to {self.directorio}")
+        return self.directorio
+
+
+class KaggleHubRoto:
+    """kagglehub falso cuya descarga siempre falla."""
+
+    def dataset_download(self, dataset):
+        raise RuntimeError("404: Not Found")
 
 
 class SubprocessFalso:
@@ -69,8 +83,20 @@ class SubprocessFalso:
             raise self.error
 
 
+class ImportlibFalso:
+    """Reemplaza importlib dentro del módulo para simular el import."""
+
+    def __init__(self, modulo):
+        self.modulo = modulo
+        self.nombres = []
+
+    def import_module(self, nombre):
+        self.nombres.append(nombre)
+        return self.modulo
+
+
 def test_load_dataset_matrix_selects_columns(monkeypatch, tmp_path):
-    ruta = _crear_zip(tmp_path, {"train.csv": "x,y,label\n1,2.5,a\n3,4,b\n"})
+    ruta = _crear_dataset(tmp_path, {"train.csv": "x,y,label\n1,2.5,a\n3,4,b\n"})
     llamadas = _descarga_simulada(monkeypatch, ruta)
     resultado = kaggle.load_dataset_matrix("demo", ["x", "y"], "train", 1)
     assert resultado == [[1.0, 2.5]]
@@ -78,20 +104,20 @@ def test_load_dataset_matrix_selects_columns(monkeypatch, tmp_path):
 
 
 def test_load_dataset_matrix_infers_numeric_columns(monkeypatch, tmp_path):
-    ruta = _crear_zip(tmp_path, {"data.csv": "x,y,label\n1,2.5,a\n"})
+    ruta = _crear_dataset(tmp_path, {"data.csv": "x,y,label\n1,2.5,a\n"})
     _descarga_simulada(monkeypatch, ruta)
     assert kaggle.load_dataset_matrix("demo") == [[1.0, 2.5]]
 
 
 def test_load_dataset_matrix_rejects_non_numeric(monkeypatch, tmp_path):
-    ruta = _crear_zip(tmp_path, {"data.csv": "x,y\n1,bad\n"})
+    ruta = _crear_dataset(tmp_path, {"data.csv": "x,y\n1,bad\n"})
     _descarga_simulada(monkeypatch, ruta)
     with pytest.raises(Exception, match="no numéricos"):
         kaggle.load_dataset_matrix("demo", ["x", "y"])
 
 
 def test_load_dataset_matrix_limit_zero_returns_all(monkeypatch, tmp_path):
-    ruta = _crear_zip(tmp_path, {"data.csv": "x,y\n1,2\n3,4\n"})
+    ruta = _crear_dataset(tmp_path, {"data.csv": "x,y\n1,2\n3,4\n"})
     _descarga_simulada(monkeypatch, ruta)
     assert kaggle.load_dataset_matrix("demo", ["x", "y"], "", 0) == [
         [1.0, 2.0],
@@ -100,28 +126,28 @@ def test_load_dataset_matrix_limit_zero_returns_all(monkeypatch, tmp_path):
 
 
 def test_load_dataset_matrix_missing_column(monkeypatch, tmp_path):
-    ruta = _crear_zip(tmp_path, {"data.csv": "x,y\n1,2\n"})
+    ruta = _crear_dataset(tmp_path, {"data.csv": "x,y\n1,2\n"})
     _descarga_simulada(monkeypatch, ruta)
     with pytest.raises(Exception, match="Columnas inexistentes"):
         kaggle.load_dataset_matrix("demo", ["x", "z"])
 
 
 def test_load_dataset_matrix_without_numeric_columns(monkeypatch, tmp_path):
-    ruta = _crear_zip(tmp_path, {"data.csv": "nombre,letra\nana,a\n"})
+    ruta = _crear_dataset(tmp_path, {"data.csv": "nombre,letra\nana,a\n"})
     _descarga_simulada(monkeypatch, ruta)
     with pytest.raises(Exception, match="columnas numéricas"):
         kaggle.load_dataset_matrix("demo")
 
 
 def test_load_dataset_matrix_null_cell(monkeypatch, tmp_path):
-    ruta = _crear_zip(tmp_path, {"data.csv": "x,y\n1,\n"})
+    ruta = _crear_dataset(tmp_path, {"data.csv": "x,y\n1,\n"})
     _descarga_simulada(monkeypatch, ruta)
     with pytest.raises(Exception, match="no numéricos o nulos"):
         kaggle.load_dataset_matrix("demo", ["x", "y"])
 
 
 def test_load_dataset_returns_pardos_dataframe(monkeypatch, tmp_path):
-    ruta = _crear_zip(tmp_path, {"personas.csv": "nombre,edad\nAna,30\nLuis,25\n"})
+    ruta = _crear_dataset(tmp_path, {"personas.csv": "nombre,edad\nAna,30\nLuis,25\n"})
     _descarga_simulada(monkeypatch, ruta)
     df = kaggle.load_dataset("demo")
     assert isinstance(df, DataFrame)
@@ -130,7 +156,7 @@ def test_load_dataset_returns_pardos_dataframe(monkeypatch, tmp_path):
 
 
 def test_load_dataset_explicit_file(monkeypatch, tmp_path):
-    ruta = _crear_zip(
+    ruta = _crear_dataset(
         tmp_path,
         {"train.csv": "a\n1\n", "test.csv": "a\n2\n", "README.md": "hola"},
     )
@@ -140,7 +166,7 @@ def test_load_dataset_explicit_file(monkeypatch, tmp_path):
 
 
 def test_load_dataset_auto_selects_single_csv(monkeypatch, tmp_path):
-    ruta = _crear_zip(tmp_path, {"datos.csv": "x\n7\n", "notas.txt": "texto"})
+    ruta = _crear_dataset(tmp_path, {"datos.csv": "x\n7\n", "notas.txt": "texto"})
     _descarga_simulada(monkeypatch, ruta)
     df = kaggle.load_dataset("demo")
     assert df.columns == ["x"]
@@ -148,35 +174,37 @@ def test_load_dataset_auto_selects_single_csv(monkeypatch, tmp_path):
 
 
 def test_load_dataset_missing_file_lists_candidates(monkeypatch, tmp_path):
-    ruta = _crear_zip(tmp_path, {"train.csv": "a\n1\n", "test.csv": "a\n2\n"})
+    ruta = _crear_dataset(tmp_path, {"train.csv": "a\n1\n", "test.csv": "a\n2\n"})
     _descarga_simulada(monkeypatch, ruta)
     with pytest.raises(Exception, match="No se encontró 'nope.csv'"):
         kaggle.load_dataset("demo", "nope.csv")
 
 
 def test_load_dataset_multiple_csvs_error(monkeypatch, tmp_path):
-    ruta = _crear_zip(tmp_path, {"train.csv": "a\n1\n", "test.csv": "a\n2\n"})
+    ruta = _crear_dataset(tmp_path, {"train.csv": "a\n1\n", "test.csv": "a\n2\n"})
     _descarga_simulada(monkeypatch, ruta)
     with pytest.raises(Exception, match="varios archivos CSV"):
         kaggle.load_dataset("demo")
 
 
 def test_load_dataset_rejects_non_csv_file(monkeypatch, tmp_path):
-    ruta = _crear_zip(tmp_path, {"datos.csv": "x\n1\n", "notas.txt": "texto"})
+    ruta = _crear_dataset(tmp_path, {"datos.csv": "x\n1\n", "notas.txt": "texto"})
     _descarga_simulada(monkeypatch, ruta)
     with pytest.raises(Exception, match="no es un archivo CSV"):
         kaggle.load_dataset("demo", "notas.txt")
 
 
 def test_load_dataset_nested_file_by_name(monkeypatch, tmp_path):
-    ruta = _crear_zip(tmp_path, {"data/train.csv": "y\n0\n", "data/test.csv": "y\n1\n"})
+    ruta = _crear_dataset(
+        tmp_path, {"data/train.csv": "y\n0\n", "data/test.csv": "y\n1\n"}
+    )
     _descarga_simulada(monkeypatch, ruta)
     df = kaggle.load_dataset("demo", "train")
     assert df.data == [[0]]
 
 
 def test_load_dataset_handles_utf8_bom(monkeypatch, tmp_path):
-    ruta = _crear_zip(tmp_path, {"datos.csv": "\ufeffx,y\n1,2\n"})
+    ruta = _crear_dataset(tmp_path, {"datos.csv": "\ufeffx,y\n1,2\n"})
     _descarga_simulada(monkeypatch, ruta)
     df = kaggle.load_dataset("demo")
     assert df.columns == ["x", "y"]
@@ -193,7 +221,7 @@ def test_load_dataset_rejects_empty_name(monkeypatch):
 
 
 def test_load_dataset_split_selector_and_precedence(monkeypatch, tmp_path):
-    ruta = _crear_zip(tmp_path, {"train.csv": "y\n0\n", "test.csv": "y\n1\n"})
+    ruta = _crear_dataset(tmp_path, {"train.csv": "y\n0\n", "test.csv": "y\n1\n"})
     _descarga_simulada(monkeypatch, ruta)
     por_split = kaggle.load_dataset_split("demo", "", "test")
     assert por_split.data == [[1]]
@@ -222,81 +250,183 @@ def test_extract_table_plain_csv(tmp_path):
     assert filas == [["1", "2"]]
 
 
-def test_download_dataset_uses_api_and_quiets_output(monkeypatch, tmp_path, capsys):
-    monkeypatch.setattr(kaggle, "_check_credentials", lambda: None)
-    monkeypatch.setattr(kaggle, "KaggleApi", FakeApi)
-    FakeApi.autenticado = False
-    destino = tmp_path / "descarga"
-    destino.mkdir()
-    ruta = kaggle._download_dataset("propietario/conjunto", str(destino))
-    assert ruta == str(destino / "conjunto.zip")
-    assert FakeApi.autenticado is True
+def test_extract_table_walks_subdirectories(tmp_path):
+    ruta = _crear_dataset(
+        tmp_path,
+        {
+            "data/train.csv": "y\n0\n",
+            "data/test.csv": "y\n1\n",
+            "README.md": "hola",
+        },
+    )
+    columnas, filas = kaggle._extract_table(ruta, "data/train.csv", "", "demo")
+    assert columnas == ["y"]
+    assert filas == [["0"]]
+
+
+def test_extract_table_skips_macosx_and_dotfiles(tmp_path):
+    ruta = _crear_dataset(
+        tmp_path,
+        {
+            "Iris.csv": "x\n1\n",
+            "__MACOSX/._Iris.csv": "junk",
+            "._Iris.csv": "junk",
+            ".oculto/secret.csv": "z\n9\n",
+        },
+    )
+    columnas, filas = kaggle._extract_table(ruta, "", "", "demo")
+    assert columnas == ["x"]
+    assert filas == [["1"]]
+
+
+def test_extract_table_empty_directory(tmp_path):
+    ruta = tmp_path / "vacio"
+    ruta.mkdir()
+    with pytest.raises(Exception, match="no contiene archivos"):
+        kaggle._extract_table(str(ruta), "", "", "demo")
+
+
+def test_download_dataset_uses_client_and_quiets_output(monkeypatch, tmp_path, capsys):
+    directorio = _crear_dataset(tmp_path, {"data.csv": "x\n1\n"})
+    cliente = KaggleHubFalso(directorio)
+    monkeypatch.setattr(kaggle, "kagglehub", cliente)
+    ruta = kaggle._download_dataset("propietario/conjunto")
+    assert ruta == directorio
+    assert cliente.handle == "propietario/conjunto"
     assert capsys.readouterr().out == ""
 
 
-def test_download_dataset_wraps_api_error(monkeypatch, tmp_path):
-    class ApiRota:
-        def authenticate(self):
-            raise RuntimeError("401 Unauthorized")
-
-    monkeypatch.setattr(kaggle, "_check_credentials", lambda: None)
-    monkeypatch.setattr(kaggle, "KaggleApi", ApiRota)
-    destino = tmp_path / "descarga"
-    destino.mkdir()
-    with pytest.raises(Exception, match="Error descargando dataset 'propietario/conjunto'"):
-        kaggle._download_dataset("propietario/conjunto", str(destino))
+def test_download_dataset_wraps_client_error(monkeypatch, tmp_path):
+    _sin_credenciales(monkeypatch, tmp_path)
+    monkeypatch.setattr(kaggle, "kagglehub", KaggleHubRoto())
+    with pytest.raises(
+        Exception, match="Error descargando dataset 'propietario/conjunto'"
+    ):
+        kaggle._download_dataset("propietario/conjunto")
 
 
-def test_require_kaggle_already_available(monkeypatch):
-    falso = SubprocessFalso(error=AssertionError("no debe instalar"))
-    monkeypatch.setattr(kaggle, "subprocess", falso)
-    kaggle._require_kaggle()
-    assert falso.llamadas == []
-
-
-def test_require_kaggle_install_failure(monkeypatch):
-    falso = SubprocessFalso(error=RuntimeError("sin conexión"))
-    monkeypatch.setattr(kaggle, "subprocess", falso)
-    monkeypatch.setattr(kaggle, "_KAGGLE_AVAILABLE", False)
+def test_download_dataset_hint_when_no_credentials(monkeypatch, tmp_path):
+    _sin_credenciales(monkeypatch, tmp_path)
+    monkeypatch.setattr(kaggle, "kagglehub", KaggleHubRoto())
     with pytest.raises(Exception) as exc:
-        kaggle._require_kaggle()
-    assert str(exc.value).startswith("kaggle:")
-    assert "pip install kaggle" in str(exc.value)
-    assert falso.llamadas[0]["args"] == [
-        sys.executable,
-        "-m",
-        "pip",
-        "install",
-        "kaggle",
-    ]
-    assert falso.llamadas[0]["timeout"] == 120
-
-
-def test_check_credentials_missing_raises(monkeypatch, tmp_path):
-    monkeypatch.delenv("KAGGLE_USERNAME", raising=False)
-    monkeypatch.delenv("KAGGLE_KEY", raising=False)
-    monkeypatch.setenv("KAGGLE_CONFIG_DIR", str(tmp_path / "sin_config"))
-    with pytest.raises(Exception, match="no se encontraron credenciales") as exc:
-        kaggle._check_credentials()
+        kaggle._download_dataset("propietario/conjunto")
     mensaje = str(exc.value)
-    assert mensaje.startswith("kaggle:")
+    assert "Si el dataset es privado" in mensaje
     assert "kaggle.json" in mensaje
     assert "KAGGLE_USERNAME" in mensaje
     assert "KAGGLE_KEY" in mensaje
 
 
-def test_check_credentials_accepts_env_vars(monkeypatch, tmp_path):
-    monkeypatch.setenv("KAGGLE_USERNAME", "estudiante")
-    monkeypatch.setenv("KAGGLE_KEY", "clave_de_ejemplo")
-    monkeypatch.setenv("KAGGLE_CONFIG_DIR", str(tmp_path / "sin_config"))
-    kaggle._check_credentials()
-
-
-def test_check_credentials_accepts_config_file(monkeypatch, tmp_path):
+def test_download_dataset_no_hint_when_credentials(monkeypatch, tmp_path):
     config = tmp_path / "config"
     config.mkdir()
     (config / "kaggle.json").write_text("{}", encoding="utf-8")
     monkeypatch.delenv("KAGGLE_USERNAME", raising=False)
     monkeypatch.delenv("KAGGLE_KEY", raising=False)
     monkeypatch.setenv("KAGGLE_CONFIG_DIR", str(config))
-    kaggle._check_credentials()
+    monkeypatch.setattr(kaggle, "kagglehub", KaggleHubRoto())
+    with pytest.raises(Exception) as exc:
+        kaggle._download_dataset("propietario/conjunto")
+    assert "Si el dataset es privado" not in str(exc.value)
+
+
+def test_download_dataset_no_filtra_logs_del_cliente(monkeypatch, tmp_path, capsys):
+    directorio = _crear_dataset(tmp_path, {"data.csv": "x\n1\n"})
+    salida_original = io.StringIO()
+    handler = logging.StreamHandler(salida_original)
+    raiz = logging.getLogger("kagglehub")
+    nivel_anterior = raiz.level
+    raiz.addHandler(handler)
+    raiz.setLevel(logging.INFO)
+
+    class HubConLogs:
+        def dataset_download(self, dataset):
+            logging.getLogger("kagglehub.clients").info("Downloading to fake...")
+            print("fake stdout")
+            return directorio
+
+    monkeypatch.setattr(kaggle, "kagglehub", HubConLogs())
+    try:
+        ruta = kaggle._download_dataset("dueno/conjunto")
+    finally:
+        raiz.removeHandler(handler)
+        raiz.setLevel(nivel_anterior)
+    assert ruta == directorio
+    assert handler.stream is salida_original
+    assert salida_original.getvalue() == ""
+    assert capsys.readouterr().out == ""
+
+
+def test_tiene_credenciales_true_with_config_file(monkeypatch, tmp_path):
+    config = tmp_path / "config"
+    config.mkdir()
+    (config / "kaggle.json").write_text("{}", encoding="utf-8")
+    monkeypatch.delenv("KAGGLE_USERNAME", raising=False)
+    monkeypatch.delenv("KAGGLE_KEY", raising=False)
+    monkeypatch.setenv("KAGGLE_CONFIG_DIR", str(config))
+    assert kaggle._tiene_credenciales() is True
+
+
+def test_tiene_credenciales_true_with_env_vars(monkeypatch, tmp_path):
+    monkeypatch.setenv("KAGGLE_USERNAME", "estudiante")
+    monkeypatch.setenv("KAGGLE_KEY", "clave_de_ejemplo")
+    monkeypatch.setenv("KAGGLE_CONFIG_DIR", str(tmp_path / "sin_config"))
+    assert kaggle._tiene_credenciales() is True
+
+
+def test_tiene_credenciales_false_with_neither(monkeypatch, tmp_path):
+    _sin_credenciales(monkeypatch, tmp_path)
+    assert kaggle._tiene_credenciales() is False
+
+
+def test_tiene_credenciales_false_with_only_one_env_var(monkeypatch, tmp_path):
+    monkeypatch.setenv("KAGGLE_USERNAME", "estudiante")
+    monkeypatch.delenv("KAGGLE_KEY", raising=False)
+    monkeypatch.setenv("KAGGLE_CONFIG_DIR", str(tmp_path / "sin_config"))
+    assert kaggle._tiene_credenciales() is False
+
+
+def test_require_kagglehub_already_available(monkeypatch):
+    falso = SubprocessFalso(error=AssertionError("no debe instalar"))
+    monkeypatch.setattr(kaggle, "subprocess", falso)
+    kaggle._require_kagglehub()
+    assert falso.llamadas == []
+
+
+def test_require_kagglehub_install_success(monkeypatch):
+    falso_subprocess = SubprocessFalso()
+    cliente = object()
+    falso_import = ImportlibFalso(cliente)
+    monkeypatch.setattr(kaggle, "subprocess", falso_subprocess)
+    monkeypatch.setattr(kaggle, "importlib", falso_import)
+    monkeypatch.setattr(kaggle, "_KAGGLEHUB_AVAILABLE", False)
+    kaggle._require_kagglehub()
+    assert kaggle._KAGGLEHUB_AVAILABLE is True
+    assert kaggle.kagglehub is cliente
+    assert falso_import.nombres == ["kagglehub"]
+    assert falso_subprocess.llamadas[0]["args"] == [
+        sys.executable,
+        "-m",
+        "pip",
+        "install",
+        "kagglehub",
+    ]
+    assert falso_subprocess.llamadas[0]["timeout"] == 120
+
+
+def test_require_kagglehub_install_failure(monkeypatch):
+    falso = SubprocessFalso(error=RuntimeError("sin conexión"))
+    monkeypatch.setattr(kaggle, "subprocess", falso)
+    monkeypatch.setattr(kaggle, "_KAGGLEHUB_AVAILABLE", False)
+    with pytest.raises(Exception) as exc:
+        kaggle._require_kagglehub()
+    assert str(exc.value).startswith("kaggle:")
+    assert "no se pudo instalar" in str(exc.value)
+    assert "pip install kagglehub" in str(exc.value)
+    assert falso.llamadas[0]["args"] == [
+        sys.executable,
+        "-m",
+        "pip",
+        "install",
+        "kagglehub",
+    ]

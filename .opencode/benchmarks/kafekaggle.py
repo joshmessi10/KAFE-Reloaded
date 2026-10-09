@@ -1,18 +1,17 @@
-"""Benchmark reproducible de KafeKAGGLE (parseo CSV/ZIP sin red).
+"""Benchmark reproducible de KafeKAGGLE (parseo CSV sin red).
 
-El paso de descarga se sustituye por una copia local de un archivo
+El paso de descarga se sustituye por un archivo o directorio local
 preparado, de modo que el benchmark mide la parte determinista de la
-librería: selección de archivo, parseo CSV y construcción de PARDOS/matriz.
+librería: selección de archivo (directorio con subdirectorios), parseo CSV
+y construcción de PARDOS/matriz.
 """
 import csv
-import io
 import os
 import statistics
 import sys
 import tempfile
 import time
 import tracemalloc
-import zipfile
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parents[2] / "src"))
@@ -42,22 +41,9 @@ def write_csv(path, rows, cols, seed=1):
             ])
 
 
-def write_zip(path, csv_name, rows, cols):
-    buffer = io.StringIO()
-    writer = csv.writer(buffer)
-    writer.writerow([f"c{i}" for i in range(cols)])
-    for r in range(rows):
-        writer.writerow([round(((r * (i + 1)) % 89) / 5.0 + i, 4) for i in range(cols)])
-    with zipfile.ZipFile(path, "w", zipfile.ZIP_DEFLATED) as zf:
-        zf.writestr(csv_name, buffer.getvalue())
-
-
 def fake_download(source):
-    def _download(dataset_name, dest_dir):
-        target = os.path.join(dest_dir, os.path.basename(source))
-        with open(source, "rb") as src, open(target, "wb") as dst:
-            dst.write(src.read())
-        return target
+    def _download(dataset_name):
+        return source
     return _download
 
 
@@ -77,16 +63,17 @@ def main():
         medium = os.path.join(tmp, "medium.csv")
         large = os.path.join(tmp, "large.csv")
         empty = os.path.join(tmp, "empty.csv")
-        nested = os.path.join(tmp, "nested.zip")
+        nested = os.path.join(tmp, "nested_ds")
+        os.makedirs(os.path.join(nested, "data"))
 
         write_csv(small, 50, 4)
         write_csv(medium, 1000, 8)
         write_csv(large, 10000, 10)
         with open(empty, "w", encoding="utf-8") as handle:
             handle.write("a,b\n")
-        write_zip(nested, "data/train.csv", 500, 6)
+        write_csv(os.path.join(nested, "data", "train.csv"), 500, 6)
 
-        kg._KAGGLE_AVAILABLE = True
+        kg._KAGGLEHUB_AVAILABLE = True
 
         # Calentamiento: la primera llamada importa KafePARDOS de forma perezosa,
         # lo que inflaría el pico de memoria de S1.
@@ -103,7 +90,7 @@ def main():
             lambda: kg.load_dataset_matrix(
                 "local/large", ["c0", "c1", "c2"], "", 100
             ))
-        run("S5 zip: 500x6 selector data/train.csv (PARDOS)", nested,
+        run("S5 dir: 500x6 selector data/train.csv (PARDOS)", nested,
             lambda: kg.load_dataset("local/nested", "data/train.csv"))
         run("S6 edge: CSV vacío load_dataset", empty,
             lambda: kg.load_dataset("local/empty"))

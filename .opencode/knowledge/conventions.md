@@ -41,7 +41,7 @@ Repository-wide conventions agents must follow.
 ## Naming Conventions
 
 - Python: snake_case modules/functions; import `globals` as a module (`import globals`, never `from globals import ...`).
-- KAFE built-in library keys are lowercase in `self.libraries`: `numk`, `math`, `files`, `plot`, `geshaDeep`, `pardos`, `machine`.
+- KAFE built-in library keys are lowercase in `self.libraries`: `numk`, `math`, `files`, `plot`, `geshaDeep`, `pardos`, `machine`, `huggingface`, `kaggle`.
 - Test files: `tests/test_KafeXXX.py`. Fixtures: `<name>.kf`, `<name>.expec` (expected stdout), optional `<name>.in` (stdin), invalid `<name>.error.kf` + `<name>.error.expec`.
 - KAFE keywords/types are fixed by the grammar (see `.opencode/knowledge/language-spec.md`).
 

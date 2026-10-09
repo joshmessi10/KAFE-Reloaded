@@ -9,10 +9,8 @@ Esta librería permite a los usuarios de KAFE acceder a datasets de Kaggle
 directamente desde sus programas, de forma similar a:
 
     Python:
-        from kaggle import KaggleApi
-        api = KaggleApi()
-        api.authenticate()
-        api.dataset_download_files("uciml/iris", path=".")
+        import kagglehub
+        ruta = kagglehub.dataset_download("uciml/iris")
 
     KAFE:
         import kaggle;
@@ -22,67 +20,71 @@ Diferencias con Hugging Face (KafeHF):
     - Kaggle no organiza los datos en splits (train/test/validation); cada
       dataset trae archivos. Por eso el parámetro `split` actúa como un
       selector de archivo con forma de split: "train" busca train.csv.
-    - La API de Kaggle requiere credenciales: ~/.kaggle/kaggle.json o las
+    - Los datasets públicos se descargan sin ninguna credencial
+      (descarga anónima). Las credenciales son opcionales y solo se
+      necesitan para datasets privados: ~/.kaggle/kaggle.json o las
       variables de entorno KAGGLE_USERNAME y KAGGLE_KEY.
+    - Las descargas quedan cacheadas por kagglehub en ~/.cache/kagglehub,
+      por lo que un segundo acceso al mismo dataset es instantáneo.
 
 Los archivos se leen con la librería `csv` de la estándar (sin pandas) y se
 convierten a DataFrames de PARDOS o a matrices de números para NUMK/GESHA.
 
-Dependencia externa opcional: kaggle.
-    pip install kaggle
+Dependencia externa opcional: kagglehub.
+    pip install kagglehub
 """
 
 from global_utils import check_sig
 from TypeUtils import cadena_t, lista_cadenas_t, entero_t
 import csv
+import importlib
 import io
+import logging
 import os
 import subprocess
 import sys
-import tempfile
-import zipfile
-from contextlib import redirect_stdout
+from contextlib import contextmanager, redirect_stdout
 
 try:
-    from kaggle import KaggleApi
-    _KAGGLE_AVAILABLE = True
+    import kagglehub
+    _KAGGLEHUB_AVAILABLE = True
 except ImportError:
-    KaggleApi = None
-    _KAGGLE_AVAILABLE = False
+    kagglehub = None
+    _KAGGLEHUB_AVAILABLE = False
 
 
-def _require_kaggle():
-    """Instala ``kaggle`` bajo demanda cuando no está disponible."""
-    global KaggleApi, _KAGGLE_AVAILABLE
-    if _KAGGLE_AVAILABLE:
+def _require_kagglehub():
+    """Instala ``kagglehub`` bajo demanda cuando no está disponible."""
+    global kagglehub, _KAGGLEHUB_AVAILABLE
+    if _KAGGLEHUB_AVAILABLE:
         return
     try:
         subprocess.run(
-            [sys.executable, "-m", "pip", "install", "kaggle"],
+            [sys.executable, "-m", "pip", "install", "kagglehub"],
             check=True,
             timeout=120,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True,
         )
-        from kaggle import KaggleApi as imported_kaggle_api
-        KaggleApi = imported_kaggle_api
-        _KAGGLE_AVAILABLE = True
+        kagglehub = importlib.import_module("kagglehub")
+        _KAGGLEHUB_AVAILABLE = True
     except Exception as error:
         raise Exception(
-            "kaggle: no se pudo instalar automáticamente 'kaggle'. "
-            "Comprueba la conexión o ejecuta 'pip install kaggle'. "
+            "kaggle: no se pudo instalar automáticamente 'kagglehub'. "
+            "Comprueba la conexión o ejecuta 'pip install kagglehub'. "
             f"Detalle: {error}"
         ) from error
 
 
-def _check_credentials():
-    """Verifica que existan credenciales de Kaggle antes de usar la API.
+def _tiene_credenciales():
+    """Indica si hay credenciales de Kaggle disponibles (opcionales).
 
-    La librería `kaggle` autentica con ~/.kaggle/kaggle.json (o con
-    KAGGLE_CONFIG_DIR/kaggle.json) o con las variables de entorno
-    KAGGLE_USERNAME y KAGGLE_KEY. Sin credenciales la API falla con un
-    mensaje poco claro, así que se comprueba antes y en español.
+    Fuentes de credenciales: ~/.kaggle/kaggle.json (o
+    KAGGLE_CONFIG_DIR/kaggle.json) o las variables de entorno
+    KAGGLE_USERNAME y KAGGLE_KEY. Los datasets públicos se descargan
+    sin credenciales; las privadas las necesitan, por lo que esta
+    función solo se usa para enriquecer los mensajes de error.
     """
     config_dir = os.environ.get("KAGGLE_CONFIG_DIR") or os.path.join(
         os.path.expanduser("~"), ".kaggle"
@@ -92,13 +94,7 @@ def _check_credentials():
     tiene_variables = bool(os.environ.get("KAGGLE_USERNAME")) and bool(
         os.environ.get("KAGGLE_KEY")
     )
-    if not tiene_archivo and not tiene_variables:
-        raise Exception(
-            "kaggle: no se encontraron credenciales de Kaggle. "
-            "Descarga tu archivo kaggle.json desde https://www.kaggle.com/settings "
-            "y colócalo en ~/.kaggle/kaggle.json, o define las variables de entorno "
-            "KAGGLE_USERNAME y KAGGLE_KEY con tu usuario y tu clave de API."
-        )
+    return tiene_archivo or tiene_variables
 
 
 def _validate_dataset_name(dataset_name):
@@ -110,38 +106,56 @@ def _validate_dataset_name(dataset_name):
         )
 
 
-def _download_dataset(dataset_name, dest_dir):
-    """Descarga el ZIP completo de un dataset a ``dest_dir`` y retorna su ruta.
+@contextmanager
+def _silenciar_logs_kagglehub():
+    """Redirige temporalmente los logs del logger "kagglehub" a un buffer.
 
-    Único punto de contacto con la API de Kaggle: valida credenciales,
-    autentica y descarga. Las pruebas unitarias reemplazan esta función
-    para no tocar red ni credenciales.
+    kagglehub no imprime sus mensajes de progreso ("Downloading to…",
+    "Extracting files…") con print: usa logging y su handler de stdout
+    captura el objeto sys.stdout al importar, por lo que un
+    redirect_stdout no los intercepta. Este gestor reubica el stream de
+    cada handler del logger "kagglehub" (los loggers hijos propagan hacia
+    él) en un buffer descartable y restaura los streams originales al
+    salir, incluso si la descarga lanza una excepción. El progreso de
+    tqdm va a stderr y no se toca.
     """
-    _check_credentials()
+    captura = io.StringIO()
+    raiz = logging.getLogger("kagglehub")
+    originales = [(handler, handler.stream) for handler in raiz.handlers]
+    for handler, _stream in originales:
+        handler.setStream(captura)
     try:
-        api = KaggleApi()
-        api.authenticate()
-        # La API imprime mensajes informativos (URL del dataset, licencias)
-        # que no deben mezclarse con la salida del programa KAFE.
-        with redirect_stdout(io.StringIO()):
-            api.dataset_download_files(dataset_name, path=dest_dir, unzip=False)
-    except Exception as error:
-        raise Exception(
-            f"kaggle: Error descargando dataset '{dataset_name}': {error}"
-        ) from error
+        yield
+    finally:
+        for handler, stream in originales:
+            handler.setStream(stream)
 
-    zips = sorted(
-        os.path.join(dest_dir, nombre)
-        for nombre in os.listdir(dest_dir)
-        if nombre.lower().endswith(".zip")
-    )
-    if len(zips) == 1:
-        return zips[0]
-    archivos = sorted(os.listdir(dest_dir))
-    raise Exception(
-        f"kaggle: La descarga de '{dataset_name}' no produjo un único archivo ZIP. "
-        f"Archivos obtenidos: {archivos}"
-    )
+
+def _download_dataset(dataset_name):
+    """Descarga un dataset con kagglehub y retorna el directorio extraído.
+
+    Único punto de contacto con Kaggle: kagglehub descarga (sin
+    credenciales si el dataset es público), extrae y cachea el dataset en
+    ~/.cache/kagglehub, y retorna el directorio ya extraído. La salida
+    del cliente (print y logs de progreso) se silencia para no contaminar
+    la salida del programa KAFE. Las pruebas unitarias y los benchmarks
+    reemplazan esta función para no tocar red.
+    """
+    try:
+        with redirect_stdout(io.StringIO()), _silenciar_logs_kagglehub():
+            return kagglehub.dataset_download(dataset_name)
+    except Exception as error:
+        mensaje = (
+            f"kaggle: Error descargando dataset '{dataset_name}': {error}."
+        )
+        if not _tiene_credenciales():
+            mensaje += (
+                " Si el dataset es privado, configura credenciales: "
+                "~/.kaggle/kaggle.json o las variables de entorno "
+                "KAGGLE_USERNAME y KAGGLE_KEY (los datasets públicos no "
+                "las necesitan)."
+            )
+        raise Exception(mensaje) from error
 
 
 def _resolve_file(members, selector):
@@ -231,36 +245,37 @@ def _parse_csv(handle):
     return columnas, datos
 
 
-def _extract_table(archivo, file_name, split, dataset_name):
-    """Extrae (columnas, filas) del archivo descargado (ZIP o CSV suelto)."""
-    if archivo.lower().endswith(".zip"):
-        try:
-            with zipfile.ZipFile(archivo) as zfu:
-                miembros = [
-                    nombre
-                    for nombre in zfu.namelist()
-                    if not nombre.endswith("/")
-                    and "__MACOSX" not in nombre
-                    and not os.path.basename(nombre).startswith(".")
-                ]
-                if not miembros:
-                    raise Exception(
-                        f"kaggle: El archivo ZIP de '{dataset_name}' está vacío."
-                    )
-                elegido = _select_file(miembros, file_name, split)
-                with zfu.open(elegido) as contenido:
-                    flujo = io.TextIOWrapper(
-                        contenido, encoding="utf-8-sig", newline=""
-                    )
-                    return _parse_csv(flujo)
-        except zipfile.BadZipFile as error:
+def _extract_table(ruta, file_name, split, dataset_name):
+    """Extrae (columnas, filas) de un directorio descargado o un CSV suelto.
+
+    kagglehub siempre retorna un directorio extraído; se recorre en
+    profundidad recolectando rutas relativas con separador '/', ignorando
+    metadatos de macOS (__MACOSX) y archivos u ocultos (cualquier
+    componente de la ruta que empiece con '.').
+    """
+    if os.path.isdir(ruta):
+        miembros = []
+        for directorio, _subdirs, archivos in os.walk(ruta):
+            for nombre in archivos:
+                absoluto = os.path.join(directorio, nombre)
+                relativo = os.path.relpath(absoluto, ruta)
+                if "__MACOSX" in relativo:
+                    continue
+                if any(parte.startswith(".") for parte in relativo.split(os.sep)):
+                    continue
+                miembros.append(relativo.replace(os.sep, "/"))
+        if not miembros:
             raise Exception(
-                f"kaggle: El archivo descargado de '{dataset_name}' no es un ZIP "
-                f"válido: {error}"
-            ) from error
-    nombre = os.path.basename(archivo)
+                f"kaggle: El dataset '{dataset_name}' no contiene archivos."
+            )
+        miembros = sorted(miembros)
+        elegido = _select_file(miembros, file_name, split)
+        destino = os.path.join(ruta, *elegido.split("/"))
+        with open(destino, encoding="utf-8-sig", newline="") as flujo:
+            return _parse_csv(flujo)
+    nombre = os.path.basename(ruta)
     _select_file([nombre], file_name, split)
-    with open(archivo, encoding="utf-8-sig", newline="") as flujo:
+    with open(ruta, encoding="utf-8-sig", newline="") as flujo:
         return _parse_csv(flujo)
 
 
@@ -270,10 +285,9 @@ def _load_table(dataset_name, file_name, split):
     dataset_name = dataset_name.strip()
     file_name = file_name.strip()
     split = split.strip()
-    _require_kaggle()
-    with tempfile.TemporaryDirectory(prefix="kafe_kaggle_") as destino:
-        archivo = _download_dataset(dataset_name, destino)
-        return _extract_table(archivo, file_name, split, dataset_name)
+    _require_kagglehub()
+    ruta = _download_dataset(dataset_name)
+    return _extract_table(ruta, file_name, split, dataset_name)
 
 
 def _to_number(celda):
@@ -325,10 +339,10 @@ def load_dataset(dataset_name, file_name=""):
     Un dataset de Kaggle es un conjunto de archivos (normalmente CSV) que la
     comunidad comparte para practicar y competir en Machine Learning. A
     diferencia de Hugging Face, Kaggle no divide los datos en splits: los
-    archivos viven dentro de un ZIP descargable.
+    archivos viven dentro del dataset descargable.
 
     Internamente, la función:
-    1. Descarga el dataset completo a un directorio temporal (API de Kaggle).
+    1. Descarga el dataset con kagglehub (cacheado en ~/.cache/kagglehub).
     2. Selecciona el archivo CSV a leer (el indicado, o el único del dataset).
     3. Lee el CSV con la librería estándar `csv` (sin pandas).
     4. Convierte las columnas y filas al formato DataFrame de KafePARDOS.
@@ -349,9 +363,12 @@ def load_dataset(dataset_name, file_name=""):
         PARDOS df = kaggle.load_dataset("uciml/iris", "Iris.csv");
         show(df.head(5));
 
-    Nota: Requiere conexión a internet, la librería `kaggle` instalada y
-    credenciales configuradas (~/.kaggle/kaggle.json o KAGGLE_USERNAME y
-    KAGGLE_KEY). El dataset completo se carga en memoria.
+    Nota: Requiere conexión a internet y la librería `kagglehub` instalada
+    (se instala automáticamente bajo demanda). Los datasets públicos no
+    requieren ninguna credencial; para datasets privados, las credenciales
+    son opcionales (~/.kaggle/kaggle.json, KAGGLE_USERNAME y KAGGLE_KEY, o
+    los secretos de Colab). Las descargas quedan cacheadas por kagglehub y
+    el dataset completo se carga en memoria.
     """
     columnas, filas = _load_table(dataset_name, file_name, "")
     return _convert_to_pardos(columnas, filas)
@@ -393,8 +410,9 @@ def load_dataset_split(dataset_name, file_name, split=""):
         PARDOS test_df = kaggle.load_dataset_split("dueno/conjunto", "", "test");
         show(test_df.head(5));
 
-    Nota: Requiere conexión a internet, la librería `kaggle` instalada y
-    credenciales configuradas.
+    Nota: Requiere conexión a internet y la librería `kagglehub` instalada.
+    Los datasets públicos no requieren credenciales; las privadas las
+    necesitan de forma opcional (kaggle.json o variables de entorno).
     """
     columnas, filas = _load_table(dataset_name, file_name, split)
     return _convert_to_pardos(columnas, filas)
@@ -428,9 +446,9 @@ def load_dataset_matrix(dataset_name, columns=None, split="", limit=0):
         import kaggle;
         List[List[FLOAT]] X = kaggle.load_dataset_matrix("uciml/iris", ["SepalLengthCm", "PetalLengthCm"], "Iris", 10);
 
-    Nota: Requiere conexión a internet, la librería `kaggle` instalada y
-    credenciales configuradas. El dataset completo se descarga en cada
-    llamada a un directorio temporal.
+    Nota: Requiere conexión a internet y la librería `kagglehub` instalada.
+    Los datasets públicos no requieren credenciales y las descargas quedan
+    cacheadas por kagglehub; el dataset completo se carga en memoria.
     """
     columnas_disponibles, filas = _load_table(dataset_name, "", split)
 
