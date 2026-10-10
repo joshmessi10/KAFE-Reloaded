@@ -1,8 +1,0 @@
-import geshaDeep;
-GESHA conv = geshaDeep.create_conv2d(1, [2, 2], "linear", [1, 3, 3], 1, "valid", 4);
-List[List[List[FLOAT]]] image = [[[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0]]];
-conv.forward(image);
-List[List[List[FLOAT]]] dx = conv.backward([[[1.0, 1.0], [1.0, 1.0]]]);
-show(len(dx));
-show(len(dx[0]));
-show(len(dx[0][0]));

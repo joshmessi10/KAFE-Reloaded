@@ -7,10 +7,11 @@ Los datos son listas numéricas de NUMK. Este módulo no realiza aritmética.
 class Parameter:
     """Parámetro entrenable (pesos o sesgo). Almacena datos y gradientes."""
     
-    def __init__(self, data, name=None):
+    def __init__(self, data, name=None, regularizer=None):
         self.data = data
         self.grad = None
         self.name = name
+        self.regularizer = regularizer
 
     def __repr__(self):
         return f"Parameter(name={self.name})"

@@ -1233,6 +1233,19 @@ Mediana de 3 ejecuciones de forward+backward, medida con `perf_counter` y
 | SimpleRNN | T40, F8, U16 | 0.291254 s | 142.52 KiB |
 | SimpleRNN | T60, F16, U32 | 1.064947 s | 390.92 KiB |
 
+### 2026-10-10 — Capas CNN/RNN avanzadas
+
+Forward y backward, medidos con `perf_counter` mediante
+`.opencode/benchmarks/gesha_cnn_rnn_layers.py`.
+
+| Escenario | Tiempo |
+|---|---:|
+| Conv1D C4, L128, F8, K3 | 0.010978 s |
+| DepthwiseConv2D C8, 32x32, K3 | 0.227299 s |
+| Conv2DTranspose C4, 16x16, F8 | 0.031977 s |
+| LSTM T40, F8, U16 | 0.095240 s |
+| GRU T40, F8, U16 | 0.059625 s |
+
 ### 2026-10-08 — KafeKAGGLE (ingesta de datasets de Kaggle)
 
 Mediana de 3 ejecuciones con `perf_counter` y `tracemalloc`; script
@@ -1271,3 +1284,6 @@ Lecturas:
 - Knowledge: `.opencode/knowledge/concepts/kaggle-dataset-ingestion.md`
 - Implementation: `src/lib/KafeKaggle/funciones.py`
 - ADR: ADR-0013 (cliente kagglehub)
+### 2026-10-10 — Inicializadores y regularizadores GESHA
+
+Medición con `.opencode/benchmarks/gesha_training_utilities.py` (una ejecución, semilla 7): small 10x3 0.011122 s; medium 300x8 0.001210 s; edge 1x1 0.000046 s; multi-feature 64x32 0.000992 s; stress 1000x128 0.061408 s. Incluye creación HeNormal y penalización L1L2; también se verificaron GlorotUniform y Orthogonal.

@@ -1,7 +1,0 @@
-import geshaDeep;
-GESHA conv = geshaDeep.create_conv2d(1, [1, 1], "linear", [1, 2, 2], 1, "valid", 1);
-GESHA rnn = geshaDeep.create_rnn(1, "tanh", [2, 1], False, 1);
-List[List[List[FLOAT]]] image = conv.forward([[[1.0, 2.0], [3.0, 4.0]]]);
-List[FLOAT] state = rnn.forward([[1.0], [2.0]]);
-show(len(image));
-show(len(state));

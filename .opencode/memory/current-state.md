@@ -15,7 +15,7 @@ KafeMACHINE architectural review completed (2026-09-14):
 - All 262 tests passing (Algorithms + KafeMACHINE + KafeGESHA)
 
 KafeGESHA restored after the "Clean Gesha Architecture" refactor (2026-09-24, ADR-0008):
-- Flat structure: `funciones.py`, `core.py`, `layers.py`, `models.py`, `activations.py`, `losses.py`, `optimizers.py`
+- Estructura modular: `layers/`, `activations/`, `losses/`, `optimizers/`, `initializers/`, `regularizers/`, `callbacks/`, más `core.py`, `models.py` y `funciones.py`.
 - Root cause of `TypeError: Expected GESHA, obtained FUNC` fixed: `TypeUtils.obtener_tipo_dato()` now checks GESHA **before** `callable` (so `Layer.__call__ = connect` no longer shadows the type; plain callables remain `FUNC`)
 - Public contract restored: `predict` (single sample vs batch), `predict_proba`, `predict_label` (INT / List[INT]), `fit` format `Epoch N/M — Loss X.XX%`
 - Gate fixtures deterministic (seed 42); `.expec` regenerated from real stdout — `or_gate.expec` bit-identical to the pre-refactor contract
@@ -43,3 +43,6 @@ KafeHF / KafeKaggle dataset ingestion — ✔ Complete (2026-10-08).
 ## Current Blockers
 
 None identified. Note: run the suite as `pytest tests/` — a bare `pytest` at the repo root aborts collection on legacy UTF-16 files (`test_output.txt`, `test_results.txt`).
+## Actualización 2026-10-10 — entrenamiento GESHA
+
+GESHA dispone de inicializadores, regularizadores L1/L2/L1L2, EarlyStopping y ModelCheckpoint. Dense y Conv2D aceptan los nuevos objetos de forma opcional y mantienen sus valores iniciales históricos por compatibilidad. NUMK incluye generación normal N-dimensional.

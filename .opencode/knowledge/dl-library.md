@@ -6,13 +6,15 @@ retira expresamente el wrapper Tensor y centraliza operaciones ND en NUMK.
 ## Estructura y contratos
 
 - `core.py`: Parameter, Node, InputNode; estado, sin aritmética.
-- `layers.py`: Layer, Dense, Conv2D, SimpleRNN, Input, Dropout, Flatten, Add,
-  ActivationLayer.
-- `activations.py`: ActivationFunction/Activation con forward/backward y
+- `layers/`: carpetas `base`, `core`, `convolutional`, `pooling`,
+  `normalization`, `spatial`, `merge`, `regularization` y `recurrent`; cada
+  capa concreta está en su propio archivo y los `__init__.py` solo agrupan
+  exports.
+- `activations/`: ActivationFunction/Activation con forward/backward y
   activate/derivative históricos. Caché completa por instancia.
-- `losses.py`: LossFunction/Loss; forward(predicho, real), backward() y
+- `losses/`: LossFunction/Loss; forward(predicho, real), backward() y
   compute/derivative(real, predicho) compatibles.
-- `optimizers.py`: Optimizer.step(parameters), update(layers); SGD, Adam,
+- `optimizers/`: Optimizer.step(parameters), update(layers); SGD, Adam,
   RMSprop, AdamW. NUMK recorre parámetros; GESHA define las fórmulas escalares.
 - `models.py`: Model (exportado como Gesha), Sequential y Functional.
 - `funciones.py`: fábricas públicas y delegación de tensor_* a NUMK.
@@ -64,5 +66,14 @@ Conv2D recibe CHW y delega convolución/gradientes a NUMK. SimpleRNN recibe
 `[timesteps, features]`, devuelve el último estado o la secuencia y usa BPTT.
 Fábricas públicas: `create_conv2d` y `create_rnn`.
 
+Las extensiones CNN/RNN viven en los subpaquetes categorizados de `layers/`: Conv1D,
+DepthwiseConv2D, Conv2DTranspose, cinco pooling, BatchNormalization,
+ZeroPadding2D, UpSampling2D, Reshape, Permute, Concatenate, Multiply,
+SpatialDropout2D, LSTM, GRU, Bidirectional y Embedding. Continúan usando el
+contrato `Layer` y parámetros compatibles con los optimizadores existentes.
+
 Nuevos componentes DL requieren impacto, ADR si aplica, tests, conceptos,
 documentación, historia y cinco mediciones reales.
+## Utilidades de entrenamiento GESHA
+
+GESHA incluye diez inicializadores (`Zeros` a `Orthogonal`), regularización L1/L2 combinable y callbacks `EarlyStopping`/`ModelCheckpoint`. Dense y Conv2D aceptan objetos de inicialización y regularización; las operaciones N-dimensionales permanecen en NUMK.

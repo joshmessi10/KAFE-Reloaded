@@ -4,6 +4,27 @@ GESHA define modelos, capas, activaciones, pérdidas y optimizadores. NUMK
 almacena los datos como listas y realiza el álgebra numérica. El tipo del
 lenguaje sigue siendo `GESHA`; el alias Python `Gesha` sigue apuntando a Model.
 
+## Organización de capas
+
+Las capas viven en `src/lib/KafeGESHA/layers/`, agrupadas por categoría:
+
+```text
+layers/
+├── base/             # Layer, Input
+├── core/             # Dense, ActivationLayer
+├── convolutional/    # Conv1D, Conv2D, DepthwiseConv2D, Conv2DTranspose
+├── pooling/          # Max/Average/Global pooling
+├── normalization/    # BatchNormalization
+├── spatial/          # Flatten, Padding, Upsampling, Reshape, Permute
+├── merge/            # Add, Concatenate, Multiply
+├── regularization/   # Dropout, SpatialDropout2D
+└── recurrent/        # SimpleRNN, LSTM, GRU, Bidirectional, Embedding
+```
+
+Cada capa concreta tiene un archivo propio dentro de su categoría. El
+`layers/__init__.py` reexporta todas las clases para preservar los imports
+existentes de GESHA.
+
 ## Ejemplo ejecutable
 
 ```kafe
@@ -45,9 +66,9 @@ Los nombres antiguos documentados `binary`, `categorical`, `regression`,
 | `core.py` | Parameter (datos y gradientes) y nodos del grafo; ninguna clase Tensor |
 | `funciones.py` | Fábricas y validación de argumentos del lenguaje |
 | `layers.py` | Transformación de las entradas y composición con activaciones |
-| `activations.py` | No linealidades, caché completa y derivadas locales |
-| `losses.py` | Pérdida escalar y gradiente respecto a predicciones |
-| `optimizers.py` | Actualización de parámetros y momentos de Adam/RMSprop |
+| `activations/` | Una activación por archivo, contrato base y registro de nombres |
+| `losses/` | Una pérdida por archivo y contrato escalar común |
+| `optimizers/` | Un optimizador por archivo: SGD, RMSprop, Adam y AdamW |
 | `models.py` | Orden de ejecución, entrenamiento y predicción |
 
 Las cuatro familias de componentes son Layer, ActivationFunction (alias
@@ -140,3 +161,52 @@ GESHA recurrent = geshaDeep.create_rnn(16, "tanh", [20, 4], False, 42);
 
 Su costo es `O(T*(F*U+U²))`. El ejemplo completo está en
 `docs/ejemplos/gesha-rnn.kf`.
+
+## Capas CNN adicionales
+
+Todas usan datos NUMK y heredan de `Layer`. Los formatos son `[C,L]` para 1D y
+`[C,H,W]` para 2D.
+
+| Fábrica KAFE | Función |
+|---|---|
+| `create_conv1d(filters, kernel, activation, shape, stride, padding, seed)` | Convolución de señales |
+| `create_depthwise_conv2d(kernel, multiplier, activation, shape, stride, padding, seed)` | Kernel independiente por canal |
+| `create_conv2d_transpose(filters, kernel, activation, shape, stride, padding, seed)` | Aumento aprendido de resolución |
+| `max_pooling1d(size, stride)` | Máximo temporal |
+| `max_pooling2d(size, stride)` | Máximo espacial |
+| `average_pooling2d(size, stride)` | Promedio espacial |
+| `global_average_pooling2d()` | Promedio completo por canal |
+| `global_max_pooling2d()` | Máximo completo por canal |
+| `batch_normalization(epsilon, momentum)` | Normalización por canal |
+| `zero_padding2d(padding)` | Bordes de ceros |
+| `up_sampling2d(size)` | Repetición espacial |
+| `reshape_layer(shape)` | Cambio de forma |
+| `permute_layer(dims)` | Permutación de ejes base 0 |
+| `concatenate_layer(axis)` | Concatenación de entradas Functional |
+| `multiply_layer()` | Producto elemento a elemento Functional |
+| `spatial_dropout2d(rate, seed)` | Desactivación de canales completos |
+
+`BatchNormalization` calcula estadísticas espaciales por canal porque el bucle
+educativo actual entrega una muestra a la capa en cada forward. Conserva medias
+móviles para inferencia.
+
+## Capas recurrentes adicionales
+
+| Fábrica KAFE | Función |
+|---|---|
+| `create_lstm(units, shape, return_sequences, seed)` | Memoria con compuertas input/forget/output |
+| `create_gru(units, shape, return_sequences, seed)` | Recurrencia gated compacta |
+| `bidirectional(layer)` | Ejecuta una RNN compatible en ambos sentidos |
+| `embedding(vocabulary_size, dimension, seed)` | Índices enteros a vectores entrenables |
+
+LSTM y GRU usan BPTT completo. `Bidirectional` acepta `SimpleRNN`, `LSTM` o
+`GRU` y concatena las salidas de ambas direcciones.
+# Inicializadores, regularizadores y callbacks
+
+`create_dense` acepta opcionalmente `kernel_initializer` y `kernel_regularizer` después de `seed`. Están disponibles `zeros_initializer`, `ones_initializer`, `random_uniform`, `random_normal`, `glorot_uniform`, `glorot_normal`, `he_uniform`, `he_normal`, `orthogonal` y `constant_initializer`.
+
+Las inicializaciones históricas de Dense y Conv2D siguen siendo el valor predeterminado para conservar resultados existentes. Para CNN con ReLU se recomienda pasar `he_normal`; para capas densas con `tanh`, `glorot_uniform`; y para matrices recurrentes, `orthogonal`.
+
+Los regularizadores son `l1_regularizer`, `l2_regularizer` y `l1_l2_regularizer`. Se asocian al peso y su penalización y gradiente se incorporan durante `fit`.
+
+Los callbacks `early_stopping` y `model_checkpoint` se agregan con `add_callback(modelo, callback)`. El checkpoint guarda pesos en JSON; `save_weights` y `load_weights` también están disponibles en el modelo. `fit` devuelve un historial con `loss` y `val_loss` sin cambiar su salida por consola.

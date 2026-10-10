@@ -561,3 +561,32 @@ reemplazan la elección del cliente y el gate de credenciales.
   extracción, caché y manejo de errores).
 - **Leer credenciales desde el programa KAFE**: descartado: expondría
   secretos en código educativo; las gestiona el cliente como en Colab.
+## ADR-0014 — Utilidades de entrenamiento como objetos GESHA (2026-10-10)
+
+**Status:** Accepted.
+
+**Context:** GESHA necesitaba inicialización dependiente del fan, penalizaciones reutilizables y control del ciclo de entrenamiento sin introducir Tensor ni dependencias externas.
+
+**Decision:** Implementar paquetes independientes `initializers`, `regularizers` y `callbacks`; reconocer sus objetos mediante el tipo existente `GESHA`; delegar creación N-dimensional a NUMK; asociar regularizadores a `Parameter`; ejecutar callbacks en `Model.fit`; persistir pesos como JSON.
+
+**Consequences:** La API previa continúa válida. Los checkpoints son portables y legibles, pero no incluyen arquitectura ni estado del optimizador.
+
+**Alternatives:** Cadenas solamente limitaban configuración; incorporar NumPy violaba la política de dependencias; crear un tipo nuevo ampliaba innecesariamente la gramática.
+## ADR-0015 — Activaciones y pérdidas como paquetes (2026-10-10)
+
+**Status:** Accepted.
+
+**Context:** Los módulos monolíticos de activaciones y pérdidas dificultaban localizar cada implementación; `advanced_layers.py` duplicaba exports ya presentes en `layers`.
+
+**Decision:** Usar un archivo por activación y pérdida, con contratos base y `__init__.py` compatibles. Exportar todas las capas únicamente desde `layers` y eliminar el adaptador avanzado.
+
+**Consequences:** La estructura refleja cada responsabilidad sin cambiar imports públicos. Añadir un componente ya no amplía un archivo central, salvo su export en `__init__.py` y el registro cuando corresponda.
+## ADR-0016 — Optimizadores como paquete (2026-10-10)
+
+**Status:** Accepted.
+
+**Context:** SGD, RMSprop, Adam y AdamW compartían un módulo creciente pese a tener estado y reglas de actualización independientes.
+
+**Decision:** Separar el contrato `Optimizer` y cada implementación en archivos propios bajo `optimizers/`, manteniendo los exports históricos en el paquete.
+
+**Consequences:** Cada algoritmo puede evolucionar aisladamente y los imports públicos permanecen estables. AdamW sigue reutilizando Adam antes de aplicar weight decay desacoplado.

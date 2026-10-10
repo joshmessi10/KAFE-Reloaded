@@ -1,5 +1,0 @@
-import geshaDeep;
-GESHA rnn = geshaDeep.create_rnn(3, "tanh", [4, 2], False, 8);
-List[List[FLOAT]] sequence = [[1.0, 0.0], [0.0, 1.0], [1.0, 1.0], [0.5, 0.5]];
-List[FLOAT] result = rnn.forward(sequence);
-show(len(result));

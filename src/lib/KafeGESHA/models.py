@@ -1,5 +1,7 @@
 """Modelos para KafeGESHA."""
 from abc import ABC, abstractmethod
+import json
+import os
 from lib.KafeGESHA.losses import MeanSquaredError, MeanAbsoluteError, BinaryCrossEntropy, CategoricalCrossEntropy, SparseCategoricalCrossEntropy
 from lib.KafeGESHA.optimizers import SGD, RMSprop, Adam, AdamW
 from lib.KafeNUMK import funciones as numk
@@ -25,6 +27,8 @@ class Model(ABC):
         self._loss = None
         self._metrics = []
         self._is_compiled = False
+        self.callbacks = []
+        self.stop_training = False
 
     def compile(self, optimizer="sgd", loss="mse", metrics=None):
         self._optimizer = _get_optimizer(optimizer) if isinstance(optimizer, str) else optimizer
@@ -35,6 +39,29 @@ class Model(ABC):
     def set_lr(self, new_lr):
         if self._optimizer and hasattr(self._optimizer, "lr"):
             self._optimizer.lr = new_lr
+
+    def add_callback(self, callback):
+        if not hasattr(callback, 'set_model'):
+            raise TypeError("add_callback requiere un Callback")
+        self.callbacks.append(callback)
+
+    def save_weights(self, filepath):
+        parameters = list(dict.fromkeys(self.parameters()))
+        if not parameters: raise RuntimeError("save_weights requiere un modelo construido")
+        directory = os.path.dirname(os.path.abspath(filepath))
+        os.makedirs(directory, exist_ok=True)
+        with open(filepath, 'w', encoding='utf-8') as stream:
+            json.dump([{'name': p.name, 'data': p.data} for p in parameters], stream)
+
+    def load_weights(self, filepath):
+        parameters = list(dict.fromkeys(self.parameters()))
+        if not parameters: raise RuntimeError("load_weights requiere un modelo construido")
+        with open(filepath, encoding='utf-8') as stream: stored = json.load(stream)
+        if len(stored) != len(parameters): raise ValueError("Pesos incompatibles con el modelo")
+        for parameter, record in zip(parameters, stored):
+            if numk.shape(parameter.data) != numk.shape(record['data']):
+                raise ValueError("Forma de pesos incompatible")
+            parameter.data = numk.tensor(record['data'])
 
     @abstractmethod
     def forward(self, x): pass
@@ -70,7 +97,7 @@ class Model(ABC):
                 labels.append(o.index(max(o)))
         return labels if isinstance(X[0], list) else labels[0]
 
-    def fit(self, X, Y, epochs=1, batch_size=1, val_data=None, regularization_lambda=0.0):
+    def fit(self, X, Y, epochs=1, batch_size=1, val_data=None, regularization_lambda=0.0, callbacks=None):
         if not self._is_compiled: raise RuntimeError("Modelo no compilado.")
         if not X or len(X) != len(Y):
             raise ValueError("fit requiere X e Y no vacios con igual numero de muestras")
@@ -79,7 +106,13 @@ class Model(ABC):
         if type(epochs) is not int or epochs < 0:
             raise ValueError("epochs debe ser entero no negativo")
         
+        active_callbacks = self.callbacks + list(callbacks or [])
+        self.stop_training = False
+        for callback in active_callbacks:
+            callback.set_model(self); callback.on_train_begin({})
+        history = {'loss': [], 'val_loss': []}
         for epoch in range(epochs):
+            for callback in active_callbacks: callback.on_epoch_begin(epoch, {})
             self._set_training(True)
             total_loss = 0.0
             for batch_start in range(0, len(X), batch_size):
@@ -98,6 +131,9 @@ class Model(ABC):
                     batch_parameters = list(dict.fromkeys(self.parameters()))
                     for parameter in batch_parameters:
                         if parameter.grad is not None:
+                            if parameter.regularizer is not None:
+                                parameter.grad = numk.broadcast_add(parameter.grad, parameter.regularizer.gradient(parameter.data))
+                                total_loss += parameter.regularizer.penalty(parameter.data)
                             accumulated[parameter] = (
                                 numk.tensor(parameter.grad) if parameter not in accumulated
                                 else numk.map_elements(lambda a, b: a + b,
@@ -109,6 +145,7 @@ class Model(ABC):
                 self._optimizer.step(batch_parameters)
             
             avg_loss = total_loss / len(X)
+            history['loss'].append(avg_loss)
             loss_pct = avg_loss * 100.0
             msg = f"Epoch {epoch+1}/{epochs} — Loss {loss_pct:.2f}%"
             
@@ -121,8 +158,15 @@ class Model(ABC):
                                for y, p in zip(val_y, val_preds)) / len(val_x)
                 self._set_training(True)
                 msg += f" - val_loss: {val_loss:.4f}"
+                history['val_loss'].append(val_loss)
                 
             print(msg)
+            logs = {'loss': avg_loss}
+            if val_data: logs['val_loss'] = val_loss
+            for callback in active_callbacks: callback.on_epoch_end(epoch, logs)
+            if self.stop_training: break
+        for callback in active_callbacks: callback.on_train_end(logs if epochs else {})
+        return history
 
 
 class Sequential(Model):

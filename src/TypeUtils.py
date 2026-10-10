@@ -30,11 +30,14 @@ def obtener_tipo_dato(dato):
     from lib.KafeGESHA.models import Model as Gesha
     from lib.KafeGESHA.layers import Layer, Input
     from lib.KafeGESHA.core import Node
+    from lib.KafeGESHA.initializers import Initializer
+    from lib.KafeGESHA.regularizers import Regularizer, L1L2
+    from lib.KafeGESHA.callbacks import Callback
     from lib.KafeMACHINE.BaseMachine import BaseMachine
 
     if type(dato) is list:
         return obtener_tipo_lista(dato)
-    elif isinstance(dato, (Gesha, Layer, Node, Input)):
+    elif isinstance(dato, (Gesha, Layer, Node, Input, Initializer, Regularizer, L1L2, Callback)):
         return nombre_tipos["gesha"]
     elif callable(dato):
         return nombre_tipos["func"]

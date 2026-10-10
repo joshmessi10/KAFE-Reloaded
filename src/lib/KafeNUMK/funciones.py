@@ -306,6 +306,76 @@ def conv2d_chw_backward(input_data, kernels, grad_output, stride=1, padding="val
     return dx, dw, db
 
 
+def transpose_axes(data, axes):
+    """Permuta ejes N-dimensionales sin introducir un wrapper Tensor."""
+    source_shape = shape(data)
+    if sorted(axes) != list(range(len(source_shape))):
+        raise ValueError("NUMK: axes debe ser una permutación")
+    output_shape = [source_shape[axis] for axis in axes]
+    output = zeros_nd(output_shape)
+
+    def get_value(indices):
+        value = data
+        for index in indices:
+            value = value[index]
+        return value
+
+    def set_value(indices, value):
+        target = output
+        for index in indices[:-1]:
+            target = target[index]
+        target[indices[-1]] = value
+
+    def visit(indices, depth):
+        if depth == len(output_shape):
+            source_indices = [0] * len(axes)
+            for output_axis, source_axis in enumerate(axes):
+                source_indices[source_axis] = indices[output_axis]
+            set_value(indices, get_value(source_indices))
+            return
+        for index in range(output_shape[depth]):
+            visit(indices + [index], depth + 1)
+
+    visit([], 0)
+    return output
+
+
+def concatenate(values, axis=0):
+    """Concatena listas ND con formas iguales excepto en ``axis``."""
+    if not values:
+        raise ValueError("NUMK: concatenate requiere entradas")
+    shapes = [shape(value) for value in values]
+    rank = len(shapes[0])
+    if axis < 0:
+        axis += rank
+    if not 0 <= axis < rank or any(len(item) != rank for item in shapes):
+        raise ValueError("NUMK: axis/rangos incompatibles")
+    for dimension in range(rank):
+        if dimension != axis and len({item[dimension] for item in shapes}) != 1:
+            raise ValueError("NUMK: formas incompatibles para concatenate")
+    if axis == 0:
+        result = []
+        for value in values:
+            result.extend(tensor(value))
+        return result
+    return [concatenate([value[index] for value in values], axis - 1)
+            for index in range(shapes[0][0])]
+
+
+def split_sizes(data, sizes, axis=0):
+    """Operación inversa de concatenate para tamaños explícitos."""
+    if axis < 0:
+        axis += len(shape(data))
+    if axis == 0:
+        result, start = [], 0
+        for size in sizes:
+            result.append(tensor(data[start:start + size]))
+            start += size
+        return result
+    child_splits = [split_sizes(child, sizes, axis - 1) for child in data]
+    return [[child[index] for child in child_splits] for index in range(len(sizes))]
+
+
 # ============================================================
 # N-D EXTENSIONS — Axis reduction
 # ============================================================
@@ -395,6 +465,21 @@ def random_tensor(shape, low=-0.5, high=0.5, seed=None):
         if len(shape) == 1:
             return [rng.uniform(low, high) for _ in range(shape[0])]
         return [_rand(shape[1:]) for _ in range(shape[0])]
+    return _rand(list(shape))
+
+
+@check_sig([1, 2, 3, 4], vector_numeros_t, [flotante_t, entero_t],
+           [flotante_t, entero_t], [entero_t, "VOID"])
+def normal_tensor(shape, mean=0.0, stddev=1.0, seed=None):
+    """Crea un tensor N-dimensional con muestras gaussianas."""
+    _validate_dimensions(shape)
+    if stddev < 0:
+        raise ValueError("normal_tensor: stddev debe ser no negativo")
+    rng = _random_module if seed is None else _random_module.Random(seed)
+    def _rand(dims):
+        if not dims:
+            return rng.gauss(mean, stddev)
+        return [_rand(dims[1:]) for _ in range(dims[0])]
     return _rand(list(shape))
 
 
