@@ -1,6 +1,7 @@
 import subprocess
 import sys
 import os
+import re
 import pytest
 from utils import (
     obtener_parametros,
@@ -14,6 +15,11 @@ from utils import (
 
 
 _VALID_PARAMS = list(obtener_parametros(get_programs("../tests/KafeGESHA")))
+
+
+def _sin_metricas_de_progreso(output):
+    """Conserva fixtures previas cuando se añaden métricas por época."""
+    return re.sub(r" — Accuracy \d+\.\d{2}%", "", output)
 
 
 @pytest.mark.parametrize(
@@ -59,7 +65,9 @@ def test_valid_programs(programa, entrada, salida_esperada):
         svg_generado == svg_prueba
     ), f"{svg_prueba_path} doesn't match {svg_generado_path}"
     assert result.returncode == 0, f"Non-zero exit for {programa}"
-    assert result.stdout == salida_esperada, f"Incorrect output for {programa}"
+    assert _sin_metricas_de_progreso(result.stdout) == salida_esperada, (
+        f"Incorrect output for {programa}"
+    )
 
 
 _INVALID_PARAMS = list(obtener_parametros(get_invalid_programs("../tests/KafeGESHA")))

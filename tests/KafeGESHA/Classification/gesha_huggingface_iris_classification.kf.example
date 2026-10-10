@@ -1,0 +1,60 @@
+-- Ejemplo de integración remota: Hugging Face -> PARDOS -> GESHA.
+-- No se ejecuta automáticamente: requiere acceso a Hugging Face.
+
+import huggingface;
+import pardos;
+import geshaDeep;
+import machine;
+
+show("=== Clasificación de especies Iris con GESHA ===");
+
+PARDOS iris = huggingface.load_dataset("scikit-learn/iris");
+show("Columnas originales:");
+show(iris.columns);
+
+-- Id identifica la fila, no la especie: se elimina con PARDOS.
+PARDOS sin_id = iris.drop("Id");
+List[STR] especies = sin_id.col("Species");
+
+MACHINE codificador = machine.label_encoder();
+List[INT] y = codificador.fit_transform(especies);
+show("Especies en el orden de las etiquetas:");
+show(codificador.classes_);
+
+PARDOS caracteristicas = sin_id.drop("Species");
+List[List[FLOAT]] X = pardos.to_matrix(caracteristicas);
+
+-- Una única división 80/20, estratificada y reproducible con semilla 15.
+MACHINE division = machine.stratified_train_test_split(X, y, 0.2, 15);
+List[List[FLOAT]] X_train = division[0];
+List[List[FLOAT]] X_test = division[1];
+List[INT] y_train = division[2];
+List[INT] y_test = division[3];
+show("División [entrenamiento, prueba]:");
+show([len(X_train), len(X_test)]);
+
+-- Las estadísticas se aprenden solamente de entrenamiento.
+MACHINE scaler = machine.standard_scaler();
+scaler.fit(X_train);
+List[List[FLOAT]] X_train_normalizado = scaler.transform(X_train);
+List[List[FLOAT]] X_test_normalizado = scaler.transform(X_test);
+
+-- Input(4) -> Dense(8, ReLU) -> Dense(8, ReLU) -> Dense(3, Softmax).
+GESHA hidden1 = geshaDeep.create_dense(8, "relu", [4], 0.0, 11, geshaDeep.he_normal(11));
+GESHA hidden2 = geshaDeep.create_dense(8, "relu", [8], 0.0, 12, geshaDeep.he_normal(12));
+GESHA output = geshaDeep.create_dense(3, "softmax", [8], 0.0, 13, geshaDeep.glorot_uniform(13));
+GESHA classifier = geshaDeep.sequential([hidden1, hidden2, output]);
+classifier.compile("adam", "sparse_categorical_crossentropy", []);
+classifier.set_lr(0.01);
+classifier.fit(X_train_normalizado, y_train, 120, 16);
+
+List[INT] y_pred = classifier.predict_label(X_test_normalizado);
+INT correctas = 0;
+for (i in range(0, len(y_test))):
+    if (y_pred[i] == y_test[i]):
+        correctas = correctas + 1;
+    ;
+;
+FLOAT accuracy_test = correctas / len(y_test);
+show("Accuracy de prueba (%):");
+show(accuracy_test * 100.0);

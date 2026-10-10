@@ -62,6 +62,7 @@ Active project planning. Do not move this content into AGENTS.md (see AGENTS.md 
 - ✔ GESHA — Conv2D y SimpleRNN sobre NUMK (2026-10-08)
 - ✔ GESHA — Catálogo CNN/RNN avanzado (2026-10-10)
 - ✔ GESHA — inicializadores, regularizadores y callbacks (2026-10-10, ADR-0014)
+- ✔ GESHA/PARDOS — ejemplo Iris supervisado con split estratificado (2026-10-10, ADR-0017)
 - ✔ KafeKAGGLE — librería de ingesta de datasets de Kaggle (2026-10-08)
 - ✔ KafeKAGGLE v2 — cliente kagglehub: datasets públicos sin credenciales (2026-10-08, ADR-0013)
 - ☐ Harness Engineering — Actualizar reglas (5 benchmarks, conceptos enriquecidos, verificación de contexto)

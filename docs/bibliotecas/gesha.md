@@ -207,6 +207,18 @@ LSTM y GRU usan BPTT completo. `Bidirectional` acepta `SimpleRNN`, `LSTM` o
 
 Las inicializaciones históricas de Dense y Conv2D siguen siendo el valor predeterminado para conservar resultados existentes. Para CNN con ReLU se recomienda pasar `he_normal`; para capas densas con `tanh`, `glorot_uniform`; y para matrices recurrentes, `orthogonal`.
 
+Durante clasificación, cada línea de `fit` muestra también `Accuracy` en porcentaje junto a `Loss`. La métrica usa umbral 0.5 para clasificación binaria y la clase de mayor probabilidad para clasificación multiclase; también queda disponible como `history['accuracy']` y en los callbacks.
+
+### Ejemplo supervisado con Iris de Hugging Face
+
+[`src/Ejemplo.kf`](../../src/Ejemplo.kf) descarga `scikit-learn/iris` con
+`huggingface.load_dataset`, por lo que los datos llegan como `PARDOS`. El
+ejemplo elimina `Id`, convierte `Species` a etiquetas 0/1/2 con
+`machine.label_encoder`, separa 80/20 con
+`machine.stratified_train_test_split` y ajusta `StandardScaler` solamente
+con entrenamiento. La red es `4 -> Dense(8, ReLU) -> Dense(8, ReLU) ->
+Dense(3, Softmax)` y reporta accuracy sobre las flores no vistas.
+
 Los regularizadores son `l1_regularizer`, `l2_regularizer` y `l1_l2_regularizer`. Se asocian al peso y su penalización y gradiente se incorporan durante `fit`.
 
 Los callbacks `early_stopping` y `model_checkpoint` se agregan con `add_callback(modelo, callback)`. El checkpoint guarda pesos en JSON; `save_weights` y `load_weights` también están disponibles en el modelo. `fit` devuelve un historial con `loss` y `val_loss` sin cambiar su salida por consola.

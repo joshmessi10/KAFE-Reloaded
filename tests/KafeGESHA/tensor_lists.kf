@@ -1,9 +1,0 @@
-import geshaDeep;
-import numk;
-
-List[List[List[FLOAT]]] data = geshaDeep.tensor([[[1.0, 2.0]]]);
-List[List[FLOAT]] zeros = geshaDeep.tensor_zeros([1, 2]);
-List[List[FLOAT]] ones = geshaDeep.tensor_ones([1, 2]);
-show(data);
-show(numk.broadcast_add(zeros, ones));
-show(numk.reshape(data, [2]));

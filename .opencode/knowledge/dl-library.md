@@ -77,3 +77,8 @@ documentación, historia y cinco mediciones reales.
 ## Utilidades de entrenamiento GESHA
 
 GESHA incluye diez inicializadores (`Zeros` a `Orthogonal`), regularización L1/L2 combinable y callbacks `EarlyStopping`/`ModelCheckpoint`. Dense y Conv2D aceptan objetos de inicialización y regularización; las operaciones N-dimensionales permanecen en NUMK.
+
+El ejemplo principal `src/Ejemplo.kf` integra Hugging Face, PARDOS y GESHA
+para clasificación supervisada de Iris. La normalización se ajusta sobre el
+subconjunto de entrenamiento y la pérdida sparse categorical preserva las
+etiquetas enteras codificadas por `LabelEncoder`.

@@ -111,6 +111,19 @@ def test_minibatch_average_and_partial_batch(capsys):
     assert "Epoch 1/1 — Loss" in capsys.readouterr().out
 
 
+def test_binary_training_reports_accuracy_and_history(capsys):
+    layer = Dense(1, "sigmoid", [1])
+    layer.w.data = [[0.0]]
+    layer.b.data = [0.0]
+    model = Sequential([layer])
+    model.compile(SGD(lr=0.1), "binary_crossentropy")
+
+    history = model.fit([[0.0], [1.0]], [[0.0], [1.0]], 1, 1)
+
+    assert history['accuracy'] == [pytest.approx(0.0)]
+    assert "Accuracy 0.00%" in capsys.readouterr().out
+
+
 def test_lazy_parameters_are_updated_in_first_epoch():
     layer = Dense(1, "linear", seed=42)
     assert layer.parameters() == []

@@ -590,3 +590,12 @@ reemplazan la elección del cliente y el gate de credenciales.
 **Decision:** Separar el contrato `Optimizer` y cada implementación en archivos propios bajo `optimizers/`, manteniendo los exports históricos en el paquete.
 
 **Consequences:** Cada algoritmo puede evolucionar aisladamente y los imports públicos permanecen estables. AdamW sigue reutilizando Adam antes de aplicar weight decay desacoplado.
+## ADR-0017 — Split estratificado para ejemplos supervisados GESHA (2026-10-10)
+
+**Status:** Accepted.
+
+**Context:** Una partición aleatoria puede alterar la representación de una especie en un conjunto Iris pequeño.
+
+**Decision:** Incorporar `stratified_train_test_split` a KafeMACHINE, con la misma estructura de retorno que `train_test_split`, y usarlo después de codificar etiquetas con PARDOS/LabelEncoder.
+
+**Consequences:** El ejemplo obtiene 120/30 muestras y 40/10 por especie. La normalización se ajusta únicamente sobre entrenamiento, evitando fuga de datos.

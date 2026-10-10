@@ -79,3 +79,10 @@ como DataFrame de PARDOS. El flujo análogo con Hugging Face está en
 [`gesha-huggingface-clustering.kf`](../ejemplos/gesha-huggingface-clustering.kf);
 para Kaggle basta con reemplazar `huggingface` por `kaggle` y el nombre del
 dataset por su identificador `dueno/conjunto`.
+
+`src/Ejemplo.kf` contiene un segundo flujo completo para
+`uciml/breast-cancer-wisconsin-data`: elimina `id` y la columna vacía con
+PARDOS, transforma `diagnosis` en `B=0` y `M=1`, crea una división
+estratificada 80/20 y normaliza solamente con el entrenamiento. Después
+entrena GESHA con la arquitectura 30-64-32-16-1, ReLU, Dropout del 20 % y
+salida Sigmoid; la evaluación muestra el accuracy de prueba y `P(maligno)`.
