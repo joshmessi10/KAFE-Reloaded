@@ -174,7 +174,7 @@ def indexingExpr(self, ctx):
     if type(index) != int:
         raiseNonIntegerIndex(index)
 
-    if type(collection) == str or type(collection) == list:
+    if hasattr(collection, "__getitem__") and hasattr(collection, "__len__"):
         try:
             return collection[index]
         except IndexError:

@@ -263,6 +263,17 @@ def train_test_split(X, y, test_size=0.2, random_state=0, shuffle=True):
 
 
 @check_sig({
+    2: [matriz_numeros_t, vector_numeros_t],
+    3: [matriz_numeros_t, vector_numeros_t, flotante_t],
+    4: [matriz_numeros_t, vector_numeros_t, flotante_t, entero_t],
+})
+def stratified_train_test_split(X, y, test_size=0.2, random_state=0):
+    """Divide matrices y etiquetas preservando las proporciones de clase."""
+    from .model_selection.model_selection import stratified_train_test_split as _split
+    return _split(X, y, test_size, random_state)
+
+
+@check_sig({
     1: [entero_t],
     2: [entero_t, entero_t],
     3: [entero_t, entero_t, booleano_t],

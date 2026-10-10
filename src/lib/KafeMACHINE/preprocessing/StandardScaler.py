@@ -22,13 +22,13 @@ class StandardScaler(BaseMachine):
         n_features = len(matrix[0])
 
         self.mean_ = [
-            sum(row[j] for row in matrix) / n_samples
+            float(sum(row[j] for row in matrix) / n_samples)
             for j in range(n_features)
         ]
         self.scale_ = [
-            sqrt(
+            float(sqrt(
                 sum((row[j] - self.mean_[j]) ** 2 for row in matrix) / n_samples
-            )
+            ))
             for j in range(n_features)
         ]
         self._is_fitted = True
@@ -47,7 +47,7 @@ class StandardScaler(BaseMachine):
 
         result = [
             [
-                0.0 if self.scale_[j] == 0 else (row[j] - self.mean_[j]) / self.scale_[j]
+                float(0.0 if self.scale_[j] == 0 else (row[j] - self.mean_[j]) / self.scale_[j])
                 for j in range(len(self.mean_))
             ]
             for row in matrix

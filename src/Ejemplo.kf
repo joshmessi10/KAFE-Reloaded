@@ -1,0 +1,49 @@
+-- CNN Mini para CIFAR-10: Kaggle -> GESHA
+-- Dataset: https://www.kaggle.com/datasets/ayush1220/cifar10
+--
+-- CIFAR-10 se distribuye como PNG dentro de archivos .7z. Este ejemplo usa
+-- el cargador de imágenes propuesto para KafeKaggle: load_cifar10.
+-- El cargador debe extraer las imágenes, convertirlas a [C,H,W] = [3,32,32],
+-- escalar los píxeles a [0,1] y retornar una división estratificada fija.
+
+import kaggle;
+import geshaDeep;
+import machine;
+
+show("=== CNN Mini: CIFAR-10 con GESHA ===");
+
+-- El resultado conserva train y test separados y balancea las diez clases.
+-- [X_train, X_test, y_train, y_test], con 2.000 y 400 imágenes respectivamente.
+MACHINE cifar = kaggle.load_cifar10("ayush1220/cifar10", 2000, 400, 42);
+List[List[List[List[FLOAT]]]] X_train = cifar[0];
+List[List[List[List[FLOAT]]]] X_test = cifar[1];
+List[INT] y_train = cifar[2];
+List[INT] y_test = cifar[3];
+
+show("Imágenes [entrenamiento, prueba]:");
+show([len(X_train), len(X_test)]);
+show("Forma de una imagen RGB [canales, alto, ancho]:");
+show([len(X_train[0]), len(X_train[0][0]), len(X_train[0][0][0])]);
+
+-- Input(3,32,32) -> Conv2D(8,3x3,ReLU) -> MaxPooling2D(2x2)
+-- -> Conv2D(16,3x3,ReLU) -> GlobalAveragePooling2D -> Dense(10,Softmax).
+GESHA conv1 = geshaDeep.create_conv2d(8, [3, 3], "relu", [3, 32, 32], 1, "same", 101, geshaDeep.he_normal(101));
+GESHA pool1 = geshaDeep.max_pooling2d([2, 2]);
+GESHA conv2 = geshaDeep.create_conv2d(16, [3, 3], "relu", [8, 16, 16], 1, "same", 102, geshaDeep.he_normal(102));
+GESHA gap = geshaDeep.global_average_pooling2d();
+GESHA salida = geshaDeep.create_dense(10, "softmax", [16], 0.0, 103, geshaDeep.glorot_uniform(103));
+GESHA cnn = geshaDeep.sequential([conv1, pool1, conv2, gap, salida]);
+
+-- Etiquetas enteras 0..9: Sparse Categorical Crossentropy.
+cnn.compile("adam", "sparse_categorical_crossentropy", []);
+cnn.set_lr(0.001);
+show("Entrenando CNN Mini: 5 épocas, batch size 16...");
+cnn.fit(X_train, y_train, 5, 16);
+
+-- Evaluación sobre las 400 imágenes de prueba que no participaron en fit.
+List[INT] y_pred = cnn.predict_label(X_test);
+FLOAT accuracy_test = machine.accuracy_score(y_test, y_pred);
+show("Accuracy de prueba (%):");
+show(accuracy_test * 100.0);
+show("Matriz de confusión (filas=real, columnas=predicción):");
+show(machine.confusion_matrix(y_test, y_pred));

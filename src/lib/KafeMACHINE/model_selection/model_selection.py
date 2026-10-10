@@ -4,6 +4,30 @@ from TypeUtils import entero_t, flotante_t, booleano_t, matriz_numeros_t, vector
 from ..BaseMachine import BaseMachine
 
 
+class TrainTestSplit(BaseMachine):
+    """Resultado indexable de una división de datos.
+
+    Conserva la forma ``[X_train, X_test, y_train, y_test]`` sin obligar al
+    lenguaje KAFE a declarar una lista heterogénea.
+    """
+
+    def __init__(self, X_train, X_test, y_train, y_test):
+        super().__init__()
+        self._parts = (X_train, X_test, y_train, y_test)
+
+    def __getitem__(self, index):
+        return self._parts[index]
+
+    def __iter__(self):
+        return iter(self._parts)
+
+    def __len__(self):
+        return len(self._parts)
+
+    def __eq__(self, other):
+        return isinstance(other, TrainTestSplit) and self._parts == other._parts
+
+
 def _validate_non_empty(data, name):
     if not data:
         raise Exception(f"{name}: Empty input data")
@@ -92,6 +116,49 @@ def train_test_split(X, y, test_size=0.2, random_state=0, shuffle=True):
     y_test = [y[i] for i in test_indices]
 
     return [X_train, X_test, y_train, y_test]
+
+
+@check_sig({
+    2: [matriz_numeros_t, vector_numeros_t],
+    3: [matriz_numeros_t, vector_numeros_t, flotante_t],
+    4: [matriz_numeros_t, vector_numeros_t, flotante_t, entero_t],
+})
+def stratified_train_test_split(X, y, test_size=0.2, random_state=0):
+    """Divide X e y conservando la proporción de cada clase.
+
+    Cada etiqueta se baraja con la misma semilla y aporta aproximadamente
+    ``test_size`` de sus muestras al conjunto de prueba. Es útil para que
+    clases pequeñas no desaparezcan de entrenamiento o evaluación.
+    """
+    _validate_non_empty(X, "stratified_train_test_split")
+    if len(X) != len(y):
+        raise Exception("stratified_train_test_split: X and y must have the same number of samples")
+    if test_size <= 0 or test_size >= 1:
+        raise Exception("stratified_train_test_split: test_size must be between 0 and 1 (exclusive)")
+
+    by_label = {}
+    for index, label in enumerate(y):
+        by_label.setdefault(label, []).append(index)
+
+    rng = random.Random(random_state if random_state != 0 else None)
+    train_indices = []
+    test_indices = []
+    for indices in by_label.values():
+        rng.shuffle(indices)
+        test_count = int(len(indices) * test_size)
+        if len(indices) > 1:
+            test_count = max(1, min(len(indices) - 1, test_count))
+        test_indices.extend(indices[:test_count])
+        train_indices.extend(indices[test_count:])
+
+    rng.shuffle(train_indices)
+    rng.shuffle(test_indices)
+    return TrainTestSplit(
+        [X[index] for index in train_indices],
+        [X[index] for index in test_indices],
+        [y[index] for index in train_indices],
+        [y[index] for index in test_indices],
+    )
 
 
 @check_sig({

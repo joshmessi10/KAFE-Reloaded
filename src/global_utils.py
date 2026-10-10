@@ -66,9 +66,12 @@ def verificarHomogeneidad(lista):
 
     lista = flatten_list(lista)
     if (len(lista) != 0):
-        tipo = type(lista[0])
+        # La homogeneidad del lenguaje se define por el tipo público de
+        # KAFE, no por la clase Python concreta. Así una lista de capas
+        # puede combinar Dense, Dropout, Conv2D, etc.: todas son GESHA.
+        tipo = obtener_tipo_dato(lista[0])
         for elemento in lista:
-            if type(elemento) != tipo:
+            if obtener_tipo_dato(elemento) != tipo:
                 return False
 
     return True

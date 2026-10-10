@@ -21,6 +21,30 @@ def _get_optimizer(name):
     return opts.get(name.lower(), SGD)()
 
 
+def _is_classification_loss(loss):
+    return isinstance(loss, (
+        BinaryCrossEntropy,
+        CategoricalCrossEntropy,
+        SparseCategoricalCrossEntropy,
+    ))
+
+
+def _prediction_label(prediction):
+    """Convierte una salida binaria o multiclase en su etiqueta predicha."""
+    if len(prediction) == 1:
+        return 1 if prediction[0] >= 0.5 else 0
+    return prediction.index(max(prediction))
+
+
+def _target_label(target, loss):
+    """Convierte etiquetas binarias, one-hot o sparse a un índice de clase."""
+    if isinstance(loss, SparseCategoricalCrossEntropy):
+        return target[0]
+    if len(target) == 1:
+        return 1 if target[0] >= 0.5 else 0
+    return target.index(max(target))
+
+
 class Model(ABC):
     def __init__(self):
         self._optimizer = None
@@ -110,11 +134,15 @@ class Model(ABC):
         self.stop_training = False
         for callback in active_callbacks:
             callback.set_model(self); callback.on_train_begin({})
+        is_classification = _is_classification_loss(self._loss)
         history = {'loss': [], 'val_loss': []}
+        if is_classification:
+            history['accuracy'] = []
         for epoch in range(epochs):
             for callback in active_callbacks: callback.on_epoch_begin(epoch, {})
             self._set_training(True)
             total_loss = 0.0
+            correct_predictions = 0
             for batch_start in range(0, len(X), batch_size):
                 batch_end = min(batch_start + batch_size, len(X))
                 accumulated = {}
@@ -126,6 +154,10 @@ class Model(ABC):
                     if not isinstance(y_pred, list):
                         y_pred = [y_pred]
                     total_loss += self._loss.forward(y_pred, y)
+                    if is_classification:
+                        correct_predictions += int(
+                            _prediction_label(y_pred) == _target_label(y, self._loss)
+                        )
                     self.backward(self._loss.backward(), regularization_lambda)
                     # El forward construye las capas lazy antes de recoger parámetros.
                     batch_parameters = list(dict.fromkeys(self.parameters()))
@@ -148,6 +180,10 @@ class Model(ABC):
             history['loss'].append(avg_loss)
             loss_pct = avg_loss * 100.0
             msg = f"Epoch {epoch+1}/{epochs} — Loss {loss_pct:.2f}%"
+            if is_classification:
+                accuracy = correct_predictions / len(X)
+                history['accuracy'].append(accuracy)
+                msg += f" — Accuracy {accuracy * 100.0:.2f}%"
             
             if val_data:
                 val_x, val_y = val_data
@@ -162,6 +198,8 @@ class Model(ABC):
                 
             print(msg)
             logs = {'loss': avg_loss}
+            if is_classification:
+                logs['accuracy'] = accuracy
             if val_data: logs['val_loss'] = val_loss
             for callback in active_callbacks: callback.on_epoch_end(epoch, logs)
             if self.stop_training: break

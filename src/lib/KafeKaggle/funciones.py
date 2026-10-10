@@ -44,6 +44,7 @@ import os
 import subprocess
 import sys
 from contextlib import contextmanager, redirect_stdout
+import random
 
 try:
     import kagglehub
@@ -329,6 +330,173 @@ def _convert_to_pardos(columnas, filas):
 
     datos = [[inferir_tipo(celda) for celda in fila] for fila in filas]
     return DataFrame(columnas, datos)
+
+
+def _require_cifar_image_dependencies():
+    """Obtiene los lectores opcionales para PNG y archivos 7z de CIFAR-10.
+
+    KafeKAGGLE mantiene ``kagglehub`` como dependencia diferida. CIFAR-10
+    necesita además Pillow para decodificar PNG y py7zr para extraer el
+    archivo publicado por Kaggle; se instalan solo al solicitar este loader.
+    """
+    modules = []
+    for package, module_name in (("Pillow", "PIL.Image"), ("py7zr", "py7zr")):
+        try:
+            modules.append(importlib.import_module(module_name))
+        except ImportError:
+            try:
+                subprocess.run(
+                    [sys.executable, "-m", "pip", "install", package],
+                    check=True,
+                    timeout=180,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    text=True,
+                )
+                modules.append(importlib.import_module(module_name))
+            except Exception as error:
+                raise Exception(
+                    f"kaggle: no se pudo instalar '{package}', necesario para "
+                    f"leer CIFAR-10. Detalle: {error}"
+                ) from error
+    return modules[0], modules[1]
+
+
+def _find_file_by_name(root, name):
+    """Busca un archivo por nombre sin depender de una ruta interna fija."""
+    target = name.lower()
+    matches = []
+    for directory, _subdirs, files in os.walk(root):
+        for filename in files:
+            if filename.lower() == target:
+                matches.append(os.path.join(directory, filename))
+    if not matches:
+        return None
+    return sorted(matches)[0]
+
+
+def _extract_7z_if_needed(archive_path, py7zr_module):
+    """Extrae un 7z una sola vez junto al archivo y devuelve su carpeta."""
+    destination = archive_path[:-3]
+    if os.path.isdir(destination) and any(os.scandir(destination)):
+        return destination
+    os.makedirs(destination, exist_ok=True)
+    try:
+        with py7zr_module.SevenZipFile(archive_path, mode="r") as archive:
+            archive.extractall(path=destination)
+    except Exception as error:
+        raise Exception(f"kaggle: no se pudo extraer '{os.path.basename(archive_path)}': {error}") from error
+    return destination
+
+
+def _find_cifar_train_directory(dataset_path, py7zr_module):
+    """Localiza o extrae el directorio de PNG etiquetados de CIFAR-10."""
+    for directory, _subdirs, files in os.walk(dataset_path):
+        if any(filename.lower().endswith(".png") for filename in files):
+            return directory
+    archive = _find_file_by_name(dataset_path, "train.7z")
+    if archive is None:
+        raise Exception(
+            "kaggle: CIFAR-10 requiere imágenes de entrenamiento PNG o el archivo train.7z."
+        )
+    extracted = _extract_7z_if_needed(archive, py7zr_module)
+    for directory, _subdirs, files in os.walk(extracted):
+        if any(filename.lower().endswith(".png") for filename in files):
+            return directory
+    raise Exception("kaggle: train.7z no contiene imágenes PNG.")
+
+
+def _read_cifar_labels(labels_path):
+    """Lee ``trainLabels.csv`` y codifica sus diez clases en 0..9."""
+    with open(labels_path, encoding="utf-8-sig", newline="") as stream:
+        reader = csv.DictReader(stream)
+        if not reader.fieldnames or "id" not in reader.fieldnames or "label" not in reader.fieldnames:
+            raise Exception("kaggle: trainLabels.csv debe contener las columnas 'id' y 'label'.")
+        raw_labels = {}
+        for row in reader:
+            raw_labels[int(row["id"])] = row["label"].strip()
+    classes = sorted(set(raw_labels.values()))
+    if len(classes) != 10:
+        raise Exception(f"kaggle: CIFAR-10 debe tener 10 clases, se encontraron {len(classes)}.")
+    encoded = {image_id: classes.index(label) for image_id, label in raw_labels.items()}
+    return encoded
+
+
+def _load_cifar_image(path, image_module):
+    """Convierte un PNG RGB de 32×32 al formato GESHA [canal, alto, ancho]."""
+    try:
+        with image_module.open(path) as image:
+            rgb = image.convert("RGB")
+            if rgb.size != (32, 32):
+                raise Exception(f"se esperaba 32x32 y se obtuvo {rgb.size[0]}x{rgb.size[1]}")
+            pixels = list(rgb.getdata())
+    except Exception as error:
+        raise Exception(f"kaggle: no se pudo leer la imagen '{os.path.basename(path)}': {error}") from error
+    return [
+        [[float(pixels[row * 32 + column][channel]) / 255.0 for column in range(32)] for row in range(32)]
+        for channel in range(3)
+    ]
+
+
+@check_sig([4], [cadena_t], [entero_t], [entero_t], [entero_t])
+def load_cifar10(dataset_name, train_samples, test_samples, seed):
+    """Carga una muestra estratificada de CIFAR-10 para GESHA.
+
+    Descarga el dataset de Kaggle, lee los PNG etiquetados y retorna un
+    ``TrainTestSplit`` indexable: ``[X_train, X_test, y_train, y_test]``.
+    Las muestras se seleccionan por clase sin solapamiento; ``X_test`` es una
+    partición de evaluación extraída del conjunto etiquetado de entrenamiento,
+    pues el test de la competición no publica etiquetas.
+    """
+    if train_samples <= 0 or test_samples <= 0:
+        raise Exception("kaggle: train_samples y test_samples deben ser positivos.")
+    if train_samples % 10 != 0 or test_samples % 10 != 0:
+        raise Exception("kaggle: las cantidades de CIFAR-10 deben ser múltiplos de 10 para conservar el balance.")
+
+    image_module, py7zr_module = _require_cifar_image_dependencies()
+    _validate_dataset_name(dataset_name)
+    _require_kagglehub()
+    dataset_path = _download_dataset(dataset_name.strip())
+    labels_path = _find_file_by_name(dataset_path, "trainLabels.csv")
+    if labels_path is None:
+        raise Exception("kaggle: no se encontró trainLabels.csv en el dataset CIFAR-10.")
+    image_directory = _find_cifar_train_directory(dataset_path, py7zr_module)
+    labels = _read_cifar_labels(labels_path)
+
+    by_class = {class_id: [] for class_id in range(10)}
+    for directory, _subdirs, files in os.walk(image_directory):
+        for filename in files:
+            if not filename.lower().endswith(".png"):
+                continue
+            stem = os.path.splitext(filename)[0]
+            if stem.isdigit() and int(stem) in labels:
+                image_id = int(stem)
+                by_class[labels[image_id]].append((image_id, os.path.join(directory, filename)))
+
+    per_class_train = train_samples // 10
+    per_class_test = test_samples // 10
+    rng = random.Random(seed)
+    train_records, test_records = [], []
+    for class_id in range(10):
+        records = sorted(by_class[class_id])
+        rng.shuffle(records)
+        required = per_class_train + per_class_test
+        if len(records) < required:
+            raise Exception(
+                f"kaggle: la clase {class_id} solo tiene {len(records)} imágenes; se requieren {required}."
+            )
+        train_records.extend((path, class_id) for _id, path in records[:per_class_train])
+        test_records.extend((path, class_id) for _id, path in records[per_class_train:required])
+    rng.shuffle(train_records)
+    rng.shuffle(test_records)
+
+    X_train = [_load_cifar_image(path, image_module) for path, _label in train_records]
+    X_test = [_load_cifar_image(path, image_module) for path, _label in test_records]
+    y_train = [label for _path, label in train_records]
+    y_test = [label for _path, label in test_records]
+
+    from lib.KafeMACHINE.model_selection.model_selection import TrainTestSplit
+    return TrainTestSplit(X_train, X_test, y_train, y_test)
 
 
 @check_sig([1, 2], [cadena_t], [cadena_t])

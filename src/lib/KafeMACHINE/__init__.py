@@ -17,7 +17,10 @@ from .ensemble.AdaBoost import AdaBoostClassifier
 from .ensemble.GradientBoosting import GradientBoostingClassifier, GradientBoostingRegressor
 from .clustering.GaussianMixture import GaussianMixture
 from .discriminant.LinearDiscriminantAnalysis import LinearDiscriminantAnalysis
-from .model_selection.model_selection import train_test_split, k_fold, CrossValScore, GridSearchCV, RandomizedSearchCV, Pipeline
+from .model_selection.model_selection import (
+    train_test_split, stratified_train_test_split, k_fold, CrossValScore,
+    GridSearchCV, RandomizedSearchCV, Pipeline,
+)
 from .preprocessing import (
     StandardScaler,
     MinMaxScaler,
