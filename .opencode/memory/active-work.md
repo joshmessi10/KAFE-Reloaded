@@ -2,26 +2,25 @@
 
 ## Current Feature
 
-None. Last feature closed: KafeKAGGLE — interfaz genérica de ingesta de imágenes (reemplaza `load_cifar10`).
+KafeKAGGLE — ingesta robusta de datasets de imágenes (etiquetas por carpetas).
 
 ## Status
 
-Completed / closed (2026-10-13). DoD APPROVED by the Reviewer; suite green (629 passed, 2 skipped). Session closed via `/close`.
+in_progress (2026-10-13). Impact analysis completado (ADR-0019); pendiente implementación por el Builder.
 
 ## Current Step
 
-Cerrado. La feature se implementó, documentó, validó y cerró.
+Implementación de `load_image_folder_dataset` + acotado de mensajes de error + verificación de descarga/extracción en `src/lib/KafeKaggle/funciones.py`.
 
 ## Next Step
 
-Reanudar por roadmap: KafeGESHA LSTM/Transformer, o Review Tasks de KafeMACHINE. Abrir con `/init` + `/resume`.
+Builder implementa y añade tests herméticos en `tests/test_KafeKaggle_backend.py`; luego actualizar `src/Ejemplo.kf` y fixtures.
 
 ## Expected Outcome
 
-N/A — el trabajo de la sesión quedó completado.
+Datos de imagen etiquetados (`X` `[N,3,H,W]` en [0,1], `y` en [0,N-1]) listos para entrenar con `machine.stratified_train_test_split` + GESHA, y errores acotados en vez de volcados de rutas.
 
 ## Notes
 
-- Esta sesión cerró la feature KafeKAGGLE de imágenes: `load_image`/`load_images`/`load_image_dataset` + contenedor `ImageDataset`, decisión A1 en KafeMACHINE (split acepta X 4D), ADR-0018 + actualización de ADR-0017.
-- Cierra también el cierre diferido del ítem KafeKAGGLE v2 (regularizado en `progress/session-log.md` el 2026-10-13).
-- ADRs de referencia: ADR-0018 (imágenes), ADR-0017 (split estratificado, actualizado), ADR-0013 (cliente kagglehub), ADR-0011/0012 (Conv2D y datos de imagen).
+- Motivo: `Ejemplo.kf` usaba `load_image_dataset(..., "trainLabels.csv", ...)` sobre un dataset sin CSV (etiquetas por carpetas) → error que volcaba ~60000 rutas.
+- ADRs de referencia: ADR-0018 (API de imágenes), ADR-0019 (etiquetas por carpetas).

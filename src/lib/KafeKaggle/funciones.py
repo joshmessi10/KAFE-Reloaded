@@ -46,6 +46,7 @@ import importlib
 import io
 import logging
 import os
+import random
 import subprocess
 import sys
 import zipfile
@@ -149,7 +150,7 @@ def _download_dataset(dataset_name):
     """
     try:
         with redirect_stdout(io.StringIO()), _silenciar_logs_kagglehub():
-            return kagglehub.dataset_download(dataset_name)
+            ruta = kagglehub.dataset_download(dataset_name)
     except Exception as error:
         mensaje = (
             f"kaggle: Error descargando dataset '{dataset_name}': {error}."
@@ -162,6 +163,29 @@ def _download_dataset(dataset_name):
                 "las necesitan)."
             )
         raise Exception(mensaje) from error
+    if not isinstance(ruta, str) or not os.path.isdir(ruta) or not any(
+        os.scandir(ruta)
+    ):
+        raise Exception(
+            f"kaggle: La descarga de '{dataset_name}' no produjo archivos. "
+            "Comprueba el nombre del dataset o vuelve a intentarlo."
+        )
+    return ruta
+
+
+def _formatear_lista(elementos, limite=20):
+    """Recorta una lista larga para mensajes de error legibles.
+
+    Devuelve la representación de los primeros ``limite`` elementos seguida
+    de un resumen del resto (``… y N más (total M)``) cuando la lista excede
+    el límite, evitando volcar miles de rutas en un solo mensaje.
+    """
+    total = len(elementos)
+    if total <= limite:
+        return str(elementos)
+    return (
+        f"{elementos[:limite]} … y {total - limite} más (total {total})"
+    )
 
 
 def _resolve_file(members, selector):
@@ -190,7 +214,7 @@ def _resolve_file(members, selector):
         )
     raise Exception(
         f"kaggle: No se encontró '{selector}' en el dataset. "
-        f"Archivos disponibles: {members}"
+        f"Archivos disponibles: {_formatear_lista(members)}"
     )
 
 
@@ -211,12 +235,12 @@ def _select_file(members, file_name, split):
         elif not csvs:
             raise Exception(
                 "kaggle: El dataset no contiene archivos CSV. "
-                f"Archivos disponibles: {members}"
+                f"Archivos disponibles: {_formatear_lista(members)}"
             )
         else:
             raise Exception(
                 "kaggle: El dataset contiene varios archivos CSV; especifica "
-                f"'file_name' o 'split'. CSV disponibles: {csvs}"
+                f"'file_name' o 'split'. CSV disponibles: {_formatear_lista(csvs)}"
             )
     if not elegido.lower().endswith(".csv"):
         raise Exception(
@@ -468,11 +492,11 @@ def _resolve_member(members, selector, descripcion):
     if len(por_nombre) > 1:
         raise Exception(
             f"kaggle: {descripcion} '{selector}' es ambiguo; coincide con "
-            f"varios archivos: {por_nombre}"
+            f"varios archivos: {_formatear_lista(por_nombre)}"
         )
     raise Exception(
         f"kaggle: No se encontró {descripcion} '{selector}'. Archivos "
-        f"disponibles: {members}"
+        f"disponibles: {_formatear_lista(members)}"
     )
 
 
@@ -899,6 +923,117 @@ def load_image_dataset(
         for relativa in rutas
     ]
     y = _encode_labels(etiquetas_crudas)
+
+    from lib.KafeKaggle.dataset import ImageDataset
+
+    return ImageDataset(X, y)
+
+
+@check_sig(
+    [1, 2, 3, 4, 5, 6],
+    [cadena_t],
+    [entero_t],
+    [entero_t],
+    [cadena_t],
+    [entero_t],
+    [cadena_t],
+)
+def load_image_folder_dataset(
+    dataset_name, height=32, width=32, color_mode="rgb", limit=0, split="train"
+):
+    """
+    Carga un dataset de Kaggle con etiquetas derivadas de las carpetas.
+
+    Pensada para datasets organizados en el layout canónico de clasificación
+    de imágenes, donde la clase es el nombre de la carpeta que contiene cada
+    imagen (``.../<split>/<clase>/<imagen>.png``). Es el caso de datasets
+    como CIFAR-10, que no incluyen un CSV de etiquetas: la etiqueta vive en
+    el nombre del directorio padre.
+
+    Fundamento: la etiqueta de cada imagen es el nombre del directorio
+    inmediatamente padre; ``split`` filtra por un subdirectorio ancestro
+    (por ejemplo ``"train"``) y, si está vacío, se usan todas las imágenes.
+    Las etiquetas de texto se codifican a enteros ``0..N-1`` en orden
+    alfabético para que la codificación sea reproducible y compatible con
+    *sparse categorical crossentropy*. Cuando ``limit > 0`` se aplica un
+    muestreo aleatorio determinista (semilla fija) ANTES de decodificar, de
+    modo que la muestra contenga varias clases (sin él, tomar las primeras
+    rutas ordenadas daría una sola clase).
+
+    Argumentos:
+        dataset_name (STR): Identificador 'dueno/conjunto' del dataset.
+        height (INT, opcional): Alto de salida (default 32).
+        width (INT, opcional): Ancho de salida (default 32).
+        color_mode (STR, opcional): "rgb" o "gray"/"grayscale" (default "rgb").
+        limit (INT, opcional): Máximo de imágenes a cargar; 0 = todas.
+        split (STR, opcional): Subdirectorio ancestro a usar ("train", "test",
+            …); "" o None = todas las imágenes.
+
+    Retorna:
+        ImageDataset (tipo KAFE ``MACHINE``): ``datos[0]`` = X (imágenes
+        ``[C][H][W]``), ``datos[1]`` = y (List[INT] codificadas).
+
+    Ejemplo KAFE:
+        import kaggle;
+        MACHINE datos = kaggle.load_image_folder_dataset("ayush1220/cifar10", 32, 32, "rgb", 4000, "train");
+        List[List[List[List[FLOAT]]]] X = datos[0];
+        List[INT] y = datos[1];
+
+    Nota: Requiere conexión a internet y las dependencias opcionales
+    `Pillow`/`py7zr` (auto-instaladas). Materializa en memoria O(N·C·H·W);
+    usa `limit` en conjuntos grandes.
+    """
+    _validate_dataset_name(dataset_name)
+    color_mode = _normalize_color_mode(color_mode)
+    height = _normalize_dimension(height, "height")
+    width = _normalize_dimension(width, "width")
+    if limit < 0:
+        raise Exception(
+            f"kaggle: 'limit' debe ser mayor o igual que 0; se recibió {limit}."
+        )
+    split = "" if split is None else str(split).strip()
+
+    image_module, py7zr_module = _require_image_dependencies()
+    _require_kagglehub()
+    root = _download_dataset(dataset_name.strip())
+    _ensure_images_extracted(root, py7zr_module)
+    imagenes = _find_images(root)
+
+    seleccionadas = []
+    for relativa in imagenes:
+        partes = relativa.split("/")
+        if len(partes) < 2:
+            continue
+        etiqueta = partes[-2]
+        if split and split not in partes[:-1]:
+            continue
+        seleccionadas.append((relativa, etiqueta))
+
+    if not seleccionadas:
+        raise Exception(
+            "kaggle: no se encontraron imágenes etiquetadas por carpeta en "
+            f"'{dataset_name}' (split='{split}'). Revisa la estructura del "
+            "dataset."
+        )
+
+    if limit > 0 and len(seleccionadas) > limit:
+        random.Random(42).shuffle(seleccionadas)
+        seleccionadas = seleccionadas[:limit]
+
+    rutas = [relativa for relativa, _ in seleccionadas]
+    etiquetas = [etiqueta for _, etiqueta in seleccionadas]
+
+    X = [
+        _load_image_array(
+            os.path.join(root, *relativa.split("/")),
+            height,
+            width,
+            color_mode,
+            image_module,
+        )
+        for relativa in rutas
+    ]
+    y = _encode_labels(etiquetas)
 
     from lib.KafeKaggle.dataset import ImageDataset
 

@@ -22,6 +22,7 @@ Candidate items not yet on the roadmap. Add items here during Impact Analysis an
 
 - [x] KafeKAGGLE — importación de datasets de Kaggle (patrón KafeHF / ADR-0012) — completado 2026-10-08
 - [x] KafeKAGGLE — interfaz genérica de ingesta de imágenes (reemplaza load_cifar10) — completado 2026-10-13
+- [ ] KafeKAGGLE — ingesta robusta de datasets de imágenes (etiquetas por carpetas) — in_progress 2026-10-13
 
 ## Documentation
 

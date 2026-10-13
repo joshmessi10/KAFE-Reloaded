@@ -1,10 +1,11 @@
 -- CNN Mini para CIFAR-10: Kaggle -> GESHA
 -- Dataset: https://www.kaggle.com/datasets/ayush1220/cifar10
 --
--- CIFAR-10 se distribuye como PNG dentro de archivos .7z. Este ejemplo usa
--- la API genérica de imágenes de KafeKaggle: load_image_dataset descarga y
--- extrae las imágenes, las convierte a [C,H,W] = [3,32,32], escala los
--- píxeles a [0,1] y empareja cada imagen con su etiqueta. La división
+-- CIFAR-10 se distribuye como PNG organizados en carpetas por clase
+-- (train/<clase>/*.png). Este ejemplo usa la API de imágenes por carpetas de
+-- KafeKaggle: load_image_folder_dataset descarga el dataset, deriva la
+-- etiqueta del nombre de la carpeta, convierte cada imagen a [C,H,W] = [3,32,32],
+-- escala los píxeles a [0,1] y muestrea de forma representativa. La división
 -- estratificada queda en KafeMACHINE, que ya acepta tensores 4D.
 
 import kaggle;
@@ -13,8 +14,8 @@ import machine;
 
 show("=== CNN Mini: CIFAR-10 con GESHA ===");
 
--- Carga etiquetada una sola vez: contenedor indexable [X, y].
-MACHINE datos = kaggle.load_image_dataset("ayush1220/cifar10", "trainLabels.csv", 32, 32, "rgb", 4000);
+-- Carga etiquetada por carpetas: contenedor indexable [X, y].
+MACHINE datos = kaggle.load_image_folder_dataset("ayush1220/cifar10", 32, 32, "rgb", 4000, "train");
 List[List[List[List[FLOAT]]]] X = datos[0];
 List[INT] y = datos[1];
 

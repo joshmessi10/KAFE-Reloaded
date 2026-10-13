@@ -736,3 +736,172 @@ def test_find_images_without_images(tmp_path):
     (raiz / "notas.txt").write_text("texto", encoding="utf-8")
     with pytest.raises(Exception, match="no contiene imágenes"):
         kaggle._find_images(str(raiz))
+
+
+# ---------------------------------------------------------------------------
+# Ingesta por carpetas (etiquetas derivadas del directorio padre)
+# ---------------------------------------------------------------------------
+
+
+def test_formatear_lista_no_recorta_lista_corta():
+    assert kaggle._formatear_lista(["a", "b"]) == "['a', 'b']"
+
+
+def test_formatear_lista_recorta_lista_larga():
+    elementos = [f"f{i}.png" for i in range(100)]
+    resumen = kaggle._formatear_lista(elementos, limite=3)
+    assert "f0.png" in resumen
+    assert "f99.png" not in resumen
+    assert "… y 97 más (total 100)" in resumen
+
+
+def test_load_image_missing_path_caps_long_list(pil, monkeypatch, tmp_path):
+    raiz = tmp_path / "dataset"
+    for i in range(50):
+        _guardar_png(pil, raiz / f"img_{i:03d}.png", (1, 1), (10, 20, 30))
+    _descarga_imagenes(monkeypatch, str(raiz), pil)
+    with pytest.raises(Exception) as exc:
+        kaggle.load_image("demo", "nope.png", 1, 1, "rgb")
+    mensaje = str(exc.value)
+    assert "No se encontró la imagen" in mensaje
+    assert "… y 30 más (total 50)" in mensaje
+    assert "img_049.png" not in mensaje
+
+
+def test_download_dataset_empty_directory_raises(monkeypatch, tmp_path):
+    directorio = tmp_path / "vacio"
+    directorio.mkdir()
+    monkeypatch.setattr(kaggle, "kagglehub", KaggleHubFalso(str(directorio)))
+    with pytest.raises(Exception, match="no produjo archivos"):
+        kaggle._download_dataset("propietario/conjunto")
+
+
+def test_load_image_folder_dataset_labels_from_parent_dir(pil, monkeypatch, tmp_path):
+    raiz = tmp_path / "dataset"
+    _guardar_png(pil, raiz / "cat" / "1.png", (1, 1), (255, 0, 0))
+    _guardar_png(pil, raiz / "cat" / "2.png", (1, 1), (255, 0, 0))
+    _guardar_png(pil, raiz / "dog" / "3.png", (1, 1), (0, 0, 255))
+    _descarga_imagenes(monkeypatch, str(raiz), pil)
+    datos = kaggle.load_image_folder_dataset("demo", 1, 1, "rgb", 0, "")
+    assert isinstance(datos, ImageDataset)
+    X, y = datos[0], datos[1]
+    assert len(X) == 3
+    assert y == [0, 0, 1]
+    assert len(X[0]) == 3
+    assert len(X[0][0]) == 1
+
+
+def test_load_image_folder_dataset_split_filters_ancestor(pil, monkeypatch, tmp_path):
+    raiz = tmp_path / "dataset"
+    _guardar_png(pil, raiz / "train" / "cat" / "a.png", (1, 1), (255, 0, 0))
+    _guardar_png(pil, raiz / "test" / "cat" / "b.png", (1, 1), (0, 255, 0))
+    _descarga_imagenes(monkeypatch, str(raiz), pil)
+
+    solo_train = kaggle.load_image_folder_dataset("demo", 1, 1, "rgb", 0, "train")
+    assert len(solo_train[0]) == 1
+    assert solo_train[1] == [0]
+
+    todas = kaggle.load_image_folder_dataset("demo", 1, 1, "rgb", 0, "")
+    assert len(todas[0]) == 2
+    assert todas[1] == [0, 0]
+
+
+def test_load_image_folder_dataset_empty_after_split_raises(pil, monkeypatch, tmp_path):
+    raiz = tmp_path / "dataset"
+    _guardar_png(pil, raiz / "train" / "cat" / "a.png", (1, 1), (255, 0, 0))
+    _descarga_imagenes(monkeypatch, str(raiz), pil)
+    with pytest.raises(Exception, match="no se encontraron imágenes etiquetadas"):
+        kaggle.load_image_folder_dataset("demo", 1, 1, "rgb", 0, "test")
+
+
+def test_load_image_folder_dataset_duplicate_basenames(pil, monkeypatch, tmp_path):
+    raiz = tmp_path / "dataset"
+    _guardar_png(pil, raiz / "airplane" / "0001.png", (1, 1), (255, 0, 0))
+    _guardar_png(pil, raiz / "automobile" / "0001.png", (1, 1), (0, 0, 255))
+    _descarga_imagenes(monkeypatch, str(raiz), pil)
+    X, y = kaggle.load_image_folder_dataset("demo", 1, 1, "rgb", 0, "")[:]
+    assert len(X) == 2
+    assert y == [0, 1]
+    assert X[0][0][0][0] == pytest.approx(1.0)
+    assert X[1][0][0][0] == pytest.approx(0.0)
+    assert X[1][2][0][0] == pytest.approx(1.0)
+
+
+def test_load_image_folder_dataset_limit_representative_and_deterministic(
+    pil, monkeypatch, tmp_path
+):
+    raiz = tmp_path / "dataset"
+    for clase in ("a", "b", "c"):
+        for i in range(12):
+            color = ((i * 20) % 256, 0, 0)
+            _guardar_png(pil, raiz / clase / f"{i:02d}.png", (1, 1), color)
+    _descarga_imagenes(monkeypatch, str(raiz), pil)
+
+    X_uno, y_uno = kaggle.load_image_folder_dataset("demo", 1, 1, "rgb", 6, "")[:]
+    X_dos, y_dos = kaggle.load_image_folder_dataset("demo", 1, 1, "rgb", 6, "")[:]
+    assert len(X_uno) == 6
+    assert len(set(y_uno)) >= 2
+    assert y_uno == y_dos
+
+
+def test_load_image_folder_dataset_gray_single_channel(pil, monkeypatch, tmp_path):
+    raiz = tmp_path / "dataset"
+    _guardar_png(pil, raiz / "cat" / "a.png", (2, 2), (255, 255, 255))
+    _descarga_imagenes(monkeypatch, str(raiz), pil)
+    X, y = kaggle.load_image_folder_dataset("demo", 2, 2, "gray", 0, "")[:]
+    assert len(X) == 1
+    assert len(X[0]) == 1
+    assert X[0][0][0][0] == pytest.approx(1.0)
+    assert y == [0]
+
+
+def test_load_image_folder_dataset_e2e_shape_and_range(pil, monkeypatch, tmp_path):
+    raiz = tmp_path / "dataset"
+    _guardar_png(pil, raiz / "uno" / "1.png", (3, 2), (255, 0, 0))
+    _guardar_png(pil, raiz / "uno" / "2.png", (3, 2), (0, 255, 0))
+    _guardar_png(pil, raiz / "dos" / "3.png", (3, 2), (0, 0, 255))
+    _guardar_png(pil, raiz / "dos" / "4.png", (3, 2), (128, 128, 128))
+    _descarga_imagenes(monkeypatch, str(raiz), pil)
+    X, y = kaggle.load_image_folder_dataset("demo", 4, 5, "rgb", 0, "")[:]
+    assert len(X) == 4
+    assert len(X[0]) == 3
+    assert len(X[0][0]) == 4
+    assert len(X[0][0][0]) == 5
+    valores = [v for img in X for canal in img for fila in canal for v in fila]
+    assert all(0.0 <= v <= 1.0 for v in valores)
+    assert set(y) == {0, 1}
+
+
+def test_load_image_folder_dataset_invalid_color_mode_before_download(monkeypatch):
+    _no_descargar(monkeypatch)
+    with pytest.raises(Exception, match="'color_mode' inválido"):
+        kaggle.load_image_folder_dataset("demo", 32, 32, "cmyk")
+
+
+def test_load_image_folder_dataset_invalid_limit_before_download(monkeypatch):
+    _no_descargar(monkeypatch)
+    with pytest.raises(Exception, match="'limit' debe ser mayor o igual"):
+        kaggle.load_image_folder_dataset("demo", 32, 32, "rgb", -1)
+
+
+def test_load_image_folder_dataset_wrong_arity():
+    with pytest.raises(Exception, match="expects 1 or 2 or 3 or 4 or 5 or 6 args"):
+        kaggle.load_image_folder_dataset()
+
+
+def test_load_image_folder_dataset_wrong_type():
+    with pytest.raises(Exception, match="expects argument of type STR"):
+        kaggle.load_image_folder_dataset(42)
+
+
+def test_ensure_images_extracted_7z_real(tmp_path):
+    py7zr = pytest.importorskip("py7zr")
+    origen = tmp_path / "origen" / "1.png"
+    origen.parent.mkdir(parents=True)
+    origen.write_bytes(b"PNG-bytes")
+    raiz = tmp_path / "dataset"
+    raiz.mkdir()
+    with py7zr.SevenZipFile(str(raiz / "imgs.7z"), "w") as archivo:
+        archivo.write(str(origen), "train/cat/1.png")
+    kaggle._ensure_images_extracted(str(raiz), py7zr)
+    assert kaggle._find_images(str(raiz)) == ["imgs.7z_extracted/train/cat/1.png"]

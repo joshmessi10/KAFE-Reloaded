@@ -671,3 +671,35 @@ Se relaja la validación de tipo de `X` en `train_test_split` y `stratified_trai
 - **`Ejemplo.kf` migra** a `load_image_dataset` + `machine.stratified_train_test_split`.
 - La memoria O(N·C·H·W) de listas anidadas de Python y la caché sin evicción de `kagglehub` quedan como limitaciones documentadas (`limit`, advertencias).
 - Acompañan a la decisión: `docs/bibliotecas/kaggle.md`, concept record de ingesta de imágenes, `.opencode/knowledge/libraries.md`, history, roadmap y benchmark `kafekaggle.py` + `records.md`.
+
+---
+
+## ADR-0019: KafeKAGGLE — etiquetas por carpetas e ingesta robusta de imágenes
+
+- **Status**: accepted
+- **Date**: 2026-10-13
+
+### Contexto
+
+El dataset `ayush1220/cifar10` (usado por `src/Ejemplo.kf`) organiza las etiquetas en carpetas (`train/<clase>/*.png`, `test/<clase>/*.png`) y **no** incluye un CSV de etiquetas. La API de ADR-0018 (`load_image_dataset(dataset_name, labels_file, ...)`) requiere un CSV: al no encontrarlo, `_resolve_member` interpolaba la lista completa de miembros (≈60000 rutas) en el mensaje de error, que se imprime a stdout, produciendo un volcado ininteligible sin señal de error. Además, `_find_images` ordena por ruta, por lo que un `limit` pequeño tomaría imágenes de una sola clase, arruinando el entrenamiento.
+
+### Decisión
+
+1. **Nueva función pública** `load_image_folder_dataset(dataset_name, height=32, width=32, color_mode="rgb", limit=0, split="train")`: deriva la etiqueta del directorio inmediatamente padre; `split` filtra por subdirectorio ancestro (vacío = todas); devuelve `ImageDataset` con `X` `[N,C,H,W]` en [0,1] y `y` codificada 0..N-1 (alfabético). `@check_sig` aridades `[1,2,3,4,5,6]`, tipos `[cadena_t, entero_t, entero_t, cadena_t, entero_t, cadena_t]`.
+2. **Muestreo determinista**: cuando `limit > 0`, se aplica un shuffle con semilla fija antes de decodificar, garantizando una muestra representativa (varias clases) y reproducible.
+3. **Mensajes de error acotados**: `_resolve_member`/`_resolve_file`/`_select_file` recortan las listas (primeras N + "… y M más" + total) conservando los prefijos actuales.
+4. **Verificación de descarga/extracción**: tras `_download_dataset` se comprueba que la ruta existe, es directorio y no está vacío; error educativo en caso contrario. La extracción sigue siendo idempotente y segura ante *path traversal*.
+
+### Alternativas consideradas
+
+- **Cambiar de dataset** a uno con `trainLabels.csv`: rechazada; acopla el ejemplo a un dataset concreto y mantiene el camino CSV frágil.
+- **Parsear/derivar un CSV**: rechazada; añade complejidad artificial cuando las carpetas ya codifican la etiqueta (layout canónico de clasificación de imágenes).
+- **Muestreo round-robin por clase** en lugar de shuffle: rechazada por menor simplicidad; el shuffle con semilla es el estándar.
+- **Extender `load_image_dataset` con `label_source`**: rechazada; rompe la firma/aridades actuales y mezcla dos responsabilidades.
+
+### Consecuencias
+
+- KafeKAGGLE gana una función aditiva (compatible; no rompe la API de ADR-0018).
+- `src/Ejemplo.kf` entrena ahora con datos representativos, usables por `machine.stratified_train_test_split` + GESHA.
+- Los errores dejan de volcar miles de rutas.
+- Requiere actualizar docs, knowledge, concept record, fixtures, history, roadmap y benchmark.

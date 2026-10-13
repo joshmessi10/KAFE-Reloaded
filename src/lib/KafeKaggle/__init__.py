@@ -6,6 +6,7 @@ from lib.KafeKaggle.funciones import (
     load_image,
     load_images,
     load_image_dataset,
+    load_image_folder_dataset,
 )
 
 __all__ = [
@@ -15,4 +16,5 @@ __all__ = [
     "load_image",
     "load_images",
     "load_image_dataset",
+    "load_image_folder_dataset",
 ]
