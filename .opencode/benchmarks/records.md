@@ -30,6 +30,7 @@ This file consolidates all benchmark records for KAFE. Individual benchmark file
 | RobustScaler | `src/lib/KafeMACHINE/preprocessing/RobustScaler.py` | ML preprocessing | 2026-09-21 | Baseline |
 | DecisionTreeRegressor | `src/lib/KafeMACHINE/DecisionTree.py` (Regressor) | ML algorithm | 2026-09-21 | Baseline |
 | KNNRegressor | `src/lib/KafeMACHINE/KNN.py` (Regressor) | ML algorithm | 2026-09-21 | Baseline |
+| KafeKAGGLE Image API | `src/lib/KafeKaggle/funciones.py` (load_image/load_images/load_image_dataset) | Library utility (ingesta de imagenes) | 2026-10-13 | Baseline |
 
 ---
 
@@ -1287,3 +1288,50 @@ Lecturas:
 ### 2026-10-10 — Inicializadores y regularizadores GESHA
 
 Medición con `.opencode/benchmarks/gesha_training_utilities.py` (una ejecución, semilla 7): small 10x3 0.011122 s; medium 300x8 0.001210 s; edge 1x1 0.000046 s; multi-feature 64x32 0.000992 s; stress 1000x128 0.061408 s. Incluye creación HeNormal y penalización L1L2; también se verificaron GlorotUniform y Orthogonal.
+
+---
+
+### Benchmark: KafeKAGGLE - Image Ingestion API (offline, synthetic data)
+
+- **Date**: 2026-10-13
+- **Component**: `src/lib/KafeKaggle/funciones.py` (load_image / load_images / load_image_dataset) + `src/lib/KafeKaggle/dataset.py` (ImageDataset)
+- **Category**: Library utility (image ingestion) / memory characterization
+- **Purpose**: Measure runtime and peak memory of the generic KafeKAGGLE image-ingestion API. OFFLINE: no network, no package installation. `_download_dataset` is replaced by a temp directory of synthetic 32x32 PNGs generated with Pillow, and `_require_image_dependencies` by a double returning (PIL.Image, None) so py7zr is not required.
+
+#### Setup
+
+- **Dataset**: synthetic PNG images 32x32 generated with Pillow (deterministic colors); NOT real CIFAR-10.
+- **Hardware**: 12 logical CPUs, CPU only
+- **Environment**: Python 3.13.11, Windows 11 (10.0.26200), Pillow 12.3.0
+- **Script**: `.opencode/benchmarks/kafekaggle_images.py`
+
+#### Methodology
+
+- Each scenario runs the public function 3 times inside `tracemalloc`; runtime is the median of `time.perf_counter()`, peak memory is the max of `tracemalloc.get_traced_memory()[1]`.
+- A 1-image warm-up runs both `load_images` and `load_image_dataset` before measuring (avoids lazy imports and first-call noise).
+- Images are regenerated per scenario inside a `tempfile.TemporaryDirectory`.
+
+#### Results
+
+| Scenario | N | Channels | Time (ms) | Peak (MB) |
+|----------|---:|---:|---:|---:|
+| load_images rgb N=8 | 8 | 3 | 172.847 | 0.800 |
+| load_images rgb N=64 | 64 | 3 | 1301.638 | 6.406 |
+| load_images rgb N=256 | 256 | 3 | 6047.247 | 25.609 |
+| load_images gray N=256 | 256 | 1 | 1551.444 | 8.603 |
+| load_image_dataset N=256 (rgb) | 256 | 3 | 5923.080 | 25.642 |
+
+#### Conclusions
+
+- Peak memory grows linearly with N*C*H*W: about 100 KB per 32x32 rgb image (a boxed Python float plus list overhead); gray (1 channel) is roughly one third of rgb.
+- Confirms risk R3: `load_images` / `load_image_dataset` materialize the whole set in memory. A CIFAR-10 style set (4000 rgb 32x32) would need about 400 MB; the full 50000-image train split about 5 GB. `limit` is the documented mitigation.
+- Runtime is dominated by the pure-Python per-pixel normalization loop (about 24 ms per rgb image); gray is about 4x faster at equal N.
+- `load_image_dataset` at N=256 is on par with `load_images` (5923 vs 6047 ms): label CSV parsing and encoding add negligible overhead; image decoding dominates.
+- Offline synthetic measurements isolate the deterministic ingestion cost; they exclude network download (R4) and 7z extraction (R5), which the real CIFAR-10 flow would add.
+
+#### Related
+
+- Tests: `tests/test_KafeKaggle_backend.py` (64 passed) + fixtures
+- Knowledge: `.opencode/knowledge/concepts/kaggle-image-ingestion.md`
+- Impact: `.opencode/progress/impact-kafekaggle-images.md` (R3/R4)
+- Script: `.opencode/benchmarks/kafekaggle_images.py`

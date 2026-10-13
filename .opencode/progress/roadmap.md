@@ -65,6 +65,7 @@ Active project planning. Do not move this content into AGENTS.md (see AGENTS.md 
 - ✔ GESHA/PARDOS — ejemplo Iris supervisado con split estratificado (2026-10-10, ADR-0017)
 - ✔ KafeKAGGLE — librería de ingesta de datasets de Kaggle (2026-10-08)
 - ✔ KafeKAGGLE v2 — cliente kagglehub: datasets públicos sin credenciales (2026-10-08, ADR-0013)
+- ✔ KafeKAGGLE — API genérica de ingesta de imágenes (load_image/load_images/load_image_dataset, reemplaza load_cifar10) + A1 en KafeMACHINE (2026-10-13, ADR-0018)
 - ☐ Harness Engineering — Actualizar reglas (5 benchmarks, conceptos enriquecidos, verificación de contexto)
 - ☐ Engineering Lead Permissions — Permisos edit/write para docs y records
 

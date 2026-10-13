@@ -27,11 +27,16 @@ Diferencias con Hugging Face (KafeHF):
     - Las descargas quedan cacheadas por kagglehub en ~/.cache/kagglehub,
       por lo que un segundo acceso al mismo dataset es instantáneo.
 
-Los archivos se leen con la librería `csv` de la estándar (sin pandas) y se
-convierten a DataFrames de PARDOS o a matrices de números para NUMK/GESHA.
+Además de las tablas CSV, KafeKAGGLE ofrece una API genérica de ingesta de
+imágenes (`load_image`, `load_images`, `load_image_dataset`) que devuelve
+imágenes en formato `[C][H][W]` con píxeles normalizados a `[0,1]`,
+compatible con las capas Conv2D de GESHA.
 
-Dependencia externa opcional: kagglehub.
-    pip install kagglehub
+Dependencias externas opcionales (auto-instaladas bajo demanda):
+    - kagglehub — cliente oficial de descarga.
+    - Pillow — decodificación PNG/JPEG/BMP y redimensionado.
+    - py7zr — extracción de archivos ``.7z`` anidados (``.zip`` usa la
+      biblioteca estándar ``zipfile``).
 """
 
 from global_utils import check_sig
@@ -43,8 +48,8 @@ import logging
 import os
 import subprocess
 import sys
+import zipfile
 from contextlib import contextmanager, redirect_stdout
-import random
 
 try:
     import kagglehub
@@ -332,12 +337,14 @@ def _convert_to_pardos(columnas, filas):
     return DataFrame(columnas, datos)
 
 
-def _require_cifar_image_dependencies():
-    """Obtiene los lectores opcionales para PNG y archivos 7z de CIFAR-10.
+def _require_image_dependencies():
+    """Obtiene los lectores opcionales para imágenes y archivos 7z.
 
-    KafeKAGGLE mantiene ``kagglehub`` como dependencia diferida. CIFAR-10
-    necesita además Pillow para decodificar PNG y py7zr para extraer el
-    archivo publicado por Kaggle; se instalan solo al solicitar este loader.
+    KafeKAGGLE mantiene ``kagglehub`` como dependencia diferida. La ingesta
+    de imágenes necesita además Pillow para decodificar PNG/JPEG/BMP y
+    redimensionar, y py7zr para extraer archivos ``.7z`` anidados. Ambos se
+    instalan solo al solicitar esta API y permanecen opcionales.
+    Devuelve ``(PIL.Image, py7zr)``.
     """
     modules = []
     for package, module_name in (("Pillow", "PIL.Image"), ("py7zr", "py7zr")):
@@ -357,146 +364,545 @@ def _require_cifar_image_dependencies():
             except Exception as error:
                 raise Exception(
                     f"kaggle: no se pudo instalar '{package}', necesario para "
-                    f"leer CIFAR-10. Detalle: {error}"
+                    f"la ingesta de imágenes. Detalle: {error}"
                 ) from error
     return modules[0], modules[1]
 
 
-def _find_file_by_name(root, name):
-    """Busca un archivo por nombre sin depender de una ruta interna fija."""
-    target = name.lower()
-    matches = []
-    for directory, _subdirs, files in os.walk(root):
-        for filename in files:
-            if filename.lower() == target:
-                matches.append(os.path.join(directory, filename))
-    if not matches:
-        return None
-    return sorted(matches)[0]
+def _normalize_color_mode(color_mode):
+    """Valida y normaliza el modo de color antes de descargar nada.
 
-
-def _extract_7z_if_needed(archive_path, py7zr_module):
-    """Extrae un 7z una sola vez junto al archivo y devuelve su carpeta."""
-    destination = archive_path[:-3]
-    if os.path.isdir(destination) and any(os.scandir(destination)):
-        return destination
-    os.makedirs(destination, exist_ok=True)
-    try:
-        with py7zr_module.SevenZipFile(archive_path, mode="r") as archive:
-            archive.extractall(path=destination)
-    except Exception as error:
-        raise Exception(f"kaggle: no se pudo extraer '{os.path.basename(archive_path)}': {error}") from error
-    return destination
-
-
-def _find_cifar_train_directory(dataset_path, py7zr_module):
-    """Localiza o extrae el directorio de PNG etiquetados de CIFAR-10."""
-    for directory, _subdirs, files in os.walk(dataset_path):
-        if any(filename.lower().endswith(".png") for filename in files):
-            return directory
-    archive = _find_file_by_name(dataset_path, "train.7z")
-    if archive is None:
+    Acepta ``"rgb"`` (3 canales, ``convert("RGB")``) y ``"gray"`` /
+    ``"grayscale"`` (1 canal, ``convert("L")``), sin distinguir mayúsculas
+    ni espacios. Cualquier otro valor produce un error educativo.
+    Devuelve ``"rgb"`` o ``"gray"``.
+    """
+    if not isinstance(color_mode, str):
         raise Exception(
-            "kaggle: CIFAR-10 requiere imágenes de entrenamiento PNG o el archivo train.7z."
+            "kaggle: 'color_mode' debe ser una cadena: 'rgb' o 'gray'."
         )
-    extracted = _extract_7z_if_needed(archive, py7zr_module)
-    for directory, _subdirs, files in os.walk(extracted):
-        if any(filename.lower().endswith(".png") for filename in files):
-            return directory
-    raise Exception("kaggle: train.7z no contiene imágenes PNG.")
+    normalizado = color_mode.strip().lower()
+    if normalizado == "rgb":
+        return "rgb"
+    if normalizado in ("gray", "grayscale"):
+        return "gray"
+    raise Exception(
+        f"kaggle: 'color_mode' inválido ('{color_mode}'). Usa 'rgb' o "
+        "'gray'/'grayscale'."
+    )
 
 
-def _read_cifar_labels(labels_path):
-    """Lee ``trainLabels.csv`` y codifica sus diez clases en 0..9."""
-    with open(labels_path, encoding="utf-8-sig", newline="") as stream:
-        reader = csv.DictReader(stream)
-        if not reader.fieldnames or "id" not in reader.fieldnames or "label" not in reader.fieldnames:
-            raise Exception("kaggle: trainLabels.csv debe contener las columnas 'id' y 'label'.")
-        raw_labels = {}
-        for row in reader:
-            raw_labels[int(row["id"])] = row["label"].strip()
-    classes = sorted(set(raw_labels.values()))
-    if len(classes) != 10:
-        raise Exception(f"kaggle: CIFAR-10 debe tener 10 clases, se encontraron {len(classes)}.")
-    encoded = {image_id: classes.index(label) for image_id, label in raw_labels.items()}
-    return encoded
+def _normalize_dimension(valor, nombre):
+    """Valida que ``height``/``width`` sean enteros positivos."""
+    if isinstance(valor, bool) or not isinstance(valor, int) or valor <= 0:
+        raise Exception(
+            f"kaggle: '{nombre}' debe ser un entero positivo; se recibió "
+            f"{valor!r}."
+        )
+    return valor
 
 
-def _load_cifar_image(path, image_module):
-    """Convierte un PNG RGB de 32×32 al formato GESHA [canal, alto, ancho]."""
+def _list_members(root):
+    """Lista rutas relativas de todos los archivos de ``root``.
+
+    Aplica la misma política de ``_extract_table``: ignora ``__MACOSX`` y
+    cualquier componente que empiece con '.'. Devuelve la lista ordenada.
+    """
+    miembros = []
+    for directorio, _subdirs, archivos in os.walk(root):
+        for nombre in archivos:
+            absoluto = os.path.join(directorio, nombre)
+            relativo = os.path.relpath(absoluto, root)
+            if "__MACOSX" in relativo:
+                continue
+            if any(parte.startswith(".") for parte in relativo.split(os.sep)):
+                continue
+            miembros.append(relativo.replace(os.sep, "/"))
+    return sorted(miembros)
+
+
+def _find_images(root):
+    """Recolecta rutas relativas de imágenes ordenadas dentro de ``root``.
+
+    Recorre ``root`` en profundidad y devuelve las rutas relativas (con
+    separador '/') de los archivos ``.png/.jpg/.jpeg/.bmp`` (sin distinguir
+    mayúsculas), ignorando metadatos de macOS (``__MACOSX``) y archivos u
+    ocultos (componentes que empiezan con '.'), igual que ``_extract_table``.
+    Ordena la lista para que el resultado sea determinista. Error educativo
+    si no hay ninguna imagen.
+    """
+    extensiones = (".png", ".jpg", ".jpeg", ".bmp")
+    imagenes = []
+    for directorio, _subdirs, archivos in os.walk(root):
+        for nombre in archivos:
+            if not nombre.lower().endswith(extensiones):
+                continue
+            absoluto = os.path.join(directorio, nombre)
+            relativo = os.path.relpath(absoluto, root)
+            if "__MACOSX" in relativo:
+                continue
+            if any(parte.startswith(".") for parte in relativo.split(os.sep)):
+                continue
+            imagenes.append(relativo.replace(os.sep, "/"))
+    if not imagenes:
+        raise Exception(
+            "kaggle: El dataset no contiene imágenes .png/.jpg/.jpeg/.bmp."
+        )
+    return sorted(imagenes)
+
+
+def _resolve_member(members, selector, descripcion):
+    """Resuelve una ruta exacta o un basename único dentro de ``members``.
+
+    Primero intenta la coincidencia exacta de la ruta relativa; si no, por
+    basename. Un basename que coincide con varios archivos es ambiguo y un
+    selector inexistente provoca un error educativo que lista los candidatos.
+    """
+    exactos = [m for m in members if m == selector]
+    if exactos:
+        return exactos[0]
+    objetivo = os.path.basename(selector).lower()
+    por_nombre = [m for m in members if os.path.basename(m).lower() == objetivo]
+    if len(por_nombre) == 1:
+        return por_nombre[0]
+    if len(por_nombre) > 1:
+        raise Exception(
+            f"kaggle: {descripcion} '{selector}' es ambiguo; coincide con "
+            f"varios archivos: {por_nombre}"
+        )
+    raise Exception(
+        f"kaggle: No se encontró {descripcion} '{selector}'. Archivos "
+        f"disponibles: {members}"
+    )
+
+
+def _safe_join(destination, member):
+    """Devuelve la ruta absoluta segura de ``member`` bajo ``destination``.
+
+    Retorna ``None`` si la entrada intenta salir del destino (*path
+    traversal*), por ejemplo con componentes ``..`` o una ruta absoluta.
+    """
+    raiz = os.path.realpath(destination)
+    candidato = os.path.realpath(os.path.join(destination, member))
+    if candidato == raiz:
+        return candidato
+    if not candidato.startswith(raiz + os.sep):
+        return None
+    return candidato
+
+
+def _extract_zip(archive_path, destination):
+    """Extrae un ``.zip`` descartando entradas inseguras (path traversal)."""
+    with zipfile.ZipFile(archive_path) as archive:
+        for member in archive.namelist():
+            if _safe_join(destination, member) is None:
+                continue
+            archive.extract(member, destination)
+
+
+def _extract_7z(archive_path, destination, py7zr_module):
+    """Extrae un ``.7z`` descartando entradas inseguras (path traversal)."""
+    with py7zr_module.SevenZipFile(archive_path, mode="r") as archive:
+        seguros = [
+            member
+            for member in archive.getnames()
+            if _safe_join(destination, member) is not None
+        ]
+        if seguros:
+            archive.extract(path=destination, targets=seguros)
+
+
+def _ensure_images_extracted(root, py7zr_module):
+    """Extrae los ``.zip``/``.7z`` anidados de ``root`` una sola vez y seguro.
+
+    Recorre ``root`` buscando archivos ``.zip`` y ``.7z`` y extrae cada uno
+    en una carpeta hermana (``<archivo>_extracted``) sólo si no existe o
+    está vacía. La extracción valida cada entrada contra *path traversal*
+    (descarta las que salgan del destino): los ``.zip`` se abren con
+    ``zipfile`` de la biblioteca estándar y los ``.7z`` con ``py7zr``.
+    Es idempotente: una segunda llamada no re-extrae. Devuelve ``root``.
+    """
+    for directorio, _subdirs, archivos in os.walk(root):
+        for nombre in archivos:
+            extension = os.path.splitext(nombre)[1].lower()
+            if extension not in (".zip", ".7z"):
+                continue
+            archive_path = os.path.join(directorio, nombre)
+            destination = archive_path + "_extracted"
+            if os.path.isdir(destination) and any(os.scandir(destination)):
+                continue
+            os.makedirs(destination, exist_ok=True)
+            try:
+                if extension == ".zip":
+                    _extract_zip(archive_path, destination)
+                else:
+                    _extract_7z(archive_path, destination, py7zr_module)
+            except Exception as error:
+                raise Exception(
+                    f"kaggle: no se pudo extraer "
+                    f"'{os.path.basename(archive_path)}': {error}"
+                ) from error
+    return root
+
+
+def _load_image_array(path, height, width, color_mode, image_module):
+    """Decodifica, reescala y normaliza una imagen al formato GESHA ``[C][H][W]``.
+
+    Fundamento: la imagen se decodifica con Pillow, se convierte al modo de
+    color pedido (``convert("RGB")`` o ``convert("L")``), se redimensiona a
+    ``(width, height)`` y se normaliza cada píxel a ``[0,1]`` dividiendo por
+    255 (:math:`p/255`). El resultado es una lista ``[canal][alto][ancho]``
+    (layout CHW que espera Conv2D), con 3 canales en ``"rgb"`` y 1 en
+    ``"gray"``. Error educativo en español si la lectura falla.
+    """
     try:
         with image_module.open(path) as image:
-            rgb = image.convert("RGB")
-            if rgb.size != (32, 32):
-                raise Exception(f"se esperaba 32x32 y se obtuvo {rgb.size[0]}x{rgb.size[1]}")
-            pixels = list(rgb.getdata())
+            convertida = image.convert("RGB" if color_mode == "rgb" else "L")
+            redimensionada = convertida.resize((width, height))
+            tamano = redimensionada.size
+            datos = redimensionada.tobytes()
+        canales = 3 if color_mode == "rgb" else 1
     except Exception as error:
-        raise Exception(f"kaggle: no se pudo leer la imagen '{os.path.basename(path)}': {error}") from error
+        raise Exception(
+            f"kaggle: no se pudo leer la imagen "
+            f"'{os.path.basename(path)}': {error}"
+        ) from error
+    if tamano != (width, height):
+        raise Exception(
+            f"kaggle: la imagen '{os.path.basename(path)}' tiene tamaño "
+            f"{tamano}; se esperaba {(width, height)}."
+        )
+    if canales == 1:
+        return [
+            [
+                [
+                    float(datos[fila * width + columna]) / 255.0
+                    for columna in range(width)
+                ]
+                for fila in range(height)
+            ]
+        ]
     return [
-        [[float(pixels[row * 32 + column][channel]) / 255.0 for column in range(32)] for row in range(32)]
-        for channel in range(3)
+        [
+            [
+                float(datos[(fila * width + columna) * 3 + canal]) / 255.0
+                for columna in range(width)
+            ]
+            for fila in range(height)
+        ]
+        for canal in range(canales)
     ]
 
 
-@check_sig([4], [cadena_t], [entero_t], [entero_t], [entero_t])
-def load_cifar10(dataset_name, train_samples, test_samples, seed):
-    """Carga una muestra estratificada de CIFAR-10 para GESHA.
+def _detect_label_columns(fieldnames):
+    """Detecta las columnas de id y de etiqueta del CSV de etiquetas.
 
-    Descarga el dataset de Kaggle, lee los PNG etiquetados y retorna un
-    ``TrainTestSplit`` indexable: ``[X_train, X_test, y_train, y_test]``.
-    Las muestras se seleccionan por clase sin solapamiento; ``X_test`` es una
-    partición de evaluación extraída del conjunto etiquetado de entrenamiento,
-    pues el test de la competición no publica etiquetas.
+    La columna id se busca entre ``id/filename/image/file/img`` y la de
+    etiqueta entre ``label/class/category/clase/etiqueta`` (sin distinguir
+    mayúsculas). Devuelve ``(columna_id, columna_etiqueta)`` con los nombres
+    reales del encabezado; error educativo si no se detectan.
     """
-    if train_samples <= 0 or test_samples <= 0:
-        raise Exception("kaggle: train_samples y test_samples deben ser positivos.")
-    if train_samples % 10 != 0 or test_samples % 10 != 0:
-        raise Exception("kaggle: las cantidades de CIFAR-10 deben ser múltiplos de 10 para conservar el balance.")
+    if not fieldnames:
+        raise Exception("kaggle: El archivo de etiquetas no tiene encabezado.")
+    campos = {nombre.strip().lower(): nombre for nombre in fieldnames}
+    id_columna = None
+    for candidato in ("id", "filename", "image", "file", "img"):
+        if candidato in campos:
+            id_columna = campos[candidato]
+            break
+    etiqueta_columna = None
+    for candidato in ("label", "class", "category", "clase", "etiqueta"):
+        if candidato in campos:
+            etiqueta_columna = campos[candidato]
+            break
+    if id_columna is None or etiqueta_columna is None:
+        raise Exception(
+            "kaggle: no se detectaron las columnas de id y etiqueta en el "
+            f"archivo de etiquetas. Encabezado: {list(fieldnames)}. Se "
+            "esperaba una columna id ('id', 'filename', 'image', 'file', "
+            "'img') y una de etiqueta ('label', 'class', 'category', "
+            "'clase', 'etiqueta')."
+        )
+    return id_columna, etiqueta_columna
 
-    image_module, py7zr_module = _require_cifar_image_dependencies()
-    _validate_dataset_name(dataset_name)
-    _require_kagglehub()
-    dataset_path = _download_dataset(dataset_name.strip())
-    labels_path = _find_file_by_name(dataset_path, "trainLabels.csv")
-    if labels_path is None:
-        raise Exception("kaggle: no se encontró trainLabels.csv en el dataset CIFAR-10.")
-    image_directory = _find_cifar_train_directory(dataset_path, py7zr_module)
-    labels = _read_cifar_labels(labels_path)
 
-    by_class = {class_id: [] for class_id in range(10)}
-    for directory, _subdirs, files in os.walk(image_directory):
-        for filename in files:
-            if not filename.lower().endswith(".png"):
+def _read_image_labels(labels_path):
+    """Lee el CSV de etiquetas y devuelve ``({id: clase}, clases ordenadas)``.
+
+    La clave se normaliza a la CADENA del id sin extensión (``str(...)``),
+    de modo que emparejan tanto ids enteros ("1") como nombres con ceros a
+    la izquierda ("0001"). Las clases se devuelven ordenadas alfabéticamente.
+    """
+    with open(labels_path, encoding="utf-8-sig", newline="") as flujo:
+        reader = csv.DictReader(flujo)
+        id_columna, etiqueta_columna = _detect_label_columns(reader.fieldnames)
+        registros = {}
+        for fila in reader:
+            if fila is None:
                 continue
-            stem = os.path.splitext(filename)[0]
-            if stem.isdigit() and int(stem) in labels:
-                image_id = int(stem)
-                by_class[labels[image_id]].append((image_id, os.path.join(directory, filename)))
+            id_crudo = fila.get(id_columna)
+            etiqueta = fila.get(etiqueta_columna)
+            if id_crudo is None or etiqueta is None:
+                continue
+            clave = os.path.splitext(str(id_crudo).strip())[0]
+            if clave == "":
+                continue
+            registros[clave] = str(etiqueta).strip()
+    clases = sorted(set(registros.values()))
+    return registros, clases
 
-    per_class_train = train_samples // 10
-    per_class_test = test_samples // 10
-    rng = random.Random(seed)
-    train_records, test_records = [], []
-    for class_id in range(10):
-        records = sorted(by_class[class_id])
-        rng.shuffle(records)
-        required = per_class_train + per_class_test
-        if len(records) < required:
-            raise Exception(
-                f"kaggle: la clase {class_id} solo tiene {len(records)} imágenes; se requieren {required}."
-            )
-        train_records.extend((path, class_id) for _id, path in records[:per_class_train])
-        test_records.extend((path, class_id) for _id, path in records[per_class_train:required])
-    rng.shuffle(train_records)
-    rng.shuffle(test_records)
 
-    X_train = [_load_cifar_image(path, image_module) for path, _label in train_records]
-    X_test = [_load_cifar_image(path, image_module) for path, _label in test_records]
-    y_train = [label for _path, label in train_records]
-    y_test = [label for _path, label in test_records]
+def _encode_labels(records):
+    """Codifica etiquetas crudas como enteros ``0..N-1`` (clases ordenadas).
 
-    from lib.KafeMACHINE.model_selection.model_selection import TrainTestSplit
-    return TrainTestSplit(X_train, X_test, y_train, y_test)
+    El orden de las clases es alfabético, de modo que dos ejecuciones sobre
+    los mismos datos producen la misma codificación.
+    """
+    clases = sorted(set(records))
+    indices = {clase: indice for indice, clase in enumerate(clases)}
+    return [indices[clase] for clase in records]
+
+
+@check_sig([2, 3, 4, 5], [cadena_t], [cadena_t], [entero_t], [entero_t], [cadena_t])
+def load_image(dataset_name, image_path, height=32, width=32, color_mode="rgb"):
+    """
+    Carga una sola imagen de un dataset de Kaggle como tensor ``[C][H][W]``.
+
+    Abre la imagen indicada por ``image_path`` dentro del dataset, la
+    redimensiona a ``height × width`` y devuelve sus píxeles normalizados a
+    ``[0,1]`` con layout ``[canal][alto][ancho]`` (CHW), el que esperan las
+    capas Conv2D de GESHA.
+
+    Fundamento: la imagen se decodifica (Pillow), se convierte al modo de
+    color pedido (``convert("RGB")`` o ``convert("L")``), se reescala a
+    ``(width, height)`` y se normaliza cada píxel dividiendo por 255
+    (:math:`p/255`), pasando de ``[0,255]`` a ``[0,1]``.
+
+    Argumentos:
+        dataset_name (STR): Identificador 'dueno/conjunto' del dataset.
+        image_path (STR): Ruta relativa de la imagen dentro del dataset
+            (p. ej. "train/12.png"). Si no existe como ruta exacta, se
+            resuelve por nombre de archivo; si hay homónimos, se lanza un
+            error de ambigüedad que los lista.
+        height (INT, opcional): Alto de salida en píxeles (default 32).
+        width (INT, opcional): Ancho de salida en píxeles (default 32).
+        color_mode (STR, opcional): "rgb" (3 canales) o "gray"/"grayscale"
+            (1 canal). Default "rgb".
+
+    Retorna:
+        List[List[List[FLOAT]]] con forma ``[canales][alto][ancho]`` en
+        ``[0,1]``.
+
+    Ejemplo KAFE:
+        import kaggle;
+        List[List[List[FLOAT]]] img = kaggle.load_image("dueno/conjunto", "train/12.png", 32, 32, "rgb");
+
+    Nota: Requiere conexión a internet, `kagglehub` y las dependencias
+    opcionales `Pillow`/`py7zr` (se instalan automáticamente bajo demanda).
+    """
+    _validate_dataset_name(dataset_name)
+    if not image_path or not str(image_path).strip():
+        raise Exception(
+            "kaggle: 'image_path' no puede estar vacío; indica la ruta "
+            "relativa de una imagen dentro del dataset."
+        )
+    color_mode = _normalize_color_mode(color_mode)
+    height = _normalize_dimension(height, "height")
+    width = _normalize_dimension(width, "width")
+
+    image_module, py7zr_module = _require_image_dependencies()
+    _require_kagglehub()
+    root = _download_dataset(dataset_name.strip())
+    _ensure_images_extracted(root, py7zr_module)
+    imagenes = _find_images(root)
+    elegida = _resolve_member(imagenes, str(image_path).strip(), "la imagen")
+    return _load_image_array(
+        os.path.join(root, *elegida.split("/")),
+        height,
+        width,
+        color_mode,
+        image_module,
+    )
+
+
+@check_sig([1, 2, 3, 4, 5], [cadena_t], [entero_t], [entero_t], [cadena_t], [entero_t])
+def load_images(dataset_name, height=32, width=32, color_mode="rgb", limit=0):
+    """
+    Carga todas las imágenes de un dataset de Kaggle como lista de tensores.
+
+    Descubre recursivamente las imágenes ``.png/.jpg/.jpeg/.bmp`` del
+    dataset (ignorando ``__MACOSX`` y archivos ocultos), las ordena por
+    ruta relativa para un resultado determinista y devuelve cada una como
+    ``[C][H][W]`` con píxeles en ``[0,1]``.
+
+    Fundamento: cada imagen se decodifica, se convierte al modo de color,
+    se reescala a ``(width, height)`` y se normaliza (:math:`p/255`), igual
+    que en ``load_image``.
+
+    Argumentos:
+        dataset_name (STR): Identificador 'dueno/conjunto' del dataset.
+        height (INT, opcional): Alto de salida (default 32).
+        width (INT, opcional): Ancho de salida (default 32).
+        color_mode (STR, opcional): "rgb" o "gray"/"grayscale" (default "rgb").
+        limit (INT, opcional): Máximo de imágenes a cargar; 0 = todas.
+
+    Retorna:
+        List[List[List[List[FLOAT]]]] con una imagen ``[C][H][W]`` por
+        elemento, en orden determinista.
+
+    Ejemplo KAFE:
+        import kaggle;
+        List[List[List[List[FLOAT]]]] imgs = kaggle.load_images("dueno/conjunto", 32, 32, "rgb", 100);
+
+    Nota: Requiere conexión a internet y las dependencias opcionales
+    `Pillow`/`py7zr` (auto-instaladas). Materializa en memoria
+    O(N·C·H·W); usa `limit` en conjuntos grandes.
+    """
+    _validate_dataset_name(dataset_name)
+    color_mode = _normalize_color_mode(color_mode)
+    height = _normalize_dimension(height, "height")
+    width = _normalize_dimension(width, "width")
+    if limit < 0:
+        raise Exception(
+            f"kaggle: 'limit' debe ser mayor o igual que 0; se recibió {limit}."
+        )
+
+    image_module, py7zr_module = _require_image_dependencies()
+    _require_kagglehub()
+    root = _download_dataset(dataset_name.strip())
+    _ensure_images_extracted(root, py7zr_module)
+    imagenes = _find_images(root)
+    if limit > 0:
+        imagenes = imagenes[:limit]
+    return [
+        _load_image_array(
+            os.path.join(root, *relativa.split("/")),
+            height,
+            width,
+            color_mode,
+            image_module,
+        )
+        for relativa in imagenes
+    ]
+
+
+@check_sig([2, 3, 4, 5, 6], [cadena_t], [cadena_t], [entero_t], [entero_t], [cadena_t], [entero_t])
+def load_image_dataset(
+    dataset_name, labels_file, height=32, width=32, color_mode="rgb", limit=0
+):
+    """
+    Carga un dataset de imágenes etiquetadas de Kaggle como contenedor ``[X, y]``.
+
+    Descarga el dataset, extrae los archivos comprimidos anidados, lee el CSV
+    de etiquetas, empareja cada imagen con su etiqueta por el *stem* del
+    nombre de archivo (normalizado a cadena) y devuelve un ``ImageDataset``
+    indexable ``[X, y]``: ``X`` son las imágenes ``[C][H][W]`` en ``[0,1]`` y
+    ``y`` son las etiquetas codificadas ``0..N-1`` (clases ordenadas
+    alfabéticamente), alineadas y en el MISMO orden determinista.
+
+    Fundamento: las etiquetas (texto) se codifican a enteros para poder
+    usarse con la pérdida *sparse categorical crossentropy*; el orden
+    alfabético de las clases garantiza una codificación reproducible. El
+    contenedor no realiza ninguna división train/test: esa responsabilidad
+    queda en KafeMACHINE (``machine.stratified_train_test_split``).
+
+    Argumentos:
+        dataset_name (STR): Identificador 'dueno/conjunto' del dataset.
+        labels_file (STR): CSV de etiquetas dentro del dataset (columna id:
+            id/filename/image/file/img; columna etiqueta:
+            label/class/category/clase/etiqueta).
+        height (INT, opcional): Alto de salida (default 32).
+        width (INT, opcional): Ancho de salida (default 32).
+        color_mode (STR, opcional): "rgb" o "gray"/"grayscale" (default "rgb").
+        limit (INT, opcional): Máximo de imágenes etiquetadas a cargar; 0 =
+            todas. Con ``limit=0`` se exige que cada imagen encontrada tenga
+            etiqueta; con ``limit>0`` se cargan las primeras ``limit`` imágenes
+            etiquetadas (las imágenes sin etiqueta se ignoran).
+
+    Retorna:
+        ImageDataset (tipo KAFE ``MACHINE``): ``datos[0]`` = X (imágenes
+        ``[C][H][W]``), ``datos[1]`` = y (List[INT] codificadas).
+
+    Ejemplo KAFE:
+        import kaggle;
+        MACHINE datos = kaggle.load_image_dataset("dueno/conjunto", "trainLabels.csv", 32, 32, "rgb", 1000);
+        List[List[List[List[FLOAT]]]] X = datos[0];
+        List[INT] y = datos[1];
+
+    Nota: Requiere conexión a internet y las dependencias opcionales
+    `Pillow`/`py7zr` (auto-instaladas). Errores educativos si el archivo de
+    etiquetas no existe, si no se detectan sus columnas o si hay desajustes
+    entre imágenes y etiquetas.
+    """
+    _validate_dataset_name(dataset_name)
+    if not labels_file or not str(labels_file).strip():
+        raise Exception(
+            "kaggle: 'labels_file' no puede estar vacío; indica la ruta del "
+            "CSV de etiquetas dentro del dataset."
+        )
+    color_mode = _normalize_color_mode(color_mode)
+    height = _normalize_dimension(height, "height")
+    width = _normalize_dimension(width, "width")
+    if limit < 0:
+        raise Exception(
+            f"kaggle: 'limit' debe ser mayor o igual que 0; se recibió {limit}."
+        )
+
+    image_module, py7zr_module = _require_image_dependencies()
+    _require_kagglehub()
+    root = _download_dataset(dataset_name.strip())
+    _ensure_images_extracted(root, py7zr_module)
+    imagenes = _find_images(root)
+    etiquetas_elegidas = _resolve_member(
+        _list_members(root), str(labels_file).strip(), "el archivo de etiquetas"
+    )
+    registros, _clases = _read_image_labels(
+        os.path.join(root, *etiquetas_elegidas.split("/"))
+    )
+
+    rutas = []
+    etiquetas_crudas = []
+    no_emparejadas = 0
+    for relativa in imagenes:
+        clave = os.path.splitext(os.path.basename(relativa))[0]
+        etiqueta = registros.get(clave)
+        if etiqueta is None:
+            no_emparejadas += 1
+            continue
+        rutas.append(relativa)
+        etiquetas_crudas.append(etiqueta)
+        if limit > 0 and len(rutas) >= limit:
+            break
+
+    if not rutas:
+        raise Exception(
+            f"kaggle: ninguna de las {len(imagenes)} imágenes del dataset "
+            f"coincide con las etiquetas de '{labels_file}' "
+            f"(emparejadas=0, no emparejadas={no_emparejadas})."
+        )
+    if limit == 0 and no_emparejadas:
+        raise Exception(
+            f"kaggle: hay imágenes sin etiqueta en '{labels_file}' "
+            f"(emparejadas={len(rutas)}, no emparejadas={no_emparejadas}). "
+            "Usa 'limit' para cargar sólo una muestra o revisa el archivo de "
+            "etiquetas."
+        )
+
+    X = [
+        _load_image_array(
+            os.path.join(root, *relativa.split("/")),
+            height,
+            width,
+            color_mode,
+            image_module,
+        )
+        for relativa in rutas
+    ]
+    y = _encode_labels(etiquetas_crudas)
+
+    from lib.KafeKaggle.dataset import ImageDataset
+
+    return ImageDataset(X, y)
 
 
 @check_sig([1, 2], [cadena_t], [cadena_t])

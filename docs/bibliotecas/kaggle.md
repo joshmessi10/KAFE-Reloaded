@@ -86,3 +86,83 @@ PARDOS, transforma `diagnosis` en `B=0` y `M=1`, crea una división
 estratificada 80/20 y normaliza solamente con el entrenamiento. Después
 entrena GESHA con la arquitectura 30-64-32-16-1, ReLU, Dropout del 20 % y
 salida Sigmoid; la evaluación muestra el accuracy de prueba y `P(maligno)`.
+
+## Ingesta de imágenes
+
+Además de las tablas CSV, KafeKAGGLE ofrece una **API genérica de imágenes**
+(construida sobre `kagglehub`, ADR-0013) que descarga el dataset, descubre
+recursivamente los archivos `.png/.jpg/.jpeg/.bmp` (ignorando `__MACOSX` y los
+archivos ocultos), los decodifica, los redimensiona y normaliza sus píxeles a
+`[0,1]`. El resultado tiene layout **`[C][H][W]`** (`canal × alto × ancho`), el
+que esperan las capas `Conv2D` de GESHA (ADR-0011). No está ligada a ningún
+dataset concreto: sirve para cualquier conjunto de imágenes de Kaggle.
+
+| Función | Retorno |
+|---|---|
+| `load_image(dataset_name, image_path, height=32, width=32, color_mode="rgb")` | una imagen `[C][H][W]` |
+| `load_images(dataset_name, height=32, width=32, color_mode="rgb", limit=0)` | `List[[C][H][W]]` |
+| `load_image_dataset(dataset_name, labels_file, height=32, width=32, color_mode="rgb", limit=0)` | contenedor `MACHINE` con `[0]=X`, `[1]=y` |
+
+- **Formato `[C,H,W]`**: cada imagen es una lista `[canal][alto][ancho]`; cada
+  píxel se normaliza a `[0,1]` dividiendo por 255 (`p/255`).
+- **`color_mode`**: `"rgb"` produce 3 canales (`convert("RGB")`);
+  `"gray"`/`"grayscale"` produce 1 canal (`convert("L")`). Cualquier otro valor
+  lanza un error educativo antes de descargar nada.
+- **`limit`**: `0` carga todas las imágenes; un valor positivo carga como mucho
+  las primeras `limit`.
+- **`load_image_dataset`**: lee el CSV de etiquetas indicado, detecta las
+  columnas de id (`id`/`filename`/`image`/`file`/`img`) y de etiqueta
+  (`label`/`class`/`category`/`clase`/`etiqueta`), empareja cada imagen con su
+  etiqueta por el *stem* del nombre de archivo y codifica las clases como
+  enteros `0..N-1` en orden alfabético (codificación reproducible). Devuelve un
+  contenedor indexable de tipo KAFE `MACHINE`: `datos[0]` son las imágenes `X`
+  y `datos[1]` las etiquetas `y`.
+
+El orden de `load_images` y `load_image_dataset` es **determinista**: las rutas
+relativas se ordenan alfabéticamente, de modo que dos ejecuciones sobre los
+mismos datos producen siempre el mismo resultado.
+
+### Dependencias opcionales de imágenes
+
+La ingesta de imágenes necesita dos dependencias **opcionales**, instaladas
+automáticamente bajo demanda (patrón de `kagglehub`):
+
+- `Pillow` — decodificación de PNG/JPEG/BMP y redimensionado.
+- `py7zr` — extracción de archivos `.7z` anidados (los `.zip` usan la
+  biblioteca estándar `zipfile`).
+
+Solo se instalan cuando un programa usa esta API. La extracción de archivos
+comprimidos valida cada entrada contra *path traversal* y descarta las que
+intenten salir del destino.
+
+### Memoria
+
+Todas las imágenes se materializan **en memoria** con complejidad
+`O(N·C·H·W)` (listas anidadas de Python). Una imagen 32×32 RGB ocupa del orden
+de 0,1 MB, por lo que 4000 imágenes rondan los 400 MB y el split de
+entrenamiento completo de CIFAR-10 (50000 imágenes) ronda los 5 GB. Usa
+`limit` para cargar solo una muestra de conjuntos grandes.
+
+### División train/test
+
+KafeKAGGLE **no** realiza la división train/test: esa responsabilidad queda en
+KafeMACHINE con `machine.stratified_train_test_split`, que reparte `X` e `y`
+conservando la proporción de cada clase. Esto desacopla la ingesta de imágenes
+de la selección de modelo (ADR-0018).
+
+```kafe
+import kaggle;
+import machine;
+
+MACHINE datos = kaggle.load_image_dataset("ayush1220/cifar10", "trainLabels.csv", 32, 32, "rgb", 1000);
+List[List[List[List[FLOAT]]]] X = datos[0];
+List[INT] y = datos[1];
+
+MACHINE split = machine.stratified_train_test_split(X, y, 0.2, 42);
+List[List[List[List[FLOAT]]]] X_train = split[0];
+List[List[List[List[FLOAT]]]] X_test  = split[1];
+```
+
+Para una sola imagen o una lista sin etiquetas, usa `load_image` o
+`load_images`. `src/Ejemplo.kf` entrena una CNN Mini sobre estas imágenes con
+GESHA (migrado a `load_image_dataset` + `machine.stratified_train_test_split`).

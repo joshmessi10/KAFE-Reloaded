@@ -243,10 +243,10 @@ def svm(C=1.0, kernel='linear', max_iter=1000):
 
 
 @check_sig({
-    2: [matriz_numeros_t, vector_numeros_t],
-    3: [matriz_numeros_t, vector_numeros_t, flotante_t],
-    4: [matriz_numeros_t, vector_numeros_t, flotante_t, entero_t],
-    5: [matriz_numeros_t, vector_numeros_t, flotante_t, entero_t, booleano_t]
+    2: [lista_cualquiera_t, vector_numeros_t],
+    3: [lista_cualquiera_t, vector_numeros_t, flotante_t],
+    4: [lista_cualquiera_t, vector_numeros_t, flotante_t, entero_t],
+    5: [lista_cualquiera_t, vector_numeros_t, flotante_t, entero_t, booleano_t]
 })
 def train_test_split(X, y, test_size=0.2, random_state=0, shuffle=True):
     """
@@ -263,9 +263,9 @@ def train_test_split(X, y, test_size=0.2, random_state=0, shuffle=True):
 
 
 @check_sig({
-    2: [matriz_numeros_t, vector_numeros_t],
-    3: [matriz_numeros_t, vector_numeros_t, flotante_t],
-    4: [matriz_numeros_t, vector_numeros_t, flotante_t, entero_t],
+    2: [lista_cualquiera_t, vector_numeros_t],
+    3: [lista_cualquiera_t, vector_numeros_t, flotante_t],
+    4: [lista_cualquiera_t, vector_numeros_t, flotante_t, entero_t],
 })
 def stratified_train_test_split(X, y, test_size=0.2, random_state=0):
     """Divide matrices y etiquetas preservando las proporciones de clase."""

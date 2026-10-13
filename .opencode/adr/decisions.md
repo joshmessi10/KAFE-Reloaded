@@ -599,3 +599,75 @@ reemplazan la elección del cliente y el gate de credenciales.
 **Decision:** Incorporar `stratified_train_test_split` a KafeMACHINE, con la misma estructura de retorno que `train_test_split`, y usarlo después de codificar etiquetas con PARDOS/LabelEncoder.
 
 **Consequences:** El ejemplo obtiene 120/30 muestras y 40/10 por especie. La normalización se ajusta únicamente sobre entrenamiento, evitando fuga de datos.
+
+**Actualización (2026-10-13, ADR-0018):** El parámetro `X` de `train_test_split` y `stratified_train_test_split` pasó de `matriz_numeros_t` a `lista_cualquiera_t` para aceptar tensores de imagen 4D `[N,C,H,W]`. Cambio **retrocompatible**: `y` permanece `vector_numeros_t` y los cuerpos siguen indexando `X[i]`. Prueba de regresión: `tests/KafeMACHINE/model_selection/test_stratified_train_test_split_4d.kf`.
+
+---
+
+## ADR-0018: KafeKAGGLE — interfaz genérica de ingesta de imágenes
+
+- **Status**: accepted
+- **Date**: 2026-10-13
+
+### Contexto
+
+`load_cifar10` era un cargador **experimental** en `src/lib/KafeKaggle/funciones.py`, específico de CIFAR-10, sin tests ni documentación, y referenciado únicamente por `src/lib/KafeKaggle/__init__.py` y `src/Ejemplo.kf`. Sus helpers (`_require_cifar_image_dependencies`, `_find_cifar_train_directory`, `_read_cifar_labels`, `_load_cifar_image`) acoplaban la librería a un dataset concreto y, a través de `TrainTestSplit`, a KafeMACHINE. Se reemplaza por una **API genérica de imágenes** construida sobre `kagglehub` (ADR-0013), desacoplada de datasets concretos y con retorno compatible con GESHA/Conv2D en formato `[C,H,W]` con píxeles normalizados a `[0,1]` (ADR-0011).
+
+El Impact Analysis (`impact-kafekaggle-images.md`) identificó que la división estratificada `machine.stratified_train_test_split` **rechaza X de 4 dimensiones** por su `@check_sig` basado en `matriz_numeros_t = [List[List[INT]], List[List[FLOAT]]]`, bloqueando el flujo `load_image_dataset` + split propuesto. El usuario aprobó la alternativa **A1** (relajar el tipo de X en el split) para preservar el desacoplamiento.
+
+### Decisión
+
+#### Decisión 1 — Nueva API pública de 3 funciones en `src/lib/KafeKaggle/funciones.py`
+
+- `load_image(dataset_name, image_path, height=32, width=32, color_mode="rgb")` → una imagen `[C][H][W]` (FLOAT en `[0,1]`); aridades `[2,3,4,5]` con tipos `[cadena_t, cadena_t, entero_t, entero_t, cadena_t]` (corrige la inconsistencia con los defaults, hallazgo H1).
+- `load_images(dataset_name, height=32, width=32, color_mode="rgb", limit=0)` → `List[[C][H][W]]` en orden **determinista** (por ruta relativa ordenada); `limit=0` = todas; aridades `[1,2,3,4,5]`.
+- `load_image_dataset(dataset_name, labels_file, height=32, width=32, color_mode="rgb", limit=0)` → contenedor indexable `[X, y]`; aridades `[2,3,4,5,6]`.
+
+Detalles conservados: `color_mode` `"rgb"`→3 canales (`convert("RGB")`), `"gray"`/`"grayscale"`→1 canal (`convert("L")`), otro valor→error educativo en español; descubrimiento recursivo de `.png/.jpg/.jpeg/.bmp` ignorando `__MACOSX`/dotfiles y ordenando rutas relativas (política de `_extract_table`, `funciones.py:249`); redimensionado con `PIL.Image.resize` a `(width, height)`; etiquetas leídas con `csv` estándar, detección de columnas id/etiqueta por nombre, emparejamiento por stem y codificación 0..N-1. Las validaciones de `color_mode` y de parámetros deben ocurrir **antes** de `_download_dataset` para permitir fixtures de error offline (hallazgo H6).
+
+#### Decisión 2 — Eliminación de `load_cifar10`
+
+Se elimina `load_cifar10` y los helpers específicos de CIFAR. Es un *breaking change* aceptable: símbolo **experimental, sin tests ni docs**, referenciado sólo por `src/lib/KafeKaggle/__init__.py` y `src/Ejemplo.kf`, que se actualizan (`__init__.py` reexporta las 3 funciones nuevas; `Ejemplo.kf` migra al nuevo flujo). `TypeUtils.py`, la gramática y `EvalVisitorPrimitivo.py` no cambian (dispatch dinámico por nombre de librería).
+
+#### Decisión 3 — Dependencias opcionales `Pillow` y `py7zr` con auto-instalación diferida
+
+- `Pillow` — decodificación PNG/JPEG/BMP y redimensionado (`PIL.Image`).
+- `py7zr` — extracción de archivos `.7z` anidados.
+- `.zip` se maneja con `zipfile` (stdlib).
+
+Permitidas por la Dependency Policy: son **utilidades de E/S**, no implementaciones de algoritmos ML; precedente `kagglehub` (ADR-0012/ADR-0013). Se instalan de forma diferida (patrón `_require_image_dependencies`, renombrado desde `_require_cifar_image_dependencies`) y permanecen opcionales/on-demand. La extracción de archivos no confiables debe validar rutas (evitar *path traversal*) y extraer sólo bajo el destino controlado.
+
+#### Decisión 4 (núcleo, A1) — Relajar la validación de tipo de `X` en el split de KafeMACHINE
+
+Se relaja la validación de tipo de `X` en `train_test_split` y `stratified_train_test_split` de KafeMACHINE para aceptar listas de **anidamiento arbitrario**, usando `lista_cualquiera_t` (`src/TypeUtils.py:68`) en lugar de `matriz_numeros_t`; `y` permanece `vector_numeros_t`.
+
+- **Motivo:** el split estratificado debe poder aplicarse a tensores de imagen 4D `[N,C,H,W]`.
+- **Retrocompatible:** acepta un **superconjunto** de tipos (no rompe llamadas 2D existentes). El cuerpo ya indexa `X[i]`, válido para 4D.
+- **Desacopla** KafeKAGGLE de la división (el split queda enteramente en KafeMACHINE).
+- **Referencia/actualización:** ADR-0017 (contrato público de KafeMACHINE) se actualiza con esta ampliación.
+- Requiere confirmar que `model_selection.py` no asume 2D en el cuerpo.
+
+#### Decisión 5 — `load_image_dataset` devuelve un contenedor indexable `ImageDataset`
+
+`load_image_dataset` devuelve un contenedor indexable `ImageDataset` (subclase de `lib.KafeMACHINE.BaseMachine`, por tanto tipo KAFE `MACHINE`) con `[0]=X`, `[1]=y`.
+
+- **Motivo (hallazgo empírico):** KAFE **RECHAZA** asignar a una variable una lista heterogénea (`Expected homogeneous list`); devolver `[X, y]` como lista plana **impediría su uso bindable**.
+- `ImageDataset` **NO realiza ninguna división** (esa queda en KafeMACHINE), preservando el desacoplamiento funcional; sólo importa la clase base neutra.
+- **Precedente:** `TrainTestSplit` es el mismo patrón.
+
+### Alternativas Consideradas
+
+- **A2 — Mantener la división dentro de KafeKAGGLE** (cuarta función o que `load_image_dataset` devuelva `TrainTestSplit`). **Rechazada**: reacopla KafeKAGGLE a KafeMACHINE (el mismo acoplamiento que tenía `load_cifar10`) y contradice el objetivo explícito de desacoplamiento.
+- **A3 — Devolver y dividir índices.** **Rechazada**: KAFE no ofrece una primitiva de *gather* por índices, por lo que alinear imágenes y etiquetas tras el split no es viable sin A1.
+- **Devolver `[X, y]` como lista plana.** **Rechazada**: KAFE no permite enlazar una lista heterogénea a una variable, por lo que no sería utilizable.
+- **Carga perezosa (iterador/generador).** **Rechazada**: no encaja con el retorno `List[...]` de KAFE; se prefiere `limit` + documentación.
+- **Decodificar imágenes sin Pillow.** **Rechazada**: no hay decodificación PNG/JPG en la stdlib.
+
+### Consecuencias
+
+- **Nueva API pública** de ingesta de imágenes en KafeKAGGLE; se **elimina** `load_cifar10` (breaking change aceptable de símbolo experimental).
+- **KafeKaggle gana dependencias opcionales** `Pillow`/`py7zr` (auto-instalación diferida; `.zip` con stdlib).
+- **KafeMACHINE amplía su contrato de tipos** de forma **retrocompatible** (`X` acepta anidamiento arbitrario; `y` sigue `vector_numeros_t`); se actualiza ADR-0017 y se añaden pruebas.
+- **`Ejemplo.kf` migra** a `load_image_dataset` + `machine.stratified_train_test_split`.
+- La memoria O(N·C·H·W) de listas anidadas de Python y la caché sin evicción de `kagglehub` quedan como limitaciones documentadas (`limit`, advertencias).
+- Acompañan a la decisión: `docs/bibliotecas/kaggle.md`, concept record de ingesta de imágenes, `.opencode/knowledge/libraries.md`, history, roadmap y benchmark `kafekaggle.py` + `records.md`.

@@ -81,3 +81,26 @@ Format for each entry:
 - **Validation**: `/init` green al cierre (suite + consistencia de progreso); hygiene OK — sin archivos temporales, sin TODOs, el único `print()` de tests es intencional (FakeApi simula la salida real del cliente y `test_download_dataset_uses_api_and_quiets_output` prueba que `_download_dataset` la silencia)
 - **Significant history records**: `.opencode/history/2026/2026-10.md` (entrada KafeKAGGLE + entrada reparación de suite); `.opencode/history/2026/2026-09.md` (entrada backdated del fix de `check_sig` preservado desde current.md)
 - **Next step**: Reanudar por roadmap: KafeGESHA LSTM/Transformer (Deep Learning) o Review Tasks de KafeMACHINE; abrir con `/init` + `/resume`
+
+---
+## 2026-10-13 — KafeKAGGLE v2 (cierre diferido)
+
+- **Feature**: KafeKAGGLE v2 — cliente `kagglehub` (datasets públicos sin credenciales)
+- **Status**: done
+- **Summary**: Cierre diferido del ítem KafeKAGGLE v2: cliente `kagglehub` con descarga anónima para datasets públicos, `_tiene_credenciales()` como predicado, `_download_dataset()` retornando el directorio extraído y silenciado de logs. DoD APPROVED en `progress/review-kafekaggle-v2.md`.
+- **Tests**: 594 passed, 2 skipped (`pytest tests/ -q`)
+- **Validation**: DoD APPROVED (Reviewer). `current.md` quedó sin resetear desde 2026-10-08; este cierre lo regulariza.
+- **Significant history records**: `.opencode/history/2026/2026-10.md` (entrada KafeKAGGLE v2)
+- **Next step**: Abrir la interfaz genérica de ingesta de imágenes de KafeKAGGLE (reemplazo de `load_cifar10`)
+
+---
+## 2026-10-13 — KafeKAGGLE — API genérica de ingesta de imágenes (reemplaza `load_cifar10`)
+
+- **Feature**: KafeKAGGLE — interfaz genérica de ingesta de imágenes (reemplaza `load_cifar10`)
+- **Status**: done
+- **Commands executed**: /init, /open-work, /impact, /dod, /close
+- **Summary**: Se reemplazó el cargador experimental `load_cifar10` (específico de CIFAR-10, sin tests ni docs, acoplado a KafeMACHINE) por una API genérica de imágenes: `load_image`, `load_images` y `load_image_dataset` en `src/lib/KafeKaggle/funciones.py`, con un contenedor indexable `ImageDataset` (`[0]=X`, `[1]=y`) en `src/lib/KafeKaggle/dataset.py`. Layout CHW con píxeles normalizados `p/255` a `[0,1]` (compatible con Conv2D de GESHA, ADR-0011); `color_mode` `"rgb"`/`"gray"`/`"grayscale"`; `limit` acota la carga; descubrimiento recursivo (skip `__MACOSX`/dotfiles); extracción de `.zip` (stdlib) y `.7z` (py7zr opcional) con validación de *path traversal*; dependencias opcionales `Pillow`/`py7zr` con auto-instalación diferida. Decisión **A1** (ADR-0018, actualización de ADR-0017): se relajó el tipo de `X` en `train_test_split`/`stratified_train_test_split` de KafeMACHINE de `matriz_numeros_t` a `lista_cualquiera_t` para aceptar tensores 4D `[N,C,H,W]` de forma retrocompatible. `src/Ejemplo.kf` migró a `load_image_dataset` + `machine.stratified_train_test_split`. Sin cambios de gramática/`TypeUtils`/`EvalVisitor`.
+- **Tests**: 629 passed, 2 skipped (`pytest tests/ -q`, 200s); baseline previa 577/1.
+- **Validation**: `/dod` APPROVED por el Reviewer (`progress/review.md`). Prueba del ítem bloqueante A1: `tests/KafeMACHINE/model_selection/test_stratified_train_test_split_4d.kf` + `.expec` (salida 6/2/6/2/1/2). Benchmark offline de 5 escenarios (`.opencode/benchmarks/records.md` + `kafekaggle_images.py`, `benchmark-index.md`). Fixtures `.kf`/`.error.kf` de aridad/tipo/`color_mode` y escenarios de red `*.kf.example` fuera de la suite.
+- **Significant history records**: `.opencode/adr/decisions.md` (ADR-0018 + actualización de ADR-0017); `.opencode/history/2026/2026-10.md` (entrada "KafeKAGGLE — API genérica de ingesta de imágenes"); `.opencode/knowledge/concepts/kaggle-image-ingestion.md`; `docs/bibliotecas/kaggle.md`; `.opencode/knowledge/libraries.md`
+- **Next step**: Reanudar por roadmap — KafeGESHA LSTM/Transformer, o Review Tasks de KafeMACHINE; abrir con `/init` + `/resume`

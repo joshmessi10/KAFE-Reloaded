@@ -2,26 +2,26 @@
 
 ## Current Feature
 
-None — session closed.
+None. Last feature closed: KafeKAGGLE — interfaz genérica de ingesta de imágenes (reemplaza `load_cifar10`).
 
 ## Status
 
-Closed (2026-10-08). Work item completed: KafeKAGGLE — importación de datos de Kaggle (DoD APPROVED, `progress/review-kafekaggle.md`).
+Completed / closed (2026-10-13). DoD APPROVED by the Reviewer; suite green (629 passed, 2 skipped). Session closed via `/close`.
 
 ## Current Step
 
-Session closed via `/close`.
+Cerrado. La feature se implementó, documentó, validó y cerró.
 
 ## Next Step
 
-Open the next session with `/init` + `/resume` and pick the next roadmap item: KafeGESHA LSTM/Transformer (`.opencode/progress/roadmap.md` → Deep Learning) or the KafeMACHINE Review Tasks backlog.
+Reanudar por roadmap: KafeGESHA LSTM/Transformer, o Review Tasks de KafeMACHINE. Abrir con `/init` + `/resume`.
 
 ## Expected Outcome
 
-N/A (no active work item).
+N/A — el trabajo de la sesión quedó completado.
 
 ## Notes
 
-- Session artifacts: `progress/impact-kafekaggle.md`, `progress/report-kafekaggle.md`, `progress/review-kafekaggle.md`.
-- Suite baseline for the next session: **577 passed, 1 skipped** — run `pytest tests/` (a bare `pytest` aborts on legacy UTF-16 files at the root).
-- Environment caveats recorded in `memory/known-issues.md` (subagents cannot run pytest; PowerShell mangles UTF-8; `uv` not installed).
+- Esta sesión cerró la feature KafeKAGGLE de imágenes: `load_image`/`load_images`/`load_image_dataset` + contenedor `ImageDataset`, decisión A1 en KafeMACHINE (split acepta X 4D), ADR-0018 + actualización de ADR-0017.
+- Cierra también el cierre diferido del ítem KafeKAGGLE v2 (regularizado en `progress/session-log.md` el 2026-10-13).
+- ADRs de referencia: ADR-0018 (imágenes), ADR-0017 (split estratificado, actualizado), ADR-0013 (cliente kagglehub), ADR-0011/0012 (Conv2D y datos de imagen).

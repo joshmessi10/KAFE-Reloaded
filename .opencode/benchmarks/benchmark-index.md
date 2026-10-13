@@ -6,6 +6,7 @@ Register every benchmark record here. Benchmarks are mandatory for ML algorithms
 |-----------|-----------|----------|------|--------|
 | (none yet) | | | | |
 | kafekaggle | `src/lib/KafeKaggle/funciones.py` | Library utility (ingesta) | 2026-10-08 | recorded |
+| kafekaggle_images | `src/lib/KafeKaggle/funciones.py` (image ingestion) | Library utility (image ingestion) | 2026-10-13 | recorded |
 
 ## Adding a Benchmark
 

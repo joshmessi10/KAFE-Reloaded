@@ -1,6 +1,6 @@
 import random
 from global_utils import check_sig
-from TypeUtils import entero_t, flotante_t, booleano_t, matriz_numeros_t, vector_numeros_t, cadena_t
+from TypeUtils import entero_t, flotante_t, booleano_t, matriz_numeros_t, vector_numeros_t, cadena_t, lista_cualquiera_t
 from ..BaseMachine import BaseMachine
 
 
@@ -66,10 +66,10 @@ def _make_folds(n_samples, n_splits, shuffle=False, random_state=0):
 
 
 @check_sig({
-    2: [matriz_numeros_t, vector_numeros_t],
-    3: [matriz_numeros_t, vector_numeros_t, flotante_t],
-    4: [matriz_numeros_t, vector_numeros_t, flotante_t, entero_t],
-    5: [matriz_numeros_t, vector_numeros_t, flotante_t, entero_t, booleano_t]
+    2: [lista_cualquiera_t, vector_numeros_t],
+    3: [lista_cualquiera_t, vector_numeros_t, flotante_t],
+    4: [lista_cualquiera_t, vector_numeros_t, flotante_t, entero_t],
+    5: [lista_cualquiera_t, vector_numeros_t, flotante_t, entero_t, booleano_t]
 })
 def train_test_split(X, y, test_size=0.2, random_state=0, shuffle=True):
     """
@@ -119,9 +119,9 @@ def train_test_split(X, y, test_size=0.2, random_state=0, shuffle=True):
 
 
 @check_sig({
-    2: [matriz_numeros_t, vector_numeros_t],
-    3: [matriz_numeros_t, vector_numeros_t, flotante_t],
-    4: [matriz_numeros_t, vector_numeros_t, flotante_t, entero_t],
+    2: [lista_cualquiera_t, vector_numeros_t],
+    3: [lista_cualquiera_t, vector_numeros_t, flotante_t],
+    4: [lista_cualquiera_t, vector_numeros_t, flotante_t, entero_t],
 })
 def stratified_train_test_split(X, y, test_size=0.2, random_state=0):
     """Divide X e y conservando la proporción de cada clase.

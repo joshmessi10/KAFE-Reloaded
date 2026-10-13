@@ -2,9 +2,10 @@
 -- Dataset: https://www.kaggle.com/datasets/ayush1220/cifar10
 --
 -- CIFAR-10 se distribuye como PNG dentro de archivos .7z. Este ejemplo usa
--- el cargador de imágenes propuesto para KafeKaggle: load_cifar10.
--- El cargador debe extraer las imágenes, convertirlas a [C,H,W] = [3,32,32],
--- escalar los píxeles a [0,1] y retornar una división estratificada fija.
+-- la API genérica de imágenes de KafeKaggle: load_image_dataset descarga y
+-- extrae las imágenes, las convierte a [C,H,W] = [3,32,32], escala los
+-- píxeles a [0,1] y empareja cada imagen con su etiqueta. La división
+-- estratificada queda en KafeMACHINE, que ya acepta tensores 4D.
 
 import kaggle;
 import geshaDeep;
@@ -12,13 +13,17 @@ import machine;
 
 show("=== CNN Mini: CIFAR-10 con GESHA ===");
 
--- El resultado conserva train y test separados y balancea las diez clases.
--- [X_train, X_test, y_train, y_test], con 2.000 y 400 imágenes respectivamente.
-MACHINE cifar = kaggle.load_cifar10("ayush1220/cifar10", 2000, 400, 42);
-List[List[List[List[FLOAT]]]] X_train = cifar[0];
-List[List[List[List[FLOAT]]]] X_test = cifar[1];
-List[INT] y_train = cifar[2];
-List[INT] y_test = cifar[3];
+-- Carga etiquetada una sola vez: contenedor indexable [X, y].
+MACHINE datos = kaggle.load_image_dataset("ayush1220/cifar10", "trainLabels.csv", 32, 32, "rgb", 4000);
+List[List[List[List[FLOAT]]]] X = datos[0];
+List[INT] y = datos[1];
+
+-- División estratificada con KafeMACHINE (acepta tensores 4D).
+MACHINE split = machine.stratified_train_test_split(X, y, 0.2, 42);
+List[List[List[List[FLOAT]]]] X_train = split[0];
+List[List[List[List[FLOAT]]]] X_test = split[1];
+List[INT] y_train = split[2];
+List[INT] y_test = split[3];
 
 show("Imágenes [entrenamiento, prueba]:");
 show([len(X_train), len(X_test)]);
@@ -40,7 +45,7 @@ cnn.set_lr(0.001);
 show("Entrenando CNN Mini: 5 épocas, batch size 16...");
 cnn.fit(X_train, y_train, 5, 16);
 
--- Evaluación sobre las 400 imágenes de prueba que no participaron en fit.
+-- Evaluación sobre las imágenes de prueba que no participaron en fit.
 List[INT] y_pred = cnn.predict_label(X_test);
 FLOAT accuracy_test = machine.accuracy_score(y_test, y_pred);
 show("Accuracy de prueba (%):");
