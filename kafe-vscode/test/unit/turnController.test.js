@@ -211,19 +211,20 @@ test('no-file read and knowledge search continue a greeting and leave the compos
   assert.equal(f.session.snapshot().entries.some(e => ['proposal', 'checkpoint'].includes(e.kind)), false);
 });
 
-test('repeated recoverable no-file reads retain the four tool-round bound', async () => {
-  const f = fixture({ events: async function* (_, round) { yield terminal('', [call('readActiveDocument', `read-${round}`)]); } });
+for (const tool of ['readActiveDocument', 'proposeCodeChange']) test(`repeated recoverable no-file ${tool} calls retain the four tool-round bound`, async () => {
+  const f = fixture({ events: async function* (_, round) { yield terminal('', [{ ...call(tool, `tool-${round}`), arguments: tool === 'proposeCodeChange' ? { newText: 'show(2)' } : {} }]); } });
   assert.equal((await f.submit('Hello')).status, 'failed'); assert.equal(f.calls, 5);
   assert.equal(f.controller.current.busy, false); assert.equal(f.session.historyPairs().length, 0);
+  assert.equal(f.session.snapshot().entries.find(e => e.kind === 'error').data.code, 'tool_limit');
 });
 
-for (const boundary of ['stopped', 'stale']) test(`no-file tool recovery cannot continue after ${boundary} ownership`, async () => {
+for (const tool of ['readActiveDocument', 'proposeCodeChange']) for (const boundary of ['stopped', 'stale']) test(`no-file ${tool} recovery cannot continue after ${boundary} ownership`, async () => {
   let valid = true, f;
   f = fixture({ valid: () => valid, diagnostic: record => {
     if (record.event !== 'tool-result') return;
     if (boundary === 'stale') valid = false;
     else { const turn = f.session.snapshot().turn; f.controller.stop({ turnId: turn.id, turnGeneration: turn.turnGeneration }); }
-  }, events: async function* () { yield terminal('', [call('readActiveDocument')]); } });
+  }, events: async function* () { yield terminal('', [{ ...call(tool), arguments: tool === 'proposeCodeChange' ? { newText: 'show(2)' } : {} }]); } });
   const result = await f.submit('Hello');
   assert.equal(result.status, boundary === 'stopped' ? 'cancelled' : 'stale');
   assert.equal(f.calls, 1); assert.equal(f.controller.current.busy, false); assert.equal(f.session.historyPairs().length, 0);

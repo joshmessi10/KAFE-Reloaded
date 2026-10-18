@@ -227,13 +227,19 @@ class TurnController {
           this.trace(owner, 'tool-start', { tool: call.name, round: toolRounds });
           try {
             if (call.name === 'proposeCodeChange' && !owner.grant) {
-              const target = owner.snapshot.sources.find(s => s.id === (call.arguments.sourceId || 'active-file') && ['active-file', 'selected-file'].includes(s.category));
-              if (target?.uri?.toLowerCase().endsWith('.kf') && !owner.snapshot.submission.context.restricted) owner.preparationRequest = {
-                targetUri: target.uri, scopeSummary: `Prepare one code change for the displayed target. Learner request: ${Array.from(owner.submission.text).slice(0, 1800).join('')}${Array.from(owner.submission.text).length > 1800 ? ' [request shortened]' : ''}`,
-                dependencies: checkpointDependencies(owner.snapshot, owner.dependencies) };
-              throw Object.assign(new Error(), { code: 'preparation_required' });
-            }
-            result = await this.wait(owner, this.toolRouter.route(call, { snapshot: owner.snapshot, retrievedSourceIds: owner.retrievedSourceIds,
+              const sourceId = call.arguments.sourceId;
+              const target = owner.snapshot.sources.find(s => s.id === (sourceId === undefined ? 'active-file' : sourceId) && s.category === (sourceId === undefined ? 'active-file' : 'selected-file'));
+              if (owner.snapshot.submission.context.restricted) result = { status: 'unavailable', code: 'restricted_workspace',
+                message: 'Code preparation is unavailable in a restricted workspace. Explain that no change was prepared.' };
+              else if (!target?.uri?.toLowerCase().endsWith('.kf')) result = { status: 'unavailable', code: 'no_preparation_target',
+                message: 'No captured KAFE target is available for this request. Ask the learner to open or include the intended .kf file; no change was prepared.' };
+              else {
+                owner.preparationRequest = {
+                  targetUri: target.uri, scopeSummary: `Prepare one code change for the displayed target. Learner request: ${Array.from(owner.submission.text).slice(0, 1800).join('')}${Array.from(owner.submission.text).length > 1800 ? ' [request shortened]' : ''}`,
+                  dependencies: checkpointDependencies(owner.snapshot, owner.dependencies) };
+                throw Object.assign(new Error(), { code: 'preparation_required' });
+              }
+            } else result = await this.wait(owner, this.toolRouter.route(call, { snapshot: owner.snapshot, retrievedSourceIds: owner.retrievedSourceIds,
             authorizePreparation: target => { if (!this.isSubmissionAuthorized(owner.snapshot)) throw Object.assign(new Error(), { code: 'stale_context' }); return this.authorizePreparation(owner, target); } })); }
           catch (error) {
             if (error !== CANCELLED) this.trace(owner, 'tool-failed', { tool: call.name, round: toolRounds, ...errorMetadata(error) });
@@ -244,15 +250,15 @@ class TurnController {
           owner.phase = 'tool-validation';
           if (!await this.wait(owner, this.validateSubmission(owner.snapshot))) throw Object.assign(new Error(), { code: 'stale_context' });
           if (!this.isSubmissionAuthorized(owner.snapshot)) throw Object.assign(new Error(), { code: 'stale_context' });
-          if (call.name === 'proposeCodeChange') proposal = result;
+          if (call.name === 'proposeCodeChange' && result?.status !== 'unavailable') proposal = result;
           if (call.name === 'proposeLearningCheckpoint') checkpoint = validateCheckpoint(result, { snapshot: owner.snapshot, retrievedSourceIds: owner.retrievedSourceIds });
           if (call.name === 'searchKafeKnowledge' && result?.status !== 'unavailable') {
             validatePassages(result); assertKnowledgeCoherence(result, owner.snapshot.dependencies.knowledgeLineage);
             owner.dependencies = mergeDependencies([owner.dependencies, { fileUris: [], knowledgeLineage: owner.snapshot.dependencies.knowledgeLineage }]);
             owner.retrievedSourceIds.push(...result.map(p => `knowledge:${p.id}`));
           }
-          const content = call.name === 'proposeLearningCheckpoint' ? 'Unconfirmed Tutor checkpoint proposed; no authority granted.' : call.name === 'proposeCodeChange' ? 'Proposal prepared for learner review.' :
-            result?.status === 'unavailable' ? JSON.stringify({ status: 'unavailable', code: result.code }) :
+          const content = result?.status === 'unavailable' ? JSON.stringify({ status: 'unavailable', code: result.code, ...(typeof result.message === 'string' ? { message: result.message } : {}) }) :
+            call.name === 'proposeLearningCheckpoint' ? 'Unconfirmed Tutor checkpoint proposed; no authority granted.' : call.name === 'proposeCodeChange' ? 'Proposal prepared for learner review.' :
             call.name === 'searchKafeKnowledge' ? JSON.stringify(result) :
             result === null ? 'No learner-started KAFE run result is available.' : `Source already included: ${call.name === 'getLatestRunResult' ? 'run-result' : call.arguments.sourceId || 'active-file'}`;
           messages.push({ role: 'tool', tool_call_id: call.id, content });

@@ -160,6 +160,62 @@ test('ordinary prose cannot prepare code; direct request exposes visible bounded
   assert.match(entry.data.scopeSummary, /Help/);
   assert.equal((await f.actions.dispatch(click)).status, 'completed'); assert.equal(f.stages, 1);
 });
+for (const restricted of [false, true]) test(`${restricted ? 'restricted' : 'fileless'} proposal request continues with an unavailable result and no preparation authority`, async () => {
+  const explanation = restricted ? 'Code preparation is unavailable in this restricted workspace.' : 'Open or include a KAFE file before preparing a change.';
+  const f = fixture({ events: async function* (round, input) {
+    if (round === 1) {
+      yield { type: 'text', text: 'I can help with that.' };
+      yield done([proposal()], 'I can help with that.');
+    } else {
+      if (round === 2) {
+        const result = JSON.parse(input.request.messages.findLast(m => m.role === 'tool').content);
+        assert.equal(result.status, 'unavailable');
+        assert.equal(result.code, restricted ? 'restricted_workspace' : 'no_preparation_target');
+        assert.match(result.message, restricted ? /restricted workspace/i : /captured KAFE target/i);
+      }
+      yield done([], explanation);
+    }
+  } });
+  f.context({ restricted });
+  assert.equal((await f.start()).status, 'completed'); assert.equal(f.calls, 2); assert.equal(f.stages, 0);
+  assert.equal(f.coordinator.controller.isBusy(), false); assert.equal(f.coordinator.controller.current.grant, null);
+  assert.deepEqual(f.coordinator.controller.preparationScopes(), []);
+  assert.equal(f.session.snapshot().entries.find(e => e.kind === 'assistant').text, explanation);
+  assert.equal(f.session.historyPairs()[0].assistantText, explanation);
+  assert.equal(f.session.snapshot().entries.some(e => ['proposal', 'checkpoint', 'error'].includes(e.kind)), false);
+  assert.equal(f.session.snapshot().entries.some(e => e.actions.some(a => ['prepareChange', 'acceptProposal', 'runFile'].includes(a.type) && a.enabled)), false);
+  assert.equal((await f.submit('Explain a concept')).status, 'completed'); assert.equal(f.calls, 3);
+});
+for (const sourceId of ['', 'active-file', `selected:${'a'.repeat(64)}`]) test(`unavailable explicit target ${JSON.stringify(sourceId)} never falls back to the active KAFE file`, async () => {
+  const f = fixture({ events: async function* (round, input) {
+    if (round === 1) yield done([{ ...proposal(), arguments: { newText: 'show(2)', sourceId } }]);
+    else {
+      const result = JSON.parse(input.request.messages.findLast(m => m.role === 'tool').content);
+      assert.equal(result.status, 'unavailable'); assert.equal(result.code, 'no_preparation_target');
+      yield done([], 'Include the target KAFE file before preparing its change.');
+    }
+  } });
+  assert.equal((await f.start()).status, 'completed'); assert.equal(f.calls, 2); assert.equal(f.stages, 0);
+  assert.deepEqual(f.coordinator.controller.preparationScopes(), []);
+  assert.equal(f.coordinator.controller.current.grant, null);
+  assert.equal(f.session.snapshot().entries.some(e => e.kind === 'proposal' || e.actions.some(a => a.type === 'prepareChange' && a.enabled)), false);
+});
+test('an included non-KAFE target returns unavailable without requesting preparation permission', async () => {
+  const target = uri('/notes.txt'), sourceId = selectedSourceId(target);
+  const f = fixture({ events: async function* (round, input) {
+    if (round === 1) yield done([proposal(sourceId)]);
+    else {
+      const result = JSON.parse(input.request.messages.findLast(m => m.role === 'tool').content);
+      assert.equal(result.status, 'unavailable'); assert.equal(result.code, 'no_preparation_target');
+      yield done([], 'Choose a KAFE file for this change.');
+    }
+  } });
+  f.context({ restricted: false, candidateUris: [target] }); await f.coordinator.refreshContext();
+  await f.coordinator.handleLearnerMessage({ type: 'setSourceIncluded', sourceId, included: true, contextRevision: f.session.snapshot().context.revision });
+  assert.equal((await f.submit()).status, 'completed'); assert.equal(f.calls, 2); assert.equal(f.stages, 0);
+  assert.deepEqual(f.coordinator.controller.preparationScopes(), []);
+  assert.equal(f.session.snapshot().entries.some(e => e.kind === 'error' || e.kind === 'proposal'), false);
+});
 for (const failure of ['missing_key', 'timeout', 'stage']) test(`${failure} preparation retry requires new visible scope authorization`, async () => {
   const f = fixture({ stageFailure: failure === 'stage', events: async function* (n) { if (n === 1) yield done([checkpoint()]); else if (failure !== 'stage') throw new ProviderError(failure); else yield done([proposal()]); } });
   await f.start(); await f.actions.dispatch(f.envelope('implementCheckpoint'));
