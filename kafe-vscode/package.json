@@ -168,6 +168,10 @@
     }
   },
   "scripts": {
+    "references:build": "node scripts/build-tutor-references.cjs",
+    "references:check": "node scripts/build-tutor-references.cjs --check",
+    "references:verify": "python scripts/verify-tutor-references.py",
+    "test:layout": "node --test test/layout/tutorView.layout.test.cjs",
     "test:unit": "node test/run-unit-tests.js",
     "test:extension": "node test/run-extension-host-tests.js",
     "test": "npm run test:unit && npm run test:extension"

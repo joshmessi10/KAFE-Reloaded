@@ -1,4 +1,7 @@
 test/**
+scripts/**
+reference/essentials.md
+reference/catalogue.json
 diagram/**
 .vscode/**
 node_modules/**

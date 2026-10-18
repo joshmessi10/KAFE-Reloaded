@@ -28,11 +28,11 @@ function assertReadOnlyPermissions(workflow) {
   assert.equal(permissionBlock?.replace(/\r\n/g, '\n').trimEnd(), '  contents: read');
 }
 
-test('workflow configuration asserts extension-only triggers, read-only permissions, the three OS matrix, Windows needs unit, and no publication commands', () => {
+test('workflow configuration covers language/reference changes, read-only permissions, the three OS matrix, Windows needs unit, and no publication commands', () => {
   const workflow = readFileSync(workflowPath, 'utf8');
 
-  assert.match(workflow, /^  push:\r?\n    paths:\r?\n      - 'kafe-vscode\/\*\*'\r?\n      - '\.github\/workflows\/vscode-extension\.yml'$/m);
-  assert.match(workflow, /^  pull_request:\r?\n    paths:\r?\n      - 'kafe-vscode\/\*\*'\r?\n      - '\.github\/workflows\/vscode-extension\.yml'$/m);
+  assert.match(workflow, /^  push:\r?\n    paths:\r?\n      - 'kafe-vscode\/\*\*'\r?\n      - 'src\/\*\*'\r?\n      - 'tests\/\*\*'\r?\n      - '\.github\/workflows\/vscode-extension\.yml'$/m);
+  assert.match(workflow, /^  pull_request:\r?\n    paths:\r?\n      - 'kafe-vscode\/\*\*'\r?\n      - 'src\/\*\*'\r?\n      - 'tests\/\*\*'\r?\n      - '\.github\/workflows\/vscode-extension\.yml'$/m);
   assert.match(workflow, /^  workflow_dispatch:$/m);
 
   assertReadOnlyPermissions(workflow);

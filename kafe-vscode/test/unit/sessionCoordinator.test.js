@@ -238,7 +238,9 @@ for (const closed of [false, true]) test(`explicit optional inclusion survives a
   await f.coordinator.refreshContext(); const beforeReads = f.reads.length;
   await f.submit('B active');
   assert.equal(f.reads.length, beforeReads, 'Active B is not reread as an optional file');
-  assert.equal(f.sent.at(-1).messages.filter(m => m.content.startsWith('[Source ')).length, 1);
+  const fileMessages = f.sent.at(-1).messages.filter(m => /"category":"(?:active-file|selected-file)"/.test(m.content));
+  assert.equal(fileMessages.length, 1);
+  assert.match(fileMessages[0].content, /^\[Source active-file\][\s\S]*\nB$/);
   f.setContext({ activeDocument: { uri: a, text: 'A', version: 1 }, candidateUris: closed ? [] : [b] });
   await f.coordinator.refreshContext();
   assert.equal(f.coordinator.snapshot().context.sources.find(s => s.uri === b.toString())?.included, true);

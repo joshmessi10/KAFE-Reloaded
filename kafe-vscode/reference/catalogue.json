@@ -1,0 +1,26 @@
+{
+  "description": "Reviewed, bounded reference examples. New entries must consume the complete source during parsing and match expected behavior against the pinned runtime. Keep side-effectful filesystem fixtures out of this teaching catalogue.",
+  "fixtures": [
+    "tests/TutorReferences/bmi_imc.kf",
+    "tests/TutorReferences/output_show.kf",
+    "tests/TutorReferences/entrypoint_called.kf",
+    "tests/TutorReferences/entrypoint_uncalled.kf",
+    "tests/TutorReferences/user_defined_print.kf",
+    "tests/TutorReferences/undefined_print.error.kf",
+    "tests/TutorReferences/input_pour.kf",
+    "tests/TutorReferences/conditional_chain.kf",
+    "tests/Algorithms/Fibonacci.kf",
+    "tests/funciones/function_basic_call.kf",
+    "tests/funciones/function_currying_basic.kf",
+    "tests/base/list_indexing_basic.kf",
+    "tests/base/operators_arithmetic.kf",
+    "tests/base/pour_function_with_casts.kf",
+    "tests/base/show_function_all_types.kf",
+    "tests/condicionales/if_else_basic.kf",
+    "tests/bucles/for_loop_range_basic.kf",
+    "tests/bucles/while_simple_counter.kf",
+    "tests/KafeMATH/constants_pi_e.kf",
+    "tests/KafeNUMK/matrix_addition.kf",
+    "tests/KafeNUMK/matrix_multiplication.kf"
+  ]
+}

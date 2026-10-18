@@ -1,0 +1,2 @@
+-- Valid call syntax does not make print a built-in function.
+print(1);

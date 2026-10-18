@@ -1,0 +1,9 @@
+-- A conditional chain ends after all branches, not before elif or else.
+INT value = 5;
+if (value > 10):
+    show("greater");
+elif (value == 5):
+    show("five");
+else:
+    show("other");
+;

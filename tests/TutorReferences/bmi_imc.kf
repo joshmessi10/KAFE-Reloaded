@@ -1,0 +1,16 @@
+-- BMI / IMC: body mass index, weight / height squared.
+-- Spanish search terms: peso, altura, calcular, indice de masa corporal.
+drip calc_imc(weight_kg: FLOAT, height_m: FLOAT) => FLOAT:
+    if (height_m <= 0.0):
+        return -1.0;
+    ;
+    return weight_kg / (height_m * height_m);
+;
+
+drip main() => VOID:
+    show(calc_imc(70.0, 1.75));
+    show(calc_imc(70.0, 0.0));
+    show(calc_imc(70.0, -1.0));
+;
+
+main();

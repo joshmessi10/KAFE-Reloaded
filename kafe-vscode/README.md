@@ -1,5 +1,7 @@
 # KAFE Neural Development Suite
 
+For test-backed code guidance, reference freshness checks, and the contributor workflow, see [Maintaining Tutor reliability](../docs/extension/tutor-reliability.md).
+
 The extension provides KAFE `.kf` highlighting, snippets, learner-started execution and a Tutor conversation in VS Code 1.96.0 or later. Open **KAFE: Open Tutor**.
 
 ## Conversation

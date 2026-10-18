@@ -178,9 +178,10 @@ test('workspace display labels preserve canonical active and optional provenance
     readDocument: async u => { reads++; return { uri: u, version: 3, text: 'extra' }; } }, knowledgeRetriever: { search: async () => [] } });
   for (const included of [false, true]) {
     const result = await composer.compose({ request: 'Help', activeDocument: { uri: a, text: 'main', version: 2 }, candidateUris: [b], includedSourceIds: included ? [selectedSourceId(b)] : [] });
-    assert.deepEqual(result.sources.map(s => s.label), ['examples/main.kf', 'lib/extra.kf']);
-    assert.deepEqual(result.sources.map(s => s.provenance.uri), [a.toString(), b.toString()]);
-    assert.equal(result.snapshots[0].uri, a.toString()); assert.equal(reads, included ? 1 : 0);
+    const files = result.sources.filter(s => ['active-file', 'selected-file'].includes(s.category));
+    assert.deepEqual(files.map(s => s.label), ['examples/main.kf', 'lib/extra.kf']);
+    assert.deepEqual(files.map(s => s.provenance.uri), [a.toString(), b.toString()]);
+    assert.equal(result.snapshots.find(s => s.category === 'active-file').uri, a.toString()); assert.equal(reads, included ? 1 : 0);
   }
 });
 
@@ -218,7 +219,7 @@ test('composition binds only included snapshots and eligible ordinary history to
   assert.deepEqual(result.payload.messages.slice(1, 3), [{ role: 'user', content: 'Question with `show(1)`' }, { role: 'assistant', content: 'Ordinary answer' }]);
   assert.equal(JSON.stringify(result.payload).includes('REVOKED_'), false);
   assert.equal(result.snapshots.some(source => source.id === selectedSourceId(a)), false);
-  assert.equal(result.snapshots[0].uri, b.toString());
+  assert.equal(result.snapshots.find(source => source.category === 'active-file').uri, b.toString());
   assert.deepEqual(result.dependencies, { fileUris: [b.toString()], knowledgeLineage: metadataLineage(pack) });
   assert.equal(result.payload.model, 'deepseek-flash');
   assert.equal(result.payload.stream, true);
