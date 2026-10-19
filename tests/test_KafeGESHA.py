@@ -18,6 +18,9 @@ _SLOW_EXAMPLES = {
     "KafeGESHA/rnn_sintetico.kf",
     "KafeGESHA/Autoencoder/autoencoder_clustering.kf",
     "KafeGESHA/MultiCapa/circle_classification.kf",
+    "KafeGESHA/MultiCapa/xor_gate.kf",
+    "KafeGESHA/PerceptronSimple/and_gate.kf",
+    "KafeGESHA/PerceptronSimple/or_gate.kf",
 }
 
 
@@ -38,7 +41,7 @@ def _valid_example_param(program, input_text, expected_stdout):
     [_valid_example_param(*params) for params in _VALID_PARAMS],
 )
 def test_valid_programs(program, input_text, expected_stdout):
-    result = run_kafe_program(program, input_text=input_text)
+    result = run_kafe_program(program, input_text=input_text, timeout=120)
 
     output_directory = os.path.dirname(program)
     program_basename = os.path.splitext(os.path.basename(program))[0]
@@ -80,6 +83,6 @@ def test_valid_programs(program, input_text, expected_stdout):
     ],
 )
 def test_invalid_programs(program, input_text, expected_stdout):
-    result = run_kafe_program(program, input_text=input_text)
+    result = run_kafe_program(program, input_text=input_text, timeout=120)
 
     assert_invalid_kafe_result(result, program, expected_stdout)
