@@ -1,4 +1,5 @@
 import os
+import re
 
 import pytest
 from utils import (
@@ -18,6 +19,12 @@ _SLOW_EXAMPLES = {
     "KafeGESHA/rnn_sintetico.kf",
     "KafeGESHA/Autoencoder/autoencoder_clustering.kf",
     "KafeGESHA/MultiCapa/circle_classification.kf",
+}
+
+_GATE_LABELS = {
+    "KafeGESHA/MultiCapa/xor_gate.kf": [0, 1, 1, 0],
+    "KafeGESHA/PerceptronSimple/and_gate.kf": [0, 0, 0, 1],
+    "KafeGESHA/PerceptronSimple/or_gate.kf": [0, 1, 1, 1],
 }
 
 
@@ -69,6 +76,11 @@ def test_valid_programs(program, input_text, expected_stdout):
         f"{expected_svg_path} doesn't match {generated_svg_path}"
     )
     assert_valid_kafe_result(result, program, expected_stdout)
+    relative_path = os.path.relpath(program, os.path.dirname(__file__)).replace(os.sep, "/")
+    if relative_path in _GATE_LABELS:
+        predictions = result.stdout.split("Resultados:", 1)[1].split("Esperado:", 1)[0]
+        labels = [int(value) for value in re.findall(r"clase=(\d)", predictions)]
+        assert labels == _GATE_LABELS[relative_path]
 
 
 @pytest.mark.parametrize(

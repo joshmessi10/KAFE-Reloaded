@@ -34,12 +34,13 @@ List[INT] y_train = [0, 1, 1, 1];
 GESHA layer = geshaV2.create_dense(1, "sigmoid", [2], 0.0, 42);
 GESHA model = geshaV2.sequential([layer]);
 
--- Compilar con SGD y binary crossentropy
-model.compile("sgd", "binary_crossentropy", []);
+-- Compilar con Adam y binary crossentropy
+model.compile("adam", "binary_crossentropy", []);
+model.set_lr(0.1);
 
--- Prueba breve de entrenamiento; la convergencia requiere mas epocas
+-- Entrenamiento acotado hasta aprender las cuatro entradas
 show("Entrenando perceptron simple...");
-model.fit(x_train, y_train, 2, 4);
+model.fit(x_train, y_train, 40, 4);
 
 -- Evaluar con todas las entradas
 show("\nResultados:");
@@ -54,4 +55,4 @@ show("[0, 0] -> clase=0");
 show("[0, 1] -> clase=1");
 show("[1, 0] -> clase=1");
 show("[1, 1] -> clase=1");
-show("\nPrueba breve del entrenamiento OR.");
+show("\nPerceptron simple entrenado exitosamente.");

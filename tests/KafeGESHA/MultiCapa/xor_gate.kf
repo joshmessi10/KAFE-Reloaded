@@ -35,12 +35,12 @@ GESHA hidden = geshaV2.create_dense(4, "tanh", [2], 0.0, 42);
 GESHA output = geshaV2.create_dense(1, "sigmoid", [4], 0.0, 43);
 GESHA model = geshaV2.sequential([hidden, output]);
 
--- SGD + binary crossentropy, learning rate 0.1 para convergencia
-model.compile("sgd", "binary_crossentropy", []);
+-- Adam + binary crossentropy para convergencia en una prueba acotada
+model.compile("adam", "binary_crossentropy", []);
 model.set_lr(0.1);
 
 show("Entrenando red multicapa (2 -> 4 -> 1)...");
-model.fit(x_train, y_train, 2, 4);
+model.fit(x_train, y_train, 25, 4);
 
 show("\nResultados:");
 for (p in x_train):
@@ -54,4 +54,4 @@ show("[0, 0] -> clase=0");
 show("[0, 1] -> clase=1");
 show("[1, 0] -> clase=1");
 show("[1, 1] -> clase=0");
-show("\nPrueba breve del entrenamiento XOR; la convergencia requiere mas epocas.");
+show("\nXOR resuelto: se requiere al menos una capa oculta (no lineal).");

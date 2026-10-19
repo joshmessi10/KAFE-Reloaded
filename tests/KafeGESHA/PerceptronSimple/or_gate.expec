@@ -1,13 +1,51 @@
 === Perceptron Simple: Compuerta OR ===
 Entrenando perceptron simple...
-Epoch 1/2 — Loss 78.81%
-Epoch 2/2 — Loss 78.48%
+Epoch 1/40 — Loss 78.81%
+Epoch 2/40 — Loss 70.83%
+Epoch 3/40 — Loss 64.00%
+Epoch 4/40 — Loss 58.31%
+Epoch 5/40 — Loss 53.70%
+Epoch 6/40 — Loss 50.07%
+Epoch 7/40 — Loss 47.28%
+Epoch 8/40 — Loss 45.18%
+Epoch 9/40 — Loss 43.61%
+Epoch 10/40 — Loss 42.44%
+Epoch 11/40 — Loss 41.53%
+Epoch 12/40 — Loss 40.79%
+Epoch 13/40 — Loss 40.14%
+Epoch 14/40 — Loss 39.51%
+Epoch 15/40 — Loss 38.89%
+Epoch 16/40 — Loss 38.23%
+Epoch 17/40 — Loss 37.53%
+Epoch 18/40 — Loss 36.79%
+Epoch 19/40 — Loss 36.00%
+Epoch 20/40 — Loss 35.18%
+Epoch 21/40 — Loss 34.33%
+Epoch 22/40 — Loss 33.45%
+Epoch 23/40 — Loss 32.56%
+Epoch 24/40 — Loss 31.66%
+Epoch 25/40 — Loss 30.77%
+Epoch 26/40 — Loss 29.89%
+Epoch 27/40 — Loss 29.02%
+Epoch 28/40 — Loss 28.17%
+Epoch 29/40 — Loss 27.35%
+Epoch 30/40 — Loss 26.57%
+Epoch 31/40 — Loss 25.81%
+Epoch 32/40 — Loss 25.09%
+Epoch 33/40 — Loss 24.41%
+Epoch 34/40 — Loss 23.76%
+Epoch 35/40 — Loss 23.15%
+Epoch 36/40 — Loss 22.57%
+Epoch 37/40 — Loss 22.02%
+Epoch 38/40 — Loss 21.50%
+Epoch 39/40 — Loss 21.01%
+Epoch 40/40 — Loss 20.54%
 
 Resultados:
-[0.0, 0.0] -> prob=0.5014526041316195, clase=1
-[0.0, 1.0] -> prob=0.3862295499892057, clase=0
-[1.0, 0.0] -> prob=0.5375467247819593, clase=1
-[1.0, 1.0] -> prob=0.4210341888572376, clase=0
+[0.0, 0.0] -> prob=0.3785222339944759, clase=0
+[0.0, 1.0] -> prob=0.8293329270793373, clase=1
+[1.0, 0.0] -> prob=0.8831851569066683, clase=1
+[1.0, 1.0] -> prob=0.9836923200580506, clase=1
 
 Esperado:
 [0, 0] -> clase=0
@@ -15,4 +53,4 @@ Esperado:
 [1, 0] -> clase=1
 [1, 1] -> clase=1
 
-Prueba breve del entrenamiento OR.
+Perceptron simple entrenado exitosamente.

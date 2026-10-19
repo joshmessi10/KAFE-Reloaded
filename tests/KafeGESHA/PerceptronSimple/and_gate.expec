@@ -1,13 +1,26 @@
 === Perceptron Simple: Compuerta AND ===
 Entrenando perceptron simple...
-Epoch 1/2 — Loss 70.42%
-Epoch 2/2 — Loss 70.38%
+Epoch 1/15 — Loss 70.42%
+Epoch 2/15 — Loss 67.78%
+Epoch 3/15 — Loss 65.26%
+Epoch 4/15 — Loss 62.85%
+Epoch 5/15 — Loss 60.52%
+Epoch 6/15 — Loss 58.32%
+Epoch 7/15 — Loss 56.20%
+Epoch 8/15 — Loss 54.19%
+Epoch 9/15 — Loss 52.26%
+Epoch 10/15 — Loss 50.42%
+Epoch 11/15 — Loss 48.67%
+Epoch 12/15 — Loss 47.01%
+Epoch 13/15 — Loss 45.42%
+Epoch 14/15 — Loss 43.92%
+Epoch 15/15 — Loss 42.49%
 
 Resultados:
-[0.0, 0.0] -> prob=0.49895718608734174, clase=0
-[0.0, 1.0] -> prob=0.3826866387610269, clase=0
-[1.0, 0.0] -> prob=0.5338230692895142, clase=1
-[1.0, 1.0] -> prob=0.4161763639481027, clase=0
+[0.0, 0.0] -> prob=0.18773580268953707, clase=0
+[0.0, 1.0] -> prob=0.35896578084642183, clase=0
+[1.0, 0.0] -> prob=0.3895980475279636, clase=0
+[1.0, 1.0] -> prob=0.6072893039487403, clase=1
 
 Esperado:
 [0, 0] -> clase=0
@@ -15,4 +28,4 @@ Esperado:
 [1, 0] -> clase=0
 [1, 1] -> clase=1
 
-Prueba breve del entrenamiento AND.
+Perceptron simple entrenado exitosamente.

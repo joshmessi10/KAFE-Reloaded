@@ -1,13 +1,36 @@
 === Red Multicapa: Compuerta XOR ===
 Entrenando red multicapa (2 -> 4 -> 1)...
-Epoch 1/2 — Loss 69.57%
-Epoch 2/2 — Loss 69.46%
+Epoch 1/25 — Loss 69.57%
+Epoch 2/25 — Loss 69.69%
+Epoch 3/25 — Loss 69.28%
+Epoch 4/25 — Loss 68.76%
+Epoch 5/25 — Loss 68.24%
+Epoch 6/25 — Loss 67.45%
+Epoch 7/25 — Loss 66.58%
+Epoch 8/25 — Loss 65.49%
+Epoch 9/25 — Loss 64.20%
+Epoch 10/25 — Loss 62.58%
+Epoch 11/25 — Loss 60.56%
+Epoch 12/25 — Loss 58.16%
+Epoch 13/25 — Loss 55.40%
+Epoch 14/25 — Loss 52.32%
+Epoch 15/25 — Loss 49.13%
+Epoch 16/25 — Loss 45.81%
+Epoch 17/25 — Loss 42.52%
+Epoch 18/25 — Loss 39.12%
+Epoch 19/25 — Loss 35.64%
+Epoch 20/25 — Loss 32.22%
+Epoch 21/25 — Loss 28.94%
+Epoch 22/25 — Loss 25.85%
+Epoch 23/25 — Loss 22.92%
+Epoch 24/25 — Loss 20.13%
+Epoch 25/25 — Loss 17.52%
 
 Resultados:
-[0.0, 0.0] -> prob=0.5020109384834024, clase=1
-[0.0, 1.0] -> prob=0.455446107511401, clase=0
-[1.0, 0.0] -> prob=0.4873396901501396, clase=0
-[1.0, 1.0] -> prob=0.43924055765916065, clase=0
+[0.0, 0.0] -> prob=0.03730264065662939, clase=0
+[0.0, 1.0] -> prob=0.8913035005002155, clase=1
+[1.0, 0.0] -> prob=0.8170450223168092, clase=1
+[1.0, 1.0] -> prob=0.22143467993006163, clase=0
 
 Esperado:
 [0, 0] -> clase=0
@@ -15,4 +38,4 @@ Esperado:
 [1, 0] -> clase=1
 [1, 1] -> clase=0
 
-Prueba breve del entrenamiento XOR; la convergencia requiere mas epocas.
+XOR resuelto: se requiere al menos una capa oculta (no lineal).
