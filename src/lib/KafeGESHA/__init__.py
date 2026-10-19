@@ -1,44 +1,35 @@
 """KafeGESHA — Deep Learning library for KAFE.
 
-Exported public API:
-    Model — abstract base class
-    Sequential — linear graph model
-    Functional — DAG network model
-    Dense — fully connected layer
-    Dropout — dropout regularization
-    Flatten    — flatten tensors
-    Input — symbolic input (Functional API)
-    Add — branch merge (Functional API)
-    ReLULayer, SigmoidLayer, TanhLayer, SoftmaxLayer — activations as layers
+API pública exportada:
+    Model      — clase base abstracta
+    Sequential — modelo de grafo lineal
+    Functional — modelo de grafo DAG
+    Dense      — capa totalmente conectada
+    Conv2D     — capa convolucional para imágenes CHW
+    SimpleRNN  — capa recurrente Elman para secuencias
+    Dropout    — regularización por dropout
+    Flatten    — aplanar tensores
+    Input      — entrada simbólica (API Functional)
+    Add        — merge de ramas (API Functional)
+    ReLULayer, SigmoidLayer, TanhLayer, SoftmaxLayer — activaciones como capas
 """
-from lib.KafeGESHA.core.model import Gesha, Model
-from lib.KafeGESHA.layers.activation_layers import (
-    LinearLayer,
-    ReLULayer,
-    SigmoidLayer,
-    SoftmaxLayer,
-    TanhLayer,
+from lib.KafeGESHA.models import Model as Gesha, Model, Sequential, Functional
+from lib.KafeGESHA.layers import (
+    Dense, Conv2D, SimpleRNN, Dropout, Flatten, Input, Add, ActivationLayer,
 )
-from lib.KafeGESHA.layers.dense import Dense
-from lib.KafeGESHA.layers.dropout import Dropout
-from lib.KafeGESHA.layers.flatten import Flatten
-from lib.KafeGESHA.layers.input_layer import Input
-from lib.KafeGESHA.models.functional import Add, Functional
-from lib.KafeGESHA.models.sequential import Sequential
-
-__all__ = [
-    "Model",
-    "Gesha",
-    "Sequential",
-    "Functional",
-    "Add",
-    "Dense",
-    "Dropout",
-    "Flatten",
-    "Input",
-    "ReLULayer",
-    "SigmoidLayer",
-    "TanhLayer",
-    "SoftmaxLayer",
-    "LinearLayer",
-]
+from lib.KafeGESHA.layers import (
+    Conv1D, DepthwiseConv2D, Conv2DTranspose, MaxPooling1D, MaxPooling2D,
+    AveragePooling2D, GlobalAveragePooling2D, GlobalMaxPooling2D,
+    BatchNormalization, ZeroPadding2D, UpSampling2D, Reshape, Permute,
+    Concatenate, Multiply, SpatialDropout2D, LSTM, GRU, Bidirectional, Embedding,
+)
+from lib.KafeGESHA.initializers import (Zeros, Ones, RandomUniform, RandomNormal,
+    GlorotUniform, GlorotNormal, HeUniform, HeNormal, Orthogonal, Constant)
+from lib.KafeGESHA.callbacks import Callback, EarlyStopping, ModelCheckpoint
+from lib.KafeGESHA.regularizers import L1, L2, L1L2
+# Alias para mantener compatibilidad
+ReLULayer = lambda: ActivationLayer("relu")
+SigmoidLayer = lambda: ActivationLayer("sigmoid")
+TanhLayer = lambda: ActivationLayer("tanh")
+SoftmaxLayer = lambda: ActivationLayer("softmax")
+LinearLayer = lambda: ActivationLayer("linear")

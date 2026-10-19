@@ -1,49 +1,44 @@
 # KAFE Built-in Libraries
 
-This technical reference implements the repository invariants in `AGENTS.md` and `CLAUDE.md`, subject to applicable system/runtime and user instructions.
-
 ## Registry
 
-Library `functions` modules are imported in `src/InterpreterVisitor.py` and registered in `InterpreterVisitor.__init__` (`self.libraries`). Registry keys are case-sensitive. The KAFE keyword is lowercase `import`, but the existing `geshaDeep` name retains its mixed case. The current registrations use these imported module aliases:
+Libraries are registered in `EvalVisitorPrimitivo.__init__` (`self.libraries`), keyed by the lowercase KAFE `import` name:
 
 ```python
 self.libraries = {
-    "numk": [numk_funcs_module, False],
-    "math": [math_funcs_module, False],
-    "files": [files_funcs_module, False],
-    "plot": [plot_funcs_module, False],
-    "geshaDeep": [gesha_funcs_module, False],
-    "pardos": [pardos_funcs_module, False],
-    "machine": [machine_funcs_module, False],
-    "huggingface": [hf_funcs_module, False],
+    "numk":      [lib.KafeNUMK.funciones,   False],
+    "math":      [lib.KafeMATH.funciones,   False],
+    "files":     [lib.KafeFILES.funciones,  False],
+    "plot":      [lib.KafePLOT.funciones,   False],
+    "geshaDeep": [lib.KafeGESHA.funciones,  False],
+    "pardos":    [lib.KafePARDOS.funciones, False],
+    "machine":   [lib.KafeMACHINE.funciones, False],
+    "huggingface": [lib.KafeHF.funciones,   False],
+    "kaggle":    [lib.KafeKaggle.funciones, False],
 }
 ```
 
-- For example, `import lib.KafeMACHINE.functions as machine_funcs_module` and `import lib.KafeHF.functions as hf_funcs_module` bind the MACHINE and HF modules before registration.
-- Each entry is `[module, imported_flag]`. KAFE `import <name>;` flips the flag to `True`.
-- Dispatch: `language_components/libraries/functions.py` → `libraryFunctionCall(library, function_name, args)` / `libraryConstant(library, constant_name)`.
+- Each entry is `[module, imported_flag]`. KAFE `import <name>` flips the flag to `True`.
+- Dispatch: `componentes_lenguaje/librerias/funciones.py` → `libraryFunctionCall(library, function_name, args)` / `libraryConstant(library, constant_name)`.
 - Un-imported library → `raiseLibraryNotImported`; missing function/constant → `raiseFunctionNotDefined` / `raiseVariableNotDefined`.
-- User `.kf` modules are resolved by `src/language_components/imports/functions.py` relative to `globals.current_dir`, then `src/language_components/imports/`, then `src/language_components/`.
+- User `.kf` modules are resolved by `componentes_lenguaje/importar/funciones.py` relative to `globals.current_dir`, then the component directory.
 
 ## Library Reference
 
-- `KafeNUMK` — linear algebra (NumPy-like). Modules: `functions.py`, `utils.py`, `errors.py`.
-- `KafeMATH` — math utilities (`log`, `exp`, `sqrt`, `pow_`, `math_abs`, etc.). Modules: `functions.py`, `errors.py`. Used by other libraries (GESHA, PARDOS, PLOT, MACHINE).
+- `KafeNUMK` — linear algebra (NumPy-like). Modules: `funciones.py`, `utils.py`, `errores.py`.
+- `KafeMATH` — math utilities (`log`, `exp`, `sqrt`, `pow_`, `math_abs`, etc.). Modules: `funciones.py`, `errores.py`. Used by other libraries (GESHA, PARDOS, PLOT, MACHINE).
 - `KafeFILES` — file I/O.
-- `KafePLOT` — SVG plotting. Modules: `functions.py`, `utils.py`.
+- `KafePLOT` — SVG plotting. Modules: `funciones.py`, `utils.py`.
 - `KafeGESHA` — deep learning (see `.opencode/knowledge/dl-library.md`).
-- `KafePARDOS` — DataFrames / CSV. Modules: `functions.py`, `DataFrame.py`.
+- `KafePARDOS` — DataFrames / CSV. Modules: `funciones.py`, `DataFrame.py`.
 - `KafeMACHINE` — ML models and metrics (see `.opencode/knowledge/ml-library.md`).
-- `KafeHF` — optional Hugging Face dataset loading through `import huggingface;`. `src/lib/KafeHF/functions.py` exports `load_dataset` and `load_dataset_split`, returning KafePARDOS `DataFrame` objects.
-
-## Optional Hugging Face Dependency
-
-KafeHF's wrapper is imported and registered by the visitor in the default environment. Its external `datasets` dependency is optional and absent from the default uv environment: `import huggingface;` works without that package, while a dataset-loading call reports the missing dependency. Preserve the baseline without `datasets`, including `tests/KafeHF/hf_load_dataset_no_dep.error.kf`, and keep any environment for exercising the installed integration distinct from that baseline. Enable the integration with `uv sync --locked --extra huggingface`; the missing-dependency diagnostic points to this command and its paired expected-output fixture records the exact message.
+- `KafeHF` — datasets from Hugging Face Hub (`load_dataset`, `load_dataset_split`, `load_dataset_matrix`). Optional dependency `datasets` with auto-install; returns PARDOS DataFrames or numeric matrices. Docs: `docs/bibliotecas/huggingface.md`, ADR-0010.
+- `KafeKaggle` — datasets from Kaggle via the official `kagglehub` client. Tabular API: `load_dataset`, `load_dataset_split`, `load_dataset_matrix` (CSV read with stdlib `csv`, no pandas; `split` acts as a file selector because Kaggle has no splits). Labelled-text API: `load_text_dataset(dataset_name, file_name="", delimiter="\t", text_column=0, label_column=1, limit=0)` (ADR-0021) — for headerless labelled-text files (`frase<TAB>0|1` etc.); accepts `.txt`/`.tsv`/`.csv` via the internal selector `_select_file_text` (same file-name/auto-single-file/truncated-candidates rules as `_select_file`), reads rows with `_read_rows`, validates that both columns exist and the label is an integer via `_parse_text_labels`, and returns a PARDOS DataFrame with explicit `text` (STR) and `label` (INT) columns; validations (single-char delimiter, columns ≥ 0, limit ≥ 0) run before the network. Generic image API: `load_image`, `load_images`, `load_image_dataset` (recursive `.png/.jpg/.jpeg/.bmp` discovery, CHW `[C][H][W]` output with pixels in `[0,1]`, `color_mode="rgb"`/`"gray"`, `limit`; labels matched by filename stem and encoded `0..N-1`; returns the `ImageDataset` container, a KAFE `MACHINE` with `[0]=X`, `[1]=y`). Folder-labelled API: `load_image_folder_dataset` (label = parent directory name, i.e. the `.../<split>/<class>/img.png` layout, for datasets such as CIFAR-10 that ship no label CSV; `split` filters by an ancestor subdirectory and defaults to `"train"` with `""` meaning all; a deterministic seeded shuffle runs before `limit` so the sample is class-representative; long file listings in error messages are truncated; the download is verified to produce files). No train/test split happens here — that stays in `machine.stratified_train_test_split` (ADR-0018). Optional dependencies with auto-install: `kagglehub` (download; public datasets are anonymous, credentials only for private ones, cached under `~/.cache/kagglehub`), `Pillow` (image decoding/resizing) and `py7zr` (nested `.7z`; `.zip` uses stdlib `zipfile`). Docs: `docs/bibliotecas/kaggle.md`, ADR-0012, ADR-0013, ADR-0018, ADR-0019, ADR-0021.
 
 ## Adding a New Library
 
-1. Create `src/lib/KafeXXX/functions.py` (mirror an existing library's `functions.py`).
-2. Import the module in `InterpreterVisitor.py` near the other `import lib.Kafe*` lines.
-3. Register it in `self.libraries` with its chosen KAFE `import` name; use lowercase for new names and preserve existing public-key casing such as `geshaDeep`.
-4. Add fixtures under `tests/KafeXXX/` and a `tests/test_KafeXXX.py` module that parameterizes via `get_parameters(get_programs(...))`.
-5. Update docs (`docs/libraries/`) and `.opencode/knowledge/` if the library introduces a concept.
+1. Create `src/lib/KafeXXX/funciones.py` (mirror an existing library's `funciones.py`).
+2. Import the module in `EvalVisitorPrimitivo.py` near the other `import lib.Kafe*` lines.
+3. Register it in `self.libraries` with the lowercase KAFE `import` name.
+4. Add fixtures under `tests/KafeXXX/` and a `tests/test_KafeXXX.py` that parameterizes via `obtener_parametros(get_programs(...))`.
+5. Update docs (`docs/bibliotecas/`) and `.opencode/knowledge/` if the library introduces a concept.

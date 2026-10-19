@@ -1,17 +1,15 @@
+import lib.KafeMATH.funciones as math
 import json
 import os
-from typing import Any, cast
-
-import lib.KafeMATH.functions as math
 from global_utils import check_sig
 from TypeUtils import (
-    any_matrix_type,
-    boolean_type,
-    float_type,
-    integer_type,
-    pardos_type,
-    string_list_type,
-    string_type,
+    pardos_t,
+    lista_cadenas_t,
+    matriz_cualquiera_t,
+    entero_t,
+    cadena_t,
+    flotante_t,
+    booleano_t,
 )
 
 # Alias built-in sum to avoid shadowing by DataFrame.sum method
@@ -19,20 +17,20 @@ builtins_sum = sum
 
 
 class DataFrame:
-    @check_sig([3], [pardos_type], [string_list_type], [any_matrix_type])
+    @check_sig([3], [pardos_t], [lista_cadenas_t], [matriz_cualquiera_t])
     def __init__(self, columns, data):
         for row in data:
             if len(row) != len(columns):
-                raise Exception("pardos: Inconsistent dimensions")
+                raise Exception(f"pardos: Inconsistent dimensions")
 
-        self.columns: list[str] = list(columns)
-        self.data: list[list[Any]] = [list(row) for row in data]
+        self.columns = list(columns)
+        self.data = [list(row) for row in data]
 
     def __repr__(self):
-        content = f"cols: {self.columns}, rows: {self.data}"
-        return repr(content)
+        contenido = f"cols: {self.columns}, rows: {self.data}"
+        return repr(contenido)
 
-    @check_sig([1, 2], [pardos_type], [integer_type])
+    @check_sig([1, 2], [pardos_t], [entero_t])
     def head(self, *args):
         n = 5
         if len(args) == 1:
@@ -40,7 +38,7 @@ class DataFrame:
 
         return DataFrame(self.columns, self.data[:n])
 
-    @check_sig([1, 2], [pardos_type], [integer_type])
+    @check_sig([1, 2], [pardos_t], [entero_t])
     def tail(self, *args):
         n = 5
         if len(args) == 1:
@@ -51,13 +49,13 @@ class DataFrame:
         else:
             return DataFrame(self.columns, self.data[:])
 
-    @check_sig([1], [pardos_type])
+    @check_sig([1], [pardos_t])
     def shape(self):
-        row_count = len(self.data)
+        n_filas = len(self.data)
         n_cols = len(self.columns)
-        return [row_count, n_cols]
+        return [n_filas, n_cols]
 
-    @check_sig([2], [pardos_type], [string_type])
+    @check_sig([2], [pardos_t], [cadena_t])
     def col(self, column_name):
         if column_name not in self.columns:
             raise Exception(f"pardos: Column '{column_name}' doesn't exist")
@@ -69,28 +67,28 @@ class DataFrame:
 
         dtypes_rows = self.dtypes()
 
-        column_type = None
-        for col, type_name in dtypes_rows:
+        tipo_col = None
+        for col, tipo in dtypes_rows:
             if col == column_name:
-                column_type = type_name
+                tipo_col = tipo
                 break
 
         result_rows = []
-        if column_type == string_type:
+        if tipo_col == cadena_t:
             for v in raw:
                 if isinstance(v, float) and math.isnan(v):
                     result_rows.append("")
                 else:
                     result_rows.append(str(v))
 
-        elif column_type == integer_type:
+        elif tipo_col == entero_t:
             for v in raw:
                 if isinstance(v, float) and math.isnan(v):
                     result_rows.append(0)
                 else:
                     result_rows.append(int(v))
 
-        elif column_type == float_type:
+        elif tipo_col == flotante_t:
             for v in raw:
                 if isinstance(v, float) and math.isnan(v):
                     result_rows.append(float("nan"))
@@ -102,9 +100,9 @@ class DataFrame:
 
         return result_rows
 
-    @check_sig([1], [pardos_type])
+    @check_sig([1], [pardos_t])
     def dtypes(self):
-        rows = []
+        filas = []
         for j, col_name in enumerate(self.columns):
             vals = [
                 row[j]
@@ -112,43 +110,43 @@ class DataFrame:
                 if not (isinstance(row[j], float) and math.isnan(row[j]))
                 and row[j] is not None
             ]
-            column_type = string_type
+            tipo_col = cadena_t
             if len(vals) > 0 and all(isinstance(v, bool) for v in vals):
-                column_type = boolean_type
+                tipo_col = booleano_t
             elif len(vals) > 0 and all(isinstance(v, int) for v in vals):
-                column_type = integer_type
+                tipo_col = entero_t
             elif len(vals) > 0 and all(isinstance(v, (int, float)) for v in vals):
-                column_type = float_type
-            rows.append([col_name, column_type])
+                tipo_col = flotante_t
+            filas.append([col_name, tipo_col])
 
-        return rows
+        return filas
 
-    @check_sig([1], [pardos_type])
+    @check_sig([1], [pardos_t])
     def info(self):
-        row_count = len(self.data)
+        n_filas = len(self.data)
         n_cols = len(self.columns)
 
         cols_str = ", ".join(self.columns)
         dtypes_rows = self.dtypes()
         dtypes_str = ", ".join(f"{c}:{t}" for c, t in dtypes_rows)
 
-        rows = [
-            ["Rows", row_count],
+        filas = [
+            ["Rows", n_filas],
             ["Columns", n_cols],
             ["Column_Names", cols_str],
             ["Dtypes", dtypes_str],
         ]
-        return f"{rows}"
+        return f"{filas}"
 
-    @check_sig([1], [pardos_type])
+    @check_sig([1], [pardos_t])
     def describe(self):
         cols = ["column", "count", "mean", "std", "min", "max"]
-        rows = []
+        filas = []
 
-        dataframe_type = self.dtypes()
-        for i, type_name in enumerate(dataframe_type):
+        tipo_df = self.dtypes()
+        for i, tipo in enumerate(tipo_df):
             col_name = self.columns[i]
-            if type_name[1] in (integer_type, float_type):
+            if tipo[1] in (entero_t, flotante_t):
                 idx = self.columns.index(col_name)
                 nums = [
                     row[idx]
@@ -157,7 +155,7 @@ class DataFrame:
                     and not (isinstance(row[idx], float) and math.isnan(row[idx]))
                 ]
                 if not nums:
-                    rows.append([col_name, "0", "nan", "nan", "nan", "nan"])
+                    filas.append([col_name, "0", "nan", "nan", "nan", "nan"])
                     continue
                 count = len(nums)
                 mean = sum(nums) / count
@@ -165,7 +163,7 @@ class DataFrame:
                 std = var**0.5
                 min_val = min(nums)
                 max_val = max(nums)
-                rows.append(
+                filas.append(
                     [
                         col_name,
                         str(count),
@@ -176,9 +174,9 @@ class DataFrame:
                     ]
                 )
 
-        return DataFrame(cols, rows)
+        return DataFrame(cols, filas)
 
-    @check_sig([2], [pardos_type], [string_type])
+    @check_sig([2], [pardos_t], [cadena_t])
     def to_csv(self, path):
         """
         Export DataFrame to CSV file.
@@ -189,7 +187,7 @@ class DataFrame:
         if os.path.isabs(path):
             real_path = path
         else:
-            real_path = os.path.join(cast(str, globals.current_dir), path)
+            real_path = os.path.join(globals.current_dir, path)
 
         with open(real_path, "w", encoding="utf-8") as f:
             # Write header
@@ -205,7 +203,7 @@ class DataFrame:
                         row_str.append(str(val))
                 f.write(",".join(row_str) + "\n")
 
-    @check_sig([2], [pardos_type], [string_type])
+    @check_sig([2], [pardos_t], [cadena_t])
     def to_json(self, path):
         """
         Export DataFrame to JSON file in 'records' orient.
@@ -217,7 +215,7 @@ class DataFrame:
         if os.path.isabs(path):
             real_path = path
         else:
-            real_path = os.path.join(cast(str, globals.current_dir), path)
+            real_path = os.path.join(globals.current_dir, path)
 
         # Build records format
         records = []
@@ -235,7 +233,7 @@ class DataFrame:
         with open(real_path, "w", encoding="utf-8") as f:
             json.dump(records, f, indent=2, ensure_ascii=False)
 
-    @check_sig([3], [pardos_type], [string_type], [string_type])
+    @check_sig([3], [pardos_t], [cadena_t], [cadena_t])
     def rename(self, old_name, new_name):
         """
         Rename a column.
@@ -256,7 +254,7 @@ class DataFrame:
         # Return new DataFrame with same data but renamed columns
         return DataFrame(new_columns, self.data)
 
-    @check_sig([2], [pardos_type], [string_type])
+    @check_sig([2], [pardos_t], [cadena_t])
     def drop(self, column_name):
         """
         Drop a column from the DataFrame.
@@ -272,14 +270,14 @@ class DataFrame:
         new_columns = [col for col in self.columns if col != column_name]
 
         # Create new data without the dropped column
-        new_data: list[list[Any]] = []
+        new_data = []
         for row in self.data:
             new_row = [row[i] for i in range(len(row)) if i != col_idx]
             new_data.append(new_row)
 
         return DataFrame(new_columns, new_data)
 
-    @check_sig([2], [pardos_type], [integer_type, float_type, string_type])
+    @check_sig([2], [pardos_t], [entero_t, flotante_t, cadena_t])
     def fillna(self, value):
         """
         Fill NaN values with a specified value.
@@ -297,7 +295,7 @@ class DataFrame:
 
         return DataFrame(self.columns, new_data)
 
-    @check_sig([1], [pardos_type])
+    @check_sig([1], [pardos_t])
     def dropna(self):
         """
         Drop rows that contain any NaN values.
@@ -315,7 +313,7 @@ class DataFrame:
 
         return DataFrame(self.columns, new_data)
 
-    @check_sig([1], [pardos_type])
+    @check_sig([1], [pardos_t])
     def ffill(self):
         """
         Forward fill - propagate last valid observation forward to fill NaN values.
@@ -348,7 +346,7 @@ class DataFrame:
 
         return DataFrame(self.columns, new_data)
 
-    @check_sig([1], [pardos_type])
+    @check_sig([1], [pardos_t])
     def bfill(self):
         """
         Backward fill - propagate next valid observation backward to fill NaN values.
@@ -356,7 +354,7 @@ class DataFrame:
         Returns a new DataFrame with NaN values filled using backward fill.
         """
         # Initialize new_data with same structure
-        new_data: list[list[Any]] = [[None] * len(self.columns) for _ in range(len(self.data))]
+        new_data = [[None] * len(self.columns) for _ in range(len(self.data))]
 
         # Process column by column
         for col_idx in range(len(self.columns)):
@@ -397,7 +395,7 @@ class DataFrame:
         result_rows = [[k, v] for k, v in sorted_items]
         return DataFrame(result_cols, result_rows)
 
-    @check_sig([2], [pardos_type], [string_type])
+    @check_sig([2], [pardos_t], [cadena_t])
     def mean(self, column_name):
         """Calculate the arithmetic mean of a numeric column."""
         if column_name not in self.columns:
@@ -415,7 +413,7 @@ class DataFrame:
 
 
 
-    @check_sig([2], [pardos_type], [string_type])
+    @check_sig([2], [pardos_t], [cadena_t])
     def sum(self, column_name):
         """Calculate the sum of a numeric column."""
         if column_name not in self.columns:
@@ -433,7 +431,7 @@ class DataFrame:
 
 
 
-    @check_sig([3], [pardos_type], [string_type], [string_type])
+    @check_sig([3], [pardos_t], [cadena_t], [cadena_t])
     def agg(self, column_name, func_name):
         """Apply a single aggregation function to a column.
         
@@ -467,7 +465,7 @@ class DataFrame:
         elif func_name == "max":
             return max(nums)
 
-    @check_sig([1, 2], [pardos_type], [integer_type])
+    @check_sig([1, 2], [pardos_t], [entero_t])
     def round(self, *args):
         """Round all floating-point numbers in the DataFrame to n decimal places."""
         decimals = 4
@@ -485,7 +483,7 @@ class DataFrame:
             rounded_data.append(new_row)
         return DataFrame(self.columns, rounded_data)
 
-    @check_sig([2], [pardos_type], [string_type])
+    @check_sig([2], [pardos_t], [cadena_t])
     def query(self, query_str):
         import globals
         visitor = globals.current_visitor
@@ -494,12 +492,11 @@ class DataFrame:
 
         # Lazy import to avoid crashes if antlr4 is missing in some environments
         try:
-            from antlr4 import CommonTokenStream, InputStream
-
+            from antlr4 import InputStream, CommonTokenStream
             from Kafe_GrammarLexer import Kafe_GrammarLexer
             from Kafe_GrammarParser import Kafe_GrammarParser
-        except ImportError as e:
-            raise Exception("pardos: antlr4-python3-runtime is not installed") from e
+        except ImportError:
+            raise Exception("pardos: antlr4-python3-runtime is not installed")
 
         # Parse the query string as an expression
         input_stream = InputStream(query_str)
@@ -536,16 +533,16 @@ class DataFrame:
                 for i, col_name in enumerate(self.columns):
                     val = row[i]
                     if isinstance(val, bool):
-                        type_name = boolean_type
+                        tipo = booleano_t
                     elif isinstance(val, int):
-                        type_name = integer_type
+                        tipo = entero_t
                     elif isinstance(val, float):
-                        type_name = float_type
+                        tipo = flotante_t
                     else:
-                        type_name = string_type
+                        tipo = cadena_t
                     
-                    from global_utils import assign_variable
-                    assign_variable(visitor, col_name, val, type_name)
+                    from global_utils import asignar_variable
+                    asignar_variable(visitor, col_name, val, tipo)
                     visitor.mark_variable_in_scope(col_name)
                 
                 # Evaluate expression
@@ -558,7 +555,7 @@ class DataFrame:
 
         return DataFrame(self.columns, filtered_data)
 
-    @check_sig([2], [pardos_type], [pardos_type])
+    @check_sig([2], [pardos_t], [pardos_t])
     def concat(self, other):
         """Concatenate two DataFrames vertically."""
         if self.columns != other.columns:
@@ -573,7 +570,7 @@ class DataFrame:
                 raise Exception("pardos: concat: Columns do not match")
         return DataFrame(self.columns, self.data + other.data)
 
-    @check_sig([3, 4], [pardos_type], [pardos_type], [string_type], [string_type])
+    @check_sig([3, 4], [pardos_t], [pardos_t], [cadena_t], [cadena_t])
     def merge(self, other, on, how='inner'):
         """Merge two DataFrames on a common column."""
         if on not in self.columns or on not in other.columns:
@@ -611,7 +608,7 @@ class DataFrame:
                 
         return DataFrame(new_cols, new_data)
 
-    @check_sig([2], [pardos_type], [string_type])
+    @check_sig([2], [pardos_t], [cadena_t])
     def groupby(self, column_name):
         """Group the DataFrame by a column."""
         if column_name not in self.columns:
@@ -644,7 +641,7 @@ class GroupBy:
 
             temp_df = DataFrame(self.df.columns, self.groups[key])
             # Filter out non-numeric columns for aggregation, except the grouping column
-            numeric_cols = [c for c, t in temp_df.dtypes() if t in (integer_type, float_type)]
+            numeric_cols = [c for c, t in temp_df.dtypes() if t in (entero_t, flotante_t)]
 
             if numeric_cols:
                 col_to_agg = numeric_cols[0]

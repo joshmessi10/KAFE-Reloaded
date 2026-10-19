@@ -1,15 +1,31 @@
 import random
-
 from global_utils import check_sig
-from TypeUtils import (
-    boolean_type,
-    float_type,
-    integer_type,
-    numeric_matrix_types,
-    numeric_vector_types,
-)
-
+from TypeUtils import entero_t, flotante_t, booleano_t, matriz_numeros_t, vector_numeros_t, cadena_t, lista_cualquiera_t
 from ..BaseMachine import BaseMachine
+
+
+class TrainTestSplit(BaseMachine):
+    """Resultado indexable de una división de datos.
+
+    Conserva la forma ``[X_train, X_test, y_train, y_test]`` sin obligar al
+    lenguaje KAFE a declarar una lista heterogénea.
+    """
+
+    def __init__(self, X_train, X_test, y_train, y_test):
+        super().__init__()
+        self._parts = (X_train, X_test, y_train, y_test)
+
+    def __getitem__(self, index):
+        return self._parts[index]
+
+    def __iter__(self):
+        return iter(self._parts)
+
+    def __len__(self):
+        return len(self._parts)
+
+    def __eq__(self, other):
+        return isinstance(other, TrainTestSplit) and self._parts == other._parts
 
 
 def _validate_non_empty(data, name):
@@ -18,7 +34,7 @@ def _validate_non_empty(data, name):
 
 
 def _make_folds(n_samples, n_splits, shuffle=False, random_state=0):
-    """Generates indexes for k-fold cross validation without check_sig."""
+    """Genera índices para k-fold cross validation sin check_sig."""
     rng = random.Random(random_state if random_state != 0 else None)
 
     if shuffle:
@@ -50,30 +66,30 @@ def _make_folds(n_samples, n_splits, shuffle=False, random_state=0):
 
 
 @check_sig({
-    2: [numeric_matrix_types, numeric_vector_types],
-    3: [numeric_matrix_types, numeric_vector_types, float_type],
-    4: [numeric_matrix_types, numeric_vector_types, float_type, integer_type],
-    5: [numeric_matrix_types, numeric_vector_types, float_type, integer_type, boolean_type]
+    2: [lista_cualquiera_t, vector_numeros_t],
+    3: [lista_cualquiera_t, vector_numeros_t, flotante_t],
+    4: [lista_cualquiera_t, vector_numeros_t, flotante_t, entero_t],
+    5: [lista_cualquiera_t, vector_numeros_t, flotante_t, entero_t, booleano_t]
 })
 def train_test_split(X, y, test_size=0.2, random_state=0, shuffle=True):
     """
     Divide arrays into random train and test subsets.
 
-    Splits the data into training and test sets randomly.
+    Divide los datos en conjuntos de entrenamiento y prueba de forma aleatoria.
 
-    Parameters:
-        X: features array (List[List[NUM]])
-        y: target vector (List[NUM])
-        test_size: proportion from dataset to test (0.0 - 1.0, default 0.2)
-        random_state: seed for reproducibility (0 = random, default 0)
-        shuffle: whether to shuffle data before splitting (default True)
+    Parámetros:
+        X: matriz de features (List[List[NUM]])
+        y: vector objetivo (List[NUM])
+        test_size: proporción del dataset para test (0.0 - 1.0, default 0.2)
+        random_state: semilla para reproducibilidad (0 = aleatorio, default 0)
+        shuffle: si se barajan los datos antes de dividir (default True)
 
-    Returns:
+    Retorna:
         (X_train, X_test, y_train, y_test)
 
-    Mathematical foundation:
-        Given a dataset of n samples, they are randomly selected
-        floor(n * test_size) samples for test, the rest for train.
+    Fundamento matemático:
+        Dado un dataset de n muestras, se seleccionan aleatoriamente
+        floor(n * test_size) muestras para test, el resto para train.
     """
     _validate_non_empty(X, "train_test_split")
     if len(X) != len(y):
@@ -99,35 +115,78 @@ def train_test_split(X, y, test_size=0.2, random_state=0, shuffle=True):
     y_train = [y[i] for i in train_indices]
     y_test = [y[i] for i in test_indices]
 
-    return [X_train, X_test, y_train, y_test]
+    return TrainTestSplit(X_train, X_test, y_train, y_test)
 
 
 @check_sig({
-    1: [integer_type],
-    2: [integer_type, integer_type],
-    3: [integer_type, integer_type, boolean_type],
-    4: [integer_type, integer_type, boolean_type, integer_type]
+    2: [lista_cualquiera_t, vector_numeros_t],
+    3: [lista_cualquiera_t, vector_numeros_t, flotante_t],
+    4: [lista_cualquiera_t, vector_numeros_t, flotante_t, entero_t],
+})
+def stratified_train_test_split(X, y, test_size=0.2, random_state=0):
+    """Divide X e y conservando la proporción de cada clase.
+
+    Cada etiqueta se baraja con la misma semilla y aporta aproximadamente
+    ``test_size`` de sus muestras al conjunto de prueba. Es útil para que
+    clases pequeñas no desaparezcan de entrenamiento o evaluación.
+    """
+    _validate_non_empty(X, "stratified_train_test_split")
+    if len(X) != len(y):
+        raise Exception("stratified_train_test_split: X and y must have the same number of samples")
+    if test_size <= 0 or test_size >= 1:
+        raise Exception("stratified_train_test_split: test_size must be between 0 and 1 (exclusive)")
+
+    by_label = {}
+    for index, label in enumerate(y):
+        by_label.setdefault(label, []).append(index)
+
+    rng = random.Random(random_state if random_state != 0 else None)
+    train_indices = []
+    test_indices = []
+    for indices in by_label.values():
+        rng.shuffle(indices)
+        test_count = int(len(indices) * test_size)
+        if len(indices) > 1:
+            test_count = max(1, min(len(indices) - 1, test_count))
+        test_indices.extend(indices[:test_count])
+        train_indices.extend(indices[test_count:])
+
+    rng.shuffle(train_indices)
+    rng.shuffle(test_indices)
+    return TrainTestSplit(
+        [X[index] for index in train_indices],
+        [X[index] for index in test_indices],
+        [y[index] for index in train_indices],
+        [y[index] for index in test_indices],
+    )
+
+
+@check_sig({
+    1: [entero_t],
+    2: [entero_t, entero_t],
+    3: [entero_t, entero_t, booleano_t],
+    4: [entero_t, entero_t, booleano_t, entero_t]
 })
 def k_fold(n_samples, n_splits=5, shuffle=False, random_state=0):
     """
     Generate k-fold cross validation splits.
 
-    Generates indexes for k-fold cross validation. Each fold contains
-    a subset for test and the rest for train.
+    Genera índices para k-fold cross validation. Cada fold contiene
+    un subset de test y el resto para train.
 
-    Parameters:
-        n_samples: total number of samples
-        n_splits: number of folds (default 5)
-        shuffle: whether to shuffle data before splitting (default False)
-        random_state: seed for reproducibility (0 = random, default 0)
+    Parámetros:
+        n_samples: número total de muestras
+        n_splits: número de folds (default 5)
+        shuffle: si se barajan los datos antes de dividir (default False)
+        random_state: semilla para reproducibilidad (0 = aleatorio, default 0)
 
-    Returns:
+    Retorna:
         List of (train_indices, test_indices) tuples
 
-    Mathematical foundation:
-        The data is divided into k approximately equal folds.
-        In each iteration i, fold i is test and the others are train.
-        Test size ≈ floor(n_samples / n_splits)
+    Fundamento matemático:
+        Los datos se dividen en k folds aproximadamente iguales.
+        En cada iteración i, el fold i es de test y los demás son train.
+        Tamaño de test ≈ floor(n_samples / n_splits)
     """
     if n_samples <= 0:
         raise Exception("k_fold: n_samples must be positive")
@@ -144,6 +203,7 @@ def k_fold(n_samples, n_splits=5, shuffle=False, random_state=0):
     else:
         indices = list(range(n_samples))
 
+    folds = []
     fold_sizes = [n_samples // n_splits] * n_splits
     for i in range(n_samples % n_splits):
         fold_sizes[i] += 1
@@ -170,7 +230,7 @@ class CrossValScore(BaseMachine):
     """
     Wrapper for cross_val_score that can be used as a KAFE object.
 
-    Evaluate a model using k-fold cross validation.
+    Evalúa un modelo usando k-fold cross validation.
     """
 
     def __init__(self, cv=5, scoring='accuracy', random_state=0):
@@ -235,12 +295,12 @@ class CrossValScore(BaseMachine):
 
 def _generate_param_grid(param_grid):
     """
-    Generates all combinations of a parameter grid.
+    Genera todas las combinaciones de un grid de parámetros.
 
-    param_grid: dict where keys are parameter names and values ​​are lists of values
-    Example: {'n_neighbors': [3, 5, 7], 'weights': ['uniform', 'distance']}
+    param_grid: dict donde las claves son nombres de parámetros y los valores son listas de valores
+    Ejemplo: {'n_neighbors': [3, 5, 7], 'weights': ['uniform', 'distance']}
 
-    Returns: list of dicts with all combinations
+    Retorna: lista de dicts con todas las combinaciones
     """
     if not param_grid:
         return [{}]
@@ -249,7 +309,7 @@ def _generate_param_grid(param_grid):
     values = list(param_grid.values())
 
     combinations = [{}]
-    for key, vals in zip(keys, values, strict=True):
+    for key, vals in zip(keys, values):
         new_combinations = []
         for combo in combinations:
             for val in vals:
@@ -263,25 +323,25 @@ def _generate_param_grid(param_grid):
 
 class GridSearchCV(BaseMachine):
     """
-    Exhaustive search on a grid of parameters with cross validation.
+    Búsqueda exahustiva sobre una cuadrícula de parámetros con validación cruzada.
 
-    Mathematical foundation:
-        Given a grid of parameters G = {p1: [v1, v2], p2: [v3, v4]}
-        Evaluate all combinations |G| = |p1| × |p2| = 4
-        For each combination, calculate the average score using k-fold CV
+    Fundamento matemático:
+        Dado un grid de parámetros G = {p1: [v1, v2], p2: [v3, v4]}
+        Evalúa todas las combinaciones |G| = |p1| × |p2| = 4
+        Para cada combinación, calcula el score promedio usando k-fold CV
 
-    Parameters:
-        param_grid: dict of parameters to evaluate
-                    Example: {'n_neighbors': [3, 5, 7], 'weights': ['uniform', 'distance']}
-        cv: number of folds for cross validation (default 5)
-        scoring: evaluation metric ('accuracy', 'r2', 'mse') (default 'accuracy')
-        random_state: seed for reproducibility (default 0)
+    Parámetros:
+        param_grid: dict de parámetros a evaluar
+                    Ejemplo: {'n_neighbors': [3, 5, 7], 'weights': ['uniform', 'distance']}
+        cv: número de folds para cross validation (default 5)
+        scoring: métrica de evaluación ('accuracy', 'r2', 'mse') (default 'accuracy')
+        random_state: semilla para reproducibilidad (default 0)
 
-    Attributes (after fit):
-        best_params_: best parameters found
-        best_score_: best score obtained
-        cv_results_: detailed results of all combinations
-        n_splits_: number of folds used
+    Atributos (después de fit):
+        best_params_: mejores parámetros encontrados
+        best_score_: mejor score obtenido
+        cv_results_: resultados detallados de todas las combinaciones
+        n_splits_: número de folds usados
     """
 
     def __init__(self, param_grid, cv=5, scoring='accuracy', random_state=0):
@@ -299,7 +359,7 @@ class GridSearchCV(BaseMachine):
         self.n_splits_ = cv
 
     def _evaluate_params(self, model, X, y, params):
-        """Evaluates a combination of parameters using k-fold CV."""
+        """Evalúa una combinación de parámetros usando k-fold CV."""
         for key, value in params.items():
             setattr(model, key, value)
 
@@ -337,7 +397,7 @@ class GridSearchCV(BaseMachine):
 
     def fit(self, model, X, y):
         """
-        Evaluates all combinations of the parameter grid.
+        Evalúa todas las combinaciones del grid de parámetros.
         """
         if not X or not y:
             raise Exception("GridSearchCV: Empty input data")
@@ -370,26 +430,26 @@ class GridSearchCV(BaseMachine):
 
 class RandomizedSearchCV(BaseMachine):
     """
-    Random search on parameter distributions with cross validation.
+    Búsqueda aleatoria sobre distribuciones de parámetros con validación cruzada.
 
-    Mathematical foundation:
-        Instead of evaluating all combinations (exhaustive),
-        randomly samples n_iter combinations from the parameter space.
-        More efficient than GridSearch when there are many parameters.
+    Fundamento matemático:
+        En lugar de evaluar todas las combinaciones (exahustivo),
+        muestrea aleatoriamente n_iter combinaciones del espacio de parámetros.
+        Más eficiente que GridSearch cuando hay muchos parámetros.
 
-    Parameters:
-        param_distributions: dict of parameter distributions
-                            Example: {'n_neighbors': [3, 5, 7, 9], 'weights': ['uniform', 'distance']}
-        n_iter: number of combinations to sample (default 10)
-        cv: number of folds for cross validation (default 5)
-        scoring: evaluation metric ('accuracy', 'r2', 'mse') (default 'accuracy')
-        random_state: seed for reproducibility (default 0)
+    Parámetros:
+        param_distributions: dict de distribuciones de parámetros
+                            Ejemplo: {'n_neighbors': [3, 5, 7, 9], 'weights': ['uniform', 'distance']}
+        n_iter: número de combinaciones a muestrear (default 10)
+        cv: número de folds para cross validation (default 5)
+        scoring: métrica de evaluación ('accuracy', 'r2', 'mse') (default 'accuracy')
+        random_state: semilla para reproducibilidad (default 0)
 
-    Attributes (after fit):
-        best_params_: best parameters found
-        best_score_: best score obtained
-        cv_results_: detailed results of all combinations evaluated
-        n_iter_: number of iterations performed
+    Atributos (después de fit):
+        best_params_: mejores parámetros encontrados
+        best_score_: mejor score obtenido
+        cv_results_: resultados detallados de todas las combinaciones evaluadas
+        n_iter_: número de iteraciones realizadas
     """
 
     def __init__(self, param_distributions, n_iter=10, cv=5, scoring='accuracy', random_state=0):
@@ -411,7 +471,7 @@ class RandomizedSearchCV(BaseMachine):
         self.n_splits_ = cv
 
     def _sample_params(self, rng):
-        """Shows random combinations of parameters."""
+        """Muestra combinaciones aleatorias de parámetros."""
         params = {}
         for key, values in self.param_distributions.items():
             if isinstance(values, list):
@@ -421,7 +481,7 @@ class RandomizedSearchCV(BaseMachine):
         return params
 
     def _evaluate_params(self, model, X, y, params):
-        """Evaluates a combination of parameters using k-fold CV."""
+        """Evalúa una combinación de parámetros usando k-fold CV."""
         for key, value in params.items():
             setattr(model, key, value)
 
@@ -459,7 +519,7 @@ class RandomizedSearchCV(BaseMachine):
 
     def fit(self, model, X, y):
         """
-        Evaluates sampled combinations of parameters.
+        Evalúa combinaciones muestreadas de parámetros.
         """
         if not X or not y:
             raise Exception("RandomizedSearchCV: Empty input data")
@@ -494,34 +554,34 @@ class RandomizedSearchCV(BaseMachine):
 
 class Pipeline(BaseMachine):
     """
-    Chain multiple preprocessing steps and a final model.
+    Encadena múltiples pasos de preprocessing y un modelo final.
 
-    Pipeline allows you to sequence preprocessing transformations with a model,
-    avoiding data leakage by adjusting each step only in the training data.
+    Pipeline permite secuenciar transformaciones de preprocessing con un modelo,
+    evitando data leakage al ajustar cada paso solo en el training data.
 
-    Mathematical foundation:
-        Given a pipeline P = [T1, T2, ..., Tn, M]
-        For training:
+    Fundamento matemático:
+        Dado un pipeline P = [T1, T2, ..., Tn, M]
+        Para training:
             X' = T1.fit_transform(X)
             X'' = T2.fit_transform(X')
             ...
             M.fit(X''', y)
 
-        For prediction:
+        Para predicción:
             X' = T1.transform(X)
             X'' = T2.transform(X')
             ...
             return M.predict(X''')
 
-    Parameters:
-        names: list of names of each step (List[STRING])
-               Example: ['scaler', 'model']
-        steps: list of transformers or models (List[MACHINE])
-               Example: [scaler, model]
+    Parámetros:
+        names: lista de nombres de cada paso (List[STRING])
+               Ejemplo: ['scaler', 'model']
+        steps: lista de transformadores o modelos (List[MACHINE])
+               Ejemplo: [scaler, model]
 
-    Attributes (after fit):
-        steps_: adjusted steps list
-        named_steps_: dict of steps by name
+    Atributos (después de fit):
+        steps_: lista de pasos ajustados
+        named_steps_: dict de pasos por nombre
     """
 
     def __init__(self, names, steps):
@@ -531,13 +591,13 @@ class Pipeline(BaseMachine):
         if len(names) != len(steps):
             raise Exception("Pipeline: names and steps must have the same length")
 
-        self.steps = list(zip(names, steps, strict=True))
+        self.steps = list(zip(names, steps))
         self.steps_ = []
         self.named_steps_ = {}
 
     def fit(self, X, y):
         """
-        Tune the entire pipeline: train each transformer and the final model.
+        Ajusta el pipeline completo: entrena cada transformador y el modelo final.
         """
         if not X or not y:
             raise Exception("Pipeline: Empty input data")
@@ -568,7 +628,7 @@ class Pipeline(BaseMachine):
 
     def predict(self, X):
         """
-        Predict by applying all the transformations and then the model.
+        Predice aplicando todas las transformaciones y luego el modelo.
         """
         if not self.steps_:
             raise Exception("Pipeline: Pipeline not fitted. Call fit() first.")
@@ -577,7 +637,7 @@ class Pipeline(BaseMachine):
 
         current_X = [row[:] for row in X]
 
-        for _name, step in self.steps_:
+        for name, step in self.steps_:
             is_last = (step == self.steps_[-1][1])
 
             if is_last:
@@ -589,7 +649,7 @@ class Pipeline(BaseMachine):
 
     def score(self, X, y, metric=None):
         """
-        Score using the final pipeline model.
+        Score usando el modelo final del pipeline.
         """
         if not self.steps_:
             raise Exception("Pipeline: Pipeline not fitted. Call fit() first.")
@@ -597,14 +657,14 @@ class Pipeline(BaseMachine):
         model = self.steps_[-1][1]
 
         current_X = [row[:] for row in X]
-        for _name, step in self.steps_[:-1]:
+        for name, step in self.steps_[:-1]:
             current_X = step.transform(current_X)
 
         return model.score(current_X, y, metric)
 
     def transform(self, X):
         """
-        Applies all pipeline transformations (without the final model).
+        Aplica todas las transformaciones del pipeline (sin el modelo final).
         """
         if not self.steps_:
             raise Exception("Pipeline: Pipeline not fitted. Call fit() first.")
@@ -613,7 +673,7 @@ class Pipeline(BaseMachine):
 
         current_X = [row[:] for row in X]
 
-        for _name, step in self.steps_:
+        for name, step in self.steps_:
             is_last = (step == self.steps_[-1][1])
             if not is_last:
                 current_X = step.transform(current_X)
@@ -622,14 +682,14 @@ class Pipeline(BaseMachine):
 
     def fit_transform(self, X, y):
         """
-        Fit and transform in one step (for transformers).
+        Fit y transform en un solo paso (para los transformadores).
         """
         self.fit(X, y)
         return self.transform(X)
 
     def get_params(self):
         """
-        Returns the names of the pipeline steps.
+        Retorna los nombres de los pasos del pipeline.
         """
         return [name for name, _ in self.steps]
 

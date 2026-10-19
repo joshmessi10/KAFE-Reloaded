@@ -30,11 +30,11 @@ Source of Truth precedence: **ADRs > Knowledge Layer > History > Progress**.
 
 - Significant changes must be traceable through ADRs, history, and the session log
 - AGENTS.md stays lean; detail lives in `.opencode/knowledge/`
-- Session memory files and the session log must be updated when closing a session
+- Session memory files and bitácora must be updated on close
 
 ---
 
-## ADR-0002: OpenCode Roles as Subagents (SUPERSEDED)
+## ADR-0002: Roles como Subagentes OpenCode (SUPERSEDED)
 
 - **Status**: superseded by ADR-0005
 - **Date**: 2026-08-03
@@ -42,15 +42,15 @@ Source of Truth precedence: **ADRs > Knowledge Layer > History > Progress**.
 
 ### Context (Original)
 
-AGENTS.md defines five engineering roles that were initially deferred as subagents because the workload did not justify the orchestration overhead.
+AGENTS.md define cinco roles de ingeniería que originalmente fueron diferidos como subagentes porque el volumen de trabajo no justificaba la sobrecarga de orquestación.
 
 ### Decision (Original)
 
-Keep the five roles as documented responsibilities and defer their implementation.
+Mantener los cinco roles como responsabilidades documentadas y diferir su implementación.
 
-### Decision (Updated — 2026-08-04)
+### Decision (Actualizada — 2026-08-04)
 
-The five roles are now implemented as OpenCode subagents in `.opencode/agents/`. Superseded by ADR-0005.
+Los cinco roles ahora están implementados como subagentes OpenCode en `.opencode/agents/`. Reemplazado por ADR-0005.
 
 ---
 
@@ -85,7 +85,7 @@ Use explicit local gates through commands instead of CI hooks:
 
 ---
 
-## ADR-0004: Session Lifecycle (Session Log + `/close`)
+## ADR-0004: Session Lifecycle (Bitácora + `/close`)
 
 - **Status**: accepted
 - **Date**: 2026-08-03
@@ -97,7 +97,7 @@ Without an end-of-session lifecycle, `current.md` accumulated state across sessi
 ### Decision
 
 Implement a session lifecycle with two mechanisms:
-- Append-only session log at `.opencode/progress/session-log.md`
+- Append-only bitácora `.opencode/progress/session-log.md`
 - `/close` command with hard gates
 
 ### Rationale
@@ -121,39 +121,39 @@ Implement a session lifecycle with two mechanisms:
 
 ### Context
 
-AGENTS.md defines five engineering roles that were initially deferred as subagents (ADR-0002). The engineering system has matured, and the workload now justifies implementing them.
+AGENTS.md define cinco roles de ingeniería que originalmente fueron diferidos como subagentes (ADR-0002). El sistema de ingeniería ha madurado y el volumen de trabajo justifica la implementación.
 
 ### Decision
 
-Implement the five roles as OpenCode subagents in `.opencode/agents/`:
+Implementar los cinco roles como subagentes OpenCode en `.opencode/agents/`:
 
-| File | Mode | Responsibility |
+| Archivo | Modo | Responsabilidad |
 |---------|------|-----------------|
-| `engineering-lead.md` | primary | Orchestrator |
-| `architect.md` | subagent | Design + ADR |
-| `builder.md` | subagent | Implementation + tests |
-| `reviewer.md` | subagent | Quality gates + Definition of Done |
+| `engineering-lead.md` | primary | Orquestador |
+| `architect.md` | subagent | Diseño + ADR |
+| `builder.md` | subagent | Implementación + tests |
+| `reviewer.md` | subagent | Quality gates + DoD |
 | `historian.md` | subagent | History/knowledge/memory |
 | `tester.md` | subagent | Validation + benchmarks |
 
-Configuration in `opencode.json`:
+Configuración en `opencode.json`:
 - `default_agent: "engineering-lead"`
 - `subagent_depth: 2`
-- Granular permissions per agent
+- Permisos granulares por agente
 
 ### Rationale
 
-- Separation of responsibilities
-- Parallel orchestration
-- Granular permissions
-- Enforcement of the anti-telephone protocol
+- Separación de responsabilidades
+- Orquestación paralela
+- Permisos granulares
+- Enforcement del protocolo anti-telephone
 
 ### Consequences
 
-- Seven skills updated with agent ownership
+- 7 skills actualizados con Agent Ownership
 - ADR-0002 superseded
-- The Lead orchestrates via the Task tool
-- Subagents follow the anti-telephone protocol
+- Lead orquesta via Task tool
+- Subagentes siguen protocolo anti-telephone
 
 ---
 
@@ -323,193 +323,487 @@ Fails fast at construction time instead of silently producing a broken model.
 
 ---
 
-## ADR-0008: Mirrored Root Policies Govern Project Procedures
-
-- **Status**: accepted
-- **Date**: 2026-09-23
-- **Clarifies**: ADR-0001 (its historical text remains unchanged)
-
-### Context
-
-KAFE's root instructions have adopted applicable repository policies for English, Superpowers, dependency management, and quality gates. `AGENTS.md` and `CLAUDE.md` must express the same substantive rules. Some OpenCode knowledge and review instructions still described themselves as the exclusive review authority, which could exclude those root invariants. The repository also retains legacy setup and unimplemented migration gates that must not be presented as passing checks.
-
-### Decision
-
-1. Applicable runtime and user instructions govern execution. The mirrored `AGENTS.md` and `CLAUDE.md` files define repository invariants. Only their file-identifying introductory text may differ.
-2. `OPENCODE.md`, `.opencode/` procedures and knowledge, and `.kiro/` steering implement the root invariants and cannot waive them. Reviews and `/dod` must consult both root policies and relevant technical knowledge.
-3. ADR-0001's ADR > Knowledge > History > Progress order applies to conflicts among project records only. It does not elevate historical records above current root policies or applicable runtime/user instructions. OpenCode remains the persistent project engineering system with its existing lifecycle, roles, and ML/DL documentation and benchmark duties.
-4. Record verification as PASS, FAIL, PENDING, or N/A with evidence or reasons. Distinguish task acceptance from repository migration debt. Missing gates remain PENDING; a task that promises to implement one is incomplete until its enforcement is demonstrated.
-5. Keep Superpowers specs, plans, and review reports local in the ignored artifact paths. Never stage, force-add, or commit them; persist durable project decisions in ADR/history/knowledge records instead.
-
-### Rationale
-
-- A mirrored policy body prevents agent-specific rule drift.
-- Project knowledge retains its technical role without excluding repository-wide obligations.
-- Evidence and explicit pending status prevent existing pytest success from being mistaken for complete quality-policy enforcement.
-- The clarification preserves historical decisions and KAFE's educational engineering process.
-
-### Consequences
-
-- Root policy changes must remain synchronized and be reflected in affected procedures and steering.
-- English migration, coordinated uv setup, and new quality/CI checks remain separate implementation work. The uv plan must cover runtime, development, docs, Nix's role, and optional integrations while preserving KafeHF's missing-dependency behavior.
-- Child interpreter coverage and full diagnostic observation require explicit implementation and execution evidence; parent pytest-cov/filterwarnings alone do not establish them.
-- Existing applicable full-suite, session-closure, ML/DL artifact, benchmark, and history obligations remain in force.
-
-### Alternatives Considered
-
-- **Mirror only a new policy section:** rejected because substantive rules elsewhere could still diverge.
-- **Keep knowledge as the exclusive review authority:** rejected because it could bypass root invariants.
-- **Rewrite ADR-0001:** rejected to preserve the historical decision and make the clarification traceable.
-
----
-
-## ADR-0009: Retire Repository-level Kiro Configuration and Steering
-
-- **Status**: accepted
-- **Date**: 2026-09-23
-- **Partially supersedes**: ADR-0008, Decision 2, only its inclusion of `.kiro/` steering
-
-### Context
-
-The preceding policy alignment brought Kiro steering under the mirrored root invariants. A subsequent user-approved retirement removes repository-level Kiro support. The steering's reusable KAFE facts are already represented in the root and OpenCode documentation; its file I/O fixture casing and parser-cleanup details are preserved in canonical verification guidance. The repository-scoped MCP configuration contains no reusable engineering policy.
-
-### Decision
-
-1. Remove `.kiro/settings/mcp.json` and `.kiro/steering/product.md`, `structure.md`, and `tech.md` from this repository. This decision does not authorize changing global/user Kiro configuration or unrelated MCP integrations.
-2. Current subordinate repository procedures are `OPENCODE.md` and `.opencode/`. Remove active Kiro authority references from the mirrored root instructions, the operating manual, and engineering/context records.
-3. Preserve ADR-0008 unchanged as a historical decision. Its inclusion of Kiro steering in Decision 2 is superseded by this retirement; all remaining authority, review, local-artifact, migration-status, and verification requirements stay in force.
-4. Preserve the earlier alignment history and append this retirement event. Keep the reusable `tests/KafeFiles/` casing and `make clean` requirements in `.opencode/knowledge/verifications.md`.
-
-### Rationale
-
-- Retiring a duplicated tool-specific instruction surface reduces maintenance and rule drift.
-- Canonical guidance retains the useful operational details without preserving repository-level Kiro integration.
-- A scoped superseding decision records the changed support boundary without rewriting historical policy.
-
-### Consequences
-
-- The repository no longer supplies Kiro MCP settings or steering; historical Kiro references describe the earlier state and this retirement only.
-- `AGENTS.md` and `CLAUDE.md` remain mirrored. OpenCode retains its operating-manual and persistent-engineering-system roles under the root policies.
-- Runtime behavior, dependency declarations, fixtures, workflows, and pending English/uv/quality migrations are unaffected by the retirement.
-
-### Alternatives Considered
-
-- **Keep duplicate Kiro steering:** rejected because the user approved retiring repository-level support and canonical guidance already covers the project.
-- **Delete historical decisions and events:** rejected because it would erase the reason for the changed authority boundary.
-- **Remove global tools or migrate MCP settings automatically:** outside the authorized repository scope.
-
----
-
-## ADR-0010: uv Owns Python Dependency Management
-
-- **Status**: accepted
-- **Date**: 2026-09-23
-
-### Context
-
-KAFE's Python runtime, development tools, MkDocs dependencies, optional Hugging Face integration, Nix shell, and CI previously used separate or implicit dependency sources. This made fresh setup and optional-dependency behavior difficult to reproduce. The repository policy requires a committed uv lock while keeping `datasets` absent from the default environment.
-
-### Decision
-
-1. Use the root `pyproject.toml` and committed `uv.lock` as the sole Python dependency definition. Keep this as a non-package project with `requires-python = ">=3.10"` and the uv-required non-release metadata version.
-2. Declare ANTLR runtime in the base project, developer tools and pytest in `dev`, MkDocs dependencies in `docs`, and Hugging Face `datasets` only in the optional `huggingface` extra. Set `tool.uv.exclude-newer = "7 days"`.
-3. Use locked uv sync/run commands for local development, docs, Make targets, OpenCode procedures, and GitHub Actions. Install uv using Astral's official instructions when it is unavailable.
-4. Keep Nix responsible for Python, uv, Java, ANTLR, and system utilities; do not maintain Python library dependencies in Nix. Preserve ANTLR 4.13.2 generation and runtime compatibility.
-5. Remove the legacy `requirements.txt` manifest and point KafeHF's missing-dependency diagnostic to `uv sync --locked --extra huggingface`. Keep the default environment free of `datasets`.
-
-### Rationale
-
-- A single committed lock makes local setup, CI, and docs dependency resolution reproducible.
-- Separate groups keep docs tooling out of the normal project install and preserve KafeHF's deterministic missing-dependency behavior.
-- Nix remains useful for system tools without duplicating Python dependency ownership.
-
-### Consequences
-
-- Developer setup, Make, OpenCode guidance, and both existing Python workflows use the locked uv project.
-- `datasets` is installed only when the Hugging Face extra is selected; the missing-dependency fixture remains part of the default suite.
-- The required quality tools are declared in `dev`, but their lint, typing, spelling, audit, coverage, warning, and suppression-policy gates remain pending for the separate quality-gates work.
-- Nix validation requires a Nix-capable host. Test CI is verified after the authorized feature push; the docs workflow deploys only from `main`.
-
-### Alternatives Considered
-
-- **Keep pip/requirements alongside uv:** rejected because it would retain two dependency authorities.
-- **Keep Python libraries in Nix:** rejected because it would duplicate the uv project and lock.
-- **Make `datasets` a base or development dependency:** rejected because it would invalidate the deterministic missing-dependency environment.
-
----
-
-## ADR-0011: One-Time English Backfill of Project Records
-
-- **Status**: accepted
-- **Date**: 2026-09-23
-
-### Context
-
-The user requires the current repository content to be in English and approved Task 6 to translate existing project records. The records include append-only session history and accepted ADRs whose Spanish prose predates this requirement. Translating those entries in place is necessary for the current-tree language requirement, but would ordinarily conflict with the record-preservation rules. Their original versions remain in Git history.
-
-### Decision
-
-1. Authorize one faithful English translation pass over existing tracked Spanish prose in repository guidance and `.opencode/` records, including historical session entries and accepted ADR prose. Preserve chronology, dates, identifiers, statuses, measured results, decisions, and substantive meaning; do not rewrite Git history.
-2. For this one backfill only, this ADR supersedes prior append-only or accepted-record immutability rules to the extent they would prevent translating existing prose. It does not authorize deleting or altering historical facts, changing the outcome of a recorded decision, or editing captured contents of retired artifacts.
-3. Keep future session and history entries append-only, write them in English, and do not use this exception for later editorial rewrites.
-4. Remove the PDF and machine-specific logs listed in the approved Task 6 brief from the current tree without modifying their captured contents. Their Git history remains available.
-
-### Rationale
-
-- A faithful current-tree translation satisfies the user's English requirement while preserving the original record meaning and chronology.
-- An explicit, narrowly scoped exception prevents this backfill from weakening future append-only protection.
-- Keeping Git history unchanged preserves the original Spanish wording and the approved retired artifacts for recovery.
-
-### Consequences
-
-- Existing tracked records may receive language-only edits in Task 6; substantive decisions, dates, identifiers, and measured results remain unchanged.
-- Future project records remain append-only and English.
-- The approved retired PDF and logs are absent from the current tree but remain recoverable from Git history.
-
-### Alternatives Considered
-
-- **Leave historical Spanish untouched:** rejected because the user requires English current-tree content and approved the one-time backfill.
-- **Rewrite or filter Git history:** rejected because it is unnecessary for the current-tree requirement and would remove the original record snapshots.
-- **Make all future records freely editable:** rejected because the user authorized only this one-time backfill.
-
----
-
-## ADR-0012: Python Quality Gates and CI Enforcement
+## ADR-0008: Restaurar el Tipo GESHA y el Contrato Público de KafeGESHA tras el Refactor
 
 - **Status**: accepted
 - **Date**: 2026-09-24
 
 ### Context
 
-The repository now uses a committed uv lock for Python runtime, development, documentation, and optional dependencies. The interpreter fixture suite also verifies child-process diagnostics, warnings, and subprocess coverage. Consistent local and hosted quality gates are needed to check the owned Python code and preserve that evidence without analyzing generated ANTLR outputs or masking authored issues.
+El refactor "Clean Gesha Architecture" reestructuró KafeGESHA aplanando el paquete en `src/lib/KafeGESHA/{layers,models,core,activations,losses,optimizers}.py` y añadió `Layer.__call__ = connect` para soportar la API Functional. Este refactor introdujo una regresión de contrato público:
+
+- El usuario reportó `TypeError: Expected GESHA, obtained FUNC` en `python Kafe.py Ejemplo.kf` en la línea `GESHA layer = geshaDeep.create_dense(1, "sigmoid", [2]);`.
+- **Causa raíz**: `TypeUtils.obtener_tipo_dato()` evaluaba `callable(dato)` **antes** de `isinstance(dato, (Gesha, Layer, Node, Input))`. Con `Layer.__call__ = connect`, toda capa es callable, por lo que cualquier capa/modelo GESHA se clasificaba como `FUNC` en lugar de `GESHA`.
+- `TypeUtils` es un módulo compartido por todo el lenguaje: regresión, asignación de tipos, dispatch de librerías y la gramática dependen de la clasificación correcta del tipo GESHA.
+
+Además, se observaron otras desviaciones del contrato pre-refactor: `Model.fit` emitía un formato de salida distinto, `predict`/`predict_label`/`predict_proba` cambiaron la semántica de muestras, el entrenamiento fijaba semillas ad-hoc y los fixtures `.expec` de las compuertas quedaron desalineados con la salida real (suite KafeGESHA en rojo: baseline 2 failed).
 
 ### Decision
 
-1. Use the locked `dev` group and existing tools. Ruff targets Python 3.10, enables `E4`, `E7`, `E9`, `F`, `B`, and `I`, and sets `force-exclude = true`. basedpyright analyzes `src/` and `tests/` using Python 3.10, `basic` mode, and `failOnWarnings = true`.
-2. Exclude only `src/Kafe_GrammarLexer.py`, `src/Kafe_GrammarParser.py`, and `src/Kafe_GrammarVisitor.py` from Ruff, basedpyright, and coverage. Keep generated parser outputs ignored and untracked. Regenerate with ANTLR 4.13.2 before interpreter tests or checks when the files are absent or the grammar changes.
-3. Configure codespell to scan hidden files with the exact case-sensitive ignore list `expec,mape,MAPE,FPR,Hart,le`. Skip only justified local/build outputs, root-local `docs/superpowers/`, and generated ANTLR artifacts; keep source, tests, `.opencode/`, and ordinary documentation in scope.
-4. Prohibit authored `# noqa` and `# pyright:` comment tokens. The repository policy checker enumerates tracked `*.py` files with `git ls-files -z`, tokenizes comments, and reports findings with file and line. It must fail on unreadable or invalid tracked Python files; ignored generated parsers need not be tracked.
-5. Enforce locked dependency auditing, Ruff, basedpyright, codespell, the suppression policy checker, and the full pytest/coverage gate through the existing `.github/workflows/tests.yml`, after Java 11 setup and ANTLR generation. Keep `filterwarnings = ["error"]` and `PYTHONWARNINGS=error` for interpreter child processes. Preserve exact stdout/stderr/exit expectations and the 80% minimum coverage for `src/`.
-6. Run `.github/workflows/docs.yml` validation on all pushes, pull requests, and manual dispatches. Deploy only from `main` for documentation-changing pushes or manual dispatches. Serialize eligible deploy jobs by workflow/ref with a non-cancelling queue, explicitly check out `main`, strictly rebuild that snapshot, then run `mkdocs gh-deploy --force`. Keep `NO_MKDOCS_2_WARNING=1` scoped to the strict build that needs the Material for MkDocs upstream MkDocs 2.0 warning exception.
-7. Keep `.github/workflows/main.yml` for weekly/manual Nix lock maintenance; do not add Python quality duties or a generic CI workflow there. Require zero errors and zero warnings for applicable quality gates. Distinguish local verification from hosted CI, and record remote status only after observing the run at the exact pushed commit.
+Restaurar el contrato público pre-refactor de KafeGESHA:
+
+1. **Orden del chequeo GESHA en `TypeUtils.obtener_tipo_dato()`** — decisión central del ADR: validar `isinstance(dato, (Gesha, Layer, Node, Input))` **antes** del chequeo `callable(dato)`. Así `Layer.__call__ = connect` no interfiere con la clasificación de tipos de capas, nodos ni modelos como `GESHA`.
+2. **`Dense.forward`** — activación aplicada por elemento (con caché de `_last_z`); Softmax conserva la excepción vectorial (requiere el vector completo).
+3. **`Dense.backward`** — derivada por elemento recuperada desde `_last_z` (con manejo de Jacobiana para Softmax), corrigiendo el gradiente propagado.
+4. **`activations.py`** — `derivative(x)` calcula a partir de `x` cuando se provee; la caché (`last_input`/`last_output`) queda solo como fallback para `None`.
+5. **`Model.predict`** — vector → `forward(X)` directo; matriz → batch con `forward` por muestra.
+6. **`predict_label`/`predict_proba`** — restaurados (threshold 0.5 para salida unitaria, argmax multiclase; `INT` para muestra única, `List[INT]` para batch).
+7. **`Model.fit`** — formato `Epoch N/M — Loss X.XX%` (em-dash) restaurado, gradiente por unidad, shapes de loss planas.
+8. **Fixtures deterministas** — `and_gate.kf` y `or_gate.kf` fijados con seed `42` en `create_dense` (reproducible) y `.expec` regenerados desde stdout real (`or_gate.expec` bit-a-bit idéntico al contrato pre-refactor).
 
 ### Rationale
 
-- Locked commands, narrowly selected rule sets, and a fixed Python target make local and CI results reproducible.
-- Explicit generated-file exclusions keep tool output focused on owned code while ensuring no ordinary Python files are silently ignored.
-- Token-based suppression checking catches authored directives without matching the same text inside string literals.
-- The existing workflow boundaries preserve interpreter/ANTLR setup, docs publication, and Nix ownership while making quality checks mandatory.
-- Warning-as-error gates expose regressions; the one upstream documentation advisory exception remains narrow and explained.
+- **Consistencia de contrato**: los programas educativos (`Ejemplo.kf`, `and_gate.kf`, `or_gate.kf`) y la documentación asumen el tipo `GESHA` y el formato de salida pre-refactor. Restaurar el contrato preserva compatibilidad sin migrar documentación ni ejemplos.
+- **Corrección del chequeo de tipos**: la causalidad es estructural — `callable` es un superconjunto de "es una capa GESHA" desde que `Layer` es callable. El chequeo específico debe preceder al genérico.
+- **Determinismo**: la semilla 42 hace que los tests de compuertas sean reproducibles entre ejecuciones y máquinas, condición necesaria para fixtures estables.
+- `TypeUtils` es compartido por todo el lenguaje; restaurarlo sin tocar otras clasificaciones minimiza el riesgo colateral.
 
 ### Consequences
 
-- Local commands and exclusions are documented in `.opencode/knowledge/verifications.md`; root guidance remains mirrored in `AGENTS.md` and `CLAUDE.md`.
-- Hosted success is not implied by committed workflow configuration. The quality migration remains open until the authorized branch is pushed and all required remote checks are observed at the resulting exact SHA.
-- Future changes must preserve optional `datasets` behavior, fixture contracts, generated parser exclusions, and the docs/Nix workflow boundaries.
+**Positivas:**
+
+- `src/Ejemplo.kf` ya no produce `TypeError` y el perceptrón AND aprende (loss decreciente hasta ~26.42%).
+- Contrato público de KafeGESHA restaurado: tipo `GESHA`, `predict`/`predict_label`/`predict_proba` y formato de `fit` consistentes con los ejemplos y documentación.
+- Determinismo con seed 42: fixtures `and_gate.expec`/`or_gate.expec` reproducibles.
+- Suite KafeGESHA en verde: `pytest tests/test_KafeGESHA.py` → 2 passed, 1 skipped; suite completa 464 passed, 1 skipped.
+
+**Riesgos y consideraciones:**
+
+- `TypeUtils.obtener_tipo_dato()` es compartido por todo el lenguaje; el reordenamiento afecta la clasificación global de tipos. Cualquier futuro objeto introducido en KafeGESHA que sea callable debe mantener esta precedencia (GESHA → PARDOS → MACHINE → callable → ...).
+- `Layer.__call__ = connect` sigue presente: es intencional para la API Functional, pero cualquier código que dependa de `callable()` para detectar funciones debe blindarse contra tipos GESHA.
+- Los `.expec` fueron regenerados desde stdout real; cambios futuros en el formato numérico, la semilla o el orden de entrenamiento romperán los fixtures (a diferencia de los fixtures de texto es determinista con seed 42).
 
 ### Alternatives Considered
 
-- **Use broad ignores or blanket suppressions:** rejected because they could hide owned-source defects.
-- **Analyze generated ANTLR modules:** rejected because their output is generated and not project-authored.
-- **Replace existing workflows with a generic Python CI job:** rejected because it would risk dropping Java/ANTLR setup, docs deployment, or Nix ownership.
-- **Mark migration complete after local checks alone:** rejected because hosted CI and deployment behavior must be observed at the exact pushed commit.
+**Mantener la semántica batch nueva + migrar fixtures y documentación.** Se evaluó quedarse con el comportamiento del refactor (predict/predict_label batch, formato nuevo de fit) y actualizar `Ejemplo.kf`, las compuertas y la documentación al nuevo contrato.
+
+- **Rechazado** porque: (a) rompería la compatibilidad con los ejemplos educativos publicados y el material didáctico que enseñan `GESHA`, comprometiendo el valor educativo; (b) exigiría migrar documentación y todos los ejemplos existentes; (c) la causa funcional primaria (`TypeError: Expected GESHA, obtained FUNC`) es un bug de clasificación de tipos, no una mejora intencional del refactor. La decisión de restaurar el contrato pre-refactor es la de menor costo y mayor consistencia.
+
+Mantener `callable` antes de `isinstance` y corregir solo `Layer` (eliminar `__call__`). Se descartó porque la API Functional depende de la callability de las capas (`layer(inbound)`), y eliminar `__call__` rompería el patrón added por el refactor; el reordenamiento en `TypeUtils` resuelve la colisión sin sacrificar la API.
+
+## ADR-0009: Contratos incrementales para el backend GESHA
+
+- **Status**: accepted
+- **Date**: 2026-09-30
+
+### Context
+
+GESHA ya tenía implementaciones operativas y una API pública utilizada por los
+fixtures KAFE. Reemplazar sus clases habría roto `Gesha`, la API Functional y
+los resultados deterministas.
+
+### Decision
+
+Se añaden contratos compatibles sobre las clases existentes: `forward` y
+`backward` para activaciones y pérdidas, `update(layers)` para optimizadores,
+validación lazy de Dense y Softmax estable. Los métodos históricos permanecen
+como adaptadores. No se añade un motor tensorial nuevo.
+
+### Consequences
+
+La arquitectura puede evolucionar hacia capas y entrenamiento por contratos
+sin migrar los programas KAFE existentes. Las formas de lote completo,
+minibatches y la fusión especializada Softmax-entropía cruzada quedan como
+siguiente fase y requieren pruebas matemáticas específicas.
+
+---
+
+## ADR-0012: Ingesta de datasets de Kaggle con la librería oficial `kaggle`
+
+- **Status**: partially superseded by ADR-0013 (2026-10-08: cliente `kagglehub`, credenciales opcionales)
+- **Date**: 2026-10-08
+
+### Context
+
+KafeHF ya permitía importar datasets de Hugging Face (`huggingface.load_dataset*`,
+ADR-0010). Se solicitó una capac análoga para Kaggle. Kaggle no usa splits sino
+archivos (normalmente un CSV dentro de un ZIP) y su API exige credenciales,
+lo que diferencia el caso de uso de Hugging Face.
+
+### Decision
+
+Se añade la librería integrada `src/lib/KafeKaggle/` con clave de import
+`kaggle`, espejo de KafeHF: `load_dataset`, `load_dataset_split` y
+`load_dataset_matrix` con retorno PARDOS/matriz numérica, dependencia opcional
+`kaggle` con auto-instalación (`pip install kaggle` vía `subprocess`) y
+validación previa de credenciales en español (`~/.kaggle/kaggle.json` o
+`KAGGLE_USERNAME`/`KAGGLE_KEY`). Los CSV se leen con la librería estándar
+`csv` (ZIP con `zipfile`), sin pandas. El parámetro `split` se interpreta como
+**selector de archivo con forma de split** (`"train"` → `train.csv`) para
+mantener la simetría de API con KafeHF. El paso de descarga queda aislado en
+`_download_dataset()` para poder sustituirlo en tests sin red ni credenciales.
+
+### Rationale
+
+- La librería oficial `kaggle` es la API mantenida por la plataforma; usarla
+  evita reimplementar autenticación y endpoints (la política de dependencias
+  prohíbe implementaciones de algoritmos ML externos, no clientes de datos;
+  precedente: `datasets` en ADR-0010).
+- `csv`/`zipfile` de la estándar evitan añadir pandas como dependencia propia
+  y cumplen la política de dependencias.
+- La simetría con KafeHF reduce la carga cognitiva: un programa con forma
+  Hugging Face se porta a Kaggle cambiando el import y el nombre del dataset.
+- Los tests de red/credenciales viven en `*.kf.example` (fuera del
+  discovery de pytest) y la suite se cubre con `monkeypatch`, de modo que CI
+  nunca toca red.
+
+### Consequences
+
+- API pública nueva sin breaking changes; gramática sin cambios.
+- Cada llamada descarga el dataset completo a un directorio temporal; para
+  datasets grandes debe usarse `limit` o `load_dataset_matrix`.
+- Solo se admiten archivos CSV.
+- `docs/bibliotecas/kaggle.md`, concept record
+  `kaggle-dataset-ingestion.md` y fixtures `tests/KafeKaggle/` acompañan la
+  decisión.
+
+### Alternatives Considered
+
+- **Descarga directa por HTTP con urllib contra `kaggle.com/api/v1`**: elimina
+  la dependencia pip pero reimplementa autenticación y manejo de errores de la
+  API; más código propio que mantener y peor para un proyecto educativo.
+- **pandas para leer los CSV**: añade una dependencia propia pesada; se descarta
+  por la política de dependencias (la estándar `csv` es suficiente).
+- **Rechazar `split` con un error educativo ("Kaggle no tiene splits")**:
+  se descarta porque rompe la simetría con KafeHF sin ganancia pedagógica;
+  en su lugar `split` actúa como selector de archivo y el docstring explica la
+  diferencia de modelado.
+- **`kagglehub`**: cliente alternativo de comunidad; se descarta por usar la
+  librería oficial solicitada. *(Actualización: `kagglehub` resultó ser el
+  cliente oficial moderno de Kaggle y sustituyó a `kaggle` en ADR-0013.)*
+
+## ADR-0013: KafeKAGGLE usa `kagglehub` como cliente (datasets públicos sin credenciales)
+
+- **Status**: accepted
+- **Date**: 2026-10-08
+
+### Context
+
+Durante la validación en vivo de KafeKAGGLE (ADR-0012) se comprobó que:
+
+1. El gate de credenciales de ADR-0012 bloquea datasets **públicos** que en
+   realidad se descargan de forma anónima: GET anónimo a
+   `https://www.kaggle.com/api/v1/datasets/download/uciml/iris` → HTTP 200
+   `application/zip`, y `kagglehub.dataset_download('uciml/iris')` sin
+   `KAGGLE_USERNAME`/`KAGGLE_KEY`/`kaggle.json` descarga y extrae
+   correctamente (verificado en este entorno).
+2. `kaggle 2.2.4` imprime una ayuda en inglés ("Authentication required…")
+   a stdout al importar sin credenciales, contaminando la salida del
+   programa KAFE.
+3. El flujo educativo de referencia (Google Colab) usa `kagglehub`, que
+   además soporta las mismas fuentes de credenciales (`kaggle.json`, env
+   vars `KAGGLE_USERNAME`/`KAGGLE_KEY` y secrets de Colab — verificado en
+   `kagglehub/config.py`).
+
+La premisa de ADR-0012 ("su API exige credenciales") y su descarte de
+`kagglehub` ("cliente de comunidad") resultaron incorrectas: `kagglehub` es
+el cliente oficial moderno (`github.com/Kaggle/kagglehub`).
+
+### Decision
+
+Reemplazar el cliente por debajo de KafeKAGGLE — `kaggle`/`KaggleApi` →
+`kagglehub` — manteniendo intacta la API pública KAFE:
+
+- Descarga **anónima** para datasets públicos: se elimina el gate previo de
+  credenciales; `_check_credentials()` pasa a ser el predicado
+  `_tiene_credenciales()`, usado solo para enriquecer el mensaje de error
+  cuando la descarga falla sin credenciales (datasets privados).
+- `_download_dataset(dataset_name)` retorna el **directorio extraído** por
+  `kagglehub.dataset_download()` (caché persistente en
+  `~/.cache/kagglehub`) en vez de un ZIP en un directorio temporal; la
+  salida de progreso del cliente se redirige con `redirect_stdout`.
+- `_extract_table` recorre el directorio recursivamente (skip
+  `__MACOSX`/dotfiles); se eliminan `zipfile` y `tempfile`.
+- Auto-instalación vía `_require_kagglehub()` (mismo patrón que
+  `_require_hf`).
+- `import kaggle;`, las tres funciones públicas, `@check_sig` y la semántica
+  de `split` como selector de archivo **no cambian**.
+
+**Supresión parcial de ADR-0012**: se conserva todo lo demás (lectura con
+`csv` estándar sin pandas, retorno PARDOS/matriz, selector de split con
+forma de split, seam `_download_dataset()` para tests offline); se
+reemplazan la elección del cliente y el gate de credenciales.
+
+### Rationale
+
+- `kagglehub` es el cliente oficial de Kaggle y el que usan los ejemplos de
+  Colab: paridad con el flujo que encuentran los estudiantes.
+- Habilita el requisito verificado empíricamente: datasets públicos sin
+  credenciales (elimina la configuración única de aula).
+- Elimina el texto de autenticación que `kaggle` imprimía al importar.
+- Caché persistente: el segundo acceso es instantáneo (mejora respecto a la
+  re-descarga por llamada de ADR-0012).
+- Cumple la política de dependencias: cliente oficial de datos, dependencia
+  opcional con auto-install; no es una implementación ML externa.
+
+### Consequences
+
+- Los datasets **privados** siguen requiriendo credenciales (mensaje en
+  español con las tres fuentes al fallar la descarga).
+- La caché de `kagglehub` crece en disco sin evicción automática (limitación
+  documentada en el concept record).
+- Los 35 unit tests de `tests/test_KafeKaggle_backend.py` se reescribieron
+  para el nuevo seam; los 5 fixtures `.kf` no cambiaron; el benchmark S5
+  pasó de ZIP a directorio (registro actualizado en `records.md`).
+- `docs/bibliotecas/kaggle.md`, concept record `kaggle-dataset-ingestion.md`,
+  `libraries.md`, `CLAUDE.md` y history actualizados.
+
+### Alternatives Considered
+
+- **Mantener `kaggle` con el gate de credenciales**: descartado porque
+  bloquea datasets públicos sin razón técnica (la API los sirve anónimos) y
+  añade una configuración innecesaria al aula.
+- **Soportar ambos clientes (`kagglehub` primario + `kaggle` fallback)**:
+  descartado por complejidad: `kagglehub` ya cubre públicos y privados con
+  las mismas fuentes de credenciales.
+- **HTTP directo con `urllib` contra el endpoint de descarga**: descartado
+  por las mismas razones que en ADR-0012 (reimplementar versionado,
+  extracción, caché y manejo de errores).
+- **Leer credenciales desde el programa KAFE**: descartado: expondría
+  secretos en código educativo; las gestiona el cliente como en Colab.
+## ADR-0014 — Utilidades de entrenamiento como objetos GESHA (2026-10-10)
+
+**Status:** Accepted.
+
+**Context:** GESHA necesitaba inicialización dependiente del fan, penalizaciones reutilizables y control del ciclo de entrenamiento sin introducir Tensor ni dependencias externas.
+
+**Decision:** Implementar paquetes independientes `initializers`, `regularizers` y `callbacks`; reconocer sus objetos mediante el tipo existente `GESHA`; delegar creación N-dimensional a NUMK; asociar regularizadores a `Parameter`; ejecutar callbacks en `Model.fit`; persistir pesos como JSON.
+
+**Consequences:** La API previa continúa válida. Los checkpoints son portables y legibles, pero no incluyen arquitectura ni estado del optimizador.
+
+**Alternatives:** Cadenas solamente limitaban configuración; incorporar NumPy violaba la política de dependencias; crear un tipo nuevo ampliaba innecesariamente la gramática.
+## ADR-0015 — Activaciones y pérdidas como paquetes (2026-10-10)
+
+**Status:** Accepted.
+
+**Context:** Los módulos monolíticos de activaciones y pérdidas dificultaban localizar cada implementación; `advanced_layers.py` duplicaba exports ya presentes en `layers`.
+
+**Decision:** Usar un archivo por activación y pérdida, con contratos base y `__init__.py` compatibles. Exportar todas las capas únicamente desde `layers` y eliminar el adaptador avanzado.
+
+**Consequences:** La estructura refleja cada responsabilidad sin cambiar imports públicos. Añadir un componente ya no amplía un archivo central, salvo su export en `__init__.py` y el registro cuando corresponda.
+## ADR-0016 — Optimizadores como paquete (2026-10-10)
+
+**Status:** Accepted.
+
+**Context:** SGD, RMSprop, Adam y AdamW compartían un módulo creciente pese a tener estado y reglas de actualización independientes.
+
+**Decision:** Separar el contrato `Optimizer` y cada implementación en archivos propios bajo `optimizers/`, manteniendo los exports históricos en el paquete.
+
+**Consequences:** Cada algoritmo puede evolucionar aisladamente y los imports públicos permanecen estables. AdamW sigue reutilizando Adam antes de aplicar weight decay desacoplado.
+## ADR-0017 — Split estratificado para ejemplos supervisados GESHA (2026-10-10)
+
+**Status:** Accepted.
+
+**Context:** Una partición aleatoria puede alterar la representación de una especie en un conjunto Iris pequeño.
+
+**Decision:** Incorporar `stratified_train_test_split` a KafeMACHINE, con la misma estructura de retorno que `train_test_split`, y usarlo después de codificar etiquetas con PARDOS/LabelEncoder.
+
+**Consequences:** El ejemplo obtiene 120/30 muestras y 40/10 por especie. La normalización se ajusta únicamente sobre entrenamiento, evitando fuga de datos.
+
+**Actualización (2026-10-13, ADR-0018):** El parámetro `X` de `train_test_split` y `stratified_train_test_split` pasó de `matriz_numeros_t` a `lista_cualquiera_t` para aceptar tensores de imagen 4D `[N,C,H,W]`. Cambio **retrocompatible**: `y` permanece `vector_numeros_t` y los cuerpos siguen indexando `X[i]`. Prueba de regresión: `tests/KafeMACHINE/model_selection/test_stratified_train_test_split_4d.kf`.
+
+---
+
+## ADR-0018: KafeKAGGLE — interfaz genérica de ingesta de imágenes
+
+- **Status**: accepted
+- **Date**: 2026-10-13
+
+### Contexto
+
+`load_cifar10` era un cargador **experimental** en `src/lib/KafeKaggle/funciones.py`, específico de CIFAR-10, sin tests ni documentación, y referenciado únicamente por `src/lib/KafeKaggle/__init__.py` y `src/Ejemplo.kf`. Sus helpers (`_require_cifar_image_dependencies`, `_find_cifar_train_directory`, `_read_cifar_labels`, `_load_cifar_image`) acoplaban la librería a un dataset concreto y, a través de `TrainTestSplit`, a KafeMACHINE. Se reemplaza por una **API genérica de imágenes** construida sobre `kagglehub` (ADR-0013), desacoplada de datasets concretos y con retorno compatible con GESHA/Conv2D en formato `[C,H,W]` con píxeles normalizados a `[0,1]` (ADR-0011).
+
+El Impact Analysis (`impact-kafekaggle-images.md`) identificó que la división estratificada `machine.stratified_train_test_split` **rechaza X de 4 dimensiones** por su `@check_sig` basado en `matriz_numeros_t = [List[List[INT]], List[List[FLOAT]]]`, bloqueando el flujo `load_image_dataset` + split propuesto. El usuario aprobó la alternativa **A1** (relajar el tipo de X en el split) para preservar el desacoplamiento.
+
+### Decisión
+
+#### Decisión 1 — Nueva API pública de 3 funciones en `src/lib/KafeKaggle/funciones.py`
+
+- `load_image(dataset_name, image_path, height=32, width=32, color_mode="rgb")` → una imagen `[C][H][W]` (FLOAT en `[0,1]`); aridades `[2,3,4,5]` con tipos `[cadena_t, cadena_t, entero_t, entero_t, cadena_t]` (corrige la inconsistencia con los defaults, hallazgo H1).
+- `load_images(dataset_name, height=32, width=32, color_mode="rgb", limit=0)` → `List[[C][H][W]]` en orden **determinista** (por ruta relativa ordenada); `limit=0` = todas; aridades `[1,2,3,4,5]`.
+- `load_image_dataset(dataset_name, labels_file, height=32, width=32, color_mode="rgb", limit=0)` → contenedor indexable `[X, y]`; aridades `[2,3,4,5,6]`.
+
+Detalles conservados: `color_mode` `"rgb"`→3 canales (`convert("RGB")`), `"gray"`/`"grayscale"`→1 canal (`convert("L")`), otro valor→error educativo en español; descubrimiento recursivo de `.png/.jpg/.jpeg/.bmp` ignorando `__MACOSX`/dotfiles y ordenando rutas relativas (política de `_extract_table`, `funciones.py:249`); redimensionado con `PIL.Image.resize` a `(width, height)`; etiquetas leídas con `csv` estándar, detección de columnas id/etiqueta por nombre, emparejamiento por stem y codificación 0..N-1. Las validaciones de `color_mode` y de parámetros deben ocurrir **antes** de `_download_dataset` para permitir fixtures de error offline (hallazgo H6).
+
+#### Decisión 2 — Eliminación de `load_cifar10`
+
+Se elimina `load_cifar10` y los helpers específicos de CIFAR. Es un *breaking change* aceptable: símbolo **experimental, sin tests ni docs**, referenciado sólo por `src/lib/KafeKaggle/__init__.py` y `src/Ejemplo.kf`, que se actualizan (`__init__.py` reexporta las 3 funciones nuevas; `Ejemplo.kf` migra al nuevo flujo). `TypeUtils.py`, la gramática y `EvalVisitorPrimitivo.py` no cambian (dispatch dinámico por nombre de librería).
+
+#### Decisión 3 — Dependencias opcionales `Pillow` y `py7zr` con auto-instalación diferida
+
+- `Pillow` — decodificación PNG/JPEG/BMP y redimensionado (`PIL.Image`).
+- `py7zr` — extracción de archivos `.7z` anidados.
+- `.zip` se maneja con `zipfile` (stdlib).
+
+Permitidas por la Dependency Policy: son **utilidades de E/S**, no implementaciones de algoritmos ML; precedente `kagglehub` (ADR-0012/ADR-0013). Se instalan de forma diferida (patrón `_require_image_dependencies`, renombrado desde `_require_cifar_image_dependencies`) y permanecen opcionales/on-demand. La extracción de archivos no confiables debe validar rutas (evitar *path traversal*) y extraer sólo bajo el destino controlado.
+
+#### Decisión 4 (núcleo, A1) — Relajar la validación de tipo de `X` en el split de KafeMACHINE
+
+Se relaja la validación de tipo de `X` en `train_test_split` y `stratified_train_test_split` de KafeMACHINE para aceptar listas de **anidamiento arbitrario**, usando `lista_cualquiera_t` (`src/TypeUtils.py:68`) en lugar de `matriz_numeros_t`; `y` permanece `vector_numeros_t`.
+
+- **Motivo:** el split estratificado debe poder aplicarse a tensores de imagen 4D `[N,C,H,W]`.
+- **Retrocompatible:** acepta un **superconjunto** de tipos (no rompe llamadas 2D existentes). El cuerpo ya indexa `X[i]`, válido para 4D.
+- **Desacopla** KafeKAGGLE de la división (el split queda enteramente en KafeMACHINE).
+- **Referencia/actualización:** ADR-0017 (contrato público de KafeMACHINE) se actualiza con esta ampliación.
+- Requiere confirmar que `model_selection.py` no asume 2D en el cuerpo.
+
+#### Decisión 5 — `load_image_dataset` devuelve un contenedor indexable `ImageDataset`
+
+`load_image_dataset` devuelve un contenedor indexable `ImageDataset` (subclase de `lib.KafeMACHINE.BaseMachine`, por tanto tipo KAFE `MACHINE`) con `[0]=X`, `[1]=y`.
+
+- **Motivo (hallazgo empírico):** KAFE **RECHAZA** asignar a una variable una lista heterogénea (`Expected homogeneous list`); devolver `[X, y]` como lista plana **impediría su uso bindable**.
+- `ImageDataset` **NO realiza ninguna división** (esa queda en KafeMACHINE), preservando el desacoplamiento funcional; sólo importa la clase base neutra.
+- **Precedente:** `TrainTestSplit` es el mismo patrón.
+
+### Alternativas Consideradas
+
+- **A2 — Mantener la división dentro de KafeKAGGLE** (cuarta función o que `load_image_dataset` devuelva `TrainTestSplit`). **Rechazada**: reacopla KafeKAGGLE a KafeMACHINE (el mismo acoplamiento que tenía `load_cifar10`) y contradice el objetivo explícito de desacoplamiento.
+- **A3 — Devolver y dividir índices.** **Rechazada**: KAFE no ofrece una primitiva de *gather* por índices, por lo que alinear imágenes y etiquetas tras el split no es viable sin A1.
+- **Devolver `[X, y]` como lista plana.** **Rechazada**: KAFE no permite enlazar una lista heterogénea a una variable, por lo que no sería utilizable.
+- **Carga perezosa (iterador/generador).** **Rechazada**: no encaja con el retorno `List[...]` de KAFE; se prefiere `limit` + documentación.
+- **Decodificar imágenes sin Pillow.** **Rechazada**: no hay decodificación PNG/JPG en la stdlib.
+
+### Consecuencias
+
+- **Nueva API pública** de ingesta de imágenes en KafeKAGGLE; se **elimina** `load_cifar10` (breaking change aceptable de símbolo experimental).
+- **KafeKaggle gana dependencias opcionales** `Pillow`/`py7zr` (auto-instalación diferida; `.zip` con stdlib).
+- **KafeMACHINE amplía su contrato de tipos** de forma **retrocompatible** (`X` acepta anidamiento arbitrario; `y` sigue `vector_numeros_t`); se actualiza ADR-0017 y se añaden pruebas.
+- **`Ejemplo.kf` migra** a `load_image_dataset` + `machine.stratified_train_test_split`.
+- La memoria O(N·C·H·W) de listas anidadas de Python y la caché sin evicción de `kagglehub` quedan como limitaciones documentadas (`limit`, advertencias).
+- Acompañan a la decisión: `docs/bibliotecas/kaggle.md`, concept record de ingesta de imágenes, `.opencode/knowledge/libraries.md`, history, roadmap y benchmark `kafekaggle.py` + `records.md`.
+
+---
+
+## ADR-0019: KafeKAGGLE — etiquetas por carpetas e ingesta robusta de imágenes
+
+- **Status**: accepted
+- **Date**: 2026-10-13
+
+### Contexto
+
+El dataset `ayush1220/cifar10` (usado por `src/Ejemplo.kf`) organiza las etiquetas en carpetas (`train/<clase>/*.png`, `test/<clase>/*.png`) y **no** incluye un CSV de etiquetas. La API de ADR-0018 (`load_image_dataset(dataset_name, labels_file, ...)`) requiere un CSV: al no encontrarlo, `_resolve_member` interpolaba la lista completa de miembros (≈60000 rutas) en el mensaje de error, que se imprime a stdout, produciendo un volcado ininteligible sin señal de error. Además, `_find_images` ordena por ruta, por lo que un `limit` pequeño tomaría imágenes de una sola clase, arruinando el entrenamiento.
+
+### Decisión
+
+1. **Nueva función pública** `load_image_folder_dataset(dataset_name, height=32, width=32, color_mode="rgb", limit=0, split="train")`: deriva la etiqueta del directorio inmediatamente padre; `split` filtra por subdirectorio ancestro (vacío = todas); devuelve `ImageDataset` con `X` `[N,C,H,W]` en [0,1] y `y` codificada 0..N-1 (alfabético). `@check_sig` aridades `[1,2,3,4,5,6]`, tipos `[cadena_t, entero_t, entero_t, cadena_t, entero_t, cadena_t]`.
+2. **Muestreo determinista**: cuando `limit > 0`, se aplica un shuffle con semilla fija antes de decodificar, garantizando una muestra representativa (varias clases) y reproducible.
+3. **Mensajes de error acotados**: `_resolve_member`/`_resolve_file`/`_select_file` recortan las listas (primeras N + "… y M más" + total) conservando los prefijos actuales.
+4. **Verificación de descarga/extracción**: tras `_download_dataset` se comprueba que la ruta existe, es directorio y no está vacío; error educativo en caso contrario. La extracción sigue siendo idempotente y segura ante *path traversal*.
+
+### Alternativas consideradas
+
+- **Cambiar de dataset** a uno con `trainLabels.csv`: rechazada; acopla el ejemplo a un dataset concreto y mantiene el camino CSV frágil.
+- **Parsear/derivar un CSV**: rechazada; añade complejidad artificial cuando las carpetas ya codifican la etiqueta (layout canónico de clasificación de imágenes).
+- **Muestreo round-robin por clase** en lugar de shuffle: rechazada por menor simplicidad; el shuffle con semilla es el estándar.
+- **Extender `load_image_dataset` con `label_source`**: rechazada; rompe la firma/aridades actuales y mezcla dos responsabilidades.
+
+### Consecuencias
+
+- KafeKAGGLE gana una función aditiva (compatible; no rompe la API de ADR-0018).
+- `src/Ejemplo.kf` entrena ahora con datos representativos, usables por `machine.stratified_train_test_split` + GESHA.
+- Los errores dejan de volcar miles de rutas.
+- Requiere actualizar docs, knowledge, concept record, fixtures, history, roadmap y benchmark.
+
+---
+
+## ADR-0020: Optimización del entrenamiento de CNN en GESHA/NUMK (2026-10-17)
+
+- **Status**: accepted
+- **Date**: 2026-10-17
+
+### Contexto
+
+`src/Ejemplo.kf` (CNN Mini CIFAR-10: Conv2D(8) → MaxPooling2D → Conv2D(16) → GlobalAveragePooling2D → Dense(10), 4000 imágenes × 5 épocas) tardaba ≈2 h 19 min. No había ningún fallo: era coste de Python puro más trabajo redundante real (un forward completo redundante dentro del backward suponía ~30 % del entrenamiento). Requisito duro: resultados **bit-idénticos** (mismo orden de acumulación en coma flotante).
+
+### Decisión
+
+Cinco optimizaciones bit-idénticas; F6 descartado:
+
+1. **F1** — `src/lib/KafeNUMK/funciones.py`: `conv2d_chw_backward` calculaba la forma esperada ejecutando una convolución forward completa dentro del backward (~30 % del entrenamiento); ahora se deriva aritméticamente y `expected` es una tupla `(filters, out_h, out_w)` (crítico: `numk.shape()` devuelve tupla; con lista, `!=` habría sido siempre verdadero). Validaciones y mensajes preservados en el mismo orden.
+2. **F5** — `src/lib/KafeNUMK/funciones.py`: hoisting de filas/kernels y rango de `kx` precalculado (`kx_start`/`kx_end` por celda de salida) en `conv2d_chw` y `conv2d_chw_backward`, eliminando el chequeo de borde por iteración interna. Pre-padding con ceros descartado (riesgo de diferencias en el cero con signo).
+3. **F2** — `src/lib/KafeGESHA/models.py`: la lista deduplicada de parámetros (`batch_parameters`) se calcula una sola vez tras el primer forward (construcción lazy) y se reutiliza, en lugar de reconstruirse por muestra.
+4. **F3** — `src/lib/KafeGESHA/models.py`: acumulación de gradientes del minibatch in-place con el helper `_acumular_en`, en lugar de crear un tensor nuevo por muestra.
+5. **F4** — `src/lib/KafeGESHA/optimizers/adam.py`: helper `_adam_actualizar` con una sola pasada recursiva (momentos y parámetros in-place) y correcciones de sesgo `1-beta1**t`/`1-beta2**t` precalculadas por `step`, en lugar de recalcularlas por escalar con 3 pasadas `map_elements`.
+
+**F6 descartado**: one-hot de `SparseCategoricalCrossEntropy` (<0,01 % de impacto; riesgo en la API compartida de pérdidas).
+
+**Validación**: 288/288 combinaciones bit-idénticas (forward y backward dx/dw/db, igualdad exacta `==` sin tolerancias) y 9/9 contratos de error preservados (`.opencode/benchmarks/conv_equiv_results.md`); suite completa 645 passed / 2 skipped sin regresiones; benchmark de 5 escenarios (conv1 fwd 45.123→28.993 ms 1.56×, conv1 bwd 114.703→49.369 ms 2.32×, conv2 fwd 57.459→39.261 ms 1.46×, conv2 bwd 145.268→63.295 ms 2.30×, fit e2e 521.949→384.789 ms/muestra 1.36×) en `.opencode/benchmarks/gesha_cnn_optimization_results.md`.
+
+### Alternativas consideradas
+
+- **Vectorizar con numpy**: rechazada; prohibido por la política de dependencias del proyecto.
+- **Pre-padding con ceros** en `conv2d_chw`/`conv2d_chw_backward`: rechazada; riesgo de diferencias bit-idénticas en el cero con signo.
+- **F6 (one-hot en `SparseCategoricalCrossEntropy`)**: rechazada; impacto despreciable (<0,01 %) frente al riesgo de tocar la API compartida de pérdidas.
+
+### Consecuencias
+
+- API pública intacta (cambios internos; sin nueva superficie pública).
+- El ejemplo completo de CNN baja de ≈2 h 19 min a ≈1 h 45 min proyectados (1.36×).
+- Referencias: history 2026-10-17, `progress/review-cnn-performance.md` (APPROVED), `progress/impact-cnn-performance.md`.
+
+---
+
+## ADR-0021: Ingesta de datasets de texto etiquetado y tokenización para RNN en KAFE
+
+- **Status**: accepted
+- **Date**: 2026-10-18
+
+### Contexto
+
+Para que `src/EjemploRNN2.kf` funcione end-to-end hacían falta dos piezas que KAFE no tenía:
+
+1. **KafeKaggle solo leía CSV con coma y encabezado**: `_select_file` (`src/lib/KafeKaggle/funciones.py`) rechazaba cualquier extensión distinta de `.csv` y `_parse_csv` fijaba el delimitador `,` y trataba la primera fila como encabezado. El dataset `marklvl/sentiment-labelled-sentences-data-set` es `.txt` con TAB y sin encabezado → bloqueante para el ejemplo de sentimiento.
+2. **No existía ninguna puente texto→índices** para la capa `geshaDeep.embedding`, que exige `List[INT]` de índices de vocabulario en rango. Sin tokenizador no había forma de conectar texto crudo con una RNN → bloqueante para el ejemplo.
+
+### Decisión
+
+- **D1 — Nueva función pública `kaggle.load_text_dataset(dataset_name, file_name="", delimiter="\t", text_column=0, label_column=1, limit=0)`** → PARDOS con columnas `text` (STR) y `label` (INT). API aditiva dedicada al formato de origen (mismo patrón semántico que `load_image_folder_dataset`, ADR-0019: una función por formato de origen), apoyada en helpers internos `_leer_filas`, `_parse_text_labels` y `_select_file_texto` (este último acepta `.txt`/`.tsv`/`.csv`). `load_dataset`/`_select_file` quedan intactos (compatibilidad). Validaciones antes de tocar la red: delimiter de un solo carácter, columnas ≥ 0, limit ≥ 0, etiqueta convertible a entero; los mensajes de error listan como mucho las primeras filas problemáticas.
+
+- **D2 — Nuevo transformer `machine.tokenizer(num_words=0, oov_token="")`** en `src/lib/KafeMACHINE/preprocessing/Tokenizer.py`. Hereda `BaseMachine` (contrato unificado ADR-0007) con `fit`/`transform`/`fit_transform` y atributos estilo scikit-learn `word_index`/`index_word`/`vocabulary_size`. Tokenización con stdlib `re` (minúsculas + separación por no-alfanuméricos, sin stemming ni stop-words), orden determinista por (-frecuencia, primera aparición), índice 0 reservado (padding/neutral), índice 1 para OOV opcional y `num_words` como acotamiento/regularizador del vocabulario. `vocabulary_size` es directamente el `input_dim` que necesita `geshaDeep.embedding`.
+
+- **D3 — Sin cambios de gramática ni de `TypeUtils`**: todo se resuelve en librerías; `check_sig` cubre las firmas nuevas.
+
+- **D4 — Limitación aceptada y documentada**: `Model.predict` (`src/lib/KafeGESHA/models.py`) distingue lote de muestra única por `isinstance(X[0], list)`, insuficiente para secuencias `[T,F]` (una única secuencia se iteraría como si fuera un lote de timesteps). Se documenta que las predicciones con RNN se hacen SIEMPRE por lote (≥2 muestras); el fix queda como follow-up por riesgo de regresión en fixtures Dense/CNN.
+
+### Alternativas consideradas
+
+1. **Añadir `delimiter`/`header` a `load_dataset`**: rechazada; sobrecarga la API tabular genérica y obliga a nombres de columna sintéticos cuando el archivo no tiene encabezado.
+2. **Tokenizar en el `.kf` con bucles**: rechazada; KAFE no tiene split de cadenas y no sería reutilizable.
+3. **Tokenizar en KafePARDOS**: rechazada; no es manipulación tabular, es representación para ML (lugar de KafeMACHINE).
+4. **Librería externa de tokenización**: rechazada; prohibida por la Dependency Policy de AGENTS.md.
+5. **Arreglar `predict` (D4) ahora**: rechazada en este feature; alto riesgo de regresión en fixtures Dense/CNN existentes, fuera del alcance.
+
+### Consecuencias
+
+- El flujo kaggle→tokenizador→Embedding→RNN queda operativo: `src/EjemploRNN2.kf` alcanza accuracy 0.58 sobre test (baseline de clase ~0.557) de forma determinista.
+- KafeMACHINE gana un transformer de texto (`Tokenizer`); KafeKaggle gana un formato de origen (`load_text_dataset`); se añaden 36+ tests y fixtures sin red.
+- Deuda pendiente registrada: corrección de `KafeMATH.log` cerca de 1 (ver `known-issues.md`; afecta a métricas/losses que usan `log`, no al gradiente de BCE) y el fix de `predict` single-sample (D4).
+
+---
+
+## ADR-0022: Contenedor homogéneo para train_test_split
+
+- **Status**: accepted
+- **Date**: 2026-10-18
+
+### Context
+
+`machine.train_test_split` devolvía `[X_train, X_test, y_train, y_test]` como lista Python heterogénea. El intérprete KAFE exige listas homogéneas, por lo que una asignación `MACHINE split = machine.train_test_split(...)` fallaba con `Expected homogeneous list`. `stratified_train_test_split` ya devolvía el contenedor indexable `TrainTestSplit`.
+
+### Decision
+
+Retornar `TrainTestSplit(X_train, X_test, y_train, y_test)` también desde `train_test_split`. Se conservan los índices `[0..3]`, el orden de datos, la semilla y la firma pública.
+
+### Rationale
+
+Un mismo contrato para ambas variantes de split permite flujos KAFE de regresión y clasificación sin ampliar los tipos del lenguaje ni introducir dependencias.
+
+### Consequences
+
+Los programas KAFE pueden asignar el resultado a `MACHINE` y acceder a sus cuatro partes. Los consumidores Python que exigen `isinstance(result, list)` deberán adaptarse; la indexación sigue igual. Se añade un fixture KAFE y se actualizan la referencia y el concepto de train/test split.
+
+### Alternatives Considered
+
+- Mantener la lista heterogénea: deja la API inútil en asignaciones KAFE.
+- Crear un tipo nuevo: duplica `TrainTestSplit` sin aportar capacidades.
+- Hacer el split manual en cada ejemplo: replica lógica de selección y oculta el defecto de la API.

@@ -1,0 +1,9 @@
+INT x = 10;
+
+while (x > 5):
+    INT y = x * 2;
+    x = x - 1;
+;
+
+-- y was declared inside the loop, so it should not be accessible here
+show(y);

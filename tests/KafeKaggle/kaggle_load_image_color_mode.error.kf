@@ -1,0 +1,2 @@
+import kaggle;
+kaggle.load_image("demo/dataset", "img.png", 32, 32, "cmyk");

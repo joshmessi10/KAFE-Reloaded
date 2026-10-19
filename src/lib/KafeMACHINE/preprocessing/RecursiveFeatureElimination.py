@@ -1,39 +1,31 @@
-from collections.abc import Iterable
-from typing import Protocol, cast
-
 from global_utils import check_sig
+from TypeUtils import pardos_t, matriz_numeros_t, vector_numeros_t, entero_t
 from lib.KafePARDOS.DataFrame import DataFrame
-from TypeUtils import numeric_matrix_types, numeric_vector_types, pardos_type
-
 from ..BaseMachine import BaseMachine
 from ..linear.LinearRegression import LinearRegression
 
 
-class _HasFeatureImportances(Protocol):
-    feature_importances_: Iterable[float]
-
-
 class RecursiveFeatureElimination(BaseMachine):
     """
-    Recursive Feature Elimination (RFE) - Feature selection by recursive elimination.
+    Recursive Feature Elimination (RFE) - Seleccion de features por eliminacion recursiva.
 
-    Mathematical basis:
-        1. Train model with all the features
-        2. Calculate the importance of each feature (coefficients or feature importance)
-        3. Eliminate the least important feature
-        4. Repeat until you have n_features
+    Fundamento matematico:
+        1. Entrenar modelo con todas las features
+        2. Calcular importancia de cada feature (coeficientes o feature importance)
+        3. Eliminar la feature menos importante
+        4. Repetir hasta tener n_features
 
-        Importance is calculated as |coefficient| for linear models.
+        La importancia se calcula como |coeficiente| para modelos lineales.
 
-    Parameters:
-        estimator: model with coef_ or feature_importances_ (default LinearRegression)
-        n_features: number of features to select (default 1)
+    Parametros:
+        estimator: modelo con coef_ o feature_importances_ (default LinearRegression)
+        n_features: numero de features a seleccionar (default 1)
 
-    Attributes (after fit):
-        selected_indices_: indices of selected features
-        ranking_: importance ranking (1 = most important)
-        support_: boolean mask of selected features
-        n_features_in_: number of input features
+    Atributos (despues de fit):
+        selected_indices_: indices de features seleccionadas
+        ranking_: ranking de importancia (1 = mas importante)
+        support_: mascara booleana de features seleccionadas
+        n_features_in_: numero de features de entrada
     """
 
     def __init__(self, estimator=None, n_features=1):
@@ -49,14 +41,13 @@ class RecursiveFeatureElimination(BaseMachine):
         self.n_features_in_ = 0
 
     def _get_feature_importance(self, X, y):
-        """Train the model and return importance of features."""
+        """Entrena el modelo y retorna importancia de features."""
         self.estimator.fit(X, y)
 
         if hasattr(self.estimator, 'coef_'):
             importances = [abs(c) for c in self.estimator.coef_]
         elif hasattr(self.estimator, 'feature_importances_'):
-            estimator = cast(_HasFeatureImportances, self.estimator)
-            importances = list(estimator.feature_importances_)
+            importances = list(self.estimator.feature_importances_)
         else:
             n = len(X)
             importances = []
@@ -67,14 +58,15 @@ class RecursiveFeatureElimination(BaseMachine):
 
         return importances
 
-    @check_sig([3], [pardos_type] + numeric_matrix_types, numeric_vector_types, is_method=True)
+    @check_sig([3], [pardos_t] + matriz_numeros_t, vector_numeros_t, is_method=True)
     def fit(self, X, y):
-        """Adjusts RFE by recursively removing less important features."""
+        """Ajusta RFE eliminando recursivamente las features menos importantes."""
         matrix, cols, is_df = self._unwrap_data(X)
 
         if not matrix or not matrix[0]:
             raise Exception("RecursiveFeatureElimination: Empty input data")
 
+        n_samples = len(matrix)
         n_features = len(matrix[0])
         self.n_features_in_ = n_features
 
@@ -113,9 +105,9 @@ class RecursiveFeatureElimination(BaseMachine):
         self._is_fitted = True
         return self
 
-    @check_sig([2], [pardos_type] + numeric_matrix_types, is_method=True)
+    @check_sig([2], [pardos_t] + matriz_numeros_t, is_method=True)
     def transform(self, data):
-        """Transform by selecting only the chosen features."""
+        """Transforma seleccionando solo las features elegidas."""
         self._check_fitted("transform")
         matrix, cols, is_df = self._unwrap_data(data)
 
@@ -133,13 +125,13 @@ class RecursiveFeatureElimination(BaseMachine):
         return DataFrame(new_cols, result) if is_df else result
 
     def fit_transform(self, X, y):
-        """Fit and transform in one step."""
+        """Fit y transform en un solo paso."""
         self.fit(X, y)
         return self.transform(X)
 
-    @check_sig([2], [pardos_type] + numeric_matrix_types, is_method=True)
+    @check_sig([2], [pardos_t] + matriz_numeros_t, is_method=True)
     def inverse_transform(self, data):
-        """Not implemented (transformation is not invertible)."""
+        """No implementado (transformacion no es invertible)."""
         raise Exception("RecursiveFeatureElimination: inverse_transform not implemented")
 
     def __repr__(self):

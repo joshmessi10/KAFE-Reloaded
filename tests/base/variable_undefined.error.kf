@@ -1,3 +1,3 @@
--- Incorrect use of the Pour function and casts
+-- Función Pour y Cast Incorrecto
 
 INT a = pour("> ");

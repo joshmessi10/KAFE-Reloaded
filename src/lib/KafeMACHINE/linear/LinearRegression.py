@@ -1,8 +1,7 @@
 from global_utils import check_sig
-from TypeUtils import numeric_matrix_types, numeric_vector_types, pardos_type
-
-from ..BaseMachine import BaseMachine
+from TypeUtils import vector_numeros_t, matriz_numeros_t, pardos_t
 from ..metrics import r2_score
+from ..BaseMachine import BaseMachine
 
 
 class LinearRegression(BaseMachine):
@@ -33,7 +32,7 @@ class LinearRegression(BaseMachine):
 
         return [aug[i][n] for i in range(n)]
 
-    @check_sig([3], [pardos_type] + numeric_vector_types + numeric_matrix_types, numeric_vector_types, is_method=True)
+    @check_sig([3], [pardos_t] + vector_numeros_t + matriz_numeros_t, vector_numeros_t, is_method=True)
     def fit(self, X, y):
         matrix, cols, is_df = self._unwrap_data(X)
         matrix = self._validate_matrix_shape(matrix)
@@ -46,9 +45,9 @@ class LinearRegression(BaseMachine):
         y_vals = list(y)
         m = len(matrix[0])
 
-        Xt = list(zip(*X_design, strict=False))
+        Xt = list(zip(*X_design))
         XtX = [
-            [sum(a * b for a, b in zip(Xt[i], Xt[j], strict=True)) for j in range(m + 1)]
+            [sum(a * b for a, b in zip(Xt[i], Xt[j])) for j in range(m + 1)]
             for i in range(m + 1)
         ]
         Xty = [sum(Xt[i][j] * y_vals[j] for j in range(n)) for i in range(m + 1)]
@@ -60,7 +59,7 @@ class LinearRegression(BaseMachine):
         self._is_fitted = True
         return self
 
-    @check_sig([2], numeric_vector_types + numeric_matrix_types, is_method=True)
+    @check_sig([2], vector_numeros_t + matriz_numeros_t, is_method=True)
     def predict(self, X):
         self._check_fitted("predict")
         if not X:

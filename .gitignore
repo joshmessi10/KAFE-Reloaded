@@ -21,9 +21,12 @@ env/
 # Only ignore generated SVG files (those without grafico_ prefix in tests directories)
 *.svg
 !tests/**/grafico_*.svg
+!docs/ejemplos/machine-*.svg
 output.txt
 temp_output.txt
 archivo_*.txt
+kafe-vscode/.vscode-test/
+
 
 # Coverage reports
 .coverage
@@ -33,8 +36,7 @@ htmlcov/
 # OS files
 .DS_Store
 
-# Local-only Superpowers artifacts (do not ignore published docs)
+# Ignore docs/superpowers
 docs/superpowers/
-.superpowers/
 # MkDocs generated site
 site/

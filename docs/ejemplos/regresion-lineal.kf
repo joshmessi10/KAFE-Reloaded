@@ -1,0 +1,47 @@
+-- ============================================
+-- Regresión Lineal con MACHINE
+-- Demuestra la librería de Machine Learning
+-- ============================================
+
+import machine;
+
+-- Datos de entrenamiento: y = 2x + 1 (aproximado)
+show("=== Regresión Lineal ===");
+
+MACHINE lr = machine.linear_regression();
+
+List[FLOAT] x = [1.0, 2.0, 3.0, 4.0, 5.0];
+List[FLOAT] y = [2.1, 4.0, 5.8, 8.1, 10.0];
+
+lr.fit(x, y);
+
+show("Pendiente (m): " + str(lr.slope_));
+show("Intercepto (b): " + str(lr.intercept_));
+
+-- Predicciones
+List[FLOAT] preds = lr.predict([6.0, 10.0, 0.0]);
+show("\nPredicciones:");
+show(preds);
+
+-- ============================================
+-- LabelEncoder
+-- ============================================
+show("\n=== Label Encoder ===");
+
+MACHINE le = machine.label_encoder();
+
+List[STR] labels = ["gato", "perro", "pajaro", "gato", "perro"];
+show("Etiquetas originales:");
+show(labels);
+
+le.fit(labels);
+show("Clases aprendidas:");
+show(le.classes_);
+
+List[INT] encoded = le.transform(labels);
+show("Codificado:");
+show(encoded);
+
+List[STR] decoded = le.inverse_transform(encoded);
+show("Decodificado:");
+show(decoded);

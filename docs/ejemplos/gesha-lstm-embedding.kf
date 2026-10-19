@@ -1,0 +1,11 @@
+-- Clasificación de tokens: Embedding -> Bidirectional LSTM -> Dense
+import geshaDeep;
+
+GESHA words = geshaDeep.embedding(20, 4, 10);
+GESHA recurrent = geshaDeep.create_lstm(3, [5, 4], False, 11);
+GESHA context = geshaDeep.bidirectional(recurrent);
+GESHA output = geshaDeep.create_dense(1, "sigmoid", [6], 0.0, 12);
+
+List[List[FLOAT]] vectors = words.forward([1, 5, 8, 5, 2]);
+List[FLOAT] encoded = context.forward(vectors);
+show(output.forward(encoded));

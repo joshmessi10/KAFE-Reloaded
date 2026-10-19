@@ -1,0 +1,64 @@
+-- Salary Data - SVR: salario segun experiencia.
+-- Dataset: https://www.kaggle.com/datasets/karthickveerakumar/salary-data-simple-linear-regression
+-- El objetivo se expresa en miles para que la escala de SVR sea interpretable.
+import kaggle;
+import machine;
+import plot;
+
+List[STR] columnas = ["YearsExperience"];
+List[List[FLOAT]] X = kaggle.load_dataset_matrix(
+    "karthickveerakumar/salary-data-simple-linear-regression",
+    columnas, "Salary_Data.csv", 0
+);
+PARDOS df = kaggle.load_dataset(
+    "karthickveerakumar/salary-data-simple-linear-regression", "Salary_Data.csv"
+);
+List[FLOAT] salarios = df.col("Salary");
+List[FLOAT] y = [];
+INT i = 0;
+while (i < len(salarios)):
+    append(y, salarios[i] / 1000.0);
+    i = i + 1;
+;
+MACHINE split = machine.train_test_split(X, y, 0.2, 42);
+List[List[FLOAT]] X_train = split[0];
+List[List[FLOAT]] X_test = split[1];
+List[FLOAT] y_train = split[2];
+List[FLOAT] y_test = split[3];
+MACHINE scaler = machine.standard_scaler();
+scaler.fit(X_train);
+List[List[FLOAT]] train_scaled = scaler.transform(X_train);
+List[List[FLOAT]] test_scaled = scaler.transform(X_test);
+show("Train/test:");
+show([len(X_train), len(X_test)]);
+
+MACHINE svr = machine.svr(10.0, 2.0, "linear");
+svr.fit(train_scaled, y_train);
+List[FLOAT] pred_svr = svr.predict(test_scaled);
+show("SVR - Salary Data: MAE (miles) y R2:");
+show(machine.mean_absolute_error(y_test, pred_svr));
+show(machine.r2_score(y_test, pred_svr));
+show("SVR - Salary Data: primera prediccion de test (miles):");
+show(pred_svr[0]);
+
+-- Cinco casos de evaluacion tomados del conjunto de prueba.
+List[FLOAT] pred_ejemplos = svr.predict(test_scaled);
+show("Cinco casos de evaluacion: esperado -> predicho:");
+for (j in range(0, 5)):
+    show(str(y_test[j]) + " -> " + str(pred_ejemplos[j]));
+;
+
+-- Comparacion de valores reales y predichos en el conjunto de prueba.
+List[FLOAT] indices_plot = [];
+for (j in range(0, len(y_test))):
+    append(indices_plot, float(j));
+;
+plot.figure();
+plot.title("salary svr: prueba");
+plot.xlabel("Indice de muestra de prueba");
+plot.ylabel("Valor real y predicho");
+plot.pointColor("blue");
+plot.graph(indices_plot, y_test, "point");
+plot.pointColor("orange");
+plot.graph(indices_plot, pred_ejemplos, "point");
+plot.render();

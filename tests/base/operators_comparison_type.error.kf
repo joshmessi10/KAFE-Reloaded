@@ -1,3 +1,3 @@
--- Division by zero error
+-- Error división por zero
 
 show(5 / 0);

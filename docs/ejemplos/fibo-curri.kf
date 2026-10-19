@@ -1,0 +1,58 @@
+-- ============================================
+-- Fibonacci con Currificación
+-- Demuestra funciones recursivas y closures
+-- ============================================
+
+-- Función recursiva de Fibonacci
+drip fibonacci(n: INT) => INT:
+    if (n <= 1):
+        return n;
+    ;
+    return fibonacci(n - 1) + fibonacci(n - 2);
+;
+
+-- Calcular Fibonacci de diferentes valores
+show("=== Fibonacci Recursivo ===");
+show("fib(0) = " + str(fibonacci(0)));
+show("fib(1) = " + str(fibonacci(1)));
+show("fib(7) = " + str(fibonacci(7)));
+show("fib(10) = " + str(fibonacci(10)));
+
+-- ============================================
+-- Currificación: crear funciones especializadas
+-- ============================================
+show("\n=== Currificación ===");
+
+drip restar(a: INT, b: INT) => INT:
+    return a - b;
+;
+
+-- Llamada normal
+show("restar(10, 3) = " + str(restar(10, 3)));
+
+-- Llamada currificada
+show("restar(10)(3) = " + str(restar(10)(3)));
+
+-- Crear función parcial
+FUNC(INT)=>INT restar5 = restar(5);
+show("restar5(3) = " + str(restar5(3)));   -- 2
+show("restar5(10) = " + str(restar5(10)));  -- -5
+
+-- ============================================
+-- Closures: funciones que capturan su entorno
+-- ============================================
+show("\n=== Closures ===");
+
+drip crearContador(inicial: INT) => FUNC()=>INT:
+    INT c = inicial;
+    return () => c = c + 1;
+;
+
+FUNC()=>INT contador = crearContador(0);
+show("Contador: " + str(contador()));  -- 1
+show("Contador: " + str(contador()));  -- 2
+show("Contador: " + str(contador()));  -- 3
+
+-- Segundo contador independiente
+FUNC()=>INT contador2 = crearContador(10);
+show("Contador2: " + str(contador2()));  -- 11

@@ -1,0 +1,38 @@
+=== RNN sintético: suma de la secuencia ===
+Muestras (16) y forma de una secuencia:
+[16, 5, 1]
+Etiquetas:
+[1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0]
+Entrenando RNN (4 unidades, 25 epocas)...
+Epoch 1/25 — Loss 75.82%
+Epoch 2/25 — Loss 72.18%
+Epoch 3/25 — Loss 69.18%
+Epoch 4/25 — Loss 66.24%
+Epoch 5/25 — Loss 63.27%
+Epoch 6/25 — Loss 60.04%
+Epoch 7/25 — Loss 56.33%
+Epoch 8/25 — Loss 51.75%
+Epoch 9/25 — Loss 45.78%
+Epoch 10/25 — Loss 37.94%
+Epoch 11/25 — Loss 28.40%
+Epoch 12/25 — Loss 18.65%
+Epoch 13/25 — Loss 11.00%
+Epoch 14/25 — Loss 6.38%
+Epoch 15/25 — Loss 3.98%
+Epoch 16/25 — Loss 2.76%
+Epoch 17/25 — Loss 2.08%
+Epoch 18/25 — Loss 1.68%
+Epoch 19/25 — Loss 1.42%
+Epoch 20/25 — Loss 1.23%
+Epoch 21/25 — Loss 1.10%
+Epoch 22/25 — Loss 0.99%
+Epoch 23/25 — Loss 0.90%
+Epoch 24/25 — Loss 0.83%
+Epoch 25/25 — Loss 0.77%
+Accuracy: 
+1.0
+Primeras 4 predicciones (predicho vs real):
+1 vs 1
+0 vs 0
+1 vs 1
+0 vs 0

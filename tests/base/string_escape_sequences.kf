@@ -1,2 +1,2 @@
-STR s = "Hello\n\tWorld!\" a \"";
+STR s = "Hola\n\tMundo!\" a \"";
 show(s);

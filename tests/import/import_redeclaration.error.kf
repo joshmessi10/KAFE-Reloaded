@@ -1,4 +1,4 @@
--- Variable already defined in the module
-import math_module;
+-- Variable ya definida en el módulo
+import matematica;
 
 INT a = 7;

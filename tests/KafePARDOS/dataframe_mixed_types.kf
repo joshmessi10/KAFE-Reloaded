@@ -8,8 +8,8 @@ show(all);
 List[INT] shp = df.shape();
 show(shp);   -- [5, 1]
 
-List[FLOAT] content = df.col("value");
-show(content);
+List[FLOAT] contenido = df.col("value");
+show(contenido);
 
 show(df.dtypes());
 

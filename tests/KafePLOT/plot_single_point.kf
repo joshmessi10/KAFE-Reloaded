@@ -1,9 +1,9 @@
 import plot;
 
 plot.figure();
-plot.title("Projectile launch");
-plot.xlabel("Time");
-plot.ylabel("Height");
+plot.title("Lanzamiento de proyectil");
+plot.xlabel("Tiempo");
+plot.ylabel("Altura");
 plot.grid(True);
 plot.color("blue");
 plot.pointColor("orange");

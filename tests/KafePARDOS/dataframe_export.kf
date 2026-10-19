@@ -7,11 +7,11 @@ show(all);
 
 show(df.shape());
 
-List[STR] names = df.col("name");
-show(names);
+List[STR] nombres = df.col("nombre");
+show(nombres);
 
-List[INT]  scores = df.col("score");
-show(scores);
+List[INT]  puntajes = df.col("puntaje");
+show(puntajes);
 
 show(df.dtypes());
 

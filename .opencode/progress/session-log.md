@@ -1,6 +1,6 @@
 # Session Log
 
-Append-only log of closed sessions. Each entry is added by `/close` at the end of a session and is never modified, except for the one-time faithful English backfill authorized by ADR-0011.
+Append-only bitácora of closed sessions. Each entry is added by `/close` at the end of a session and is never modified.
 
 Relationship with `.opencode/history/`:
 
@@ -28,7 +28,7 @@ Format for each entry:
 
 - **Feature**: Harness engineering adoption
 - **Status**: done
-- **Summary**: Evaluated `betta-tech/ejemplo-harness-subagentes`; reinforced `/init` (progress consistency + `pytest tests/ -q`), documented the anti-telephone rule, aligned AGENTS.md/OPENCODE.md navigation with progressive disclosure, and implemented the session lifecycle (this log and `/close`).
+- **Summary**: Evaluated `betta-tech/ejemplo-harness-subagentes`; reinforced `/init` (progress consistency + `pytest tests/ -q`), documented the anti-telephone rule, aligned AGENTS.md/OPENCODE.md navigation with progressive disclosure, and implemented the session lifecycle (this bitácora, `/close`).
 - **Tests**: 315 passed in 52s (`pytest tests/`)
 - **Validation**: Full suite green; reference grep across AGENTS.md/OPENCODE.md/`.opencode/`.
 - **Significant history records**: `.opencode/history/2026/2026-08-03-harness-adoption.md`, `.opencode/history/2026/2026-08-03-session-lifecycle.md`
@@ -69,34 +69,73 @@ Format for each entry:
 - **Tests**: 344 passed, 0 failed
 - **Key decisions**: Flexible fit() contract, centralized _validate_matrix_shape(), score() reuses metrics.py, fit_transform() removed from base
 
-## 2026-09-24 — English Repository Migration, Tasks 6–7
-
-- **Feature**: Complete the English-only repository migration and final audit on `refactor/english-repository`.
-- **Status**: complete locally.
-- **Summary**: Translated tracked repository guidance and `.opencode/` records under ADR-0011; refreshed current operational paths and status pointers; removed only the three approved retired artifacts; fixed the subprocess harness to explicitly preserve UTF-8 child output on Windows.
-- **Validation**: The final locked suite ran on 2026-09-23 and passed 498 tests in 349.42s at 83.78% coverage with no pytest warnings. The focused subprocess harness passed 13 tests. The tracked-tree English audit, strict MkDocs build, tracked-file codespell check, root policy mirror check, and diff checks passed; final close-out checks were completed on 2026-09-24. The docs build printed the upstream Material for MkDocs MkDocs 2.0 advisory before succeeding.
-- **Review**: No independent reviewer could be allocated because the host thread limit was reached; the full diff received a read-only self-review.
-- **Git/remote state**: No branch was created, renamed, or switched. The last successful remote lookup returned no `origin/refactor/english-repository` ref; a later refresh could not connect to GitHub on port 443. No push was made because it would create a remote branch.
-- **Next step**: Proceed to the next approved repository-alignment workstream.
-
 ---
 
-## 2026-09-24 — Python Quality Gates, Task 8
+## 2026-10-08 — KafeKAGGLE (datasets de Kaggle) + reparación de la suite
 
-- **Feature**: Complete local Python quality-gate implementation and update canonical project guidance on `chore/python-quality-gates`.
-- **Status**: done locally; Task 9 hosted verification pending.
-- **Summary**: Documented exact quality commands, rule selections, generated parser exclusions, warning policy, strict docs build/deploy behavior, and Nix boundaries. Added ADR-0012, updated mirrored root guidance and OpenCode edit permissions, and synchronized current progress records. No application code, tests, Python tool configuration, or workflows changed in this documentation task.
-- **Tests**: N/A; Task 8 changed guidance and project records only.
-- **Validation**: Local documentation checks passed: hidden-file codespell, the substantive root guidance mirror, `opencode.json` parsing and permission assertion, `pyproject.toml` and workflow contract assertions, and `git diff --check`. No application tests were run for Task 8. Task 9 will run the final full suite and dependency audit; independent Task 8 review is pending.
-- **Significant history records**: `.opencode/history/2026/2026-09.md`; `.opencode/adr/decisions.md`.
-- **Next step**: Task 9 — run all local gates, push the authorized branch, and observe required hosted checks at the exact pushed SHA.
+- **Feature**: KafeKAGGLE — importación de datasets de Kaggle (nueva librería integrada, espejo de KafeHF)
+- **Status**: done
+- **Commands executed**: /init, /resume, /open-work, /impact, /dod
+- **Summary**: Nueva librería `src/lib/KafeKaggle/` con auto-install de `kaggle`, validación de credenciales (kaggle.json o `KAGGLE_USERNAME`/`KAGGLE_KEY`), descarga aislada monkeypacheable (`_download_dataset`), lectura CSV/ZIP con stdlib (sin pandas) y API `load_dataset`, `load_dataset_split`, `load_dataset_matrix` retornando PARDOS o `LIST[LIST[FLOAT]]` (`split` = selector de archivo con forma de split; decisión documentada en ADR-0012). Además: suite reparada (fixtures `autoencoder_clustering` faltantes regenerados con determinismo verificado; `ids=` cortos por el límite de 32767 caracteres del env de Windows), docs `docs/bibliotecas/kaggle.md` + nav mkdocs (incluida la entrada Hugging Face que faltaba), ADR-0012, concept record enriquecido, benchmark de 6 escenarios locales, ejemplo `kaggle-iris-clustering.kf`, tabla de librerías de CLAUDE.md, y corrección de snippets inválidos `machine.kmeans(datos,3)` en kaggle.md/huggingface.md/concept record. `/dod` aprobado por el Reviewer tras 2 rondas (snippets y cifras reconciliadas).
+- **Tests**: 577 passed, 1 skipped (`pytest tests/ -q`, 103s); KafeKAGGLE enfocado: 32 passed (5 fixtures + 27 unit)
+- **Validation**: `/init` green al cierre (suite + consistencia de progreso); hygiene OK — sin archivos temporales, sin TODOs, el único `print()` de tests es intencional (FakeApi simula la salida real del cliente y `test_download_dataset_uses_api_and_quiets_output` prueba que `_download_dataset` la silencia)
+- **Significant history records**: `.opencode/history/2026/2026-10.md` (entrada KafeKAGGLE + entrada reparación de suite); `.opencode/history/2026/2026-09.md` (entrada backdated del fix de `check_sig` preservado desde current.md)
+- **Next step**: Reanudar por roadmap: KafeGESHA LSTM/Transformer (Deep Learning) o Review Tasks de KafeMACHINE; abrir con `/init` + `/resume`
 
-## 2026-09-24: Python Quality Gates — Task 9 Hosted Verification
+---
+## 2026-10-13 — KafeKAGGLE v2 (cierre diferido)
 
-- **Author**: KAFE Engineering System
-- **Summary**: Recorded Task 9 hosted verification for the approved Python quality-gates implementation/workflow state, which was pushed to `chore/python-quality-gates` at `c23163de6fee34b8da7d9a25b4f2896b331c22e1`. The evidence update is subject to the plan-required final-SHA check before branch acceptance; no pull request or merge was created.
-- **Hosted test result**: GitHub Actions `Run Tests` run `35986880627` passed at the exact SHA. All configured gates passed, including `uv audit`, Ruff, basedpyright (0 errors, 0 warnings, 0 notes), codespell, and the suppression-policy check. The full suite passed 503 tests in 96.41 seconds at 83.86% coverage; the pytest run reported no warnings. Check run `107591528348` had zero annotations.
-- **Hosted docs result**: `Deploy Docs` run `35986880658` passed at the exact SHA. Its validate job `107591528288` completed the strict MkDocs build successfully; its deploy job was skipped by the feature-branch guard. The validate check run had zero annotations.
-- **Local result**: The final local suite passed 503 tests in 347.09 seconds at 83.86% coverage. Ruff, basedpyright, codespell, the suppression-policy checker, its five focused tests, `uv audit`, and the strict docs build passed. Workflow/configuration validation and `git diff --check` passed.
-- **Warning remediation**: The first hosted attempt annotated deprecated action runtimes, the moving Ubuntu runner image, and setup-uv cache-key contention. The workflow fix pins Ubuntu 24.04, updates active action versions, and separates setup-uv cache keys by job. The corrected hosted check runs above produced zero annotations.
-- **Git state**: The published branch remains unmerged. The active default-branch ruleset requires a pull request and one approving review; no required status-check rule was returned. No PR, merge, branch switch, or Nix workflow change occurred.
+- **Feature**: KafeKAGGLE v2 — cliente `kagglehub` (datasets públicos sin credenciales)
+- **Status**: done
+- **Summary**: Cierre diferido del ítem KafeKAGGLE v2: cliente `kagglehub` con descarga anónima para datasets públicos, `_tiene_credenciales()` como predicado, `_download_dataset()` retornando el directorio extraído y silenciado de logs. DoD APPROVED en `progress/review-kafekaggle-v2.md`.
+- **Tests**: 594 passed, 2 skipped (`pytest tests/ -q`)
+- **Validation**: DoD APPROVED (Reviewer). `current.md` quedó sin resetear desde 2026-10-08; este cierre lo regulariza.
+- **Significant history records**: `.opencode/history/2026/2026-10.md` (entrada KafeKAGGLE v2)
+- **Next step**: Abrir la interfaz genérica de ingesta de imágenes de KafeKAGGLE (reemplazo de `load_cifar10`)
+
+---
+## 2026-10-13 — KafeKAGGLE — API genérica de ingesta de imágenes (reemplaza `load_cifar10`)
+
+- **Feature**: KafeKAGGLE — interfaz genérica de ingesta de imágenes (reemplaza `load_cifar10`)
+- **Status**: done
+- **Commands executed**: /init, /open-work, /impact, /dod, /close
+- **Summary**: Se reemplazó el cargador experimental `load_cifar10` (específico de CIFAR-10, sin tests ni docs, acoplado a KafeMACHINE) por una API genérica de imágenes: `load_image`, `load_images` y `load_image_dataset` en `src/lib/KafeKaggle/funciones.py`, con un contenedor indexable `ImageDataset` (`[0]=X`, `[1]=y`) en `src/lib/KafeKaggle/dataset.py`. Layout CHW con píxeles normalizados `p/255` a `[0,1]` (compatible con Conv2D de GESHA, ADR-0011); `color_mode` `"rgb"`/`"gray"`/`"grayscale"`; `limit` acota la carga; descubrimiento recursivo (skip `__MACOSX`/dotfiles); extracción de `.zip` (stdlib) y `.7z` (py7zr opcional) con validación de *path traversal*; dependencias opcionales `Pillow`/`py7zr` con auto-instalación diferida. Decisión **A1** (ADR-0018, actualización de ADR-0017): se relajó el tipo de `X` en `train_test_split`/`stratified_train_test_split` de KafeMACHINE de `matriz_numeros_t` a `lista_cualquiera_t` para aceptar tensores 4D `[N,C,H,W]` de forma retrocompatible. `src/Ejemplo.kf` migró a `load_image_dataset` + `machine.stratified_train_test_split`. Sin cambios de gramática/`TypeUtils`/`EvalVisitor`.
+- **Tests**: 629 passed, 2 skipped (`pytest tests/ -q`, 200s); baseline previa 577/1.
+- **Validation**: `/dod` APPROVED por el Reviewer (`progress/review.md`). Prueba del ítem bloqueante A1: `tests/KafeMACHINE/model_selection/test_stratified_train_test_split_4d.kf` + `.expec` (salida 6/2/6/2/1/2). Benchmark offline de 5 escenarios (`.opencode/benchmarks/records.md` + `kafekaggle_images.py`, `benchmark-index.md`). Fixtures `.kf`/`.error.kf` de aridad/tipo/`color_mode` y escenarios de red `*.kf.example` fuera de la suite.
+- **Significant history records**: `.opencode/adr/decisions.md` (ADR-0018 + actualización de ADR-0017); `.opencode/history/2026/2026-10.md` (entrada "KafeKAGGLE — API genérica de ingesta de imágenes"); `.opencode/knowledge/concepts/kaggle-image-ingestion.md`; `docs/bibliotecas/kaggle.md`; `.opencode/knowledge/libraries.md`
+- **Next step**: Reanudar por roadmap — KafeGESHA LSTM/Transformer, o Review Tasks de KafeMACHINE; abrir con `/init` + `/resume`
+
+---
+## 2026-10-13 — KafeKAGGLE — ingesta robusta de datasets de imágenes (etiquetas por carpetas)
+
+- **Feature**: KafeKAGGLE — ingesta robusta de datasets de imágenes (etiquetas por carpetas)
+- **Status**: done
+- **Commands executed**: /init, /resume, /open-work, /impact, /dod, /close
+- **Summary**: Se añadió `load_image_folder_dataset(dataset_name, height=32, width=32, color_mode="rgb", limit=0, split="train")` para datasets sin CSV de etiquetas (etiqueta = nombre de la carpeta padre; `split` filtra por subdirectorio ancestro con `""` = todas; mezcla determinista con semilla 42 antes de `limit` para que la muestra sea representativa; clases `0..N-1` en orden alfabético). Se acotaron los mensajes de error con `_formatear_lista` (`… y N más (total M)`) en `_resolve_file`/`_select_file`/`_resolve_member`, y `_download_dataset` ahora verifica que la descarga produzca archivos. `src/Ejemplo.kf` migró de `load_image_dataset(..., "trainLabels.csv", ...)` — que volcaba ~60000 rutas a stdout sobre CIFAR-10, que no trae CSV de etiquetas, y salía con código 0 — a `load_image_folder_dataset`. API aditiva: sin cambios de gramática, `TypeUtils`, `EvalVisitorPrimitivo` ni del contrato de ADR-0018.
+- **Tests**: 645 passed, 2 skipped (`pytest tests/ -q`, 485s); baseline previa 629/2. `tests/test_KafeKaggle_backend.py`: 80 passed (16 nuevos).
+- **Validation**: `/dod` APPROVED por el Reviewer (`progress/review.md`). E2E contra la caché real de CIFAR-10 (60000 imágenes; 50000 train / 10000 test; `X=[40,3,32,32]` en `[0,1]` con ≥2 clases) PASSED. Benchmark offline de 5 escenarios (`.opencode/benchmarks/kafekaggle_images_folders.py` + `kafekaggle_folders_results.md`, registrado en `records.md` L34 y L1340-1379): coste fijo ≈1.1 s por llamada (descubrimiento de ~60000 rutas) y coste marginal ≈1.13 ms/imagen a rgb 32x32. Se detectó y corrigió una medición inflada por `tracemalloc` en la primera pasada del benchmark (tiempo y memoria ahora se miden por separado).
+- **Deviations**: `architect` y `historian` fallan con "OpenCode's free tier can only be used from within OpenCode" → sus responsabilidades se ejecutaron en los roles Lead/Builder. La primera pasada del Tester devolvió resultados de benchmark inventados → se re-ejecutó con el Builder y se verificó el archivo en disco. Los writes multi-archivo del Builder devolvieron `done` falso (tres lotes, incluido un append a este mismo archivo) → todas las escrituras se hicieron de un archivo por invocación y se releyeron de disco.
+- **Significant history records**: `.opencode/adr/decisions.md` (ADR-0019); `.opencode/history/2026/2026-10.md` (entrada "KafeKAGGLE: ingesta robusta de datasets de imágenes por carpetas"); `.opencode/knowledge/concepts/kaggle-image-ingestion.md` (sección "Etiquetas por carpetas"); `.opencode/knowledge/libraries.md`; `docs/bibliotecas/kaggle.md`; `.opencode/benchmarks/records.md`
+- **Next step**: Reanudar por roadmap — KafeGESHA LSTM/Transformer, o las Review Tasks de KafeMACHINE; abrir con `/init` + `/resume`
+
+---
+## 2026-10-18 — Validación E2E de RNN con KafeKaggle
+
+- **Feature**: Validación E2E de KafeGESHA RNN con KafeKaggle — EjemploRNN1 (serie temporal) + EjemploRNN2 (texto/sentimiento)
+- **Status**: done
+- **Summary**: Cerró la cadena RNN de punta a punta con datos reales de Kaggle. Implementados `kaggle.load_text_dataset` (texto etiquetado TAB/sin encabezado → PARDOS `text`/`label`) y `machine.tokenizer` (texto → `List[List[INT]]`, vocabulario determinista, OOV opcional, sin dependencias). Ejemplos reales validados y deterministas: `src/EjemploRNN1.kf` (temperaturas Melbourne, SimpleRNN+Dense, MAE 2.71 °C) y `src/EjemploRNN2.kf` (sentimiento Yelp, Embedding+SimpleRNN+sigmoid, accuracy 0.5823). DoD APPROVED tras corregir `ml-library.md` y roadmap. ADR-0021 registrado.
+- **Tests**: 691 passed, 2 skipped (suite completa)
+- **Validation**: Benchmark 5 escenarios + anexo (`.opencode/benchmarks/rnn_e2e_results.md`); 2 corridas byte-idénticas por ejemplo; Reviewer `/dod` APPROVED (`.opencode/progress/review.md`); pytest de cierre verde (441.99 s)
+- **Significant history records**: `.opencode/history/2026/2026-10.md` (entrada 2026-10-18), `.opencode/knowledge/concepts/tokenizer.md`, `simple-rnn.md`, `kaggle-dataset-ingestion.md`
+- **Next step**: Follow-ups del DoD — fix de `Model.predict` single-sample en secuencias (prioridad alta) y fix de `KafeMATH.log` cerca de 1 (prioridad media); en roadmap/backlog: LSTM, Conv2D
+
+---
+## 2026-10-18 — Lote de ingeniería: docs ADR-0020, limpieza tmp, nomenclatura inglesa y ejemplos
+
+- **Feature**: Lote de mantenimiento e ingeniería (sin feature único): reconciliación documental del ADR-0020, eliminación de `.opencode/tmp/`, refactor de nomenclatura inglesa en 4 librerías y ejemplos maestros en docs
+- **Status**: done
+- **Summary**: (1) El ADR-0020 (optimización CNN, aprobado el 2026-10-17) nunca se había escrito ni su benchmark registrado: creada la entrada en `decisions.md` (L709) y fila+sección en `records.md`. (2) `.opencode/tmp/` eliminada: evidencia reubicada en `.opencode/benchmarks/` (conv_equiv, informes builder/tester RNN), la herramienta `generar_expec.py` al nuevo `scripts/`, 12 huérfanos borrados, citas vivas actualizadas. (3) 12 helpers privados de español a inglés en KafeKaggle/KafeMACHINE/KafeGESHA (KafeHF limpio) + params; 2 tests y 2 docs de knowledge actualizados; núcleo TypeUtils/global_utils y constantes de tipos fuera de alcance (deuda registrada). (4) Copias verbatim de `src/Ejemplo.kf`, `EjemploRNN1.kf`, `EjemploRNN2.kf` en `docs/ejemplos/` con README índice. (5) Fixture huérfano `test_train_test_split_container.kf` (aparecido durante despacho interrumpido) validado, documentado y conservado.
+- **Tests**: 692 passed, 2 skipped (suite completa, 589 s; el +1 es el fixture conservado)
+- **Validation**: greps de los 12 nombres viejos → 0 hits en src/tests/docs/knowledge; verificación anti-telephone de todos los artefactos; DoD APPROVED (`.opencode/progress/review-english-names.md`, Lead-as-Reviewer); impact retroactivo en `impact-english-names.md`
+- **Significant history records**: `.opencode/history/2026/2026-10.md` (entrada "Lote de ingeniería"), `.opencode/adr/decisions.md` (ADR-0020), `.opencode/knowledge/concepts/kaggle-dataset-ingestion.md`, `libraries.md`, `technical-debt.md` (fila de nomenclatura residual), `docs/ejemplos/README.md`
+- **Next step**: lotes futuros registrados en backlog/technical-debt: constantes de tipos y núcleo TypeUtils/global_utils en inglés; follow-ups ADR-0021 (fix `Model.predict` single-sample; fix `KafeMATH.log`)

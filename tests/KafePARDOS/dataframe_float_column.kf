@@ -7,8 +7,8 @@ show(all);
 
 show(df.shape());
 
-List[FLOAT] values = df.col("value");
-show(values);
+List[FLOAT] valores = df.col("value");
+show(valores);
 
 show(df.dtypes());
 

@@ -1,30 +1,29 @@
 from global_utils import check_sig
-from TypeUtils import numeric_matrix_types, numeric_vector_types, pardos_type
-
-from ..BaseMachine import BaseMachine
+from TypeUtils import vector_numeros_t, matriz_numeros_t, pardos_t
 from ..metrics import r2_score
+from ..BaseMachine import BaseMachine
 
 
 class ElasticNet(BaseMachine):
     """
-    Elastic Net Regression — Combined L1 + L2 regularization.
+    Elastic Net Regression — Regularización combinada L1 + L2.
 
-    Minimizes: ||y - Xθ||² + α * l1_ratio * ||θ||₁ + α * (1 - l1_ratio) * ||θ||²
+    Minimiza: ||y - Xθ||² + α * l1_ratio * ||θ||₁ + α * (1 - l1_ratio) * ||θ||²
 
-    Combines the advantages of Ridge (L2) and Lasso (L1):
-    - L1 can delete features (feature selection)
-    - L2 handles correlated features
+    Combina las ventajas de Ridge (L2) y Lasso (L1):
+    - L1 puede eliminar features (selección de features)
+    - L2 maneja features correlacionadas
 
-    Parameters:
-        alpha: regularization force (default 1.0)
-        l1_ratio: L1 vs L2 ratio (0=Ridge, 1=Lasso) (default 0.5)
-        fit_intercept: if intercept is set (default True)
-        max_iter: maximum iterations (default 1000)
-        tol: tolerance for convergence (default 1e-4)
+    Parámetros:
+        alpha: fuerza de regularización (default 1.0)
+        l1_ratio: proporción de L1 vs L2 (0=Ridge, 1=Lasso) (default 0.5)
+        fit_intercept: si se ajusta intercepto (default True)
+        max_iter: máximo de iteraciones (default 1000)
+        tol: tolerancia para convergencia (default 1e-4)
 
-    Attributes (after fit):
-        coef_: model coefficients
-        intercept_: model intercept
+    Atributos (después de fit):
+        coef_: coeficientes del modelo
+        intercept_: intercepto del modelo
     """
 
     def __init__(self, alpha=1.0, l1_ratio=0.5, fit_intercept=True,
@@ -46,7 +45,7 @@ class ElasticNet(BaseMachine):
         self.intercept_ = 0.0
 
     def _soft_threshold(self, x, threshold):
-        """Soft thresholding operator: sign(x) * max(|x| - threshold, 0)"""
+        """Operador de soft thresholding: sign(x) * max(|x| - threshold, 0)"""
         if x > threshold:
             return x - threshold
         elif x < -threshold:
@@ -55,13 +54,13 @@ class ElasticNet(BaseMachine):
             return 0.0
 
     def _coordinate_descent(self, X, y):
-        """Fit Elastic Net using coordinate descent."""
+        """Ajusta Elastic Net usando Coordinate Descent."""
         n = len(X)
         m = len(X[0])
 
         beta = [0.0] * m
 
-        Xt = list(zip(*X, strict=False))
+        Xt = list(zip(*X))
         XtX = [
             [sum(Xt[i][k] * Xt[j][k] for k in range(n)) for j in range(m)]
             for i in range(m)
@@ -70,7 +69,7 @@ class ElasticNet(BaseMachine):
 
         col_norms = [XtX[j][j] for j in range(m)]
 
-        for _iteration in range(self.max_iter):
+        for iteration in range(self.max_iter):
             beta_old = beta[:]
 
             for j in range(m):
@@ -92,9 +91,9 @@ class ElasticNet(BaseMachine):
 
         return beta
 
-    @check_sig([3], [pardos_type] + numeric_vector_types + numeric_matrix_types, numeric_vector_types, is_method=True)
+    @check_sig([3], [pardos_t] + vector_numeros_t + matriz_numeros_t, vector_numeros_t, is_method=True)
     def fit(self, X, y):
-        """Fit Elastic Net regression."""
+        """Ajusta Elastic Net regression."""
         matrix, cols, is_df = self._unwrap_data(X)
         matrix = self._validate_matrix_shape(matrix)
 
@@ -120,9 +119,9 @@ class ElasticNet(BaseMachine):
         self._is_fitted = True
         return self
 
-    @check_sig([2], numeric_vector_types + numeric_matrix_types, is_method=True)
+    @check_sig([2], vector_numeros_t + matriz_numeros_t, is_method=True)
     def predict(self, X):
-        """Predict using Elastic Net."""
+        """Predice usando Elastic Net."""
         self._check_fitted("predict")
         if not X:
             return []
@@ -142,7 +141,7 @@ class ElasticNet(BaseMachine):
         ]
 
     def score(self, X, y, metric=None):
-        """Score using R² (default) or a custom metric."""
+        """Score usando R² (default) o una métrica personalizada."""
         self._check_fitted("score")
         preds = self.predict(X)
         if metric is None:

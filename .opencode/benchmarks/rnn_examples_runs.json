@@ -1,0 +1,111 @@
+{
+  "corridas": [
+    {
+      "ejemplo": "EjemploRNN1.kf",
+      "corrida": 1,
+      "rc": 0,
+      "segundos": 119.86,
+      "stdout": "=== RNN 1: Temperatura mínima de Melbourne ===\nDías cargados:\n300\nVentanas [muestras, timesteps, features]:\n[293, 7, 1]\nMin / max del train (°C):\n[2.1, 25.0]\nTrain / test:\n[234, 59]\nEntrenando RNN (16 unidades, 15 épocas, batch 8)...\nEpoch 1/15 — Loss 7.77%\nEpoch 2/15 — Loss 3.52%\nEpoch 3/15 — Loss 3.87%\nEpoch 4/15 — Loss 3.71%\nEpoch 5/15 — Loss 3.28%\nEpoch 6/15 — Loss 2.36%\nEpoch 7/15 — Loss 1.78%\nEpoch 8/15 — Loss 1.53%\nEpoch 9/15 — Loss 1.49%\nEpoch 10/15 — Loss 1.52%\nEpoch 11/15 — Loss 1.54%\nEpoch 12/15 — Loss 1.54%\nEpoch 13/15 — Loss 1.55%\nEpoch 14/15 — Loss 1.55%\nEpoch 15/15 — Loss 1.56%\nMAE en grados Celsius:\n2.7147498390716023\nPrimeras 5 predicciones vs reales (°C):\n1. predicho=7.136624941187632 real=5.5\n2. predicho=4.980735686282061 real=6.2\n3. predicho=5.972104974111955 real=8.0\n4. predicho=7.062057492749126 real=10.3\n5. predicho=8.691147430036153 real=9.8\n",
+      "stderr": ""
+    },
+    {
+      "ejemplo": "EjemploRNN1.kf",
+      "corrida": 2,
+      "rc": 0,
+      "segundos": 121.72,
+      "stdout": "=== RNN 1: Temperatura mínima de Melbourne ===\nDías cargados:\n300\nVentanas [muestras, timesteps, features]:\n[293, 7, 1]\nMin / max del train (°C):\n[2.1, 25.0]\nTrain / test:\n[234, 59]\nEntrenando RNN (16 unidades, 15 épocas, batch 8)...\nEpoch 1/15 — Loss 7.77%\nEpoch 2/15 — Loss 3.52%\nEpoch 3/15 — Loss 3.87%\nEpoch 4/15 — Loss 3.71%\nEpoch 5/15 — Loss 3.28%\nEpoch 6/15 — Loss 2.36%\nEpoch 7/15 — Loss 1.78%\nEpoch 8/15 — Loss 1.53%\nEpoch 9/15 — Loss 1.49%\nEpoch 10/15 — Loss 1.52%\nEpoch 11/15 — Loss 1.54%\nEpoch 12/15 — Loss 1.54%\nEpoch 13/15 — Loss 1.55%\nEpoch 14/15 — Loss 1.55%\nEpoch 15/15 — Loss 1.56%\nMAE en grados Celsius:\n2.7147498390716023\nPrimeras 5 predicciones vs reales (°C):\n1. predicho=7.136624941187632 real=5.5\n2. predicho=4.980735686282061 real=6.2\n3. predicho=5.972104974111955 real=8.0\n4. predicho=7.062057492749126 real=10.3\n5. predicho=8.691147430036153 real=9.8\n",
+      "stderr": ""
+    },
+    {
+      "ejemplo": "EjemploRNN2.kf",
+      "corrida": 1,
+      "rc": 0,
+      "segundos": 85.8,
+      "stdout": "=== RNN 2: Sentimiento de frases Yelp ===\nFrases / etiquetas:\n[400, 400]\nEtiqueta de la primera frase:\n1\nTrain / test:\n[321, 79]\nTrain balanceado (neg / pos):\n[142, 142]\nVocabulario del train (0=padding, 1=OOV):\n202\nPalabras OOV en el primer texto de test:\n6\nEntrenando RNN + Embedding (8 épocas, batch 8)...\nEpoch 1/8 — Loss 69.16% — Accuracy 51.41%\nEpoch 2/8 — Loss 59.03% — Accuracy 72.89%\nEpoch 3/8 — Loss 42.42% — Accuracy 76.76%\nEpoch 4/8 — Loss 32.17% — Accuracy 85.21%\nEpoch 5/8 — Loss 20.68% — Accuracy 90.14%\nEpoch 6/8 — Loss 16.55% — Accuracy 93.31%\nEpoch 7/8 — Loss 17.18% — Accuracy 94.01%\nEpoch 8/8 — Loss 10.55% — Accuracy 96.48%\nAccuracy en test:\n0.5822784810126582\nMatriz de confusión [[TN, FP], [FN, TP]]:\n[[18, 17], [16, 28]]\nClasificación de frases nuevas (0=negativo, 1=positivo):\nThe food was amazing and the staff was friendly -> 1\nTerrible experience, I will never come back here -> 0\nIt was okay, nothing special about it -> 0\n",
+      "stderr": ""
+    },
+    {
+      "ejemplo": "EjemploRNN2.kf",
+      "corrida": 2,
+      "rc": 0,
+      "segundos": 85.26,
+      "stdout": "=== RNN 2: Sentimiento de frases Yelp ===\nFrases / etiquetas:\n[400, 400]\nEtiqueta de la primera frase:\n1\nTrain / test:\n[321, 79]\nTrain balanceado (neg / pos):\n[142, 142]\nVocabulario del train (0=padding, 1=OOV):\n202\nPalabras OOV en el primer texto de test:\n6\nEntrenando RNN + Embedding (8 épocas, batch 8)...\nEpoch 1/8 — Loss 69.16% — Accuracy 51.41%\nEpoch 2/8 — Loss 59.03% — Accuracy 72.89%\nEpoch 3/8 — Loss 42.42% — Accuracy 76.76%\nEpoch 4/8 — Loss 32.17% — Accuracy 85.21%\nEpoch 5/8 — Loss 20.68% — Accuracy 90.14%\nEpoch 6/8 — Loss 16.55% — Accuracy 93.31%\nEpoch 7/8 — Loss 17.18% — Accuracy 94.01%\nEpoch 8/8 — Loss 10.55% — Accuracy 96.48%\nAccuracy en test:\n0.5822784810126582\nMatriz de confusión [[TN, FP], [FN, TP]]:\n[[18, 17], [16, 28]]\nClasificación de frases nuevas (0=negativo, 1=positivo):\nThe food was amazing and the staff was friendly -> 1\nTerrible experience, I will never come back here -> 0\nIt was okay, nothing special about it -> 0\n",
+      "stderr": ""
+    }
+  ],
+  "determinismo": {
+    "EjemploRNN1.kf": true,
+    "EjemploRNN2.kf": true
+  },
+  "verificaciones": {
+    "EjemploRNN1.kf": {
+      "rc": 0,
+      "sin_trazas": true,
+      "perdidas": [
+        7.77,
+        3.52,
+        3.87,
+        3.71,
+        3.28,
+        2.36,
+        1.78,
+        1.53,
+        1.49,
+        1.52,
+        1.54,
+        1.54,
+        1.55,
+        1.55,
+        1.56
+      ],
+      "n_perdidas": 15,
+      "loss_inicial_pct": 7.77,
+      "loss_final_pct": 1.56,
+      "decremento_global": true,
+      "pasos_decrecientes": 7,
+      "n_pasos": 14,
+      "perdidas_negativas": [],
+      "mae_celsius": 2.7147498390716023,
+      "mae_lt_5": true
+    },
+    "EjemploRNN2.kf": {
+      "rc": 0,
+      "sin_trazas": true,
+      "perdidas": [
+        69.16,
+        59.03,
+        42.42,
+        32.17,
+        20.68,
+        16.55,
+        17.18,
+        10.55
+      ],
+      "n_perdidas": 8,
+      "loss_inicial_pct": 69.16,
+      "loss_final_pct": 10.55,
+      "decremento_global": true,
+      "pasos_decrecientes": 6,
+      "n_pasos": 7,
+      "perdidas_negativas": [],
+      "accuracy_test": 0.5822784810126582,
+      "accuracy_ge_05": true,
+      "matriz_confusion": "[[18, 17], [16, 28]]",
+      "frases_nuevas": [
+        {
+          "frase": "The food was amazing and the staff was friendly",
+          "prediccion": "1"
+        },
+        {
+          "frase": "Terrible experience, I will never come back here",
+          "prediccion": "0"
+        },
+        {
+          "frase": "It was okay, nothing special about it",
+          "prediccion": "0"
+        }
+      ],
+      "n_frases_nuevas": 3
+    }
+  }
+}

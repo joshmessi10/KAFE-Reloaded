@@ -2,79 +2,79 @@
 
 ## Mathematical Foundation
 
-Gradient Boosting Regressor builds regression trees sequentially to minimize mean squared error (MSE) using gradient descent.
+Gradient Boosting Regressor construye árboles de regresión secuencialmente para minimizar el error cuadrático medio (MSE) usando gradient descent.
 
-### Algorithm
+### Algoritmo
 
-1. **Initialize**: $F_0(x) = \bar{y} = \frac{1}{n}\sum_{i=1}^{n} y_i$.
-2. **For each iteration $t = 1, \ldots, T$**:
-   - Calculate residuals: $r_i = y_i - F_{t-1}(x_i)$.
-   - Fit tree $h_t$ to predict residuals $r_i$.
-   - Update: $F_t(x) = F_{t-1}(x) + \eta \cdot h_t(x)$.
-3. **Predict**: $H(x) = F_T(x)$.
+1. **Inicializar**: $F_0(x) = \bar{y} = \frac{1}{n}\sum_{i=1}^{n} y_i$
+2. **Para cada iteración t = 1, ..., T**:
+   - Calcular residuos: $r_i = y_i - F_{t-1}(x_i)$
+   - Entrenar árbol $h_t$ para predecir residuos $r_i$
+   - Actualizar: $F_t(x) = F_{t-1}(x) + \eta \cdot h_t(x)$
+3. **Predicción**: $H(x) = F_T(x)$
 
-### Loss Function
+### Función de Pérdida
 
-For regression, Gradient Boosting minimizes **MSE** (mean squared error):
+Para regresión, Gradient Boosting minimiza el **MSE** (Mean Squared Error):
 
 $$\mathcal{L}(y, F) = \frac{1}{2}(y - F)^2$$
 
-The pseudo-residuals are the negative gradient:
+Los pseudo-residuos son el negativo del gradiente:
 
 $$r_i = -\frac{\partial \mathcal{L}(y_i, F(x_i))}{\partial F(x_i)} = y_i - F(x_i)$$
 
 ### Subsampling
 
-`GradientBoostingRegressor` supports **stochastic gradient boosting** through the `subsample` parameter:
-- Randomly samples a fraction of the data on each iteration.
-- Reduces overfitting and speeds up training.
+GradientBoostingRegressor soporta **stochastic gradient boosting** via el parámetro `subsample`:
+- Muestrea aleatoriamente una fracción de datos en cada iteración
+- Reduce overfitting y acelera entrenamiento
 
-## Computational Complexity
+## Complejidad Computacional
 
-| Operation | Time Complexity | Space Complexity |
+| Operación | Complejidad Temporal | Complejidad Espacial |
 |-----------|---------------------|---------------------|
 | Training | $O(T \cdot n \cdot m \cdot d)$ | $O(T \cdot n)$ |
 | Prediction | $O(T \cdot d)$ | $O(1)$ |
 
-Here, $T$ is `n_estimators`, $n$ is the number of samples, $m$ is the number of features, and $d$ is `max_depth`.
+Donde $T$ = n_estimators, $n$ = muestras, $m$ = features, $d$ = max_depth.
 
-## Advantages
+## Ventajas
 
-1. **High accuracy** — can outperform linear regression and Random Forest on some datasets.
-2. **Captures nonlinearities** — trees model complex patterns.
-3. **Feature importance** — estimates importance for each feature.
-4. **Robust to outliers** — less sensitive than linear regression.
-5. **Stochastic boosting** — subsampling can reduce overfitting.
+1. **Alta precisión** — generalmente mejor que regresión lineal y Random Forest
+2. **Captura no-linearidades** — árboles capturan patrones complejos
+3. **Feature importance** — importancia por feature
+4. **Robusto a outliers** — menos sensible que regresión lineal
+5. **Stochastic boosting** — subsampling reduce overfitting
 
-## Limitations
+## Limitaciones
 
-1. **Overfitting** — can be more susceptible than Random Forest.
-2. **Sequential** — boosting rounds cannot be parallelized.
-3. **Sensitive to hyperparameters** — especially `learning_rate` and `n_estimators`.
-4. **Slower training** — trees are fitted sequentially.
+1. **Overfitting** — más susceptible que Random Forest
+2. **Secuencial** — no se puede paralelizar
+3. **Sensible a hiperparámetros** — learning_rate y n_estimators
+4. **Más lento** — entrenamiento secuencial
 
-## When to Use
+## Cuando Usar
 
-- Nonlinear regression.
-- When high accuracy is important.
-- When there is time to tune hyperparameters.
-- Data with complex patterns.
+- Regresión no lineal
+- Necesitas máxima precisión
+- Tienes tiempo para tuning de hiperparámetros
+- Datos con patrones complejos
 
-## When NOT to Use
+## Cuando NO Usar
 
-- Very noisy data, where overfitting may occur.
-- Very large datasets that make sequential training too slow.
-- When parallel training is required (consider Random Forest).
-- Purely linear relationships (use linear regression).
+- Datos con mucho ruido (puede overfittear)
+- Datasets muy grandes (entrenamiento secuencial)
+- Necesitas paralelización (usar Random Forest)
+- Relaciones puramente lineales (usar regresión lineal)
 
-## Relationship with KAFE
+## Relación con KAFE
 
-KAFE implements `GradientBoostingRegressor` from scratch:
-- Regression trees as weak learners.
-- MSE (squared-error) objective.
-- Initial prediction equal to the mean of $y$.
-- Stochastic gradient boosting through subsampling.
-- Scikit-learn-style API: `fit()`, `predict()`, and `score()` ($R^2$).
+KAFE implementa GradientBoostingRegressor desde scratch:
+- Árboles de regresión como weak learners
+- Función de pérdida MSE (cuadrática)
+- Predicción inicial = media de y
+- Stochastic gradient boosting via subsampling
+- API estilo scikit-learn: `fit()`, `predict()`, `score()` (R²)
 
 ## References
 

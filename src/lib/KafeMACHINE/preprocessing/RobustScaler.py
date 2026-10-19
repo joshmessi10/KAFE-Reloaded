@@ -1,33 +1,32 @@
 from global_utils import check_sig
+from TypeUtils import pardos_t, matriz_numeros_t
 from lib.KafePARDOS.DataFrame import DataFrame
-from TypeUtils import numeric_matrix_types, pardos_type
-
 from ..BaseMachine import BaseMachine
 
 
 class RobustScaler(BaseMachine):
     """
-    Robust Scaler — Robust scaling using the median and IQR.
+    Robust Scaler — Escalamiento robusto usando mediana e IQR.
 
-    Scale features using outlier-robust statistics:
-    - Median (Q2) instead of mean
-    - IQR (Q3 - Q1) instead of standard deviation
+    Escala features usando estadísticos robustos a outliers:
+    - Mediana (Q2) en vez de media
+    - IQR (Q3 - Q1) en vez de desviación estándar
 
-    Mathematical foundation:
+    Fundamento matemático:
         X_scaled = (X - median) / IQR
 
-        Where:
-            median = Q2 (50th percentile)
-            IQR = Q3 - Q1 (75th percentile - 25th percentile)
+        Donde:
+            median = Q2 (percentil 50)
+            IQR = Q3 - Q1 (percentil 75 - percentil 25)
 
-    Parameters:
-        with_centering: if True, centers using median (default True)
-        with_scaling: if True, scales using IQR (default True)
-        quantile_range: quantile range for IQR (default (25.0, 75.0))
+    Parámetros:
+        with_centering: si True, centra usando mediana (default True)
+        with_scaling: si True, escala usando IQR (default True)
+        quantile_range: rango de quantiles para IQR (default (25.0, 75.0))
 
-    Attributes (after fit):
-        center_: median by feature (if with_centering=True)
-        scale_: IQR per feature (if with_scaling=True)
+    Atributos (después de fit):
+        center_: mediana por feature (si with_centering=True)
+        scale_: IQR por feature (si with_scaling=True)
     """
 
     def __init__(self, with_centering=True, with_scaling=True, quantile_range=(25.0, 75.0)):
@@ -42,7 +41,7 @@ class RobustScaler(BaseMachine):
         self.scale_ = []
 
     def _percentile(self, sorted_data, p):
-        """Calculates the p percentile of ordered data."""
+        """Calcula el percentil p de datos ordenados."""
         n = len(sorted_data)
         if n == 0:
             return 0.0
@@ -57,9 +56,9 @@ class RobustScaler(BaseMachine):
             return sorted_data[f] + c * (sorted_data[f + 1] - sorted_data[f])
         return sorted_data[f]
 
-    @check_sig([2], [pardos_type] + numeric_matrix_types, is_method=True)
+    @check_sig([2], [pardos_t] + matriz_numeros_t, is_method=True)
     def fit(self, data):
-        """Fit RobustScaler by calculating the median and IQR."""
+        """Ajusta RobustScaler calculando mediana e IQR."""
         matrix, cols, is_df = self._unwrap_data(data)
 
         if not matrix or not matrix[0]:
@@ -90,9 +89,9 @@ class RobustScaler(BaseMachine):
     def fit_transform(self, data):
         return self.fit(data).transform(data)
 
-    @check_sig([2], [pardos_type] + numeric_matrix_types, is_method=True)
+    @check_sig([2], [pardos_t] + matriz_numeros_t, is_method=True)
     def transform(self, data):
-        """Transforms data using adjusted median and IQR."""
+        """Transforma datos usando mediana e IQR ajustados."""
         self._check_fitted("transform")
         matrix, cols, is_df = self._unwrap_data(data)
 
@@ -117,9 +116,9 @@ class RobustScaler(BaseMachine):
 
         return DataFrame(cols, result) if is_df else result
 
-    @check_sig([2], [pardos_type] + numeric_matrix_types, is_method=True)
+    @check_sig([2], [pardos_t] + matriz_numeros_t, is_method=True)
     def inverse_transform(self, data):
-        """Reverse the transformation."""
+        """Invierte la transformación."""
         self._check_fitted("inverse_transform")
         matrix, cols, is_df = self._unwrap_data(data)
 

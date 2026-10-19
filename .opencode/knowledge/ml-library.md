@@ -6,17 +6,14 @@ scikit-learn-style ML models and evaluation metrics, implemented from scratch in
 
 ## Structure
 
-- `src/lib/KafeMACHINE/functions.py` — public factory functions (the `machine` API).
+- `src/lib/KafeMACHINE/funciones.py` — public factory functions (the `machine` API).
 - `src/lib/KafeMACHINE/BaseMachine.py` — base model class shared by models.
-- Linear models: `linear/LinearRegression.py`, `linear/LogisticRegression.py`, `linear/RidgeRegression.py`, `linear/LassoRegression.py`, `linear/ElasticNet.py`, and `linear/SVR.py`.
-- Neighbors: `neighbors/KNN.py`.
-- Trees: `tree/DecisionTree.py` and `tree/RandomForest.py`.
-- Other estimators: `naive_bayes/GaussianNB.py`, `svm/SVM.py`, `discriminant/LinearDiscriminantAnalysis.py`, `clustering/{DBSCAN,AgglomerativeClustering,GaussianMixture,KMeans}.py`, and `ensemble/{AdaBoost,GradientBoosting}.py`.
-- Preprocessing: `preprocessing/{StandardScaler,MinMaxScaler,RobustScaler,SimpleImputer,LabelEncoder,OneHotEncoder,OrdinalEncoder,PCA,PolynomialFeatures,VarianceThreshold,RecursiveFeatureElimination}.py`.
-- Model selection and pipeline: `model_selection/model_selection.py` contains `train_test_split`, `k_fold`, `CrossValScore`, `GridSearchCV`, `RandomizedSearchCV`, and `Pipeline`.
+- Models: `LinearRegression.py`, `LogisticRegression.py`, `KNN.py`, `PCA.py`, `DecisionTree.py` (DecisionTreeClassifier + DecisionTreeRegressor), `RandomForest.py` (RandomForestClassifier + RandomForestRegressor), `GaussianNB.py`, `DBSCAN.py`, `RidgeRegression.py`, `LassoRegression.py`, `SVR.py`, `SVM.py`, `ElasticNet.py`, `AgglomerativeClustering.py`, `AdaBoost.py`, `GradientBoosting.py` (GradientBoostingClassifier + GradientBoostingRegressor), `GaussianMixture.py`, `LinearDiscriminantAnalysis.py`.
+- Preprocessing: `StandardScaler.py`, `MinMaxScaler.py`, `RobustScaler.py`, `SimpleImputer.py`, `LabelEncoder.py`, `OneHotEncoder.py`, `OrdinalEncoder.py`, `PCA.py`, `PolynomialFeatures.py`, `VarianceThreshold.py`, `RecursiveFeatureElimination.py`, `Tokenizer.py`.
+- Model Selection: `model_selection.py` — `train_test_split`, `k_fold`, `CrossValScore(BaseMachine)`, `GridSearchCV`, `RandomizedSearchCV`, `Pipeline`.
+- Hyperparameter Search: GridSearchCV and RandomizedSearchCV in `model_selection.py`.
+- Pipeline: `Pipeline` class in `model_selection.py` — chains preprocessing steps with a model.
 - Metrics: `metrics.py`.
-
-The KAFE `grid_search_cv` and `randomized_search_cv` factories currently initialize empty parameter collections and do not expose arguments to configure them. Configured parameter searches are not currently available through these KAFE factories.
 
 ## Public API (factories)
 
@@ -36,6 +33,7 @@ The KAFE `grid_search_cv` and `randomized_search_cv` factories currently initial
 - `machine.gaussian_nb()`
 - `machine.standard_scaler()` / `machine.minmax_scaler()` / `machine.robust_scaler(with_centering, with_scaling, quantile_low, quantile_high)` / `machine.simple_imputer(strategy)`
 - `machine.label_encoder()` / `machine.one_hot_encoder()` / `machine.ordinal_encoder()`
+- `machine.tokenizer(num_words=0, oov_token="")` — convierte texto en `List[List[INT]]` con vocabulario determinista y OOV opcional; prepara los índices que consume `geshaDeep.embedding`.
 - `machine.polynomial_features(degree, include_bias)`
 - `machine.variance_threshold(threshold)`
 - `machine.recursive_feature_elimination(estimator, n_features)`
@@ -47,8 +45,8 @@ The KAFE `grid_search_cv` and `randomized_search_cv` factories currently initial
 - `machine.ada_boost_classifier(n_estimators, learning_rate)`
 - `machine.gradient_boosting_classifier(n_estimators, learning_rate, max_depth)`
 - `machine.gradient_boosting_regressor(n_estimators, learning_rate, max_depth)`
-- Model selection: `machine.train_test_split(X, y, test_size, random_state, shuffle)`, `machine.k_fold(n_samples, n_splits, shuffle, random_state)`, `machine.cross_val_score(cv, scoring, random_state)`
-- Hyperparameter-search factories: `machine.grid_search_cv(cv, scoring, random_state)` and `machine.randomized_search_cv(n_iter, cv, scoring, random_state)`.
+- Model selection: `machine.train_test_split(X, y, test_size, random_state)`, `machine.k_fold_cross_validation(model, X, y, k, scoring_fn)`, `machine.cross_val_score(cv, scoring, random_state)`
+- Hyperparameter search: `machine.grid_search_cv(model, param_grid, cv, scoring_fn)`, `machine.randomized_search_cv(model, param_dist, n_iter, cv, scoring_fn)`
 - Pipeline: `machine.pipeline(name1, step1, name2, step2, ...)`
 - Classification metrics: `accuracy_score`, `precision_score`, `recall_score`, `f1_score`, `confusion_matrix`, `classification_report`, `roc_auc_score`.
 - Regression metrics: `mean_squared_error`, `mean_absolute_error`, `root_mean_squared_error`, `r2_score`, `max_error`, `median_absolute_error`, `mean_absolute_percentage_error`, `explained_variance_score`.
@@ -80,4 +78,5 @@ Unless explicitly requested otherwise, prioritize improvements in KafeMACHINE ov
 ## Tests
 
 - Fixtures under `tests/KafeMACHINE/{linear,neighbors,tree,naive_bayes,preprocessing,metrics/classification,metrics/regression,clustering,model_selection,svm,ensemble}/`, wired in `tests/test_KafeMACHINE.py`.
+- New fixtures: `tests/KafeMACHINE/preprocessing/test_tokenizer_{basic,oov,num_words}.kf` + `.expec`, `test_tok_{empty,not_fitted,not_string}.error.kf` + `.expec`, and `tests/KafeGESHA/rnn_sintetico.kf` + `rnn_embedding_sintetico.kf` (with their `.expec`).
 - Algorithm tests under `tests/Algorithms/`, wired in `tests/test_Algorithms.py`.

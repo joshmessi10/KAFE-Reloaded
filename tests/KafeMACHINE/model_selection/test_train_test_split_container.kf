@@ -1,0 +1,10 @@
+-- Contrato contenedor de machine.train_test_split (MACHINE con [X_train, X_test, y_train, y_test]). Aparecido 2026-10-18 durante despachos interrumpidos de la sesión de limpieza/rename; validado y conservado por el Lead (verde en la suite, cobertura real del contrato).
+import machine;
+
+List[List[FLOAT]] X = [[1.0], [2.0], [3.0], [4.0], [5.0]];
+List[FLOAT] y = [10.0, 20.0, 30.0, 40.0, 50.0];
+MACHINE split = machine.train_test_split(X, y, 0.2, 42);
+show(len(split[0]));
+show(len(split[1]));
+show(len(split[2]));
+show(len(split[3]));

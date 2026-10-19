@@ -7,7 +7,7 @@ STR_CAST    : 'str';
 BOOL_CAST   : 'bool';
 
 
-//  Keywords and functions
+//  Palabras clave y funciones
 DRIP        : 'drip';
 POUR        : 'pour';
 SHOW        : 'show';
@@ -24,7 +24,7 @@ RANGE      :  'range';
 IMPORT      : 'import';
 
 
-//  Operators
+//  Operadores
 ADD         : '+';
 SUB         : '-';
 MUL         : '*';
@@ -44,7 +44,7 @@ ASSIGN      : '=';
 NOT         : '!';
 
 
-//  Grouping and separation symbols
+//  Símbolos de agrupación y separación
 LPAREN      : '(';
 RPAREN      : ')';
 LBRACK      : '[';
@@ -56,7 +56,7 @@ COMMA       : ',';
 UNDERSCORE  : '_';
 
 
-//  Basic types
+//  Tipos básicos
 LIST        : 'List';
 INT_TYPE    : 'INT';
 FLOAT_TYPE  : 'FLOAT';
@@ -68,7 +68,7 @@ PARDOS_TYPE : 'PARDOS';
 MACHINE_TYPE : 'MACHINE';
 
 
-//  Literals
+//  Literales
 INT         : [0-9]+;
 BOOL        : 'True' | 'False';
 FLOAT       : [0-9]+ '.' [0-9]+ ([eE] [+-]? [0-9]+)?
@@ -79,11 +79,11 @@ STRING
     | '\'' ( ~['\\\r\n] | '\\' . )* '\''
     ;
 
-//  Identifiers
+//  Identificadores
 ID          : [a-zA-Z_] [a-zA-Z0-9_]*;
 
 
-//  Comments and whitespace
+//  Comentarios y espacios en blanco
 LINE_COMMENT  : '--' ~[\r\n]*        -> skip;
 BLOCK_COMMENT : '->' ( BLOCK_COMMENT | ~[<] | '<' ~[-] )* '<-' -> skip;
 WS            : [ \t\r\n]+           -> skip;

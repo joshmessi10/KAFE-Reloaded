@@ -1,17 +1,17 @@
--- List mutation tests
+-- Pruebas modificar lista
 
 List[INT] number = [1,2,3];
-List[STR] greeting_chars  = ["h","o"];
+List[STR] hola  = ["h","o"];
 List[List[List[BOOL]]] booleanos = [[[True, False]]];
 
 show(booleanos);
 show(number);
-show(greeting_chars);
+show(hola);
 
-greeting_chars[0] = "f";
+hola[0] = "f";
 number[0] = 100;
 booleanos[0] = [[False]];
 
 show(booleanos);
 show(number);
-show(greeting_chars);
+show(hola);

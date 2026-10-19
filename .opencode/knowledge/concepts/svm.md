@@ -2,75 +2,75 @@
 
 ## Mathematical Foundation
 
-SVM is a classification algorithm that finds the maximum-margin hyperplane separating the classes.
+SVM es un algoritmo de clasificación que encuentra el hiperplano de máximo margen que separa las clases.
 
-### Maximum-Margin Hyperplane
+### Hiperplano de Máximo Margen
 
-The goal is to find the hyperplane $w \cdot x + b = 0$ that maximizes the margin between the classes.
+El objetivo es encontrar el hiperplano $w \cdot x + b = 0$ que maximice el margen entre las clases.
 
-**Margin**: the perpendicular distance from the hyperplane to the nearest point from either class.
+**Margen**: distancia perpendicular del hiperplano al punto más cercano de cada clase.
 
-### Cost Function (Hinge Loss)
+### Función de Coste (Hinge Loss)
 
 $$J(w) = \frac{1}{2}||w||^2 + C \sum_{i=1}^{n} \max(0, 1 - y_i \cdot f(x_i))$$
 
-Where:
-- $w$ = model weights
-- $C$ = regularization parameter
-- $y_i \in \{-1, +1\}$ = class labels
+Donde:
+- $w$ = pesos del modelo
+- $C$ = parámetro de regularización
+- $y_i \in \{-1, +1\}$ = etiquetas de clase
 - $f(x_i) = w \cdot x_i + b$
 
 ### Kernels
 
-- **Linear**: $K(x_i, x_j) = x_i \cdot x_j$
+- **Lineal**: $K(x_i, x_j) = x_i \cdot x_j$
 - **RBF (Gaussian)**: $K(x_i, x_j) = \exp(-\gamma ||x_i - x_j||^2)$
-- **Polynomial**: $K(x_i, x_j) = (x_i \cdot x_j + 1)^d$
+- **Polinomial**: $K(x_i, x_j) = (x_i \cdot x_j + 1)^d$
 
-### Support Vectors
+### Support Vectores
 
-Points on or inside the margin are the **support vectors**. These points alone determine the hyperplane.
+Los puntos que están sobre o dentro del margen son los **support vectors**. Solo estos puntos determinan el hiperplano.
 
-## Computational Complexity
+## Complejidad Computacional
 
-| Operation | Time Complexity | Space Complexity |
-|-----------|-----------------|------------------|
-| Training | $O(n^2 \cdot m)$ (kernel) or $O(n \cdot m)$ (linear) | $O(n^2)$ (kernel) or $O(m)$ (linear) |
-| Prediction | $O(n_{sv} \cdot m)$ (kernel) or $O(m)$ (linear) | $O(n_{sv})$ |
+| Operación | Complejidad Temporal | Complejidad Espacial |
+|-----------|---------------------|---------------------|
+| Training | $O(n^2 \cdot m)$ (kernel) o $O(n \cdot m)$ (linear) | $O(n^2)$ (kernel) o $O(m)$ (linear) |
+| Prediction | $O(n_{sv} \cdot m)$ (kernel) o $O(m)$ (linear) | $O(n_{sv})$ |
 
-## Advantages
+## Ventajas
 
-1. **Effective in high dimensions** — works well with many features.
-2. **Kernel trick** — handles nonlinear relationships.
-3. **Generalization** — maximizes the margin to reduce overfitting.
-4. **Memory efficient** — prediction uses only support vectors.
+1. **Efectivo en alta dimensionalidad** — funciona bien con muchos features
+2. **Kernel trick** — maneja relaciones no lineales
+3. **Generalización** — maximiza el margen, minimiza overfitting
+4. **Memoria eficiente** — solo usa support vectors para predicción
 
-## Limitations
+## Limitaciones
 
-1. **Scalability** — kernel training takes $O(n^2)$ time.
-2. **Binary by default** — natively classifies only two classes.
-3. **Scale-sensitive** — requires normalization.
-4. **Not probabilistic by default** — does not natively produce probabilities.
+1. **Escalabilidad** — entrenamiento O(n²) con kernels
+2. **Solo binario** — nativamente solo clasifica 2 clases
+3. **Sensible a escala** — requiere normalización
+4. **No probabilístico** — no produce probabilidades nativamente
 
-## When to Use
+## Cuando Usar
 
-- Binary classification.
-- High-dimensional data.
-- Nonlinear relationships (with a kernel).
-- When a clear margin is useful.
+- Clasificación binaria
+- Alta dimensionalidad
+- Relaciones no lineales (con kernel)
+- Necesitas margen claro
 
-## When NOT to Use
+## Cuando NO Usar
 
-- Multiclass classification unless using One-vs-One or One-vs-Rest.
-- Very large datasets.
-- Data with substantial noise.
+- Clasificación multiclase (usar One-vs-One o One-vs-Rest)
+- Datasets muy grandes
+- Datos con mucho ruido
 
-## Relationship with KAFE
+## Relación con KAFE
 
-KAFE implements SVM from scratch:
-- **Linear**: SGD with hinge loss and L2 regularization.
-- **Kernel**: simplified SMO with a kernel matrix.
-- Supports linear, RBF, and polynomial kernels.
-- Includes `predict_proba()` for calibrated probabilities.
+KAFE implementa SVM desde scratch:
+- **Lineal**: SGD con hinge loss + L2 regularization
+- **Kernel**: SMO simplificado con kernel matrix
+- Soporta kernels lineal, RBF y polinomial
+- Incluye `predict_proba()` para probabilidades calibradas
 
 ## References
 

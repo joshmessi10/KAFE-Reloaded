@@ -1,29 +1,40 @@
+import subprocess
+import sys
 import pytest
-from utils import (
-    assert_invalid_kafe_result,
-    assert_valid_kafe_result,
-    get_invalid_programs,
-    get_parameters,
-    get_programs,
-    run_kafe_program,
-)
+from utils import obtener_parametros, get_programs, get_kafe_path, get_src_dir, get_invalid_programs, get_kafe_path, get_src_dir
 
 
 @pytest.mark.parametrize(
-    "program, input_text, expected_stdout",
-    list(get_parameters(get_programs("../tests/KafeNUMK"))),
+    "programa, entrada, salida_esperada",
+    list(obtener_parametros(get_programs("../tests/KafeNUMK"))),
 )
-def test_valid_programs(program, input_text, expected_stdout):
-    result = run_kafe_program(program, input_text=input_text)
+def test_valid_programs(programa, entrada, salida_esperada):
+    result = subprocess.run(
+        [sys.executable, get_kafe_path(), programa],
+        capture_output=True,
+        text=True,
+        input=entrada,
+        cwd=get_src_dir(),
+    )
 
-    assert_valid_kafe_result(result, program, expected_stdout)
+    assert result.returncode == 0, f"Non-zero exit for {programa}"
+    assert result.stdout == salida_esperada, f"Incorrect output for {programa}"
 
 
 @pytest.mark.parametrize(
-    "program, input_text, expected_stdout",
-    list(get_parameters(get_invalid_programs("../tests/KafeNUMK"))),
+    "programa, entrada, salida_esperada",
+    list(obtener_parametros(get_invalid_programs("../tests/KafeNUMK"))),
 )
-def test_invalid_programs(program, input_text, expected_stdout):
-    result = run_kafe_program(program, input_text=input_text)
+def test_invalid_programs(programa, entrada, salida_esperada):
+    result = subprocess.run(
+        [sys.executable, get_kafe_path(), programa],
+        capture_output=True,
+        text=True,
+        input=entrada,
+        cwd=get_src_dir(),
+    )
 
-    assert_invalid_kafe_result(result, program, expected_stdout)
+    assert result.returncode == 1, f"Zero exit for {programa}"
+    assert (
+        result.stderr.splitlines()[-1] + "\n" == salida_esperada
+    ), f"Incorrect output for {programa}"

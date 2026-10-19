@@ -1,4 +1,4 @@
--- Index out of bounds
+-- Indice fuera de rango
 List[List[BOOL]] b = [];
 
 b[0] = [False];

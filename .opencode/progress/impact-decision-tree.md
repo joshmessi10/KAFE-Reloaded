@@ -3,8 +3,6 @@
 **Date:** 2026-08-04
 **Status:** Analysis Complete
 
-**Historical planning record:** This analysis preserves the proposal and repository paths as they stood on 2026-08-04. The planned paths and steps below are not current implementation instructions; consult the current architecture and migration records for active paths.
-
 ## Affected Modules
 
 ### Files to Create
@@ -23,7 +21,7 @@
 
 ### Files to Modify
 
-- `src/lib/KafeMACHINE/functions.py` — add `decision_tree_classifier()` factory + import
+- `src/lib/KafeMACHINE/funciones.py` — add `decision_tree_classifier()` factory + import
 - `src/lib/KafeMACHINE/__init__.py` — add `from .DecisionTree import DecisionTreeClassifier`
 - `tests/test_KafeMACHINE.py` — add `"tree_models"` to SUBDIRS
 - `.opencode/knowledge/ml-library.md` — update Structure, Public API, Tests

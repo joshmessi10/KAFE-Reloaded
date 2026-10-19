@@ -1,10 +1,4 @@
-from typing import Any, TypeAlias, cast
-
 from lib.KafePARDOS.DataFrame import DataFrame
-
-Number: TypeAlias = int | float
-Vector: TypeAlias = list[Number]
-Matrix: TypeAlias = list[Vector]
 
 
 class BaseMachine:
@@ -33,7 +27,7 @@ class BaseMachine:
         if not getattr(self, '_is_fitted', False):
             raise Exception(f"{type(self).__name__}: Must call fit before {method_name}")
 
-    def _unwrap_data(self, data: Any) -> tuple[Any, list[str], bool]:
+    def _unwrap_data(self, data):
         """Extract raw data from a DataFrame or return data as-is.
 
         Returns:
@@ -46,9 +40,7 @@ class BaseMachine:
             return data.data, data.columns, True
         return data, [], False
 
-    def _validate_matrix_shape(
-        self, X: Any, expected_features: int | None = None
-    ) -> Matrix:
+    def _validate_matrix_shape(self, X, expected_features=None):
         """Validate that X is a well-formed 2D matrix.
 
         - Converts 1D input to 2D (each element becomes a single-feature sample)
@@ -84,7 +76,7 @@ class BaseMachine:
                 f"{type(self).__name__}: Expected {expected_features} features, got {n_features}"
             )
 
-        return cast(Matrix, X)
+        return X
 
     def fit(self, X, y=None):
         """Fit the component to data.

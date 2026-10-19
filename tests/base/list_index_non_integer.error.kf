@@ -1,4 +1,4 @@
--- Indexing beyond the list size
+-- Indexación más allá del tamaño de la lista
 
 STR a = "Hello";
 

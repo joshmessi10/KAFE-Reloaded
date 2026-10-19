@@ -1,4 +1,4 @@
--- Test inverse
+-- Prueba Inversa
 import numk;
 
 List[List[INT]] A = [

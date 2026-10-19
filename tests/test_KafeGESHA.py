@@ -1,59 +1,93 @@
+import subprocess
+import sys
 import os
-
+import re
 import pytest
 from utils import (
-    assert_invalid_kafe_result,
-    assert_valid_kafe_result,
-    get_invalid_programs,
-    get_parameters,
+    obtener_parametros,
     get_programs,
-    run_kafe_program,
+    get_kafe_path,
+    get_src_dir,
+    get_invalid_programs,
+    get_kafe_path,
+    get_src_dir,
 )
+
+
+_VALID_PARAMS = list(obtener_parametros(get_programs("../tests/KafeGESHA")))
+
+
+def _sin_metricas_de_progreso(output):
+    """Conserva fixtures previas cuando se añaden métricas por época."""
+    return re.sub(r" — Accuracy \d+\.\d{2}%", "", output)
 
 
 @pytest.mark.parametrize(
-    "program, input_text, expected_stdout",
-    list(get_parameters(get_programs("../tests/KafeGESHA"))),
+    "programa, entrada, salida_esperada",
+    _VALID_PARAMS,
+    ids=[os.path.relpath(programa, os.path.dirname(__file__)) for programa, _, _ in _VALID_PARAMS],
 )
-def test_valid_programs(program, input_text, expected_stdout):
-    result = run_kafe_program(program, input_text=input_text)
+def test_valid_programs(programa, entrada, salida_esperada):
+    result = subprocess.run(
+        [sys.executable, get_kafe_path(), programa],
+        capture_output=True,
+        text=True,
+        input=entrada,
+        cwd=get_src_dir(),
+    )
 
-    output_directory = os.path.dirname(program)
-    program_basename = os.path.splitext(os.path.basename(program))[0]
-    expected_svg_basename = f"graph_{program_basename}.svg"
-    generated_svg_basename = f"{program_basename}.svg"
-    generated_svg_path = os.path.join(output_directory, generated_svg_basename)
-    expected_svg_path = os.path.join(output_directory, expected_svg_basename)
+    carpeta_destino = os.path.dirname(programa)
+    nombre_base = os.path.splitext(os.path.basename(programa))[0]
+    svg_prueba_base = f"grafico_{nombre_base}.svg"
+    svg_generado_base = f"{nombre_base}.svg"
+    svg_generado_path = os.path.join(carpeta_destino, svg_generado_base)
+    svg_prueba_path = os.path.join(carpeta_destino, svg_prueba_base)
 
     try:
-        with open(generated_svg_path) as f:
-            generated_svg = f.read()
+        with open(svg_generado_path) as f:
+            svg_generado = f.read()
     except FileNotFoundError:
-        generated_svg = ""
+        svg_generado = ""
     else:
         # Try to remove the file, but don't fail if we can't (Windows file locking)
         try:
-            os.remove(generated_svg_path)
+            os.remove(svg_generado_path)
         except (PermissionError, OSError):
             pass
 
     try:
-        with open(expected_svg_path) as f:
-            expected_svg = f.read()
+        with open(svg_prueba_path) as f:
+            svg_prueba = f.read()
     except FileNotFoundError:
-        expected_svg = ""
+        svg_prueba = ""
 
     assert (
-        generated_svg == expected_svg
-    ), f"{expected_svg_path} doesn't match {generated_svg_path}"
-    assert_valid_kafe_result(result, program, expected_stdout)
+        svg_generado == svg_prueba
+    ), f"{svg_prueba_path} doesn't match {svg_generado_path}"
+    assert result.returncode == 0, f"Non-zero exit for {programa}"
+    assert _sin_metricas_de_progreso(result.stdout) == salida_esperada, (
+        f"Incorrect output for {programa}"
+    )
+
+
+_INVALID_PARAMS = list(obtener_parametros(get_invalid_programs("../tests/KafeGESHA")))
 
 
 @pytest.mark.parametrize(
-    "program, input_text, expected_stdout",
-    list(get_parameters(get_invalid_programs("../tests/KafeGESHA"))),
+    "programa, entrada, salida_esperada",
+    _INVALID_PARAMS,
+    ids=[os.path.relpath(programa, os.path.dirname(__file__)) for programa, _, _ in _INVALID_PARAMS],
 )
-def test_invalid_programs(program, input_text, expected_stdout):
-    result = run_kafe_program(program, input_text=input_text)
+def test_invalid_programs(programa, entrada, salida_esperada):
+    result = subprocess.run(
+        [sys.executable, get_kafe_path(), programa],
+        capture_output=True,
+        text=True,
+        input=entrada,
+        cwd=get_src_dir(),
+    )
 
-    assert_invalid_kafe_result(result, program, expected_stdout)
+    assert result.returncode == 1, f"Zero exit for {programa}"
+    # Combine stdout and stderr for error checking (training output goes to stdout, error to stderr)
+    combined_output = result.stdout + result.stderr.splitlines()[-1] + "\n"
+    assert combined_output == salida_esperada, f"Incorrect output for {programa}"

@@ -1,4 +1,4 @@
--- Variable assignment
+-- Asignación Variables
 
 INT a = 5;
 show(a);

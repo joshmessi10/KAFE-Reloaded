@@ -1,8 +1,8 @@
---- mean: score ---
+--- mean: puntaje ---
 86.6
---- sum: score ---
+--- sum: puntaje ---
 433
---- agg max: score ---
+--- agg max: puntaje ---
 92
---- agg min: score ---
+--- agg min: puntaje ---
 78

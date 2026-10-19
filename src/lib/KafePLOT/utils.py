@@ -1,5 +1,4 @@
 import os
-
 import globals
 
 x_label = ""
@@ -10,7 +9,7 @@ line_color = "blue"
 point_color = "red"
 point_size = 3
 show_bar_values = False
-pie_legend: str | None = None
+pie_legend = None
 
 _figure_active = False
 _accumulated_series = []
@@ -36,16 +35,16 @@ def reset_variables():
 
 
 def save_svg(content):
-    if not globals.program_path:
+    if not globals.ruta_programa:
         raise Exception("save_svg: No program file path set")
-    dest_folder = os.path.dirname(globals.program_path)
+    dest_folder = os.path.dirname(globals.ruta_programa)
     if not dest_folder:
         dest_folder = "."
-    svg_name = os.path.splitext(os.path.basename(globals.program_path))[0] + ".svg"
+    svg_name = os.path.splitext(os.path.basename(globals.ruta_programa))[0] + ".svg"
     svg_path = os.path.join(dest_folder, svg_name)
 
     try:
         with open(svg_path, "w", encoding="utf-8") as f:
             f.write(content)
     except OSError as e:
-        raise Exception(f"save_svg: Could not write SVG to {svg_path}: {e}") from e
+        raise Exception(f"save_svg: Could not write SVG to {svg_path}: {e}")

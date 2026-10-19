@@ -1,4 +1,4 @@
--- Test matrix multiplication
+-- Prueba multiplicar matrices
 import numk;
 import numk;
 

@@ -1,8 +1,7 @@
+from lib.KafeMATH.funciones import isnan
 from global_utils import check_sig
-from lib.KafeMATH.functions import isnan
+from TypeUtils import pardos_t, matriz_cualquiera_t
 from lib.KafePARDOS.DataFrame import DataFrame
-from TypeUtils import any_matrix_type, pardos_type
-
 from ..BaseMachine import BaseMachine
 
 
@@ -54,7 +53,7 @@ class SimpleImputer(BaseMachine):
         else:
             return self.fill_value
 
-    @check_sig([2], [pardos_type, any_matrix_type], is_method=True)
+    @check_sig([2], [pardos_t, matriz_cualquiera_t], is_method=True)
     def fit(self, data):
         matrix, cols, is_df = self._unwrap_data(data)
 
@@ -73,7 +72,7 @@ class SimpleImputer(BaseMachine):
     def fit_transform(self, data):
         return self.fit(data).transform(data)
 
-    @check_sig([2], [pardos_type, any_matrix_type], is_method=True)
+    @check_sig([2], [pardos_t, matriz_cualquiera_t], is_method=True)
     def transform(self, data):
         self._check_fitted("transform")
         matrix, cols, is_df = self._unwrap_data(data)

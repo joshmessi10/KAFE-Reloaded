@@ -1,16 +1,16 @@
-def infer_type(cell):
-    if cell is None:
+def inferir_tipo(celda):
+    if celda is None:
         return None
-    if isinstance(cell, bool):
-        return cell
-    if isinstance(cell, (int, float)):
-        return cell
-    if cell == "":
+    if isinstance(celda, bool):
+        return celda
+    if isinstance(celda, (int, float)):
+        return celda
+    if celda == "":
         return float("nan")
     try:
-        return int(cell)
+        return int(celda)
     except ValueError:
         try:
-            return float(cell)
+            return float(celda)
         except ValueError:
-            return cell
+            return celda

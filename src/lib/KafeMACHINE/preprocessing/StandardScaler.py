@@ -1,8 +1,7 @@
+from lib.KafeMATH.funciones import sqrt
 from global_utils import check_sig
-from lib.KafeMATH.functions import sqrt
+from TypeUtils import pardos_t, matriz_numeros_t
 from lib.KafePARDOS.DataFrame import DataFrame
-from TypeUtils import numeric_matrix_types, pardos_type
-
 from ..BaseMachine import BaseMachine
 
 
@@ -12,7 +11,7 @@ class StandardScaler(BaseMachine):
         self.mean_ = []
         self.scale_ = []
 
-    @check_sig([2], [pardos_type] + numeric_matrix_types, is_method=True)
+    @check_sig([2], [pardos_t] + matriz_numeros_t, is_method=True)
     def fit(self, data):
         matrix, cols, is_df = self._unwrap_data(data)
 
@@ -23,13 +22,13 @@ class StandardScaler(BaseMachine):
         n_features = len(matrix[0])
 
         self.mean_ = [
-            sum(row[j] for row in matrix) / n_samples
+            float(sum(row[j] for row in matrix) / n_samples)
             for j in range(n_features)
         ]
         self.scale_ = [
-            sqrt(
+            float(sqrt(
                 sum((row[j] - self.mean_[j]) ** 2 for row in matrix) / n_samples
-            )
+            ))
             for j in range(n_features)
         ]
         self._is_fitted = True
@@ -38,7 +37,7 @@ class StandardScaler(BaseMachine):
     def fit_transform(self, data):
         return self.fit(data).transform(data)
 
-    @check_sig([2], [pardos_type] + numeric_matrix_types, is_method=True)
+    @check_sig([2], [pardos_t] + matriz_numeros_t, is_method=True)
     def transform(self, data):
         self._check_fitted("transform")
         matrix, cols, is_df = self._unwrap_data(data)
@@ -48,7 +47,7 @@ class StandardScaler(BaseMachine):
 
         result = [
             [
-                0.0 if self.scale_[j] == 0 else (row[j] - self.mean_[j]) / self.scale_[j]
+                float(0.0 if self.scale_[j] == 0 else (row[j] - self.mean_[j]) / self.scale_[j])
                 for j in range(len(self.mean_))
             ]
             for row in matrix
@@ -56,7 +55,7 @@ class StandardScaler(BaseMachine):
 
         return DataFrame(cols, result) if is_df else result
 
-    @check_sig([2], [pardos_type] + numeric_matrix_types, is_method=True)
+    @check_sig([2], [pardos_t] + matriz_numeros_t, is_method=True)
     def inverse_transform(self, data):
         self._check_fitted("inverse_transform")
         matrix, cols, is_df = self._unwrap_data(data)

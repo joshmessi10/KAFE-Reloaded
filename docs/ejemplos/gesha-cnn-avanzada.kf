@@ -1,0 +1,14 @@
+-- Bloque tipo MobileNet: depthwise -> batch norm -> pooling global -> Dense
+import geshaDeep;
+
+List[List[List[FLOAT]]] image = [[[1.0, 0.0, 1.0, 0.0], [0.0, 1.0, 0.0, 1.0], [1.0, 0.0, 1.0, 0.0], [0.0, 1.0, 0.0, 1.0]]];
+GESHA depthwise = geshaDeep.create_depthwise_conv2d([3, 3], 2, "relu", [1, 4, 4], 1, "same", 42);
+GESHA normalization = geshaDeep.batch_normalization();
+GESHA pooling = geshaDeep.global_average_pooling2d();
+GESHA classifier = geshaDeep.create_dense(3, "softmax", [2], 0.0, 43);
+GESHA model = geshaDeep.sequential();
+model.add(depthwise);
+model.add(normalization);
+model.add(pooling);
+model.add(classifier);
+show(model.predict([image]));

@@ -1,31 +1,30 @@
 from global_utils import check_sig
-from TypeUtils import numeric_matrix_types, numeric_vector_types, pardos_type
-
-from ..BaseMachine import BaseMachine
+from TypeUtils import vector_numeros_t, matriz_numeros_t, pardos_t
 from ..metrics import r2_score
+from ..BaseMachine import BaseMachine
 
 
 class RidgeRegression(BaseMachine):
     """
-    Ridge Regression — Regularized linear regression with L2 penalty.
+    Ridge Regression — Regresión lineal regularizada con penalización L2.
 
-    Minimizes: ||y - Xθ||² + α||θ||²
+    Minimiza: ||y - Xθ||² + α||θ||²
 
-    The L2 regularization term (α||θ||²) penalizes large coefficients,
-    reducing overfitting without removing features.
+    El término de regularización L2 (α||θ||²) penaliza coeficientes grandes,
+    reduciendo overfitting sin eliminar features.
 
-    Closed solution: θ = (X^T X + αI)^{-1} X^T y
+    Solución cerrada: θ = (X^T X + αI)^{-1} X^T y
 
-    Parameters:
-        alpha: regularization force (default 1.0)
-        fit_intercept: if intercept is set (default True)
-        max_iter: maximum iterations for gradient descent (default 1000)
-        learning_rate: learning rate (default 0.01)
-        tol: tolerance for convergence (default 1e-4)
+    Parámetros:
+        alpha: fuerza de regularización (default 1.0)
+        fit_intercept: si se ajusta intercepto (default True)
+        max_iter: máximo de iteraciones para gradient descent (default 1000)
+        learning_rate: tasa de aprendizaje (default 0.01)
+        tol: tolerancia para convergencia (default 1e-4)
 
-    Attributes (after fit):
-        coef_: model coefficients
-        intercept_: model intercept
+    Atributos (después de fit):
+        coef_: coeficientes del modelo
+        intercept_: intercepto del modelo
     """
 
     def __init__(self, alpha=1.0, fit_intercept=True, max_iter=1000,
@@ -47,12 +46,12 @@ class RidgeRegression(BaseMachine):
         self.intercept_ = 0.0
 
     def _solve_ridge(self, X, y):
-        """Solve Ridge regression using the closed solution: θ = (X^T X + αI)^{-1} X^T and"""
+        """Resuelve Ridge regression usando la solución cerrada: θ = (X^T X + αI)^{-1} X^T y"""
         n = len(X)
         m = len(X[0])
 
-        Xt = list(zip(*X, strict=False))
-        XtX: list[list[float]] = [
+        Xt = list(zip(*X))
+        XtX = [
             [sum(Xt[i][k] * Xt[j][k] for k in range(n)) for j in range(m)]
             for i in range(m)
         ]
@@ -65,7 +64,7 @@ class RidgeRegression(BaseMachine):
         return self._gaussian_elimination(XtX, Xty)
 
     def _gaussian_elimination(self, A, b):
-        """Solve Ax = b using Gaussian elimination with partial pivoting."""
+        """Resuelve Ax = b usando eliminación gaussiana con pivoteo parcial."""
         n = len(A)
         aug = [row[:] + [b[i]] for i, row in enumerate(A)]
 
@@ -87,9 +86,9 @@ class RidgeRegression(BaseMachine):
 
         return [aug[i][n] for i in range(n)]
 
-    @check_sig([3], [pardos_type] + numeric_vector_types + numeric_matrix_types, numeric_vector_types, is_method=True)
+    @check_sig([3], [pardos_t] + vector_numeros_t + matriz_numeros_t, vector_numeros_t, is_method=True)
     def fit(self, X, y):
-        """Fit the Ridge regression model."""
+        """Ajusta el modelo Ridge regression."""
         matrix, cols, is_df = self._unwrap_data(X)
         matrix = self._validate_matrix_shape(matrix)
 
@@ -115,9 +114,9 @@ class RidgeRegression(BaseMachine):
         self._is_fitted = True
         return self
 
-    @check_sig([2], numeric_vector_types + numeric_matrix_types, is_method=True)
+    @check_sig([2], vector_numeros_t + matriz_numeros_t, is_method=True)
     def predict(self, X):
-        """Predict using Ridge regression."""
+        """Predice usando Ridge regression."""
         self._check_fitted("predict")
         if not X:
             return []
@@ -137,7 +136,7 @@ class RidgeRegression(BaseMachine):
         ]
 
     def score(self, X, y, metric=None):
-        """Evaluate using R² (default) or a custom metric."""
+        """Evalúa usando R² (default) o una métrica personalizada."""
         self._check_fitted("score")
         preds = self.predict(X)
         if metric is None:

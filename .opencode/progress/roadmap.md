@@ -2,10 +2,6 @@
 
 Active project planning. Do not move this content into AGENTS.md (see AGENTS.md — Progress Sources).
 
-## Repository Policy Alignment
-
-The policy baseline and earlier uv, interpreter-evidence, and English-repository workstreams are complete on their respective branches. The Python quality-gates implementation is complete on `chore/python-quality-gates`: implementation/workflow SHA `c23163de6fee34b8da7d9a25b4f2896b331c22e1` passed the hosted `Run Tests` and `Deploy Docs` workflows, including 503 tests at 83.86% coverage and the strict docs build. Final branch acceptance is gated on the plan-required CI check for the evidence-update SHA; the branch remains unmerged. See `.opencode/progress/repository-alignment.md` for scope, exact run IDs, and the observed ruleset.
-
 ## Machine Learning
 - ✔ Base Machine (2026-07-28)
 - ✔ Linear Regression (2026-07-28)
@@ -42,10 +38,11 @@ The policy baseline and earlier uv, interpreter-evidence, and English-repository
 
 ## Deep Learning
 
-- ☐ Dense
-- ☐ Conv2D
-- ☐ LSTM
+- ✔ Dense (operativa desde 2026-09-24)
+- ✔ Conv2D (2026-10-08)
+- ✔ SimpleRNN (2026-10-08)
 - ☐ Transformer
+- ✔ Validación E2E RNN — EjemploRNN1 (serie temporal) + EjemploRNN2 (texto) con KafeKaggle (2026-10-18)
 
 ## Optimization
 
@@ -54,7 +51,6 @@ The policy baseline and earlier uv, interpreter-evidence, and English-repository
 
 ## Documentation & Engineering
 
-- ✔ Interpreter subprocess quality evidence — pushed as `6e8edd5`; 497 tests passed, 83.78%; GitHub exact-SHA CI passed (2026-09-23)
 - ✔ MkDocs theme — Black/White/Yellow palette (2026-08-04)
 - ✔ Knowledge concepts — All ML algorithms documented (2026-08-04)
 - ✔ Benchmarks — Full suite characterization (2026-08-04)
@@ -64,19 +60,30 @@ The policy baseline and earlier uv, interpreter-evidence, and English-repository
 - ✔ Model validation improvements — dimension checks, len(X)==len(y), hyperparameter validation (2026-09-14)
 - ✔ CI Test Suite Fixes — pre-existing broken tests fixed, CrossValScore architecture fix (2026-09-21)
 - ✔ KafeGESHA clustering test — platform-independence fix (2026-09-21)
-- ✔ English repository migration — Tasks 1–7 completed (2026-09-24)
-- ✔ Python quality-gates implementation — hosted tests and strict docs validation passed at exact SHA `c23163de6fee34b8da7d9a25b4f2896b331c22e1` (2026-09-24); Task 9 final branch acceptance is tied to CI on the resulting evidence-update SHA
-- ☐ Harness Engineering — Update rules for five benchmarks, enriched concepts, and context verification
-- ☐ Engineering Lead permissions — review complete edit/write access for documentation and records
+- ✔ GESHA — Conv2D y SimpleRNN sobre NUMK (2026-10-08)
+- ✔ GESHA — Catálogo CNN/RNN avanzado (2026-10-10)
+- ✔ GESHA — inicializadores, regularizadores y callbacks (2026-10-10, ADR-0014)
+- ✔ GESHA/PARDOS — ejemplo Iris supervisado con split estratificado (2026-10-10, ADR-0017)
+- ✔ KafeKAGGLE — librería de ingesta de datasets de Kaggle (2026-10-08)
+- ✔ KafeKAGGLE v2 — cliente kagglehub: datasets públicos sin credenciales (2026-10-08, ADR-0013)
+- ✔ KafeKAGGLE — API genérica de ingesta de imágenes (load_image/load_images/load_image_dataset, reemplaza load_cifar10) + A1 en KafeMACHINE (2026-10-13, ADR-0018)
+- ✔ KafeKAGGLE — ingesta robusta por carpetas (load_image_folder_dataset) + recorte de listas en errores + verificación de descarga (2026-10-13, ADR-0019)
+- ✔ GESHA/NUMK — optimización del entrenamiento de CNN (2026-10-17, ADR-0020)
+- ✔ KafeKAGGLE — `load_text_dataset` (texto etiquetado, TAB/sin encabezado) + `machine.tokenizer` (2026-10-18, ADR-0021)
+- ✔ Ingeniería: docs ADR-0020 + benchmark CNN registrado; .opencode/tmp eliminado (evidencia→benchmarks/, herramienta→scripts/) (2026-10-18)
+- ✔ Nomenclatura inglesa en helpers privados de KafeKaggle/KafeMACHINE/KafeGESHA (12 funciones; API pública intacta) (2026-10-18)
+- ✔ Ejemplos maestros documentados: docs/ejemplos/ejemplo-{cnn-cifar10,rnn1-series,rnn2-sentimiento}.kf + README (2026-10-18)
+- ☐ Harness Engineering — Actualizar reglas (5 benchmarks, conceptos enriquecidos, verificación de contexto)
+- ☐ Engineering Lead Permissions — Permisos edit/write para docs y records
 
-## Historical Review Tasks — Full Review Pending
+## Review Tasks (Historical) — Pendientes de Revisión Full
 
-Each implementation must pass through the full engineering-harness workflow:
-Impact Analysis → Implementation → Five Benchmarks → Enriched Concept → Docs → History → Definition of Done
+Cada implementación debe pasar por el flujo completo del harness engineering:
+Impact Analysis → Implementación → 5 Benchmarks → Concepto Enriquecido → Docs → History → DoD
 
-- ☐ Review BaseMachine — fit/transform/score, enriched concept, five benchmarks, July 28 history
-- ☐ Review LinearRegression — OLS normal equation, enriched concept, five benchmarks, July 28 history
-- ☐ Review LogisticRegression — gradient descent + sigmoid, enriched concept, five benchmarks, July 28 history
-- ☐ Review KNN — Euclidean distance, enriched concept, five benchmarks, July 28 history
-- ☐ Review classification metrics — accuracy/precision/recall/F1, enriched concept, five benchmarks, July 28 history
-- ☐ Review regression metrics — MSE/MAE/R², enriched concept, five benchmarks, July 28 history
+- ☐ Revisión de BaseMachine — fit/transform/score, concepto enriquecido, 5 benchmarks, history 28 julio
+- ☐ Revisión de LinearRegression — OLS normal equation, concepto enriquecido, 5 benchmarks, history 28 julio
+- ☐ Revisión de LogisticRegression — gradient descent + sigmoid, concepto enriquecido, 5 benchmarks, history 28 julio
+- ☐ Revisión de KNN — Euclidean distance, concepto enriquecido, 5 benchmarks, history 28 julio
+- ☐ Revisión de Métricas de Clasificación — accuracy/precision/recall/F1, concepto enriquecido, 5 benchmarks, history 28 julio
+- ☐ Revisión de Métricas de Regresión — MSE/MAE/R², concepto enriquecido, 5 benchmarks, history 28 julio

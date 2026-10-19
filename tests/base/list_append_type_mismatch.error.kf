@@ -1,4 +1,4 @@
--- Incorrect data type when modifying a list
+-- Tipo de dato incorrecto al modificar lista
 List[List[INT]] a = [[5, 4], [4, 34]];
 
 a[0] = 5;

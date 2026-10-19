@@ -5,12 +5,12 @@ clean:
 	rm Kafe_GrammarLexer.py Kafe_GrammarParser.py Kafe_Grammar.tokens Kafe_GrammarVisitor.py Kafe_Grammar.interp Kafe_GrammarLexer.interp Kafe_GrammarLexer.tokens
 
 test:
-	if [ -z "$(suite)" ]; then \
+	if [ -z "$(prueba)" ]; then \
 		for i in $(wildcard ../tests/test_*.py); do \
-			uv run --locked --project .. --group dev pytest $$i; \
+			python -m pytest $$i; \
 		done; \
 	else \
-		for i in $(wildcard ../tests/test_$(suite).py); do \
-			uv run --locked --project .. --group dev pytest $$i; \
+		for i in $(wildcard ../tests/test_$(prueba).py); do \
+			python -m pytest $$i; \
 		done; \
 	fi

@@ -1,4 +1,4 @@
--- Error: inverse of a non-square matrix
+-- Error inversa de una matriz no cuadrada
 import numk;
 
 List[List[INT]] A = [

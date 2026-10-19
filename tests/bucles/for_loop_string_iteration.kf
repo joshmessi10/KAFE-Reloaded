@@ -1,0 +1,4 @@
+for (i in "asdf"):
+	show(i + 'asfd');
+	show(i);
+;
