@@ -31,6 +31,9 @@ This file consolidates all benchmark records for KAFE. Individual benchmark file
 | DecisionTreeRegressor | `src/lib/KafeMACHINE/DecisionTree.py` (Regressor) | ML algorithm | 2026-09-21 | Baseline |
 | KNNRegressor | `src/lib/KafeMACHINE/KNN.py` (Regressor) | ML algorithm | 2026-09-21 | Baseline |
 | KafeKAGGLE Image API | `src/lib/KafeKaggle/funciones.py` (load_image/load_images/load_image_dataset) | Library utility (ingesta de imagenes) | 2026-10-13 | Baseline |
+| kafekaggle_images_folders.py | `KafeKAGGLE — load_image_folder_dataset` | Library utility (ingesta de imagenes) | 2026-10-13 | Baseline |
+| RNN E2E (KafeKaggle + Tokenizer + GESHA) | `src/lib/KafeKaggle/funciones.py` + `src/lib/KafeMACHINE/preprocessing/Tokenizer.py` + `src/lib/KafeGESHA` | DL component (E2E chain) | 2026-10-18 | Measured |
+| GeshaCNN Optimization | `src/lib/KafeNUMK/funciones.py` + `src/lib/KafeGESHA/models.py` + `src/lib/KafeGESHA/optimizers/adam.py` | Performance optimization (DL training) | 2026-10-17 | Measured |
 
 ---
 
@@ -1335,3 +1338,139 @@ Medición con `.opencode/benchmarks/gesha_training_utilities.py` (una ejecución
 - Knowledge: `.opencode/knowledge/concepts/kaggle-image-ingestion.md`
 - Impact: `.opencode/progress/impact-kafekaggle-images.md` (R3/R4)
 - Script: `.opencode/benchmarks/kafekaggle_images.py`
+
+## KafeKAGGLE — load_image_folder_dataset (2026-10-13, ADR-0019)
+
+**Script**: `.opencode/benchmarks/kafekaggle_images_folders.py`
+**Resultados crudos**: `.opencode/benchmarks/kafekaggle_folders_results.md`
+**Entorno**: Python 3.13.11 | Windows-11-10.0.26200-SP0 | Pillow 12.3.0 | CPUs 12
+**Dataset**: CIFAR-10 real (`ayush1220/cifar10`, versión 2, caché de kagglehub) —
+60000 imágenes en 10 clases (50000 `train` / 10000 `test`), PNG RGB.
+**Condiciones**: offline (la descarga se sustituye por la raíz cacheada y las
+dependencias de imagen por `(PIL.Image, None)`); sin red, sin `pip`.
+
+| Escenario | N | Canales | Tiempo mediana (ms, 5 reps) | Pico memoria (MB) | img/s |
+|---|---:|---:|---:|---:|---:|
+| S1 train rgb 32x32 limit=100 | 100 | 3 | 1243.858 | 14.054 | 80.4 |
+| S2 train rgb 32x32 limit=500 | 500 | 3 | 1697.118 | 54.072 | 294.6 |
+| S3 test rgb 32x32 limit=100 | 100 | 3 | 1225.172 | 14.035 | 81.6 |
+| S4 train gray 32x32 limit=100 | 100 | 1 | 1306.790 | 9.123 | 76.5 |
+| S5 todas rgb 8x8 limit=200 | 200 | 3 | 1391.668 | 10.149 | 143.7 |
+
+**Metodología**: el tiempo es la mediana de 5 repeticiones con
+`time.perf_counter` **sin** instrumentación; la memoria es el pico de
+`tracemalloc` medido en una pasada separada. Una versión anterior medía tiempo y
+memoria en la misma pasada con `tracemalloc` activo y producía tiempos inflados
+(~8-9 s de coste fijo por llamada): el instrumento dominaba la medida.
+
+**Interpretación**:
+
+- **Coste fijo por llamada ≈ 1.1 s** (S1: 1244 ms para 100 imágenes). Está
+  dominado por el descubrimiento de archivos —`_find_images` recorre y ordena
+  ~60000 rutas— y por el recorrido del árbol en `_ensure_images_extracted`. Es
+  independiente de `limit` y de `height/width` (S5: 1392 ms para 200 imágenes a
+  8x8), lo que confirma que no es coste de decodificación.
+- **Coste marginal ≈ 1.13 ms/imagen** a rgb 32x32, derivado de
+  `(1697.118 - 1243.858) / 400`. En régimen marginal el pipeline sostiene
+  ~880 img/s; la cifra de la columna `img/s` está penalizada por el coste fijo.
+- **Memoria ∝ N·C·H·W**: S2 retiene 54.072 MB para 500×3×32×32 = 1.536 M valores
+  (~35 B por valor, contando listas anidadas de `float` de Python). `gray`
+  ocupa ~1/3 (9.123 MB vs 14.054 MB) porque hay un solo canal.
+- **Mejora futura identificada**: cachear el índice de archivos por raíz de
+  dataset eliminaría el ~1.1 s de coste fijo en llamadas repetidas sobre el
+  mismo dataset.
+
+---
+
+### Benchmark: RNN E2E (KafeKaggle + Tokenizer + GESHA) — 2026-10-18
+
+- **Date**: 2026-10-18
+- **Component**: `src/lib/KafeKaggle/funciones.py` + `src/lib/KafeMACHINE/preprocessing/Tokenizer.py` + `src/lib/KafeGESHA` (Embedding, SimpleRNN, Dense, Sequential)
+- **Category**: DL component (E2E chain)
+- **Purpose**: medir tiempo, pico de memoria y correctitud de la cadena completa ingesta Kaggle → Tokenizer → RNN/Embedding → evaluación (5 escenarios + anexo KafeMATH.log/BCE). Parte del /benchmark de la validación E2E de RNN.
+
+#### Setup
+
+- **Dataset**: `yelp_labelled.txt` (1000 frases, TAB, sin encabezado) y `daily-minimum-temperatures-in-me.csv` (3651 filas, celdas con prefijo ?), desde la caché local de kagglehub
+- **Hardware**: Intel64 Family 6 Model 158, 12 CPUs lógicas, CPU only
+- **Environment**: Python 3.13.11, Windows 11 (10.0.26200), sin dependencias externas nuevas
+
+#### Methodology
+
+- Script `.opencode/benchmarks/rnn_e2e.py` (crudos: `rnn_e2e_results.json`, detalle completo: `rnn_e2e_results.md`).
+- Tiempos con `time.perf_counter` en UNA corrida por escenario (S1: mediana de 3); memoria en pasada separada con `tracemalloc`; imports de Python fuera del cronómetro.
+- S3 sin red: `kg._download_dataset` sustituido por un tempdir y restaurado en `finally`.
+- S4 replica en Python el camino de `EjemploRNN1.kf` (mismas capas, hiperparámetros y semillas 101/102).
+
+#### Results
+
+| Escenario | Train/Test | Runtime | Pico | Métrica |
+|---|---|---|---|---|
+| S1 tokenización 50 frases | - | ingesta 0.788 s + fit 0.000417 s + transform 0.000314 s (medianas 3) | n/d | vocab 271; tipos, rango y determinismo OK |
+| S2 300 frases RNN+Embedding | 216/60 | 33.4849 s (6.697 s/época, 5 épocas) | 692.64 KiB | acc 0.60; loss 69.33% → 21.50%; matriz [[12,15],[9,24]] |
+| S3 edge cases (13 casos) | - | 0.013 s | n/d | 13/13 estados esperados, sin crash |
+| S4 serie 300 días (réplica EjemploRNN1) | 234/59 | 116.7006 s (7.78 s/época, 15 épocas) | 1560.03 KiB | MAE 2.71475 °C (idéntico al .kf); losses 7.77% → 1.56% |
+| S5a 1000 frases sin truncar | 800/200 | 130.2025 s (2 épocas; extrap. 8 épocas 520.81 s) | 3998.73 KiB | loss 66.20% → 35.28%; acc(2 épocas) 0.75 |
+| S5b 1000 días, ventana 14 | 788/198 | 93.5778 s (2 épocas) | 3719.5 KiB | MAE 6.30 °C con 2 épocas; 2 celdas ? imputadas (filas 566/567) |
+
+#### Conclusions
+
+- Los 5 escenarios completaron sin crash y sin pérdidas negativas; coste por muestra-época escala ≈ con muestras × timesteps: S5b/S4 = x1.79 por doble ventana (T=14 vs 7); S5a/S2 = x2.62 al eliminar el truncado.
+- S4 replica `EjemploRNN1.kf` con MAE y losses EXACTAMENTE iguales a los del intérprete (2.714749…): el camino Python y el camino .kf son deterministas y equivalentes.
+- Anexo H CONFIRMA el hallazgo de `progress/current.md` §6: `KafeMATH.log(0.999)` = +0.00311689 (matemáticamente correcto: −0.00100050) y `log(0.99999999)` = +0.00502498 (correcto: −1e-8). Consecuencia medida: `BinaryCrossEntropy.compute` devuelve BCE negativa (−0.00311689 con y=1,p=0.999; −0.00502498 con y=0,p=1e-8). `derivative` no usa log (−0.5000000037) y queda intacto: el entrenamiento no se afecta.
+- S5b con solo 2 épocas queda en MAE 6.30 °C (el .kf con 15 épocas alcanza 2.71): esperable, no es regresión.
+- Deuda menor detectada: mensajes en inglés en rutas educativas en español (`Tokenizer: Must call fit before transform`; `TypeError: Function tokenizer expects argument of type INT, got type STR` de check_sig).
+
+#### Related
+
+- Informe del Tester: `.opencode/benchmarks/tester-rnn-e2e.md`
+- Resultados: `.opencode/benchmarks/rnn_e2e_results.md` + `.opencode/benchmarks/rnn_e2e_results.json`
+- Ejemplos: `src/EjemploRNN1.kf`, `src/EjemploRNN2.kf` (corridas: `.opencode/benchmarks/rnn_examples_runs.json`)
+- Impacto: `.opencode/progress/impact-rnn-e2e.md`
+
+---
+
+### Benchmark: GeshaCNN Optimization — 2026-10-17
+
+- **Date**: 2026-10-17
+- **Component**: `src/lib/KafeNUMK/funciones.py` + `src/lib/KafeGESHA/models.py` + `src/lib/KafeGESHA/optimizers/adam.py`
+- **Category**: performance optimization (DL training)
+- **Purpose**: medir la mejora de las cinco optimizaciones bit-idénticas del entrenamiento de la CNN (F1-F5) sobre `conv2d` forward/backward y `fit` end-to-end, manteniendo resultados exactamente iguales (requisito duro de bit-idénticos). Parte del /benchmark de ADR-0020.
+
+#### Setup
+
+- **Dataset**: tensores sintéticos deterministas (`random.Random(1234)`, floats `round(uniform(-1,1),12)`): conv1 [3,32,32] → [8,32,32] same, conv2 [8,16,16] → [16,16,16] same; S5 con 64 muestras y `fit(X, y, epochs=1, batch_size=16)`.
+- **Hardware**: CPU only (máquina de desarrollo; ejecución aislada, sin nada más en paralelo)
+- **Environment**: Python 3.13.11, Windows 11 (10.0.26200), sin dependencias externas nuevas
+
+#### Methodology
+
+- Script `.opencode/benchmarks/gesha_cnn_optimization.py` (detalle completo: `.opencode/benchmarks/gesha_cnn_optimization_results.md`).
+- Tiempo = mediana de 5 repeticiones con `time.perf_counter` **sin** `tracemalloc`; memoria = pico de `tracemalloc` en una pasada separada (nunca junto al cronómetro).
+- S1-S4 comparan la implementación naive original (copia literal de `conv2d_chw`/`conv2d_chw_backward` previa a la optimización) contra la versión actual de `funciones.py` en la misma sesión; S5 compara el baseline registrado de 521.949 ms/muestra (misma máquina, datos sintéticos idénticos) contra la medición actual.
+
+#### Results
+
+| Escenario | Antes (ms) | Después (ms) | Mejora | Memoria pico (MB) |
+|---|---:|---:|---:|---:|
+| S1 forward conv1 [3,32,32] -> [8,32,32] same | 45.123 | 28.993 | 1.56x | 0.260 |
+| S2 backward conv1 (incluye su forward interno) | 114.703 | 49.369 | 2.32x | 0.109 |
+| S3 forward conv2 [8,16,16] -> [16,16,16] same | 57.459 | 39.261 | 1.46x | 0.136 |
+| S4 backward conv2 (incluye su forward interno) | 145.268 | 63.295 | 2.30x | 0.137 |
+| S5 fit end-to-end (ms/muestra, 64 muestras) | 521.949 | 384.789 | 1.36x | 1.777 |
+
+`Memoria pico` = pico de `tracemalloc` de la versión `Después` en su pasada separada.
+
+#### Conclusions
+
+- Requisito bit-idéntico verificado: **288/288 combinaciones** con igualdad exacta `==` (forward y backward dx/dw/db, sin tolerancias) y **9/9 contratos de error preservados** (`.opencode/benchmarks/conv_equiv_results.md`); suite completa `pytest tests/ -q` → 645 passed / 2 skipped, sin regresiones.
+- Los backward ganan más que los forward (2.32×/2.30× vs 1.56×/1.46×): F1 elimina un forward redundante por backward y F5 quita el chequeo de borde de la iteración interna.
+- `fit` end-to-end mejora 1.36× (521.949 → 384.789 ms/muestra); proyección del ejemplo completo (`src/Ejemplo.kf`, 4000 imágenes × 5 épocas): ≈2 h 19 min → ≈1 h 45 min.
+- Implementación en Python puro sobre listas anidadas, sin dependencias externas. **Los valores absolutos dependen de la CPU y de la carga de la máquina**; las comparaciones antes/después se miden en la misma sesión y máquina.
+
+#### Related
+
+- ADR: ADR-0020
+- Resultados: `.opencode/benchmarks/gesha_cnn_optimization_results.md`
+- Impacto: `.opencode/progress/impact-cnn-performance.md`
+- Review: `.opencode/progress/review-cnn-performance.md` (APPROVED)

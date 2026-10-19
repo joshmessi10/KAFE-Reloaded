@@ -703,3 +703,107 @@ El dataset `ayush1220/cifar10` (usado por `src/Ejemplo.kf`) organiza las etiquet
 - `src/Ejemplo.kf` entrena ahora con datos representativos, usables por `machine.stratified_train_test_split` + GESHA.
 - Los errores dejan de volcar miles de rutas.
 - Requiere actualizar docs, knowledge, concept record, fixtures, history, roadmap y benchmark.
+
+---
+
+## ADR-0020: Optimización del entrenamiento de CNN en GESHA/NUMK (2026-10-17)
+
+- **Status**: accepted
+- **Date**: 2026-10-17
+
+### Contexto
+
+`src/Ejemplo.kf` (CNN Mini CIFAR-10: Conv2D(8) → MaxPooling2D → Conv2D(16) → GlobalAveragePooling2D → Dense(10), 4000 imágenes × 5 épocas) tardaba ≈2 h 19 min. No había ningún fallo: era coste de Python puro más trabajo redundante real (un forward completo redundante dentro del backward suponía ~30 % del entrenamiento). Requisito duro: resultados **bit-idénticos** (mismo orden de acumulación en coma flotante).
+
+### Decisión
+
+Cinco optimizaciones bit-idénticas; F6 descartado:
+
+1. **F1** — `src/lib/KafeNUMK/funciones.py`: `conv2d_chw_backward` calculaba la forma esperada ejecutando una convolución forward completa dentro del backward (~30 % del entrenamiento); ahora se deriva aritméticamente y `expected` es una tupla `(filters, out_h, out_w)` (crítico: `numk.shape()` devuelve tupla; con lista, `!=` habría sido siempre verdadero). Validaciones y mensajes preservados en el mismo orden.
+2. **F5** — `src/lib/KafeNUMK/funciones.py`: hoisting de filas/kernels y rango de `kx` precalculado (`kx_start`/`kx_end` por celda de salida) en `conv2d_chw` y `conv2d_chw_backward`, eliminando el chequeo de borde por iteración interna. Pre-padding con ceros descartado (riesgo de diferencias en el cero con signo).
+3. **F2** — `src/lib/KafeGESHA/models.py`: la lista deduplicada de parámetros (`batch_parameters`) se calcula una sola vez tras el primer forward (construcción lazy) y se reutiliza, en lugar de reconstruirse por muestra.
+4. **F3** — `src/lib/KafeGESHA/models.py`: acumulación de gradientes del minibatch in-place con el helper `_acumular_en`, en lugar de crear un tensor nuevo por muestra.
+5. **F4** — `src/lib/KafeGESHA/optimizers/adam.py`: helper `_adam_actualizar` con una sola pasada recursiva (momentos y parámetros in-place) y correcciones de sesgo `1-beta1**t`/`1-beta2**t` precalculadas por `step`, en lugar de recalcularlas por escalar con 3 pasadas `map_elements`.
+
+**F6 descartado**: one-hot de `SparseCategoricalCrossEntropy` (<0,01 % de impacto; riesgo en la API compartida de pérdidas).
+
+**Validación**: 288/288 combinaciones bit-idénticas (forward y backward dx/dw/db, igualdad exacta `==` sin tolerancias) y 9/9 contratos de error preservados (`.opencode/benchmarks/conv_equiv_results.md`); suite completa 645 passed / 2 skipped sin regresiones; benchmark de 5 escenarios (conv1 fwd 45.123→28.993 ms 1.56×, conv1 bwd 114.703→49.369 ms 2.32×, conv2 fwd 57.459→39.261 ms 1.46×, conv2 bwd 145.268→63.295 ms 2.30×, fit e2e 521.949→384.789 ms/muestra 1.36×) en `.opencode/benchmarks/gesha_cnn_optimization_results.md`.
+
+### Alternativas consideradas
+
+- **Vectorizar con numpy**: rechazada; prohibido por la política de dependencias del proyecto.
+- **Pre-padding con ceros** en `conv2d_chw`/`conv2d_chw_backward`: rechazada; riesgo de diferencias bit-idénticas en el cero con signo.
+- **F6 (one-hot en `SparseCategoricalCrossEntropy`)**: rechazada; impacto despreciable (<0,01 %) frente al riesgo de tocar la API compartida de pérdidas.
+
+### Consecuencias
+
+- API pública intacta (cambios internos; sin nueva superficie pública).
+- El ejemplo completo de CNN baja de ≈2 h 19 min a ≈1 h 45 min proyectados (1.36×).
+- Referencias: history 2026-10-17, `progress/review-cnn-performance.md` (APPROVED), `progress/impact-cnn-performance.md`.
+
+---
+
+## ADR-0021: Ingesta de datasets de texto etiquetado y tokenización para RNN en KAFE
+
+- **Status**: accepted
+- **Date**: 2026-10-18
+
+### Contexto
+
+Para que `src/EjemploRNN2.kf` funcione end-to-end hacían falta dos piezas que KAFE no tenía:
+
+1. **KafeKaggle solo leía CSV con coma y encabezado**: `_select_file` (`src/lib/KafeKaggle/funciones.py`) rechazaba cualquier extensión distinta de `.csv` y `_parse_csv` fijaba el delimitador `,` y trataba la primera fila como encabezado. El dataset `marklvl/sentiment-labelled-sentences-data-set` es `.txt` con TAB y sin encabezado → bloqueante para el ejemplo de sentimiento.
+2. **No existía ninguna puente texto→índices** para la capa `geshaDeep.embedding`, que exige `List[INT]` de índices de vocabulario en rango. Sin tokenizador no había forma de conectar texto crudo con una RNN → bloqueante para el ejemplo.
+
+### Decisión
+
+- **D1 — Nueva función pública `kaggle.load_text_dataset(dataset_name, file_name="", delimiter="\t", text_column=0, label_column=1, limit=0)`** → PARDOS con columnas `text` (STR) y `label` (INT). API aditiva dedicada al formato de origen (mismo patrón semántico que `load_image_folder_dataset`, ADR-0019: una función por formato de origen), apoyada en helpers internos `_leer_filas`, `_parse_text_labels` y `_select_file_texto` (este último acepta `.txt`/`.tsv`/`.csv`). `load_dataset`/`_select_file` quedan intactos (compatibilidad). Validaciones antes de tocar la red: delimiter de un solo carácter, columnas ≥ 0, limit ≥ 0, etiqueta convertible a entero; los mensajes de error listan como mucho las primeras filas problemáticas.
+
+- **D2 — Nuevo transformer `machine.tokenizer(num_words=0, oov_token="")`** en `src/lib/KafeMACHINE/preprocessing/Tokenizer.py`. Hereda `BaseMachine` (contrato unificado ADR-0007) con `fit`/`transform`/`fit_transform` y atributos estilo scikit-learn `word_index`/`index_word`/`vocabulary_size`. Tokenización con stdlib `re` (minúsculas + separación por no-alfanuméricos, sin stemming ni stop-words), orden determinista por (-frecuencia, primera aparición), índice 0 reservado (padding/neutral), índice 1 para OOV opcional y `num_words` como acotamiento/regularizador del vocabulario. `vocabulary_size` es directamente el `input_dim` que necesita `geshaDeep.embedding`.
+
+- **D3 — Sin cambios de gramática ni de `TypeUtils`**: todo se resuelve en librerías; `check_sig` cubre las firmas nuevas.
+
+- **D4 — Limitación aceptada y documentada**: `Model.predict` (`src/lib/KafeGESHA/models.py`) distingue lote de muestra única por `isinstance(X[0], list)`, insuficiente para secuencias `[T,F]` (una única secuencia se iteraría como si fuera un lote de timesteps). Se documenta que las predicciones con RNN se hacen SIEMPRE por lote (≥2 muestras); el fix queda como follow-up por riesgo de regresión en fixtures Dense/CNN.
+
+### Alternativas consideradas
+
+1. **Añadir `delimiter`/`header` a `load_dataset`**: rechazada; sobrecarga la API tabular genérica y obliga a nombres de columna sintéticos cuando el archivo no tiene encabezado.
+2. **Tokenizar en el `.kf` con bucles**: rechazada; KAFE no tiene split de cadenas y no sería reutilizable.
+3. **Tokenizar en KafePARDOS**: rechazada; no es manipulación tabular, es representación para ML (lugar de KafeMACHINE).
+4. **Librería externa de tokenización**: rechazada; prohibida por la Dependency Policy de AGENTS.md.
+5. **Arreglar `predict` (D4) ahora**: rechazada en este feature; alto riesgo de regresión en fixtures Dense/CNN existentes, fuera del alcance.
+
+### Consecuencias
+
+- El flujo kaggle→tokenizador→Embedding→RNN queda operativo: `src/EjemploRNN2.kf` alcanza accuracy 0.58 sobre test (baseline de clase ~0.557) de forma determinista.
+- KafeMACHINE gana un transformer de texto (`Tokenizer`); KafeKaggle gana un formato de origen (`load_text_dataset`); se añaden 36+ tests y fixtures sin red.
+- Deuda pendiente registrada: corrección de `KafeMATH.log` cerca de 1 (ver `known-issues.md`; afecta a métricas/losses que usan `log`, no al gradiente de BCE) y el fix de `predict` single-sample (D4).
+
+---
+
+## ADR-0022: Contenedor homogéneo para train_test_split
+
+- **Status**: accepted
+- **Date**: 2026-10-18
+
+### Context
+
+`machine.train_test_split` devolvía `[X_train, X_test, y_train, y_test]` como lista Python heterogénea. El intérprete KAFE exige listas homogéneas, por lo que una asignación `MACHINE split = machine.train_test_split(...)` fallaba con `Expected homogeneous list`. `stratified_train_test_split` ya devolvía el contenedor indexable `TrainTestSplit`.
+
+### Decision
+
+Retornar `TrainTestSplit(X_train, X_test, y_train, y_test)` también desde `train_test_split`. Se conservan los índices `[0..3]`, el orden de datos, la semilla y la firma pública.
+
+### Rationale
+
+Un mismo contrato para ambas variantes de split permite flujos KAFE de regresión y clasificación sin ampliar los tipos del lenguaje ni introducir dependencias.
+
+### Consequences
+
+Los programas KAFE pueden asignar el resultado a `MACHINE` y acceder a sus cuatro partes. Los consumidores Python que exigen `isinstance(result, list)` deberán adaptarse; la indexación sigue igual. Se añade un fixture KAFE y se actualizan la referencia y el concepto de train/test split.
+
+### Alternatives Considered
+
+- Mantener la lista heterogénea: deja la API inútil en asignaciones KAFE.
+- Crear un tipo nuevo: duplica `TrainTestSplit` sin aportar capacidades.
+- Hacer el split manual en cada ejemplo: replica lógica de selección y oculta el defecto de la API.

@@ -1,0 +1,56 @@
+-- Nivel 6: Breast Cancer Wisconsin, 30 -> 16 -> 8 -> 1.
+-- Demo educativa: no sirve para decisiones clinicas.
+-- Dataset: https://www.kaggle.com/datasets/uciml/breast-cancer-wisconsin-data
+import kaggle;
+import machine;
+import geshaDeep;
+
+List[STR] columnas = [
+    "radius_mean", "texture_mean", "perimeter_mean", "area_mean", "smoothness_mean",
+    "compactness_mean", "concavity_mean", "concave points_mean", "symmetry_mean", "fractal_dimension_mean",
+    "radius_se", "texture_se", "perimeter_se", "area_se", "smoothness_se",
+    "compactness_se", "concavity_se", "concave points_se", "symmetry_se", "fractal_dimension_se",
+    "radius_worst", "texture_worst", "perimeter_worst", "area_worst", "smoothness_worst",
+    "compactness_worst", "concavity_worst", "concave points_worst", "symmetry_worst", "fractal_dimension_worst"
+];
+List[List[FLOAT]] X = kaggle.load_dataset_matrix("uciml/breast-cancer-wisconsin-data", columnas, "data.csv", 240);
+PARDOS df = kaggle.load_dataset("uciml/breast-cancer-wisconsin-data", "data.csv");
+List[STR] diagnosticos = df.col("diagnosis");
+List[INT] y = [];
+for (i in range(0, len(X))):
+    INT clase = 0;
+    if (diagnosticos[i] == "M"):
+        clase = 1;
+    ;
+    append(y, clase);
+;
+MACHINE division = machine.stratified_train_test_split(X, y, 0.2, 42);
+List[List[FLOAT]] X_train = division[0];
+List[List[FLOAT]] X_test = division[1];
+List[INT] y_train = division[2];
+List[INT] y_test = division[3];
+MACHINE scaler = machine.standard_scaler();
+scaler.fit(X_train);
+List[List[FLOAT]] train_scaled = scaler.transform(X_train);
+List[List[FLOAT]] test_scaled = scaler.transform(X_test);
+
+GESHA h1 = geshaDeep.create_dense(16, "relu", [30], 0.0, 42, geshaDeep.he_normal(42));
+GESHA h2 = geshaDeep.create_dense(8, "relu", [16], 0.0, 43, geshaDeep.he_normal(43));
+GESHA salida = geshaDeep.create_dense(1, "sigmoid", [8], 0.0, 44);
+GESHA modelo = geshaDeep.sequential([h1, h2, salida]);
+modelo.compile("adam", "binary_crossentropy", []);
+modelo.set_lr(0.005);
+modelo.fit(train_scaled, y_train, 30, 16);
+
+List[INT] predicciones = modelo.predict_label(test_scaled);
+INT aciertos = 0;
+for (i in range(0, len(y_test))):
+    if (predicciones[i] == y_test[i]):
+        aciertos = aciertos + 1;
+    ;
+    if (i < 5):
+        show("Diagnostico experimental real=" + str(y_test[i]) + " predicho=" + str(predicciones[i]));
+    ;
+;
+show("Breast Cancer accuracy test:");
+show(aciertos / len(y_test));

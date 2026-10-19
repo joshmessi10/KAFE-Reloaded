@@ -4,19 +4,22 @@ description: Tester de KAFE. Ejecuta tests y benchmarks. Valida que todo funcion
 mode: subagent
 permission:
   read: allow
-  edit: deny
+  edit:
+    ".opencode/benchmarks/**": allow
+    "benchmarks/**": allow
+    ".opencode/progress/**": allow
+    "progress/**": allow
   bash:
     "*": deny
     "pytest *": allow
+    "py -m pytest *": allow
+    "python -m pytest *": allow
     "python *benchmark*": allow
----
-
-Eres el Tester de KAFE. Tu trabajo es validar que todo funcione correctamente.
+    "py *benchmark*": allow
 
 ## Protocolo
 
 1. Lee `progress/current.md` para saber qué se implementó.
-2. Ejecuta `pytest tests/ -q` — reporta resultados.
 3. Si hay tests fallidos, identifica la causa y reporta.
 4. Si se agregaron componentes ML/DL, ejecuta benchmarks:
    - Carga `.opencode/skills/add-ml-algorithm/SKILL.md` o `.opencode/skills/add-dl-layer/SKILL.md`

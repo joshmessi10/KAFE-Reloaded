@@ -1,0 +1,163 @@
+-- ============================================================
+-- RNN 1: Serie temporal — Temperaturas mínimas de Melbourne
+-- ============================================================
+-- Qué hace: importa un dataset real de Kaggle con KafeKaggle,
+-- construye ventanas deslizantes de 7 días con 1 feature, entrena
+-- una SimpleRNN que predice la temperatura mínima del día
+-- siguiente y evalúa el error absoluto medio (MAE) en °C sobre
+-- datos futuros.
+--
+-- Dataset: https://www.kaggle.com/datasets/paulbrabban/daily-minimum-temperatures-in-melbourne
+-- Archivo: CSV con coma y encabezado (dentro del dataset el archivo
+-- se llama "daily-minimum-temperatures-in-me.csv", por eso se usa la
+-- selección automática de KafeKaggle: es el único CSV). Columna de
+-- temperatura: "Daily minimum temperatures in Melbourne, Australia,
+-- 1981-1990". El CSV trae celdas corruptas con prefijo '?' (p. ej.
+-- "?0.2") y una fila residual de encabezado al final, así que la
+-- columna se tipa como STR y se acota con un while a las primeras
+-- DIAS filas, que sí son numéricas.
+--
+-- Por qué NO se baraja una serie temporal: los días se observaron en
+-- orden cronológico y el objetivo de hoy depende de ayer. Barajar
+-- (shuffle) dejaría datos futuros en el entrenamiento y pasados en la
+-- prueba (data leakage temporal): la métrica quedaría inflada y el
+-- modelo no mediría su capacidad real de predecir el día siguiente.
+-- Por eso el split es CRONOLÓGICO: primer 80 % (más antiguo) entrena,
+-- último 20 % (más reciente) prueba.
+-- ============================================================
+
+-- Tiempo medido local: ~116 s con DIAS=300 y 15 épocas. Con DIAS=500 y
+-- 20 épocas tardaba ~256 s: demasiado cerca del límite de 5 minutos,
+-- por eso se redujeron datos/épocas (el ciclo estacional se aprende igual).
+
+import kaggle;
+import geshaDeep;
+import machine;
+
+show("=== RNN 1: Temperatura mínima de Melbourne ===");
+
+-- Carga el dataset completo (selección automática del único CSV)
+PARDOS df = kaggle.load_dataset("paulbrabban/daily-minimum-temperatures-in-melbourne");
+
+INT DIAS = 300;
+INT VENTANA = 7;
+
+-- La columna se tipa como STR por las celdas con '?' y la fila residual
+List[STR] crudos = df.col("Daily minimum temperatures in Melbourne, Australia, 1981-1990");
+
+-- Acotamiento con while: las primeras DIAS filas son numéricas; fuera de
+-- ese corte están las celdas corruptas ('?0.2') y la fila residual.
+List[FLOAT] temperaturas = [];
+INT i = 0;
+while (i < DIAS && i < len(crudos)):
+    append(temperaturas, float(crudos[i]));
+    i = i + 1;
+;
+show("Días cargados:");
+show(len(temperaturas));
+
+-- Ventanas deslizantes: cada timestep es [t_i] (1 feature) y el objetivo
+-- es el valor VENTANA días después (predecir el futuro, no el pasado).
+List[List[List[FLOAT]]] X = [];
+List[FLOAT] y = [];
+INT muestra = 0;
+INT total = len(temperaturas) - VENTANA;
+while (muestra < total):
+    List[List[FLOAT]] ventana = [];
+    INT j = 0;
+    while (j < VENTANA):
+        List[FLOAT] paso = [temperaturas[muestra + j]];
+        append(ventana, paso);
+        j = j + 1;
+    ;
+    append(X, ventana);
+    append(y, temperaturas[muestra + VENTANA]);
+    muestra = muestra + 1;
+;
+show("Ventanas [muestras, timesteps, features]:");
+show([len(X), len(X[0]), len(X[0][0])]);
+
+-- Split CRONOLÍCICO manual 80/20: n_train primeras muestras = train
+INT n = len(X);
+INT n_train = int(n * 0.8);
+
+-- Normalización min-max a [0,1] usando SOLO el min/máx del train: son las
+-- estadísticas de las primeras (n_train + VENTANA) temperaturas crudas
+-- (las ventanas y objetivos del train nunca salen de ahí). Usar min/máx
+-- del test filtraría información futura hacia el entrenamiento.
+FLOAT min_t = temperaturas[0];
+FLOAT max_t = temperaturas[0];
+INT limite_train = n_train + VENTANA;
+INT s = 0;
+while (s < limite_train):
+    FLOAT v = temperaturas[s];
+    if (v < min_t):
+        min_t = v;
+    ;
+    if (v > max_t):
+        max_t = v;
+    ;
+    s = s + 1;
+;
+FLOAT rango = max_t - min_t;
+show("Min / max del train (°C):");
+show([min_t, max_t]);
+
+-- Construcción de train/test ya normalizados (split posicional, sin barajar)
+List[List[List[FLOAT]]] X_train = [];
+List[List[List[FLOAT]]] X_test = [];
+List[FLOAT] y_train = [];
+List[FLOAT] y_test = [];
+List[FLOAT] y_test_real = [];
+INT k = 0;
+while (k < n):
+    List[List[FLOAT]] ventana = [];
+    INT j = 0;
+    while (j < VENTANA):
+        List[FLOAT] paso = [(X[k][j][0] - min_t) / rango];
+        append(ventana, paso);
+        j = j + 1;
+    ;
+    if (k < n_train):
+        append(X_train, ventana);
+        append(y_train, (y[k] - min_t) / rango);
+    else:
+        append(X_test, ventana);
+        append(y_test, (y[k] - min_t) / rango);
+        append(y_test_real, y[k]);
+    ;
+    k = k + 1;
+;
+show("Train / test:");
+show([len(X_train), len(X_test)]);
+
+-- SimpleRNN(16, tanh) sobre [VENTANA, 1] -> Dense(1, lineal): regresión
+GESHA rnn = geshaDeep.create_rnn(16, "tanh", [VENTANA, 1], False, 101);
+GESHA salida = geshaDeep.create_dense(1, "linear", [16], 0.0, 102, geshaDeep.glorot_uniform(102));
+GESHA modelo = geshaDeep.sequential([rnn, salida]);
+modelo.compile("adam", "mse", []);
+modelo.set_lr(0.01);
+
+show("Entrenando RNN (16 unidades, 15 épocas, batch 8)...");
+modelo.fit(X_train, y_train, 15, 8);
+
+-- Predicción SIEMPRE por lote: Model.predict distingue lote de muestra
+-- única por el anidamiento, y en secuencias hay que pasar listas de listas
+List[List[FLOAT]] pred_norm = modelo.predict(X_test);
+
+-- Desnormalización a °C y MAE sobre el test cronológico
+List[FLOAT] reales = y_test_real;
+List[FLOAT] predichas = [];
+INT p = 0;
+while (p < len(y_test)):
+    append(predichas, pred_norm[p][0] * rango + min_t);
+    p = p + 1;
+;
+show("MAE en grados Celsius:");
+show(machine.mean_absolute_error(reales, predichas));
+show("Primeras 5 predicciones vs reales (°C):");
+INT q = 0;
+while (q < 5):
+    show(str(q + 1) + ". predicho=" + str(predichas[q]) + " real=" + str(reales[q]));
+    q = q + 1;
+;

@@ -45,6 +45,16 @@ def _target_label(target, loss):
     return target.index(max(target))
 
 
+def _accumulate_into(target, source):
+    """Suma `source` sobre `target` in-place (listas anidadas de float)."""
+    for indice in range(len(target)):
+        valor = target[indice]
+        if isinstance(valor, list):
+            _accumulate_into(valor, source[indice])
+        else:
+            target[indice] = valor + source[indice]
+
+
 class Model(ABC):
     def __init__(self):
         self._optimizer = None
@@ -138,6 +148,7 @@ class Model(ABC):
         history = {'loss': [], 'val_loss': []}
         if is_classification:
             history['accuracy'] = []
+        batch_parameters = None
         for epoch in range(epochs):
             for callback in active_callbacks: callback.on_epoch_begin(epoch, {})
             self._set_training(True)
@@ -149,6 +160,9 @@ class Model(ABC):
                 for i in range(batch_start, batch_end):
                     x, y = X[i], Y[i]
                     y_pred = self.forward(x)
+                    if batch_parameters is None:
+                        # Las capas lazy se construyen en el primer forward.
+                        batch_parameters = list(dict.fromkeys(self.parameters()))
                     if not isinstance(y, list):
                         y = [y]
                     if not isinstance(y_pred, list):
@@ -159,17 +173,15 @@ class Model(ABC):
                             _prediction_label(y_pred) == _target_label(y, self._loss)
                         )
                     self.backward(self._loss.backward(), regularization_lambda)
-                    # El forward construye las capas lazy antes de recoger parámetros.
-                    batch_parameters = list(dict.fromkeys(self.parameters()))
                     for parameter in batch_parameters:
                         if parameter.grad is not None:
                             if parameter.regularizer is not None:
                                 parameter.grad = numk.broadcast_add(parameter.grad, parameter.regularizer.gradient(parameter.data))
                                 total_loss += parameter.regularizer.penalty(parameter.data)
-                            accumulated[parameter] = (
-                                numk.tensor(parameter.grad) if parameter not in accumulated
-                                else numk.map_elements(lambda a, b: a + b,
-                                                       accumulated[parameter], parameter.grad))
+                            if parameter not in accumulated:
+                                accumulated[parameter] = numk.tensor(parameter.grad)
+                            else:
+                                _accumulate_into(accumulated[parameter], parameter.grad)
 
                 # El optimizador se aplica una vez por minibatch.
                 for parameter, gradient in accumulated.items():

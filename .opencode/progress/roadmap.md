@@ -38,10 +38,11 @@ Active project planning. Do not move this content into AGENTS.md (see AGENTS.md 
 
 ## Deep Learning
 
-- ☐ Dense
-- ☐ Conv2D
-- ☐ LSTM
+- ✔ Dense (operativa desde 2026-09-24)
+- ✔ Conv2D (2026-10-08)
+- ✔ SimpleRNN (2026-10-08)
 - ☐ Transformer
+- ✔ Validación E2E RNN — EjemploRNN1 (serie temporal) + EjemploRNN2 (texto) con KafeKaggle (2026-10-18)
 
 ## Optimization
 
@@ -66,6 +67,12 @@ Active project planning. Do not move this content into AGENTS.md (see AGENTS.md 
 - ✔ KafeKAGGLE — librería de ingesta de datasets de Kaggle (2026-10-08)
 - ✔ KafeKAGGLE v2 — cliente kagglehub: datasets públicos sin credenciales (2026-10-08, ADR-0013)
 - ✔ KafeKAGGLE — API genérica de ingesta de imágenes (load_image/load_images/load_image_dataset, reemplaza load_cifar10) + A1 en KafeMACHINE (2026-10-13, ADR-0018)
+- ✔ KafeKAGGLE — ingesta robusta por carpetas (load_image_folder_dataset) + recorte de listas en errores + verificación de descarga (2026-10-13, ADR-0019)
+- ✔ GESHA/NUMK — optimización del entrenamiento de CNN (2026-10-17, ADR-0020)
+- ✔ KafeKAGGLE — `load_text_dataset` (texto etiquetado, TAB/sin encabezado) + `machine.tokenizer` (2026-10-18, ADR-0021)
+- ✔ Ingeniería: docs ADR-0020 + benchmark CNN registrado; .opencode/tmp eliminado (evidencia→benchmarks/, herramienta→scripts/) (2026-10-18)
+- ✔ Nomenclatura inglesa en helpers privados de KafeKaggle/KafeMACHINE/KafeGESHA (12 funciones; API pública intacta) (2026-10-18)
+- ✔ Ejemplos maestros documentados: docs/ejemplos/ejemplo-{cnn-cifar10,rnn1-series,rnn2-sentimiento}.kf + README (2026-10-18)
 - ☐ Harness Engineering — Actualizar reglas (5 benchmarks, conceptos enriquecidos, verificación de contexto)
 - ☐ Engineering Lead Permissions — Permisos edit/write para docs y records
 

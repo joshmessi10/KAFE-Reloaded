@@ -2,6 +2,8 @@
 
 MACHINE provee implementaciones de algoritmos de Machine Learning estilo scikit-learn: modelos de regresión, clasificación, preprocesamiento y métricas de evaluación.
 
+Para ver los algoritmos aplicados a datasets reales, abre los [flujos Machine Learning con Kaggle](../ejemplos/machine-kaggle.md): 18 algoritmos en 18 programas KAFE independientes, con partición, preprocesamiento y métricas.
+
 **Importación:**
 
 ```kafe
@@ -27,6 +29,7 @@ import machine;
 | `machine.label_encoder()` | `() -> MACHINE` | Crea un codificador de etiquetas |
 | `machine.one_hot_encoder()` | `() -> MACHINE` | Crea un codificador one-hot |
 | `machine.ordinal_encoder()` | `() -> MACHINE` | Crea un codificador ordinal (enteros ordenados) |
+| `machine.tokenizer(num_words, oov_token)` | `(INT, STR) -> MACHINE` | Crea un tokenizador de texto (palabras → índices enteros) |
 | `machine.pca(n)` | `(INT) -> MACHINE` | Crea modelo PCA con n componentes |
 | `machine.dbscan(eps, min_samples)` | `(FLOAT, INT) -> MACHINE` | Crea un modelo de clustering DBSCAN |
 | `machine.gaussian_mixture(n_components, max_iter, tol, random_state)` | `(INT, INT, FLOAT, INT) -> MACHINE` | Crea un modelo de mezcla de Gaussianas (GMM) |
@@ -578,7 +581,7 @@ Herramientas para dividir datasets y evaluar modelos de forma robusta.
 
 | Función | Firma | Descripción |
 |---------|-------|-------------|
-| `machine.train_test_split(X, y, test_size, random_state)` | `(List[List[NUM]], List[NUM], FLOAT, INT) -> (List[List[NUM]], List[List[NUM]], List[NUM], List[NUM])` | Divide datos en training y test sets |
+| `machine.train_test_split(X, y, test_size, random_state)` | `(List[List[NUM]], List[NUM], FLOAT, INT) -> MACHINE` | Contenedor indexable `[X_train, X_test, y_train, y_test]` |
 | `machine.k_fold_cross_validation(model, X, y, k, scoring_fn)` | `(MACHINE, List[List[NUM]], List[NUM], INT, FUNC) -> (List[FLOAT], FLOAT)` | Evalúa modelo con K-Fold CV, retorna scores por fold y promedio |
 
 ### train_test_split
@@ -597,7 +600,7 @@ El parámetro `random_state` controla la semilla aleatoria para reproducibilidad
 
 | Método | Firma | Descripción |
 |--------|-------|-------------|
-| `train_test_split(X, y, test_size, random_state)` | `(List[List[NUM]], List[NUM], FLOAT, INT) -> Tuple` | Retorna `(X_train, X_test, y_train, y_test)` |
+| `train_test_split(X, y, test_size, random_state)` | `(List[List[NUM]], List[NUM], FLOAT, INT) -> MACHINE` | Retorna un contenedor indexable `[X_train, X_test, y_train, y_test]` |
 
 #### Ejemplo
 
@@ -610,8 +613,11 @@ List[FLOAT] y = [2.0, 4.0, 6.0, 8.0, 10.0,
                  12.0, 14.0, 16.0, 18.0, 20.0];
 
 -- División 80/20 con semilla fija
-(List[List[FLOAT]] X_train, List[List[FLOAT]] X_test,
- List[FLOAT] y_train, List[FLOAT] y_test) = machine.train_test_split(X, y, 0.2, 42);
+MACHINE split = machine.train_test_split(X, y, 0.2, 42);
+List[List[FLOAT]] X_train = split[0];
+List[List[FLOAT]] X_test = split[1];
+List[FLOAT] y_train = split[2];
+List[FLOAT] y_test = split[3];
 
 show(len(X_train));  -- 8
 show(len(X_test));   -- 2
@@ -2333,6 +2339,88 @@ PARDOS encoded2 = oe2.fit_transform(df, ["color", "size"]);
 PARDOS decoded = oe2.inverse_transform(encoded2);
 show(decoded);
 ```
+
+---
+
+## Tokenizer
+
+Convierte una lista de textos en secuencias de índices enteros
+(`List[List[INT]]`), el puente entre texto crudo y la capa
+`geshaDeep.embedding` de GESHA (que solo acepta índices de vocabulario).
+
+### Parámetros del Constructor
+
+```kafe
+-- num_words=0 (vocabulario completo), oov_token="" (sin OOV)
+MACHINE tok = machine.tokenizer(200, "<OOV>");
+```
+
+| Parámetro | Tipo | Default | Descripción |
+|-----------|------|---------|-------------|
+| `num_words` | INT | 0 | Acota el vocabulario a las N palabras más frecuentes; 0 = sin acotar |
+| `oov_token` | STR | "" | Token que recibe las palabras desconocidas (índice 1); "" = sin OOV |
+
+### Métodos
+
+| Método | Firma | Descripción |
+|--------|-------|-------------|
+| `tok.fit(texts)` | `(List[STR]) -> MACHINE` | Construye el vocabulario a partir de los textos |
+| `tok.transform(texts)` | `(List[STR]) -> List[List[INT]]` | Convierte cada texto en su secuencia de índices |
+| `tok.fit_transform(texts)` | `(List[STR]) -> List[List[INT]]` | Fit + transform en un paso |
+
+### Propiedades
+
+| Propiedad | Tipo | Descripción |
+|-----------|------|-------------|
+| `tok.word_index` | `Dict` | Índice de cada token (STR → INT) |
+| `tok.index_word` | `Dict` | Diccionario inverso (INT → STR) |
+| `tok.vocabulary_size` | `INT` | Total de índices usados; es el `input_dim` de `geshaDeep.embedding` |
+
+### Reglas del vocabulario
+
+- **Tokenización**: minúsculas + separación por cualquier carácter no
+  alfanuméricos (con stdlib `re`); sin stemming ni stop-words, de forma
+  deliberadamente simple y reproducible.
+- **Índice 0 reservado**: padding/neutral; nunca se asigna a una palabra.
+- **OOV en índice 1**: si `oov_token` está configurado, ocupa el índice 1 y
+  las palabras desconocidas en `transform` se mapean a él; sin OOV, las
+  desconocidas se ignoran.
+- **`num_words` acota**: se quedan solo las N palabras más frecuentes
+  (además de 0 y del OOV si existe); actúa como regularizador.
+- **Determinismo**: el vocabulario se ordena por (-frecuencia, primera
+  aparición), de modo que dos ejecuciones sobre los mismos datos producen
+  SIEMPRE el mismo `word_index`.
+
+### Ejemplo
+
+```kafe
+import machine;
+import geshaDeep;
+
+MACHINE tok = machine.tokenizer(0, "<OOV>");
+List[STR] frases = ["the food was great", "the service was terrible", "great food and great service"];
+tok.fit(frases);
+
+List[List[INT]] secuencias = tok.transform(frases);
+show(secuencias);       -- secuencias de índices; 0 reservado, 1 = OOV
+show(tok.vocabulary_size);
+
+-- Conectar con Embedding: cada índice se convierte en un vector denso
+GESHA emb = geshaDeep.embedding(tok.vocabulary_size, 8, 42);
+```
+
+### Limitaciones
+
+- Sin stemming ni stop-words: "running" y "run" son palabras distintas.
+- Las tildes y la puntuación parten las palabras: la regex `[^a-z0-9]+`
+  separa en trozos no alfanuméricos, así que `"qué"` produce `"qu"` (la
+  `é` rompe el token). Usa texto sin acentos o acepta la fragmentación.
+- El tokenizador debe hacer `fit` **solo con el train** (nunca con
+  train+test): el vocabulario visto en test sería fuga de información.
+
+`src/EjemploRNN2.kf` muestra el flujo completo: `kaggle.load_text_dataset` →
+`machine.tokenizer` → `geshaDeep.embedding` + SimpleRNN para clasificación
+de sentimiento.
 
 ---
 

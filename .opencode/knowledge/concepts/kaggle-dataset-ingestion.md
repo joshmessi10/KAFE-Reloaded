@@ -186,6 +186,29 @@ model.fit(X);
 - `kaggle.load_dataset(dataset_name: STR, file_name: STR = "") → PARDOS`
 - `kaggle.load_dataset_split(dataset_name: STR, file_name: STR, split: STR = "") → PARDOS`
 - `kaggle.load_dataset_matrix(dataset_name: STR, columns: List[STR], split: STR, limit: INT) → List[List[FLOAT]]`
+- `kaggle.load_text_dataset(dataset_name: STR, file_name: STR = "", delimiter: STR = "\t", text_column: INT = 0, label_column: INT = 1, limit: INT = 0) → PARDOS` (desde 2026-10-18, ADR-0021)
+
+## Ingesta de texto etiquetado (`load_text_dataset`, 2026-10-18)
+
+Muchos datasets de texto de Kaggle se publican como `.txt` con campos
+separados por TAB y **sin fila de encabezado** (p. ej.
+`marklvl/sentiment-labelled-sentences-data-set`, cuyo `yelp_labelled.txt`
+tiene frase TAB etiqueta). El lector CSV de KafeKaggle exige coma y
+encabezado (`_select_file` rechazaba `.txt`), por lo que esa ruta de
+datos era inalcanzable.
+
+La API `kaggle.load_text_dataset(dataset_name, file_name="", delimiter="\t",
+text_column=0, label_column=1, limit=0)` añade una ruta propia: selecciona
+el archivo aceptando `.txt`/`.tsv`/`.csv` (`_select_file_text`), lee las
+filas con el helper `_read_rows` (mismas reglas de filas cortas/vacías
+que el CSV), parsea cada fila con `_parse_text_labels` y retorna un PARDOS
+`DataFrame` con columnas fijas `text` (cadena) y `label` (entero). La API
+CSV anterior queda intacta.
+
+Para encadenar hacia una RNN de texto: PARDOS → extraer columnas → split
+estratificado → `machine.tokenizer` (fit solo sobre train) →
+`geshaDeep.embedding` + `geshaDeep.create_rnn`. Referencia completa:
+`src/EjemploRNN2.kf` y ADR-0021 (`.opencode/adr/decisions.md`).
 
 ## References
 

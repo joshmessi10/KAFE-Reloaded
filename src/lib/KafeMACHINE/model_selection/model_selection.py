@@ -115,7 +115,7 @@ def train_test_split(X, y, test_size=0.2, random_state=0, shuffle=True):
     y_train = [y[i] for i in train_indices]
     y_test = [y[i] for i in test_indices]
 
-    return [X_train, X_test, y_train, y_test]
+    return TrainTestSplit(X_train, X_test, y_train, y_test)
 
 
 @check_sig({

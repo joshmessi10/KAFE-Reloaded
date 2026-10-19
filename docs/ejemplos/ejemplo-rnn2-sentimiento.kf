@@ -1,0 +1,201 @@
+-- ============================================================
+-- RNN 2: Clasificación de sentimiento con texto real (Yelp)
+-- ============================================================
+-- Qué hace: importa un dataset de frases con sentimiento
+-- (0=negativo, 1=positivo) con KafeKaggle, tokeniza el texto con
+-- machine.tokenizer (fit SOLO con el train), entrena una RNN con
+-- capa Embedding sobre las secuencias de índices, evalúa accuracy
+-- y matriz de confusión sobre el test estratificado y clasifica
+-- 3 frases nuevas.
+--
+-- Dataset: marklvl/sentiment-labelled-sentences-data-set, archivo
+-- "sentiment labelled sentences/yelp_labelled.txt" (formato
+-- frase<TAB>etiqueta, 1000 filas, sin encabezado). Se usa la ruta
+-- completa del archivo: el zip contiene una copia anidada del mismo
+-- txt y la selección automática sería ambigua. Se acota con limit=400
+-- (177 negativas / 223 positivas) por el coste del entrenamiento en
+-- Python puro: el entrenamiento completo (1000 frases) supera el
+-- límite de 5 minutos del ejemplo.
+--
+-- Por qué split estratificado: conserva la proporción 0/1 tanto en
+-- train como en test; con solo 1000 frases, un split aleatorio
+-- simple podría dejar la prueba desbalanceada y el accuracy sería
+-- engañoso (una clase mayoritaria basta para "engañar" al número).
+--
+-- Por qué el tokenizer se fittea SOLO con el train: si el vocabulario
+-- se construyera con train+test, las palabras del test aparecerían en
+-- el word_index y el modelo "recordaría" tokens que jamás debió ver
+-- (data leakage de vocabulario). Las palabras no vistas en train
+-- quedan codificadas como OOV (<OOV>).
+--
+-- Por qué Embedding al inicio: la capa convierte cada índice de
+-- token en un vector denso aprendible (no se codifica el texto con
+-- one-hot: eso sería un vector gigante casi todo ceros). La RNN lee
+-- la secuencia de vectores y resume el contexto de la frase.
+--
+-- Nota honesta: con solo ~284 frases de train y una SimpleRNN pura
+-- (sin LSTM/GRU), el accuracy de prueba queda cerca de 0.6: el
+-- modelo memoriza el train (véase el salto de loss) y generaliza
+-- poco. Es una lección real de overfitting con datos pequeños; el
+-- valor del ejemplo es el flujo completo (ingesta -> tokenización ->
+-- split -> RNN -> evaluación -> frases nuevas).
+-- ============================================================
+
+import kaggle;
+import machine;
+import geshaDeep;
+
+show("=== RNN 2: Sentimiento de frases Yelp ===");
+
+-- Carga con la ruta completa del archivo (evita la ambigüedad del zip);
+-- limit=400 acota el coste del entrenamiento (ver cabecera)
+PARDOS df = kaggle.load_text_dataset("marklvl/sentiment-labelled-sentences-data-set", "sentiment labelled sentences/yelp_labelled.txt", "\t", 0, 1, 400);
+
+List[STR] textos = df.col("text");
+List[INT] etiquetas = df.col("label");
+show("Frases / etiquetas:");
+show([len(textos), len(etiquetas)]);
+show("Etiqueta de la primera frase:");
+show(etiquetas[0]);
+
+-- Split estratificado 80/20 con semilla fija (reproducible)
+MACHINE split = machine.stratified_train_test_split(textos, etiquetas, 0.2, 42);
+List[STR] textos_train = split[0];
+List[STR] textos_test = split[1];
+List[INT] labels_train = split[2];
+List[INT] labels_test = split[3];
+show("Train / test:");
+show([len(textos_train), len(textos_test)]);
+
+-- Balanceo del train: con más positivas que negativas el modelo puede
+-- "ganar" accuracy aprendiendo solo el prior de clases (predecir 1
+-- siempre) en vez del texto. Igualamos a mano ambas clases.
+List[STR] textos_pos = [];
+List[INT] labels_pos = [];
+List[STR] textos_neg = [];
+List[INT] labels_neg = [];
+INT c = 0;
+while (c < len(textos_train)):
+    if (labels_train[c] == 1):
+        append(textos_pos, textos_train[c]);
+        append(labels_pos, 1);
+    else:
+        append(textos_neg, textos_train[c]);
+        append(labels_neg, 0);
+    ;
+    c = c + 1;
+;
+List[STR] textos_bal = [];
+List[INT] labels_bal = [];
+INT menor = len(textos_neg);
+if (len(textos_pos) < menor):
+    menor = len(textos_pos);
+;
+INT f = 0;
+while (f < menor):
+    append(textos_bal, textos_neg[f]);
+    append(labels_bal, 0);
+    append(textos_bal, textos_pos[f]);
+    append(labels_bal, 1);
+    f = f + 1;
+;
+show("Train balanceado (neg / pos):");
+show([menor, menor]);
+
+-- Tokenizer fitteado SOLO con el train balanceado (evita fuga de vocabulario).
+-- num_words=200 acota el vocabulario a las 200 palabras más frecuentes
+-- del train: además de reducir parámetros, actúa como regularizador
+-- (con 321 muestras un vocabulario de ~1060 palabras memoriza).
+-- oov_token="<OOV>" recibe las palabras no vistas (índice 1).
+MACHINE tok = machine.tokenizer(200, "<OOV>");
+tok.fit(textos_bal);
+List[List[INT]] X_train_full = tok.transform(textos_bal);
+List[List[INT]] X_test_full = tok.transform(textos_test);
+show("Vocabulario del train (0=padding, 1=OOV):");
+show(tok.vocabulary_size);
+
+-- Truncado a los primeros MAXLEN tokens: las frases de Yelp tienen
+-- ~15-20 palabras y con pocas muestras de train una RNN pura memoriza
+-- secuencias largas (sobreajuste). Acortarla mejora la generalización
+-- y reduce el coste (menos pasos de tiempo por muestra).
+INT MAXLEN = 10;
+List[List[INT]] X_train = [];
+INT a = 0;
+while (a < len(X_train_full)):
+    List[INT] seq = [];
+    INT b = 0;
+    while (b < MAXLEN && b < len(X_train_full[a])):
+        append(seq, X_train_full[a][b]);
+        b = b + 1;
+    ;
+    append(X_train, seq);
+    a = a + 1;
+;
+List[List[INT]] X_test = [];
+INT t = 0;
+while (t < len(X_test_full)):
+    List[INT] seq = [];
+    INT u = 0;
+    while (u < MAXLEN && u < len(X_test_full[t])):
+        append(seq, X_test_full[t][u]);
+        u = u + 1;
+    ;
+    append(X_test, seq);
+    t = t + 1;
+;
+
+-- Demostración de OOV: palabras del primer texto de test que el
+-- tokenizer NO conoció en train (quedaron como índice 1)
+INT cuenta = 0;
+INT i = 0;
+while (i < len(X_test[0])):
+    if (X_test[0][i] == 1):
+        cuenta = cuenta + 1;
+    ;
+    i = i + 1;
+;
+show("Palabras OOV en el primer texto de test:");
+show(cuenta);
+
+-- Embedding(vocab x 8) -> SimpleRNN(8, tanh) -> Dense(1, sigmoid)
+INT vocab = tok.vocabulary_size;
+GESHA emb = geshaDeep.embedding(vocab, 8, 21);
+GESHA rnn = geshaDeep.create_rnn(8, "tanh", [8], False, 22);
+GESHA salida = geshaDeep.create_dense(1, "sigmoid", [8], 0.0, 23, geshaDeep.glorot_uniform(23));
+GESHA modelo = geshaDeep.sequential([emb, rnn, salida]);
+modelo.compile("adam", "bce", []);
+modelo.set_lr(0.01);
+
+show("Entrenando RNN + Embedding (8 épocas, batch 8)...");
+modelo.fit(X_train, labels_bal, 8, 8);
+
+-- Predicción SIEMPRE por lote (en secuencias, pasar listas de listas)
+List[INT] pred_test = modelo.predict_label(X_test);
+show("Accuracy en test:");
+show(machine.accuracy_score(labels_test, pred_test));
+show("Matriz de confusión [[TN, FP], [FN, TP]]:");
+show(machine.confusion_matrix(labels_test, pred_test));
+
+-- 3 frases NUEVAS (jamás vistas): se tokenizan con el MISMO tokenizer
+-- (lo que no estaba en train cae en OOV) y se clasifican con el modelo.
+List[STR] nuevas = ["The food was amazing and the staff was friendly", "Terrible experience, I will never come back here", "It was okay, nothing special about it"];
+List[List[INT]] X_nuevas_full = tok.transform(nuevas);
+List[List[INT]] X_nuevas = [];
+INT v = 0;
+while (v < len(X_nuevas_full)):
+    List[INT] seq = [];
+    INT w = 0;
+    while (w < MAXLEN && w < len(X_nuevas_full[v])):
+        append(seq, X_nuevas_full[v][w]);
+        w = w + 1;
+    ;
+    append(X_nuevas, seq);
+    v = v + 1;
+;
+List[INT] pred_nuevas = modelo.predict_label(X_nuevas);
+show("Clasificación de frases nuevas (0=negativo, 1=positivo):");
+INT j = 0;
+while (j < 3):
+    show(nuevas[j] + " -> " + str(pred_nuevas[j]));
+    j = j + 1;
+;

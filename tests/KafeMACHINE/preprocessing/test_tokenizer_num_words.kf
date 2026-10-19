@@ -1,0 +1,22 @@
+import machine;
+
+List[STR] corpus = ["a b c", "b c d", "c d e"];
+
+-- num_words acota el vocabulario a las N palabras más frecuentes
+-- (más el índice 0 reservado); el resto se descarta.
+MACHINE tok = machine.tokenizer(2);
+tok.fit(corpus);
+show("Word index con num_words=2: ");
+show(tok.word_index);
+show("Vocabulary size: ");
+show(tok.vocabulary_size);
+show("Transform: ");
+show(tok.transform(corpus));
+
+-- num_words=0 (default) no acota: usa todo el vocabulario
+MACHINE completo = machine.tokenizer();
+completo.fit(corpus);
+show("Sin límite: ");
+show(completo.word_index);
+show("Vocabulary size sin límite: ");
+show(completo.vocabulary_size);

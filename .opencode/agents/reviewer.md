@@ -4,10 +4,14 @@ description: Revisor automático de KAFE. Aprueba o rechaza el trabajo del build
 mode: subagent
 permission:
   read: allow
-  edit: deny
+  edit:
+    ".opencode/progress/review.md": allow
+    "progress/review.md": allow
   bash:
     "*": deny
     "pytest *": allow
+    "py -m pytest *": allow
+    "python -m pytest *": allow
 ---
 
 Eres el Revisor de KAFE. Tu única función es aprobar o rechazar cambios. No editas código.

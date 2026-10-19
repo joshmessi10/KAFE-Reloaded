@@ -258,19 +258,28 @@ def conv2d_chw(input_data, kernels, bias, stride=1, padding="valid"):
         raise ValueError("NUMK: kernel mayor que la entrada")
     output = zeros_nd([filters, out_h, out_w])
     for f in range(filters):
+        kernel_f = kernels[f]
+        output_f = output[f]
         for oy in range(out_h):
+            output_row = output_f[oy]
+            base_y = oy * stride - pad_h
             for ox in range(out_w):
+                base_x = ox * stride - pad_w
+                kx_start = 0 if base_x >= 0 else -base_x
+                kx_end = kw if base_x + kw <= width else width - base_x
                 value = bias[f]
                 for c in range(channels):
+                    channel = input_data[c]
+                    kernel_fc = kernel_f[c]
                     for ky in range(kh):
-                        iy = oy * stride + ky - pad_h
+                        iy = base_y + ky
                         if iy < 0 or iy >= height:
                             continue
-                        for kx in range(kw):
-                            ix = ox * stride + kx - pad_w
-                            if 0 <= ix < width:
-                                value += input_data[c][iy][ix] * kernels[f][c][ky][kx]
-                output[f][oy][ox] = value
+                        row = channel[iy]
+                        kernel_row = kernel_fc[ky]
+                        for kx in range(kx_start, kx_end):
+                            value += row[base_x + kx] * kernel_row[kx]
+                output_row[ox] = value
     return output
 
 
@@ -280,29 +289,49 @@ def conv2d_chw_backward(input_data, kernels, grad_output, stride=1, padding="val
     filters, kernel_channels, kh, kw = shape(kernels)
     if channels != kernel_channels:
         raise ValueError("NUMK: canales incompatibles en backward conv2d")
-    expected = shape(conv2d_chw(input_data, kernels, [0.0] * filters, stride, padding))
-    if shape(grad_output) != expected:
-        raise ValueError("NUMK: grad_output incompatible en backward conv2d")
+    if type(stride) is not int or stride <= 0:
+        raise ValueError("NUMK: stride debe ser entero positivo")
+    if padding not in ("valid", "same"):
+        raise ValueError("NUMK: padding debe ser valid o same")
     pad_h = (kh - 1) // 2 if padding == "same" else 0
     pad_w = (kw - 1) // 2 if padding == "same" else 0
+    out_h = (height + 2 * pad_h - kh) // stride + 1
+    out_w = (width + 2 * pad_w - kw) // stride + 1
+    if out_h <= 0 or out_w <= 0:
+        raise ValueError("NUMK: kernel mayor que la entrada")
+    expected = (filters, out_h, out_w)
+    if shape(grad_output) != expected:
+        raise ValueError("NUMK: grad_output incompatible en backward conv2d")
     dx = zeros_nd([channels, height, width])
     dw = zeros_nd([filters, channels, kh, kw])
     db = zeros_nd([filters])
     for f in range(filters):
-        for oy in range(expected[1]):
-            for ox in range(expected[2]):
-                grad = grad_output[f][oy][ox]
+        grad_f = grad_output[f]
+        dw_f = dw[f]
+        for oy in range(out_h):
+            grad_row = grad_f[oy]
+            base_y = oy * stride - pad_h
+            for ox in range(out_w):
+                grad = grad_row[ox]
                 db[f] += grad
+                base_x = ox * stride - pad_w
+                kx_start = 0 if base_x >= 0 else -base_x
+                kx_end = kw if base_x + kw <= width else width - base_x
                 for c in range(channels):
+                    input_channel = input_data[c]
+                    kernel_fc = kernels[f][c]
+                    dw_fc = dw_f[c]
+                    dx_channel = dx[c]
                     for ky in range(kh):
-                        iy = oy * stride + ky - pad_h
+                        iy = base_y + ky
                         if iy < 0 or iy >= height:
                             continue
-                        for kx in range(kw):
-                            ix = ox * stride + kx - pad_w
-                            if 0 <= ix < width:
-                                dw[f][c][ky][kx] += input_data[c][iy][ix] * grad
-                                dx[c][iy][ix] += kernels[f][c][ky][kx] * grad
+                        dw_row = dw_fc[ky]
+                        input_row = input_channel[iy]
+                        for kx in range(kx_start, kx_end):
+                            ix = base_x + kx
+                            dw_row[kx] += input_row[ix] * grad
+                            dx_channel[iy][ix] += kernel_fc[ky][kx] * grad
     return dx, dw, db
 
 

@@ -27,10 +27,14 @@ Diferencias con Hugging Face (KafeHF):
     - Las descargas quedan cacheadas por kagglehub en ~/.cache/kagglehub,
       por lo que un segundo acceso al mismo dataset es instantáneo.
 
-Además de las tablas CSV, KafeKAGGLE ofrece una API genérica de ingesta de
-imágenes (`load_image`, `load_images`, `load_image_dataset`) que devuelve
-imágenes en formato `[C][H][W]` con píxeles normalizados a `[0,1]`,
-compatible con las capas Conv2D de GESHA.
+Además de las tablas CSV, KafeKAGGLE ofrece:
+    - ``load_text_dataset`` — datasets de texto etiquetado sin encabezado
+      (frases + etiqueta entera), el formato ``texto<TAB>0|1`` de los
+      datasets de sentimiento; columnas ``text`` (STR) y ``label`` (INT).
+    - Una API genérica de ingesta de imágenes (`load_image`,
+      `load_images`, `load_image_dataset`) que devuelve imágenes en
+      formato `[C][H][W]` con píxeles normalizados a `[0,1]`, compatible
+      con las capas Conv2D de GESHA.
 
 Dependencias externas opcionales (auto-instaladas bajo demanda):
     - kagglehub — cliente oficial de descarga.
@@ -173,18 +177,18 @@ def _download_dataset(dataset_name):
     return ruta
 
 
-def _formatear_lista(elementos, limite=20):
+def _format_list(items, limit=20):
     """Recorta una lista larga para mensajes de error legibles.
 
-    Devuelve la representación de los primeros ``limite`` elementos seguida
+    Devuelve la representación de los primeros ``limit`` items seguida
     de un resumen del resto (``… y N más (total M)``) cuando la lista excede
     el límite, evitando volcar miles de rutas en un solo mensaje.
     """
-    total = len(elementos)
-    if total <= limite:
-        return str(elementos)
+    total = len(items)
+    if total <= limit:
+        return str(items)
     return (
-        f"{elementos[:limite]} … y {total - limite} más (total {total})"
+        f"{items[:limit]} … y {total - limit} más (total {total})"
     )
 
 
@@ -214,8 +218,40 @@ def _resolve_file(members, selector):
         )
     raise Exception(
         f"kaggle: No se encontró '{selector}' en el dataset. "
-        f"Archivos disponibles: {_formatear_lista(members)}"
+        f"Archivos disponibles: {_format_list(members)}"
     )
+
+
+def _choose_file(members, file_name, split, extensions, description, label):
+    """Comparte la selección de archivos: file_name > split > único candidato.
+
+    ``extensions`` limita la selección automática (cuando ni ``file_name``
+    ni ``split`` están vacíos), ``description`` redacta los mensajes de error
+    y ``label`` nombra a los candidatos listados.
+    """
+    if file_name:
+        elegido = _resolve_file(members, file_name)
+    elif split:
+        elegido = _resolve_file(members, split)
+    else:
+        candidatos = [m for m in members if m.lower().endswith(extensions)]
+        if len(candidatos) == 1:
+            elegido = candidatos[0]
+        elif not candidatos:
+            raise Exception(
+                f"kaggle: El dataset no contiene archivos {description}. "
+                f"Archivos disponibles: {_format_list(members)}"
+            )
+        else:
+            raise Exception(
+                f"kaggle: El dataset contiene varios archivos {description}; "
+                f"especifica 'file_name' o 'split'. {label} disponibles: "
+                f"{_format_list(candidatos)}"
+            )
+    return elegido
+
+
+_EXTENSIONES_TEXTO = (".txt", ".tsv", ".csv")
 
 
 def _select_file(members, file_name, split):
@@ -224,24 +260,7 @@ def _select_file(members, file_name, split):
     Prioridad: file_name (si no está vacío), luego split (selector tipo
     split de Hugging Face), y si ambos están vacíos se exige un único CSV.
     """
-    if file_name:
-        elegido = _resolve_file(members, file_name)
-    elif split:
-        elegido = _resolve_file(members, split)
-    else:
-        csvs = [m for m in members if m.lower().endswith(".csv")]
-        if len(csvs) == 1:
-            elegido = csvs[0]
-        elif not csvs:
-            raise Exception(
-                "kaggle: El dataset no contiene archivos CSV. "
-                f"Archivos disponibles: {_formatear_lista(members)}"
-            )
-        else:
-            raise Exception(
-                "kaggle: El dataset contiene varios archivos CSV; especifica "
-                f"'file_name' o 'split'. CSV disponibles: {_formatear_lista(csvs)}"
-            )
+    elegido = _choose_file(members, file_name, split, (".csv",), "CSV", "CSV")
     if not elegido.lower().endswith(".csv"):
         raise Exception(
             f"kaggle: '{elegido}' no es un archivo CSV; KafeKAGGLE solo admite "
@@ -250,29 +269,125 @@ def _select_file(members, file_name, split):
     return elegido
 
 
+def _select_file_text(members, file_name, split):
+    """Elige un archivo de texto etiquetado: acepta ``.txt``, ``.tsv`` y ``.csv``.
+
+    Misma prioridad de selección que ``_select_file`` (file_name, luego
+    split, luego el único candidato), pero sin rechazar por extensión los
+    formatos de texto con el que trabaja ``load_text_dataset``.
+    """
+    elegido = _choose_file(
+        members,
+        file_name,
+        split,
+        _EXTENSIONES_TEXTO,
+        "de texto (.txt, .tsv, .csv)",
+        "Archivos",
+    )
+    if not elegido.lower().endswith(_EXTENSIONES_TEXTO):
+        raise Exception(
+            f"kaggle: '{elegido}' no es un archivo de texto; KafeKAGGLE solo "
+            "admite archivos .txt, .tsv y .csv."
+        )
+    return elegido
+
+
+def _read_rows(handle, delimiter=","):
+    """Lee un archivo delimitado y retorna sus filas con celdas STR limpias.
+
+    Cada fila no vacía se devuelve con las celdas recortadas (``strip``);
+    las filas vacías (sin celdas o con todas las celdas vacías) se
+    descartan. No interpreta encabezados: quien llama decide si la primera
+    fila es cabecera (``_parse_csv``) o un registro más
+    (``_parse_text_labels``).
+    """
+    filas = []
+    for fila in csv.reader(handle, delimiter=delimiter):
+        limpia = [celda.strip() for celda in fila]
+        if len(limpia) == 0 or all(celda == "" for celda in limpia):
+            continue
+        filas.append(limpia)
+    return filas
+
+
 def _parse_csv(handle):
     """Lee un CSV desde un texto y retorna (columnas, filas) con celdas STR.
 
     La primera fila es el encabezado; las filas vacías se ignoran y las
     filas con más celdas que el encabezado se recortan (mismo criterio que
-    pardos.read_csv).
+    pardos.read_csv); las cortas se rellenan con "".
     """
-    filas = []
-    for fila in csv.reader(handle):
-        filas.append([celda.strip() for celda in fila])
-    while filas and (len(filas[-1]) == 0 or all(c == "" for c in filas[-1])):
-        filas.pop()
+    filas = _read_rows(handle, ",")
     if not filas:
         return [], []
     columnas = filas[0]
     datos = []
     for fila in filas[1:]:
-        if len(fila) == 0 or all(c == "" for c in fila):
-            continue
         if len(fila) < len(columnas):
             fila = fila + [""] * (len(columnas) - len(fila))
         datos.append(fila[: len(columnas)])
     return columnas, datos
+
+
+def _is_integer(cell):
+    """Indica si una celda representa un entero ("0", "-3", " 12 ")."""
+    try:
+        int(cell.strip())
+        return True
+    except ValueError:
+        return False
+
+
+def _parse_text_labels(handle, delimiter, text_column, label_column):
+    """Lee un archivo de texto etiquetado y valida sus columnas.
+
+    No hay encabezado: todas las filas son registros. Valida que cada fila
+    tenga celdas suficientes para ``text_column`` y ``label_column`` y que
+    la etiqueta sea un entero convertible (0/1 u otro entero). Retorna la
+    lista de filas ya limpias; los mensajes de error listan como mucho las
+    primeras filas problemáticas (``_format_list``).
+    """
+    filas = _read_rows(handle, delimiter)
+    requeridas = max(text_column, label_column) + 1
+    incompletas = [fila for fila in filas if len(fila) < requeridas]
+    if incompletas:
+        raise Exception(
+            f"kaggle: Hay filas con menos de {requeridas} celdas "
+            f"(text_column={text_column}, label_column={label_column}); "
+            f"filas problemáticas: {_format_list(incompletas)}"
+        )
+    invalidas = [
+        fila[label_column] for fila in filas if not _is_integer(fila[label_column])
+    ]
+    if invalidas:
+        raise Exception(
+            f"kaggle: La columna de etiquetas (label_column={label_column}) "
+            "debe contener enteros; valores no válidos: "
+            f"{_format_list(invalidas)}"
+        )
+    return filas
+
+
+def _extract_text_table(ruta, file_name, delimiter, text_column, label_column, dataset_name):
+    """Extrae las filas de un archivo de texto etiquetado ya descargado.
+
+    Recorre el directorio en profundidad (mismos criterios que
+    ``_extract_table``: sin ``__MACOSX`` ni rutas ocultas), selecciona el
+    archivo con ``_select_file_text`` y lo lee con ``delimiter`` indicado.
+    """
+    if os.path.isdir(ruta):
+        miembros = _list_members(ruta)
+        if not miembros:
+            raise Exception(
+                f"kaggle: El dataset '{dataset_name}' no contiene archivos."
+            )
+        elegido = _select_file_text(miembros, file_name, "")
+        destino = os.path.join(ruta, *elegido.split("/"))
+    else:
+        _select_file_text([os.path.basename(ruta)], file_name, "")
+        destino = ruta
+    with open(destino, encoding="utf-8-sig", newline="") as flujo:
+        return _parse_text_labels(flujo, delimiter, text_column, label_column)
 
 
 def _extract_table(ruta, file_name, split, dataset_name):
@@ -320,15 +435,15 @@ def _load_table(dataset_name, file_name, split):
     return _extract_table(ruta, file_name, split, dataset_name)
 
 
-def _to_number(celda):
+def _to_number(cell):
     """Convierte una celda CSV a float; None si es vacía o no numérica."""
-    if isinstance(celda, bool):
+    if isinstance(cell, bool):
         return None
-    if isinstance(celda, (int, float)):
-        return float(celda)
-    if not isinstance(celda, str):
+    if isinstance(cell, (int, float)):
+        return float(cell)
+    if not isinstance(cell, str):
         return None
-    texto = celda.strip()
+    texto = cell.strip()
     if texto == "":
         return None
     try:
@@ -337,7 +452,7 @@ def _to_number(celda):
         return None
 
 
-def _convert_to_pardos(columnas, filas):
+def _convert_to_pardos(columns, rows):
     """
     Convierte una tabla CSV leída a un DataFrame de PARDOS.
 
@@ -348,8 +463,8 @@ def _convert_to_pardos(columnas, filas):
     "2.5" -> 2.5, "texto" -> "texto", "" -> NaN.
 
     Argumentos:
-        columnas (List[STR]): Encabezado del CSV.
-        filas (List[List[STR]]): Filas de datos sin el encabezado.
+        columns (List[STR]): Encabezado del CSV.
+        rows (List[List[STR]]): Filas de datos sin el encabezado.
 
     Retorna:
         DataFrame de PARDOS con los datos convertidos.
@@ -357,8 +472,8 @@ def _convert_to_pardos(columnas, filas):
     from lib.KafePARDOS.DataFrame import DataFrame
     from lib.KafePARDOS.utils import inferir_tipo
 
-    datos = [[inferir_tipo(celda) for celda in fila] for fila in filas]
-    return DataFrame(columnas, datos)
+    datos = [[inferir_tipo(celda) for celda in fila] for fila in rows]
+    return DataFrame(columns, datos)
 
 
 def _require_image_dependencies():
@@ -416,14 +531,14 @@ def _normalize_color_mode(color_mode):
     )
 
 
-def _normalize_dimension(valor, nombre):
+def _normalize_dimension(value, name):
     """Valida que ``height``/``width`` sean enteros positivos."""
-    if isinstance(valor, bool) or not isinstance(valor, int) or valor <= 0:
+    if isinstance(value, bool) or not isinstance(value, int) or value <= 0:
         raise Exception(
-            f"kaggle: '{nombre}' debe ser un entero positivo; se recibió "
-            f"{valor!r}."
+            f"kaggle: '{name}' debe ser un entero positivo; se recibió "
+            f"{value!r}."
         )
-    return valor
+    return value
 
 
 def _list_members(root):
@@ -475,7 +590,7 @@ def _find_images(root):
     return sorted(imagenes)
 
 
-def _resolve_member(members, selector, descripcion):
+def _resolve_member(members, selector, description):
     """Resuelve una ruta exacta o un basename único dentro de ``members``.
 
     Primero intenta la coincidencia exacta de la ruta relativa; si no, por
@@ -491,12 +606,12 @@ def _resolve_member(members, selector, descripcion):
         return por_nombre[0]
     if len(por_nombre) > 1:
         raise Exception(
-            f"kaggle: {descripcion} '{selector}' es ambiguo; coincide con "
-            f"varios archivos: {_formatear_lista(por_nombre)}"
+            f"kaggle: {description} '{selector}' es ambiguo; coincide con "
+            f"varios archivos: {_format_list(por_nombre)}"
         )
     raise Exception(
-        f"kaggle: No se encontró {descripcion} '{selector}'. Archivos "
-        f"disponibles: {_formatear_lista(members)}"
+        f"kaggle: No se encontró {description} '{selector}'. Archivos "
+        f"disponibles: {_format_list(members)}"
     )
 
 
@@ -1125,6 +1240,95 @@ def load_dataset_split(dataset_name, file_name, split=""):
     """
     columnas, filas = _load_table(dataset_name, file_name, split)
     return _convert_to_pardos(columnas, filas)
+
+
+@check_sig([1, 2, 3, 4, 5, 6], [cadena_t], [cadena_t], [cadena_t], [entero_t], [entero_t], [entero_t])
+def load_text_dataset(
+    dataset_name, file_name="", delimiter="\t", text_column=0, label_column=1, limit=0
+):
+    """
+    Descarga un dataset de Kaggle con texto etiquetado y lo retorna como DataFrame.
+
+    Pensada para datasets de clasificación de texto en los que cada fila es
+    un registro ``texto<TAB>etiqueta`` (o separado por cualquier otro
+    carácter) **sin encabezado**: a diferencia de ``load_dataset``, aquí
+    TODAS las filas son datos, porque los archivos de texto etiquetado
+    (p. ej. los de la colección *sentiment labelled sentences*) no traen
+    cabecera.
+
+    Internamente, la función:
+    1. Valida nombre, delimitador, columnas y límite ANTES de tocar la red.
+    2. Descarga el dataset con kagglehub (cacheado en ~/.cache/kagglehub).
+    3. Selecciona el archivo de texto (``.txt``, ``.tsv`` o ``.csv``): el
+       indicado en ``file_name`` con prioridad; si está vacío, el único
+       archivo de texto del dataset.
+    4. Lee las filas con la librería estándar `csv` y valida que cada fila
+       tenga ambas columnas y que la etiqueta sea un entero.
+    5. Construye un DataFrame de PARDOS con las columnas ``text`` (STR) y
+       ``label`` (INT), tipadas de forma explícita (sin inferencia) para
+       que ``df.col("text")`` siempre retorne List[STR] y
+       ``df.col("label")`` siempre List[INT].
+
+    Argumentos:
+        dataset_name (STR): Identificador 'dueno/conjunto' del dataset.
+        file_name (STR, opcional): Archivo dentro del dataset ("data.txt").
+            Si está vacío, se lee el único archivo .txt/.tsv/.csv.
+        delimiter (STR, opcional): Un solo carácter separador; default "\\t"
+            (TAB), el formato de los datasets de frases etiquetadas.
+        text_column (INT, opcional): Índice de la columna de texto (default 0).
+        label_column (INT, opcional): Índice de la columna de etiqueta
+            entera, p. ej. 0/1 (default 1).
+        limit (INT, opcional): Máximo de filas a cargar; 0 = todas.
+
+    Retorna:
+        PARDOS DataFrame con las columnas ``text`` (STR) y ``label`` (INT).
+
+    Ejemplo KAFE:
+        import kaggle;
+        PARDOS df = kaggle.load_text_dataset("marklvl/sentiment-labelled-sentences-data-set", "sentiment labelled sentences/yelp_labelled.txt");
+        List[STR] textos = df.col("text");
+        List[INT] etiquetas = df.col("label");
+
+    Nota: Requiere conexión a internet y la librería `kagglehub` (se instala
+    automáticamente bajo demanda). Los datasets públicos no necesitan
+    credenciales y las descargas quedan cacheadas. El archivo completo se
+    carga en memoria; usa `limit` en conjuntos grandes.
+    """
+    _validate_dataset_name(dataset_name)
+    if len(delimiter) != 1:
+        raise Exception(
+            "kaggle: 'delimiter' debe ser un solo carácter (p. ej. \"\\t\" o "
+            f"\",\"); se recibió {delimiter!r}."
+        )
+    if text_column < 0 or label_column < 0:
+        raise Exception(
+            "kaggle: 'text_column' y 'label_column' deben ser mayores o "
+            f"iguales que 0; se recibieron text_column={text_column}, "
+            f"label_column={label_column}."
+        )
+    if limit < 0:
+        raise Exception(
+            f"kaggle: 'limit' debe ser mayor o igual que 0; se recibió {limit}."
+        )
+
+    _require_kagglehub()
+    ruta = _download_dataset(dataset_name.strip())
+    filas = _extract_text_table(
+        ruta, file_name.strip(), delimiter, text_column, label_column, dataset_name
+    )
+
+    textos = [fila[text_column] for fila in filas]
+    etiquetas = [int(fila[label_column]) for fila in filas]
+    if limit > 0:
+        textos = textos[:limit]
+        etiquetas = etiquetas[:limit]
+
+    from lib.KafePARDOS.DataFrame import DataFrame
+
+    return DataFrame(
+        ["text", "label"],
+        [[texto, etiqueta] for texto, etiqueta in zip(textos, etiquetas)],
+    )
 
 
 @check_sig([1, 2, 3, 4], [cadena_t], [lista_cadenas_t], [cadena_t], [entero_t])

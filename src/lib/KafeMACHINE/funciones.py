@@ -4,6 +4,7 @@ from .linear.LinearRegression import LinearRegression
 from .preprocessing.LabelEncoder import LabelEncoder
 from .preprocessing.OneHotEncoder import OneHotEncoder
 from .preprocessing.OrdinalEncoder import OrdinalEncoder
+from .preprocessing.Tokenizer import Tokenizer
 from .preprocessing.PCA import PCA
 from .preprocessing.StandardScaler import StandardScaler
 from .preprocessing.MinMaxScaler import MinMaxScaler
@@ -67,6 +68,19 @@ def ordinal_encoder():
     Codifica características categóricas a enteros según un orden especificado.
     """
     return OrdinalEncoder()
+
+
+@check_sig({0: [], 1: [[entero_t]], 2: [[entero_t], [cadena_t]]})
+def tokenizer(num_words=0, oov_token=""):
+    """
+    Crea una instancia de Tokenizer (texto -> secuencias de índices).
+
+    num_words: acota el vocabulario a las N palabras más frecuentes
+               (0 = sin límite; default: 0)
+    oov_token: token que ocupa el índice 1 para las palabras desconocidas
+               (cadena vacía = se ignoran; default: '')
+    """
+    return Tokenizer(num_words, oov_token)
 
 @check_sig([1], [entero_t])
 def pca(n_components):

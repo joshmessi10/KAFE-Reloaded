@@ -4,7 +4,10 @@ description: Historiador de KAFE. Actualiza history, knowledge y memory layers. 
 mode: subagent
 permission:
   read: allow
-  edit: allow
+  edit:
+    ".opencode/**": allow
+    "progress/session-log.md": allow
+    "docs/**": allow
   bash: deny
 ---
 

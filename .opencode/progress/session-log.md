@@ -104,3 +104,38 @@ Format for each entry:
 - **Validation**: `/dod` APPROVED por el Reviewer (`progress/review.md`). Prueba del ítem bloqueante A1: `tests/KafeMACHINE/model_selection/test_stratified_train_test_split_4d.kf` + `.expec` (salida 6/2/6/2/1/2). Benchmark offline de 5 escenarios (`.opencode/benchmarks/records.md` + `kafekaggle_images.py`, `benchmark-index.md`). Fixtures `.kf`/`.error.kf` de aridad/tipo/`color_mode` y escenarios de red `*.kf.example` fuera de la suite.
 - **Significant history records**: `.opencode/adr/decisions.md` (ADR-0018 + actualización de ADR-0017); `.opencode/history/2026/2026-10.md` (entrada "KafeKAGGLE — API genérica de ingesta de imágenes"); `.opencode/knowledge/concepts/kaggle-image-ingestion.md`; `docs/bibliotecas/kaggle.md`; `.opencode/knowledge/libraries.md`
 - **Next step**: Reanudar por roadmap — KafeGESHA LSTM/Transformer, o Review Tasks de KafeMACHINE; abrir con `/init` + `/resume`
+
+---
+## 2026-10-13 — KafeKAGGLE — ingesta robusta de datasets de imágenes (etiquetas por carpetas)
+
+- **Feature**: KafeKAGGLE — ingesta robusta de datasets de imágenes (etiquetas por carpetas)
+- **Status**: done
+- **Commands executed**: /init, /resume, /open-work, /impact, /dod, /close
+- **Summary**: Se añadió `load_image_folder_dataset(dataset_name, height=32, width=32, color_mode="rgb", limit=0, split="train")` para datasets sin CSV de etiquetas (etiqueta = nombre de la carpeta padre; `split` filtra por subdirectorio ancestro con `""` = todas; mezcla determinista con semilla 42 antes de `limit` para que la muestra sea representativa; clases `0..N-1` en orden alfabético). Se acotaron los mensajes de error con `_formatear_lista` (`… y N más (total M)`) en `_resolve_file`/`_select_file`/`_resolve_member`, y `_download_dataset` ahora verifica que la descarga produzca archivos. `src/Ejemplo.kf` migró de `load_image_dataset(..., "trainLabels.csv", ...)` — que volcaba ~60000 rutas a stdout sobre CIFAR-10, que no trae CSV de etiquetas, y salía con código 0 — a `load_image_folder_dataset`. API aditiva: sin cambios de gramática, `TypeUtils`, `EvalVisitorPrimitivo` ni del contrato de ADR-0018.
+- **Tests**: 645 passed, 2 skipped (`pytest tests/ -q`, 485s); baseline previa 629/2. `tests/test_KafeKaggle_backend.py`: 80 passed (16 nuevos).
+- **Validation**: `/dod` APPROVED por el Reviewer (`progress/review.md`). E2E contra la caché real de CIFAR-10 (60000 imágenes; 50000 train / 10000 test; `X=[40,3,32,32]` en `[0,1]` con ≥2 clases) PASSED. Benchmark offline de 5 escenarios (`.opencode/benchmarks/kafekaggle_images_folders.py` + `kafekaggle_folders_results.md`, registrado en `records.md` L34 y L1340-1379): coste fijo ≈1.1 s por llamada (descubrimiento de ~60000 rutas) y coste marginal ≈1.13 ms/imagen a rgb 32x32. Se detectó y corrigió una medición inflada por `tracemalloc` en la primera pasada del benchmark (tiempo y memoria ahora se miden por separado).
+- **Deviations**: `architect` y `historian` fallan con "OpenCode's free tier can only be used from within OpenCode" → sus responsabilidades se ejecutaron en los roles Lead/Builder. La primera pasada del Tester devolvió resultados de benchmark inventados → se re-ejecutó con el Builder y se verificó el archivo en disco. Los writes multi-archivo del Builder devolvieron `done` falso (tres lotes, incluido un append a este mismo archivo) → todas las escrituras se hicieron de un archivo por invocación y se releyeron de disco.
+- **Significant history records**: `.opencode/adr/decisions.md` (ADR-0019); `.opencode/history/2026/2026-10.md` (entrada "KafeKAGGLE: ingesta robusta de datasets de imágenes por carpetas"); `.opencode/knowledge/concepts/kaggle-image-ingestion.md` (sección "Etiquetas por carpetas"); `.opencode/knowledge/libraries.md`; `docs/bibliotecas/kaggle.md`; `.opencode/benchmarks/records.md`
+- **Next step**: Reanudar por roadmap — KafeGESHA LSTM/Transformer, o las Review Tasks de KafeMACHINE; abrir con `/init` + `/resume`
+
+---
+## 2026-10-18 — Validación E2E de RNN con KafeKaggle
+
+- **Feature**: Validación E2E de KafeGESHA RNN con KafeKaggle — EjemploRNN1 (serie temporal) + EjemploRNN2 (texto/sentimiento)
+- **Status**: done
+- **Summary**: Cerró la cadena RNN de punta a punta con datos reales de Kaggle. Implementados `kaggle.load_text_dataset` (texto etiquetado TAB/sin encabezado → PARDOS `text`/`label`) y `machine.tokenizer` (texto → `List[List[INT]]`, vocabulario determinista, OOV opcional, sin dependencias). Ejemplos reales validados y deterministas: `src/EjemploRNN1.kf` (temperaturas Melbourne, SimpleRNN+Dense, MAE 2.71 °C) y `src/EjemploRNN2.kf` (sentimiento Yelp, Embedding+SimpleRNN+sigmoid, accuracy 0.5823). DoD APPROVED tras corregir `ml-library.md` y roadmap. ADR-0021 registrado.
+- **Tests**: 691 passed, 2 skipped (suite completa)
+- **Validation**: Benchmark 5 escenarios + anexo (`.opencode/benchmarks/rnn_e2e_results.md`); 2 corridas byte-idénticas por ejemplo; Reviewer `/dod` APPROVED (`.opencode/progress/review.md`); pytest de cierre verde (441.99 s)
+- **Significant history records**: `.opencode/history/2026/2026-10.md` (entrada 2026-10-18), `.opencode/knowledge/concepts/tokenizer.md`, `simple-rnn.md`, `kaggle-dataset-ingestion.md`
+- **Next step**: Follow-ups del DoD — fix de `Model.predict` single-sample en secuencias (prioridad alta) y fix de `KafeMATH.log` cerca de 1 (prioridad media); en roadmap/backlog: LSTM, Conv2D
+
+---
+## 2026-10-18 — Lote de ingeniería: docs ADR-0020, limpieza tmp, nomenclatura inglesa y ejemplos
+
+- **Feature**: Lote de mantenimiento e ingeniería (sin feature único): reconciliación documental del ADR-0020, eliminación de `.opencode/tmp/`, refactor de nomenclatura inglesa en 4 librerías y ejemplos maestros en docs
+- **Status**: done
+- **Summary**: (1) El ADR-0020 (optimización CNN, aprobado el 2026-10-17) nunca se había escrito ni su benchmark registrado: creada la entrada en `decisions.md` (L709) y fila+sección en `records.md`. (2) `.opencode/tmp/` eliminada: evidencia reubicada en `.opencode/benchmarks/` (conv_equiv, informes builder/tester RNN), la herramienta `generar_expec.py` al nuevo `scripts/`, 12 huérfanos borrados, citas vivas actualizadas. (3) 12 helpers privados de español a inglés en KafeKaggle/KafeMACHINE/KafeGESHA (KafeHF limpio) + params; 2 tests y 2 docs de knowledge actualizados; núcleo TypeUtils/global_utils y constantes de tipos fuera de alcance (deuda registrada). (4) Copias verbatim de `src/Ejemplo.kf`, `EjemploRNN1.kf`, `EjemploRNN2.kf` en `docs/ejemplos/` con README índice. (5) Fixture huérfano `test_train_test_split_container.kf` (aparecido durante despacho interrumpido) validado, documentado y conservado.
+- **Tests**: 692 passed, 2 skipped (suite completa, 589 s; el +1 es el fixture conservado)
+- **Validation**: greps de los 12 nombres viejos → 0 hits en src/tests/docs/knowledge; verificación anti-telephone de todos los artefactos; DoD APPROVED (`.opencode/progress/review-english-names.md`, Lead-as-Reviewer); impact retroactivo en `impact-english-names.md`
+- **Significant history records**: `.opencode/history/2026/2026-10.md` (entrada "Lote de ingeniería"), `.opencode/adr/decisions.md` (ADR-0020), `.opencode/knowledge/concepts/kaggle-dataset-ingestion.md`, `libraries.md`, `technical-debt.md` (fila de nomenclatura residual), `docs/ejemplos/README.md`
+- **Next step**: lotes futuros registrados en backlog/technical-debt: constantes de tipos y núcleo TypeUtils/global_utils en inglés; follow-ups ADR-0021 (fix `Model.predict` single-sample; fix `KafeMATH.log`)

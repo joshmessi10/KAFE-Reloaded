@@ -4,7 +4,10 @@ description: Diseñador de sistema de KAFE. Impact analysis, ADR generation, arq
 mode: subagent
 permission:
   read: allow
-  edit: deny
+  edit:
+    ".opencode/**": allow
+    "docs/**": allow
+    "progress/**": allow
   bash: deny
 ---
 

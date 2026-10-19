@@ -212,3 +212,58 @@ MACHINE split = machine.stratified_train_test_split(X, y, 0.2, 42);
 - ADR-0018 (KafeKAGGLE — interfaz genérica de ingesta de imágenes),
   ADR-0011 (Conv2D/SimpleRNN), ADR-0013 (cliente kagglehub).
 - `docs/bibliotecas/kaggle.md` (sección «Ingesta de imágenes»).
+
+## Etiquetas por carpetas (`load_image_folder_dataset`)
+
+### Qué es
+
+Variante de la ingesta de imágenes en la que la etiqueta de cada imagen no
+proviene de un CSV, sino del **nombre del directorio que la contiene**:
+
+```
+<raíz>/<split>/<clase>/<imagen>.png
+```
+
+Es el esquema que usan datasets como CIFAR-10 (`train/avion/0001.png`, …) y la
+mayoría de los datasets de imágenes publicados en Kaggle.
+
+### Por qué existe
+
+`load_image_dataset` exige un `labels_file` (CSV) que mapee nombre-de-archivo →
+etiqueta, y muchos datasets no lo traen. Además, los basenames pueden repetirse
+entre carpetas (`0001.png` aparece una vez por clase), así que emparejar "por
+nombre" es ambiguo: el nombre de la carpeta padre es la única señal de etiqueta
+fiable.
+
+### Cómo funciona
+
+1. Se descarga (o reutiliza) el dataset con `kagglehub` y se ubica su raíz.
+2. Se descubren recursivamente las imágenes (`.png/.jpg/.jpeg/.bmp`).
+3. Si `split` no está vacío, se conservan solo las rutas que tienen ese
+   subdirectorio como ancestro (p. ej. `"train"`); `""` desactiva el filtrado.
+4. Se aplica una **mezcla determinista** con semilla fija (`random.Random(42)`)
+   antes de `limit`, para que la muestra contenga varias clases (sin ella, las
+   primeras rutas ordenadas darían una sola clase).
+5. La etiqueta de cada imagen es el nombre de su carpeta padre; las clases se
+   ordenan alfabéticamente y se codifican `0..N-1`.
+6. Cada imagen se decodifica y redimensiona a CHW `[C][H][W]` con píxeles en
+   `[0,1]` (`color_mode="rgb"` → 3 canales, `"gray"` → 1).
+7. Se devuelve un `ImageDataset` (`MACHINE` con `[0]=X`, `[1]=y`).
+
+### Ventajas y limitaciones
+
+- **Ventajas**: funciona con datasets sin CSV; codificación de etiquetas
+  reproducible; `limit` representativo; errores legibles (las listas de archivos
+  se truncan con `… y N más (total M)`); verificación de que la descarga produjo
+  archivos.
+- **Limitaciones**: asume exactamente un nivel de carpeta por clase (layouts
+  planos o más profundos no se infieren); la etiqueta es el nombre literal de la
+  carpeta; no hace split train/test (eso es responsabilidad de
+  `machine.stratified_train_test_split`).
+
+### Relación con la implementación KAFE
+
+- Implementada en `src/lib/KafeKaggle/funciones.py::load_image_folder_dataset`.
+- Firma: `load_image_folder_dataset(dataset_name, height=32, width=32, color_mode="rgb", limit=0, split="train")`.
+- Reutiliza el descubrimiento de imágenes y la decodificación de `load_image_dataset`.
+- Decisión registrada en ADR-0019.

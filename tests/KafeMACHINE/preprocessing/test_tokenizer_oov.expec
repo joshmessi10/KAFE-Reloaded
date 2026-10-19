@@ -1,0 +1,8 @@
+Word index con OOV: 
+{'<OOV>': 1, 'a': 2, 'b': 3, 'c': 4, 'd': 5}
+Vocabulary size: 
+6
+Transform con desconocidas: 
+[[2, 1, 1, 3]]
+Sin OOV, desconocidas ignoradas: 
+[[1]]

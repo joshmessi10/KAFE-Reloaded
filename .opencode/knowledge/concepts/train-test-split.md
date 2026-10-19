@@ -35,7 +35,7 @@ $$P(x_i \in \text{test} \mid y_i = c) = \alpha \quad \forall c \in \mathcal{C}$$
 2. **Barajar índices**: Generar permutación aleatoria de $\{0, 1, \dots, n-1\}$
 3. **Estratificar (opcional)**: Para cada clase $c$, barajar los índices de esa clase y asignar los primeros `floor(n_c * test_size)` al test
 4. **Dividir**: Los primeros `n_train` índices van al training set, los restantes al test set
-5. **Retornar**: Tupla `(X_train, X_test, y_train, y_test)`
+5. **Retornar**: Contenedor indexable `[X_train, X_test, y_train, y_test]`
 
 ## Motivation
 
@@ -86,9 +86,9 @@ Sin división train-test, no hay forma objetiva de medir la capacidad de general
 KAFE implementa `train_test_split` en `model_selection.py` como función pura que opera sobre listas nativas de KAFE. La implementación:
 
 - Acepta `List[List[NUM]]` para features y `List[NUM]` para targets
-- Parámetro `test_size` (default 0.2) y `random_state` (default None)
-- Soporta stratified splitting para clasificación
-- Retorna tupla `(X_train, X_test, y_train, y_test)` como `List[List[NUM]]`
+- Parámetro `test_size` (default 0.2) y `random_state` (default 0)
+- Para clasificación, `stratified_train_test_split` es la función separada que conserva proporciones de clase
+- Retorna un contenedor `MACHINE` indexable; evita una lista heterogénea que el sistema de tipos de KAFE rechaza.
 
 ## Usage Examples
 
@@ -99,8 +99,11 @@ List[List[FLOAT]] X = [[1.0], [2.0], [3.0], [4.0], [5.0], [6.0], [7.0], [8.0], [
 List[FLOAT] y = [2.0, 4.0, 6.0, 8.0, 10.0, 12.0, 14.0, 16.0, 18.0, 20.0];
 
 -- División 80/20
-(List[List[FLOAT]] X_train, List[List[FLOAT]] X_test,
- List[FLOAT] y_train, List[FLOAT] y_test) = machine.train_test_split(X, y, 0.2, 42);
+MACHINE split = machine.train_test_split(X, y, 0.2, 42);
+List[List[FLOAT]] X_train = split[0];
+List[List[FLOAT]] X_test = split[1];
+List[FLOAT] y_train = split[2];
+List[FLOAT] y_test = split[3];
 
 show(len(X_train));  -- 8
 show(len(X_test));   -- 2
@@ -108,11 +111,11 @@ show(len(X_test));   -- 2
 
 ## Implementation Location
 
-- `src/lib/KafeMACHINE/model_selection.py` — función `train_test_split`
+- `src/lib/KafeMACHINE/model_selection/model_selection.py` — función `train_test_split`
 
 ## Public API
 
-- `machine.train_test_split(X, y, test_size, random_state)` → `(List[List[NUM]], List[List[NUM]], List[NUM], List[NUM])`
+- `machine.train_test_split(X, y, test_size, random_state)` → `MACHINE` indexable con `X_train`, `X_test`, `y_train`, `y_test`
 
 ## References
 

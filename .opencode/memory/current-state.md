@@ -37,18 +37,38 @@ KafeKAGGLE generic image ingestion (2026-10-13, ADR-0018):
 - No changes to grammar, `TypeUtils.py` or `EvalVisitorPrimitivo.py` (dynamic dispatch by library name).
 - Full suite at close 2026-10-13: **629 passed, 2 skipped** (baseline 577/1 before the feature).
 
+KafeKAGGLE ingesta robusta por carpetas (2026-10-13, ADR-0019):
+- Nueva función `load_image_folder_dataset(dataset_name, height=32, width=32, color_mode="rgb", limit=0, split="train")`: la etiqueta es el nombre de la carpeta padre (`.../<split>/<clase>/img.png`, el esquema de CIFAR-10 que no trae CSV); `split` filtra por subdirectorio ancestro (`""` = todas); mezcla determinista con semilla 42 antes de `limit` para que la muestra contenga varias clases; clases codificadas `0..N-1` en orden alfabético.
+- Errores acotados: `_formatear_lista` trunca listas en los mensajes (`… y N más (total M)`); `_download_dataset` verifica que la descarga produzca archivos.
+- `src/Ejemplo.kf` migrado de `load_image_dataset(..., "trainLabels.csv", ...)` — que volcaba ~60000 rutas a stdout sobre CIFAR-10 — a `load_image_folder_dataset`.
+- Sin cambios de gramática, `TypeUtils.py` ni `EvalVisitorPrimitivo.py`; API aditiva (no rompe ADR-0018).
+- Full suite at close 2026-10-13: **645 passed, 2 skipped** (baseline 629/2 before the feature).
+
+KafeKAGGLE text ingestion + KafeMACHINE Tokenizer + RNN E2E (2026-10-18, ADR-0021):
+- Nueva API de texto en KafeKaggle: `kaggle.load_text_dataset(dataset_name, file_name="", delimiter="\t", text_column=0, label_column=1, limit=0)` → PARDOS con columnas `text`/`label`; acepta `.txt`/`.tsv`/`.csv` (`_select_file_texto`, `_leer_filas`, `_parse_text_labels`); la API CSV anterior intacta.
+- Nuevo transformer en KafeMACHINE: `machine.tokenizer(num_words=0, oov_token="")` (`src/lib/KafeMACHINE/preprocessing/Tokenizer.py`, hereda `BaseMachine`); tokenización `re` (minúsculas + no-alfanuméricos), vocabulario determinista por (-frecuencia, primera aparición), índice 0 reservado, OOV opcional en índice 1; métodos `fit`/`transform`/`fit_transform`, atributos `word_index`/`index_word`/`vocabulary_size`.
+- Cadena RNN de KafeGESHA validada E2E con datos reales: `src/EjemploRNN1.kf` (serie Melbourne, MAE 2.71 °C) y `src/EjemploRNN2.kf` (sentimiento Yelp, accuracy 0.5823); fixtures de regresión `tests/KafeGESHA/rnn_sintetico.kf` y `rnn_embedding_sintetico.kf`. Limitación conocida: `Model.predict` confunde muestra única con lote en secuencias → ejemplos predicen por lote (follow-up).
+- Full suite at close 2026-10-18: **691 passed, 2 skipped** (baseline 645/2 before the feature). DoD APPROVED por Reviewer; sesión cerrada 2026-10-18 (`/close`).
+
+Lote de ingeniería post-cierre RNN (2026-10-18, ver history):
+- Helpers privados de KafeKaggle/KafeMACHINE/KafeGESHA en **inglés** desde 2026-10-18 (`_formatear_lista`→`_format_list`, `_elegir_archivo`→`_choose_file`, `_select_file_texto`→`_select_file_text`, `_leer_filas`→`_read_rows`, `_es_entero`→`_is_integer`, `_tokenizar`→`_tokenize`, `_validar_texts`→`_validate_texts`, `_acumular_en`→`_accumulate_into`, `_adam_actualizar`→`_adam_update`, + params de 4 funciones de KafeKaggle); mapeo completo y verificación en `.opencode/progress/impact-english-names.md` (grep de nombres viejos → 0 hits). Constantes de tipos (`entero_t`, `flotante_t`, `vector_numeros_t`, `matriz_numeros_t`, `lista_cadenas_t`...) y helpers del núcleo TypeUtils/global_utils (`obtener_tipo_dato`, `construir_tipo_lista`, `obtener_nivel_anidamiento`...) siguen en español — deuda acotada y aceptada (ver `technical-debt.md`).
+- `.opencode/tmp/` **eliminada**: `conv_equiv.py`/`conv_equiv_results.md`/`builder-rnn-e2e.md`/`tester-rnn-e2e.md` reubicados en `.opencode/benchmarks/`; herramienta de generación de `.expec` en `scripts/generar_expec.py`; ADR-0020 escrito en `.opencode/adr/decisions.md` y benchmark CNN registrado en `.opencode/benchmarks/records.md` (evidencia de benchmarks CNN/RNN consolidada en `.opencode/benchmarks/`).
+- Ejemplos maestros copiados verbatim a `docs/ejemplos/` con `README.md` índice: `ejemplo-cnn-cifar10.kf` (de `src/Ejemplo.kf`), `ejemplo-rnn1-series.kf` (de `src/EjemploRNN1.kf`), `ejemplo-rnn2-sentimiento.kf` (de `src/EjemploRNN2.kf`); canónicos siguen en `src/`.
+- Full suite 2026-10-18 tras el lote: **692 passed, 2 skipped** (el +1 es el fixture huérfano conservado `tests/KafeMACHINE/model_selection/test_train_test_split_container.kf`, sin atribución, verde).
+
 ## Current Milestone
 
-KafeMACHINE machine learning library — ✔ Complete. 11 models, preprocessing, metrics, model selection.
-KafeGESHA deep learning library — ◐ In Progress. Dense (operational, contract restored 2026-09-24), activations, optimizers; LSTM/Transformer pending (Conv2D y SimpleRNN ✔ 2026-10-08).
-KafeHF / KafeKaggle dataset ingestion — ✔ Complete (2026-10-08). KafeKAGGLE generic image API — ✔ Complete (2026-10-13, ADR-0018).
+KafeMACHINE machine learning library — ✔ Complete. 11 models, preprocessing, metrics, model selection. Tokenizer ✔ 2026-10-18 (ADR-0021).
+KafeGESHA deep learning library — ◐ In Progress. Dense (operational, contract restored 2026-09-24), activations, optimizers; LSTM/Transformer pending (Conv2D y SimpleRNN ✔ 2026-10-08; cadena RNN validada E2E 2026-10-18).
+KafeHF / KafeKaggle dataset ingestion — ✔ Complete (2026-10-08). KafeKAGGLE generic image API — ✔ Complete (2026-10-13, ADR-0018). Etiquetas por carpetas (`load_image_folder_dataset`) — ✔ Complete (2026-10-13, ADR-0019). Text ingestion (`load_text_dataset`) — ✔ Complete (2026-10-18, ADR-0021).
 
 ## Current Priorities
 
-1. KafeGESHA: LSTM, Transformer layers (per roadmap); Conv2D operativo.
-2. Legacy review tasks (BaseMachine, LinearRegression, LogisticRegression, KNN, Metrics).
-3. Performance optimization (vectorization, parallel execution).
-4. Documentation — remaining component documentation cycles.
+1. Follow-ups ADR-0021: fix `Model.predict` single-sample en secuencias (prioridad alta); fix `KafeMATH.log` error de signo cerca de 1 (prioridad media).
+2. KafeGESHA: LSTM, Transformer layers (per roadmap); Conv2D operativo.
+3. Legacy review tasks (BaseMachine, LinearRegression, LogisticRegression, KNN, Metrics).
+4. Performance optimization (vectorization, parallel execution).
+5. Documentation — remaining component documentation cycles.
 
 ## Current Blockers
 

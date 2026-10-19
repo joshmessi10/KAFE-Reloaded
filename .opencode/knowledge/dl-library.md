@@ -1,5 +1,7 @@
 # KafeGESHA — backend sobre NUMK
 
+Ejemplos docentes ejecutables: `docs/ejemplos/gesha-niveles.md` enlaza ocho programas independientes de redes densas (AND, OR, XOR, función cuadrática, Iris, Breast Cancer Wisconsin, Red Wine Quality y MNIST). Los niveles con Kaggle separan entrenamiento/prueba y documentan límites de muestreo y coste.
+
 Estado 2026-09-30. ADR-0008 conserva el tipo y la API de modelos; ADR-0010
 retira expresamente el wrapper Tensor y centraliza operaciones ND en NUMK.
 

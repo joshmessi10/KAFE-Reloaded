@@ -1,5 +1,7 @@
 # GESHA — Redes neuronales sobre NUMK
 
+Para aprender con programas completos y datasets progresivos, consulta los [ocho niveles de redes neuronales](../ejemplos/gesha-niveles.md): compuertas AND/OR/XOR, regresión de función, Iris, Breast Cancer, Red Wine Quality y MNIST.
+
 GESHA define modelos, capas, activaciones, pérdidas y optimizadores. NUMK
 almacena los datos como listas y realiza el álgebra numérica. El tipo del
 lenguaje sigue siendo `GESHA`; el alias Python `Gesha` sigue apuntando a Model.

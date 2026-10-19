@@ -743,13 +743,13 @@ def test_find_images_without_images(tmp_path):
 # ---------------------------------------------------------------------------
 
 
-def test_formatear_lista_no_recorta_lista_corta():
-    assert kaggle._formatear_lista(["a", "b"]) == "['a', 'b']"
+def test_format_list_no_recorta_lista_corta():
+    assert kaggle._format_list(["a", "b"]) == "['a', 'b']"
 
 
-def test_formatear_lista_recorta_lista_larga():
+def test_format_list_recorta_lista_larga():
     elementos = [f"f{i}.png" for i in range(100)]
-    resumen = kaggle._formatear_lista(elementos, limite=3)
+    resumen = kaggle._format_list(elementos, limit=3)
     assert "f0.png" in resumen
     assert "f99.png" not in resumen
     assert "… y 97 más (total 100)" in resumen
@@ -905,3 +905,179 @@ def test_ensure_images_extracted_7z_real(tmp_path):
         archivo.write(str(origen), "train/cat/1.png")
     kaggle._ensure_images_extracted(str(raiz), py7zr)
     assert kaggle._find_images(str(raiz)) == ["imgs.7z_extracted/train/cat/1.png"]
+
+
+# ---------------------------------------------------------------------------
+# load_text_dataset (texto etiquetado sin encabezado, sin red)
+# ---------------------------------------------------------------------------
+
+
+def test_load_text_dataset_tab_without_header(monkeypatch, tmp_path):
+    ruta = _crear_dataset(
+        tmp_path,
+        {"frases.txt": "me encanta esto\t1\nqué mal está esto\t0\n"},
+    )
+    llamadas = _descarga_simulada(monkeypatch, ruta)
+    df = kaggle.load_text_dataset("demo", "frases.txt")
+    assert llamadas == ["demo"]
+    assert isinstance(df, DataFrame)
+    assert df.columns == ["text", "label"]
+    assert df.data == [["me encanta esto", 1], ["qué mal está esto", 0]]
+    assert all(isinstance(fila[0], str) for fila in df.data)
+    assert all(type(fila[1]) is int for fila in df.data)
+
+
+def test_load_text_dataset_csv_with_comma(monkeypatch, tmp_path):
+    ruta = _crear_dataset(
+        tmp_path,
+        {"datos.csv": "buena relación,1\nmala relación,0\nregular,1\n"},
+    )
+    _descarga_simulada(monkeypatch, ruta)
+    df = kaggle.load_text_dataset("demo", "datos.csv", ",")
+    assert df.columns == ["text", "label"]
+    assert df.data == [["buena relación", 1], ["mala relación", 0], ["regular", 1]]
+
+
+def test_load_text_dataset_custom_delimiter_and_columns(monkeypatch, tmp_path):
+    ruta = _crear_dataset(
+        tmp_path,
+        {"notas.txt": "1;excelente\n0;pésimo\n"},
+    )
+    _descarga_simulada(monkeypatch, ruta)
+    df = kaggle.load_text_dataset("demo", "notas.txt", ";", 1, 0)
+    assert df.columns == ["text", "label"]
+    assert df.data == [["excelente", 1], ["pésimo", 0]]
+
+
+def test_load_text_dataset_limit(monkeypatch, tmp_path):
+    contenido = "".join(f"frase número {i}\t{i % 2}\n" for i in range(10))
+    ruta = _crear_dataset(tmp_path, {"frases.txt": contenido})
+    _descarga_simulada(monkeypatch, ruta)
+    df = kaggle.load_text_dataset("demo", "frases.txt", "\t", 0, 1, 3)
+    assert len(df.data) == 3
+    assert df.data == [["frase número 0", 0], ["frase número 1", 1], ["frase número 2", 0]]
+
+
+def test_load_text_dataset_limit_zero_returns_all(monkeypatch, tmp_path):
+    ruta = _crear_dataset(tmp_path, {"frases.txt": "bueno\t1\nmalo\t0\n"})
+    _descarga_simulada(monkeypatch, ruta)
+    assert len(kaggle.load_text_dataset("demo", "frases.txt", "\t", 0, 1, 0).data) == 2
+
+
+def test_load_text_dataset_auto_selects_single_text_file(monkeypatch, tmp_path):
+    ruta = _crear_dataset(
+        tmp_path,
+        {"datos.tsv": "excelente\t1\n", "README.md": "hola"},
+    )
+    _descarga_simulada(monkeypatch, ruta)
+    df = kaggle.load_text_dataset("demo")
+    assert df.data == [["excelente", 1]]
+
+
+def test_load_text_dataset_missing_file_lists_candidates_bounded(monkeypatch, tmp_path):
+    archivos = {f"frase_{i:03d}.txt": "texto\t1\n" for i in range(50)}
+    archivos["nota.md"] = "x"
+    ruta = _crear_dataset(tmp_path, archivos)
+    _descarga_simulada(monkeypatch, ruta)
+    with pytest.raises(Exception) as exc:
+        kaggle.load_text_dataset("demo", "nope.txt")
+    mensaje = str(exc.value)
+    assert "No se encontró 'nope.txt'" in mensaje
+    assert "… y 31 más (total 51)" in mensaje
+    assert "frase_049.txt" not in mensaje
+
+
+def test_load_text_dataset_non_integer_label(monkeypatch, tmp_path):
+    ruta = _crear_dataset(tmp_path, {"frases.txt": "bueno\t1\nneutro\tpositivo\n"})
+    _descarga_simulada(monkeypatch, ruta)
+    with pytest.raises(Exception, match="debe contener enteros"):
+        kaggle.load_text_dataset("demo", "frases.txt")
+
+
+def test_load_text_dataset_column_out_of_range(monkeypatch, tmp_path):
+    ruta = _crear_dataset(tmp_path, {"frases.txt": "bueno\t1\nmalo\t0\n"})
+    _descarga_simulada(monkeypatch, ruta)
+    with pytest.raises(Exception, match="menos de 6 celdas"):
+        kaggle.load_text_dataset("demo", "frases.txt", "\t", 5, 1)
+
+
+def test_load_text_dataset_dataset_without_files(monkeypatch, tmp_path):
+    vacio = tmp_path / "vacio"
+    vacio.mkdir()
+    _descarga_simulada(monkeypatch, str(vacio))
+    with pytest.raises(Exception, match="no contiene archivos"):
+        kaggle.load_text_dataset("demo")
+
+
+def test_load_text_dataset_without_text_files(monkeypatch, tmp_path):
+    ruta = _crear_dataset(tmp_path, {"datos.json": "{}", "imagen.png": "x"})
+    _descarga_simulada(monkeypatch, ruta)
+    with pytest.raises(Exception, match="no contiene archivos de texto"):
+        kaggle.load_text_dataset("demo")
+
+
+def test_load_text_dataset_rejects_non_text_extension(monkeypatch, tmp_path):
+    ruta = _crear_dataset(tmp_path, {"datos.txt": "bueno\t1\n", "modelo.bin": "x"})
+    _descarga_simulada(monkeypatch, ruta)
+    with pytest.raises(Exception, match="no es un archivo de texto"):
+        kaggle.load_text_dataset("demo", "modelo.bin")
+
+
+def test_load_text_dataset_rejects_empty_name(monkeypatch):
+    _no_descargar(monkeypatch)
+    with pytest.raises(Exception, match="no puede estar vacío"):
+        kaggle.load_text_dataset("")
+
+
+def test_load_text_dataset_invalid_delimiter_before_download(monkeypatch):
+    _no_descargar(monkeypatch)
+    with pytest.raises(Exception, match="'delimiter' debe ser un solo carácter"):
+        kaggle.load_text_dataset("demo", "frases.txt", "--")
+
+
+def test_load_text_dataset_invalid_columns_before_download(monkeypatch):
+    _no_descargar(monkeypatch)
+    with pytest.raises(Exception, match="deben ser mayores o iguales que 0"):
+        kaggle.load_text_dataset("demo", "frases.txt", "\t", -1, 1)
+
+
+def test_load_text_dataset_invalid_limit_before_download(monkeypatch):
+    _no_descargar(monkeypatch)
+    with pytest.raises(Exception, match="'limit' debe ser mayor o igual"):
+        kaggle.load_text_dataset("demo", "frases.txt", "\t", 0, 1, -1)
+
+
+def test_load_text_dataset_wrong_arity():
+    with pytest.raises(Exception, match="expects 1 or 2 or 3 or 4 or 5 or 6 args"):
+        kaggle.load_text_dataset()
+
+
+def test_load_text_dataset_wrong_type():
+    with pytest.raises(Exception, match="expects argument of type STR"):
+        kaggle.load_text_dataset(42)
+
+
+def test_parse_text_labels_helper():
+    filas = kaggle._parse_text_labels(
+        io.StringIO("  buenísimo \t1\nmalo\t0\n\n"), "\t", 0, 1
+    )
+    assert filas == [["buenísimo", "1"], ["malo", "0"]]
+
+
+def test_parse_text_labels_rejects_float_label():
+    with pytest.raises(Exception, match="debe contener enteros"):
+        kaggle._parse_text_labels(io.StringIO("texto\t1.5\n"), "\t", 0, 1)
+
+
+def test_read_rows_skips_empty_rows_and_strips():
+    filas = kaggle._read_rows(io.StringIO(" a , 1 \n\n,\n b , 0 \n"), ",")
+    assert filas == [["a", "1"], ["b", "0"]]
+
+
+def test_load_dataset_csv_header_truncate_and_pad_unchanged():
+    """Regresión: la generalización del lector no cambia load_dataset."""
+    columnas, filas = kaggle._parse_csv(
+        io.StringIO("a,b\n1\n\n3,4,extra\n5,6\n\n")
+    )
+    assert columnas == ["a", "b"]
+    assert filas == [["1", ""], ["3", "4"], ["5", "6"]]

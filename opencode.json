@@ -2,7 +2,6 @@
   "$schema": "https://opencode.ai/config.json",
   "instructions": ["OPENCODE.md", "AGENTS.md"],
   "default_agent": "engineering-lead",
-  "subagent_depth": 2,
   "agent": {
     "engineering-lead": {
       "description": "KAFE Engineering Lead - orquesta agentes, gestiona ciclo de vida, edita docs y records",
@@ -16,32 +15,99 @@
           "tester": "allow"
         },
         "edit": {
+          "**": "deny",
           ".opencode/**": "allow",
           "docs/**": "allow",
           "AGENTS.md": "allow",
           "OPENCODE.md": "allow",
-          "mkdocs.yml": "allow"
+          "mkdocs.yml": "allow",
+          "opencode.json": "allow"
         },
-        "write": {
-          ".opencode/**": "allow",
-          "docs/**": "allow"
+        "bash": {
+          "*": "ask",
+          "pytest*": "allow",
+          "python*": "allow"
         }
       }
     },
     "architect": {
-      "description": "System design, impact analysis, ADR generation"
+      "description": "System design, impact analysis, ADR generation. No edita código fuente.",
+      "mode": "subagent",
+      "permission": {
+        "task": "deny",
+        "edit": {
+          "**": "deny",
+          ".opencode/**": "allow",
+          "docs/**": "allow"
+        },
+        "bash": { "*": "deny" }
+      }
     },
     "builder": {
-      "description": "Implementation, refactoring, feature development"
+      "description": "Implementation, refactoring, feature development",
+      "mode": "subagent",
+      "permission": {
+        "task": "deny",
+        "edit": {
+          "**": "deny",
+          "src/**": "allow",
+          "tests/**": "allow",
+          "docs/**": "allow",
+          ".opencode/**": "allow",
+          "mkdocs.yml": "allow",
+          "opencode.json": "allow"
+        },
+        "bash": {
+          "*": "deny",
+          "pytest*": "allow",
+          "python*": "allow"
+        }
+      }
     },
     "reviewer": {
-      "description": "Quality gates, Definition of Done verification"
+      "description": "Quality gates, Definition of Done verification",
+      "mode": "subagent",
+      "permission": {
+        "task": "deny",
+        "edit": {
+          "**": "deny",
+          ".opencode/**": "allow"
+        },
+        "bash": {
+          "*": "deny",
+          "pytest*": "allow"
+        }
+      }
     },
     "historian": {
-      "description": "History, knowledge, and memory layer updates"
+      "description": "History, knowledge, and memory layer updates",
+      "mode": "subagent",
+      "permission": {
+        "task": "deny",
+        "edit": {
+          "**": "deny",
+          ".opencode/**": "allow",
+          "docs/**": "allow"
+        },
+        "bash": { "*": "deny" }
+      }
     },
     "tester": {
-      "description": "Validation, tests, benchmarks for ML/DL components"
+      "description": "Validation, tests, benchmarks for ML/DL components",
+      "mode": "subagent",
+      "permission": {
+        "task": "deny",
+        "edit": {
+          "**": "deny",
+          ".opencode/**": "allow",
+          "docs/**": "allow"
+        },
+        "bash": {
+          "*": "deny",
+          "pytest*": "allow",
+          "python*": "allow"
+        }
+      }
     }
   }
 }

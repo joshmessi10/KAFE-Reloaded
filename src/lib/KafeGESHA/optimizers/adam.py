@@ -4,6 +4,21 @@ from lib.KafeNUMK import funciones as numk
 from .base import Optimizer
 
 
+def _adam_update(data, moments, variances, gradient, lr, beta1, beta2, bias_correction_m, bias_correction_v, epsilon):
+    """Una sola pasada recursiva: actualiza m, v y los parámetros in-place."""
+    for indice in range(len(data)):
+        valor = data[indice]
+        if isinstance(valor, list):
+            _adam_update(valor, moments[indice], variances[indice], gradient[indice], lr, beta1, beta2, bias_correction_m, bias_correction_v, epsilon)
+        else:
+            grad = gradient[indice]
+            momento = beta1 * moments[indice] + (1.0 - beta1) * grad
+            varianza = beta2 * variances[indice] + (1.0 - beta2) * grad ** 2
+            moments[indice] = momento
+            variances[indice] = varianza
+            data[indice] = valor - lr * (momento / bias_correction_m) / (sqrt(varianza / bias_correction_v) + epsilon)
+
+
 class Adam(Optimizer):
     def __init__(self, lr=0.001, beta1=0.9, beta2=0.999, epsilon=1e-8):
         self.lr = lr
@@ -16,6 +31,8 @@ class Adam(Optimizer):
 
     def step(self, parameters):
         self.t += 1
+        bias_correction_m = 1.0 - self.beta1 ** self.t
+        bias_correction_v = 1.0 - self.beta2 ** self.t
         for parameter in parameters:
             if parameter.grad is None:
                 continue
@@ -24,25 +41,15 @@ class Adam(Optimizer):
                 shape = list(numk.shape(parameter.grad))
                 self.m[identity] = numk.zeros_nd(shape)
                 self.v[identity] = numk.zeros_nd(shape)
-            self.m[identity] = numk.map_elements(
-                lambda moment, gradient: self.beta1 * moment + (1 - self.beta1) * gradient,
-                self.m[identity],
-                parameter.grad,
-            )
-            self.v[identity] = numk.map_elements(
-                lambda moment, gradient: self.beta2 * moment + (1 - self.beta2) * gradient ** 2,
-                self.v[identity],
-                parameter.grad,
-            )
-
-            def update(value, first_moment, second_moment):
-                corrected_m = first_moment / (1 - self.beta1 ** self.t)
-                corrected_v = second_moment / (1 - self.beta2 ** self.t)
-                return value - self.lr * corrected_m / (sqrt(corrected_v) + self.epsilon)
-
-            parameter.data = numk.map_elements(
-                update,
+            _adam_update(
                 parameter.data,
                 self.m[identity],
                 self.v[identity],
+                parameter.grad,
+                self.lr,
+                self.beta1,
+                self.beta2,
+                bias_correction_m,
+                bias_correction_v,
+                self.epsilon,
             )
