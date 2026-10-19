@@ -513,3 +513,62 @@ The repository now uses a committed uv lock for Python runtime, development, doc
 - **Analyze generated ANTLR modules:** rejected because their output is generated and not project-authored.
 - **Replace existing workflows with a generic Python CI job:** rejected because it would risk dropping Java/ANTLR setup, docs deployment, or Nix ownership.
 - **Mark migration complete after local checks alone:** rejected because hosted CI and deployment behavior must be observed at the exact pushed commit.
+
+---
+
+## ADR-0013: Preserve the Existing Gesha API During Branch Integration
+
+- **Status**: accepted
+- **Date**: 2026-10-19
+
+### Context
+
+`feature/Kafe_Gesha_Clustering` and `main` diverged from identical trees but have unrelated commit histories. The feature redesigns Gesha models, layers, activation classes, and optimizers. Replacing the current `geshaDeep` implementation with those files broke existing interpreter fixtures in the previous integration branch.
+
+### Decision
+
+Keep `geshaDeep` and its existing model, core, activation, and optimizer modules as the compatibility API. Register the redesigned backend under `geshaV2`, backed by `KafeGESHA/functions_v2.py`. Keep the redesigned model and core in `models_v2.py` and `core_v2.py`; export its public classes from the package. New examples and fixtures import `geshaV2`. Preserve the established `KafeNUMK` and other `main` APIs while adding the new tensor operations and libraries.
+
+### Consequences
+
+Both Gesha APIs remain available during migration. Existing programs retain their behavior, and the new backend can be tested independently. Shared utility changes require regression tests for both APIs. A future replacement of `geshaDeep` requires a separate compatibility decision and migration plan.
+
+---
+
+## ADR-0014: Admit Spanish Educational Content
+
+- **Status**: accepted
+- **Date**: 2026-10-19
+
+### Context
+
+The Gesha feature adds educational documentation, source comments, examples, fixture text, and project records in Spanish. The user explicitly chose to admit Spanish rather than translate this material during integration. The prior English-only rule in ADR-0011 and the fixed codespell vocabulary in ADR-0012 would reject that choice.
+
+### Decision
+
+1. Keep English as the default for source identifiers, paths, configuration, and commit messages. Educational prose, comments, docstrings, examples, records, and user-facing text may use English or Spanish. Preserve existing text when editing unless translation is part of the task.
+2. Continue running codespell over source, tests, ordinary documentation, and hidden project records. Keep the original `ignore-words-list`; add the reviewed `.codespell-es.txt` file for Spanish words that codespell mistakes for English typos. Do not add broad skips or disable the spelling check.
+3. Mirror the language policy in `AGENTS.md` and `CLAUDE.md` and update the knowledge and verification references. This decision supersedes only the English-only authoring requirement of ADR-0011 and the fixed-vocabulary part of ADR-0012. The historical English migration and all other quality gates remain in force.
+
+### Consequences
+
+Spanish educational material can be merged without distorting its wording to satisfy an English spelling dictionary. New Spanish words that trigger codespell require review before adding them to the vocabulary file. True typos, including those in English content, remain errors.
+
+---
+
+## ADR-0015: Use the KAFE GESHA Type for Mixed Layer Lists
+
+- **Status**: accepted
+- **Date**: 2026-10-19
+
+### Context
+
+The redesigned Sequential API accepts lists containing different layer classes. The interpreter previously compared concrete Python classes when checking list homogeneity, so it rejected valid `GESHA` lists before library dispatch. Initializer objects were also identified as callable `FUNC` values.
+
+### Decision
+
+Classify Gesha layers, models, initializers, regularizers, optimizers, losses, and callbacks as KAFE `GESHA`. During list homogeneity validation, allow different concrete Python classes only when every flattened element has KAFE type `GESHA`. Keep concrete-class validation for all other types.
+
+### Consequences
+
+Mixed-layer Sequential programs can execute through the interpreter. Mixed primitive lists remain invalid. The scope of `GESHA` now includes configuration objects that belong to its model-building API. The change is verified by interpreter fixtures and focused list typing checks.

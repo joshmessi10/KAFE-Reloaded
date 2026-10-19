@@ -56,6 +56,8 @@ nav:
       - PLOT (Visualization): libraries/plot.md
       - FILES (File Operations): libraries/files.md
       - GeshaDeep (Deep Learning): libraries/gesha.md
+      - Kaggle Dataset Ingestion: bibliotecas/kaggle.md
+      - Hugging Face Numeric Ingestion: bibliotecas/huggingface.md
       - PARDOS (DataFrames): libraries/pardos.md
       - MACHINE (ML Utilities): libraries/machine.md
   - Specification:
@@ -70,6 +72,9 @@ nav:
       - Semantic Errors: errors/semantic-errors.md
       - Error Reference: errors/error-reference.md
   - Examples:
+      - Feature Examples: ejemplos/README.md
+      - Gesha Learning Levels: ejemplos/gesha-niveles.md
+      - Kaggle Machine Learning: ejemplos/machine-kaggle.md
       - Hello World: examples/hello-world.kf
       - Fibonacci with Currying: examples/fibonacci-currying.kf
       - Merge Sort: examples/merge-sort.kf

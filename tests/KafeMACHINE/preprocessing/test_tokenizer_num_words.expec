@@ -1,0 +1,10 @@
+Word index con num_words=2: 
+{'c': 1, 'b': 2}
+Vocabulary size: 
+3
+Transform: 
+[[2, 1], [2, 1], [1]]
+Sin límite: 
+{'c': 1, 'b': 2, 'd': 3, 'a': 4, 'e': 5}
+Vocabulary size sin límite: 
+6

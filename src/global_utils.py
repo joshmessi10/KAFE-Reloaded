@@ -8,6 +8,7 @@ from TypeUtils import (
     boolean_type,
     float_type,
     function_type,
+    gesha_type,
     get_data_type,
     integer_type,
     list_type,
@@ -81,8 +82,11 @@ def verify_homogeneity(items):
     items = flatten_list(items)
     if (len(items) != 0):
         data_type = type(items[0])
+        gesha_items = get_data_type(items[0]) == gesha_type
         for item in items:
-            if type(item) is not data_type:
+            if type(item) is not data_type and not (
+                gesha_items and get_data_type(item) == gesha_type
+            ):
                 return False
 
     return True

@@ -1,5 +1,11 @@
 # Current Work
 
+## Integration of Gesha feature with main (2026-10-19)
+
+The isolated branch `integration/Kafe_Gesha_Clustering_v2` is based on `main` and ports the genuine feature additions without replacing the current `geshaDeep` implementation. The redesigned backend is registered as `geshaV2`; see ADR-0013. The original feature checkout remains at `b6a2260`.
+
+Ruff, basedpyright, the Python suppression-policy check, and the strict MkDocs build pass locally. Focused backend tests pass (156 passed, 27 skipped). The user authorized Spanish educational content (ADR-0014); codespell passes with a reviewed Spanish vocabulary while continuing to scan all files. Seven long Gesha example fixtures are explicitly skipped in pytest while their `.kf` examples remain available. The full local suite passed with 685 passed, 34 skipped, and 83.82% coverage (minimum 80%). Publish the branch and obtain hosted verification before merging.
+
 Feature: Python quality-gates implementation and workflows — validated at exact SHA `c23163de6fee34b8da7d9a25b4f2896b331c22e1`
 Status: Implementation/workflow changes passed hosted checks at `c23163de6fee34b8da7d9a25b4f2896b331c22e1`; results are recorded below. The branch remains unmerged.
 Current step: Task 9 records the local gates and exact-SHA hosted results for the implementation/workflow state at `c23163de6fee34b8da7d9a25b4f2896b331c22e1`.

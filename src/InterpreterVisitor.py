@@ -1,11 +1,17 @@
 from typing import Any, cast
 
+import lib.KafeFILES.functions as files_funcs_module
+import lib.KafeGESHA.functions as gesha_funcs_module
+import lib.KafeGESHA.functions_v2 as gesha_v2_funcs_module
+import lib.KafeHF.functions as hf_funcs_module
+import lib.KafeKaggle.funciones as kaggle_funcs_module
+import lib.KafeMACHINE.functions as machine_funcs_module
+import lib.KafeMATH.functions as math_funcs_module
+import lib.KafeNUMK.functions as numk_funcs_module
+import lib.KafePARDOS.functions as pardos_funcs_module
+import lib.KafePLOT.functions as plot_funcs_module
+from errors import raiseVariableNotDefined
 from Kafe_GrammarVisitor import Kafe_GrammarVisitor
-
-from language_components.libraries.functions import (
-    libraryFunctionCall,
-    libraryConstant,
-)
 from language_components.base.functions import (
     additiveExpr,
     assignStmt,
@@ -21,36 +27,29 @@ from language_components.base.functions import (
     unaryExpression,
     varDecl,
 )
-from language_components.loops.functions import forLoop, whileLoop
 from language_components.conditionals.functions import ifElseExpr
 from language_components.functions.functions import (
+    functionCall,
     functionDecl,
     lambdaExpr,
-    returnStmt,
-    visitAppendCall,
-    functionCall,
-    visitRemoveCall,
-    visitLenCall,
-    rangeExpr,
     pourStmt,
+    rangeExpr,
+    returnStmt,
     showStmt,
+    visitAppendCall,
+    visitLenCall,
+    visitRemoveCall,
 )
 from language_components.imports.functions import importStmt
+from language_components.libraries.functions import (
+    libraryConstant,
+    libraryFunctionCall,
+)
+from language_components.loops.functions import forLoop, whileLoop
 from language_components.method_calling.functions import (
     objectConstant,
     objectFunctionCall,
 )
-
-from errors import raiseVariableNotDefined
-
-import lib.KafeNUMK.functions as numk_funcs_module
-import lib.KafeMATH.functions as math_funcs_module
-import lib.KafeFILES.functions as files_funcs_module
-import lib.KafePLOT.functions as plot_funcs_module
-import lib.KafeGESHA.functions as gesha_funcs_module
-import lib.KafePARDOS.functions as pardos_funcs_module
-import lib.KafeMACHINE.functions as machine_funcs_module
-import lib.KafeHF.functions as hf_funcs_module
 
 
 class InterpreterVisitor(Kafe_GrammarVisitor):
@@ -63,12 +62,15 @@ class InterpreterVisitor(Kafe_GrammarVisitor):
             "files": [files_funcs_module, False],
             "plot": [plot_funcs_module, False],
             "geshaDeep": [gesha_funcs_module, False],
+            "geshaV2": [gesha_v2_funcs_module, False],
             "pardos": [pardos_funcs_module, False],
             "machine": [machine_funcs_module, False],
             "huggingface": [hf_funcs_module, False],
+            "kaggle": [kaggle_funcs_module, False],
         }
         self.imported = set()
         import globals
+
         globals.current_visitor = self
 
     def push_scope(self):
@@ -196,26 +198,26 @@ class InterpreterVisitor(Kafe_GrammarVisitor):
     def visitFloatLiteral(self, ctx):
         return float(ctx.getText())
 
-
-
     def visitInterpretEscapes(self, raw):
-        escapes = {'n':'\n','t':'\t','r':'\r','\\':'\\','"':'"',"'" : "'"}
+        escapes = {"n": "\n", "t": "\t", "r": "\r", "\\": "\\", '"': '"', "'": "'"}
         result = []
         it = iter(raw)
         for c in it:
-            if c == '\\':
+            if c == "\\":
                 try:
                     esc = next(it)
                     if esc not in escapes:
                         from errors import raiseInvalidEscape
+
                         raiseInvalidEscape(esc)
                     result.append(escapes[esc])
                 except StopIteration:
                     from errors import raiseIncompleteEscape
+
                     raiseIncompleteEscape()
             else:
                 result.append(c)
-        return ''.join(result)
+        return "".join(result)
 
     def visitStringLiteral(self, ctx):
         return self.visitInterpretEscapes(ctx.getText()[1:-1])

@@ -1,0 +1,66 @@
+-- Breast Cancer Wisconsin - SVM: clasificacion binaria.
+-- Dataset: https://www.kaggle.com/datasets/uciml/breast-cancer-wisconsin-data
+-- Se excluyen id, diagnosis y la columna vacia final del CSV.
+-- B=0 (benigno), M=1 (maligno). Las metricas se calculan solo en test.
+import kaggle;
+import machine;
+import plot;
+
+List[STR] columnas = [
+    "radius_mean", "texture_mean", "smoothness_mean",
+    "compactness_mean", "concavity_mean", "symmetry_mean"
+];
+List[List[FLOAT]] X = kaggle.load_dataset_matrix(
+    "uciml/breast-cancer-wisconsin-data", columnas, "data.csv", 240
+);
+PARDOS df = kaggle.load_dataset("uciml/breast-cancer-wisconsin-data", "data.csv");
+List[STR] diagnosis = df.col("diagnosis");
+List[INT] y = [];
+INT i = 0;
+while (i < len(X)):
+    INT clase = 0;
+    if (diagnosis[i] == "M"):
+        clase = 1;
+    ;
+    append(y, clase);
+    i = i + 1;
+;
+MACHINE split = machine.stratified_train_test_split(X, y, 0.2, 42);
+List[List[FLOAT]] X_train = split[0];
+List[List[FLOAT]] X_test = split[1];
+List[INT] y_train = split[2];
+List[INT] y_test = split[3];
+
+MACHINE scaler = machine.standard_scaler();
+scaler.fit(X_train);
+List[List[FLOAT]] train_scaled = scaler.transform(X_train);
+List[List[FLOAT]] test_scaled = scaler.transform(X_test);
+show("Train/test:");
+show([len(X_train), len(X_test)]);
+
+MACHINE svm = machine.svm(1.0, "linear", 350);
+svm.fit(train_scaled, y_train);
+show("SVM - Breast Cancer Wisconsin: accuracy:");
+show(machine.accuracy_score(y_test, svm.predict(test_scaled)));
+
+-- Cinco casos de evaluacion tomados del conjunto de prueba.
+List[INT] pred_ejemplos = svm.predict(test_scaled);
+show("Cinco casos de evaluacion: esperado -> predicho:");
+for (j in range(0, 5)):
+    show(str(y_test[j]) + " -> " + str(pred_ejemplos[j]));
+;
+
+-- Comparacion de valores reales y predichos en el conjunto de prueba.
+List[FLOAT] indices_plot = [];
+for (j in range(0, len(y_test))):
+    append(indices_plot, float(j));
+;
+plot.figure();
+plot.title("breast cancer svm: prueba");
+plot.xlabel("Indice de muestra de prueba");
+plot.ylabel("Valor real y predicho");
+plot.pointColor("blue");
+plot.graph(indices_plot, y_test, "point");
+plot.pointColor("orange");
+plot.graph(indices_plot, pred_ejemplos, "point");
+plot.render();

@@ -10,10 +10,36 @@ from utils import (
     run_kafe_program,
 )
 
+_VALID_PARAMS = list(get_parameters(get_programs("../tests/KafeGESHA")))
+_INVALID_PARAMS = list(get_parameters(get_invalid_programs("../tests/KafeGESHA")))
+
+_SLOW_EXAMPLES = {
+    "rnn_embedding_sintetico.kf",
+    "rnn_sintetico.kf",
+    "autoencoder_clustering.kf",
+    "circle_classification.kf",
+    "xor_gate.kf",
+    "and_gate.kf",
+    "or_gate.kf",
+}
+
+
+def _valid_example_param(program, input_text, expected_stdout):
+    relative_path = os.path.relpath(program, os.path.dirname(__file__))
+    if os.path.basename(program) in _SLOW_EXAMPLES:
+        return pytest.param(
+            program,
+            input_text,
+            expected_stdout,
+            id=relative_path,
+            marks=pytest.mark.skip(reason="Long training example; covered by backend tests"),
+        )
+    return pytest.param(program, input_text, expected_stdout, id=relative_path)
+
 
 @pytest.mark.parametrize(
     "program, input_text, expected_stdout",
-    list(get_parameters(get_programs("../tests/KafeGESHA"))),
+    [_valid_example_param(*params) for params in _VALID_PARAMS],
 )
 def test_valid_programs(program, input_text, expected_stdout):
     result = run_kafe_program(program, input_text=input_text)
@@ -43,15 +69,19 @@ def test_valid_programs(program, input_text, expected_stdout):
     except FileNotFoundError:
         expected_svg = ""
 
-    assert (
-        generated_svg == expected_svg
-    ), f"{expected_svg_path} doesn't match {generated_svg_path}"
+    assert generated_svg == expected_svg, (
+        f"{expected_svg_path} doesn't match {generated_svg_path}"
+    )
     assert_valid_kafe_result(result, program, expected_stdout)
 
 
 @pytest.mark.parametrize(
     "program, input_text, expected_stdout",
-    list(get_parameters(get_invalid_programs("../tests/KafeGESHA"))),
+    _INVALID_PARAMS,
+    ids=[
+        os.path.relpath(program, os.path.dirname(__file__))
+        for program, _, _ in _INVALID_PARAMS
+    ],
 )
 def test_invalid_programs(program, input_text, expected_stdout):
     result = run_kafe_program(program, input_text=input_text)

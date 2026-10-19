@@ -1,0 +1,22 @@
+-- Nivel 3: XOR, 2 -> 4 -> 1. La capa oculta crea una frontera no lineal.
+import geshaV2;
+
+List[List[FLOAT]] X = [[0.0, 0.0], [0.0, 1.0], [1.0, 0.0], [1.0, 1.0]];
+List[INT] y = [0, 1, 1, 0];
+GESHA oculta = geshaV2.create_dense(4, "tanh", [2], 0.0, 42);
+GESHA salida = geshaV2.create_dense(1, "sigmoid", [4], 0.0, 43);
+GESHA modelo = geshaV2.sequential([oculta, salida]);
+modelo.compile("sgd", "binary_crossentropy", []);
+modelo.set_lr(0.1);
+modelo.fit(X, y, 1000, 1);
+
+INT aciertos = 0;
+for (i in range(0, len(X))):
+    INT pred = modelo.predict_label(X[i]);
+    show(str(X[i]) + " esperado=" + str(y[i]) + " predicho=" + str(pred));
+    if (pred == y[i]):
+        aciertos = aciertos + 1;
+    ;
+;
+show("XOR aciertos/4:");
+show(aciertos);

@@ -1,0 +1,20 @@
+import machine;
+
+List[STR] corpus = ["b a a", "c a b", "d"];
+
+-- Con oov_token el índice 1 queda reservado para el token desconocido
+MACHINE tok = machine.tokenizer(0, "<OOV>");
+tok.fit(corpus);
+show("Word index con OOV:");
+show(tok.word_index);
+show("Vocabulary size:");
+show(tok.vocabulary_size);
+-- Las palabras desconocidas del texto se mapean al índice de <OOV>
+show("Transform con desconocidas:");
+show(tok.transform(["a desconocida lejana b"]));
+
+-- Sin OOV las desconocidas se ignoran (no se agregan al vocabulario)
+MACHINE simple = machine.tokenizer();
+simple.fit(corpus);
+show("Sin OOV, desconocidas ignoradas:");
+show(simple.transform(["a zzz"]));

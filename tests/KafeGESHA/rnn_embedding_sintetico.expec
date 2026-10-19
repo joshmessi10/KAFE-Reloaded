@@ -1,0 +1,57 @@
+=== RNN + Embedding sintético ===
+Secuencias:
+[[1, 2, 3], [2, 1, 4], [3, 3, 2], [4, 1, 1], [5, 6, 7], [6, 7, 8], [7, 5, 6], [8, 9, 5]]
+Etiquetas:
+[0, 0, 0, 0, 1, 1, 1, 1]
+Entrenando RNN con Embedding (vocab=10, dim=4)...
+Epoch 1/40 — Loss 69.31%
+Epoch 2/40 — Loss 69.26%
+Epoch 3/40 — Loss 69.20%
+Epoch 4/40 — Loss 69.13%
+Epoch 5/40 — Loss 69.14%
+Epoch 6/40 — Loss 69.09%
+Epoch 7/40 — Loss 69.03%
+Epoch 8/40 — Loss 69.04%
+Epoch 9/40 — Loss 68.98%
+Epoch 10/40 — Loss 68.93%
+Epoch 11/40 — Loss 68.87%
+Epoch 12/40 — Loss 68.87%
+Epoch 13/40 — Loss 68.81%
+Epoch 14/40 — Loss 68.75%
+Epoch 15/40 — Loss 68.68%
+Epoch 16/40 — Loss 68.60%
+Epoch 17/40 — Loss 68.59%
+Epoch 18/40 — Loss 68.52%
+Epoch 19/40 — Loss 68.44%
+Epoch 20/40 — Loss 68.36%
+Epoch 21/40 — Loss 68.27%
+Epoch 22/40 — Loss 68.18%
+Epoch 23/40 — Loss 68.08%
+Epoch 24/40 — Loss 67.98%
+Epoch 25/40 — Loss 67.87%
+Epoch 26/40 — Loss 67.75%
+Epoch 27/40 — Loss 67.63%
+Epoch 28/40 — Loss 67.50%
+Epoch 29/40 — Loss 67.36%
+Epoch 30/40 — Loss 67.21%
+Epoch 31/40 — Loss 67.05%
+Epoch 32/40 — Loss 66.88%
+Epoch 33/40 — Loss 66.70%
+Epoch 34/40 — Loss 66.51%
+Epoch 35/40 — Loss 66.31%
+Epoch 36/40 — Loss 66.09%
+Epoch 37/40 — Loss 65.87%
+Epoch 38/40 — Loss 65.62%
+Epoch 39/40 — Loss 65.37%
+Epoch 40/40 — Loss 65.09%
+Accuracy: 
+1.0
+Predicciones vs reales:
+0 vs 0
+0 vs 0
+0 vs 0
+0 vs 0
+1 vs 1
+1 vs 1
+1 vs 1
+1 vs 1

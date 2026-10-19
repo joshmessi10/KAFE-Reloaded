@@ -13,6 +13,8 @@ self.libraries = {
     "files": [files_funcs_module, False],
     "plot": [plot_funcs_module, False],
     "geshaDeep": [gesha_funcs_module, False],
+    "geshaV2": [gesha_v2_funcs_module, False],
+    "kaggle": [kaggle_funcs_module, False],
     "pardos": [pardos_funcs_module, False],
     "machine": [machine_funcs_module, False],
     "huggingface": [hf_funcs_module, False],
@@ -32,6 +34,8 @@ self.libraries = {
 - `KafeFILES` — file I/O.
 - `KafePLOT` — SVG plotting. Modules: `functions.py`, `utils.py`.
 - `KafeGESHA` — deep learning (see `.opencode/knowledge/dl-library.md`).
+- `geshaV2` — the new tensor-based KafeGESHA API. The existing `geshaDeep` entry retains its published model and layer behavior; new examples import `geshaV2`. The two entries have separate function modules, and the new backend keeps its model/core implementations in `models_v2.py` and `core_v2.py`.
+- `kaggle` — local and Kaggle dataset ingestion through `KafeKaggle`; see `docs/bibliotecas/kaggle.md`.
 - `KafePARDOS` — DataFrames / CSV. Modules: `functions.py`, `DataFrame.py`.
 - `KafeMACHINE` — ML models and metrics (see `.opencode/knowledge/ml-library.md`).
 - `KafeHF` — optional Hugging Face dataset loading through `import huggingface;`. `src/lib/KafeHF/functions.py` exports `load_dataset` and `load_dataset_split`, returning KafePARDOS `DataFrame` objects.

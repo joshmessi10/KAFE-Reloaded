@@ -1,0 +1,59 @@
+-- ============================================
+-- Red Neuronal Multicapa: Circulos Concentricos
+-- Frontera de decision NO lineal (curva)
+-- ============================================
+-- Teoria:
+--   Clasificar puntos dentro/fuera de un circulo de
+--   radio 0.5 centrado en el origen requiere aprender
+--   la frontera x^2 + y^2 = 0.25 — una CURVA, no una
+--   linea. Ninguna red sin activaciones no lineales
+--   puede resolverlo (todo seria lineal).
+--
+--   Con dos capas ocultas la red combina activaciones:
+--     h1 = relu(W1*x + b1)  detecta sectores del plano
+--     h2 = relu(W2*h1 + b2) combina sectores en formas
+--     y  = sigmoid(W3*h2 + b3)
+--
+--   Esto ilustra el teorema de aproximacion universal:
+--   con activaciones no lineales, redes suficientemente
+--   anchas aproximan cualquier frontera continua.
+--
+--   Arquitectura: 2 -> 4 (relu) -> 4 (relu) -> 1 (sigmoid)
+-- ============================================
+
+import geshaV2;
+
+show("=== Red Multicapa: Circulos Concentricos ===");
+
+-- Puntos de entrenamiento: 6 dentro del circulo (clase 1), 6 fuera (clase 0)
+List[List[FLOAT]] x_train = [[0.0, 0.0], [0.2, 0.1], [-0.15, 0.1], [0.1, -0.2], [-0.1, -0.2], [0.15, 0.15], [0.8, 0.0], [0.0, 0.9], [-0.7, -0.5], [0.6, 0.6], [-0.9, 0.3], [0.4, -0.8]];
+List[INT] y_train = [1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0];
+
+-- Primera capa oculta: 4 neuronas relu
+GESHA hidden1 = geshaV2.create_dense(4, "relu", [2], 0.0, 42);
+-- Segunda capa oculta: 4 neuronas relu
+GESHA hidden2 = geshaV2.create_dense(4, "relu", [4], 0.0, 43);
+-- Salida: sigmoid (probabilidad de estar dentro)
+GESHA output = geshaV2.create_dense(1, "sigmoid", [4], 0.0, 44);
+GESHA model = geshaV2.sequential([hidden1, hidden2, output]);
+
+model.compile("sgd", "binary_crossentropy", []);
+model.set_lr(0.05);
+
+show("Entrenando red multicapa (2 -> 4 -> 4 -> 1)...");
+model.fit(x_train, y_train, 1000, 1);
+
+-- Puntos de prueba: dentro y fuera del circulo
+List[List[FLOAT]] x_test = [[0.0, 0.0], [0.3, 0.3], [0.7, 0.0], [0.9, 0.9]];
+show("\nPredicciones de prueba:");
+for (p in x_test):
+    INT lbl = model.predict_label(p);
+    show(str(p) + " -> clase=" + str(lbl));
+;
+
+show("\nEsperado:");
+show("[0.0, 0.0] -> clase=1");
+show("[0.3, 0.3] -> clase=1");
+show("[0.7, 0.0] -> clase=0");
+show("[0.9, 0.9] -> clase=0");
+show("\nFrontera circular aprendida con 2 capas ocultas.");

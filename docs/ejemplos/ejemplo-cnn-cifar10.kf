@@ -1,0 +1,55 @@
+-- CNN Mini para CIFAR-10: Kaggle -> GESHA
+-- Dataset: https://www.kaggle.com/datasets/ayush1220/cifar10
+--
+-- CIFAR-10 se distribuye como PNG organizados en carpetas por clase
+-- (train/<clase>/*.png). Este ejemplo usa la API de imágenes por carpetas de
+-- KafeKaggle: load_image_folder_dataset descarga el dataset, deriva la
+-- etiqueta del nombre de la carpeta, convierte cada imagen a [C,H,W] = [3,32,32],
+-- escala los píxeles a [0,1] y muestrea de forma representativa. La división
+-- estratificada queda en KafeMACHINE, que ya acepta tensores 4D.
+
+import kaggle;
+import geshaV2;
+import machine;
+
+show("=== CNN Mini: CIFAR-10 con GESHA ===");
+
+-- Carga etiquetada por carpetas: contenedor indexable [X, y].
+MACHINE datos = kaggle.load_image_folder_dataset("ayush1220/cifar10", 32, 32, "rgb", 4000, "train");
+List[List[List[List[FLOAT]]]] X = datos[0];
+List[INT] y = datos[1];
+
+-- División estratificada con KafeMACHINE (acepta tensores 4D).
+MACHINE split = machine.stratified_train_test_split(X, y, 0.2, 42);
+List[List[List[List[FLOAT]]]] X_train = split[0];
+List[List[List[List[FLOAT]]]] X_test = split[1];
+List[INT] y_train = split[2];
+List[INT] y_test = split[3];
+
+show("Imágenes [entrenamiento, prueba]:");
+show([len(X_train), len(X_test)]);
+show("Forma de una imagen RGB [canales, alto, ancho]:");
+show([len(X_train[0]), len(X_train[0][0]), len(X_train[0][0][0])]);
+
+-- Input(3,32,32) -> Conv2D(8,3x3,ReLU) -> MaxPooling2D(2x2)
+-- -> Conv2D(16,3x3,ReLU) -> GlobalAveragePooling2D -> Dense(10,Softmax).
+GESHA conv1 = geshaV2.create_conv2d(8, [3, 3], "relu", [3, 32, 32], 1, "same", 101, geshaV2.he_normal(101));
+GESHA pool1 = geshaV2.max_pooling2d([2, 2]);
+GESHA conv2 = geshaV2.create_conv2d(16, [3, 3], "relu", [8, 16, 16], 1, "same", 102, geshaV2.he_normal(102));
+GESHA gap = geshaV2.global_average_pooling2d();
+GESHA salida = geshaV2.create_dense(10, "softmax", [16], 0.0, 103, geshaV2.glorot_uniform(103));
+GESHA cnn = geshaV2.sequential([conv1, pool1, conv2, gap, salida]);
+
+-- Etiquetas enteras 0..9: Sparse Categorical Crossentropy.
+cnn.compile("adam", "sparse_categorical_crossentropy", []);
+cnn.set_lr(0.001);
+show("Entrenando CNN Mini: 5 épocas, batch size 16...");
+cnn.fit(X_train, y_train, 5, 16);
+
+-- Evaluación sobre las imágenes de prueba que no participaron en fit.
+List[INT] y_pred = cnn.predict_label(X_test);
+FLOAT accuracy_test = machine.accuracy_score(y_test, y_pred);
+show("Accuracy de prueba (%):");
+show(accuracy_test * 100.0);
+show("Matriz de confusión (filas=real, columnas=predicción):");
+show(machine.confusion_matrix(y_test, y_pred));

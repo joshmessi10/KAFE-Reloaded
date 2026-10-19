@@ -1,0 +1,50 @@
+-- Nivel 5: Iris Species, 4 -> 8 -> 3; especies 0=setosa, 1=versicolor, 2=virginica.
+-- Dataset: https://www.kaggle.com/datasets/uciml/iris
+import kaggle;
+import machine;
+import geshaV2;
+
+List[STR] columnas = ["SepalLengthCm", "SepalWidthCm", "PetalLengthCm", "PetalWidthCm"];
+List[List[FLOAT]] X = kaggle.load_dataset_matrix("uciml/iris", columnas, "Iris.csv", 0);
+PARDOS df = kaggle.load_dataset("uciml/iris", "Iris.csv");
+List[STR] especies = df.col("Species");
+List[INT] y = [];
+for (i in range(0, len(X))):
+    INT clase = 0;
+    if (especies[i] == "Iris-versicolor"):
+        clase = 1;
+    ;
+    if (especies[i] == "Iris-virginica"):
+        clase = 2;
+    ;
+    append(y, clase);
+;
+MACHINE division = machine.stratified_train_test_split(X, y, 0.2, 42);
+List[List[FLOAT]] X_train = division[0];
+List[List[FLOAT]] X_test = division[1];
+List[INT] y_train = division[2];
+List[INT] y_test = division[3];
+MACHINE scaler = machine.standard_scaler();
+scaler.fit(X_train);
+List[List[FLOAT]] train_scaled = scaler.transform(X_train);
+List[List[FLOAT]] test_scaled = scaler.transform(X_test);
+
+GESHA oculta = geshaV2.create_dense(8, "relu", [4], 0.0, 42, geshaV2.he_normal(42));
+GESHA salida = geshaV2.create_dense(3, "softmax", [8], 0.0, 43, geshaV2.glorot_uniform(43));
+GESHA modelo = geshaV2.sequential([oculta, salida]);
+modelo.compile("adam", "sparse_categorical_crossentropy", []);
+modelo.set_lr(0.01);
+modelo.fit(train_scaled, y_train, 80, 16);
+
+List[INT] predicciones = modelo.predict_label(test_scaled);
+INT aciertos = 0;
+for (i in range(0, len(y_test))):
+    if (predicciones[i] == y_test[i]):
+        aciertos = aciertos + 1;
+    ;
+    if (i < 5):
+        show("Iris real=" + str(y_test[i]) + " predicho=" + str(predicciones[i]));
+    ;
+;
+show("Iris accuracy test:");
+show(aciertos / len(y_test));

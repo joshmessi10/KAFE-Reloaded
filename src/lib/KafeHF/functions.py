@@ -23,7 +23,7 @@ from importlib import import_module
 from typing import Any
 
 from global_utils import check_sig
-from TypeUtils import string_type
+from TypeUtils import integer_type, string_list_type, string_type
 
 try:
     hf_load_dataset: Any = import_module("datasets").load_dataset
@@ -82,9 +82,7 @@ def load_dataset(dataset_name):
     if hasattr(dataset_dict, "keys"):
         splits = list(dataset_dict.keys())
         if len(splits) == 0:
-            raise Exception(
-                f"huggingface: Dataset '{dataset_name}' has no splits."
-            )
+            raise Exception(f"huggingface: Dataset '{dataset_name}' has no splits.")
         split_name = "train" if "train" in splits else splits[0]
         ds = dataset_dict[split_name]
     else:
@@ -124,6 +122,62 @@ def load_dataset_split(dataset_name, split):
         ) from e
 
     return _convert_to_pardos(dataset_dict, dataset_name)
+
+
+@check_sig(
+    [1, 2, 3, 4], [string_type], [string_list_type], [string_type], [integer_type]
+)
+def load_dataset_matrix(dataset_name, columns=None, split="train", limit=0):
+    """Load numeric columns as a matrix for NUMK and GESHA."""
+    _require_hf()
+    try:
+        dataset = hf_load_dataset(dataset_name, split=split)
+    except Exception as exc:
+        raise Exception(
+            f"huggingface: Error loading split '{split}' from dataset '{dataset_name}': {exc}"
+        ) from exc
+
+    available = list(getattr(dataset, "column_names", []))
+    if not columns:
+        if not available:
+            raise Exception("huggingface: Dataset columns are unavailable")
+        first = next(iter(dataset), None)
+        if first is None:
+            return []
+        columns = [name for name in available if _is_number(first.get(name))]
+    else:
+        missing = [name for name in columns if name not in available]
+        if missing:
+            raise Exception(f"huggingface: Missing columns: {missing}")
+
+    if not columns:
+        raise Exception("huggingface: No numeric columns found")
+
+    rows = dataset
+    if hasattr(dataset, "select_columns"):
+        try:
+            rows = dataset.select_columns(columns)
+        except Exception:
+            pass
+
+    matrix = []
+    for row in rows:
+        values = []
+        for name in columns:
+            value = row.get(name)
+            if not _is_number(value):
+                raise Exception(
+                    f"huggingface: Column '{name}' contains non-numeric or null values"
+                )
+            values.append(float(value))
+        matrix.append(values)
+        if limit > 0 and len(matrix) >= limit:
+            break
+    return matrix
+
+
+def _is_number(value):
+    return isinstance(value, (int, float)) and not isinstance(value, bool)
 
 
 def _convert_to_pardos(ds, dataset_name):

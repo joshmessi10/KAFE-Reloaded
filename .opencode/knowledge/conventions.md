@@ -10,7 +10,7 @@ Project-specific conventions implementing the mirrored `AGENTS.md` and `CLAUDE.m
 
 ## Repository Conventions
 
-- English is mandatory for repository prose, code comments, identifiers, and documentation. Tasks 1–5 migrated runtime code, tests, fixtures, and the published site; Task 6 translates project records, and Task 7 performs the final audit. Follow the root language policy for untouched surfaces. Changes to KAFE syntax, identifiers, or user-visible behavior require an explicitly approved migration.
+- English remains the default for identifiers, paths, configuration, and commit messages. Educational prose, comments, documentation, examples, and user-facing text may use English or Spanish under ADR-0014. The 2026-09-24 English migration remains part of project history. Changes to KAFE syntax, identifiers, or user-visible behavior require an explicitly approved migration.
 - Fixture-driven testing: `.kf` + `.expec` pairs under `tests/` (see `.opencode/knowledge/verifications.md`).
 - Dependency policy: see Dependency Policy below.
 
@@ -19,7 +19,7 @@ Project-specific conventions implementing the mirrored `AGENTS.md` and `CLAUDE.m
 - Python, snake_case for modules and functions; PEP 8 as the baseline.
 - Import `globals` as a module (`import globals`, never `from globals import ...`).
 - Public interpreter APIs dispatch through `InterpreterVisitor` and the component/library modules (see `.opencode/knowledge/architecture.md`); do not add parallel dispatch mechanisms.
-- Write new or updated code comments and docstrings in English.
+- Write new or updated educational comments and docstrings in English or Spanish; keep each document or module internally consistent.
 - Do not add code comments unless they explain non-obvious intent.
 - Do not author `# pyright:` or `# noqa:` suppression comments. Apply the root exception process for upstream issues instead of suppressing owned-code diagnostics. The explicit CI policy check remains pending until the quality-gate migration implements it.
 

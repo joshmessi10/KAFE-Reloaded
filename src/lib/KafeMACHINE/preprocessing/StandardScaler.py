@@ -23,12 +23,11 @@ class StandardScaler(BaseMachine):
         n_features = len(matrix[0])
 
         self.mean_ = [
-            sum(row[j] for row in matrix) / n_samples
-            for j in range(n_features)
+            float(sum(row[j] for row in matrix) / n_samples) for j in range(n_features)
         ]
         self.scale_ = [
-            sqrt(
-                sum((row[j] - self.mean_[j]) ** 2 for row in matrix) / n_samples
+            float(
+                sqrt(sum((row[j] - self.mean_[j]) ** 2 for row in matrix) / n_samples)
             )
             for j in range(n_features)
         ]
@@ -44,11 +43,17 @@ class StandardScaler(BaseMachine):
         matrix, cols, is_df = self._unwrap_data(data)
 
         if len(matrix[0]) != len(self.mean_):
-            raise Exception("StandardScaler: Input dimension does not match fitted model")
+            raise Exception(
+                "StandardScaler: Input dimension does not match fitted model"
+            )
 
         result = [
             [
-                0.0 if self.scale_[j] == 0 else (row[j] - self.mean_[j]) / self.scale_[j]
+                float(
+                    0.0
+                    if self.scale_[j] == 0
+                    else (row[j] - self.mean_[j]) / self.scale_[j]
+                )
                 for j in range(len(self.mean_))
             ]
             for row in matrix
@@ -62,7 +67,9 @@ class StandardScaler(BaseMachine):
         matrix, cols, is_df = self._unwrap_data(data)
 
         if len(matrix[0]) != len(self.mean_):
-            raise Exception("StandardScaler: Input dimension does not match fitted model")
+            raise Exception(
+                "StandardScaler: Input dimension does not match fitted model"
+            )
 
         result = [
             [row[j] * self.scale_[j] + self.mean_[j] for j in range(len(self.mean_))]

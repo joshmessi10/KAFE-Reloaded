@@ -1,0 +1,40 @@
+-- Nivel 4: aproximar y = x*x con datos generados. 1 -> 16 -> 16 -> 1.
+-- La particion deja fuera valores intermedios para medir generalizacion.
+import geshaV2;
+import machine;
+
+List[List[FLOAT]] X = [];
+List[FLOAT] y = [];
+INT i = -20;
+while (i <= 20):
+    FLOAT x = i / 20.0;
+    append(X, [x]);
+    append(y, x * x);
+    i = i + 1;
+;
+MACHINE division = machine.train_test_split(X, y, 0.2, 42);
+List[List[FLOAT]] X_train = division[0];
+List[List[FLOAT]] X_test = division[1];
+List[FLOAT] y_train = division[2];
+List[FLOAT] y_test = division[3];
+
+GESHA h1 = geshaV2.create_dense(16, "tanh", [1], 0.0, 41);
+GESHA h2 = geshaV2.create_dense(16, "tanh", [16], 0.0, 42);
+GESHA salida = geshaV2.create_dense(1, "linear", [16], 0.0, 43);
+GESHA modelo = geshaV2.sequential([h1, h2, salida]);
+modelo.compile("adam", "mse", []);
+modelo.set_lr(0.01);
+modelo.fit(X_train, y_train, 120, 8);
+
+FLOAT error = 0.0;
+for (j in range(0, len(X_test))):
+    FLOAT pred = modelo.predict(X_test[j])[0];
+    FLOAT diferencia = pred - y_test[j];
+    if (diferencia < 0.0):
+        diferencia = 0.0 - diferencia;
+    ;
+    error = error + diferencia;
+    show(str(X_test[j][0]) + " real=" + str(y_test[j]) + " predicho=" + str(pred));
+;
+show("MAE de prueba:");
+show(error / len(X_test));

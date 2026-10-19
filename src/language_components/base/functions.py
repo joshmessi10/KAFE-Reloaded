@@ -53,6 +53,7 @@ def varDecl(self, ctx):
             val = cast(Any, Gesha)()
         elif data_type == pardos_type:
             from lib.KafePARDOS.DataFrame import DataFrame
+
             val = DataFrame([], [])
         elif data_type.startswith(list_type):
             val = []
@@ -170,13 +171,19 @@ def unaryExpression(self, ctx):
 
 
 def indexingExpr(self, ctx):
+    from lib.KafeMACHINE.model_selection.model_selection import TrainTestSplit
+
     collection = self.visit(ctx.primaryExpr())
     index = self.visit(ctx.expr())
 
     if type(index) is not int:
         raiseNonIntegerIndex(index)
 
-    if type(collection) is str or type(collection) is list:
+    if (
+        type(collection) is str
+        or type(collection) is list
+        or isinstance(collection, TrainTestSplit)
+    ):
         try:
             return collection[index]
         except IndexError:
