@@ -46,7 +46,7 @@ GESHA salida = geshaDeep.create_dense(10, "softmax", [64], 0.0, 44, geshaDeep.gl
 GESHA modelo = geshaDeep.sequential([h1, h2, salida]);
 modelo.compile("adam", "sparse_categorical_crossentropy", []);
 modelo.set_lr(0.01);
-modelo.fit(X_train, y_train, 15, 2);
+modelo.fit(X_train, y_train, 4, 2);
 
 List[INT] predicciones = modelo.predict_label(X_test);
 INT aciertos = 0;

@@ -24,6 +24,7 @@
 
 import geshaDeep;
 import machine;
+import math;
 import plot;
 
 show("=== Deep Clustering: Autoencoder + KMeans ===");
@@ -65,11 +66,21 @@ MACHINE km = machine.kmeans(2, 100, 42);
 km.fit(Z);
 List[INT] labels = km.labels();
 List[List[FLOAT]] centers = km.cluster_centers();
+-- La impresion de floats de precision completa puede variar un ULP entre
+-- plataformas. Redondear solo la salida deja intacto el calculo y el SVG.
+List[List[FLOAT]] centers_display = [];
+for (center in centers):
+    List[FLOAT] row = [];
+    for (coordinate in center):
+        append(row, math.round(coordinate, 10));
+    ;
+    append(centers_display, row);
+;
 
 show("\nLabels (K-Means en el latente):");
 show(labels);
 show("Centros:");
-show(centers);
+show(centers_display);
 
 -- Separa las coordenadas del latente por cluster
 List[FLOAT] xs0 = [];

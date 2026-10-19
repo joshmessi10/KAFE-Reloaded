@@ -511,6 +511,6 @@ Espacio latente (2D):
 Labels (K-Means en el latente):
 [0, 0, 0, 0, 1, 1, 1, 1]
 Centros:
-[[-0.39785733228330133, -0.43908246796760064], [0.6271139510985616, 0.6142061017076234]]
+[[-0.3978573323, -0.439082468], [0.6271139511, 0.6142061017]]
 
 Clustering completado sin etiquetas: encoder + K-Means.

@@ -41,6 +41,7 @@ CI does this automatically: `.github/workflows/tests.yml` downloads the ANTLR ja
 ## Validation Rules
 
 - Valid programs: `.kf` + `.expec` (expected stdout), optional `.in` (stdin). Exit code must be 0.
+- When a fixture prints learned floating-point values, round only the displayed values to a meaningful precision before recording `.expec`; full-precision last digits may vary across operating systems without changing model behavior.
 - Invalid programs: `.error.kf` + `.error.expec`. Expected output = **last line of stderr plus trailing newline** (`stderr.splitlines()[-1] + "\n"`); exit code 1.
 - Interpreter quirk (do not fix): non-`.error.kf` files print runtime errors to **stdout** and exit **0**.
 
