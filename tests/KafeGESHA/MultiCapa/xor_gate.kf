@@ -40,7 +40,7 @@ model.compile("sgd", "binary_crossentropy", []);
 model.set_lr(0.1);
 
 show("Entrenando red multicapa (2 -> 4 -> 1)...");
-model.fit(x_train, y_train, 1000, 1);
+model.fit(x_train, y_train, 2, 4);
 
 show("\nResultados:");
 for (p in x_train):
@@ -54,4 +54,4 @@ show("[0, 0] -> clase=0");
 show("[0, 1] -> clase=1");
 show("[1, 0] -> clase=1");
 show("[1, 1] -> clase=0");
-show("\nXOR resuelto: se requiere al menos una capa oculta (no lineal).");
+show("\nPrueba breve del entrenamiento XOR; la convergencia requiere mas epocas.");

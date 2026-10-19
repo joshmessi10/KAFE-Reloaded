@@ -18,9 +18,6 @@ _SLOW_EXAMPLES = {
     "KafeGESHA/rnn_sintetico.kf",
     "KafeGESHA/Autoencoder/autoencoder_clustering.kf",
     "KafeGESHA/MultiCapa/circle_classification.kf",
-    "KafeGESHA/MultiCapa/xor_gate.kf",
-    "KafeGESHA/PerceptronSimple/and_gate.kf",
-    "KafeGESHA/PerceptronSimple/or_gate.kf",
 }
 
 
