@@ -13,6 +13,8 @@ huggingface = ["datasets"]
 dev = [
     "basedpyright",
     "codespell",
+    "pillow",
+    "py7zr",
     "pytest>=9.0.2",
     "pytest-cov",
     "ruff",
