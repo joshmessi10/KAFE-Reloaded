@@ -90,6 +90,7 @@ exports.activate = async function activate(context) {
     vscode.commands.registerCommand('kafe.runFile', () => runFile()),
     vscode.commands.registerCommand('kafe.newConversation', () => host.coordinator.newConversation()),
     vscode.commands.registerCommand('kafe.learningPreferences', () => host.openLearningPreferences()),
+    vscode.commands.registerCommand('kafe.toggleTeachingPause', () => host.toggleTeachingPause()),
     vscode.commands.registerCommand('kafe.configureProvider', () => host.keyHandlers.configure()),
     vscode.commands.registerCommand('kafe.clearTutorProgress', createClearProgressHandler({ vscode: api, progressStore: host.progressStore }))];
   function register() {
@@ -121,6 +122,7 @@ exports.activate = async function activate(context) {
         case 'runtimeReady': runtimeReady = true; break;
         case 'resetRunCounters': if (host.coordinator.snapshot().entries.some(e=>e.kind==='run'&&e.status==='running')) throw Error('Owned Run still active'); counters.launches=[]; counters.closed=0; break;
         case 'newConversation': await vscode.commands.executeCommand('kafe.newConversation'); break;
+        case 'toggleTeachingPause': await vscode.commands.executeCommand('kafe.toggleTeachingPause'); break;
         case 'clearLegacy': clearOperation = { status: 'pending' }; void vscode.commands.executeCommand('kafe.clearTutorProgress').then(result => { clearOperation = { status: 'settled', result }; }, () => { clearOperation = { status: 'failed' }; }); break;
         case 'configure': void vscode.commands.executeCommand('kafe.configureProvider'); break;
         case 'dismissNotifications': await vscode.commands.executeCommand('notifications.clearAll'); break;

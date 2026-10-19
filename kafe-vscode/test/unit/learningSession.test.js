@@ -79,18 +79,35 @@ test('prepared decision is inert, owned, revision-bound and committed only once'
   assert.equal(s.snapshot().decisions.length, 1);
 });
 
-test('defaults preserve unknown familiarity and queue validated preferences until settlement', () => {
+test('Beginner defaults and complete level changes queue until settlement', () => {
   const s = session();
-  assert.deepEqual(s.snapshot().preferences, { mode: 'guided', frequency: 'normal', reasoningStyle: 'open-ended', codingPreference: 'ai', familiarity: 'unknown' });
+  assert.deepEqual(s.snapshot().preferences, { mode: 'guided', level: 'beginner' });
   const before = s.snapshot();
   assert.equal(s.setPreferences({ mode: 'paused' }, { busy: true }).status, 'queued');
-  s.setPreferences({ frequency: 'light' }, { busy: true });
+  s.setPreferences({ level: 'expert' }, { busy: true });
   assert.deepEqual(s.snapshot(), before);
-  assert.throws(() => s.setPreferences({ familiarity: 'mastered' }, { busy: true }), /preference/i);
+  assert.throws(() => s.setPreferences({ level: 'mastered' }, { busy: true }), /preference/i);
+  assert.throws(() => s.setPreferences({ frequency: 'light' }, { busy: true }), /preference/i);
   assert.equal(s.settlePreferences().status, 'updated');
   assert.equal(s.snapshot().preferences.mode, 'paused');
-  assert.equal(s.snapshot().preferences.frequency, 'light');
+  assert.equal(s.snapshot().preferences.level, 'expert');
   assert.equal(s.snapshot().revision, before.revision + 1);
+});
+
+test('pause toggles compose with the pending level and repeated toggles preserve the admitted response', () => {
+  const s = session(), admitted = s.snapshot();
+  s.setPreferences({ level: 'expert' }, { busy: true });
+  assert.equal(s.toggleTeaching({ busy: true }).status, 'queued');
+  assert.equal(s.toggleTeaching({ busy: true }).status, 'queued');
+  assert.deepEqual(s.snapshot(), admitted);
+  s.settlePreferences();
+  assert.deepEqual(s.snapshot().preferences, { mode: 'guided', level: 'expert' });
+  s.toggleTeaching();
+  s.setPreferences({ level: 'intermediate' });
+  assert.deepEqual(s.snapshot().preferences, { mode: 'paused', level: 'intermediate' });
+  s.setPreferences({ level: 'expert' }, { busy: true });
+  s.reset(); s.settlePreferences();
+  assert.deepEqual(s.snapshot().preferences, { mode: 'guided', level: 'beginner' });
 });
 
 test('decisions retain dependency closure after history omission and cannot revive revoked or changed grounding', () => {
@@ -171,7 +188,7 @@ test('queued preferences reserve total byte budget before later records can cons
   const s = session();
   const value = text => ({ kind: 'concept', text, attribution: 'tutor', uncertainty: '', status: 'observed', priorDecisionIds: [] });
   for (let i = 0; i < 7; i++) s.addObservation(value('x'.repeat(8000)), empty);
-  s.setPreferences({ familiarity: 'intermediate' }, { busy: true });
+  s.setPreferences({ level: 'intermediate' }, { busy: true });
   const used = s.snapshot().byteLength;
   // One observation has 1 byte comma + 36-byte UUID + the JSON field overhead (revision=8).
   const record = { id: 'x'.repeat(36), revision: 8, ...value(''), dependencies: empty };
@@ -179,7 +196,7 @@ test('queued preferences reserve total byte budget before later records can cons
   const fill = 'x'.repeat(65536 - used - overhead);
   assert.throws(() => s.addObservation(value(fill), empty), /limit|size/i);
   assert.equal(s.settlePreferences().status, 'updated');
-  assert.equal(s.snapshot().preferences.familiarity, 'intermediate');
+  assert.equal(s.snapshot().preferences.level, 'intermediate');
 });
 
 for (const kind of ['decision', 'observation']) test(`${kind} rejects more than 64 inherited files atomically and existing context remains composable`, async () => {

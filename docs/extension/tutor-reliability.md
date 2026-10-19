@@ -33,6 +33,8 @@ The extension workflow now runs when language source or tests change. It checks 
 
 The Tutor should use `show(...)` for ordinary built-in output and explicitly invoke a driver function when a complete program defines one. Top-level snippets do not require a `main` wrapper. A user-defined `print` remains valid. Missing library documentation must remain an explicit uncertainty rather than a guessed API. Syntax parsing alone cannot prove those semantic or behavioral properties.
 
+Learning level is one of Beginner, Intermediate or Expert, with Beginner as the conversation default. Presets in `TeachingPolicy.js` define explanation depth, meaningful decision frequency, reasoning style and code preparation together; only the selected level and guided/paused mode are stored. Compare the same question across all three levels using the evaluation cases. Every level must retain verified KAFE syntax, honest execution evidence and explicit preparation/Review/Apply/Run permissions. The separate Pause/Resume Teaching command must preserve the level, including queued changes; changing a level must not resume paused teaching. Deterministic tests verify the instructions sent to the provider, not the quality of the provider's actual explanations.
+
 Suggested code remains a suggestion. Preparation, native Review, Apply, and learner-started Run retain separate permissions. A no-file proposal request receives an unavailable tool result and conversation can continue. A valid file target still requires current scope confirmation. Editing or removing a dependency invalidates a stale scope.
 
 ## Rendered layout regression

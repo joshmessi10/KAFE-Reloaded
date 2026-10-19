@@ -78,12 +78,32 @@ test('included context controls and disclosure remain keyed and focused during s
   assert.equal(v.byId('included-context').children[0], node); assert.equal(v.document.activeElement, remove); assert.equal(v.byId('context-selector').open, true);
 });
 
-test('guided learning footer delegates native preferences and paused projection never grants implementation', () => {
+for (const [level, mode, label] of [
+  ['beginner', 'guided', 'Beginner'],
+  ['intermediate', 'guided', 'Intermediate'],
+  ['expert', 'guided', 'Expert'],
+  ['expert', 'paused', 'Expert (paused)'],
+]) test(`host-selected ${label} control delegates only to native preferences`, () => {
+  const v = loadView(); v.render(snapshot({ draft: 'My next question', learning: { revision: 1, preferences: { mode, level } } }));
+  const opener = v.byId('guided-learning');
+  assert.equal(opener.textContent, label);
+  assert.equal(opener.getAttribute('type'), 'button');
+  assert.equal(opener.getAttribute('aria-pressed'), null);
+  assert.match(opener.getAttribute('aria-label'), new RegExp(`Choose learning level.*Current level: ${label.split(' ')[0]}`));
+  assert.equal(opener.getAttribute('title'), opener.getAttribute('aria-label'));
+  if (mode === 'paused') assert.match(opener.getAttribute('aria-label'), /paused/);
+  opener.dispatch('click');
+  assert.deepEqual(v.sent, [envelope('openLearningPreferences')]);
+  assert.equal(v.byId('composer').value, 'My next question');
+  assert.equal(v.byId('timeline').children.length, 0);
+});
+
+test('older view snapshots without a level render Beginner safely', () => {
   const v = loadView(); v.render(snapshot({ learning: { revision: 1, preferences: { mode: 'guided' } } }));
-  v.byId('guided-learning').dispatch('click'); assert.deepEqual(v.sent.at(-1), envelope('openLearningPreferences'));
-  v.render(snapshot({ learning: { revision: 2, preferences: { mode: 'paused' } } }));
-  assert.equal(v.byId('guided-learning').textContent, 'Learning paused'); assert.equal(v.byId('guided-learning').getAttribute('aria-pressed'), null);
-  assert.equal(v.sent.length, 1);
+  assert.equal(v.byId('guided-learning').textContent, 'Beginner');
+  v.render(snapshot({ revision: 2, learning: { revision: 2, preferences: { mode: 'paused' } } }));
+  assert.equal(v.byId('guided-learning').textContent, 'Beginner (paused)');
+  assert.match(v.byId('conversation-status').textContent, /Learning level: Beginner.*paused/);
 });
 
 test('Run surface keeps source comparisons unknown independent of zero exit and current editor changes', () => {

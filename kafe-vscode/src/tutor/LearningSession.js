@@ -106,6 +106,10 @@ class LearningSession {
   settlePreferences() {
     return this.#pending ? this.setPreferences(this.#pending) : { status: 'unchanged' };
   }
+  toggleTeaching(options = {}) {
+    const current = this.#pending ?? this.#preferences;
+    return this.setPreferences({ mode: current.mode === 'paused' ? 'guided' : 'paused' }, options);
+  }
   #closure(dependencies, ids) {
     // The record bound applies after transitive union, before any state mutation.
     // Context selection can aggregate more identities across independently valid records.

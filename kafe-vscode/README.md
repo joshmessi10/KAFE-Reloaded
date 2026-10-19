@@ -12,7 +12,13 @@ The included whole-file indicators identify the active eligible `.kf` and select
 
 ## Guided learning and permissions
 
-Concept questions can receive direct explanations. For meaningful design decisions, the Tutor asks for learner reasoning, discusses requested options and may propose a Design or Implementation checkpoint. Guided learning defaults to Normal frequency, open-ended reasoning, AI preparation and unknown familiarity. **Guided learning** beside the composer or **KAFE: Learning Preferences** opens native, optional memory-only preferences, including pause/resume. Changes during a response queue until settlement. Ordinary typed discussion remains available; no onboarding wizard is required.
+Concept questions can receive direct explanations. For meaningful design decisions, the Tutor asks for learner reasoning, discusses requested options and may propose a Design or Implementation checkpoint. The level button beside the composer or **KAFE: Learning Level** opens one native picker with exactly three choices:
+
+- **Beginner** (default): step-by-step explanations, unfamiliar terms explained, more guidance and worked examples when requested.
+- **Intermediate**: shorter explanations, hints and trade-offs, collaborative preparation and occasional checkpoints.
+- **Expert**: direct technical answers, minimal introductory explanation and checkpoints for major decisions.
+
+Levels select a teaching style, not measured ability. Each selection applies a complete preset; independent frequency, reasoning, preparation and familiarity menus are no longer exposed. All levels use the same KAFE references and explicit preparation, Review, Apply and Run permissions. **KAFE: Pause/Resume Teaching** separately toggles teaching without changing the selected level; selecting a different level does not resume paused teaching. Changes during a response queue until settlement. Repeated pause/resume requests act on the queued selection. The button shows the active level, including paused status; queued changes are announced when queued and when applied. Preferences stay in memory for the conversation; New conversation resets to guided Beginner. Ordinary typed discussion remains available; no onboarding wizard is required.
 
 A checkpoint's learner-proposal summary is explicitly an unconfirmed Tutor summary. **Confirm and continue** records adoption and continues discussion; it does not establish learner authorship, understanding or mastery. **Discuss** and **Skip** confer no preparation grant. Waiting for reasoning is settled, with no work spinner or Stop.
 

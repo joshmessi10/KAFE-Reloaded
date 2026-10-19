@@ -182,11 +182,11 @@ test('preferences changed during provider response queue until settlement withou
 
 test('new conversation and recreated host clear learning independently of legacy state and credentials', async () => {
   const f = fixture();
-  await f.coordinator.handleLearnerMessage({ type: 'setLearningPreferences', preferences: { mode: 'paused', familiarity: 'beginner' } });
+  await f.coordinator.handleLearnerMessage({ type: 'setLearningPreferences', preferences: { mode: 'paused', level: 'expert' } });
   f.coordinator.learningSession.addObservation({ kind: 'concept', text: 'Iteration explained', attribution: 'tutor', uncertainty: 'Unknown', status: 'observed', priorDecisionIds: [] }, { files: [], knowledgeLineage: null });
   f.coordinator.newConversation(); await f.coordinator.refreshContext();
   assert.equal(f.coordinator.learningSession.snapshot().preferences.mode, 'guided');
-  assert.equal(f.coordinator.learningSession.snapshot().preferences.familiarity, 'unknown');
+  assert.equal(f.coordinator.learningSession.snapshot().preferences.level, 'beginner');
   assert.deepEqual(f.coordinator.learningSession.snapshot().observations, []);
   const another = fixture();
   assert.equal(another.coordinator.learningSession.snapshot().preferences.mode, 'guided');
@@ -214,9 +214,9 @@ test('native host submission and retry settle queued preferences through the sha
   const actions = new TutorHostActions({ session: f.coordinator.session, controller: f.coordinator.controller, coordinator: f.coordinator });
   const first = actions.submitMessage({ submissionId: randomUUID(), text: 'Help', contextRevision: f.coordinator.snapshot().context.revision });
   await entered[0].promise;
-  await f.coordinator.handleLearnerMessage({ type: 'setLearningPreferences', preferences: { frequency: 'light' } });
+  await f.coordinator.handleLearnerMessage({ type: 'setLearningPreferences', preferences: { level: 'expert' } });
   gates[0].resolve(); assert.equal((await first).status, 'failed');
-  assert.equal(f.coordinator.learningSession.snapshot().preferences.frequency, 'light');
+  assert.equal(f.coordinator.learningSession.snapshot().preferences.level, 'expert');
   const state = f.coordinator.snapshot(), entry = state.entries.find(e => e.actions.some(a => a.type === 'retryTurn' && a.enabled));
   const action = entry.actions.find(a => a.type === 'retryTurn');
   const retry = actions.dispatch({ type: 'invokeAction', sessionId: state.sessionId, generation: state.generation, entryId: entry.id, actionId: action.id, args: action.args });

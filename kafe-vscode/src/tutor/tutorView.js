@@ -10,6 +10,8 @@
   let stopping = null;
   let runBinding = null;
   const activeStates = ['preparing', 'responding', 'processing-tools'];
+  const levelLabels = { beginner: 'Beginner', intermediate: 'Intermediate', expert: 'Expert' };
+  const learningLevelLabel = preferences => Object.hasOwn(levelLabels, preferences?.level) ? levelLabels[preferences.level] : 'Beginner';
   const record = value => value !== null && typeof value === 'object' && !Array.isArray(value);
   const nonblank = value => typeof value === 'string' && Boolean(value.trim());
   const counter = value => Number.isSafeInteger(value) && value >= 0;
@@ -54,7 +56,11 @@
     renderDock();
     byId('stop').hidden = !active; byId('stop').disabled = !active || Boolean(stopping);
     const paused = state?.learning?.preferences?.mode === 'paused';
-    byId('guided-learning').textContent = paused ? 'Learning paused' : 'Guided learning';
+    const level = learningLevelLabel(state?.learning?.preferences), opener = byId('guided-learning');
+    const label = paused ? `${level} (paused)` : level;
+    if (opener.textContent !== label) opener.textContent = label;
+    const description = `Choose learning level. Current level: ${level}.${paused ? ' Guided learning paused.' : ''}`;
+    opener.setAttribute('aria-label', description); opener.setAttribute('title', description);
     if (active && focused === byId('send')) byId('stop').focus();
     else if (!active && focused === byId('stop')) {
       if (!byId('send').disabled) byId('send').focus();
@@ -192,8 +198,9 @@
       updates.push(words[next.turn.status]);
     }
     announcedTurn = key;
-    const learningSignature = JSON.stringify([next.learning?.preferences?.mode, next.learning?.preferenceChangeQueued]);
-    if (!fresh && learningSignature !== announcedLearning) updates.push(next.learning?.preferenceChangeQueued ? 'Preference change queued until this response settles.' : next.learning?.preferences?.mode === 'paused' ? 'Guided learning paused.' : 'Guided learning active.');
+    const level = learningLevelLabel(next.learning?.preferences), paused = next.learning?.preferences?.mode === 'paused';
+    const learningSignature = JSON.stringify([paused, level, next.learning?.preferenceChangeQueued === true]);
+    if (!fresh && learningSignature !== announcedLearning) updates.push(next.learning?.preferenceChangeQueued ? 'Preference change queued until this response settles.' : `Learning level: ${level}. Guided learning ${paused ? 'paused' : 'active'}.`);
     announcedLearning = learningSignature;
     for (const e of next.entries) {
       if (e.kind === 'checkpoint') {

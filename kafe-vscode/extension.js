@@ -8,6 +8,7 @@ const { DeepSeekProvider, SECRET_KEY } = require('./src/tutor/providers/DeepSeek
 const { SessionCoordinator } = require('./src/tutor/SessionCoordinator');
 const { ContextComposer } = require('./src/tutor/ContextComposer');
 const { LearningSession } = require('./src/tutor/LearningSession');
+const { LEARNING_LEVELS } = require('./src/tutor/TeachingPolicy');
 const { KnowledgeRetriever, KnowledgeUnavailable, KnowledgeIntegrityError } = require('./src/tutor/KnowledgeRetriever');
 const { DevelopmentKnowledgePack } = require('./src/tutor/DevelopmentKnowledgePack');
 const { ToolRouter } = require('./src/tutor/ToolRouter');
@@ -230,17 +231,18 @@ function createTutorHost({ vscode, extensionUri, secrets, workspaceState, runtim
   const openLearningPreferences = async () => {
     const { sessionId, generation } = coordinator.snapshot();
     const current = () => !hostDisposed && coordinator.snapshot().sessionId === sessionId && coordinator.snapshot().generation === generation;
-    const labels = { mode: 'Guided learning', frequency: 'Decision frequency', reasoningStyle: 'Reasoning style', codingPreference: 'Code preparation', familiarity: 'Self-reported familiarity' };
-    const choices = { mode: [['guided', 'Guided learning'], ['paused', 'Pause teaching']], frequency: [['light', 'Light'], ['normal', 'Normal'], ['frequent', 'Frequent']], reasoningStyle: [['open-ended', 'Open-ended'], ['multiple-choice', 'Multiple choice'], ['mixed', 'Mixed']], codingPreference: [['ai', 'AI prepares agreed code'], ['mixed', 'Mixed preparation'], ['hands-on', 'Learner prepares code']], familiarity: [['unknown', 'Unknown'], ['beginner', 'Beginner'], ['intermediate', 'Intermediate'], ['advanced', 'Advanced']] };
     const preferences = coordinator.learningSession.snapshot().preferences;
-    const section = await vscode.window.showQuickPick(Object.entries(labels).map(([key, label]) => ({ key, label, description: preferences[key] })), { title: 'KAFE learning preferences', placeHolder: 'Memory-only preferences; changes during a response take effect after it settles.' });
+    const choices = Object.entries(LEARNING_LEVELS).map(([level, preset]) => ({
+      level, label: preset.label, description: preset.description,
+      ...(level === preferences.level ? { detail: 'Current level' } : {}),
+    }));
+    const picked = await vscode.window.showQuickPick(choices, { title: 'KAFE: Learning Level',
+      placeHolder: 'Choose your level of guidance. Changes take effect after the current response.' });
     if (!current()) return { status: 'stale' };
-    if (!section || !Object.hasOwn(choices, section.key)) return { status: 'cancelled' };
-    const picked = await vscode.window.showQuickPick(choices[section.key].map(([value, label]) => ({ value, label, description: value === preferences[section.key] ? 'Current' : undefined })), { title: labels[section.key], placeHolder: 'Learning preferences do not authorize file edits or Run.' });
-    if (!current()) return { status: 'stale' };
-    if (!picked || !choices[section.key].some(([value]) => value === picked.value)) return { status: 'cancelled' };
-    return coordinator.handleLearnerMessage({ type: 'setLearningPreferences', preferences: { [section.key]: picked.value } });
+    if (!picked || !choices.includes(picked)) return { status: 'cancelled' };
+    return coordinator.handleLearnerMessage({ type: 'setLearningPreferences', preferences: { level: picked.level } });
   };
+  const toggleTeachingPause = () => coordinator.handleLearnerMessage({ type: 'toggleTeachingPause' });
   const onMessage = async message => {
     if (!isTutorMessage(message, coordinator.session)) return { status: 'stale' };
     try {
@@ -346,7 +348,7 @@ function createTutorHost({ vscode, extensionUri, secrets, workspaceState, runtim
     subscriptions.push(watcher.onDidDelete(uri => sourceEvent(uri, true)));
   }
   const readiness = actions.refreshContext();
-  return { tutorView, coordinator, proposalProvider, progressStore, actions, runFile, keyHandlers, readiness, openLearningPreferences,
+  return { tutorView, coordinator, proposalProvider, progressStore, actions, runFile, keyHandlers, readiness, openLearningPreferences, toggleTeachingPause,
     resolveKnowledge, knowledgeRetriever,
     dispose() { hostDisposed = true; actions.dispose(); coordinator.dispose(); tutorView.dispose(); diagnostics.dispose(); for (const subscription of subscriptions) subscription.dispose(); } };
 }
@@ -546,6 +548,7 @@ function activate(context) {
     vscode.commands.registerCommand('kafe.clearTutorProgress', createClearProgressHandler({ vscode, progressStore })),
     vscode.commands.registerCommand('kafe.newConversation', () => coordinator.newConversation()),
     vscode.commands.registerCommand('kafe.learningPreferences', () => host.openLearningPreferences()),
+    vscode.commands.registerCommand('kafe.toggleTeachingPause', () => host.toggleTeachingPause()),
   );
 }
 

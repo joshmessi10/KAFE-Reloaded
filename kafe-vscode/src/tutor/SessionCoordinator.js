@@ -352,9 +352,11 @@ class SessionCoordinator {
   async handleLearnerMessage(message) {
     if (this.disposed) return { status: 'cancelled' };
     if (!message || typeof message.type !== 'string') return { status: 'unavailable' };
-    if (message.type === 'setLearningPreferences') {
+    if (message.type === 'setLearningPreferences' || message.type === 'toggleTeachingPause') {
       try {
-        const result = this.learningSession.setPreferences(message.preferences, { busy: this.controller.isBusy() });
+        const options = { busy: this.controller.isBusy() };
+        const result = message.type === 'toggleTeachingPause' ? this.learningSession.toggleTeaching(options) :
+          this.learningSession.setPreferences(message.preferences, options);
         if (result.status === 'queued') this.preferenceChangeQueued = true;
         if (['updated', 'queued'].includes(result.status)) this.publishLearning();
         return result;

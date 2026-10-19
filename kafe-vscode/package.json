@@ -2,7 +2,7 @@
   "name": "kafe-neural-suite",
   "displayName": "KAFE Neural Development Suite",
   "description": "Edit and run KAFE programs with a guided AI tutor.",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "publisher": "KAFEGROUP",
   "icon": "icon.png",
   "license": "MIT",
@@ -45,6 +45,7 @@
     "onCommand:kafe.clearTutorProgress",
     "onCommand:kafe.newConversation",
     "onCommand:kafe.learningPreferences",
+    "onCommand:kafe.toggleTeachingPause",
     "onView:kafeTutorView"
   ],
   "contributes": {
@@ -110,8 +111,12 @@
       },
       {
         "command": "kafe.learningPreferences",
-        "title": "KAFE: Learning Preferences",
+        "title": "KAFE: Learning Level",
         "icon": "$(settings-gear)"
+      },
+      {
+        "command": "kafe.toggleTeachingPause",
+        "title": "KAFE: Pause/Resume Teaching"
       }
     ],
     "viewsContainers": {

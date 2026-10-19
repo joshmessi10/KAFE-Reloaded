@@ -10,7 +10,10 @@ test('manifest keeps the Marketplace identity and registers KAFE editing', () =>
   const pkg = readJson('package.json');
   assert.equal(pkg.publisher, 'KAFEGROUP');
   assert.equal(pkg.name, 'kafe-neural-suite');
-  assert.equal(pkg.version, '0.0.5');
+  assert.match(pkg.version, /^(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)$/);
+  const lock = readJson('package-lock.json');
+  assert.equal(lock.version, pkg.version);
+  assert.equal(lock.packages[''].version, pkg.version);
   assert.match(pkg.engines.vscode, /^\^1\.(?:9\d|[1-9]\d\d)\.0$/);
   assert.ok(pkg.activationEvents.includes('onLanguage:kafe'));
   const language = pkg.contributes.languages.find((item) => item.id === 'kafe');
@@ -23,7 +26,7 @@ test('manifest keeps the Marketplace identity and registers KAFE editing', () =>
 test('manifest exposes the runner, runtime installer, and tutor view', () => {
   const pkg = readJson('package.json');
   const commands = new Map(pkg.contributes.commands.map((item) => [item.command, item.title]));
-  assert.deepEqual([...commands.keys()].sort(), ['kafe.clearProviderKey', 'kafe.clearTutorProgress', 'kafe.configureProvider', 'kafe.installRuntime', 'kafe.learningPreferences', 'kafe.newConversation', 'kafe.openTutor', 'kafe.runFile']);
+  assert.deepEqual([...commands.keys()].sort(), ['kafe.clearProviderKey', 'kafe.clearTutorProgress', 'kafe.configureProvider', 'kafe.installRuntime', 'kafe.learningPreferences', 'kafe.newConversation', 'kafe.openTutor', 'kafe.runFile', 'kafe.toggleTeachingPause']);
   assert.ok(pkg.activationEvents.includes('onCommand:kafe.configureProvider'));
   assert.ok(!pkg.activationEvents.includes('onCommand:kafe.configureProviderKey'));
   const extension = readFileSync(path.join(root, 'extension.js'), 'utf8');

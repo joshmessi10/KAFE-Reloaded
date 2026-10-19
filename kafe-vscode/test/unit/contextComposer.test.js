@@ -115,8 +115,32 @@ test('teaching request fixtures carry direct concepts, learner-owned decisions, 
     assert.match(policy, /onboarding.*optional.*one question/i);
     assert.doesNotMatch(policy, /Start with a hint/i);
     assert.equal(result.payload.messages.at(-1).content, request);
-    assert.equal(result.learning.preferences.familiarity, 'unknown');
+    assert.equal(result.learning.preferences.level, 'beginner');
   }
+});
+
+test('each selected level reaches the provider with its complete guidance and shared KAFE references', async () => {
+  const { LearningSession } = require('../../src/tutor/LearningSession');
+  const learning = new LearningSession();
+  const composer = new ContextComposer({ documentReader: {}, knowledgeRetriever: {} });
+  for (const [level, guidance, frequency, coding] of [
+    ['beginner', /step-by-step.*unfamiliar terms/i, 'frequent', 'ai'],
+    ['expert', /direct technical answers.*major decisions/i, 'light', 'ai'],
+    ['intermediate', /shorter explanations.*trade-offs/i, 'normal', 'mixed'],
+    ['beginner', /step-by-step.*unfamiliar terms/i, 'frequent', 'ai'],
+  ]) {
+    learning.setPreferences({ level });
+    const result = await composer.compose({ request: 'Explain this KAFE loop', learningSession: learning });
+    const policy = result.payload.messages[0].content;
+    assert.deepEqual(result.learning.preferences, { mode: 'guided', level });
+    assert.match(policy, guidance);
+    assert.ok(policy.includes(`"frequency":"${frequency}"`));
+    assert.ok(policy.includes(`"codingPreference":"${coding}"`));
+    assert.match(policy, /scoped preparation confirmation/);
+    assert.match(policy, /Review, Apply and learner-started Run remain distinct/);
+    assert.ok(result.sources.some(source => source.category === 'language-reference'));
+  }
+  assert.throws(() => learning.setPreferences({ level: 'advanced' }), /preference/);
 });
 
 test('paused teaching removes reasoning prerequisite while retaining scoped preparation and native authorities', async () => {
