@@ -55,8 +55,6 @@
     byId('stop').hidden = !active; byId('stop').disabled = !active || Boolean(stopping);
     const paused = state?.learning?.preferences?.mode === 'paused';
     byId('guided-learning').textContent = paused ? 'Learning paused' : 'Guided learning';
-    const learningState = state?.learning?.preferenceChangeQueued ? 'Preference change queued until this response settles; the current response keeps its admitted preferences.' : paused ? 'Paused. Direct preparation still requires a displayed scope confirmation.' : 'Guided learning. Preferences are optional; continue chatting without setup.';
-    if (byId('learning-state').textContent !== learningState) byId('learning-state').textContent = learningState;
     if (active && focused === byId('send')) byId('stop').focus();
     else if (!active && focused === byId('stop')) {
       if (!byId('send').disabled) byId('send').focus();

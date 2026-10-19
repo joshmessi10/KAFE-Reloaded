@@ -2,7 +2,7 @@
   "name": "kafe-neural-suite",
   "displayName": "KAFE Neural Development Suite",
   "description": "Edit and run KAFE programs with a guided AI tutor.",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "publisher": "KAFEGROUP",
   "icon": "icon.png",
   "license": "MIT",

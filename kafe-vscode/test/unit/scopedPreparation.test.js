@@ -51,7 +51,7 @@ test('queued native preferences project without changing admitted teaching revis
   const queued = f.coordinator.snapshot(); view.render(queued);
   assert.equal(queued.learning.preferenceChangeQueued, true);
   assert.equal(queued.learning.revision, admitted); assert.equal(queued.revision, before.revision);
-  assert.match(view.byId('learning-state').textContent, /queued/);
+  assert.match(view.byId('conversation-status').textContent, /queued/);
   release.resolve(); await sending; const settled = f.coordinator.snapshot(); view.render(settled);
   assert.equal(settled.learning.preferenceChangeQueued, false); assert.equal(settled.learning.preferences.mode, 'paused');
   assert.equal(settled.entries.find(e => e.kind === 'checkpoint').actions.find(a => a.enabled && a.type === 'implementCheckpoint').label, 'Prepare change');

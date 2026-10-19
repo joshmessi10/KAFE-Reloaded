@@ -35,8 +35,6 @@ p { margin: 0 0 8px; overflow-wrap: anywhere; }
 .learning-field { min-width: 0; margin-block: 14px 8px; overflow-wrap: anywhere; }
 .learning-field h3 { font-size: 1em; line-height: 1.4; margin: 0 0 4px; font-weight: 600; }
 .learning-field p, .learning-field ul { margin-block: 4px 0; }
-#learning-help { font-size: .92em; margin-block: 8px 0; }
-#learning-help p { margin-block: 8px; overflow-wrap: anywhere; }
 button { color: var(--vscode-button-secondaryForeground, var(--vscode-foreground)); background: var(--vscode-button-secondaryBackground, var(--vscode-input-background)); border: 1px solid var(--vscode-contrastBorder, transparent); border-radius: 4px; padding: 4px 8px; min-height: 28px; font: inherit; line-height: 1.35; cursor: pointer; overflow-wrap: anywhere; max-width: 100%; }
 button:hover:not(:disabled) { background: var(--vscode-button-secondaryHoverBackground, var(--vscode-list-hoverBackground)); }
 button:disabled { opacity: .65; cursor: default; }
@@ -57,9 +55,7 @@ textarea:focus-visible { outline-offset: 1px; }
 .composer-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 6px; }
 #guided-learning { flex: 0 1 auto; padding-inline: 2px; }
 .submit-controls { margin-left: auto; display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: center; gap: 4px; }
-.composer-support { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; margin-top: 6px; }
-#composer-help { flex: 1 1 140px; margin: 0; font-size: .85em; }
-#context-run { min-width: 0; text-align: left; font-size: .9em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#context-run { display: block; max-width: 100%; min-width: 0; margin-top: 6px; text-align: left; font-size: .9em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .context-row { min-width: 0; font-size: .92em; }
 #active-context { display: block; overflow-wrap: anywhere; }
 #included-context { max-height: min(112px, 18vh); overflow: auto; scrollbar-color: var(--vscode-scrollbarSlider-background) transparent; }
@@ -85,7 +81,7 @@ pre { margin: 8px 0; padding: 10px; border: 1px solid var(--vscode-panel-border)
 pre code { padding: 0; }
 ::selection { color: var(--vscode-editor-selectionForeground, var(--vscode-foreground)); background: var(--vscode-editor-selectionBackground); }
 @media (max-width: 320px) { #tutor { --lane-gutter: 8px; } .composer-form { padding: 8px; } .composer-controls { gap: 4px; } }
-@media (max-height: 500px) { .composer-form { margin-bottom: 6px; padding-block: 6px; max-height: 68%; } textarea { min-height: 2.5em; } #composer-help { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); } #included-context { max-height: 14vh; } .composer-support { margin-top: 2px; } }
+@media (max-height: 500px) { .composer-form { margin-bottom: 6px; padding-block: 6px; max-height: 68%; } textarea { min-height: 2.5em; } #included-context { max-height: 14vh; } #context-run { margin-top: 2px; } }
 @media (max-width: 200px) { .submit-controls { width: 100%; } .context-origin { display: none; } }
 @media (prefers-reduced-motion: reduce) { #timeline { scroll-behavior: auto; } }
 @media (forced-colors: active) { .composer-form, pre, .entry[data-kind="learner"] { border: 1px solid CanvasText; } button, textarea { border: 1px solid ButtonText; } button:disabled { opacity: 1; color: GrayText; } :focus-visible { outline-color: Highlight; } }

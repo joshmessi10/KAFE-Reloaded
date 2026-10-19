@@ -22,6 +22,7 @@
       </div>
       <label for="composer" class="sr-only">Message to KAFE Tutor</label>
       <textarea id="composer" rows="2" aria-describedby="composer-help" placeholder="Ask a question or describe what you want to build."></textarea>
+      <p id="composer-help" class="sr-only">Enter to send. Shift+Enter for a new line.</p>
       <div class="composer-controls">
         <button id="guided-learning" class="quiet-control" type="button" aria-label="Open native learning preferences">Guided learning</button>
         <div class="submit-controls">
@@ -35,16 +36,7 @@
         <p class="context-note">File contents enter the request only after inclusion. The active KAFE file is included by default.</p>
         <div id="context-sources"></div>
       </details>
-      <div class="composer-support">
-        <p id="composer-help">Enter to send. Shift+Enter for a new line.</p>
-        <button id="context-run" class="quiet-control" type="button" hidden></button>
-      </div>
-      <details id="learning-help">
-        <summary>Learning controls</summary>
-        <p id="learning-state"></p>
-        <p>Concept questions can be answered directly. Write your own reasoning in this composer, request options or help, or use Discuss and Skip on a checkpoint. Neither grants preparation permission.</p>
-        <p>Pause or resume guided learning in native learning preferences. Preferences are optional and stay in memory. New conversation clears teaching state; reopening this view retains it.</p>
-      </details>
+      <button id="context-run" class="quiet-control" type="button" hidden></button>
     </form>
   </main>
   <script id="initial-state" type="application/json" nonce="{{NONCE}}">{{INITIAL_STATE}}</script>

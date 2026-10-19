@@ -40,16 +40,14 @@ test('all checkpoint list limits remain fully reachable and literal provider HTM
   assert.equal(t.querySelector('details'), disclosure); assert.equal(disclosure.open, true);
 });
 
-test('learning support is optional and native preferences opener has button semantics with queued settlement copy', () => {
+test('native preferences remain available and learning changes are announced', () => {
   const v = loadView(); v.render(snapshot({ learning: { revision: 1, displayRevision: 1, preferences: { mode: 'guided' }, preferenceChangeQueued: false } }));
   const opener = v.byId('guided-learning');
   assert.equal(opener.getAttribute('aria-pressed'), null);
-  assert.match(v.byId('learning-help').textContent, /Concept questions.*directly/);
-  assert.match(v.byId('learning-help').textContent, /Pause or resume.*native learning preferences/);
   v.render(snapshot({ learning: { revision: 1, displayRevision: 2, preferences: { mode: 'guided' }, preferenceChangeQueued: true } }));
-  assert.match(v.byId('learning-state').textContent, /queued.*response settles/);
+  assert.match(v.byId('conversation-status').textContent, /queued.*response settles/);
   v.render(snapshot({ learning: { revision: 2, displayRevision: 3, preferences: { mode: 'paused' }, preferenceChangeQueued: false } }));
-  assert.match(v.byId('learning-state').textContent, /Paused.*scope confirmation/);
+  assert.match(v.byId('conversation-status').textContent, /Guided learning paused/);
   opener.dispatch('click'); assert.equal(v.sent.at(-1).type, 'openLearningPreferences');
   assert.equal(v.sent.length, 1); assert.deepEqual(v.persisted, []);
 });
