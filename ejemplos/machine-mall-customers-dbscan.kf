@@ -1,0 +1,49 @@
+-- DBSCAN: clustering with Mall Customers.
+-- Five representative cluster assignments are printed below.
+import kaggle;
+import machine;
+import plot;
+
+List[STR] columnas = ["Annual Income (k$)", "Spending Score (1-100)"];
+List[List[FLOAT]] X = kaggle.load_dataset_matrix(
+    "vjchoudhary7/customer-segmentation-tutorial-in-python",
+    columnas, "Mall_Customers.csv", 0
+);
+MACHINE scaler = machine.standard_scaler();
+scaler.fit(X);
+List[List[FLOAT]] X_scaled = scaler.transform(X);
+show("Customers:");
+show(len(X_scaled));
+
+MACHINE dbscan = machine.dbscan(0.35, 5);
+List[INT] grupos_dbscan = dbscan.fit_predict(X_scaled);
+show("DBSCAN - Mall Customers: clusters (excluding noise) and first assignment:");
+show(dbscan.n_clusters());
+show(grupos_dbscan[0]);
+
+show("Five examples: features -> assigned cluster:");
+List[INT] casos = [0, 49, 99, 149, 199];
+for (indice in casos):
+    show(str(X_scaled[indice]) + " -> " + str(grupos_dbscan[indice]));
+;
+
+plot.figure();
+plot.title("mall customers dbscan: clusters");
+plot.xlabel("Feature 1");
+plot.ylabel("Feature 2");
+List[STR] colores = ["gray", "blue", "red", "green", "orange", "purple", "brown", "black"];
+for (grupo in range(-1, 6)):
+    List[FLOAT] xs_grupo = [];
+    List[FLOAT] ys_grupo = [];
+    for (j in range(0, len(X_scaled))):
+        if (grupos_dbscan[j] == grupo):
+            append(xs_grupo, X_scaled[j][0]);
+            append(ys_grupo, X_scaled[j][1]);
+        ;
+    ;
+    if (len(xs_grupo) > 0):
+        plot.pointColor(colores[grupo + 1]);
+        plot.graph(xs_grupo, ys_grupo, "point");
+    ;
+;
+plot.render();

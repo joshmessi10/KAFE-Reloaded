@@ -1,0 +1,197 @@
+/* KAFE Custom Theme — Black / White / Yellow Palette */
+
+:root {
+  --md-primary-fg-color: #1a1a1a;
+  --md-primary-fg-color--light: #2d2d2d;
+  --md-primary-fg-color--dark: #0d0d0d;
+  --md-accent-fg-color: #f5c518;
+  --md-accent-fg-color--transparent: rgba(245, 197, 24, 0.1);
+  --md-default-bg-color: #ffffff;
+  --md-default-fg-color: #1a1a1a;
+  --md-typeset-color: #1a1a1a;
+}
+
+[data-md-color-scheme="slate"] {
+  --md-default-bg-color: #1a1a1a;
+  --md-default-fg-color: #e0e0e0;
+  --md-typeset-color: #e0e0e0;
+  --md-accent-fg-color: #f5c518;
+  --md-accent-fg-color--transparent: rgba(245, 197, 24, 0.15);
+}
+
+/* Header */
+.md-header {
+  background-color: #0d0d0d;
+}
+
+/* Navigation */
+.md-nav__link {
+  color: #e0e0e0;
+}
+
+.md-nav__link:hover {
+  color: #f5c518;
+}
+
+.md-nav__item--active > .md-nav__link {
+  color: #f5c518;
+  font-weight: 600;
+}
+
+/* Tabs */
+.md-tabs {
+  background-color: #1a1a1a;
+}
+
+.md-tabs__link {
+  color: #cccccc;
+}
+
+.md-tabs__link:hover,
+.md-tabs__link--active {
+  color: #f5c518;
+}
+
+/* Content */
+.md-content {
+  background-color: #ffffff;
+}
+
+[data-md-color-scheme="slate"] .md-content {
+  background-color: #1a1a1a;
+}
+
+/* Code blocks */
+.md-typeset code {
+  background-color: #f5f5f5;
+  color: #1a1a1a;
+  border-left: 4px solid #f5c518;
+}
+
+[data-md-color-scheme="slate"] .md-typeset code {
+  background-color: #2d2d2d;
+  color: #e0e0e0;
+  border-left: 4px solid #f5c518;
+}
+
+/* Admonitions */
+.md-typeset .admonition,
+.md-typeset details {
+  border-left-color: #f5c518;
+  background-color: #fffde7;
+}
+
+[data-md-color-scheme="slate"] .md-typeset .admonition,
+[data-md-color-scheme="slate"] .md-typeset details {
+  background-color: #2d2d00;
+}
+
+/* Tables */
+.md-typeset table:not([class]) {
+  border: 1px solid #e0e0e0;
+}
+
+.md-typeset table:not([class]) th {
+  background-color: #1a1a1a;
+  color: #f5c518;
+  font-weight: 600;
+}
+
+[data-md-color-scheme="slate"] .md-typeset table:not([class]) th {
+  background-color: #f5c518;
+  color: #1a1a1a;
+}
+
+/* Links */
+.md-typeset a {
+  color: #c8a000;
+}
+
+.md-typeset a:hover {
+  color: #f5c518;
+}
+
+/* Footer */
+.md-footer {
+  background-color: #0d0d0d;
+  color: #999999;
+}
+
+.md-footer a {
+  color: #f5c518;
+}
+
+/* Search */
+.md-search__input {
+  background-color: #2d2d2d;
+}
+
+/* Sidebar */
+.md-sidebar--primary {
+  background-color: #1a1a1a;
+}
+
+/* Code copy button */
+.md-clipboard:focus,
+.md-clipboard:hover {
+  color: #f5c518;
+}
+
+/* Tabs content */
+.md-typeset .tabbed-labels {
+  border-bottom: 2px solid #f5c518;
+}
+
+.md-typeset .tabbed-content {
+  border: 1px solid #e0e0e0;
+}
+
+/* Highlight active sections */
+.md-typeset h1 {
+  border-bottom: 3px solid #f5c518;
+  padding-bottom: 0.3em;
+}
+
+.md-typeset h2 {
+  border-bottom: 1px solid #f5c518;
+  padding-bottom: 0.2em;
+}
+
+/* KAFE brand accent */
+.md-typeset blockquote {
+  border-left: 4px solid #f5c518;
+  background-color: #fffde7;
+}
+
+[data-md-color-scheme="slate"] .md-typeset blockquote {
+  background-color: #2d2d00;
+}
+
+/* Always-visible, accessible documentation tree */
+:root, [data-md-color-scheme="slate"] {
+  --md-default-bg-color: #0b0d10;
+  --md-default-fg-color: #f3f4f5;
+  --md-typeset-color: #f3f4f5;
+  --md-accent-fg-color: #ffcf33;
+}
+.md-header, .md-tabs { background: #07090c; }
+.md-main, .md-content, .md-sidebar--primary, .md-sidebar--secondary { background: #0b0d10; }
+.md-sidebar--primary { border-right: 1px solid #3c3c35; }
+.md-nav__link, .md-nav__title, .md-nav__item, .md-header__title { color: #f3f4f5; }
+.md-nav__link:hover, .md-nav__link:focus-visible, .md-nav__link--active { color: #ffcf33; }
+.md-nav__item--active > .md-nav__link { color: #ffcf33; }
+.md-nav__link:focus-visible, .md-header__button:focus-visible { outline: 2px solid #ffcf33; outline-offset: 3px; }
+.md-nav__item .md-nav__item { border-left: 1px solid #3c3c35; margin-left: .45rem; padding-left: .45rem; }
+.md-typeset a { color: #ffcf33; }
+.md-typeset a:hover { color: #ffe590; }
+.md-typeset code { color: #fff; background: #20242b; }
+.md-typeset .admonition, .md-typeset details, .md-typeset blockquote { background: #1c1e20; }
+@media screen and (max-width: 76.234375em) {
+  .md-sidebar--primary { background: #0b0d10; }
+  .md-nav--primary .md-nav__title { background: #171a1f; color: #f3f4f5; }
+}
+
+/* SVGs with a white canvas remain visible on the dark theme. */
+.md-typeset img.example-chart { display: block; max-width: 100%; margin: 1.2rem auto; padding: .5rem; background: #fff; border: 1px solid #ffcf33; border-radius: .5rem; }
+
+.math-fallback { font-family: Cambria Math, STIX Two Math, serif; font-size: 1.08em; color: #fff; }

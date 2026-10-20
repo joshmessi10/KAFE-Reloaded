@@ -1,0 +1,46 @@
+-- Lasso Regression: regression with Red Wine Quality.
+-- Five held-out predictions are printed below.
+import kaggle;
+import machine;
+
+List[STR] columnas = [
+    "fixed acidity", "volatile acidity", "citric acid", "residual sugar",
+    "chlorides", "density", "pH", "sulphates", "alcohol"
+];
+List[List[FLOAT]] X = kaggle.load_dataset_matrix(
+    "uciml/red-wine-quality-cortez-et-al-2009", columnas, "winequality-red.csv", 320
+);
+PARDOS df = kaggle.load_dataset(
+    "uciml/red-wine-quality-cortez-et-al-2009", "winequality-red.csv"
+);
+List[INT] calidad = df.col("quality");
+List[FLOAT] y = [];
+INT i = 0;
+while (i < len(X)):
+    append(y, float(calidad[i]));
+    i = i + 1;
+;
+MACHINE split = machine.train_test_split(X, y, 0.2, 42);
+List[List[FLOAT]] X_train = split[0];
+List[List[FLOAT]] X_test = split[1];
+List[FLOAT] y_train = split[2];
+List[FLOAT] y_test = split[3];
+MACHINE scaler = machine.standard_scaler();
+scaler.fit(X_train);
+List[List[FLOAT]] train_scaled = scaler.transform(X_train);
+List[List[FLOAT]] test_scaled = scaler.transform(X_test);
+show("Train/test:");
+show([len(X_train), len(X_test)]);
+
+MACHINE lasso = machine.lasso_regression(0.05);
+lasso.fit(train_scaled, y_train);
+List[FLOAT] pred_lasso = lasso.predict(test_scaled);
+show("Lasso Regression - Red Wine Quality: MAE and R2:");
+show(machine.mean_absolute_error(y_test, pred_lasso));
+show(machine.r2_score(y_test, pred_lasso));
+
+List[FLOAT] pred_ejemplos = lasso.predict(test_scaled);
+show("Five test cases: expected -> predicted:");
+for (j in range(0, 5)):
+    show(str(y_test[j]) + " -> " + str(pred_ejemplos[j]));
+;
