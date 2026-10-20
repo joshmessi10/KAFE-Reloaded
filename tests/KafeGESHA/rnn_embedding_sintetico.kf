@@ -11,7 +11,7 @@
 -- Perdida: binary crossentropy, Adam.
 -- ============================================
 
-import geshaV2;
+import gesha;
 import machine;
 
 show("=== RNN + Embedding sintético ===");
@@ -25,10 +25,10 @@ show("Etiquetas:");
 show(y);
 
 -- input_dim=10 cubre los índices 0..9; output_dim=4 es el tamaño del vector
-GESHA emb = geshaV2.embedding(10, 4, 11);
-GESHA rnn = geshaV2.create_rnn(4, "tanh", [4], False, 12);
-GESHA salida = geshaV2.create_dense(1, "sigmoid", [4], 0.0, 13, geshaV2.glorot_uniform(13));
-GESHA modelo = geshaV2.sequential([emb, rnn, salida]);
+GESHA emb = gesha.embedding(10, 4, 11);
+GESHA rnn = gesha.create_rnn(4, "tanh", [4], False, 12);
+GESHA salida = gesha.create_dense(1, "sigmoid", [4], 0.0, 13, gesha.glorot_uniform(13));
+GESHA modelo = gesha.sequential([emb, rnn, salida]);
 modelo.compile("adam", "bce", []);
 
 show("Entrenando RNN con Embedding (vocab=10, dim=4)...");

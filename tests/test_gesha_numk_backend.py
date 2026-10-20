@@ -173,17 +173,23 @@ def test_validation_restores_training_mode():
     assert dropout._training is True
 
 
-def test_fit_rejects_invalid_batches_and_empty_data():
+def test_fit_rejects_invalid_batches_and_permits_unsupervised():
+    # ADR-0016: an empty Y is a valid unsupervised (Soft K-Means) training mode,
+    # so it must train instead of raising.
     model = Sequential([Dense(1)])
     model.compile()
     for x, y, size in [
         ([], [], 1),
-        ([[1]], [], 1),
         ([[1]], [[1]], 0),
         ([[1]], [[1]], 1.5),
+        ([[1]], [[1], [2]], 1),
     ]:
         with pytest.raises(ValueError):
             model.fit(x, y, batch_size=size)
+
+    unsupervised = Sequential([Dense(1)])
+    unsupervised.compile()
+    unsupervised.fit([[1]], [], batch_size=1)
 
 
 def test_tensor_factories_return_kafe_lists_and_no_wrapper():

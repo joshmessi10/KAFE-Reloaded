@@ -31,7 +31,7 @@
 -- por eso se redujeron datos/épocas (el ciclo estacional se aprende igual).
 
 import kaggle;
-import geshaV2;
+import gesha;
 import machine;
 
 show("=== RNN 1: Temperatura mínima de Melbourne ===");
@@ -132,9 +132,9 @@ show("Train / test:");
 show([len(X_train), len(X_test)]);
 
 -- SimpleRNN(16, tanh) sobre [VENTANA, 1] -> Dense(1, lineal): regresión
-GESHA rnn = geshaV2.create_rnn(16, "tanh", [VENTANA, 1], False, 101);
-GESHA salida = geshaV2.create_dense(1, "linear", [16], 0.0, 102, geshaV2.glorot_uniform(102));
-GESHA modelo = geshaV2.sequential([rnn, salida]);
+GESHA rnn = gesha.create_rnn(16, "tanh", [VENTANA, 1], False, 101);
+GESHA salida = gesha.create_dense(1, "linear", [16], 0.0, 102, gesha.glorot_uniform(102));
+GESHA modelo = gesha.sequential([rnn, salida]);
 modelo.compile("adam", "mse", []);
 modelo.set_lr(0.01);
 

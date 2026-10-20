@@ -17,6 +17,6 @@ KAFE is an educational DSL focused on machine learning and deep learning, implem
 ## Engineering Notes
 
 - KafeMACHINE (ML) and KafeGESHA (DL) are implemented from scratch inside KAFE.
-- `self.libraries` uses case-sensitive import keys: `numk`, `math`, `files`, `plot`, `geshaDeep`, `pardos`, `machine`, and `huggingface` (KafeHF). Its external `datasets` dependency remains optional; preserve missing-dependency fixtures.
+- `self.libraries` uses case-sensitive import keys: `numk`, `math`, `files`, `plot`, `gesha`, `pardos`, `machine`, and `huggingface` (KafeHF; `geshaDeep` and `geshaV2` remain deprecated aliases of `gesha`). Its external `datasets` dependency remains optional; preserve missing-dependency fixtures.
 - ADRs > Knowledge Layer > History > Progress resolves conflicts among project records only (ADR-0008). ADR-0011 allows only one faithful English backfill of existing Spanish records; future session and history entries remain append-only and English.
 - Fixture pairs use `<name>.kf` + `<name>.expec` (expected stdout), optional `<name>.in`, or invalid `<name>.error.kf` + `<name>.error.expec`. Complete invalid stderr and optional stdout are captured by their dedicated sidecars.

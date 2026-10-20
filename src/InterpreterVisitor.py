@@ -1,7 +1,6 @@
 from typing import Any, cast
 
 import lib.KafeFILES.functions as files_funcs_module
-import lib.KafeGESHA.functions as gesha_funcs_module
 import lib.KafeGESHA.functions_v2 as gesha_v2_funcs_module
 import lib.KafeHF.functions as hf_funcs_module
 import lib.KafeKaggle.funciones as kaggle_funcs_module
@@ -61,7 +60,8 @@ class InterpreterVisitor(Kafe_GrammarVisitor):
             "math": [math_funcs_module, False],
             "files": [files_funcs_module, False],
             "plot": [plot_funcs_module, False],
-            "geshaDeep": [gesha_funcs_module, False],
+            "gesha": [gesha_v2_funcs_module, False],
+            "geshaDeep": [gesha_v2_funcs_module, False],
             "geshaV2": [gesha_v2_funcs_module, False],
             "pardos": [pardos_funcs_module, False],
             "machine": [machine_funcs_module, False],

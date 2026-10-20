@@ -1,7 +1,5 @@
--- Mall Customers - K-Means: segmentacion sin etiquetas.
--- Dataset: https://www.kaggle.com/datasets/vjchoudhary7/customer-segmentation-tutorial-in-python
--- CustomerID es un identificador; Gender requiere codificacion y no se usa.
--- No hay train/test: estas tecnicas descriptivas no predicen una etiqueta externa.
+-- K-Means: clustering with Mall Customers.
+-- Five representative cluster assignments are printed below.
 import kaggle;
 import machine;
 import plot;
@@ -14,18 +12,17 @@ List[List[FLOAT]] X = kaggle.load_dataset_matrix(
 MACHINE scaler = machine.standard_scaler();
 scaler.fit(X);
 List[List[FLOAT]] X_scaled = scaler.transform(X);
-show("Clientes:");
+show("Customers:");
 show(len(X_scaled));
 
 MACHINE kmeans = machine.kmeans(5, 100, 42);
 kmeans.fit(X_scaled);
 List[INT] grupos_kmeans = kmeans.labels();
-show("K-Means - Mall Customers: cinco grupos; primera etiqueta:");
+show("K-Means - Mall Customers: five clusters; first assignment:");
 show(grupos_kmeans[0]);
 show("Silhouette K-Means - Mall Customers:");
 show(machine.silhouette_score(X_scaled, grupos_kmeans));
 
--- Grafico SVG del espacio escalado y los cinco centroides aprendidos.
 List[FLOAT] ingresos = [];
 List[FLOAT] gasto = [];
 INT i = 0;
@@ -54,7 +51,6 @@ plot.pointSize(11);
 plot.graph(centro_x, centro_y, "point");
 plot.render();
 
--- Cinco clientes nuevos: asignar grupo con los centroides aprendidos.
 List[List[FLOAT]] nuevos = [[25.0, 80.0], [80.0, 20.0], [50.0, 50.0], [100.0, 90.0], [20.0, 20.0]];
 List[List[FLOAT]] nuevos_scaled = scaler.transform(nuevos);
 List[INT] nuevos_grupos = kmeans.predict(nuevos_scaled);

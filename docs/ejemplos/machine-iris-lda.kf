@@ -1,9 +1,7 @@
--- Iris Species - Linear Discriminant Analysis: clasificacion supervisada.
--- Dataset: https://www.kaggle.com/datasets/uciml/iris
--- Id es un identificador y no debe entrar en X.
+-- Linear Discriminant Analysis: classification with Iris Species.
+-- Five held-out predictions are printed below.
 import kaggle;
 import machine;
-import plot;
 
 List[STR] columnas = ["SepalLengthCm", "SepalWidthCm", "PetalLengthCm", "PetalWidthCm"];
 List[List[FLOAT]] X = kaggle.load_dataset_matrix("uciml/iris", columnas, "Iris.csv", 0);
@@ -23,7 +21,6 @@ while (i < len(especies)):
     i = i + 1;
 ;
 
--- Las especies solo intervienen en la parte supervisada.
 MACHINE split = machine.stratified_train_test_split(X, y, 0.2, 42);
 List[List[FLOAT]] X_train = split[0];
 List[List[FLOAT]] X_test = split[1];
@@ -41,28 +38,12 @@ lda.fit(train_scaled, y_train);
 List[INT] pred_lda = lda.predict(test_scaled);
 show("Linear Discriminant Analysis - Iris Species: accuracy:");
 show(machine.accuracy_score(y_test, pred_lda));
-show("Linear Discriminant Analysis - Iris Species: dos componentes:");
+show("Linear Discriminant Analysis - Iris Species: two components:");
 List[List[FLOAT]] componentes = lda.transform(test_scaled);
 show(componentes[0]);
 
--- Cinco casos de evaluacion tomados del conjunto de prueba.
 List[INT] pred_ejemplos = lda.predict(test_scaled);
-show("Cinco casos de evaluacion: esperado -> predicho:");
+show("Five test cases: expected -> predicted:");
 for (j in range(0, 5)):
     show(str(y_test[j]) + " -> " + str(pred_ejemplos[j]));
 ;
-
--- Comparacion de valores reales y predichos en el conjunto de prueba.
-List[FLOAT] indices_plot = [];
-for (j in range(0, len(y_test))):
-    append(indices_plot, float(j));
-;
-plot.figure();
-plot.title("iris lda: prueba");
-plot.xlabel("Indice de muestra de prueba");
-plot.ylabel("Valor real y predicho");
-plot.pointColor("blue");
-plot.graph(indices_plot, y_test, "point");
-plot.pointColor("orange");
-plot.graph(indices_plot, pred_ejemplos, "point");
-plot.render();

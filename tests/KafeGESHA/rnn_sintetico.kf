@@ -12,7 +12,7 @@
 -- Perdida: binary crossentropy, Adam.
 -- ============================================
 
-import geshaV2;
+import gesha;
 import machine;
 
 show("=== RNN sintético: suma de la secuencia ===");
@@ -52,9 +52,9 @@ show("Etiquetas:");
 show(y);
 
 -- SimpleRNN(4, tanh) sobre [5 timesteps, 1 feature] -> Dense(1, sigmoid)
-GESHA rnn = geshaV2.create_rnn(4, "tanh", [5, 1], False, 7);
-GESHA salida = geshaV2.create_dense(1, "sigmoid", [4], 0.0, 8, geshaV2.glorot_uniform(8));
-GESHA modelo = geshaV2.sequential([rnn, salida]);
+GESHA rnn = gesha.create_rnn(4, "tanh", [5, 1], False, 7);
+GESHA salida = gesha.create_dense(1, "sigmoid", [4], 0.0, 8, gesha.glorot_uniform(8));
+GESHA modelo = gesha.sequential([rnn, salida]);
 modelo.compile("adam", "bce", []);
 modelo.set_lr(0.01);
 

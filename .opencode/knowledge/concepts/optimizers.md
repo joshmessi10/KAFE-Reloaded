@@ -205,21 +205,21 @@ The model accepts these names in `compile()`:
 "adamw"   -> AdamW(lr=0.001)
 ```
 
-The learning rate can be changed later with `geshaDeep.set_lr(model, new_lr)`.
+The learning rate can be changed later with `gesha.set_lr(model, new_lr)`.
 
 ## Usage Examples
 
 ```kafe
-import geshaDeep;
+import gesha;
 
-GESHA layer = geshaDeep.create_dense(3, "softmax", [4], 0.0);
-GESHA model = geshaDeep.sequential([layer]);
+GESHA layer = gesha.create_dense(3, "softmax", [4], 0.0);
+GESHA model = gesha.sequential([layer]);
 
 -- Compile with an accepted optimizer name and loss
-geshaDeep.compile(model, "sgd", "categorical_crossentropy", []);
+gesha.compile(model, "sgd", "categorical_crossentropy", []);
 
 -- Update the compiled learning rate
-geshaDeep.set_lr(model, 0.0001);
+gesha.set_lr(model, 0.0001);
 ```
 
 ## Implementation Location
@@ -234,7 +234,7 @@ geshaDeep.set_lr(model, 0.0001);
 
 - Optimizer names accepted by `compile()`: `"sgd"`, `"rmsprop"`, `"adam"`, and `"adamw"`.
 - Optimizer method: `step(params, grads)` returns an updated parameter list.
-- Interpreter helper: `geshaDeep.set_lr(model, new_lr)` updates the configured learning rate.
+- Interpreter helper: `gesha.set_lr(model, new_lr)` updates the configured learning rate.
 
 ## References
 

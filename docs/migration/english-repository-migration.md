@@ -4,7 +4,7 @@ This is the path, route, and compatibility contract for the approved English mig
 
 The Spanish spellings in this note are literal old paths, source symbols, fixture names, or code examples needed for migration. The explanatory prose and target names are English.
 
-KAFE syntax stays English and unchanged. In particular, the lexer literals `drip`, `pour`, `show`, `len`, `remove`, `append`, `return`, `if`, `elif`, `else`, `match`, `FUNC`, `range`, `import`, `int`, `float`, `str`, `bool`, `List`, `INT`, `FLOAT`, `BOOL`, `VOID`, `STR`, `GESHA`, `PARDOS`, `MACHINE`, `True`, and `False` are not translated. The built-in import keys `numk`, `math`, `files`, `plot`, `geshaDeep`, `pardos`, `machine`, and `huggingface` remain exactly as registered by `InterpreterVisitor.self.libraries`.
+KAFE syntax stays English and unchanged. In particular, the lexer literals `drip`, `pour`, `show`, `len`, `remove`, `append`, `return`, `if`, `elif`, `else`, `match`, `FUNC`, `range`, `import`, `int`, `float`, `str`, `bool`, `List`, `INT`, `FLOAT`, `BOOL`, `VOID`, `STR`, `GESHA`, `PARDOS`, `MACHINE`, `True`, and `False` are not translated. The built-in import keys `numk`, `math`, `files`, `plot`, `gesha`, `pardos`, `machine`, and `huggingface` remain exactly as registered by `InterpreterVisitor.self.libraries` (the KafeGESHA key was later unified from `geshaDeep` to `gesha` under ADR-0016).
 
 ## Work ownership and text surfaces
 

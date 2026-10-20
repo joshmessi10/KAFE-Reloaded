@@ -2,7 +2,7 @@
 -- Dataset: https://www.kaggle.com/datasets/uciml/iris
 import kaggle;
 import machine;
-import geshaV2;
+import gesha;
 
 List[STR] columnas = ["SepalLengthCm", "SepalWidthCm", "PetalLengthCm", "PetalWidthCm"];
 List[List[FLOAT]] X = kaggle.load_dataset_matrix("uciml/iris", columnas, "Iris.csv", 0);
@@ -29,9 +29,9 @@ scaler.fit(X_train);
 List[List[FLOAT]] train_scaled = scaler.transform(X_train);
 List[List[FLOAT]] test_scaled = scaler.transform(X_test);
 
-GESHA oculta = geshaV2.create_dense(8, "relu", [4], 0.0, 42, geshaV2.he_normal(42));
-GESHA salida = geshaV2.create_dense(3, "softmax", [8], 0.0, 43, geshaV2.glorot_uniform(43));
-GESHA modelo = geshaV2.sequential([oculta, salida]);
+GESHA oculta = gesha.create_dense(8, "relu", [4], 0.0, 42, gesha.he_normal(42));
+GESHA salida = gesha.create_dense(3, "softmax", [8], 0.0, 43, gesha.glorot_uniform(43));
+GESHA modelo = gesha.sequential([oculta, salida]);
 modelo.compile("adam", "sparse_categorical_crossentropy", []);
 modelo.set_lr(0.01);
 modelo.fit(train_scaled, y_train, 80, 16);

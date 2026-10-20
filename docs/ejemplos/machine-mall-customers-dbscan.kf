@@ -1,7 +1,5 @@
--- Mall Customers - DBSCAN: segmentacion sin etiquetas.
--- Dataset: https://www.kaggle.com/datasets/vjchoudhary7/customer-segmentation-tutorial-in-python
--- CustomerID es un identificador; Gender requiere codificacion y no se usa.
--- No hay train/test: estas tecnicas descriptivas no predicen una etiqueta externa.
+-- DBSCAN: clustering with Mall Customers.
+-- Five representative cluster assignments are printed below.
 import kaggle;
 import machine;
 import plot;
@@ -14,30 +12,25 @@ List[List[FLOAT]] X = kaggle.load_dataset_matrix(
 MACHINE scaler = machine.standard_scaler();
 scaler.fit(X);
 List[List[FLOAT]] X_scaled = scaler.transform(X);
-show("Clientes:");
+show("Customers:");
 show(len(X_scaled));
 
--- En datos estandarizados eps se expresa en desviaciones tipicas.
--- DBSCAN puede marcar ruido con -1 y encontrar un numero variable de grupos.
 MACHINE dbscan = machine.dbscan(0.35, 5);
 List[INT] grupos_dbscan = dbscan.fit_predict(X_scaled);
-show("DBSCAN - Mall Customers: grupos (sin ruido) y primera etiqueta:");
+show("DBSCAN - Mall Customers: clusters (excluding noise) and first assignment:");
 show(dbscan.n_clusters());
 show(grupos_dbscan[0]);
 
--- En clustering, estas son asignaciones de muestras vistas durante fit.
--- Cinco casos de evaluacion (sin etiqueta supervisada).
-show("Cinco casos de evaluacion: caracteristicas, grupo asignado:");
+show("Five examples: features -> assigned cluster:");
 List[INT] casos = [0, 49, 99, 149, 199];
 for (indice in casos):
     show(str(X_scaled[indice]) + " -> " + str(grupos_dbscan[indice]));
 ;
 
--- Distribucion espacial de grupos; -1 es ruido en DBSCAN.
 plot.figure();
-plot.title("mall customers dbscan: grupos");
-plot.xlabel("Variable 1");
-plot.ylabel("Variable 2");
+plot.title("mall customers dbscan: clusters");
+plot.xlabel("Feature 1");
+plot.ylabel("Feature 2");
 List[STR] colores = ["gray", "blue", "red", "green", "orange", "purple", "brown", "black"];
 for (grupo in range(-1, 6)):
     List[FLOAT] xs_grupo = [];

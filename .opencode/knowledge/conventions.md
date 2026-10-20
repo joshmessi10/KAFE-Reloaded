@@ -46,7 +46,7 @@ Project-specific conventions implementing the mirrored `AGENTS.md` and `CLAUDE.m
 ## Naming Conventions
 
 - Python: snake_case modules/functions; import `globals` as a module (`import globals`, never `from globals import ...`).
-- KAFE built-in library keys in `self.libraries` are case-sensitive: `numk`, `math`, `files`, `plot`, `geshaDeep`, `pardos`, `machine`, and `huggingface`.
+- KAFE built-in library keys in `self.libraries` are case-sensitive: `numk`, `math`, `files`, `plot`, `gesha`, `pardos`, `machine`, and `huggingface`. `geshaDeep` and `geshaV2` remain registered as deprecated aliases of the same KafeGESHA module (ADR-0016); new code uses `gesha`.
 - Test files: `tests/test_KafeXXX.py`. Fixtures: `<name>.kf`, `<name>.expec` (expected stdout), optional `<name>.in` (stdin), invalid `<name>.error.kf` + `<name>.error.expec`.
 - KAFE keywords/types are fixed by the grammar (see `.opencode/knowledge/language-spec.md`).
 

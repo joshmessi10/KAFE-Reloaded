@@ -15,6 +15,14 @@ from lib.KafeGESHA.losses import (
 from lib.KafeGESHA.optimizers import SGD, Adam, AdamW, RMSprop
 from lib.KafeNUMK import functions as numk
 
+# Rutas sin validacion de tipos para el bucle de entrenamiento; la API
+# publica envuelta por @check_sig expone la original en __wrapped__.
+_shape = numk.shape.__wrapped__
+_tensor = numk.tensor.__wrapped__
+_broadcast_add = numk.broadcast_add.__wrapped__
+_scalar_mul = numk.scalar_mul.__wrapped__
+_map_elements = numk.map_elements
+
 
 def _get_loss(name):
     losses = {
@@ -29,12 +37,22 @@ def _get_loss(name):
         "scce": SparseCategoricalCrossEntropy,
         "sparse_categorical_crossentropy": SparseCategoricalCrossEntropy,
     }
-    return losses.get(name.lower(), MeanSquaredError)()
+    key = name.lower()
+    if key not in losses:
+        raise ValueError(
+            f"Model: loss '{name}' was not recognized. Available: {list(losses)}"
+        )
+    return losses[key]()
 
 
 def _get_optimizer(name):
     opts = {"sgd": SGD, "rmsprop": RMSprop, "adam": Adam, "adamw": AdamW}
-    return opts.get(name.lower(), SGD)()
+    key = name.lower()
+    if key not in opts:
+        raise ValueError(
+            f"Model: optimizer '{name}' was not recognized. Available: {list(opts)}"
+        )
+    return opts[key]()
 
 
 def _is_classification_loss(loss):
@@ -92,7 +110,9 @@ class Model(ABC):
         self._is_compiled = True
 
     def set_lr(self, new_lr):
-        if self._optimizer and hasattr(self._optimizer, "lr"):
+        if not self._is_compiled:
+            raise AttributeError("Model: compile() must be called before set_lr()")
+        if hasattr(self._optimizer, "lr"):
             self._optimizer.lr = new_lr
 
     def add_callback(self, callback):
@@ -118,9 +138,9 @@ class Model(ABC):
         if len(stored) != len(parameters):
             raise ValueError("Pesos incompatibles con el modelo")
         for parameter, record in zip(parameters, stored, strict=False):
-            if numk.shape(parameter.data) != numk.shape(record["data"]):
+            if _shape(parameter.data) != _shape(record["data"]):
                 raise ValueError("Forma de pesos incompatible")
-            parameter.data = numk.tensor(record["data"])
+            parameter.data = _tensor(record["data"])
 
     @abstractmethod
     def forward(self, x) -> Any:
@@ -167,16 +187,19 @@ class Model(ABC):
     def fit(
         self,
         X,
-        Y,
+        Y=None,
         epochs=1,
         batch_size=1,
-        val_data=None,
+        x_val=None,
+        y_val=None,
         regularization_lambda=0.0,
         callbacks=None,
     ):
         if not self._is_compiled:
             raise RuntimeError("Modelo no compilado.")
-        if not X or len(X) != len(Y):
+        Y_list = Y if isinstance(Y, list) else []
+        is_unsupervised = Y is None or len(Y_list) == 0
+        if not X or (not is_unsupervised and len(X) != len(Y_list)):
             raise ValueError(
                 "fit requiere X e Y no vacios con igual numero de muestras"
             )
@@ -184,6 +207,15 @@ class Model(ABC):
             raise ValueError("batch_size debe ser entero positivo")
         if type(epochs) is not int or epochs < 0:
             raise ValueError("epochs debe ser entero no negativo")
+        has_val = (
+            x_val is not None and y_val is not None
+            and isinstance(x_val, list) and len(x_val) > 0
+        )
+        y_val_list = y_val if isinstance(y_val, list) else []
+        if has_val and isinstance(x_val, list) and len(x_val) != len(y_val_list):
+            raise ValueError(
+                "x_val/y_val requieren X e Y no vacios de igual longitud"
+            )
 
         active_callbacks = self.callbacks + list(callbacks or [])
         self.stop_training = False
@@ -192,7 +224,7 @@ class Model(ABC):
             callback.on_train_begin({})
         is_classification = _is_classification_loss(self._loss)
         history = {"loss": [], "val_loss": []}
-        if is_classification:
+        if is_classification and not is_unsupervised:
             history["accuracy"] = []
         batch_parameters = None
         for epoch in range(epochs):
@@ -201,29 +233,64 @@ class Model(ABC):
             self._set_training(True)
             total_loss = 0.0
             correct_predictions = 0
+            centroids = None
+            if is_unsupervised:
+        # Centroides mu_k como promedios ponderados de los destinos
+        # (Soft K-Means) calculados con una pasada forward completa.
+                z_all = [self.forward(xi) for xi in X]
+                k_num = len(z_all[0])
+                weights = [
+                    sum(z_all[idx][c] for idx in range(len(X)))
+                    for c in range(k_num)
+                ]
+                centroids = []
+                for c in range(k_num):
+                    if weights[c] > 1e-6:
+                        mu_c = [
+                            sum(
+                                z_all[idx][c] * X[idx][f]
+                                for idx in range(len(X))
+                            )
+                            / weights[c]
+                            for f in range(len(X[0]))
+                        ]
+                    else:
+                        mu_c = [0.0] * len(X[0])
+                    centroids.append(mu_c)
             for batch_start in range(0, len(X), batch_size):
                 batch_end = min(batch_start + batch_size, len(X))
                 accumulated = {}
                 for i in range(batch_start, batch_end):
-                    x, y = X[i], Y[i]
+                    x = X[i]
                     y_pred = self.forward(x)
                     if batch_parameters is None:
                         # Las capas lazy se construyen en el primer forward.
                         batch_parameters = list(dict.fromkeys(self.parameters()))
-                    if not isinstance(y, list):
-                        y = [y]
-                    if not isinstance(y_pred, list):
-                        y_pred = [y_pred]
-                    total_loss += self._loss.forward(y_pred, y)
-                    if is_classification:
-                        correct_predictions += int(
-                            _prediction_label(y_pred) == _target_label(y, self._loss)
+                    if is_unsupervised:
+                        loss_val, grad_z = self._unsupervised_loss_and_grad(
+                            x, y_pred, centroids
                         )
-                    self.backward(self._loss.backward(), regularization_lambda)
+                        total_loss += loss_val
+                        self.backward(grad_z, regularization_lambda)
+                    else:
+                        y = Y_list[i] if i < len(Y_list) else []
+                        if not isinstance(y, list):
+                            y = [y]
+                        if not isinstance(y_pred, list):
+                            y_pred = [y_pred]
+                        total_loss += self._loss.forward(y_pred, y)
+                        if is_classification:
+                            correct_predictions += int(
+                                _prediction_label(y_pred)
+                                == _target_label(y, self._loss)
+                            )
+                        self.backward(
+                            self._loss.backward(), regularization_lambda
+                        )
                     for parameter in batch_parameters:
                         if parameter.grad is not None:
                             if parameter.regularizer is not None:
-                                parameter.grad = numk.broadcast_add(
+                                parameter.grad = _broadcast_add(
                                     parameter.grad,
                                     parameter.regularizer.gradient(parameter.data),
                                 )
@@ -231,47 +298,42 @@ class Model(ABC):
                                     parameter.data
                                 )
                             if parameter not in accumulated:
-                                accumulated[parameter] = numk.tensor(parameter.grad)
+                                accumulated[parameter] = _tensor(parameter.grad)
                             else:
                                 _accumulate_into(accumulated[parameter], parameter.grad)
 
                 # El optimizador se aplica una vez por minibatch.
                 for parameter, gradient in accumulated.items():
-                    parameter.grad = numk.scalar_mul(
-                        1.0 / (batch_end - batch_start), gradient
-                    )
+                     parameter.grad = _scalar_mul(
+                         1.0 / (batch_end - batch_start), gradient
+                     )
                 self._optimizer.step(batch_parameters)
 
             avg_loss = total_loss / len(X)
             history["loss"].append(avg_loss)
             loss_pct = avg_loss * 100.0
             msg = f"Epoch {epoch + 1}/{epochs} — Loss {loss_pct:.2f}%"
-            if is_classification:
+            if is_classification and not is_unsupervised:
                 accuracy = correct_predictions / len(X)
                 history["accuracy"].append(accuracy)
                 if "accuracy" in self._metrics:
                     msg += f" — Accuracy {accuracy * 100.0:.2f}%"
 
-            if val_data:
-                val_x, val_y = val_data
-                if not val_x or len(val_x) != len(val_y):
-                    raise ValueError(
-                        "val_data requiere X e Y no vacios de igual longitud"
-                    )
-                val_preds = self.predict(val_x)
+            if has_val and isinstance(x_val, list):
+                val_preds = self.predict(x_val)
                 val_loss = sum(
                     self._loss.compute(y if isinstance(y, list) else [y], p)
-                    for y, p in zip(val_y, val_preds, strict=False)
-                ) / len(val_x)
+                    for y, p in zip(y_val_list, val_preds, strict=False)
+                ) / len(x_val)
                 self._set_training(True)
                 msg += f" - val_loss: {val_loss:.4f}"
                 history["val_loss"].append(val_loss)
 
             print(msg)
             logs = {"loss": avg_loss}
-            if is_classification:
+            if is_classification and not is_unsupervised:
                 logs["accuracy"] = accuracy
-            if val_data:
+            if has_val:
                 logs["val_loss"] = val_loss
             for callback in active_callbacks:
                 callback.on_epoch_end(epoch, logs)
@@ -280,6 +342,38 @@ class Model(ABC):
         for callback in active_callbacks:
             callback.on_train_end(logs if epochs else {})
         return history
+
+    def _unsupervised_loss_and_grad(self, xi, out, centroids=None):
+        """Pérdida y gradiente dL/d(salida) del modo no supervisado (Soft K-Means).
+
+        Destino blando t_ik a partir de la distancia de xi a los centroides mu_k:
+            d_ik = sum_f (xi_f - mu_kf)^2
+            r_ik = 1 / (d_ik + eps)
+            t_ik = r_ik / sum_j r_ij
+
+        La pérdida es el MSE entre probabilidades p y destinos t. El gradiente
+        devuelto es dL/dp; la jacobiana softmax la aplica la capa Dense.
+        """
+        k = len(out)
+        eps = 1e-6
+        p = [max(eps, min(1.0 - eps, v)) for v in out]
+
+        if centroids and len(centroids) == k:
+            dists = [
+                sum((xi[f] - centroids[c][f]) ** 2 for f in range(len(xi)))
+                for c in range(k)
+            ]
+            raw = [1.0 / (d + eps) for d in dists]
+            s_raw = sum(raw) + eps
+            target = [r / s_raw for r in raw]
+        else:
+            p_sq = [v ** 2 for v in p]
+            s_sq = sum(p_sq) + eps
+            target = [v / s_sq for v in p_sq]
+
+        loss_val = sum((p[c] - target[c]) ** 2 for c in range(k))
+        grad_z = [2.0 * (p[c] - target[c]) / k for c in range(k)]
+        return loss_val, grad_z
 
 
 class Sequential(Model):
@@ -406,7 +500,7 @@ class Functional(Model):
                 grads[in_node] = (
                     local_grad
                     if in_node not in grads
-                    else numk.map_elements(
+                    else _map_elements(
                         lambda a, b: a + b, grads[in_node], local_grad
                     )
                 )
@@ -415,7 +509,7 @@ class Functional(Model):
                     grads[in_node] = (
                         g
                         if in_node not in grads
-                        else numk.map_elements(lambda a, b: a + b, grads[in_node], g)
+                        else _map_elements(lambda a, b: a + b, grads[in_node], g)
                     )
 
     def parameters(self):
@@ -433,3 +527,29 @@ class Functional(Model):
             if node.layer:
                 node.layer.summary()
         print("=" * 60)
+
+
+class GeshaPlaceholder(Model):
+    """Sentinel de un `GESHA x;` declarado sin valor.
+
+    Es concreto (no abstracto) y sigue siendo un Model del grafo disenado,
+    de modo que una declaracion `GESHA x;` no instancia una clase abstracta.
+    Cualquier uso antes de la asignacion produce un error de KAFE controlado
+    en lugar de un traceback de Python.
+    """
+
+    _UNASSIGNED_MESSAGE = (
+        "GESHA variable was used before being assigned"
+    )
+
+    def forward(self, x):
+        raise RuntimeError(self._UNASSIGNED_MESSAGE)
+
+    def backward(self, grad_output, regularization_lambda=0.0):
+        raise RuntimeError(self._UNASSIGNED_MESSAGE)
+
+    def parameters(self):
+        raise RuntimeError(self._UNASSIGNED_MESSAGE)
+
+    def _set_training(self, mode):
+        raise RuntimeError(self._UNASSIGNED_MESSAGE)

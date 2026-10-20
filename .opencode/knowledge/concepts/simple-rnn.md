@@ -52,9 +52,9 @@ reales de Kaggle (validación E2E, ADR-0021). El flujo completo es:
 3. **Split correcto**: **cronológico** para series temporales (barajar
    filtra el futuro → data leakage temporal); **estratificado**
    (`machine.stratified_train_test_split`) para clasificación de texto.
-4. **Construcción del modelo**: `geshaDeep.create_rnn(units, activation)`
-   (+ `geshaDeep.embedding(num_embeddings, embedding_dim)` para texto),
-   `geshaDeep.create_dense`, `sequential`, `compile`/`fit`/`predict`/
+4. **Construcción del modelo**: `gesha.create_rnn(units, activation)`
+   (+ `gesha.embedding(num_embeddings, embedding_dim)` para texto),
+   `gesha.create_dense`, `sequential`, `compile`/`fit`/`predict`/
    `predict_label`.
 5. **Limitación conocida de `predict`**: en secuencias, `Model.predict`
    confunde muestra única con lote; los ejemplos siempre predicen por

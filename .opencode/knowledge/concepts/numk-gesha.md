@@ -59,7 +59,7 @@ capa en distintos nodos necesita un contexto por invocación aún no implementad
 `src/lib/KafeNUMK/utils.py`: validación estructural y recorridos internos.
 `src/lib/KafeGESHA/{layers,activations,losses,optimizers,models}.py`: consumidores.
 `core.py` contiene estado, ninguna clase Tensor.
-`geshaDeep.tensor*` conserva nombres y devuelve listas: quitar .data/.shape/.ndim
+`gesha.tensor*` conserva nombres y devuelve listas: quitar .data/.shape/.ndim
 del código cliente y usar numk.shape para inspección Python. Gesha no cambia.
 
 ## Referencias

@@ -1,6 +1,6 @@
 -- Nivel 4: aproximar y = x*x con datos generados. 1 -> 16 -> 16 -> 1.
 -- La particion deja fuera valores intermedios para medir generalizacion.
-import geshaV2;
+import gesha;
 import machine;
 
 List[List[FLOAT]] X = [];
@@ -18,10 +18,10 @@ List[List[FLOAT]] X_test = division[1];
 List[FLOAT] y_train = division[2];
 List[FLOAT] y_test = division[3];
 
-GESHA h1 = geshaV2.create_dense(16, "tanh", [1], 0.0, 41);
-GESHA h2 = geshaV2.create_dense(16, "tanh", [16], 0.0, 42);
-GESHA salida = geshaV2.create_dense(1, "linear", [16], 0.0, 43);
-GESHA modelo = geshaV2.sequential([h1, h2, salida]);
+GESHA h1 = gesha.create_dense(16, "tanh", [1], 0.0, 41);
+GESHA h2 = gesha.create_dense(16, "tanh", [16], 0.0, 42);
+GESHA salida = gesha.create_dense(1, "linear", [16], 0.0, 43);
+GESHA modelo = gesha.sequential([h1, h2, salida]);
 modelo.compile("adam", "mse", []);
 modelo.set_lr(0.01);
 modelo.fit(X_train, y_train, 120, 8);

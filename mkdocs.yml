@@ -10,23 +10,12 @@ theme:
   # logo: assets/logo.png
   # favicon: assets/favicon.ico
   palette:
-    - media: "(prefers-color-scheme: light)"
-      scheme: default
-      primary: black
-      accent: yellow
-      toggle:
-        icon: material/brightness-7
-        name: Switch to dark mode
-    - media: "(prefers-color-scheme: dark)"
-      scheme: slate
-      primary: black
-      accent: yellow
-      toggle:
-        icon: material/brightness-4
-        name: Switch to light mode
+    scheme: slate
+    primary: black
+    accent: yellow
   features:
     - navigation.sections
-    - navigation.expand
+    - navigation.path
     - navigation.top
     - navigation.indexes
     - search.highlight
@@ -59,7 +48,14 @@ nav:
       - Kaggle Dataset Ingestion: bibliotecas/kaggle.md
       - Hugging Face Numeric Ingestion: bibliotecas/huggingface.md
       - PARDOS (DataFrames): libraries/pardos.md
-      - MACHINE (ML Utilities): libraries/machine.md
+      - MACHINE (ML Utilities):
+          - Overview: libraries/machine.md
+          - Functions and metrics: libraries/machine/metrics.md
+          - Linear models and SVM: libraries/machine/linear.md
+          - Model selection: libraries/machine/selection.md
+          - Classification and trees: libraries/machine/classifiers.md
+          - Clustering and ensembles: libraries/machine/clustering.md
+          - Preprocessing and reduction: libraries/machine/preprocessing.md
   - Specification:
       - Formal Grammar (EBNF): specification/ebnf-grammar.md
       - Operational Semantics: specification/operational-semantics.md
@@ -73,14 +69,43 @@ nav:
       - Error Reference: errors/error-reference.md
   - Examples:
       - Feature Examples: ejemplos/README.md
-      - Gesha Learning Levels: ejemplos/gesha-niveles.md
-      - Kaggle Machine Learning: ejemplos/machine-kaggle.md
       - Hello World: examples/hello-world.kf
       - Fibonacci with Currying: examples/fibonacci-currying.kf
       - Merge Sort: examples/merge-sort.kf
       - Linear Regression: examples/linear-regression.kf
       - Neural Network: examples/neural-network.kf
       - Decision Tree: examples/decision-tree.kf
+      - MACHINE examples:
+          - Overview: ejemplos/machine-kaggle.md
+          - "K-Means": ejemplos/machine/kmeans.md
+          - "Agglomerative Clustering": ejemplos/machine/agglomerative-clustering.md
+          - "DBSCAN": ejemplos/machine/dbscan.md
+          - "Gaussian Mixture": ejemplos/machine/gaussian-mixture.md
+          - "Linear Discriminant Analysis": ejemplos/machine/linear-discriminant-analysis.md
+          - "Gaussian Naive Bayes": ejemplos/machine/gaussian-naive-bayes.md
+          - "K-Nearest Neighbors": ejemplos/machine/knn.md
+          - "Decision Tree": ejemplos/machine/decision-tree.md
+          - "AdaBoost": ejemplos/machine/adaboost.md
+          - "Gradient Boosting": ejemplos/machine/gradient-boosting.md
+          - "Logistic Regression": ejemplos/machine/logistic-regression.md
+          - "Support Vector Machine": ejemplos/machine/svm.md
+          - "Random Forest": ejemplos/machine/random-forest.md
+          - "Ridge Regression": ejemplos/machine/ridge-regression.md
+          - "Lasso Regression": ejemplos/machine/lasso-regression.md
+          - "Elastic Net": ejemplos/machine/elastic-net.md
+          - "Linear Regression": ejemplos/machine/linear-regression.md
+          - "Support Vector Regression": ejemplos/machine/svr.md
+          - Interpret Results: ejemplos/machine/interpret-results.md
+      - Gesha Learning Levels:
+          - Overview: ejemplos/gesha-niveles.md
+          - "Nivel 1 · AND": ejemplos/gesha/nivel-1.md
+          - "Nivel 2 · OR": ejemplos/gesha/nivel-2.md
+          - "Nivel 3 · XOR": ejemplos/gesha/nivel-3.md
+          - "Nivel 4 · Aproximación de funciones": ejemplos/gesha/nivel-4.md
+          - "Nivel 5 · Iris Species": ejemplos/gesha/nivel-5.md
+          - "Nivel 6 · Breast Cancer Wisconsin": ejemplos/gesha/nivel-6.md
+          - "Nivel 7 · Red Wine Quality": ejemplos/gesha/nivel-7.md
+          - "Nivel 8 · MNIST": ejemplos/gesha/nivel-8.md
   - About:
       - Credits: about/credits.md
       - License: about/license.md
@@ -96,6 +121,8 @@ markdown_extensions:
       line_spans: __span
       pygments_lang_class: true
   - pymdownx.inlinehilite
+  - pymdownx.snippets:
+      check_paths: true
   - pymdownx.tabbed:
       alternate_style: true
   - pymdownx.arithmatex:
@@ -108,11 +135,12 @@ markdown_extensions:
       permalink: true
 
 extra_javascript:
-  - https://unpkg.com/katex/dist/katex.min.js
-  - https://unpkg.com/katex/dist/contrib/auto-render.min.js
+  - https://cdn.jsdelivr.net/npm/katex@0.16.25/dist/katex.min.js
+  - https://cdn.jsdelivr.net/npm/katex@0.16.25/dist/contrib/auto-render.min.js
+  - assets/js/math.js
 
 extra_css:
-  - https://unpkg.com/katex/dist/katex.min.css
+  - https://cdn.jsdelivr.net/npm/katex@0.16.25/dist/katex.min.css
   - assets/css/custom.css
 
 extra:

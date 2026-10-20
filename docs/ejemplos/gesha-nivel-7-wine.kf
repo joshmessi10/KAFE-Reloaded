@@ -2,7 +2,7 @@
 -- Dataset: https://www.kaggle.com/datasets/uciml/red-wine-quality-cortez-et-al-2009
 import kaggle;
 import machine;
-import geshaV2;
+import gesha;
 
 List[STR] columnas = [
     "fixed acidity", "volatile acidity", "citric acid", "residual sugar", "chlorides",
@@ -25,10 +25,10 @@ scaler.fit(X_train);
 List[List[FLOAT]] train_scaled = scaler.transform(X_train);
 List[List[FLOAT]] test_scaled = scaler.transform(X_test);
 
-GESHA h1 = geshaV2.create_dense(32, "relu", [11], 0.0, 42, geshaV2.he_normal(42));
-GESHA h2 = geshaV2.create_dense(16, "relu", [32], 0.0, 43, geshaV2.he_normal(43));
-GESHA salida = geshaV2.create_dense(1, "linear", [16], 0.0, 44);
-GESHA modelo = geshaV2.sequential([h1, h2, salida]);
+GESHA h1 = gesha.create_dense(32, "relu", [11], 0.0, 42, gesha.he_normal(42));
+GESHA h2 = gesha.create_dense(16, "relu", [32], 0.0, 43, gesha.he_normal(43));
+GESHA salida = gesha.create_dense(1, "linear", [16], 0.0, 44);
+GESHA modelo = gesha.sequential([h1, h2, salida]);
 modelo.compile("adam", "mse", []);
 modelo.set_lr(0.005);
 modelo.fit(train_scaled, y_train, 30, 16);

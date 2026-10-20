@@ -1,4 +1,4 @@
-import geshaDeep;
+import gesha;
 import math;
 import plot;
 
@@ -13,7 +13,7 @@ List[List[FLOAT]] data = [
 ];
 
 
-GESHA layer1 = geshaDeep.create_dense(
+GESHA layer1 = gesha.create_dense(
     8,
     "relu",
     [2],
@@ -21,7 +21,7 @@ GESHA layer1 = geshaDeep.create_dense(
     12
 );
 
-GESHA layer1b = geshaDeep.create_dense(
+GESHA layer1b = gesha.create_dense(
     4,
     "relu",
     [],
@@ -29,15 +29,15 @@ GESHA layer1b = geshaDeep.create_dense(
     99
 );
 
-GESHA layer2 = geshaDeep.create_dense(
+GESHA layer2 = gesha.create_dense(
     2, "softmax", [], 0.0, 42
 );
 
-GESHA model = geshaDeep.sequential([layer1, layer1b, layer2]);
+GESHA model = gesha.sequential([layer1, layer1b, layer2]);
 
-geshaDeep.compile(model, "adam", "categorical_crossentropy", []);
+gesha.compile(model, "adam", "categorical_crossentropy", []);
 
-geshaDeep.set_lr(model, 0.0005);
+gesha.set_lr(model, 0.0005);
 
 -- Modo no supervisado: y=[]
 model.fit(data, [], 50, 2);
@@ -151,7 +151,7 @@ for (i in range(0, len(CX))):
 
 
 plot.figure();
-plot.title("Clustering k-means (k=2) — GeshaDeep Sequential");
+plot.title("Clustering k-means (k=2) — GESHA Sequential");
 plot.xlabel("X");
 plot.ylabel("Y");
 plot.grid(True);

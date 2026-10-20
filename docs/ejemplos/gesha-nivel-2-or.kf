@@ -1,10 +1,10 @@
 -- Nivel 2: OR, 2 -> 1. Otra frontera linealmente separable.
-import geshaV2;
+import gesha;
 
 List[List[FLOAT]] X = [[0.0, 0.0], [0.0, 1.0], [1.0, 0.0], [1.0, 1.0]];
 List[INT] y = [0, 1, 1, 1];
-GESHA salida = geshaV2.create_dense(1, "sigmoid", [2], 0.0, 42);
-GESHA modelo = geshaV2.sequential([salida]);
+GESHA salida = gesha.create_dense(1, "sigmoid", [2], 0.0, 42);
+GESHA modelo = gesha.sequential([salida]);
 modelo.compile("sgd", "binary_crossentropy", []);
 modelo.set_lr(0.1);
 modelo.fit(X, y, 1000, 1);

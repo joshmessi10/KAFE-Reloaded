@@ -1,21 +1,25 @@
-# Ejemplos de KAFE
+# KAFE Examples
 
-Los ejemplos nuevos de redes neuronales usan `import geshaV2;`, la API de Gesha basada en tensores. Los programas existentes que usan `import geshaDeep;` conservan su comportamiento.
+All neural network examples use `import gesha;`, the single public Gesha API (the deprecated aliases `import geshaDeep;` and `import geshaV2;` still resolve to the same backend).
 
-También hay [ocho niveles de redes neuronales con GeshaDeep](gesha-niveles.md) y [18 flujos de MACHINE con Kaggle](machine-kaggle.md). Cada flujo de MACHINE muestra cinco predicciones o asignaciones y genera un gráfico SVG.
+There are also [eight levels of neural networks with Gesha](gesha-niveles.md) and [18 MACHINE methods with Kaggle datasets](machine-kaggle.md). Each MACHINE workflow displays five predictions or assignments and generates an SVG chart.
 
-Programas `.kf` completos y ejecutables. Los canónicos viven en `src/` (son los que ejecuta `python src/Kafe.py <archivo>`); las copias de esta carpeta existen para que el lector pueda consultarlos junto a la documentación sin salir de `docs/`.
+Complete, executable `.kf` programs. The canonical versions are located in `src/` (these are the ones executed by `python src/Kafe.py <file>`). The copies in this folder are provided so readers can consult them alongside the documentation without leaving `docs/`.
 
-## Ejemplos principales (copias documentales)
+## Main Examples (Documentation Copies)
 
-| Archivo | Fuente | Qué enseña | Resultado |
+| File | Source | What It Teaches | Results |
 |---|---|---|---|
-| `ejemplo-cnn-cifar10.kf` | `src/Ejemplo.kf` | Cadena completa de visión: `kaggle.load_image_folder_dataset` (etiquetas por carpetas) → `machine.stratified_train_test_split` → CNN `Conv2D→MaxPooling2D→Conv2D→GlobalAveragePooling2D→Dense(10,softmax)` con `compile/fit/predict_label` y métricas | 4000 imágenes 32×32 RGB; ~1 h 45 min de entrenamiento (tras ADR-0020); loss y accuracy por época |
-| `ejemplo-rnn1-series.kf` | `src/EjemploRNN1.kf` | Series temporales con RNN: `kaggle.load_dataset` → ventanas deslizantes `[7,1]` construidas con `while` → split **cronológico** 80/20 (sin barajar: data leakage temporal) → min-max del train → `SimpleRNN(16,tanh)+Dense(1,linear)` con adam/mse | MAE test ≈ 2.71 °C sobre temperaturas mínimas de Melbourne; ~2 min |
-| `ejemplo-rnn2-sentimiento.kf` | `src/EjemploRNN2.kf` | Texto→números→RNN: `kaggle.load_text_dataset` (TAB, sin encabezado) → split estratificado → `machine.tokenizer` (fit SOLO sobre train) → `Embedding+SimpleRNN(8,tanh)+Dense(1,sigmoid)` con adam/bce → `predict_label` por lote y frases nuevas | accuracy test ≈ 0.58 con ~284 frases (overfitting documentado en la cabecera); ~1,5 min |
+| `ejemplo-cnn-cifar10.kf` | `src/Ejemplo.kf` | Complete computer vision pipeline: `kaggle.load_image_folder_dataset` (folder-based labels) → `machine.stratified_train_test_split` → CNN `Conv2D→MaxPooling2D→Conv2D→GlobalAveragePooling2D→Dense(10,softmax)` with `compile/fit/predict_label` and evaluation metrics | 4,000 RGB images (32×32); ~1 h 45 min of training (after ADR-0020); loss and accuracy per epoch |
+| `ejemplo-rnn1-series.kf` | `src/EjemploRNN1.kf` | Time series with RNNs: `kaggle.load_dataset` → sliding windows `[7,1]` built using `while` → **chronological** 80/20 split (without shuffling, to prevent temporal data leakage) → min-max scaling based on training data → `SimpleRNN(16,tanh)+Dense(1,linear)` with Adam/MSE | Test MAE ≈ 2.71 °C on Melbourne minimum temperatures; ~2 min |
+| `ejemplo-rnn2-sentimiento.kf` | `src/EjemploRNN2.kf` | Text → numbers → RNN: `kaggle.load_text_dataset` (TAB-separated, no header) → stratified split → `machine.tokenizer` (fitted ONLY on training data) → `Embedding+SimpleRNN(8,tanh)+Dense(1,sigmoid)` with Adam/BCE → batch `predict_label` and predictions on new sentences | Test accuracy ≈ 0.58 with ~284 sentences (overfitting documented in the file header); ~1.5 min |
 
-Las tres cabeceras explican el *por qué* de cada decisión (no barajar series, fit del tokenizer solo sobre train, limitaciones honestas del modelo).
+The headers of all three examples explain the *why* behind each decision (not shuffling time series, fitting the tokenizer only on training data, and transparently documenting model limitations).
 
-## Otros ejemplos de la carpeta
+## Learning Paths
 
-(también aquí: `decision-tree.kf`, `ejemplo-clustering-plot.kf`, `fibo-curri.kf`, `gesha-cnn-avanzada.kf`, `gesha-conv2d.kf`, `gesha-huggingface-clustering.kf`, `gesha-lstm-embedding.kf`, `gesha-numk.kf`, `gesha-rnn.kf`, `hola-mundo.kf`, `kaggle-iris-clustering.kf`, `merge-sort.kf`, `red-neuronal.kf`, `regresion-lineal.kf`)
+- [MACHINE: Choosing a Dataset and Algorithm](machine-kaggle.md)
+- [GESHA: Eight Independent Levels](gesha-niveles.md)
+- [MACHINE Reference by Topic](../libraries/machine.md)
+
+The remaining `.kf` programs are available in this folder or in the Examples section of the documentation navigation.

@@ -43,7 +43,7 @@
 
 import kaggle;
 import machine;
-import geshaV2;
+import gesha;
 
 show("=== RNN 2: Sentimiento de frases Yelp ===");
 
@@ -159,10 +159,10 @@ show(cuenta);
 
 -- Embedding(vocab x 8) -> SimpleRNN(8, tanh) -> Dense(1, sigmoid)
 INT vocab = tok.vocabulary_size;
-GESHA emb = geshaV2.embedding(vocab, 8, 21);
-GESHA rnn = geshaV2.create_rnn(8, "tanh", [8], False, 22);
-GESHA salida = geshaV2.create_dense(1, "sigmoid", [8], 0.0, 23, geshaV2.glorot_uniform(23));
-GESHA modelo = geshaV2.sequential([emb, rnn, salida]);
+GESHA emb = gesha.embedding(vocab, 8, 21);
+GESHA rnn = gesha.create_rnn(8, "tanh", [8], False, 22);
+GESHA salida = gesha.create_dense(1, "sigmoid", [8], 0.0, 23, gesha.glorot_uniform(23));
+GESHA modelo = gesha.sequential([emb, rnn, salida]);
 modelo.compile("adam", "bce", []);
 modelo.set_lr(0.01);
 

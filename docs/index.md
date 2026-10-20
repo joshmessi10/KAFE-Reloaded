@@ -35,7 +35,7 @@ show(fibonacci(7));  -- 13
 |---------|-------------|
 | [**Getting started**](getting-started/installation.md) | Installation, first steps, and basic examples |
 | [**Language**](language/lexical-structure.md) | Complete language reference: types, operators, and functions |
-| [**Libraries**](libraries/numk.md) | Documentation for NUMK, MATH, PLOT, FILES, GeshaDeep, PARDOS, and MACHINE |
+| [**Libraries**](libraries/numk.md) | Documentation for NUMK, MATH, PLOT, FILES, Gesha, PARDOS, and MACHINE |
 | [**Specification**](specification/ebnf-grammar.md) | EBNF grammar, operational semantics, and execution pipeline |
 | [**Errors**](errors/error-types.md) | Complete reference for the error system |
 | [**Examples**](examples/hello-world.kf) | Progressive sample programs |

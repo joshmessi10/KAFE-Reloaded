@@ -42,14 +42,12 @@ def get_list_type(items):
 
 def get_data_type(value):
     from lib.KafeGESHA.callbacks.base import Callback
-    from lib.KafeGESHA.core.model import Gesha
-    from lib.KafeGESHA.core.node import Node
+    from lib.KafeGESHA.core import Node
     from lib.KafeGESHA.initializers.base import Initializer
-    from lib.KafeGESHA.layers.base.layer import Layer as NewLayer
-    from lib.KafeGESHA.layers.input_layer import Input
-    from lib.KafeGESHA.layers.layer import Layer
+    from lib.KafeGESHA.layers.base.input import Input
+    from lib.KafeGESHA.layers.base.layer import Layer
     from lib.KafeGESHA.losses.base import LossFunction
-    from lib.KafeGESHA.models import Model as NewModel
+    from lib.KafeGESHA.models_v2 import Model
     from lib.KafeGESHA.optimizers.base import Optimizer
     from lib.KafeGESHA.regularizers.base import Regularizer
     from lib.KafeMACHINE.BaseMachine import BaseMachine
@@ -60,12 +58,10 @@ def get_data_type(value):
     elif isinstance(
         value,
         (
-            Gesha,
+            Model,
             Layer,
             Node,
             Input,
-            NewModel,
-            NewLayer,
             Initializer,
             Regularizer,
             Optimizer,

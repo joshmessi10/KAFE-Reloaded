@@ -70,7 +70,7 @@ jobs:
   deploy:
     needs: validate
     if: >-
-      ${{ github.ref == 'refs/heads/main' &&
+      ${{ (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/integration/Kafe_Gesha_Clustering_v2') &&
           (github.event_name == 'workflow_dispatch' ||
            (github.event_name == 'push' && needs.validate.outputs.docs_changed == 'true')) }}
     concurrency:
@@ -85,7 +85,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v7
         with:
-          ref: main
+          ref: ${{ github.ref_name }}
 
       - name: Set up Python
         uses: actions/setup-python@v7
@@ -105,7 +105,7 @@ jobs:
       - name: Install documentation dependencies
         run: uv sync --locked --python 3.10 --group docs --no-dev
 
-      - name: Build current main documentation
+      - name: Build selected branch documentation
         env:
           # Material emits this upstream warning for MkDocs 2.0; keep suppression limited to the strict build.
           NO_MKDOCS_2_WARNING: "1"

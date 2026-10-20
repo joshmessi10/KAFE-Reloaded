@@ -207,7 +207,7 @@ CSV anterior queda intacta.
 
 Para encadenar hacia una RNN de texto: PARDOS → extraer columnas → split
 estratificado → `machine.tokenizer` (fit solo sobre train) →
-`geshaDeep.embedding` + `geshaDeep.create_rnn`. Referencia completa:
+`gesha.embedding` + `gesha.create_rnn`. Referencia completa:
 `src/EjemploRNN2.kf` y ADR-0021 (`.opencode/adr/decisions.md`).
 
 ## References

@@ -22,7 +22,7 @@
 --   Perdida: MSE
 -- ============================================
 
-import geshaV2;
+import gesha;
 import machine;
 import math;
 import plot;
@@ -33,15 +33,15 @@ show("=== Deep Clustering: Autoencoder + KMeans ===");
 List[List[FLOAT]] X = [[0.0, 0.1, 0.0, 0.1, 0.0, 0.1], [0.1, 0.0, 0.1, 0.0, 0.1, 0.0], [0.2, 0.2, 0.1, 0.1, 0.2, 0.1], [0.1, 0.1, 0.2, 0.2, 0.1, 0.2], [1.0, 1.1, 1.0, 1.1, 1.0, 1.1], [1.1, 1.0, 1.1, 1.0, 1.1, 1.0], [1.2, 1.2, 1.1, 1.1, 1.2, 1.1], [1.1, 1.1, 1.2, 1.2, 1.1, 1.2]];
 
 -- === ENCODER (codificador) ===
-GESHA enc1 = geshaV2.create_dense(4, "tanh", [6], 0.0, 42);
-GESHA enc2 = geshaV2.create_dense(2, "tanh", [4], 0.0, 43);
+GESHA enc1 = gesha.create_dense(4, "tanh", [6], 0.0, 42);
+GESHA enc2 = gesha.create_dense(2, "tanh", [4], 0.0, 43);
 
 -- === DECODER (decodificador) ===
-GESHA dec1 = geshaV2.create_dense(4, "tanh", [2], 0.0, 44);
-GESHA dec2 = geshaV2.create_dense(6, "linear", [4], 0.0, 45);
+GESHA dec1 = gesha.create_dense(4, "tanh", [2], 0.0, 44);
+GESHA dec2 = gesha.create_dense(6, "linear", [4], 0.0, 45);
 
 -- Autoencoder completo: se entrena sin etiquetas
-GESHA autoencoder = geshaV2.sequential([enc1, enc2, dec1, dec2]);
+GESHA autoencoder = gesha.sequential([enc1, enc2, dec1, dec2]);
 autoencoder.compile("sgd", "mse", []);
 autoencoder.set_lr(0.5);
 
@@ -55,7 +55,7 @@ show(X[0]);
 show(recon);
 
 -- === CODIFICADOR SOLO: mismas capas (pesos compartidos) ===
-GESHA encoder = geshaV2.sequential([enc1, enc2]);
+GESHA encoder = gesha.sequential([enc1, enc2]);
 List[List[FLOAT]] Z = encoder.predict(X);
 
 show("\nEspacio latente (2D):");

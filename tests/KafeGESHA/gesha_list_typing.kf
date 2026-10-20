@@ -1,0 +1,22 @@
+import gesha;
+
+-- A List[GESHA] holding layers validates (ADR-0015).
+GESHA d = gesha.create_dense(2, "relu", [2], 0.0, 42);
+GESHA f = gesha.flatten_layer();
+List[GESHA] layers = [d, f];
+show("list-ok");
+
+-- The homogeneous GESHA list is accepted by sequential.
+GESHA model = gesha.sequential(layers);
+show("model-ok");
+
+-- A MIXED list of concrete layer classes must still validate as GESHA.
+GESHA d2 = gesha.create_dense(3, "relu", [2], 0.0, 1);
+GESHA a2 = gesha.add_layer();
+GESHA f2 = gesha.flatten_layer();
+List[GESHA] mixed = [d2, a2, f2];
+show("mixed-ok");
+
+-- Indexing a GESHA list yields a GESHA value.
+GESHA head = mixed[0];
+show("index-ok");

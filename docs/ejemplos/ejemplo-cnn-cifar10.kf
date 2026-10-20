@@ -9,7 +9,7 @@
 -- estratificada queda en KafeMACHINE, que ya acepta tensores 4D.
 
 import kaggle;
-import geshaV2;
+import gesha;
 import machine;
 
 show("=== CNN Mini: CIFAR-10 con GESHA ===");
@@ -33,12 +33,12 @@ show([len(X_train[0]), len(X_train[0][0]), len(X_train[0][0][0])]);
 
 -- Input(3,32,32) -> Conv2D(8,3x3,ReLU) -> MaxPooling2D(2x2)
 -- -> Conv2D(16,3x3,ReLU) -> GlobalAveragePooling2D -> Dense(10,Softmax).
-GESHA conv1 = geshaV2.create_conv2d(8, [3, 3], "relu", [3, 32, 32], 1, "same", 101, geshaV2.he_normal(101));
-GESHA pool1 = geshaV2.max_pooling2d([2, 2]);
-GESHA conv2 = geshaV2.create_conv2d(16, [3, 3], "relu", [8, 16, 16], 1, "same", 102, geshaV2.he_normal(102));
-GESHA gap = geshaV2.global_average_pooling2d();
-GESHA salida = geshaV2.create_dense(10, "softmax", [16], 0.0, 103, geshaV2.glorot_uniform(103));
-GESHA cnn = geshaV2.sequential([conv1, pool1, conv2, gap, salida]);
+GESHA conv1 = gesha.create_conv2d(8, [3, 3], "relu", [3, 32, 32], 1, "same", 101, gesha.he_normal(101));
+GESHA pool1 = gesha.max_pooling2d([2, 2]);
+GESHA conv2 = gesha.create_conv2d(16, [3, 3], "relu", [8, 16, 16], 1, "same", 102, gesha.he_normal(102));
+GESHA gap = gesha.global_average_pooling2d();
+GESHA salida = gesha.create_dense(10, "softmax", [16], 0.0, 103, gesha.glorot_uniform(103));
+GESHA cnn = gesha.sequential([conv1, pool1, conv2, gap, salida]);
 
 -- Etiquetas enteras 0..9: Sparse Categorical Crossentropy.
 cnn.compile("adam", "sparse_categorical_crossentropy", []);

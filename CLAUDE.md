@@ -492,7 +492,7 @@ Modular implementations called by the visitor:
 | Library | Import key | Purpose |
 |---|---|---|
 | `KafeNUMK` | `numk` | NumPy-style arrays and matrices |
-| `KafeGESHA` | `geshaDeep` | Neural networks and deep learning primitives |
+| `KafeGESHA` | `gesha` | Neural networks and deep learning primitives |
 | `KafeMATH` | `math` | Math utilities |
 | `KafePLOT` | `plot` | Plotting and visualization |
 | `KafePARDOS` | `pardos` | DataFrames and CSV |

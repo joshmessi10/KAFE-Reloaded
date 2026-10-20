@@ -21,7 +21,7 @@
 --   Arquitectura: 2 -> 4 (relu) -> 4 (relu) -> 1 (sigmoid)
 -- ============================================
 
-import geshaV2;
+import gesha;
 
 show("=== Red Multicapa: Circulos Concentricos ===");
 
@@ -30,12 +30,12 @@ List[List[FLOAT]] x_train = [[0.0, 0.0], [0.2, 0.1], [-0.15, 0.1], [0.1, -0.2], 
 List[INT] y_train = [1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0];
 
 -- Primera capa oculta: 4 neuronas relu
-GESHA hidden1 = geshaV2.create_dense(4, "relu", [2], 0.0, 42);
+GESHA hidden1 = gesha.create_dense(4, "relu", [2], 0.0, 42);
 -- Segunda capa oculta: 4 neuronas relu
-GESHA hidden2 = geshaV2.create_dense(4, "relu", [4], 0.0, 43);
+GESHA hidden2 = gesha.create_dense(4, "relu", [4], 0.0, 43);
 -- Salida: sigmoid (probabilidad de estar dentro)
-GESHA output = geshaV2.create_dense(1, "sigmoid", [4], 0.0, 44);
-GESHA model = geshaV2.sequential([hidden1, hidden2, output]);
+GESHA output = gesha.create_dense(1, "sigmoid", [4], 0.0, 44);
+GESHA model = gesha.sequential([hidden1, hidden2, output]);
 
 model.compile("sgd", "binary_crossentropy", []);
 model.set_lr(0.05);

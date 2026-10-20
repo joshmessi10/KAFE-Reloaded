@@ -20,7 +20,7 @@ import library_name;
 | `math` | KafeMATH | Mathematical functions |
 | `plot` | KafePLOT | Data visualization (SVG) |
 | `files` | KafeFILES | File I/O |
-| `geshaDeep` | KafeGESHA | Deep learning and neural networks |
+| `gesha` | KafeGESHA | Deep learning and neural networks |
 | `pardos` | KafePARDOS | DataFrames and CSV |
 | `machine` | KafeMACHINE | ML utilities |
 
@@ -29,7 +29,7 @@ import numk;
 import math;
 import plot;
 import files;
-import geshaDeep;
+import gesha;
 import pardos;
 import machine;
 ```

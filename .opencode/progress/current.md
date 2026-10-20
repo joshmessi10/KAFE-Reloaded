@@ -1,178 +1,23 @@
 # Current Work
 
-## Integration of Gesha feature with main (2026-10-19)
+## Unify Gesha into a Single Public API (2026-10-19)
 
-The isolated branch `integration/Kafe_Gesha_Clustering_v2` is based on `main` and ports the genuine feature additions without replacing the current `geshaDeep` implementation. The redesigned backend is registered as `geshaV2`; see ADR-0013. The original feature checkout remains at `b6a2260`. The current test revision bounds the Gesha CLI fixtures and adds short behavior checks for AND, OR, and XOR training. Their CLI fixtures use 15–40 Adam epochs and require all four truth-table predictions to be correct; four longer examples are excluded from routine CI.
+Feature: Gesha convergence and class-hierarchy unification. Canonical import key gesha, backed by functions_v2.py / models_v2.py / core_v2.py. geshaDeep and geshaV2 stay registered as documentation-only deprecated aliases (no runtime warnings: the fixture harness treats warnings as errors).
 
-Ruff, basedpyright, the Python suppression-policy check, and the strict MkDocs build passed locally. The user authorized Spanish educational content (ADR-0014). PR #78 passed hosted tests and docs at `b4628f3` with seven long Gesha examples skipped, but GitHub requires an approving review from a writer before merge. The dev group and lock now include Pillow and py7zr; all 102 KafeKaggle backend tests pass locally without skips, and `uv audit` reports no known vulnerabilities. A later push at `d88f077` re-enabled all seven Gesha examples; its CI runs were cancelled by the user. To limit CI time, the user requested a revision skipping the four most expensive examples (two RNN, autoencoder, circle classification), while retaining multicapa XOR and both perceptron gates. The user authorized publishing this revision without waiting for hosted results.
+Status: complete. Implementation, hierarchy unification, full fixture migration, docs and knowledge migration, and the performance fix are all landed and verified.
 
-Feature: Python quality-gates implementation and workflows — validated at exact SHA `c23163de6fee34b8da7d9a25b4f2896b331c22e1`
-Status: Implementation/workflow changes passed hosted checks at `c23163de6fee34b8da7d9a25b4f2896b331c22e1`; results are recorded below. The branch remains unmerged.
-Current step: Task 9 records the local gates and exact-SHA hosted results for the implementation/workflow state at `c23163de6fee34b8da7d9a25b4f2896b331c22e1`.
-Next step: Keep the branch unmerged and use the verified implementation as the base for the next repository-alignment deliverable; Task 9 final branch acceptance follows CI for the evidence-update SHA. Do not create a pull request or merge without an explicit request.
-Blockers: The plan requires hosted checks on the resulting evidence-update SHA before final branch acceptance.
-Related ADRs: ADR-0012.
+Current step: none (feature closed for this session).
 
-## Completed Work — English Repository Migration, Task 7 (2026-09-24)
+Next step: follow-ups recorded in the backlog: (a) a Functional-API fixture, (b) metrics usable on both machine and gesha outputs, (c) confirm the deprecation-window removal date for the geshaDeep/geshaV2 aliases.
 
-**Status:** Tasks 1–7 are complete on `refactor/english-repository`; the final audit passed against the current branch. ADR-0011 authorizes a one-time faithful English backfill of existing project records; future session/history entries remain append-only and English.
+Blockers: none.
 
-**Historical authorization:** The user required all repository-owned content to be in English, approved the one-time archival translation and removal of the PDF and two machine-specific logs, and authorized commits and pushes when needed. At that workstream's completion, `refactor/english-repository` was the active branch; the current approved workstream now uses `chore/python-quality-gates`.
+Related ADRs: ADR-0013 (superseded), ADR-0015 (GESHA type for mixed layer lists), ADR-0016 (single public API), ADR-0017 (single runtime class graph).
 
-**Scope and preservation:** Translate existing Spanish prose in repository guidance and `.opencode/` while preserving dates, IDs, statuses, chronology, measured results, decisions, formulas, code identifiers, and meaning. Update current operational references to the verified English paths and APIs. Delete only `KAFE LANGUAGE Deep Learning for Dummies .pdf`, `test_results.txt`, and `test_output.txt`; verify their original Git objects remain recoverable.
+## Session evidence
 
-**Verification:** The tracked-file language audit passed with only English identifiers and detector false positives remaining. The full locked suite passed 498 tests in 349.42 seconds at 83.78% coverage with no warnings. The UTF-8 subprocess regression harness passed 13 tests. Strict MkDocs and tracked-file codespell checks, mirrored root policy, approved deletions, generated ANTLR exclusions, and final diff review are recorded in the Task 7 ledger.
-
-The sections below are retained implementation notes from earlier work. Their paths and identifiers record names used at the time and may have moved; consult the current architecture and migration records for active paths. Historical test counts must not be treated as current verification.
-
----
-
-## Fix: model_selection test fixtures and test_Algorithms error support
-
-**Status:** Implemented and verified
-
-**Root cause (compound):**
-1. **Grammar syntax errors in `.kf` files**: Bare `List` type used instead of `List[TYPE]`; lowercase `true`/`false` instead of `True`/`False`; `length()` instead of `len()`.
-2. **Missing API**: `cross_val_score_wrapper` doesn't exist — the factory is `machine.cross_val_score(cv, scoring, random_state)`.
-3. **Source bug**: `CrossValScore` class didn't extend `BaseMachine`, causing `KeyError` in `TypeUtils.obtener_tipo_dato()` when storing as `MACHINE` variable.
-4. **Wrong file extensions**: 3 error tests had `.kf` instead of `.error.kf`, so `test_Algorithms.py` couldn't discover them.
-5. **Missing test handler**: `test_Algorithms.py` had no `test_invalid_programs` function.
-6. **Wrong `.expec` content**: `train_test_split_shuffle.expec` expected lowercase `true` but KAFE outputs `True`; error `.expec` files missing `Exception: machine:` prefix; `cross_val_score_basic.expec` expected wrong R2 values.
-7. **KAFE grammar requirement**: `for` loops need trailing `;` after their block (`program: (stmt SEMI)*`).
-
-**Changes:**
-- Fixed `tests/Algorithms/model_selection/k_fold_basic.kf` — inline calls, `False`, `len()`
-- Fixed `tests/Algorithms/model_selection/k_fold_coverage.kf` — `List[INT]`, `for` loop with parentheses and trailing `;`, `False`, `len()`
-- Fixed `tests/Algorithms/model_selection/cross_val_score_basic.kf` — `cross_val_score` (not `cross_val_score_wrapper`), `len()`
-- Fixed `tests/Algorithms/model_selection/train_test_split_basic.kf` — inline calls, `True`, `len()`
-- Fixed `tests/Algorithms/model_selection/train_test_split_shuffle.kf` — inline calls, `True`
-- Renamed `error_test_size.kf` → `error_test_size.error.kf`, fixed `True`
-- Renamed `error_empty.kf` → `error_empty.error.kf`, fixed `True`
-- Renamed `error_kfold_splits.kf` → `error_kfold_splits.error.kf`, fixed `False`
-- Updated 3 `.error.expec` files to include `Exception: machine:` prefix
-- Updated `train_test_split_shuffle.expec` to `True\nTrue\n`
-- Updated `cross_val_score_basic.expec` to `[1.0, 1.0, 1.0]\n3` (perfect R2 for y=x data)
-- Fixed `src/lib/KafeMACHINE/model_selection/model_selection.py` — `CrossValScore` now extends `BaseMachine` (with `super().__init__()`)
-- Added `test_invalid_programs` to `tests/test_Algorithms.py` with `get_invalid_programs` import
-
-**Test results:** 485/485 passed. No regressions.
-
----
-
-## Fix: test_train_test_split_basic pre-existing failure
-
-**Status:** Implemented and verified
-
-**Root cause (compound):**
-1. **Grammar bug in `.kf` file**: `List result = ...` is invalid KAFE syntax — the grammar requires `List[Type]` (line 186 of Kafe_Grammar.g4). The parser threw a "Scientific Notation Error" because it expected `[` after `List`.
-2. **check_sig bug in `src/global_utils.py`**: The dict-format `check_sig` decorator iterates over `tipos_definidos` as an iterable. When the type is a scalar string (e.g., `flotante_t = "FLOAT"`), it iterated character-by-character (`'F'`, `'L'`, `'O'`, `'A'`, `'T'`), causing a false type mismatch.
-
-**Changes:**
-- Fixed `tests/KafeMACHINE/model_selection/test_train_test_split_basic.kf` — replaced invalid `List result` declaration with direct indexing into `train_test_split` call result; fixed `length` → `len` and `true` → `True`.
-- Fixed `src/global_utils.py` line 126 — added `isinstance(tipos_definidos, str)` guard to wrap scalar type strings in a list before iteration.
-
-**Test results:** 199/199 passed. No regressions.
-
----
-
-## Feature: LinearDiscriminantAnalysis (LDA)
-
-**Status:** Implemented and verified
-
-**Changes:**
-- Created `src/lib/KafeMACHINE/LinearDiscriminantAnalysis.py` — LinearDiscriminantAnalysis from scratch using Jacobi eigenvalue decomposition for S_W^{-1} S_B, following the scikit-learn API pattern (`fit()`, `transform()`, `fit_transform()`, `predict()`, `score()`). Supports dimensionality reduction (maximizes inter-class vs intra-class scatter ratio) and classification (nearest class mean in LDA space).
-- Updated `src/lib/KafeMACHINE/__init__.py` — exported LinearDiscriminantAnalysis.
-- Updated `src/lib/KafeMACHINE/funciones.py` — factory function `linear_discriminant_analysis()` with check_sig (n_components)
-- Created 3 fixture tests under `tests/Algorithms/dimensionality_reduction/lda/`:
-  - `test_lda_basic` — fit/transform on 2D data with 1 component, verify output dimensions
-  - `test_lda_predict` — predict/score on 2D data, verify predictions and accuracy
-  - `test_lda_variance_ratio` — 3-class data with 2 components, verify explained_variance_ratio_ and scalings_ lengths
-
-**Test results:** 3/3 new tests passed. No regressions (9 pre-existing failures in model_selection).
-
-## Previous Feature: Gaussian Mixture Model
-
-**Status:** Implemented and verified
-
-**Changes:**
-- Created `src/lib/KafeMACHINE/GaussianMixture.py` — GaussianMixture from scratch using EM algorithm (Expectation-Maximization), following the scikit-learn API pattern (`fit()`, `predict()`, `predict_proba()`, `score()`). Includes `aic()` and `bic()` model selection criteria. Uses diagonal covariance assumption.
-- Updated `src/lib/KafeMACHINE/__init__.py` — exported GaussianMixture.
-- Updated `src/lib/KafeMACHINE/funciones.py` — factory function `gaussian_mixture()` with check_sig (n_components, max_iter, tol, random_state)
-- Created 4 fixture tests under `tests/KafeMACHINE/clustering/gmm/`:
-  - `test_gmm_basic` — fit/predict on 2D data with 2 components, verify labels, weights, and means
-  - `test_gmm_predict_proba` — predict_proba on 2D data, verify probability vectors
-  - `test_gmm_score` — score (negative log-likelihood) on 2D data
-  - `test_gmm_aic_bic` — AIC and BIC model selection criteria on 2D data
-
-**Test results:** 4/4 new tests passed. No regressions (9 pre-existing failures in model_selection).
-
-## Previous Feature: DecisionTreeRegressor & KNNRegressor
-
-**Status:** Implemented and verified
-
-**Changes:**
-- Updated `src/lib/KafeMACHINE/DecisionTree.py` — added `DecisionTreeRegressor` class from scratch using MSE as split criterion, following the scikit-learn API pattern (`fit()`, `predict()`, `score()`)
-- Updated `src/lib/KafeMACHINE/KNN.py` — added `KNNRegressor` class from scratch supporting uniform and distance weighting, following the scikit-learn API pattern (`fit()`, `predict()`, `score()`)
-- Updated `src/lib/KafeMACHINE/__init__.py` — exported DecisionTreeRegressor and KNNRegressor.
-- Updated `src/lib/KafeMACHINE/funciones.py` — factory functions `decision_tree_regressor()` and `knn_regressor()` with check_sig
-- Created 4 fixture tests under `tests/Algorithms/regression/`:
-  - `dtr_basic` — single-feature DTR fit/predict/score, verify predictions and R²
-  - `dtr_multifeature` — multi-feature DTR with max_depth constraint
-  - `knnr_basic` — single-feature KNNR fit/predict/score with k=3, verify predictions and R²
-  - `knnr_multifeature` — multi-feature KNNR with k=3
-
-**Test results:** 4/4 new tests passed. No regressions (9 pre-existing failures in model_selection).
-
-## Previous Feature: RobustScaler (Robust Scaling)
-
-**Status:** Implemented and verified
-
-**Changes:**
-- Created `src/lib/KafeMACHINE/preprocessing/RobustScaler.py` — RobustScaler from scratch using median and IQR, following the scikit-learn API pattern (`fit()`, `transform()`, `inverse_transform()`, `fit_transform()`)
-- Updated `src/lib/KafeMACHINE/preprocessing/__init__.py` — exported RobustScaler.
-- Updated `src/lib/KafeMACHINE/__init__.py` — exported RobustScaler from preprocessing.
-- Updated `src/lib/KafeMACHINE/funciones.py` — factory function `robust_scaler()` with check_sig (with_centering, with_scaling, quantile_low, quantile_high)
-- Created 4 fixture tests under `tests/KafeMACHINE/preprocessing/robust_scaler/`:
-  - `test_robust_scaler_basic` — fit/transform/inverse_transform, verify center_, scale_, scaled data, and roundtrip restoration
-  - `test_robust_scaler_inverse` — verify inverse_transform recovers original data
-  - `test_robust_scaler_no_center` — with_centering=0, with_scaling=1, verify only IQR scaling applied
-  - `test_robust_scaler_no_scale` — with_centering=1, with_scaling=0, verify only median centering applied
-
-**Test results:** 4/4 new tests passed. No regressions (9 pre-existing failures in model_selection).
-
-## Previous Feature: GradientBoosting (Gradient Boosting) Classifier & Regressor
-
-**Status:** Implemented and verified
-
-**Changes:**
-- Created `src/lib/KafeMACHINE/GradientBoosting.py` — GradientBoostingClassifier and GradientBoostingRegressor from scratch using regression trees, following the scikit-learn API pattern (`fit()`, `predict()`, `score()`)
-- Updated `src/lib/KafeMACHINE/__init__.py` — exported GradientBoostingClassifier and GradientBoostingRegressor.
-- Updated `src/lib/KafeMACHINE/funciones.py` — factory functions `gradient_boosting_classifier()` and `gradient_boosting_regressor()` with check_sig
-- Created 6 fixture tests under `tests/KafeMACHINE/boosting/`:
-  - `test_gbc_basic` — classify linearly separable 2D data, verify predictions and accuracy
-  - `test_gbr_basic` — regress on single-feature data, verify predictions and R²
-  - `test_gbc_multifeature` — multi-feature classification with duplicate features
-  - `test_gbc_empty.error` — empty input raises exception
-  - `test_gbc_multiclass.error` — >2 classes raises exception
-  - `test_gbr_empty.error` — empty input raises exception
-
-**Test results:** 6/6 new tests passed. No regressions (9 pre-existing failures in model_selection).
-
-## Previous Feature: AdaBoost (Adaptive Boosting) Classifier
-
-**Status:** Implemented and verified
-
-**Changes:**
-- Created `src/lib/KafeMACHINE/AdaBoost.py` — AdaBoostClassifier from scratch using decision stumps, following the scikit-learn API pattern (`fit()`, `predict()`, `score()`)
-- Updated `src/lib/KafeMACHINE/__init__.py` — exported AdaBoostClassifier.
-- Updated `src/lib/KafeMACHINE/funciones.py` — factory function `ada_boost_classifier()` with check_sig
-- Updated `tests/test_KafeMACHINE.py` — added "boosting" to SUBDIRS
-- Created 6 fixture tests under `tests/KafeMACHINE/boosting/`:
-  - `test_adaboost_basic` — classify linearly separable 2D data, verify predictions and accuracy
-  - `test_adaboost_estimators` — verify estimator count matches n_estimators, verify accuracy
-  - `test_adaboost_multifeature` — multi-feature classification with duplicate features
-  - `test_adaboost_learning_rate` — verify different learning rates both achieve accuracy on simple data
-  - `test_adaboost_empty.error` — empty input raises exception
-  - `test_adaboost_multiclass.error` — >2 classes raises exception
-
-**Test results:** 6/6 new tests passed. No regressions (1 pre-existing failure in model_selection).
+- Interpreter registers gesha, geshaDeep and geshaV2 to the unified module (src/InterpreterVisitor.py).
+- models_v2 ports parity: unsupervised Soft K-Means fit branch, compile()/set_lr() validation; GeshaPlaceholder sentinel fixes the GESHA x; abstract-instantiation bug.
+- Performance fix: short-circuit type checks in global_utils.py plus unwrapped NUMK fast path -> XOR 84.5s to 2.54s; full suite 721 passed, 4 skipped in 209.88s.
+- Tests: pytest tests/ -> 721 passed, 4 skipped. ruff, basedpyright (0 errors, 0 warnings) and codespell green.
+- optimized fixture tests/KafeGESHA/optimizers/optimizer_comparison.kf rewritten into a real SGD/Adam/RMSprop comparison; stale test_fit_rejects_invalid_batches_* reconciled with ADR-0016.

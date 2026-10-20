@@ -6,14 +6,12 @@ Deep learning and neural network components, implemented from scratch inside KAF
 
 ## Structure
 
-- `src/lib/KafeGESHA/functions.py` — public functions (the `geshaDeep` API).
-- `src/lib/KafeGESHA/functions_v2.py` — tensor-based public functions (the `geshaV2` API); it uses `models_v2.py`, `core_v2.py`, and the grouped layer, activation, loss, and optimizer packages. Existing `geshaDeep` programs retain their original implementation. See ADR-0013.
-- `GeshaDeep.py`, `Gesha.py` — model composition and the deep-learning model object.
-- `Dense.py` — dense layer.
-- `ActivationFunction.py` + `ActivationFunctionLoader.py` — activation functions.
-- `LossFunction.py` — loss functions.
-- `Optimizer.py` — optimizers.
-- `utils.py` — shared helpers.
+- `src/lib/KafeGESHA/functions_v2.py` — public functions behind the `gesha` import key (see ADR-0016); it uses `models_v2.py`, `core_v2.py`, and the grouped layer, activation, loss, optimizer, initializer, regularizer, and callback packages.
+- `src/lib/KafeGESHA/functions.py` — legacy `geshaDeep` implementation. Kept only for reference until its retirement; nothing imports it anymore (the `geshaDeep`/`geshaV2` registry keys resolve to `functions_v2.py`). See ADR-0013 and ADR-0016.
+- `models_v2.py`, `core_v2.py` — the redesigned `Model`/`Sequential`/`Functional` classes and the `Parameter`/`Node` graph primitives.
+- `layers/` — dense, convolutional, pooling, spatial, recurrent, merge, normalization, and regularization layers.
+- `activations/`, `losses/`, `optimizers/` — activation functions, loss functions, and optimizers.
+- `initializers/`, `regularizers/`, `callbacks/`, `training/` — weight initializers, regularizers, training callbacks, and the training loop helpers.
 
 ## Rules
 

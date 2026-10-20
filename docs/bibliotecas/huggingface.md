@@ -1,31 +1,19 @@
-# KafeHF y datasets grandes
+# KafeHF: Hugging Face datasets
 
-KafeHF ya integra la dependencia opcional `datasets` de Hugging Face. Las
-funciones `load_dataset` y `load_dataset_split` mantienen su retorno PARDOS.
-
-Para clustering se puede obtener directamente una matriz numérica compatible
-con NUMK y GESHA:
+KafeHF reads Hugging Face datasets through the optional `datasets` package. `load_dataset` and `load_dataset_split` return PARDOS DataFrames. `load_dataset_matrix` reads selected numeric features directly into a KAFE matrix without constructing a DataFrame first.
 
 ```kafe
 import huggingface;
 import machine;
 
-LIST[STR] columnas = ["sepal_length", "sepal_width"];
-LIST[LIST[FLOAT]] datos = huggingface.load_dataset_matrix("mstz/iris", columnas, "train", 0);
+List[STR] columns = ["sepal_length", "sepal_width"];
+List[List[FLOAT]] data = huggingface.load_dataset_matrix("mstz/iris", columns, "train", 0);
 MACHINE model = machine.kmeans(3);
-model.fit(datos);
+model.fit(data);
 ```
 
-`columns` selecciona características y `limit` limita filas; `0` procesa todo
-el split. La función recorre el dataset sin crear un DataFrame intermedio y
-convierte valores a `FLOAT`. Si `datasets` no está instalado, KAFE intenta
-instalarlo automáticamente usando el intérprete actual de Python; si no hay
-conexión o permisos, muestra el comando manual `pip install datasets`.
+`columns` selects features and `limit` caps rows; `0` reads the full split. Numeric values become `FLOAT`. When `datasets` is missing, KAFE attempts installation with the active Python interpreter and reports a manual command if network access or permissions prevent it.
 
-KMeans y DBSCAN siguen siendo algoritmos en memoria. Esta API evita copias y
-conversiones innecesarias, pero para datos que no caben en memoria se debe usar
-`limit`, muestreo o un pipeline por lotes.
+K-Means and DBSCAN keep their observations in memory. Reading a matrix directly avoids an intermediate PARDOS DataFrame, but it does not make these algorithms streaming implementations. Apply a row limit or sample a large dataset before fitting.
 
-El ejemplo completo [`gesha-huggingface-clustering.kf`](../ejemplos/gesha-huggingface-clustering.kf)
-descarga Iris, entrena un autoencoder GESHA (4→3→2→3→4), transforma las 150
-muestras al espacio latente y aplica K-Means con tres grupos.
+[Compare the Kaggle ingestion API](kaggle.md).

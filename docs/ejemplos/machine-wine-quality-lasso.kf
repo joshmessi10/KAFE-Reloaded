@@ -1,9 +1,7 @@
--- Red Wine Quality - Lasso Regression: regresion de quality.
--- Dataset: https://www.kaggle.com/datasets/uciml/red-wine-quality-cortez-et-al-2009
--- quality es un puntaje ordinal; aqui se trata como regresion numerica.
+-- Lasso Regression: regression with Red Wine Quality.
+-- Five held-out predictions are printed below.
 import kaggle;
 import machine;
-import plot;
 
 List[STR] columnas = [
     "fixed acidity", "volatile acidity", "citric acid", "residual sugar",
@@ -37,28 +35,12 @@ show([len(X_train), len(X_test)]);
 MACHINE lasso = machine.lasso_regression(0.05);
 lasso.fit(train_scaled, y_train);
 List[FLOAT] pred_lasso = lasso.predict(test_scaled);
-show("Lasso Regression - Red Wine Quality: MAE y R2:");
+show("Lasso Regression - Red Wine Quality: MAE and R2:");
 show(machine.mean_absolute_error(y_test, pred_lasso));
 show(machine.r2_score(y_test, pred_lasso));
 
--- Cinco casos de evaluacion tomados del conjunto de prueba.
 List[FLOAT] pred_ejemplos = lasso.predict(test_scaled);
-show("Cinco casos de evaluacion: esperado -> predicho:");
+show("Five test cases: expected -> predicted:");
 for (j in range(0, 5)):
     show(str(y_test[j]) + " -> " + str(pred_ejemplos[j]));
 ;
-
--- Comparacion de valores reales y predichos en el conjunto de prueba.
-List[FLOAT] indices_plot = [];
-for (j in range(0, len(y_test))):
-    append(indices_plot, float(j));
-;
-plot.figure();
-plot.title("wine quality lasso: prueba");
-plot.xlabel("Indice de muestra de prueba");
-plot.ylabel("Valor real y predicho");
-plot.pointColor("blue");
-plot.graph(indices_plot, y_test, "point");
-plot.pointColor("orange");
-plot.graph(indices_plot, pred_ejemplos, "point");
-plot.render();

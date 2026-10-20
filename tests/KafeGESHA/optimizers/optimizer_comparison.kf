@@ -1,29 +1,25 @@
-import geshaDeep;
+import gesha;
 
--- Test different optimizers
+-- Comparacion de optimizadores sobre el problema XOR.
+-- Mismo dataset y misma arquitectura para los tres modelos;
+-- la unica diferencia es el optimizador.
 List[List[INT]] X = [[0, 0], [0, 1], [1, 0], [1, 1]];
-List[INT] y = [0, 0, 0, 1];
+List[INT]       y = [0, 0, 0, 1];
 
 -- SGD
-GESHA model1 = geshaDeep.binary();
-GESHA layer1 = geshaDeep.create_dense(1, "sigmoid", [2], 0.0, 42);
-model1.add(layer1);
-model1.compile("sgd", "binary_crossentropy", []);
-show("Training with SGD:");
-model1.fit(X, y, 5, 1, [], []);
+GESHA sgd_model = gesha.sequential([gesha.create_dense(2, "sigmoid", [2], 0.0, 42), gesha.create_dense(1, "sigmoid", [], 0.0, 42)]);
+sgd_model.compile("sgd", "binary_crossentropy", []);
+show("SGD:");
+sgd_model.fit(X, y, 50, 1);
 
 -- Adam
-GESHA model2 = geshaDeep.binary();
-GESHA layer2 = geshaDeep.create_dense(1, "sigmoid", [2], 0.0, 42);
-model2.add(layer2);
-model2.compile("adam", "binary_crossentropy", []);
-show("Training with Adam:");
-model2.fit(X, y, 5, 1, [], []);
+GESHA adam_model = gesha.sequential([gesha.create_dense(2, "sigmoid", [2], 0.0, 42), gesha.create_dense(1, "sigmoid", [], 0.0, 42)]);
+adam_model.compile("adam", "binary_crossentropy", []);
+show("Adam:");
+adam_model.fit(X, y, 50, 1);
 
 -- RMSprop
-GESHA model3 = geshaDeep.binary();
-GESHA layer3 = geshaDeep.create_dense(1, "sigmoid", [2], 0.0, 42);
-model3.add(layer3);
-model3.compile("rmsprop", "binary_crossentropy", []);
-show("Training with RMSprop:");
-model3.fit(X, y, 5, 1, [], []);
+GESHA rms_model = gesha.sequential([gesha.create_dense(2, "sigmoid", [2], 0.0, 42), gesha.create_dense(1, "sigmoid", [], 0.0, 42)]);
+rms_model.compile("rmsprop", "binary_crossentropy", []);
+show("RMSprop:");
+rms_model.fit(X, y, 50, 1);

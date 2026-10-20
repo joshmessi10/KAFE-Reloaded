@@ -76,7 +76,7 @@ matriz $E \in \mathbb{R}^{|V| \times d}$ que se entrena junto con la red.
 
 ## Motivation
 
-Las redes neuronales operan sobre números y `geshaDeep.embedding` exige
+Las redes neuronales operan sobre números y `gesha.embedding` exige
 `List[INT]` como entrada. Sin un tokenizador no existía ninguna forma
 KAFE-native de llevar un corpus de texto (p. ej. el dataset de sentimiento
 Yelp de Kaggle, `.txt` con TAB sin encabezado) a las secuencias de
@@ -92,7 +92,7 @@ one-hot-ing directo de palabras sería imposible en la práctica
 - **Cero dependencias**: tokenización con `re` de la stdlib; no se
   arrastra NLTK, spaCy ni sklearn (política de dependencias de KAFE).
 - **Enlace directo con `Embedding`**: el `vocabulary_size` resultante se
-  pasa tal cual a `geshaDeep.embedding(num_embeddings, embedding_dim)`;
+  pasa tal cual a `gesha.embedding(num_embeddings, embedding_dim)`;
   índice 0 reservado evita filas sin significado en $E$.
 - **Control de tamaño**: `num_words` acota el vocabulario para datasets
   grandes sin tocar el código del usuario.
@@ -114,7 +114,7 @@ one-hot-ing directo de palabras sería imposible en la práctica
 
 ## When to Use
 
-- Corpus de texto que debe alimentar una `geshaDeep.embedding` + RNN/LSTM.
+- Corpus de texto que debe alimentar una `gesha.embedding` + RNN/LSTM.
 - Clasificación de sentimiento, tópicos u otras tareas de texto con
   vocabulario finito y datasets pequeños/medianos (educativos).
 
@@ -130,7 +130,7 @@ one-hot-ing directo de palabras sería imposible en la práctica
 ## Dependencies
 
 - BaseMachine (KafeMACHINE), stdlib `re`.
-- Consumidores: `geshaDeep.embedding` (KafeGESHA), ingesta
+- Consumidores: `gesha.embedding` (KafeGESHA), ingesta
   `kaggle.load_text_dataset` (KafeKaggle).
 
 ## Related Concepts
@@ -156,7 +156,7 @@ one-hot-ing directo de palabras sería imposible en la práctica
 
 ```kafe
 import machine;
-import geshaDeep;
+import gesha;
 
 MACHINE tok = machine.tokenizer(0, "");
 List[STR] frases = ["buen café", "mal servicio", "buen ambiente"];
@@ -165,7 +165,7 @@ show(tok.vocabulary_size);
 List[List[INT]] seqs = tok.transform(frases);
 show(seqs);
 
-MACHINE emb = geshaDeep.embedding(tok.vocabulary_size, 8);
+MACHINE emb = gesha.embedding(tok.vocabulary_size, 8);
 ```
 
 ## Implementation Location

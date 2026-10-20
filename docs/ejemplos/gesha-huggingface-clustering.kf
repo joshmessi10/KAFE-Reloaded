@@ -5,7 +5,7 @@
 -- completamente no supervisado.
 
 import huggingface;
-import geshaV2;
+import gesha;
 import machine;
 import plot;
 
@@ -25,19 +25,19 @@ for (i in range(0, len(X))):
 
 -- Autoencoder 4 -> 3 -> 2 -> 3 -> 4.
 -- El cuello de botella produce un espacio latente de dos dimensiones.
-GESHA encoder1 = geshaV2.create_dense(3, "tanh", [4], 0.0, 11);
-GESHA encoder2 = geshaV2.create_dense(2, "tanh", [3], 0.0, 12);
-GESHA decoder1 = geshaV2.create_dense(3, "tanh", [2], 0.0, 13);
-GESHA decoder2 = geshaV2.create_dense(4, "linear", [3], 0.0, 14);
+GESHA encoder1 = gesha.create_dense(3, "tanh", [4], 0.0, 11);
+GESHA encoder2 = gesha.create_dense(2, "tanh", [3], 0.0, 12);
+GESHA decoder1 = gesha.create_dense(3, "tanh", [2], 0.0, 13);
+GESHA decoder2 = gesha.create_dense(4, "linear", [3], 0.0, 14);
 
-GESHA autoencoder = geshaV2.sequential([encoder1, encoder2, decoder1, decoder2]);
+GESHA autoencoder = gesha.sequential([encoder1, encoder2, decoder1, decoder2]);
 autoencoder.compile("adam", "mse", []);
 autoencoder.set_lr(0.01);
 show("Entrenando autoencoder...");
 autoencoder.fit(Xn, Xn, 25, 16);
 
 -- Se reutilizan las capas del encoder para transformar cada muestra.
-GESHA encoder = geshaV2.sequential([encoder1, encoder2]);
+GESHA encoder = gesha.sequential([encoder1, encoder2]);
 List[List[FLOAT]] Z = encoder.predict(Xn);
 
 MACHINE model = machine.kmeans(3, 100, 42);

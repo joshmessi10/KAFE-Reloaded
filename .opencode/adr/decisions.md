@@ -572,3 +572,74 @@ Classify Gesha layers, models, initializers, regularizers, optimizers, losses, a
 ### Consequences
 
 Mixed-layer Sequential programs can execute through the interpreter. Mixed primitive lists remain invalid. The scope of `GESHA` now includes configuration objects that belong to its model-building API. The change is verified by interpreter fixtures and focused list typing checks.
+
+---
+
+## ADR-0016: Unify Gesha into a Single Public API
+
+- **Status**: accepted
+- **Date**: 2026-10-19
+
+### Context
+
+ADR-0013 kept geshaDeep as a compatibility API and registered the redesigned backend as geshaV2 because replacing geshaDeep broke existing interpreter fixtures. Two near-identical Gesha APIs now coexist: 18 test fixtures use geshaDeep and 7 use geshaV2, and documentation and examples are split. Shared utility changes require regression tests for both APIs, and the duplicated naming confuses learners.
+
+### Decision
+
+1. Adopt a single canonical KAFE import key, gesha, backed by the redesigned implementation (functions_v2.py, models_v2.py, core_v2.py).
+2. Keep geshaDeep and geshaV2 registered as deprecated aliases to the same module during a migration window. Deprecation is documented only; no runtime warning is emitted, because the fixture harness treats Python warnings as errors.
+3. Migrate fixtures, examples, and documentation to gesha.
+4. Retire the legacy implementation modules once no importer references them.
+5. Preserve the established KafeNUMK and other public APIs.
+
+### Consequences
+
+- One Gesha implementation behind one canonical name; geshaDeep and geshaV2 remain functional during the transition.
+- The legacy single-sample predict shape and scalar predict_proba must be reconciled with the redesigned batch shape while migrating fixtures.
+- Removing geshaDeep and geshaV2 later requires a follow-up compatibility decision.
+
+### Alternatives Considered
+
+- **Keep two APIs:** rejected; it duplicates maintenance and hurts the educational goal.
+- **Name the single API geshaDeep:** rejected; the redesign is a new API and a clean name matches KafeGESHA.
+- **Emit runtime deprecation warnings:** rejected; the harness treats warnings as errors.
+
+---
+
+## ADR-0017: Unify the Gesha Class Hierarchy Behind One Runtime Type
+
+- **Status**: accepted
+- **Date**: 2026-10-19
+
+### Context
+
+ADR-0016 unified the Gesha *import key* behind gesha, but the class hierarchy stayed split. TypeUtils.get_data_type() classifies the KAFE GESHA type with one isinstance tuple that must list classes from BOTH backends, because models_v2.Model does not inherit from the legacy core.model.Gesha:
+
+- legacy Gesha = core.model.Model, MRO [Model, ABC, object]
+- models_v2.Model, MRO [Model, ABC, object], unrelated tree
+- isinstance(models_v2.Sequential(), legacy Gesha) is False
+
+Three concrete problems follow:
+
+1. TypeUtils.py and language_components/base/functions.py import from lib.KafeGESHA.core.model, so the legacy module cannot be retired.
+2. language_components/base/functions.py line 53 does al = cast(Any, Gesha)() to build a default value for GESHA x;. Both candidate classes are abstract, so that statement raises TypeError: Can't instantiate abstract class. A live interpreter bug, currently uncovered by any fixture.
+3. src/lib/KafeGESHA/__init__.py re-exports Gesha, Model from core.model and Sequential/Functional/Add from models.sequential/models.functional, while models/__init__.py already re-exports from models_v2. The package is half-migrated.
+
+### Decision
+
+1. Make the KAFE runtime type GESHA map to a single class in the redesigned module graph.
+2. Re-point KafeGESHA/__init__.py, models/__init__.py, TypeUtils.py, and language_components/base/functions.py at that single graph.
+3. Retire the legacy modules once no importer remains: unctions.py (already zero importers), and the legacy models/sequential.py / models/functional.py / core/model.py where the unified graph replaces them.
+4. Keep the public KAFE type name GESHA and all user-facing type-error messages unchanged.
+
+### Consequences
+
+- One class graph; TypeUtils gets one isinstance tree instead of two.
+- The legacy Gesha backend becomes fully removable, closing ADR-0013.
+- GESHA x; must be fixed: a declared-but-unassigned GESHA value needs a valid sentinel that is not an abstract class.
+
+### Alternatives Considered
+
+- **Keep two trees and leave the tuple:** rejected; keeps the legacy backend unremovable and duplicates every type-mapping change.
+- **Make models_v2.Model inherit from legacy Gesha:** rejected; it is the reverse of the intended direction (legacy is being retired) and would drag legacy internals into the new graph.
+- **Only delete unctions.py (the zero-importer file):** rejected as insufficient; it does not address the Gesha() bug nor unblock the rest.

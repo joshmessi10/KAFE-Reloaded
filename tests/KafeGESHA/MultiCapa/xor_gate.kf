@@ -21,7 +21,7 @@
 --   Arquitectura: 2 entradas -> 4 ocultas (tanh) -> 1 salida (sigmoid)
 -- ============================================
 
-import geshaV2;
+import gesha;
 
 show("=== Red Multicapa: Compuerta XOR ===");
 
@@ -30,10 +30,10 @@ List[List[FLOAT]] x_train = [[0.0, 0.0], [0.0, 1.0], [1.0, 0.0], [1.0, 1.0]];
 List[INT] y_train = [0, 1, 1, 0];
 
 -- Capa oculta: 4 neuronas con tanh (salida en [-1, 1])
-GESHA hidden = geshaV2.create_dense(4, "tanh", [2], 0.0, 42);
+GESHA hidden = gesha.create_dense(4, "tanh", [2], 0.0, 42);
 -- Capa de salida: 1 neurona con sigmoid (probabilidad)
-GESHA output = geshaV2.create_dense(1, "sigmoid", [4], 0.0, 43);
-GESHA model = geshaV2.sequential([hidden, output]);
+GESHA output = gesha.create_dense(1, "sigmoid", [4], 0.0, 43);
+GESHA model = gesha.sequential([hidden, output]);
 
 -- Adam + binary crossentropy para convergencia en una prueba acotada
 model.compile("adam", "binary_crossentropy", []);
