@@ -54,6 +54,7 @@ separe
 ser
 serie
 simular
+te
 variante
 varios
 vectores
