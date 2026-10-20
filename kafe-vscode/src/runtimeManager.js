@@ -74,8 +74,8 @@ function validatePinnedManifest(manifest) {
   const runtime = manifest.runtime;
   const uv = manifest.uv;
   if (!runtime || !uv || runtime.version !== '0.2.0' || runtime.knowledgePackVersion !== '0.2.0' ||
-    runtime.pythonRequirement !== '>=3.10' || runtime.antlrRuntimeVersion !== '4.13.2' ||
-    runtime.sourceRevision !== 'b955ba606b051debcdc291e58acb8a25fa8390c8' ||
+    runtime.pythonRequirement !== '>=3.11' || runtime.antlrRuntimeVersion !== '4.13.2' ||
+    runtime.sourceRevision !== '8441cec35ffa8cf76e2595313d77256f118e5175' ||
     !/^[a-f0-9]{64}$/.test(runtime.archiveSha256) || uv.version !== '0.11.3') {
     throw new Error('KAFE runtime manifest does not match the pinned runtime versions.');
   }

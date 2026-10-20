@@ -9,7 +9,7 @@ const { createRuntimeManager, getRuntimeTarget, validateAssetUrl } = require('..
 
 const STORAGE = 'C:/extension-storage';
 const runtimeEntries = {
-  'pyproject.toml': '[project]\nrequires-python = ">=3.10"\ndependencies = ["antlr4-python3-runtime==4.13.2"]\n',
+  'pyproject.toml': '[project]\nrequires-python = ">=3.11"\ndependencies = ["antlr4-python3-runtime==4.13.2"]\n',
   'uv.lock': 'version = 1\n',
   'src/Kafe.py': 'print("KAFE")\n',
   'src/Kafe_GrammarLexer.py': '# generated\n',

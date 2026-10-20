@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "referenceVersion": 1,
   "runtimeVersion": "0.2.0",
-  "runtimeSourceRevision": "b955ba606b051debcdc291e58acb8a25fa8390c8",
+  "runtimeSourceRevision": "8441cec35ffa8cf76e2595313d77256f118e5175",
   "sourceFingerprint": "148ebb295fd60e5e209712aad0f4cdfa12064f0f76010366e1fbc3fccf55321c",
   "runtimeSourceFingerprint": "148ebb295fd60e5e209712aad0f4cdfa12064f0f76010366e1fbc3fccf55321c",
   "fixtureFingerprint": "fe2f38d1dd5df4e4787ea91b65a21d63f5618568f15f067089612b06c0acc5ea",
@@ -703,5 +703,5 @@
     "tests/loops/while_nested_loops.kf",
     "tests/loops/while_with_break_continue.kf"
   ],
-  "contentSha256": "13094d5865560970bb9092365322d697ac8b1b7e0ab80ca4a0c188ad968acd49"
+  "contentSha256": "b7ad48a007cacb297ec394dabcf021520a2f8faef9a640a6eac6e7b0588fb06f"
 }

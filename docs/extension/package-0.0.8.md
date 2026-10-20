@@ -15,11 +15,11 @@ VSIX. Existing untracked learner files are preserved.
 ## Artifact
 
 - Extension: `kafe-vscode/kafe-neural-suite-0.0.8.vsix`.
-- Extension SHA-256: `7508a5fd07201df5e04854e1edb730c9e18ce8afced561982557e03eef2b3e6a`.
+- Extension SHA-256: `12b5300feb6d296a7340fb56aa942bd1d406ba4006515101fed7ed3781a4d58b`.
 - Runtime: `kafe-vscode/release/kafe-runtime-0.2.0.zip`.
 - Runtime sidecar: `kafe-vscode/release/kafe-runtime-0.2.0.manifest.json`.
-- Runtime SHA-256: `97f5ae5248b992b1f03f650b847e90728ab8a8fcbbff37a8927da9a793309f5c`.
-- Runtime source: `b955ba606b051debcdc291e58acb8a25fa8390c8`.
+- Runtime SHA-256: `e8d56dcd6bf429fb08c10c47c3775bcfd73dc889aed2f564fcaf260055957291`.
+- Runtime source: `8441cec35ffa8cf76e2595313d77256f118e5175`.
 - Tutor assets, runtime manager, runtime manifest and production dependencies pass
   `node test/verify-vsix.js`.
 - No Marketplace publication, GitHub release or remote push was performed.
@@ -39,11 +39,8 @@ VSIX. Existing untracked learner files are preserved.
   requires cached Windows VS Code 1.96.0 and PowerShell; this machine is macOS.
   The Windows CI job must still pass.
 - Browser layout tests were not run.
-- The dependency audit remains a release blocker for Python 3.10: Pillow 12.3.0
-  has nine reported vulnerabilities, while the fixed Pillow 13.0.0 release does
-  not support Python 3.10. Certifi was updated to its fixed release. The managed
-  runtime installs with `--no-dev`, so Pillow is not installed during normal KAFE
-  runtime setup, but the repository-wide release gate is still not clean.
+- The dependency audit passes after raising the supported baseline to Python 3.11
+  and resolving Pillow 13.0.0 and the corrected certifi release.
 
 ## Publication order
 
