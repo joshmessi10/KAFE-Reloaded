@@ -1,0 +1,5 @@
+drip apply_function(fn: FUNC(INT) => INT, v: INT) => INT:
+    return fn(v);
+;
+
+apply_function(5, 3);

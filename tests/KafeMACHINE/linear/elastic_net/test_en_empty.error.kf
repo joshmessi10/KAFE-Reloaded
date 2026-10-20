@@ -1,0 +1,4 @@
+import machine;
+
+MACHINE en = machine.elastic_net();
+en.fit([], []);

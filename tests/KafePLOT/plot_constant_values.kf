@@ -1,8 +1,8 @@
 import plot;
 
-plot.title("Distribución de frutas");
+plot.title("Fruit distribution");
 
-List[STR] etiquetas = ["Manzanas", "Peras", "Bananas", "Uvas"];
-List[INT] valores = [25, 15, 35, 25];
+List[STR] labels = ["Apples", "Pears", "Bananas", "Grapes"];
+List[INT] values = [25, 15, 35, 25];
 
-plot.pie(etiquetas, valores);
+plot.pie(labels, values);

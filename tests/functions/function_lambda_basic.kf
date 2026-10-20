@@ -1,0 +1,9 @@
+drip double_value(a: INT) => INT:
+    return a * 2;
+;
+
+drip show_list() => List[INT]:
+    return [double_value(1), double_value(2), double_value(3)];
+;
+
+show(show_list());  -- [2, 4, 6]

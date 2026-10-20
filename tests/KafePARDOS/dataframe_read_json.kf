@@ -1,0 +1,23 @@
+import pardos;
+
+-- Read JSON file
+PARDOS df = pardos.read_json("dataframe_read_json.json");
+
+-- Show the DataFrame
+show(df);
+
+-- Show shape
+show(df.shape());
+
+-- Show head
+show(df.head(2));
+
+-- Show column
+List[STR] names = df.col("name");
+show(names);
+
+-- Show dtypes
+show(df.dtypes());
+
+-- Show info
+show(df.info());

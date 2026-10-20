@@ -1,0 +1,20 @@
+import gesha;
+import pardos;
+
+-- Load data from CSV (preprocessing outside the model)
+PARDOS df = pardos.read_csv("../tests/data/clustering_sample.csv");
+
+-- Convert DataFrame to the training matrix
+List[List[FLOAT]] X_train = pardos.to_matrix(df);
+
+-- Train the model (unsupervised mode: y=[])
+GESHA layer1 = gesha.create_dense(4, "relu",    [2], 0.0, 42);
+GESHA layer2 = gesha.create_dense(2, "softmax", [],  0.0, 42);
+GESHA model  = gesha.sequential([layer1, layer2]);
+
+model.compile("adam", "mse", []);
+model.fit(X_train, [], 20, 1);
+
+-- Predict
+List[FLOAT] probs = model.predict([1.0, 1.0]);
+show("Cluster probabilities: " + str(probs));

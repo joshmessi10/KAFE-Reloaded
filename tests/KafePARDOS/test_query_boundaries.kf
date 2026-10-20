@@ -2,7 +2,7 @@ import pardos;
 
 PARDOS df = pardos.read_csv("dataframe_basic_operations.csv");
 
-show("--- Boundaries: edad <= 28 ---");
+show("--- Boundaries: age <= 28 ---");
 
-PARDOS res = df.query("edad <= 28");
+PARDOS res = df.query("age <= 28");
 show(res);

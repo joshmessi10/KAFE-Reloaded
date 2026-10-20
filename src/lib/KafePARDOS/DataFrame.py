@@ -1,13 +1,17 @@
-import lib.KafeMATH.funciones as math
+import json
+import os
+from typing import Any, cast
+
+import lib.KafeMATH.functions as math
 from global_utils import check_sig
 from TypeUtils import (
-    pardos_t,
-    lista_cadenas_t,
-    matriz_cualquiera_t,
-    entero_t,
-    cadena_t,
-    flotante_t,
-    booleano_t,
+    any_matrix_type,
+    boolean_type,
+    float_type,
+    integer_type,
+    pardos_type,
+    string_list_type,
+    string_type,
 )
 
 # Alias built-in sum to avoid shadowing by DataFrame.sum method
@@ -15,20 +19,20 @@ builtins_sum = sum
 
 
 class DataFrame:
-    @check_sig([3], [pardos_t], [lista_cadenas_t], [matriz_cualquiera_t])
+    @check_sig([3], [pardos_type], [string_list_type], [any_matrix_type])
     def __init__(self, columns, data):
         for row in data:
             if len(row) != len(columns):
-                raise Exception(f"Inconsistent dimensions")
+                raise Exception("pardos: Inconsistent dimensions")
 
-        self.columns = columns
-        self.data = data
+        self.columns: list[str] = list(columns)
+        self.data: list[list[Any]] = [list(row) for row in data]
 
     def __repr__(self):
-        contenido = f"cols: {self.columns}, rows: {self.data}"
-        return repr(contenido)
+        content = f"cols: {self.columns}, rows: {self.data}"
+        return repr(content)
 
-    @check_sig([1, 2], [pardos_t], [entero_t])
+    @check_sig([1, 2], [pardos_type], [integer_type])
     def head(self, *args):
         n = 5
         if len(args) == 1:
@@ -36,7 +40,7 @@ class DataFrame:
 
         return DataFrame(self.columns, self.data[:n])
 
-    @check_sig([1, 2], [pardos_t], [entero_t])
+    @check_sig([1, 2], [pardos_type], [integer_type])
     def tail(self, *args):
         n = 5
         if len(args) == 1:
@@ -47,41 +51,46 @@ class DataFrame:
         else:
             return DataFrame(self.columns, self.data[:])
 
-    @check_sig([1], [pardos_t])
+    @check_sig([1], [pardos_type])
     def shape(self):
-        n_filas = len(self.data)
+        row_count = len(self.data)
         n_cols = len(self.columns)
-        return [n_filas, n_cols]
+        return [row_count, n_cols]
 
-    @check_sig([2], [pardos_t], [cadena_t])
+    @check_sig([2], [pardos_type], [string_type])
     def col(self, column_name):
         if column_name not in self.columns:
-            raise Exception(f"Column '{column_name}' doesn't exist")
+            raise Exception(f"pardos: Column '{column_name}' doesn't exist")
         idx = self.columns.index(column_name)
 
         raw = [row[idx] for row in self.data]
 
+
+
         dtypes_rows = self.dtypes()
 
-        tipo_col = None
-        for col, tipo in dtypes_rows:
+        column_type = None
+        for col, type_name in dtypes_rows:
             if col == column_name:
-                tipo_col = tipo
+                column_type = type_name
                 break
 
         result_rows = []
-        if tipo_col == cadena_t:
+        if column_type == string_type:
             for v in raw:
                 if isinstance(v, float) and math.isnan(v):
                     result_rows.append("")
                 else:
                     result_rows.append(str(v))
 
-        elif tipo_col == entero_t:
+        elif column_type == integer_type:
             for v in raw:
-                result_rows.append(int(v))
+                if isinstance(v, float) and math.isnan(v):
+                    result_rows.append(0)
+                else:
+                    result_rows.append(int(v))
 
-        elif tipo_col == flotante_t:
+        elif column_type == float_type:
             for v in raw:
                 if isinstance(v, float) and math.isnan(v):
                     result_rows.append(float("nan"))
@@ -93,9 +102,9 @@ class DataFrame:
 
         return result_rows
 
-    @check_sig([1], [pardos_t])
+    @check_sig([1], [pardos_type])
     def dtypes(self):
-        filas = []
+        rows = []
         for j, col_name in enumerate(self.columns):
             vals = [
                 row[j]
@@ -103,41 +112,43 @@ class DataFrame:
                 if not (isinstance(row[j], float) and math.isnan(row[j]))
                 and row[j] is not None
             ]
-            tipo_col = cadena_t
-            if len(vals) > 0 and all(isinstance(v, int) for v in vals):
-                tipo_col = entero_t
+            column_type = string_type
+            if len(vals) > 0 and all(isinstance(v, bool) for v in vals):
+                column_type = boolean_type
+            elif len(vals) > 0 and all(isinstance(v, int) for v in vals):
+                column_type = integer_type
             elif len(vals) > 0 and all(isinstance(v, (int, float)) for v in vals):
-                tipo_col = flotante_t
-            filas.append([col_name, tipo_col])
+                column_type = float_type
+            rows.append([col_name, column_type])
 
-        return filas
+        return rows
 
-    @check_sig([1], [pardos_t])
+    @check_sig([1], [pardos_type])
     def info(self):
-        n_filas = len(self.data)
+        row_count = len(self.data)
         n_cols = len(self.columns)
 
         cols_str = ", ".join(self.columns)
         dtypes_rows = self.dtypes()
         dtypes_str = ", ".join(f"{c}:{t}" for c, t in dtypes_rows)
 
-        filas = [
-            ["Rows", n_filas],
+        rows = [
+            ["Rows", row_count],
             ["Columns", n_cols],
             ["Column_Names", cols_str],
             ["Dtypes", dtypes_str],
         ]
-        return f"{filas}"
+        return f"{rows}"
 
-    @check_sig([1], [pardos_t])
+    @check_sig([1], [pardos_type])
     def describe(self):
         cols = ["column", "count", "mean", "std", "min", "max"]
-        filas = []
+        rows = []
 
-        tipo_df = self.dtypes()
-        for i, tipo in enumerate(tipo_df):
+        dataframe_type = self.dtypes()
+        for i, type_name in enumerate(dataframe_type):
             col_name = self.columns[i]
-            if tipo[1] in (entero_t, flotante_t):
+            if type_name[1] in (integer_type, float_type):
                 idx = self.columns.index(col_name)
                 nums = [
                     row[idx]
@@ -146,6 +157,7 @@ class DataFrame:
                     and not (isinstance(row[idx], float) and math.isnan(row[idx]))
                 ]
                 if not nums:
+                    rows.append([col_name, "0", "nan", "nan", "nan", "nan"])
                     continue
                 count = len(nums)
                 mean = sum(nums) / count
@@ -153,7 +165,7 @@ class DataFrame:
                 std = var**0.5
                 min_val = min(nums)
                 max_val = max(nums)
-                filas.append(
+                rows.append(
                     [
                         col_name,
                         str(count),
@@ -164,28 +176,228 @@ class DataFrame:
                     ]
                 )
 
-        return DataFrame(cols, filas)
+        return DataFrame(cols, rows)
 
-    @check_sig([2], [pardos_t], [cadena_t])
+    @check_sig([2], [pardos_type], [string_type])
+    def to_csv(self, path):
+        """
+        Export DataFrame to CSV file.
+        """
+        import globals
+
+        # Resolve path relative to current directory
+        if os.path.isabs(path):
+            real_path = path
+        else:
+            real_path = os.path.join(cast(str, globals.current_dir), path)
+
+        with open(real_path, "w", encoding="utf-8") as f:
+            # Write header
+            f.write(",".join(self.columns) + "\n")
+
+            # Write data rows
+            for row in self.data:
+                row_str = []
+                for val in row:
+                    if isinstance(val, float) and math.isnan(val):
+                        row_str.append("")
+                    else:
+                        row_str.append(str(val))
+                f.write(",".join(row_str) + "\n")
+
+    @check_sig([2], [pardos_type], [string_type])
+    def to_json(self, path):
+        """
+        Export DataFrame to JSON file in 'records' orient.
+        Format: [{"col1": val1, "col2": val2}, ...]
+        """
+        import globals
+
+        # Resolve path relative to current directory
+        if os.path.isabs(path):
+            real_path = path
+        else:
+            real_path = os.path.join(cast(str, globals.current_dir), path)
+
+        # Build records format
+        records = []
+        for row in self.data:
+            record = {}
+            for i, col_name in enumerate(self.columns):
+                val = row[i]
+                # Handle NaN values
+                if isinstance(val, float) and math.isnan(val):
+                    record[col_name] = None
+                else:
+                    record[col_name] = val
+            records.append(record)
+
+        with open(real_path, "w", encoding="utf-8") as f:
+            json.dump(records, f, indent=2, ensure_ascii=False)
+
+    @check_sig([3], [pardos_type], [string_type], [string_type])
+    def rename(self, old_name, new_name):
+        """
+        Rename a column.
+        Returns a new DataFrame with the renamed column.
+        """
+        if old_name not in self.columns:
+            raise Exception(f"pardos: Column '{old_name}' doesn't exist")
+
+        if self.columns.count(old_name) > 1:
+            raise Exception(f"pardos: rename: Column '{old_name}' appears more than once")
+
+        if new_name in [c for i, c in enumerate(self.columns) if c != old_name]:
+            raise Exception(f"pardos: rename: Column '{new_name}' already exists")
+
+        # Create new column list with renamed column
+        new_columns = [new_name if col == old_name else col for col in self.columns]
+
+        # Return new DataFrame with same data but renamed columns
+        return DataFrame(new_columns, self.data)
+
+    @check_sig([2], [pardos_type], [string_type])
+    def drop(self, column_name):
+        """
+        Drop a column from the DataFrame.
+        Returns a new DataFrame without the specified column.
+        """
+        if column_name not in self.columns:
+            raise Exception(f"pardos: Column '{column_name}' doesn't exist")
+
+        # Find the index of the column to drop
+        col_idx = self.columns.index(column_name)
+
+        # Create new column list without the dropped column
+        new_columns = [col for col in self.columns if col != column_name]
+
+        # Create new data without the dropped column
+        new_data: list[list[Any]] = []
+        for row in self.data:
+            new_row = [row[i] for i in range(len(row)) if i != col_idx]
+            new_data.append(new_row)
+
+        return DataFrame(new_columns, new_data)
+
+    @check_sig([2], [pardos_type], [integer_type, float_type, string_type])
+    def fillna(self, value):
+        """
+        Fill NaN values with a specified value.
+        Returns a new DataFrame with NaN values replaced.
+        """
+        new_data = []
+        for row in self.data:
+            new_row = []
+            for val in row:
+                if isinstance(val, float) and math.isnan(val):
+                    new_row.append(value)
+                else:
+                    new_row.append(val)
+            new_data.append(new_row)
+
+        return DataFrame(self.columns, new_data)
+
+    @check_sig([1], [pardos_type])
+    def dropna(self):
+        """
+        Drop rows that contain any NaN values.
+        Returns a new DataFrame without rows containing NaN.
+        """
+        new_data = []
+        for row in self.data:
+            has_nan = False
+            for val in row:
+                if isinstance(val, float) and math.isnan(val):
+                    has_nan = True
+                    break
+            if not has_nan:
+                new_data.append(row)
+
+        return DataFrame(self.columns, new_data)
+
+    @check_sig([1], [pardos_type])
+    def ffill(self):
+        """
+        Forward fill - propagate last valid observation forward to fill NaN values.
+        Fills down each column (row-wise propagation).
+        Returns a new DataFrame with NaN values filled using forward fill.
+        """
+        new_data = []
+
+        # Process column by column
+        for col_idx in range(len(self.columns)):
+            last_valid = None
+            for row_idx in range(len(self.data)):
+                val = self.data[row_idx][col_idx]
+                if isinstance(val, float) and math.isnan(val):
+                    # Use last valid value if available
+                    if last_valid is not None:
+                        if row_idx >= len(new_data):
+                            new_data.append([None] * len(self.columns))
+                        new_data[row_idx][col_idx] = last_valid
+                    else:
+                        # Keep NaN if no previous valid value
+                        if row_idx >= len(new_data):
+                            new_data.append([None] * len(self.columns))
+                        new_data[row_idx][col_idx] = val
+                else:
+                    if row_idx >= len(new_data):
+                        new_data.append([None] * len(self.columns))
+                    new_data[row_idx][col_idx] = val
+                    last_valid = val
+
+        return DataFrame(self.columns, new_data)
+
+    @check_sig([1], [pardos_type])
+    def bfill(self):
+        """
+        Backward fill - propagate next valid observation backward to fill NaN values.
+        Fills up each column (reverse row-wise propagation).
+        Returns a new DataFrame with NaN values filled using backward fill.
+        """
+        # Initialize new_data with same structure
+        new_data: list[list[Any]] = [[None] * len(self.columns) for _ in range(len(self.data))]
+
+        # Process column by column
+        for col_idx in range(len(self.columns)):
+            next_valid = None
+            # Iterate backwards through rows
+            for row_idx in range(len(self.data) - 1, -1, -1):
+                val = self.data[row_idx][col_idx]
+                if isinstance(val, float) and math.isnan(val):
+                    # Use next valid value if available
+                    if next_valid is not None:
+                        new_data[row_idx][col_idx] = next_valid
+                    else:
+                        # Keep NaN if no next valid value
+                        new_data[row_idx][col_idx] = val
+                else:
+                    new_data[row_idx][col_idx] = val
+                    next_valid = val
+
+        return DataFrame(self.columns, new_data)
     def value_counts(self, column_name):
         """Count occurrences of each unique value in a column."""
         if column_name not in self.columns:
-            raise Exception(f"Column '{column_name}' doesn't exist")
+            raise Exception(f"pardos: Column '{column_name}' doesn't exist")
         idx = self.columns.index(column_name)
         counts = {}
         for row in self.data:
             val = row[idx]
             if isinstance(val, float) and math.isnan(val):
                 continue
-            key = str(val) if not isinstance(val, (int, float, str, bool)) else val
+            if isinstance(val, (int, float, str, bool)):
+                key = val
+            else:
+                key = repr(val) if not isinstance(val, (type(None),)) else val
             counts[key] = counts.get(key, 0) + 1
         # Sort by count descending (same default as pandas)
         sorted_items = sorted(counts.items(), key=lambda x: -x[1])
         result_cols = ["value", "count"]
-        result_rows = [[str(k), v] for k, v in sorted_items]
+        result_rows = [[k, v] for k, v in sorted_items]
         return DataFrame(result_cols, result_rows)
 
-    @check_sig([2], [pardos_t], [cadena_t])
+    @check_sig([2], [pardos_type], [string_type])
     def mean(self, column_name):
         """Calculate the arithmetic mean of a numeric column."""
         if column_name not in self.columns:
@@ -198,10 +410,12 @@ class DataFrame:
             and not (isinstance(row[idx], float) and math.isnan(row[idx]))
         ]
         if not nums:
-            raise Exception(f"Column '{column_name}' has no numeric values")
+            raise Exception(f"pardos: Column '{column_name}' has no numeric values")
         return builtins_sum(nums) / len(nums)
 
-    @check_sig([2], [pardos_t], [cadena_t])
+
+
+    @check_sig([2], [pardos_type], [string_type])
     def sum(self, column_name):
         """Calculate the sum of a numeric column."""
         if column_name not in self.columns:
@@ -214,10 +428,12 @@ class DataFrame:
             and not (isinstance(row[idx], float) and math.isnan(row[idx]))
         ]
         if not nums:
-            raise Exception(f"Column '{column_name}' has no numeric values")
+            raise Exception(f"pardos: Column '{column_name}' has no numeric values")
         return builtins_sum(nums)
 
-    @check_sig([3], [pardos_t], [cadena_t], [cadena_t])
+
+
+    @check_sig([3], [pardos_type], [string_type], [string_type])
     def agg(self, column_name, func_name):
         """Apply a single aggregation function to a column.
         
@@ -235,13 +451,13 @@ class DataFrame:
         supported = ["sum", "mean", "min", "max", "count"]
         if func_name not in supported:
             raise Exception(
-                f"Unsupported aggregation '{func_name}'. "
+                f"pardos: Unsupported aggregation '{func_name}'. "
                 f"Supported: {supported}"
             )
         if func_name == "count":
             return len(nums)
         if not nums:
-            raise Exception(f"Column '{column_name}' has no numeric values")
+            raise Exception(f"pardos: Column '{column_name}' has no numeric values")
         if func_name == "sum":
             return builtins_sum(nums)
         elif func_name == "mean":
@@ -251,20 +467,39 @@ class DataFrame:
         elif func_name == "max":
             return max(nums)
 
-    @check_sig([2], [pardos_t], [cadena_t])
+    @check_sig([1, 2], [pardos_type], [integer_type])
+    def round(self, *args):
+        """Round all floating-point numbers in the DataFrame to n decimal places."""
+        decimals = 4
+        if len(args) == 1:
+            decimals = args[0]
+        
+        rounded_data = []
+        for row in self.data:
+            new_row = []
+            for val in row:
+                if isinstance(val, float) and not math.isnan(val):
+                    new_row.append(math.math_round(val, decimals))
+                else:
+                    new_row.append(val)
+            rounded_data.append(new_row)
+        return DataFrame(self.columns, rounded_data)
+
+    @check_sig([2], [pardos_type], [string_type])
     def query(self, query_str):
         import globals
         visitor = globals.current_visitor
         if visitor is None:
-            raise Exception("Pardos: No active interpreter visitor found")
+            raise Exception("pardos: No active interpreter visitor found")
 
         # Lazy import to avoid crashes if antlr4 is missing in some environments
         try:
-            from antlr4 import InputStream, CommonTokenStream
+            from antlr4 import CommonTokenStream, InputStream
+
             from Kafe_GrammarLexer import Kafe_GrammarLexer
             from Kafe_GrammarParser import Kafe_GrammarParser
-        except ImportError:
-            raise Exception("Pardos: antlr4-python3-runtime is not installed")
+        except ImportError as e:
+            raise Exception("pardos: antlr4-python3-runtime is not installed") from e
 
         # Parse the query string as an expression
         input_stream = InputStream(query_str)
@@ -301,16 +536,17 @@ class DataFrame:
                 for i, col_name in enumerate(self.columns):
                     val = row[i]
                     if isinstance(val, bool):
-                        tipo = booleano_t
+                        type_name = boolean_type
                     elif isinstance(val, int):
-                        tipo = entero_t
+                        type_name = integer_type
                     elif isinstance(val, float):
-                        tipo = flotante_t
+                        type_name = float_type
                     else:
-                        tipo = cadena_t
+                        type_name = string_type
                     
-                    from global_utils import asignar_variable
-                    asignar_variable(visitor, col_name, val, tipo)
+                    from global_utils import assign_variable
+                    assign_variable(visitor, col_name, val, type_name)
+                    visitor.mark_variable_in_scope(col_name)
                 
                 # Evaluate expression
                 result = visitor.visit(tree)
@@ -321,3 +557,106 @@ class DataFrame:
                 visitor.pop_scope()
 
         return DataFrame(self.columns, filtered_data)
+
+    @check_sig([2], [pardos_type], [pardos_type])
+    def concat(self, other):
+        """Concatenate two DataFrames vertically."""
+        if self.columns != other.columns:
+            if sorted(self.columns) == sorted(other.columns):
+                # Reorder other's data to match self.columns
+                other_sorted_data = []
+                for row in other.data:
+                    new_row = [row[other.columns.index(col)] for col in self.columns]
+                    other_sorted_data.append(new_row)
+                return DataFrame(self.columns, self.data + other_sorted_data)
+            else:
+                raise Exception("pardos: concat: Columns do not match")
+        return DataFrame(self.columns, self.data + other.data)
+
+    @check_sig([3, 4], [pardos_type], [pardos_type], [string_type], [string_type])
+    def merge(self, other, on, how='inner'):
+        """Merge two DataFrames on a common column."""
+        if on not in self.columns or on not in other.columns:
+            raise Exception(f"pardos: merge: Column '{on}' not found in both DataFrames")
+        
+        idx_self = self.columns.index(on)
+        idx_other = other.columns.index(on)
+        
+        # Build hash map for the right side (use repr for unhashable/NaN keys)
+        right_map = {}
+        for row in other.data:
+            key = row[idx_other]
+            map_key = repr(key) if (isinstance(key, float) and math.isnan(key)) or not isinstance(key, (str, int, float, bool, type(None))) else key
+            if map_key not in right_map:
+                right_map[map_key] = []
+            right_map[map_key].append(row)
+            
+        new_cols = list(self.columns)
+        other_cols_no_on = [c for c in other.columns if c != on]
+        new_cols.extend(other_cols_no_on)
+        
+        new_data = []
+        for row_left in self.data:
+            key = row_left[idx_self]
+            map_key = repr(key) if (isinstance(key, float) and math.isnan(key)) or not isinstance(key, (str, int, float, bool, type(None))) else key
+            if map_key in right_map:
+                for row_right in right_map[map_key]:
+                    combined = list(row_left)
+                    combined.extend([row_right[other.columns.index(c)] for c in other_cols_no_on])
+                    new_data.append(combined)
+            elif how == 'left':
+                combined = list(row_left)
+                combined.extend([None] * len(other_cols_no_on))
+                new_data.append(combined)
+                
+        return DataFrame(new_cols, new_data)
+
+    @check_sig([2], [pardos_type], [string_type])
+    def groupby(self, column_name):
+        """Group the DataFrame by a column."""
+        if column_name not in self.columns:
+            raise Exception(f"pardos: groupby: Column '{column_name}' not found")
+        return GroupBy(self, column_name)
+
+
+class GroupBy:
+    def __init__(self, df, column):
+        self.df = df
+        self.column = column
+        self.idx = df.columns.index(column)
+        self.groups = {}
+        for row in df.data:
+            key = row[self.idx]
+            if key not in self.groups:
+                self.groups[key] = []
+            self.groups[key].append(row)
+
+    def _aggregate(self, func_name):
+        res_cols = [self.column, func_name]
+        res_data = []
+        for key in sorted(self.groups.keys(), key=lambda x: str(x)):
+            # Special case: 'count' should reflect the number of rows in each group,
+            # regardless of column types.
+            if func_name == 'count':
+                group_size = len(self.groups[key])
+                res_data.append([key, group_size])
+                continue
+
+            temp_df = DataFrame(self.df.columns, self.groups[key])
+            # Filter out non-numeric columns for aggregation, except the grouping column
+            numeric_cols = [c for c, t in temp_df.dtypes() if t in (integer_type, float_type)]
+
+            if numeric_cols:
+                col_to_agg = numeric_cols[0]
+                agg_val = temp_df.agg(col_to_agg, func_name)
+                res_data.append([key, agg_val])
+        return DataFrame(res_cols, res_data)
+
+    def mean(self):
+        return self._aggregate('mean')
+
+    def sum(self):
+        return self._aggregate('sum')
+
+    def count(self):
+        return self._aggregate('count')

@@ -1,0 +1,6 @@
+-- Non-boolean condition error
+
+INT x = 0;
+while (x):
+    show(x);
+;

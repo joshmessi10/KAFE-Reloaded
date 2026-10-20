@@ -1,0 +1,12 @@
+INT n = 60;
+INT a = 0;
+INT b = 1;
+INT counter = 0;
+
+while (counter < n):
+    show(a);
+    INT temp = a + b;
+    a = b;
+    b = temp;
+    counter = counter + 1;
+;

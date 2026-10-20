@@ -1,0 +1,7 @@
+import machine;
+
+List[FLOAT] X = [];
+List[INT] y = [];
+
+MACHINE lr = machine.logistic_regression(0.1, 100);
+lr.fit(X, y);

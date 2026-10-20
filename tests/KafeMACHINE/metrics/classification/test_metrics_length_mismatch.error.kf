@@ -1,0 +1,6 @@
+import machine;
+
+List[INT] y_true = [1, 0];
+List[INT] y_pred = [1];
+FLOAT acc = machine.accuracy_score(y_true, y_pred);
+show(acc);

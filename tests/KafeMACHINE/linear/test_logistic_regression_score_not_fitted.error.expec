@@ -1,0 +1,1 @@
+Exception: lr: LogisticRegression: Must call fit before score

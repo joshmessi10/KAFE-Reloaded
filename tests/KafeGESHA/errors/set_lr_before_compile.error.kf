@@ -1,0 +1,9 @@
+import gesha;
+
+-- Test set_lr before compile
+GESHA model = gesha.sequential();
+GESHA layer = gesha.create_dense(1, "sigmoid", [2], 0.0, 42);
+model.add(layer);
+
+-- Try to set learning rate before compile
+gesha.set_lr(model, 0.1);

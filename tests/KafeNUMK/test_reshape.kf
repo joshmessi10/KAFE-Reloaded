@@ -1,0 +1,4 @@
+import numk;
+
+show(numk.reshape([1, 2, 3, 4], [2, 2]));
+show(numk.reshape([[1, 2], [3, 4]], [4]));

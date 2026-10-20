@@ -1,0 +1,11 @@
+drip apply_function(f: FUNC(INT) => INT, n: INT) => INT:
+    return f(n);
+;
+
+drip inc(x: INT) => INT:
+    return x + 1;
+;
+
+show(apply_function(inc, 5));          -- 6
+
+show(apply_function( (y: INT) => y*y , 4));  -- 16

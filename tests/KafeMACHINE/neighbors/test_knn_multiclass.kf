@@ -1,0 +1,13 @@
+import machine;
+
+List[List[FLOAT]] X = [[1.0, 1.0], [1.0, 2.0], [2.0, 1.0],
+                        [5.0, 5.0], [5.0, 6.0], [6.0, 5.0],
+                        [10.0, 10.0], [10.0, 11.0], [11.0, 10.0]];
+List[INT] y = [0, 0, 0, 1, 1, 1, 2, 2, 2];
+
+MACHINE model = machine.knn(3);
+model.fit(X, y);
+
+List[INT] preds = model.predict([[1.0, 1.0], [5.0, 5.0], [10.0, 10.0]]);
+show("Predictions:");
+show(preds);

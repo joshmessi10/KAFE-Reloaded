@@ -1,4 +1,4 @@
--- Asignación de variable de tipo incorrecto
+-- Assignment with an incorrect variable type
 
 INT a = 5;
 a = 234.4;

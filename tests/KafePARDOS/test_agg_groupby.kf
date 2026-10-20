@@ -2,8 +2,8 @@ import pardos;
 
 PARDOS df = pardos.read_csv("dataframe_groupby.csv");
 
-show("--- value_counts: evento ---");
-PARDOS vc = df.value_counts("evento");
+show("--- value_counts: event ---");
+PARDOS vc = df.value_counts("event");
 show(vc);
 
 show("--- agg sum: id ---");

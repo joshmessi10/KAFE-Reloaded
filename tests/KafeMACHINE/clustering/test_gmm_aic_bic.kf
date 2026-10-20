@@ -1,0 +1,12 @@
+import machine;
+
+List[List[FLOAT]] X = [[1.0, 2.0], [1.5, 1.8], [5.0, 8.0], [8.0, 8.0], [1.0, 0.6], [9.0, 11.0]];
+
+MACHINE gmm = machine.gaussian_mixture(2, 100, 1e-3, 42);
+gmm.fit(X);
+
+FLOAT aic_val = gmm.aic(X);
+FLOAT bic_val = gmm.bic(X);
+
+show(int(aic_val * 10000000000.0 + 0.5) / 10000000000.0);
+show(int(bic_val * 10000000000.0 + 0.5) / 10000000000.0);

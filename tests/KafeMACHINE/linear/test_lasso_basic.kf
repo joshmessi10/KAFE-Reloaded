@@ -1,0 +1,13 @@
+import machine;
+
+List[List[FLOAT]] X = [[1.0], [2.0], [3.0], [4.0], [5.0]];
+List[FLOAT] y = [2.0, 4.0, 5.0, 4.0, 5.0];
+
+MACHINE lasso = machine.lasso_regression(0.1, True, 1000);
+lasso.fit(X, y);
+
+List[FLOAT] preds = lasso.predict([[1.5], [3.0], [5.5]]);
+show(preds);
+
+FLOAT r2 = lasso.score(X, y);
+show(r2);

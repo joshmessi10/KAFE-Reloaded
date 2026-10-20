@@ -1,0 +1,6 @@
+import machine;
+
+List[STR] labels = ["cat", "dog"];
+MACHINE le = machine.label_encoder();
+le.fit(labels);
+le.transform(["cat", "bird"]);

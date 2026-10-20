@@ -1,0 +1,9 @@
+drip multiply(a: INT,b: INT) => INT:
+    return a * b;
+;
+
+drip apply_curried(f: FUNC(INT) => FUNC(INT) => INT, x: INT, y: INT) => INT:
+    return f(x)(y);
+;
+
+show(apply_curried(multiply, 3, 7));  -- 21

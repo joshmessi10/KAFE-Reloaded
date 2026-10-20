@@ -1,0 +1,15 @@
+import machine;
+
+-- MinMaxScaler with single feature
+List[List[FLOAT]] data = [[10.0], [20.0], [30.0]];
+
+MACHINE scaler = machine.minmax_scaler();
+scaler.fit(data);
+show("data_min_:");
+show(scaler.data_min_);
+show("data_max_:");
+show(scaler.data_max_);
+
+List[List[FLOAT]] transformed = scaler.transform(data);
+show("Transformed:");
+show(transformed);

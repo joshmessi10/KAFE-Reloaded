@@ -1,0 +1,5 @@
+import machine;
+
+List[INT] empty = [];
+FLOAT mse = machine.mean_squared_error(empty, empty);
+show(mse);

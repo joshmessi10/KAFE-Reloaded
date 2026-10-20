@@ -1,0 +1,3 @@
+import machine;
+
+MACHINE lasso = machine.lasso_regression(-1.0);

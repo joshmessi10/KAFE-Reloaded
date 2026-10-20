@@ -1,0 +1,6 @@
+import machine;
+
+List[List[FLOAT]] X = [[1.0], [2.0], [3.0], [8.0], [9.0], [10.0], [20.0], [21.0], [22.0]];
+MACHINE agg = machine.agglomerative_clustering(3, "ward");
+List[INT] labels = agg.fit_predict(X);
+show(labels);

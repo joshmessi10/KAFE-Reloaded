@@ -1,0 +1,15 @@
+import machine;
+
+List[List[FLOAT]] X = [[1.0], [2.0], [3.0], [4.0], [5.0]];
+List[FLOAT] y = [2.0, 4.0, 5.0, 4.0, 5.0];
+
+-- Pure L1 (like Lasso)
+MACHINE en_l1 = machine.elastic_net(1.0, 1.0);
+en_l1.fit(X, y);
+
+-- Pure L2 (like Ridge)
+MACHINE en_l2 = machine.elastic_net(1.0, 0.0);
+en_l2.fit(X, y);
+
+show(en_l1.predict([[3.0]]));
+show(en_l2.predict([[3.0]]));

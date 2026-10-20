@@ -1,0 +1,18 @@
+import machine;
+
+List[List[FLOAT]] data = [[1.0, 2.0], [2.0, 3.0], [3.0, 4.0], [4.0, 5.0], [5.0, 6.0]];
+MACHINE scaler = machine.robust_scaler();
+scaler.fit(data);
+
+show("center_:");
+show(scaler.center_);
+show("scale_:");
+show(scaler.scale_);
+
+List[List[FLOAT]] scaled = scaler.transform(data);
+show("Scaled:");
+show(scaled);
+
+List[List[FLOAT]] restored = scaler.inverse_transform(scaled);
+show("Restored:");
+show(restored);

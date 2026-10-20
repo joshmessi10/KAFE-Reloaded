@@ -1,49 +1,49 @@
 import math;
 
--- Constantes
+-- Constants
 show(math.pi);
 show(math.e);
 
--- Funciones trigonométricas
+-- Trigonometric functions
 show(math.sin(math.pi / 2));
 show(math.cos(0));
 show(math.tan(math.pi / 4));
 
--- Inversas
+-- Inverse functions
 show(math.asin(1));
 show(math.acos(1));
 show(math.atan(1));
 
--- Hiperbólicas
+-- Hyperbolic functions
 show(math.sinh(0));
 show(math.cosh(0));
 show(math.tanh(0));
 
--- Exponenciales y logaritmos
+-- Exponentials and logarithms
 show(math.exp(1));
 show(math.log(math.e));
 show(math.log(8, 2));
 
--- Potencia y raíz
+-- Power and root
 show(math.sqrt(16));
 show(math.pow(2, 8));
 
--- Factoriales y aritmética de enteros
+-- Factorials and integer arithmetic
 show(math.factorial(5));
 show(math.gcd(48, 18));
 show(math.lcm(12, 15));
 
--- Manipulación de flotantes
+-- Floating-point operations
 show(math.abs(-42));
 show(math.floor(3.7));
 show(math.ceil(3.1));
 show(math.round(3.14159, 3));
 
--- Sumatorio y producto en rango
+-- Sum and product over a range
 show(math.sum(1, 5));
 show(math.sum(range(6)));
 show(math.prod(1, 5));
 
--- Conversión de ángulos
+-- Angle conversion
 show(math.degrees(math.pi));
 show(math.radians(180));

@@ -1,0 +1,179 @@
+import gesha;
+import math;
+import plot;
+
+
+List[List[FLOAT]] data = [
+    [1.0, 2.0],
+    [1.5, 1.8],
+    [5.0, 8.0],
+    [8.0, 8.0],
+    [1.0, 0.6],
+    [9.0, 11.0]
+];
+
+
+GESHA layer1 = gesha.create_dense(
+    8,
+    "relu",
+    [2],
+    0.0,
+    12
+);
+
+GESHA layer1b = gesha.create_dense(
+    4,
+    "relu",
+    [],
+    0.0,
+    99
+);
+
+GESHA layer2 = gesha.create_dense(
+    2, "softmax", [], 0.0, 42
+);
+
+GESHA model = gesha.sequential([layer1, layer1b, layer2]);
+
+gesha.compile(model, "adam", "categorical_crossentropy", []);
+
+gesha.set_lr(model, 0.0005);
+
+-- Modo no supervisado: y=[]
+model.fit(data, [], 50, 2);
+
+
+List[FLOAT] X0 = [];
+List[FLOAT] Y0 = [];
+List[FLOAT] X1 = [];
+List[FLOAT] Y1 = [];
+
+List[INT] indexes = [0,1,2,3,4,5];
+for (i in indexes):
+    List[FLOAT] point = data[i];
+    List[FLOAT] probs = model.predict(point);
+    show([math.round(probs[0], 12), math.round(probs[1], 12)]);
+
+    FLOAT p0 = probs[0];
+    FLOAT p1 = probs[1];
+    INT label;
+    if (p0 >= p1):
+        label = 0;
+    else:
+        label = 1;
+    ;
+
+    FLOAT xi = point[0];
+    FLOAT yi = point[1];
+    if (label == 0):
+        append(X0, xi);
+        append(Y0, yi);
+    else:
+        append(X1, xi);
+        append(Y1, yi);
+    ;
+;
+
+
+FLOAT sumx0 = 0.0; FLOAT sumy0 = 0.0; INT count0 = 0;
+FLOAT sumx1 = 0.0; FLOAT sumy1 = 0.0; INT count1 = 0;
+
+for (i in indexes):
+    List[FLOAT] point = data[i];
+    List[FLOAT] probs = model.predict(point);
+    FLOAT p0 = probs[0];
+    FLOAT p1 = probs[1];
+    INT label;
+    if (p0 >= p1):
+        label = 0;
+    else:
+        label = 1;
+    ;
+    FLOAT xi = point[0];
+    FLOAT yi = point[1];
+    if (label == 0):
+        sumx0 = sumx0 + xi;
+        sumy0 = sumy0 + yi;
+        count0 = count0 + 1;
+    else:
+        sumx1 = sumx1 + xi;
+        sumy1 = sumy1 + yi;
+        count1 = count1 + 1;
+    ;
+;
+
+FLOAT cx0;
+if (count0 == 0):
+    cx0 = 0.0;
+else:
+    cx0 = sumx0 / count0;
+;
+
+FLOAT cy0;
+if (count0 == 0):
+    cy0 = 0.0;
+else:
+    cy0 = sumy0 / count0;
+;
+
+FLOAT cx1;
+if (count1 == 0):
+    cx1 = 0.0;
+else:
+    cx1 = sumx1 / count1;
+;
+
+FLOAT cy1;
+if (count1 == 0):
+    cy1 = 0.0;
+else:
+    cy1 = sumy1 / count1;
+;
+
+List[FLOAT] CX = [cx0, cx1];
+List[FLOAT] CY = [cy0, cy1];
+
+
+List[List[FLOAT]] class_zero_points = [];
+for (i in range(0, len(X0))):
+    append(class_zero_points, [X0[i], Y0[i]]);
+;
+
+List[List[FLOAT]] class_one_points = [];
+for (i in range(0, len(X1))):
+    append(class_one_points, [X1[i], Y1[i]]);
+;
+
+List[List[FLOAT]] centers = [];
+for (i in range(0, len(CX))):
+    append(centers, [CX[i], CY[i]]);
+;
+
+
+plot.figure();
+plot.title("Clustering k-means (k=2) — GESHA Sequential");
+plot.xlabel("X");
+plot.ylabel("Y");
+plot.grid(True);
+
+
+if (len(class_zero_points) > 0):
+    plot.pointColor("red");
+    plot.pointSize(6);
+    plot.graph(class_zero_points, "point");
+;
+
+if (len(class_one_points) > 0):
+    plot.pointColor("green");
+    plot.pointSize(6);
+    plot.graph(class_one_points, "point");
+;
+
+if (len(centers) > 0):
+    plot.pointColor("black");
+    plot.pointSize(8);
+    plot.graph(centers, "point");
+;
+
+plot.legend("red: cluster 0 ; green: cluster 1 ; black: centers");
+plot.render();

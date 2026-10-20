@@ -1,0 +1,14 @@
+import machine;
+
+-- MinMaxScaler with raw 2D list (not PARDOS)
+-- Data: min=[1.0, 10.0], max=[5.0, 30.0]
+List[List[FLOAT]] data = [[1.0, 10.0], [3.0, 20.0], [5.0, 30.0]];
+
+MACHINE scaler = machine.minmax_scaler();
+List[List[FLOAT]] transformed = scaler.fit_transform(data);
+show("Transformed:");
+show(transformed);
+
+List[List[FLOAT]] restored = scaler.inverse_transform(transformed);
+show("Inverse:");
+show(restored);

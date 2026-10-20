@@ -1,9 +1,9 @@
 import plot;
 
 plot.figure();
-plot.title("Movimiento uniformemente acelerado");
-plot.xlabel("Tiempo (s)");
-plot.ylabel("Posición (m)");
+plot.title("Uniformly accelerated motion");
+plot.xlabel("Time (s)");
+plot.ylabel("Position (m)");
 
 List[INT] x = [0, 5, 10, 15, 20];
 List[INT] y = [0, 10000, 40000, 90000, 160000];

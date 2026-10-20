@@ -1,4 +1,4 @@
--- Solamente declaración de variables
+-- Variable declarations only
 
 INT a;
 List[List[INT]] b;

@@ -1,0 +1,12 @@
+import machine;
+
+List[List[FLOAT]] X = [[1.0], [2.0], [3.0], [4.0], [5.0], [6.0], [7.0], [8.0], [9.0], [10.0]];
+List[FLOAT] y = [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0];
+
+-- Randomized search
+MACHINE search = machine.randomized_search_cv(5, 3, "accuracy", 42);
+MACHINE knn_model = machine.knn(3);
+search.fit(knn_model, X, y);
+
+show(search.best_score_);
+show(len(search.cv_results_));

@@ -1,0 +1,25 @@
+import gesha;
+
+-- Comparacion de optimizadores sobre el problema XOR.
+-- Mismo dataset y misma arquitectura para los tres modelos;
+-- la unica diferencia es el optimizador.
+List[List[INT]] X = [[0, 0], [0, 1], [1, 0], [1, 1]];
+List[INT]       y = [0, 0, 0, 1];
+
+-- SGD
+GESHA sgd_model = gesha.sequential([gesha.create_dense(2, "sigmoid", [2], 0.0, 42), gesha.create_dense(1, "sigmoid", [], 0.0, 42)]);
+sgd_model.compile("sgd", "binary_crossentropy", []);
+show("SGD:");
+sgd_model.fit(X, y, 50, 1);
+
+-- Adam
+GESHA adam_model = gesha.sequential([gesha.create_dense(2, "sigmoid", [2], 0.0, 42), gesha.create_dense(1, "sigmoid", [], 0.0, 42)]);
+adam_model.compile("adam", "binary_crossentropy", []);
+show("Adam:");
+adam_model.fit(X, y, 50, 1);
+
+-- RMSprop
+GESHA rms_model = gesha.sequential([gesha.create_dense(2, "sigmoid", [2], 0.0, 42), gesha.create_dense(1, "sigmoid", [], 0.0, 42)]);
+rms_model.compile("rmsprop", "binary_crossentropy", []);
+show("RMSprop:");
+rms_model.fit(X, y, 50, 1);

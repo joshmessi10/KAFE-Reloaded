@@ -1,0 +1,5 @@
+import machine;
+
+MACHINE lr = machine.linear_regression();
+List[FLOAT] preds = lr.predict([1.0, 2.0]);
+show(preds);

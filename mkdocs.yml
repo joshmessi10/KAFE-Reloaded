@@ -1,0 +1,182 @@
+site_name: KAFE — Language Documentation
+site_description: Technical documentation for the KAFE Deep Learning Language
+site_url: https://joshmessi10.github.io/KAFE-Reloaded/
+repo_url: https://github.com/joshmessi10/KAFE-Reloaded
+repo_name: KAFE-Reloaded
+
+theme:
+  name: material
+  language: en
+  # logo: assets/logo.png
+  # favicon: assets/favicon.ico
+  palette:
+    scheme: slate
+    primary: black
+    accent: yellow
+  features:
+    - navigation.sections
+    - navigation.path
+    - navigation.top
+    - navigation.indexes
+    - search.highlight
+    - search.suggest
+    - content.code.copy
+    - content.code.annotate
+    - content.tabs.link
+    - toc.follow
+
+nav:
+  - Home: index.md
+  - Getting Started:
+      - Installation: getting-started/installation.md
+      - First Program: getting-started/first-program.md
+      - Basic Examples: getting-started/basic-examples.md
+  - Language:
+      - Lexical Structure: language/lexical-structure.md
+      - Type System: language/type-system.md
+      - Operators and Expressions: language/operators.md
+      - Control Structures: language/control-structures.md
+      - Functions: language/functions.md
+      - Lists: language/lists.md
+      - Imports: language/imports.md
+  - Libraries:
+      - NUMK (Linear Algebra): libraries/numk.md
+      - MATH (Mathematics): libraries/math.md
+      - PLOT (Visualization): libraries/plot.md
+      - FILES (File Operations): libraries/files.md
+      - Kaggle Dataset Ingestion: bibliotecas/kaggle.md
+      - Hugging Face Numeric Ingestion: bibliotecas/huggingface.md
+      - PARDOS (DataFrames): libraries/pardos.md
+      - MACHINE (ML Utilities):
+          - Overview: libraries/machine.md
+          - Functions and metrics: libraries/machine/metrics.md
+          - Linear models and SVM: libraries/machine/linear.md
+          - Model selection: libraries/machine/selection.md
+          - Classification and trees: libraries/machine/classifiers.md
+          - Clustering and ensembles: libraries/machine/clustering.md
+          - Preprocessing and reduction: libraries/machine/preprocessing.md
+      - Gesha (Deep Learning):
+          - Overview: libraries/gesha.md
+          - Models and training: libraries/gesha/models-training.md
+          - Dense networks: libraries/gesha/dense-networks.md
+          - Convolutional networks: libraries/gesha/convolutional-networks.md
+          - Recurrent networks: libraries/gesha/recurrent-networks.md
+          - Training tools: libraries/gesha/training-tools.md
+          - Soft clustering: libraries/gesha/soft-clustering.md
+  - Specification:
+      - Formal Grammar (EBNF): specification/ebnf-grammar.md
+      - Operational Semantics: specification/operational-semantics.md
+      - Lexical, Syntactic, and Semantic Analysis: specification/lexical-syntactic-semantic-analysis.md
+      - Operator Precedence: specification/operator-precedence.md
+  - Error Handling:
+      - Error Types: errors/error-types.md
+      - Lexical Errors: errors/lexical-errors.md
+      - Syntax Errors: errors/syntax-errors.md
+      - Semantic Errors: errors/semantic-errors.md
+      - Error Reference: errors/error-reference.md
+  - Examples:
+      - Feature Examples: ejemplos/README.md
+      - Hello World: examples/hello-world.kf
+      - Fibonacci with Currying: examples/fibonacci-currying.kf
+      - Merge Sort: examples/merge-sort.kf
+      - Linear Regression: examples/linear-regression.kf
+      - Neural Network: examples/neural-network.kf
+      - Decision Tree: examples/decision-tree.kf
+      - MACHINE examples:
+          - Overview: ejemplos/machine-kaggle.md
+          - "K-Means": ejemplos/machine/kmeans.md
+          - "Agglomerative Clustering": ejemplos/machine/agglomerative-clustering.md
+          - "DBSCAN": ejemplos/machine/dbscan.md
+          - "Gaussian Mixture": ejemplos/machine/gaussian-mixture.md
+          - "Linear Discriminant Analysis": ejemplos/machine/linear-discriminant-analysis.md
+          - "Gaussian Naive Bayes": ejemplos/machine/gaussian-naive-bayes.md
+          - "K-Nearest Neighbors": ejemplos/machine/knn.md
+          - "Decision Tree": ejemplos/machine/decision-tree.md
+          - "AdaBoost": ejemplos/machine/adaboost.md
+          - "Gradient Boosting": ejemplos/machine/gradient-boosting.md
+          - "Logistic Regression": ejemplos/machine/logistic-regression.md
+          - "Support Vector Machine": ejemplos/machine/svm.md
+          - "Random Forest": ejemplos/machine/random-forest.md
+          - "Ridge Regression": ejemplos/machine/ridge-regression.md
+          - "Lasso Regression": ejemplos/machine/lasso-regression.md
+          - "Elastic Net": ejemplos/machine/elastic-net.md
+          - "Linear Regression": ejemplos/machine/linear-regression.md
+          - "Support Vector Regression": ejemplos/machine/svr.md
+          - Interpret Results: ejemplos/machine/interpret-results.md
+      - Gesha examples:
+          - Overview: ejemplos/gesha-examples.md
+          - "Single perceptron: AND": ejemplos/gesha/perceptron-and.md
+          - "Single perceptron: OR": ejemplos/gesha/perceptron-or.md
+          - "Multilayer perceptron: XOR": ejemplos/gesha/mlp-xor.md
+          - "Nonlinear function approximation": ejemplos/gesha/function-approximation.md
+          - "Multiclass MLP: Iris": ejemplos/gesha/iris-mlp.md
+          - "Binary MLP: Breast Cancer Wisconsin": ejemplos/gesha/breast-cancer-mlp.md
+          - "Regression MLP: Red Wine Quality": ejemplos/gesha/wine-regression-mlp.md
+          - "Dense classifier: MNIST digits": ejemplos/gesha/mnist-dense-classifier.md
+          - "CNN: CIFAR-10": ejemplos/gesha/cnn-cifar10.md
+          - "CNN: small image classifier": ejemplos/gesha/cnn-small.md
+          - "Depthwise CNN block": ejemplos/gesha/cnn-depthwise.md
+          - "RNN: sequence classification": ejemplos/gesha/rnn-sequences.md
+          - "RNN: temperature forecasting": ejemplos/gesha/rnn-temperature.md
+          - "Embedding and RNN: sentiment": ejemplos/gesha/rnn-sentiment.md
+          - "Bidirectional LSTM: token vectors": ejemplos/gesha/lstm-embedding.md
+          - "NUMK and dense classifier": ejemplos/gesha/numk-dense.md
+          - "Autoencoder and K-Means: Iris": ejemplos/gesha/autoencoder-clustering.md
+  - About:
+      - Credits: about/credits.md
+      - License: about/license.md
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets:
+      check_paths: true
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.arithmatex:
+      generic: true
+  - tables
+  - attr_list
+  - md_in_html
+  - def_list
+  - toc:
+      permalink: true
+
+extra_javascript:
+  - https://cdn.jsdelivr.net/npm/katex@0.16.25/dist/katex.min.js
+  - https://cdn.jsdelivr.net/npm/katex@0.16.25/dist/contrib/auto-render.min.js
+  - assets/js/math.js
+
+extra_css:
+  - https://cdn.jsdelivr.net/npm/katex@0.16.25/dist/katex.min.css
+  - assets/css/custom.css
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/joshmessi10/KAFE-Reloaded
+
+plugins:
+  - search
+
+exclude_docs: |
+  /superpowers/
+  /migration/
+
+not_in_nav: |
+  /documentation-plan.md
+  /ejemplos/gesha-niveles.md
+  /ejemplos/gesha/nivel-1.md
+  /ejemplos/gesha/nivel-2.md
+  /ejemplos/gesha/nivel-3.md
+  /ejemplos/gesha/nivel-4.md
+  /ejemplos/gesha/nivel-5.md
+  /ejemplos/gesha/nivel-6.md
+  /ejemplos/gesha/nivel-7.md
+  /ejemplos/gesha/nivel-8.md

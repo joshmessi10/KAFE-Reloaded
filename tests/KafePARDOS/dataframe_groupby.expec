@@ -1,8 +1,8 @@
-"cols: ['id', 'fecha', 'evento'], rows: [[1, '2025-01-15', 'Reunión'], [2, '2025-02-28', 'Lanzamiento'], [3, '2025-03-10', 'Entrega'], [4, '2025-04-05', 'Capacitación'], [5, '2025-05-20', 'Conferencia']]"
+"cols: ['id', 'date', 'event'], rows: [[1, '2025-01-15', 'Meeting'], [2, '2025-02-28', 'Launch'], [3, '2025-03-10', 'Delivery'], [4, '2025-04-05', 'Training'], [5, '2025-05-20', 'Conference']]"
 [5, 3]
 ['2025-01-15', '2025-02-28', '2025-03-10', '2025-04-05', '2025-05-20']
-['Reunión', 'Lanzamiento', 'Entrega', 'Capacitación', 'Conferencia']
+['Meeting', 'Launch', 'Delivery', 'Training', 'Conference']
 [1, 2, 3, 4, 5]
-[['id', 'INT'], ['fecha', 'STR'], ['evento', 'STR']]
-[['Rows', 5], ['Columns', 3], ['Column_Names', 'id, fecha, evento'], ['Dtypes', 'id:INT, fecha:STR, evento:STR']]
+[['id', 'INT'], ['date', 'STR'], ['event', 'STR']]
+[['Rows', 5], ['Columns', 3], ['Column_Names', 'id, date, event'], ['Dtypes', 'id:INT, date:STR, event:STR']]
 "cols: ['column', 'count', 'mean', 'std', 'min', 'max'], rows: [['id', '5', '3.0', '1.4142135623730951', '1', '5']]"

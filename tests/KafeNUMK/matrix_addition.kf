@@ -1,4 +1,4 @@
--- Prueba Sumar Matrices
+-- Test matrix addition
 import numk;
 
 List[List[INT]] A = [[1, 2], [3, 4]];

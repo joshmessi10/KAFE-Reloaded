@@ -1,0 +1,580 @@
+from global_utils import check_sig
+from TypeUtils import integer_type, number_types, numeric_vector_types
+
+from .errors import raiseDomainError, raiseNonEqualLength
+
+pi = 3.141592653589793
+e = 2.718281828459045
+
+
+tau = 2 * pi
+inf = float('inf')
+nan = float('nan')
+
+
+@check_sig([1], number_types)
+def exp(x):
+    """Calculate e^x using Taylor series with argument reduction."""
+    if x == 0:
+        return 1.0
+    if isinf(x):
+        return x if x > 0 else 0.0
+    if isnan(x):
+        return x
+
+    negative = False
+    if x < 0:
+        negative = True
+        x = -x
+
+    # Reduce: e^x = (e^(x/2^k))^(2^k)
+    # Reduce until x/2^k <= 1.0 to minimize squaring error
+    k = 0
+    reduced = x
+    while reduced > 1.0:
+        reduced /= 2.0
+        k += 1
+
+    # Taylor series with more iterations for precision
+    term = 1.0
+    result = 1.0
+    for n in range(1, 50):
+        term *= reduced / n
+        result += term
+
+    # Square k times
+    for _ in range(k):
+        result *= result
+
+    return 1.0 / result if negative else result
+
+@check_sig([1, 2], number_types, number_types)
+def log(*args):
+    """Calculate ln(x) using argument reduction and Taylor series."""
+    x = args[0]
+
+    base = None
+    if len(args) == 2:
+        base = args[1]
+
+    if x <= 0:
+        raiseDomainError('log')
+
+    if base is not None:
+        if base <= 0 or base == 1:
+            raiseDomainError('log')
+
+    if x == 1:
+        return 0.0
+    if isinf(x):
+        return x
+    if isnan(x):
+        return x
+
+    # Argument reduction: ln(x) = ln(2^k * m) = k*ln(2) + ln(m)
+    k = 0
+    m = float(x)
+    while m >= 2.0:
+        m /= 2.0
+        k += 1
+    while m < 1.0:
+        m *= 2.0
+        k -= 1
+
+    ln2 = 0.6931471805599453
+
+    t = m - 1.0
+    result = 0.0
+    term = t
+    for n in range(1, 100):
+        result += term / n
+        term *= -t
+
+    ln_x = k * ln2 + result
+
+    if base is None:
+        return ln_x
+
+    # log_base(x) = ln(x) / ln(base)
+    k_b = 0
+    m_b = float(base)
+    while m_b >= 2.0:
+        m_b /= 2.0
+        k_b += 1
+    while m_b < 1.0:
+        m_b *= 2.0
+        k_b -= 1
+
+    t_b = m_b - 1.0
+    result_b = 0.0
+    term_b = t_b
+    for n in range(1, 100):
+        result_b += term_b / n
+        term_b *= -t_b
+
+    ln_base = k_b * ln2 + result_b
+    return ln_x / ln_base
+
+
+@check_sig([2], number_types, number_types)
+def pow_(x, y):
+    if x == 0:
+        if y > 0:
+            return 0.0
+        elif y == 0:
+            return 1.0
+        else:
+            raiseDomainError('pow')
+    if x < 0:
+        if float(y).is_integer():
+            n = int(y)
+            abs_x = -x
+            result = exp(y * log(abs_x))
+            return -result if (n % 2 != 0) else result
+        else:
+            raiseDomainError('pow')
+    return exp(y * log(x))
+
+
+@check_sig([1], number_types)
+def sqrt(x):
+    if x < 0:
+        raiseDomainError('sqrt')
+    if x == 0:
+        return 0.0
+    if isinf(x):
+        return inf
+    if isnan(x):
+        return nan
+    guess = x
+    for _ in range(30):
+        guess = (guess + x / guess) / 2
+    return guess
+
+
+@check_sig([1], number_types)
+def degrees(x):
+    return x * 180.0 / pi
+
+@check_sig([1], number_types)
+def radians(x):
+    return x * pi / 180.0
+
+
+@check_sig([1], number_types)
+def sin(x):
+    x = x % (2 * pi)
+    term = x
+    sum_ = term
+    sign = -1
+    for n in range(3, 50, 2):
+        term *= x * x / ((n - 1) * n)
+        sum_ += sign * term
+        sign *= -1
+    return sum_
+
+@check_sig([1], number_types)
+def cos(x):
+    x = x % (2 * pi)
+    term = 1.0
+    sum_ = term
+    sign = -1
+    for n in range(2, 50, 2):
+        term *= x * x / ((n - 1) * n)
+        sum_ += sign * term
+        sign *= -1
+    return sum_
+
+@check_sig([1], number_types)
+def tan(x):
+    c = cos(x)
+    if c == 0:
+        raiseDomainError('tan')
+    return sin(x) / c
+
+
+@check_sig([1], number_types)
+def asin(x):
+    if x == 1:
+        return pi / 2
+    if x == -1:
+        return -pi / 2
+    if x < -1 or x > 1:
+        raiseDomainError('asin')
+    term = x
+    sum_ = term
+    for n in range(1, 200):
+        term *= (2 * n - 1)**2 * x * x / (2 * n * (2 * n + 1))
+        sum_ += term
+    return sum_
+
+@check_sig([1], number_types)
+def acos(x):
+    if x == 1:
+        return 0.0
+    if x == -1:
+        return pi
+    return pi / 2 - asin(x)
+
+@check_sig([1], number_types)
+def atan(x):
+    if x == 0:
+        return 0.0
+    if abs(x) > 1:
+        return pi / 2 * (1 if x > 0 else -1) - atan(1 / x)
+    term = x
+    sum_ = term
+    sign = -1
+    for n in range(3, 1000, 2):
+        term *= x * x
+        sum_ += sign * term / n
+        sign *= -1
+    return sum_
+
+
+@check_sig([1], number_types)
+def sinh(x):
+    return (exp(x) - exp(-x)) / 2
+
+@check_sig([1], number_types)
+def cosh(x):
+    return (exp(x) + exp(-x)) / 2
+
+@check_sig([1], number_types)
+def tanh(x):
+    ex = exp(x)
+    enx = exp(-x)
+    return (ex - enx) / (ex + enx)
+
+
+@check_sig([1], [integer_type])
+def factorial(n):
+    n = int(n)
+    if n < 0:
+        raise ValueError("factorial: Function not defined for negative values")
+    result = 1
+    for i in range(2, n + 1):
+        result *= i
+    return result
+
+@check_sig([2], [integer_type], [integer_type])
+def comb(n, k):
+    n, k = int(n), int(k)
+    if k < 0 or k > n:
+        return 0
+    return factorial(n) // (factorial(k) * factorial(n - k))
+
+@check_sig([2], [integer_type], [integer_type])
+def perm(n, k):
+    n, k = int(n), int(k)
+    if k < 0 or k > n:
+        return 0
+    result = 1
+    for i in range(n - k + 1, n + 1):
+        result *= i
+    return result
+
+@check_sig([i for i in range(1, 100)], *[[integer_type] for _ in range(100)])
+def gcd(*ints):
+    result = abs(int(ints[0]))
+    for x in ints[1:]:
+        a, b = result, int(x)
+        while b:
+            a, b = b, a % b
+        result = abs(a)
+    return result
+
+@check_sig([i for i in range(1, 100)], *[[integer_type] for _ in range(100)])
+def lcm(*ints):
+    def _lcm(a, b):
+        return abs(a * b) // gcd(a, b)
+    result = int(ints[0])
+    for x in ints[1:]:
+        result = _lcm(result, int(x))
+    return result
+
+
+
+@check_sig([1], number_types)
+def trunc(x):
+    return int(x)
+
+@check_sig([2], number_types, number_types)
+def fmod(x, y):
+    if y == 0:
+        raiseDomainError('fmod')
+    if isinf(x):
+        return nan
+    if isinf(y):
+        return x
+    return x - y * trunc(x / y)
+
+@check_sig([2], number_types, number_types)
+def remainder(x, y):
+    if y == 0:
+        raiseDomainError('remainder')
+    res = x - y * round(x / y)
+    return round(res, 10)
+
+@check_sig([1], number_types)
+def math_abs(x):
+    return x if x >= 0 else -x
+
+@check_sig([1], number_types)
+def floor(x):
+    i = int(x)
+    return i if x >= i else i - 1
+
+@check_sig([1], number_types)
+def ceil(x):
+    i = int(x)
+    return i if x <= i else i + 1
+
+@check_sig([1, 2], number_types, [integer_type])
+def math_round(*args):
+    x = args[0]
+
+    n = 0
+    if len(args) == 2:
+        n = args[1]
+
+    factor = 10 ** n
+    t = x * factor
+    f = floor(t)
+    if t - f >= 0.5:
+        f += 1
+    return f / factor
+
+@check_sig([2], number_types, number_types)
+def copysign(x, y):
+    x, y = float(x), float(y)
+    if y == 0.0 and y.hex().startswith('-'):
+        return -abs(x)
+    return abs(x) if y >= 0 else -abs(x)
+
+@check_sig([2, 3, 4], *[number_types for _ in range(4)])
+def isclose(*args):
+    a = args[0]
+    b = args[1]
+
+    if len(args) >= 3:
+        rel_tol = args[2]
+    else:
+        rel_tol = 1e-9
+
+    if len(args) == 4:
+        abs_tol = args[3]
+    else:
+        abs_tol = 0.0
+
+    if a == b:
+        return True
+    diff = abs(a - b)
+    tol  = max(rel_tol * max(abs(a), abs(b)), abs_tol)
+    return diff <= tol
+
+@check_sig([1], number_types)
+def isinf(x):
+    return x == inf or x == -inf
+
+@check_sig([1], number_types)
+def isnan(x):
+    return x != x
+
+@check_sig([1], number_types)
+def isfinite(x):
+    return not isinf(x) and not isnan(x)
+
+@check_sig([1], number_types)
+def ulp(x):
+    if x == 0:
+        return 2 ** -1074
+    exp_val = floor(log(abs(x), 2))
+    return 2 ** (exp_val - 52)
+
+
+@check_sig([1], number_types)
+def exp2(x):
+    return float(2 ** x)
+
+@check_sig([1], number_types)
+def cbrt(x):
+    if x < 0:
+        return -((-x) ** (1/3))
+    return x ** (1/3)
+
+@check_sig([1], number_types)
+def expm1(x):
+    return exp(x) - 1
+
+@check_sig([1], number_types)
+def log2(x):
+    if x <= 0:
+        raiseDomainError('log2')
+    xi = float(x)
+    if isinf(xi) or isnan(xi):
+        if isinf(xi):
+            return xi if xi > 0 else nan
+        return xi
+    if int(xi) == xi:
+        v = int(xi)
+        n = 0
+        while v % 2 == 0 and v > 0:
+            v //= 2
+            n += 1
+        if v == 1:
+            return float(n)
+    return log(x, 2)
+
+@check_sig([1], number_types)
+def log10(x):
+    if x <= 0:
+        raiseDomainError('log10')
+    xi = float(x)
+    if isinf(xi) or isnan(xi):
+        if isinf(xi):
+            return xi if xi > 0 else nan
+        return xi
+    if int(xi) == xi:
+        v = int(xi)
+        n = 0
+        while v % 10 == 0 and v > 0:
+            v //= 10
+            n += 1
+        if v == 1:
+            return float(n)
+    return log(x, 10)
+
+
+
+@check_sig([1, 2], [integer_type] + numeric_vector_types, [integer_type])
+def sum_range(*args):
+    a = args[0]
+
+    if len(args) == 2:
+        b = args[1]
+    else:
+        b = None
+
+    if b is None:
+        total = 0
+        for x in a:
+            total += x
+        return total
+    if int(a) > int(b):
+        a, b = b, a
+    total = 0
+    for i in range(int(a), int(b) + 1):
+        total += i
+    return total
+
+@check_sig([1, 2], [integer_type] + numeric_vector_types, [integer_type])
+def prod_range(*args):
+    a = args[0]
+
+    if len(args) == 2:
+        b = args[1]
+    else:
+        b = None
+
+    if b is None:
+        result = 1
+        for x in a:
+            result *= x
+        return result
+    if int(a) > int(b):
+        a, b = b, a
+    result = 1
+    for i in range(int(a), int(b) + 1):
+        result *= i
+    return result
+
+@check_sig([2], numeric_vector_types, numeric_vector_types)
+def dist(p, q):
+    if len(p) != len(q):
+        raiseNonEqualLength('dist')
+    s = 0.0
+    for a, b in zip(p, q, strict=True):
+        s += (a - b) ** 2
+    return sqrt(s)
+
+@check_sig([1], numeric_vector_types)
+def fsum(iterable):
+    total = 0.0
+    c = 0.0
+    for x in iterable:
+        y = x - c
+        t = total + y
+        c = (t - total) - y
+        total = t
+    return total
+
+@check_sig([i for i in range(100)], *[number_types for _ in range(100)])
+def hypot(*coords):
+    s = 0.0
+    for x in coords:
+        s += x * x
+    return sqrt(s)
+
+@check_sig([2], numeric_vector_types, numeric_vector_types)
+def sumprod(p, q):
+    if len(p) != len(q):
+        raiseNonEqualLength('sumprod')
+    total = 0
+    for a, b in zip(p, q, strict=True):
+        total += a * b
+    return total
+
+
+
+@check_sig([1], number_types)
+def erf(x):
+    """Calculate the error function using Taylor series.
+    erf(x) = (2/sqrt(pi)) * sum((-1)^n * x^(2n+1) / (n! * (2n+1)), n=0..inf)
+    """
+    if x == 0:
+        return 0.0
+    if isinf(x):
+        return 1.0 if x > 0 else -1.0
+    if isnan(x):
+        return x
+
+    sign = 1 if x > 0 else -1
+    x = abs(x)
+
+    if x > 6:
+        return sign * 1.0
+
+    two_over_sqrt_pi = 1.1283791670955126
+    term = x
+    result = term
+    for n in range(1, 50):
+        term *= -x * x / n
+        result += term / (2 * n + 1)
+
+    return sign * two_over_sqrt_pi * result
+
+@check_sig([1], number_types)
+def erfc(x):
+    """Calculate the complementary error function: erfc(x) = 1 - erf(x)."""
+    return 1.0 - erf(x)
+
+@check_sig([1], number_types)
+def gamma(x):
+    xi = float(x)
+    if xi == int(xi):
+        if xi > 0:
+            return factorial(int(xi) - 1)
+        raiseDomainError('gamma')
+    raise ValueError("gamma: Function only defined for positive integers")
+
+@check_sig([1], number_types)
+def lgamma(x):
+    return log(gamma(x))
+
+
+pow   = pow_
+abs   = math_abs
+round = math_round
+sum   = sum_range
+prod  = prod_range

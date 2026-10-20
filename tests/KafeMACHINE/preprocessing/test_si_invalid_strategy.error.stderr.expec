@@ -1,0 +1,1 @@
+Exception: machine: SimpleImputer: strategy must be one of ('mean', 'median', 'most_frequent', 'constant')

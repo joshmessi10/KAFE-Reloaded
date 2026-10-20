@@ -1,0 +1,55 @@
+# KAFE Built-in Libraries
+
+This technical reference implements the repository invariants in `AGENTS.md` and `CLAUDE.md`, subject to applicable system/runtime and user instructions.
+
+## Registry
+
+Library `functions` modules are imported in `src/InterpreterVisitor.py` and registered in `InterpreterVisitor.__init__` (`self.libraries`). Registry keys are case-sensitive. The KAFE keyword is lowercase `import`; the KafeGESHA public key is lowercase `gesha`, while the deprecated aliases `geshaDeep` and `geshaV2` retain their historical casing. The current registrations use these imported module aliases:
+
+```python
+self.libraries = {
+    "numk": [numk_funcs_module, False],
+    "math": [math_funcs_module, False],
+    "files": [files_funcs_module, False],
+    "plot": [plot_funcs_module, False],
+    "gesha": [gesha_v2_funcs_module, False],
+    "geshaDeep": [gesha_v2_funcs_module, False],
+    "geshaV2": [gesha_v2_funcs_module, False],
+    "pardos": [pardos_funcs_module, False],
+    "machine": [machine_funcs_module, False],
+    "huggingface": [hf_funcs_module, False],
+    "kaggle": [kaggle_funcs_module, False],
+}
+```
+
+- `gesha` is the single public KafeGESHA import key (ADR-0016); all three keys resolve to the same `functions_v2.py` module. `geshaDeep` and `geshaV2` are documented-only deprecated aliases kept for compatibility; no runtime warning is emitted (the fixture harness treats warnings as errors). Removing them requires a follow-up compatibility decision.
+
+- For example, `import lib.KafeMACHINE.functions as machine_funcs_module` and `import lib.KafeHF.functions as hf_funcs_module` bind the MACHINE and HF modules before registration.
+- Each entry is `[module, imported_flag]`. KAFE `import <name>;` flips the flag to `True`.
+- Dispatch: `language_components/libraries/functions.py` → `libraryFunctionCall(library, function_name, args)` / `libraryConstant(library, constant_name)`.
+- Un-imported library → `raiseLibraryNotImported`; missing function/constant → `raiseFunctionNotDefined` / `raiseVariableNotDefined`.
+- User `.kf` modules are resolved by `src/language_components/imports/functions.py` relative to `globals.current_dir`, then `src/language_components/imports/`, then `src/language_components/`.
+
+## Library Reference
+
+- `KafeNUMK` — linear algebra (NumPy-like). Modules: `functions.py`, `utils.py`, `errors.py`.
+- `KafeMATH` — math utilities (`log`, `exp`, `sqrt`, `pow_`, `math_abs`, etc.). Modules: `functions.py`, `errors.py`. Used by other libraries (GESHA, PARDOS, PLOT, MACHINE).
+- `KafeFILES` — file I/O.
+- `KafePLOT` — SVG plotting. Modules: `functions.py`, `utils.py`.
+- `KafeGESHA` — deep learning (see `.opencode/knowledge/dl-library.md`). Public import key `gesha`, backed by the redesigned tensor-based backend (`functions_v2.py`, `models_v2.py`, `core_v2.py`).
+- `kaggle` — local and Kaggle dataset ingestion through `KafeKaggle`; see `docs/bibliotecas/kaggle.md`.
+- `KafePARDOS` — DataFrames / CSV. Modules: `functions.py`, `DataFrame.py`.
+- `KafeMACHINE` — ML models and metrics (see `.opencode/knowledge/ml-library.md`).
+- `KafeHF` — optional Hugging Face dataset loading through `import huggingface;`. `src/lib/KafeHF/functions.py` exports `load_dataset` and `load_dataset_split`, returning KafePARDOS `DataFrame` objects.
+
+## Optional Hugging Face Dependency
+
+KafeHF's wrapper is imported and registered by the visitor in the default environment. Its external `datasets` dependency is optional and absent from the default uv environment: `import huggingface;` works without that package, while a dataset-loading call reports the missing dependency. Preserve the baseline without `datasets`, including `tests/KafeHF/hf_load_dataset_no_dep.error.kf`, and keep any environment for exercising the installed integration distinct from that baseline. Enable the integration with `uv sync --locked --extra huggingface`; the missing-dependency diagnostic points to this command and its paired expected-output fixture records the exact message.
+
+## Adding a New Library
+
+1. Create `src/lib/KafeXXX/functions.py` (mirror an existing library's `functions.py`).
+2. Import the module in `InterpreterVisitor.py` near the other `import lib.Kafe*` lines.
+3. Register it in `self.libraries` with its chosen KAFE `import` name; use lowercase for new names and preserve existing public-key casing (e.g. the deprecated `geshaDeep`/`geshaV2` aliases alongside the public `gesha` key).
+4. Add fixtures under `tests/KafeXXX/` and a `tests/test_KafeXXX.py` module that parameterizes via `get_parameters(get_programs(...))`.
+5. Update docs (`docs/libraries/`) and `.opencode/knowledge/` if the library introduces a concept.

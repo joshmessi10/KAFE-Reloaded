@@ -1,0 +1,6 @@
+drip sum_values(a: INT, b: INT) => VOID:
+    show( "hello");
+;
+
+sum_values(10)(5);  -- 15
+sum_values(10, 5);  -- 15

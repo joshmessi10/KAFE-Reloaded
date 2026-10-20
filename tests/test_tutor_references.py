@@ -1,10 +1,9 @@
 """Executable evidence for the small bundled Tutor fundamentals."""
-from pathlib import Path
 import subprocess
 import sys
+from pathlib import Path
 
 import pytest
-
 
 CASES = Path(__file__).parent / "TutorReferences"
 

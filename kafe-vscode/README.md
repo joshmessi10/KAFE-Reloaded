@@ -44,7 +44,7 @@ Transcripts, credentials, source bytes, requests, checkpoint text and raw transp
 
 ## Runtime and knowledge
 
-The managed runtime is pinned to KAFE 0.1.0 and uv 0.11.3. Its release remains unpublished, so **KAFE: Install Runtime** reports unavailable and downloads nothing. When a release is published, setup requires explicit consent before its first download. Ordinary conversation with a configured provider can proceed without an executable runtime or knowledge pack; requests disclose unavailable knowledge. Available validated cached knowledge can be used independently of executable readiness. Invalid or changed knowledge must never be represented as valid grounding.
+The managed runtime is pinned to KAFE 0.2.0 and uv 0.11.3. **KAFE: Install Runtime** asks for explicit consent, downloads the verified runtime and uv assets into VS Code's private global storage, installs the locked runtime dependencies there, and then enables **KAFE: Run File**. Ordinary conversation with a configured provider can proceed before runtime setup. Available validated cached knowledge can be used independently of executable readiness. Invalid or changed knowledge must never be represented as valid grounding.
 
 Contributor Run can use a prepared KAFE checkout and installed tools. An Extension Development Host can use an explicitly validated development knowledge pack. Production installations do not read a development checkout as a fallback. These development paths do not establish managed-release readiness. Supported managed targets are Windows x64, macOS x64/arm64 and Linux x64.
 

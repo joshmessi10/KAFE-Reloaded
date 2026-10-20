@@ -1,0 +1,1 @@
+Exception: model: Model: loss 'invalid_loss' was not recognized. Available: ['mse', 'mean_squared_error', 'mae', 'mean_absolute_error', 'bce', 'binary_crossentropy', 'cce', 'categorical_crossentropy', 'scce', 'sparse_categorical_crossentropy']

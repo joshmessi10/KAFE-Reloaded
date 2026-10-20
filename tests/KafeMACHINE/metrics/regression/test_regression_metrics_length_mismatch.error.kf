@@ -1,0 +1,6 @@
+import machine;
+
+List[INT] y_true = [1, 2];
+List[INT] y_pred = [1];
+FLOAT mse = machine.mean_squared_error(y_true, y_pred);
+show(mse);

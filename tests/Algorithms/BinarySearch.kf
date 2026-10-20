@@ -21,5 +21,5 @@ drip binarySearch(lst: List[INT], target: INT) => INT:
 
 List[INT] data = [5, 10, 15, 20, 25, 30, 35];
 INT index = binarySearch(data, 25);
-show("Índice encontrado:");
+show("Found index:");
 show(index);

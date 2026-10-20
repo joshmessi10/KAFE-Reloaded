@@ -1,58 +1,49 @@
-import subprocess
-import sys
-import pytest
 import os
-from utils import obtener_parametros, get_programs, get_kafe_path, get_src_dir, get_invalid_programs, get_kafe_path, get_src_dir
+
+import pytest
+from utils import (
+    assert_invalid_kafe_result,
+    assert_valid_kafe_result,
+    get_invalid_programs,
+    get_parameters,
+    get_programs,
+    run_kafe_program,
+)
 
 
 @pytest.mark.parametrize(
-    "programa, entrada, salida_esperada",
-    list(obtener_parametros(get_programs("../tests/KafePLOT"))),
+    "program, input_text, expected_stdout",
+    list(get_parameters(get_programs("../tests/KafePLOT"))),
 )
-def test_valid_programs(programa, entrada, salida_esperada):
-    result = subprocess.run(
-        [sys.executable, get_kafe_path(), programa],
-        capture_output=True,
-        text=True,
-        input=entrada,
-        cwd=get_src_dir(),
-    )
+def test_valid_programs(program, input_text, expected_stdout):
+    result = run_kafe_program(program, input_text=input_text)
 
-    carpeta_destino = os.path.dirname(programa)
-    nombre_base = os.path.splitext(os.path.basename(programa))[0]
-    svg_prueba_base = f"grafico_{nombre_base}.svg"
-    svg_generado_base = f"{nombre_base}.svg"
-    svg_generado_path = os.path.join(carpeta_destino, svg_generado_base)
-    svg_prueba_path = os.path.join(carpeta_destino, svg_prueba_base)
+    output_directory = os.path.dirname(program)
+    program_basename = os.path.splitext(os.path.basename(program))[0]
+    expected_svg_basename = f"graph_{program_basename}.svg"
+    generated_svg_basename = f"{program_basename}.svg"
+    generated_svg_path = os.path.join(output_directory, generated_svg_basename)
+    expected_svg_path = os.path.join(output_directory, expected_svg_basename)
 
-    with open(svg_generado_path) as f:
-        svg_generado = f.read()
+    with open(generated_svg_path) as f:
+        generated_svg = f.read()
 
-    with open(svg_prueba_path) as f:
-        svg_prueba = f.read()
+    with open(expected_svg_path) as f:
+        expected_svg = f.read()
 
-    os.remove(svg_generado_path)
+    os.remove(generated_svg_path)
 
-    assert result.returncode == 0, f"Non-zero exit for {programa}"
     assert (
-        svg_generado == svg_prueba
-    ), f"{svg_prueba_path} doesn't match {svg_generado_path}"
+        generated_svg == expected_svg
+    ), f"{expected_svg_path} doesn't match {generated_svg_path}"
+    assert_valid_kafe_result(result, program, expected_stdout)
 
 
 @pytest.mark.parametrize(
-    "programa, entrada, salida_esperada",
-    list(obtener_parametros(get_invalid_programs("../tests/KafePLOT"))),
+    "program, input_text, expected_stdout",
+    list(get_parameters(get_invalid_programs("../tests/KafePLOT"))),
 )
-def test_invalid_programs(programa, entrada, salida_esperada):
-    result = subprocess.run(
-        [sys.executable, get_kafe_path(), programa],
-        capture_output=True,
-        text=True,
-        input=entrada,
-        cwd=get_src_dir(),
-    )
+def test_invalid_programs(program, input_text, expected_stdout):
+    result = run_kafe_program(program, input_text=input_text)
 
-    assert result.returncode == 1, f"Zero exit for {programa}"
-    assert (
-        result.stderr.splitlines()[-1] + "\n" == salida_esperada
-    ), f"Incorrect output for {programa}"
+    assert_invalid_kafe_result(result, program, expected_stdout)

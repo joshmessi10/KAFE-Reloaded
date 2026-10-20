@@ -6,5 +6,5 @@ drip factorial(n: INT) => INT:
 ;
 
 INT result = factorial(5);
-show("Factorial de 5:");
+show("Factorial of 5:");
 show(result);

@@ -1,0 +1,8 @@
+import machine;
+
+MACHINE scaler = machine.standard_scaler();
+MACHINE lr = machine.linear_regression();
+
+MACHINE pipe = machine.pipeline("scaler", scaler, "model", lr);
+
+List[FLOAT] preds = pipe.predict([[1.0, 2.0]]);

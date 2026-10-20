@@ -150,7 +150,8 @@ show(apply(double, 5));  -- 10
 Type for neural network models and layers:
 
 ```kafe
-GESHA model = geshaDeep.binary();
+GESHA layer = gesha.create_dense(1, "sigmoid", [2], 0.0, 42);
+GESHA model = gesha.sequential([layer]);
 ```
 
 ### PARDOS

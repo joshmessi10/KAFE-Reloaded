@@ -1,0 +1,7 @@
+import machine;
+
+List[List[FLOAT]] X = [];
+List[INT] y = [];
+
+MACHINE model = machine.knn(3);
+model.fit(X, y);

@@ -1,0 +1,12 @@
+import pardos;
+
+-- Test ffill() method (forward fill)
+PARDOS df = pardos.read_csv("column_manipulation_test.csv");
+
+show("Original DataFrame:");
+show(df);
+
+-- Forward fill NaN values
+PARDOS df2 = df.ffill();
+show("After forward fill:");
+show(df2);

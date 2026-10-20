@@ -1,0 +1,17 @@
+import pardos;
+import machine;
+
+List[STR] cols = ["grade"];
+List[List[STR]] df_data = [
+    ["A"],
+    ["B"],
+    ["C"],
+    ["A"],
+    ["B"]
+];
+PARDOS df = pardos.DataFrame(cols, df_data);
+
+MACHINE ord_enc = machine.ordinal_encoder();
+PARDOS encoded = ord_enc.fit_transform(df, ["grade"]);
+show("Single column encoding:");
+show(encoded);

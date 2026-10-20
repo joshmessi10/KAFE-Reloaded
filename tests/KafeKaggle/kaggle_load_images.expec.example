@@ -1,0 +1,2 @@
+Forma de las imágenes cargadas [N, C, H, W]:
+[2, 3, 32, 32]

@@ -1,0 +1,15 @@
+import machine;
+
+-- Pipeline with 3 steps: scaler -> pca -> model
+MACHINE scaler = machine.standard_scaler();
+MACHINE pca = machine.pca(1);
+MACHINE lr = machine.linear_regression();
+
+MACHINE pipe = machine.pipeline("scaler", scaler, "pca", pca, "model", lr);
+
+List[List[FLOAT]] X_train = [[1.0, 2.0], [2.0, 3.0], [3.0, 4.0], [4.0, 5.0], [5.0, 6.0]];
+List[FLOAT] y_train = [3.0, 5.0, 7.0, 9.0, 11.0];
+pipe.fit(X_train, y_train);
+
+List[FLOAT] preds = pipe.predict([[6.0, 7.0]]);
+show(preds);

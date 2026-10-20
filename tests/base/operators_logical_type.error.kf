@@ -1,3 +1,3 @@
--- Operación con tipo incorrecto
+-- Operation with an incorrect type
 
 show('asdf' ^ 12);

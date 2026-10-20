@@ -1,0 +1,9 @@
+import gesha;
+
+-- Test invalid loss function
+GESHA model = gesha.sequential();
+GESHA layer = gesha.create_dense(1, "sigmoid", [2], 0.0, 42);
+model.add(layer);
+
+-- Try to compile with invalid loss
+model.compile("sgd", "invalid_loss", []);

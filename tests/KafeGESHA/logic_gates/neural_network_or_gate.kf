@@ -1,0 +1,33 @@
+import gesha;
+
+-- Logical OR: class0=[1,0], class1=[0,1]
+List[List[INT]] x_train = [
+    [0,0],
+    [0,1],
+    [1,0],
+    [1,1]
+];
+List[List[INT]] y_train = [
+    [1,0],   -- 0 OR 0 = 0 → class0
+    [0,1],   -- 0 OR 1 = 1 → class1
+    [0,1],   -- 1 OR 0 = 1
+    [0,1]    -- 1 OR 1 = 1
+];
+
+-- small validation
+List[List[INT]] x_val = [[0,0],[1,1]];
+List[List[INT]] y_val = [[1,0],[0,1]];
+
+GESHA h   = gesha.create_dense(4, "relu",    [2], 0.0, 42);
+GESHA out = gesha.create_dense(2, "softmax", [4], 0.0, 42);
+GESHA model = gesha.sequential([h, out]);
+
+model.compile("sgd", "categorical_crossentropy", ["accuracy"]);
+model.fit(x_train, y_train, 100, 2, x_val, y_val);
+
+-- prediction for [1,0] (expect class_one)
+List[INT] sample = [1,0];
+List[FLOAT] probs = model.predict(sample);
+show("Probabilities: " + str(probs));
+
+model.summary();

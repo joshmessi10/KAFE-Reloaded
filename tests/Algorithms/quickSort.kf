@@ -48,5 +48,5 @@ drip quicksort(lst: List[INT]) => List[INT]:
 
 List[INT] unsorted = [3, 400, 32432, 46, 223, 9];
 List[INT] sorted = quicksort(unsorted);
-show("Lista ordenada:");
+show("Sorted list:");
 show(sorted);

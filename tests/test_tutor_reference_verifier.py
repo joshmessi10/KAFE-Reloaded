@@ -1,15 +1,16 @@
 """Reject false success and incomplete parsing in the reference evidence gate."""
 import importlib.util
-from pathlib import Path
 import shutil
 import subprocess
+from pathlib import Path
 from subprocess import CompletedProcess
 
 import pytest
 
-
 ROOT = Path(__file__).resolve().parent.parent
 SPEC = importlib.util.spec_from_file_location("reference_verifier", ROOT / "kafe-vscode/scripts/verify-tutor-references.py")
+if SPEC is None or SPEC.loader is None:
+    raise RuntimeError("Unable to load the Tutor reference verifier")
 verifier = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(verifier)
 FIXTURE = {"expectedExitCode": 0, "expectedStream": "stdout", "expectedOutput": "1\n"}

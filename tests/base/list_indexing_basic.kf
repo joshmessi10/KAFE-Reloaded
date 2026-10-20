@@ -1,11 +1,11 @@
 -- Indexar
 
 STR a = "Hello";
-List[List[INT]] matriz = [
+List[List[INT]] matrix = [
 	[234, 234],
 	[2341, 1234]
 ];
 
 INT i = -1;
 show(a[i]);
-show(matriz[i][2 - 1]);
+show(matrix[i][2 - 1]);

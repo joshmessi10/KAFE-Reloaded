@@ -73,9 +73,9 @@ function expectedUrl(value, host, pathname) {
 function validatePinnedManifest(manifest) {
   const runtime = manifest.runtime;
   const uv = manifest.uv;
-  if (!runtime || !uv || runtime.version !== '0.1.0' || runtime.knowledgePackVersion !== '0.1.0' ||
+  if (!runtime || !uv || runtime.version !== '0.2.0' || runtime.knowledgePackVersion !== '0.2.0' ||
     runtime.pythonRequirement !== '>=3.10' || runtime.antlrRuntimeVersion !== '4.13.2' ||
-    runtime.sourceRevision !== '857a07dfaecda2583c3f0460d5756ea6893f19d7' ||
+    runtime.sourceRevision !== 'b955ba606b051debcdc291e58acb8a25fa8390c8' ||
     !/^[a-f0-9]{64}$/.test(runtime.archiveSha256) || uv.version !== '0.11.3') {
     throw new Error('KAFE runtime manifest does not match the pinned runtime versions.');
   }

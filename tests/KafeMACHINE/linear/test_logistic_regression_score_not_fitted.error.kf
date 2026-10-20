@@ -1,0 +1,4 @@
+import machine;
+
+MACHINE lr = machine.logistic_regression(0.1, 100);
+lr.score([1.0, 2.0], [0, 0]);

@@ -1,0 +1,20 @@
+import pardos;
+import machine;
+
+List[STR] cols = ["priority"];
+List[List[STR]] df_data = [
+    ["low"],
+    ["high"],
+    ["medium"],
+    ["low"]
+];
+PARDOS df = pardos.DataFrame(cols, df_data);
+
+MACHINE ord_enc = machine.ordinal_encoder();
+PARDOS encoded = ord_enc.fit_transform(df, ["priority"]);
+show("Encoded:");
+show(encoded);
+
+PARDOS decoded = ord_enc.inverse_transform(encoded);
+show("Decoded:");
+show(decoded);

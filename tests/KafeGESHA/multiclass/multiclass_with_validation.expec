@@ -1,0 +1,11 @@
+Epoch 1/10 — Loss 1.1547 — Accuracy 33.33% - val_loss: 1.1053
+Epoch 2/10 — Loss 1.1517 — Accuracy 16.67% - val_loss: 1.1072
+Epoch 3/10 — Loss 1.1490 — Accuracy 16.67% - val_loss: 1.1091
+Epoch 4/10 — Loss 1.1464 — Accuracy 16.67% - val_loss: 1.1110
+Epoch 5/10 — Loss 1.1438 — Accuracy 16.67% - val_loss: 1.1129
+Epoch 6/10 — Loss 1.1413 — Accuracy 16.67% - val_loss: 1.1147
+Epoch 7/10 — Loss 1.1388 — Accuracy 16.67% - val_loss: 1.1166
+Epoch 8/10 — Loss 1.1363 — Accuracy 16.67% - val_loss: 1.1180
+Epoch 9/10 — Loss 1.1339 — Accuracy 16.67% - val_loss: 1.1194
+Epoch 10/10 — Loss 1.1315 — Accuracy 16.67% - val_loss: 1.1208
+Predicted label: 1

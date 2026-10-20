@@ -1,4 +1,4 @@
--- Función Pour y Casts
+-- Pour function and casts
 
 INT a = int(pour("> "));
 BOOL b = bool(pour("> "));

@@ -29,7 +29,7 @@ One sidebar conversation and one composer. Enter or Send submits once and stream
 - Exact target/scope permission admits one proposal preparation. Missing keys, failure or cancellation require fresh permission; Review, Apply and Run remain separate.
 - Host-observed staging, Apply and Run facts retain source/knowledge dependencies. Saved-source boundary equality and zero exit do not prove executed bytes or correctness; unavailable comparisons remain unknown.
 - Conversation, draft, source selection, teaching preferences/records, requests and action/output evidence are memory-only. View recreation retains its owner. New conversation and host restart discard ephemeral state and reset teaching defaults. Existing legacy progress is preserved without entering chat or model context; confirmed legacy clearing is independent of live chat and credentials.
-- The managed runtime release remains unpublished. Deterministic services do not prove real-provider or release readiness, physical IME, screen-reader speech or learning efficacy.
+- The managed runtime uses separately published, checksum-pinned KAFE and uv assets. Deterministic services do not prove real-provider behavior, physical IME, screen-reader speech or learning efficacy.
 
 ## Brand Commitments
 

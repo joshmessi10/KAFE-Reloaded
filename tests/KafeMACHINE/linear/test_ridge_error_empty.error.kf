@@ -1,0 +1,6 @@
+import machine;
+
+MACHINE ridge = machine.ridge_regression();
+List[List[FLOAT]] X = [];
+List[FLOAT] y = [];
+ridge.fit(X, y);

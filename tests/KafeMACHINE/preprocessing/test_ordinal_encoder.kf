@@ -1,0 +1,25 @@
+import pardos;
+import machine;
+
+-- Create a sample DataFrame
+List[STR] cols = ["color", "size", "label"];
+List[List[STR]] df_data = [
+    ["red", "S", "no"],
+    ["blue", "M", "yes"],
+    ["green", "L", "yes"],
+    ["red", "M", "no"]
+];
+PARDOS df = pardos.DataFrame(cols, df_data);
+show("Original DataFrame:");
+show(df);
+
+-- Ordinal Encoding with custom order
+MACHINE ord_enc = machine.ordinal_encoder();
+PARDOS encoded_df = ord_enc.fit_transform(df, ["color", "size"]);
+show("Encoded DataFrame (color, size):");
+show(encoded_df);
+
+-- Inverse transform
+PARDOS decoded_df = ord_enc.inverse_transform(encoded_df);
+show("Decoded DataFrame:");
+show(decoded_df);

@@ -1,4 +1,4 @@
--- Error redeclaración de una variable
+-- Redeclaring a variable causes an error
 
 INT var = 234;
 INT var = 234324;

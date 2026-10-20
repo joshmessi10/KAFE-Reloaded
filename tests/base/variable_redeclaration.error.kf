@@ -1,4 +1,4 @@
--- Error redeclaración de una variable con un nuevo tipo
+-- Redeclaring a variable with a different type causes an error
 
 INT var = 234;
 BOOL var = True;

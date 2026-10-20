@@ -45,7 +45,7 @@ Validated cached knowledge is independent of executable runtime readiness. An un
 
 Retained bounds: eight eligible whole history pairs within 32 KiB UTF-8, 64 KiB per source snapshot, 1 MiB Run evidence, four tools, four calls per round and four rounds per turn. Source revision fencing covers awaited capture and immediate provider admission. Secrets, source bytes, requests, transcripts and raw transport errors are not persisted or logged by the Tutor.
 
-See [PRODUCT.md](../../kafe-vscode/PRODUCT.md), [extension README](../../kafe-vscode/README.md) and [extension guide](vscode.md). The 2026-10-04 approved design now uses Kilo as visual and interaction authority, without copying its framework/assets/services. Reference repository: `https://github.com/kilo-org/kilocode`, inspected revision `ccb6673bf501b1d64ed3711e97d8572128298fa7`. The sibling clone is outside this repository and is not pushed here.
+See [PRODUCT.md](https://github.com/joshmessi10/KAFE-Reloaded/blob/feature/vsc-extension/kafe-vscode/PRODUCT.md), [extension README](https://github.com/joshmessi10/KAFE-Reloaded/blob/feature/vsc-extension/kafe-vscode/README.md) and [extension guide](vscode.md). The 2026-10-04 approved design now uses Kilo as visual and interaction authority, without copying its framework/assets/services. Reference repository: `https://github.com/kilo-org/kilocode`, inspected revision `ccb6673bf501b1d64ed3711e97d8572128298fa7`. The sibling clone is outside this repository and is not pushed here.
 
 ## Verification evidence
 

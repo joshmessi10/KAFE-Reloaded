@@ -1,0 +1,4 @@
+import numk;
+
+show(numk.scalar_mul(3.0, [1, 2, 3]));
+show(numk.scalar_mul(2.0, [[1, 2], [3, 4]]));

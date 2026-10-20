@@ -1,0 +1,5 @@
+import machine;
+
+MACHINE rf = machine.random_forest_classifier();
+List[INT] preds = rf.predict([[1.0, 2.0]]);
+show(preds);

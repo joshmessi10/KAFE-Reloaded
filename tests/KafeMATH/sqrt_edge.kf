@@ -1,0 +1,7 @@
+import math;
+
+-- sqrt edge cases: zero and non-negative boundary
+show(math.sqrt(0));
+show(math.sqrt(1));
+show(math.sqrt(2));
+show(math.sqrt(9));

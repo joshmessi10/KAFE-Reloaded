@@ -1,11 +1,11 @@
--- Gráfico de barras
+-- Bar chart
 import plot;
 
-plot.title("Ventas por producto");
-plot.xlabel("Producto");
+plot.title("Sales by product");
+plot.xlabel("Product");
 plot.ylabel("Unidades vendidas");
 
-List[STR] productos = ["A", "B", "C", "D", "E"];
-List[INT] ventas = [100, 75, 130, 50, 90];
+List[STR] products = ["A", "B", "C", "D", "E"];
+List[INT] sales = [100, 75, 130, 50, 90];
 
-plot.bar(productos, ventas);
+plot.bar(products, sales);

@@ -30,3 +30,12 @@ venv/**
 **/*credentials*
 runtime/**
 **/runtime/**
+
+# Local learner programs are not extension assets.
+*.kf
+
+# Obsolete local interpreter build; runtimeManager owns runtime setup.
+bin/**
+
+# Runtime release assets are published separately and downloaded after consent.
+release/**

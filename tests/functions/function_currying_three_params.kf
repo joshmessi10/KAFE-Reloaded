@@ -1,0 +1,9 @@
+drip get_numbers() => List[INT]:
+    List[INT] numbers = [1, 2, 3, 4];
+    for (n in numbers):
+        show(n);
+    ;
+    return numbers;
+;
+
+show(get_numbers());

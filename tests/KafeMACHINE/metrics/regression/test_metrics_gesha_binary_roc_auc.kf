@@ -1,0 +1,19 @@
+import gesha;
+import machine;
+
+-- Binary gesha classifier: batch predict returns nested probabilities
+-- (one column per sample), which roc_auc_score must flatten internally.
+List[List[FLOAT]] X = [[0.1], [0.2], [0.3], [0.4], [0.6], [0.7], [0.8], [0.9]];
+List[INT] y_true = [0, 0, 0, 0, 1, 1, 1, 1];
+
+GESHA dense = gesha.create_dense(1, "sigmoid", [1], 0.0, 7);
+GESHA model = gesha.sequential([dense]);
+model.compile("adam", "bce", []);
+model.set_lr(0.05);
+model.fit(X, y_true, 60, 8);
+
+List[List[FLOAT]] probs = model.predict(X);
+show("shape [samples, outputs]:");
+show([len(probs), len(probs[0])]);
+show("roc_auc:");
+show(machine.roc_auc_score(y_true, probs));

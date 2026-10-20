@@ -1,0 +1,16 @@
+import machine;
+
+MACHINE le = machine.label_encoder();
+
+List[INT] labels = [100, 200, 300, 100, 200];
+le.fit(labels);
+show("Classes:");
+show(le.classes_);
+
+List[INT] encoded = le.transform(labels);
+show("Encoded:");
+show(encoded);
+
+List[INT] decoded = le.inverse_transform(encoded);
+show("Decoded:");
+show(decoded);

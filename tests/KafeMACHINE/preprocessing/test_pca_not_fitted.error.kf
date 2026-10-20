@@ -1,0 +1,5 @@
+import machine;
+
+List[List[FLOAT]] X = [[1.0, 2.0], [3.0, 4.0]];
+MACHINE pca_model = machine.pca(2);
+pca_model.transform(X);

@@ -1,0 +1,10 @@
+import pardos;
+import machine;
+
+List[STR] cols = ["x"];
+List[List[STR]] df_data = [["a"]];
+PARDOS df = pardos.DataFrame(cols, df_data);
+
+MACHINE ord_enc = machine.ordinal_encoder();
+PARDOS result = ord_enc.transform(df);
+show(result);

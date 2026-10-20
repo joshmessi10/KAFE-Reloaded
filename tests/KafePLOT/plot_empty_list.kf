@@ -1,9 +1,9 @@
 import plot;
 
 plot.figure();
-plot.title("Altura máxima alcanzada");
-plot.xlabel("Tiempo");
-plot.ylabel("Altura");
+plot.title("Maximum height reached");
+plot.xlabel("Time");
+plot.ylabel("Height");
 plot.grid(True);
 plot.color("black");
 plot.pointColor("green");

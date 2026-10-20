@@ -1,48 +1,48 @@
--- test_multiseries_diferentes.kf
+-- test_multiple_series.kf
 
 import plot;
 
--- 1) Iniciar figura y configurar etiquetas
+-- 1) Initialize the figure and configure labels
 plot.figure();
-plot.title("Varias series con datos distintos");
-plot.xlabel("Eje X");
-plot.ylabel("Eje Y");
+plot.title("Multiple series with different data");
+plot.xlabel("X-axis");
+plot.ylabel("Y-axis");
 plot.grid(True);
 
--- 2) Datos de ejemplo para tres curvas diferentes
+-- 2) Example data for three different curves
 
--- 2a) Serie cuadrática: y = x^2
+-- 2a) Quadratic series: y = x^2
 List[INT] x1 = [0, 1, 2, 3, 4, 5];
 List[INT] y1 = [0, 1, 4, 9, 16, 25];
 
--- 2b) Serie “en pico”: sube y baja
+-- 2b) Peak series: rises and falls
 List[INT] x2 = [0, 1, 2, 3, 4, 5];
 List[INT] y2 = [2, 5, 2, 7, 3, 6];
 
--- 2c) Serie lineal decreciente: y = 10 − 2·x
+-- 2c) Linearly decreasing series: y = 10 - 2*x
 List[INT] x3 = [0, 1, 2, 3, 4, 5];
 List[INT] y3 = [10, 8, 6, 4, 2, 0];
 
--- 3) Dibujar la primera serie (cuadrática) como línea roja con puntos
+-- 3) Draw the first series (quadratic) as a red line with points
 plot.color("red");
 plot.pointColor("red");
 plot.pointSize(5);
-plot.graph(x1, y1);       -- estilo por defecto "both" (línea + puntos)
+plot.graph(x1, y1);       -- default style is "both" (line + points)
 
--- 4) Dibujar la segunda serie (“en pico”) solo como puntos azules
-plot.color("blue");       -- color de línea (no se verá porque usaremos solo puntos)
+-- 4) Draw the second (peak) series as blue points only
+plot.color("blue");       -- line color (not visible because only points are used)
 plot.pointColor("blue");
 plot.pointSize(6);
 plot.graph(x2, y2, "point");
 
--- 5) Dibujar la tercera serie (lineal decreciente) solo como línea verde
+-- 5) Draw the third (decreasing linear) series as a green line only
 plot.color("green");
-plot.pointColor("green"); -- los puntos no se verán
+plot.pointColor("green"); -- the points will not be visible
 plot.pointSize(3);
 plot.graph(x3, y3, "line");
 
--- 6) Añadir una leyenda para clarificar cada serie
-plot.legend("red: y=x^2 (línea+puntos)  ; blue: serie pico (solo puntos)  ;  green: 10−2x (solo línea)");
+-- 6) Add a legend to clarify each series
+plot.legend("red: y=x^2 (line+points)  ; blue: peak series (points only)  ;  green: 10−2x (line only)");
 
--- 7) Generar el SVG final
+-- 7) Generate the final SVG
 plot.render();

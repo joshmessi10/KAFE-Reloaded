@@ -309,10 +309,10 @@ test('maps only the four pinned uv platforms and rejects unsupported targets', (
   assert.throws(() => getRuntimeTarget('freebsd', 'x64'), /does not support/i);
 });
 
-test('runtime manifest pins the unpublished KAFE assets and official uv 0.11.3 checksums', () => {
-  assert.equal(manifestTemplate.runtime.releasePublished, false);
-  assert.equal(manifestTemplate.runtime.archiveUrl, 'https://github.com/joshmessi10/KAFE-Reloaded/releases/download/kafe-runtime-v0.1.0/kafe-runtime-0.1.0.zip');
-  assert.equal(manifestTemplate.runtime.manifestUrl, 'https://github.com/joshmessi10/KAFE-Reloaded/releases/download/kafe-runtime-v0.1.0/kafe-runtime-0.1.0.manifest.json');
+test('runtime manifest pins the published KAFE assets and official uv 0.11.3 checksums', () => {
+  assert.equal(manifestTemplate.runtime.releasePublished, true);
+  assert.equal(manifestTemplate.runtime.archiveUrl, 'https://github.com/joshmessi10/KAFE-Reloaded/releases/download/kafe-runtime-v0.2.0/kafe-runtime-0.2.0.zip');
+  assert.equal(manifestTemplate.runtime.manifestUrl, 'https://github.com/joshmessi10/KAFE-Reloaded/releases/download/kafe-runtime-v0.2.0/kafe-runtime-0.2.0.manifest.json');
   assert.deepEqual(Object.fromEntries(Object.entries(manifestTemplate.uv.targets).map(([key, value]) => [key, value.sha256])), {
     'win32-x64': 'ae681c0aaec7cc96af184648cb88d73f8393ed60fa5880abdd6bdb910f9b227c',
     'darwin-x64': 'b0e05e0b43a000fdc2132ee3f3400ba5dee427bc2337d3ec4eb8cf4f3d5722af',
@@ -326,9 +326,9 @@ test('runtime manifest pins the unpublished KAFE assets and official uv 0.11.3 c
 });
 
 test('accepts only HTTPS pinned release URLs and documented GitHub asset redirects', () => {
-  assert.equal(validateAssetUrl('https://github.com/joshmessi10/KAFE-Reloaded/releases/download/kafe-runtime-v0.1.0/kafe-runtime-0.1.0.zip'), true);
+  assert.equal(validateAssetUrl('https://github.com/joshmessi10/KAFE-Reloaded/releases/download/kafe-runtime-v0.2.0/kafe-runtime-0.2.0.zip'), true);
   assert.equal(validateAssetUrl('https://release-assets.githubusercontent.com/asset?sig=test', { redirect: true }), true);
-  assert.throws(() => validateAssetUrl('http://github.com/joshmessi10/KAFE-Reloaded/releases/download/kafe-runtime-v0.1.0/kafe-runtime-0.1.0.zip'), /HTTPS/i);
+  assert.throws(() => validateAssetUrl('http://github.com/joshmessi10/KAFE-Reloaded/releases/download/kafe-runtime-v0.2.0/kafe-runtime-0.2.0.zip'), /HTTPS/i);
   assert.throws(() => validateAssetUrl('https://evil.example/runtime.zip', { redirect: true }), /not allowed/i);
   assert.throws(() => validateAssetUrl('https://github.com.evil.example/runtime.zip', { redirect: true }), /not allowed/i);
 });
@@ -381,7 +381,7 @@ test('valid runtime and uv checksums stage, sync with isolated paths, and atomic
   const fixture = makeFixture();
   const result = await fixture.manager.installRuntime();
   assert.equal(result.status, 'ready', result.message);
-  assert.equal(result.runtimeVersion, '0.1.0');
+  assert.equal(result.runtimeVersion, '0.2.0');
   assert.equal(fixture.requests.length, 3);
   const sync = fixture.processCalls.find(call => call.args[0] === 'sync');
   assert.ok(sync);
@@ -442,7 +442,7 @@ test('knowledge paths do not depend on uv target', async () => {
   fixture.processCalls.length = 0;
   const knowledge = await fixture.manager.getReadyKnowledgePack();
   assert.equal(knowledge.status, 'ready');
-  assert.equal(knowledge.knowledgeRoot, path.join(fixture.manager.storageRoot, 'kafe-runtime', 'runtime-0.1.0', 'knowledge-pack'));
+  assert.equal(knowledge.knowledgeRoot, path.join(fixture.manager.storageRoot, 'kafe-runtime', 'runtime-0.2.0', 'knowledge-pack'));
   assert.equal((await fixture.manager.getReadyRuntime()).status, 'unsupported');
   assert.deepEqual(fixture.requests, []);
   assert.deepEqual(fixture.processCalls, []);
@@ -520,7 +520,7 @@ test('cache metadata tampering prevents reuse', async () => {
   const installed = await fixture.manager.installRuntime();
   const markerPath = fixture.manager.paths.readyFile;
   const marker = JSON.parse(await fixture.fs.readFile(markerPath, 'utf8'));
-  marker.runtimeVersion = '0.2.0';
+  marker.runtimeVersion = '9.9.9';
   await fixture.fs.writeFile(markerPath, JSON.stringify(marker));
   assert.equal((await fixture.manager.getReadyRuntime()).status, 'missing');
   assert.notEqual(installed.runtimeRoot, undefined);
@@ -547,7 +547,7 @@ test('rejects mismatched pinned uv hash and removes runtime downloads', async ()
 });
 
 test('rejects wrong runtime and knowledge-pack versions before extraction', async () => {
-  for (const override of [{ runtime_version: '0.2.0' }, { knowledge_pack_version: '0.2.0' }]) {
+  for (const override of [{ runtime_version: '9.9.9' }, { knowledge_pack_version: '9.9.9' }]) {
     const fixture = makeFixture({ transport: async url => {
       if (url === fixture.manifest.runtime.manifestUrl) return { statusCode: 200, body: Buffer.from(JSON.stringify({ ...fixture.remoteManifest, ...override })) };
       return { statusCode: 200, body: url === fixture.manifest.runtime.archiveUrl ? fixture.runtimeBytes : fixture.uvBytes };

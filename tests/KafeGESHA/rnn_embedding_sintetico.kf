@@ -1,0 +1,45 @@
+-- ============================================
+-- RNN + Embedding sintético SIN red
+-- ============================================
+-- Secuencias de ENTEROS hechas a mano (índices
+-- de vocabulario 1..9). La capa Embedding
+-- aprende un vector por índice; la SimpleRNN
+-- procesa la secuencia de vectores.
+--   Etiqueta 1 si el ÚLTIMO token es >= 5.
+--
+-- Arquitectura: Embedding(10 -> 4) -> SimpleRNN(4, tanh) -> Dense(1, sigmoid)
+-- Perdida: binary crossentropy, Adam.
+-- ============================================
+
+import gesha;
+import machine;
+
+show("=== RNN + Embedding sintético ===");
+
+List[List[INT]] X = [[1, 2, 3], [2, 1, 4], [3, 3, 2], [4, 1, 1], [5, 6, 7], [6, 7, 8], [7, 5, 6], [8, 9, 5]];
+List[INT] y = [0, 0, 0, 0, 1, 1, 1, 1];
+
+show("Secuencias:");
+show(X);
+show("Etiquetas:");
+show(y);
+
+-- input_dim=10 cubre los índices 0..9; output_dim=4 es el tamaño del vector
+GESHA emb = gesha.embedding(10, 4, 11);
+GESHA rnn = gesha.create_rnn(4, "tanh", [4], False, 12);
+GESHA salida = gesha.create_dense(1, "sigmoid", [4], 0.0, 13, gesha.glorot_uniform(13));
+GESHA modelo = gesha.sequential([emb, rnn, salida]);
+modelo.compile("adam", "bce", []);
+
+show("Entrenando RNN con Embedding (vocab=10, dim=4)...");
+modelo.fit(X, y, 40, 4);
+
+List[INT] pred = modelo.predict_label(X);
+show("Accuracy: ");
+show(machine.accuracy_score(y, pred));
+show("Predicciones vs reales:");
+INT k = 0;
+while (k < 8):
+    show(str(pred[k]) + " vs " + str(y[k]));
+    k = k + 1;
+;

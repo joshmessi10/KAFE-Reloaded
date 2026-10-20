@@ -1,0 +1,19 @@
+import pardos;
+import machine;
+
+List[STR] cols = ["color"];
+List[List[STR]] df_data = [
+    ["red"],
+    ["blue"]
+];
+PARDOS df = pardos.DataFrame(cols, df_data);
+
+MACHINE ord_enc = machine.ordinal_encoder();
+ord_enc.fit(df, ["color"]);
+
+List[STR] new_cols = ["color"];
+List[List[STR]] new_data = [["green"]];
+PARDOS new_df = pardos.DataFrame(new_cols, new_data);
+
+PARDOS result = ord_enc.transform(new_df);
+show(result);

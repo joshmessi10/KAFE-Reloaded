@@ -1,0 +1,6 @@
+INT a = 5;
+
+-- math.kf module
+drip square(x:INT)=>INT:
+    return x * x;
+;

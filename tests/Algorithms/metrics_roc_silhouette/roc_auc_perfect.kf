@@ -1,0 +1,6 @@
+import machine;
+
+List[INT] y_true = [0, 0, 1, 1];
+List[FLOAT] y_score = [0.1, 0.2, 0.9, 0.8];
+FLOAT auc = machine.roc_auc_score(y_true, y_score);
+show(auc);

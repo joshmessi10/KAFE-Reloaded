@@ -1,0 +1,6 @@
+show("Testing the else branch");
+if (False) :
+    show("This should not be shown");
+else :
+    show("Entered the else branch");
+;

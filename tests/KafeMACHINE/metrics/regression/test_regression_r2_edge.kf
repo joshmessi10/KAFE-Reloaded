@@ -1,0 +1,11 @@
+import machine;
+
+List[INT] y_perfect = [1, 2, 3];
+List[INT] p_perfect = [1, 2, 3];
+FLOAT r2_perfect = machine.r2_score(y_perfect, p_perfect);
+show(r2_perfect);
+
+List[INT] y_worst = [1, 2, 3, 4];
+List[INT] p_worst = [2, 2, 2, 2];
+FLOAT r2_worst = machine.r2_score(y_worst, p_worst);
+show(r2_worst);

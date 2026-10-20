@@ -1,0 +1,41 @@
+=== Red Multicapa: Compuerta XOR ===
+Entrenando red multicapa (2 -> 4 -> 1)...
+Epoch 1/25 — Loss 0.6957 — Accuracy 25.00%
+Epoch 2/25 — Loss 0.6969 — Accuracy 50.00%
+Epoch 3/25 — Loss 0.6928 — Accuracy 50.00%
+Epoch 4/25 — Loss 0.6876 — Accuracy 50.00%
+Epoch 5/25 — Loss 0.6824 — Accuracy 75.00%
+Epoch 6/25 — Loss 0.6745 — Accuracy 50.00%
+Epoch 7/25 — Loss 0.6658 — Accuracy 50.00%
+Epoch 8/25 — Loss 0.6549 — Accuracy 75.00%
+Epoch 9/25 — Loss 0.6420 — Accuracy 75.00%
+Epoch 10/25 — Loss 0.6258 — Accuracy 75.00%
+Epoch 11/25 — Loss 0.6056 — Accuracy 75.00%
+Epoch 12/25 — Loss 0.5816 — Accuracy 75.00%
+Epoch 13/25 — Loss 0.5540 — Accuracy 75.00%
+Epoch 14/25 — Loss 0.5232 — Accuracy 75.00%
+Epoch 15/25 — Loss 0.4913 — Accuracy 75.00%
+Epoch 16/25 — Loss 0.4581 — Accuracy 75.00%
+Epoch 17/25 — Loss 0.4252 — Accuracy 100.00%
+Epoch 18/25 — Loss 0.3912 — Accuracy 100.00%
+Epoch 19/25 — Loss 0.3564 — Accuracy 100.00%
+Epoch 20/25 — Loss 0.3222 — Accuracy 100.00%
+Epoch 21/25 — Loss 0.2894 — Accuracy 100.00%
+Epoch 22/25 — Loss 0.2585 — Accuracy 100.00%
+Epoch 23/25 — Loss 0.2292 — Accuracy 100.00%
+Epoch 24/25 — Loss 0.2013 — Accuracy 100.00%
+Epoch 25/25 — Loss 0.1752 — Accuracy 100.00%
+
+Resultados:
+[0.0, 0.0] -> prob=0.03730264065662939, clase=0
+[0.0, 1.0] -> prob=0.8913035005002155, clase=1
+[1.0, 0.0] -> prob=0.8170450223168092, clase=1
+[1.0, 1.0] -> prob=0.22143467993006163, clase=0
+
+Esperado:
+[0, 0] -> clase=0
+[0, 1] -> clase=1
+[1, 0] -> clase=1
+[1, 1] -> clase=0
+
+XOR resuelto: se requiere al menos una capa oculta (no lineal).

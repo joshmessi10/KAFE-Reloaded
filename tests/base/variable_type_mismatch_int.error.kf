@@ -1,6 +1,6 @@
--- Declaración de lista con dimensiones incorrectas
+-- Declaring a list with incorrect dimensions
 
-List[List[INT]] matriz = [
+List[List[INT]] matrix = [
 	[[234], [234]],
 	[[2341], [1234]]
 ];

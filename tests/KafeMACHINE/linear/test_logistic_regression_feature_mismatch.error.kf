@@ -1,0 +1,8 @@
+import machine;
+
+List[List[FLOAT]] X_train = [[1.0, 2.0], [3.0, 4.0], [5.0, 6.0]];
+List[INT] y_train = [0, 0, 0];
+
+MACHINE lr = machine.logistic_regression(0.1, 100);
+lr.fit(X_train, y_train);
+lr.predict([[1.0, 2.0, 3.0]]);

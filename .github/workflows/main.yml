@@ -5,8 +5,17 @@ on:
   schedule:
     - cron: '0 0 * * 0' # runs weekly on Sunday at 00:00
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   lockfile:
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+    timeout-minutes: 15
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository

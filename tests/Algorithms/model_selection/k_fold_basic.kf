@@ -1,0 +1,7 @@
+import machine;
+
+-- 10 samples, 5 folds
+show(len(machine.k_fold(10, 5, False, 0)));
+
+-- Each fold should have 2 test samples
+show(len(machine.k_fold(10, 5, False, 0)[0][1]));

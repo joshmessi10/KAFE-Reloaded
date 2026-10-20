@@ -1,0 +1,52 @@
+import pathlib
+from typing import cast
+
+from antlr4 import CommonTokenStream, FileStream
+
+import globals
+from errors import raiseModuleNotFound
+from Kafe_GrammarLexer import Kafe_GrammarLexer
+from Kafe_GrammarParser import Kafe_GrammarParser
+
+
+def importStmt(self, ctx):
+    module = ctx.ID().getText()
+
+    is_library = self.libraries.get(module) is not None
+    if is_library:
+        self.libraries[module][1] = True
+        return
+
+    if module in self.imported:
+        return
+    self.imported.add(module)
+
+    candidates = []
+    if globals.current_dir:
+        candidates.append(pathlib.Path(cast(str, globals.current_dir)) / f"{module}.kf")
+    base = pathlib.Path(__file__).parent
+    candidates.append(base / f"{module}.kf")
+    candidates.append(base.parent / f"{module}.kf")
+
+    filename = None
+    for path in candidates:
+        if path.is_file():
+            filename = path
+            break
+    if filename is None:
+        tried = ", ".join(str(p) for p in candidates)
+        raiseModuleNotFound(module, tried)
+    filename = cast(pathlib.Path, filename)
+
+    prev_dir = globals.current_dir
+    globals.current_dir = str(filename.parent)
+
+    input_stream = FileStream(str(filename), encoding='utf-8')
+    lexer        = Kafe_GrammarLexer(input_stream)
+    tokens       = CommonTokenStream(lexer)
+    parser       = Kafe_GrammarParser(tokens)
+    tree         = parser.program()
+    self.visit(tree)
+
+    globals.current_dir = prev_dir
+    return

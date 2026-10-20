@@ -1,0 +1,4 @@
+import machine;
+
+MACHINE pca_model = machine.pca(2);
+pca_model.fit([]);

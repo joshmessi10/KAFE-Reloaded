@@ -1236,7 +1236,7 @@ test('development Tutor prefers managed knowledge over local documentation', asy
     fs.writeFileSync(path.join(pack, 'lists.md'), 'MANAGED_LISTS_SENTINEL list indexing');
     const digest = knowledgeContentDigest([{ relative: 'lists.md', bytes: fs.readFileSync(path.join(pack, 'lists.md')) }]);
     const host = createTutorHost({ vscode: f.vscode, extensionUri: {}, secrets: {}, extensionMode: 2, extensionPath: path.join(f.temporary, 'kafe-vscode'), runtimeManager: {
-      storageRoot: f.storageRoot, manifest: { runtime: PINNED_RUNTIME }, getReadyKnowledgePack: async () => ({ status: 'ready', knowledgeRoot: pack, runtimeVersion: '0.1.0', knowledgePackVersion: '0.1.0', packIdentity: pack, expectedContentSha256: digest.contentSha256, expectedFileCount: digest.fileCount }) } });
+      storageRoot: f.storageRoot, manifest: { runtime: PINNED_RUNTIME }, getReadyKnowledgePack: async () => ({ status: 'ready', knowledgeRoot: pack, runtimeVersion: PINNED_RUNTIME.version, knowledgePackVersion: PINNED_RUNTIME.knowledgePackVersion, packIdentity: pack, expectedContentSha256: digest.contentSha256, expectedFileCount: digest.fileCount }) } });
     const passages = await host.knowledgeRetriever.search('list indexing');
     assert.ok(passages.some(p => p.text.includes('MANAGED_LISTS_SENTINEL'))); assert.ok(passages.every(p => p.sourceMode === 'managed'));
     assert.equal(fs.existsSync(path.join(f.storageRoot, 'kafe-tutor-development')), false); host.dispose();
@@ -1274,7 +1274,7 @@ test('pack loss during retrieval yields a typed sanitized availability error', a
     runtimeManager: { manifest: { runtime: PINNED_RUNTIME },
       getReadyKnowledgePack: async () => {
         if (removeOnResolve) { fs.rmSync(member, { force: true }); removeOnResolve = false; }
-        return { status: 'ready', knowledgeRoot, runtimeVersion: '0.1.0', knowledgePackVersion: '0.1.0',
+        return { status: 'ready', knowledgeRoot, runtimeVersion: PINNED_RUNTIME.version, knowledgePackVersion: PINNED_RUNTIME.knowledgePackVersion,
           packIdentity: knowledgeRoot, expectedContentSha256: digest.contentSha256,
           expectedFileCount: digest.fileCount };
       } },

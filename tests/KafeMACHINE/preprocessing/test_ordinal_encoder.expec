@@ -1,0 +1,6 @@
+Original DataFrame:
+"cols: ['color', 'size', 'label'], rows: [['red', 'S', 'no'], ['blue', 'M', 'yes'], ['green', 'L', 'yes'], ['red', 'M', 'no']]"
+Encoded DataFrame (color, size):
+"cols: ['color', 'size', 'label'], rows: [[2, 2, 'no'], [0, 1, 'yes'], [1, 0, 'yes'], [2, 1, 'no']]"
+Decoded DataFrame:
+"cols: ['color', 'size', 'label'], rows: [['red', 'S', 'no'], ['blue', 'M', 'yes'], ['green', 'L', 'yes'], ['red', 'M', 'no']]"

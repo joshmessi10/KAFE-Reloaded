@@ -1,0 +1,5 @@
+drip sum_values(a: INT,b: INT) => VOID:
+    return 5;
+;
+
+sum_values(10)(5);  -- 15

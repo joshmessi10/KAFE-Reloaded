@@ -1,0 +1,30 @@
+import machine;
+
+MACHINE tok = machine.tokenizer();
+
+List[STR] corpus = ["hola mundo hola", "mundo cruel mundo hola", "adios mundo"];
+show("Corpus: ");
+show(corpus);
+
+-- Vocabulario determinista: orden por (-frecuencia, primera aparición),
+-- índice 0 reservado para padding y nunca asignado a una palabra.
+tok.fit(corpus);
+show("Word index: ");
+show(tok.word_index);
+show("Index word: ");
+show(tok.index_word);
+show("Vocabulary size: ");
+show(tok.vocabulary_size);
+
+List[List[INT]] secuencias = tok.transform(corpus);
+show("Secuencias: ");
+show(secuencias);
+
+-- fit_transform hace fit + transform en un paso
+MACHINE tok_ft = machine.tokenizer();
+show("fit_transform: ");
+show(tok_ft.fit_transform(corpus));
+
+-- una lista vacía transforma a lista vacía
+show("Transform vacío: ");
+show(tok.transform([]));

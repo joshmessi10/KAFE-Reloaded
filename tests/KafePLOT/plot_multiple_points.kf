@@ -1,8 +1,8 @@
 import plot;
 
 plot.figure();
-plot.xlabel("Tiempo (s)");
-plot.ylabel("Posición (m)");
+plot.xlabel("Time (s)");
+plot.ylabel("Position (m)");
 
 List[INT] x = [0, 10, 20, 15, 25];
 List[INT] y = [0, 100000, 200000, 150000, 250000];
