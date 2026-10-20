@@ -59,13 +59,13 @@ jobs:
             **/uv.lock
 
       - name: Install documentation dependencies
-        run: uv sync --locked --python 3.10 --group docs --no-dev
+        run: uv sync --locked --python 3.11 --group docs --no-dev
 
       - name: Build documentation
         env:
           # Material emits this upstream warning for MkDocs 2.0; keep suppression limited to the strict build.
           NO_MKDOCS_2_WARNING: "1"
-        run: uv run --locked --python 3.10 --group docs --no-dev mkdocs build --strict
+        run: uv run --locked --python 3.11 --group docs --no-dev mkdocs build --strict
 
   deploy:
     needs: validate
@@ -103,13 +103,13 @@ jobs:
             **/uv.lock
 
       - name: Install documentation dependencies
-        run: uv sync --locked --python 3.10 --group docs --no-dev
+        run: uv sync --locked --python 3.11 --group docs --no-dev
 
       - name: Build selected branch documentation
         env:
           # Material emits this upstream warning for MkDocs 2.0; keep suppression limited to the strict build.
           NO_MKDOCS_2_WARNING: "1"
-        run: uv run --locked --python 3.10 --group docs --no-dev mkdocs build --strict
+        run: uv run --locked --python 3.11 --group docs --no-dev mkdocs build --strict
 
       - name: Deploy to GitHub Pages
-        run: uv run --locked --python 3.10 --group docs --no-dev mkdocs gh-deploy --force
+        run: uv run --locked --python 3.11 --group docs --no-dev mkdocs gh-deploy --force
