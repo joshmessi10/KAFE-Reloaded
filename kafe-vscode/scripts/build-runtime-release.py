@@ -146,7 +146,7 @@ def main():
     manifest = {
         "runtime_version": arguments.version,
         "knowledge_pack_version": arguments.version,
-        "python_requirement": ">=3.10",
+        "python_requirement": ">=3.11",
         "antlr_runtime_version": "4.13.2",
         "source_revision": revision,
         "archive_sha256": digest,
