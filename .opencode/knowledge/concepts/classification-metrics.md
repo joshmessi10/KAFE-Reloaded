@@ -15,7 +15,7 @@ Classification metrics measure the performance of classification models by compa
 | Accuracy | $(TP + TN) / (TP + TN + FP + FN)$ | Overall correctness |
 | Precision | $TP / (TP + FP)$ per class, macro-averaged | How many predicted positives are actual positives |
 | Recall | $TP / (TP + FN)$ per class, macro-averaged | How many actual positives are correctly identified |
-| F1 Score | $2 \cdot (Precision \cdot Recall) / (Precision + Recall)$ | Harmonic mean of precision and recall |
+| F1 Score | $F1_c = 2P_cR_c/(P_c+R_c)$; macro F1 is the mean across classes | Balances precision and recall for each class |
 | Confusion Matrix | $N \times N$ matrix of actual vs predicted | Detailed error analysis |
 
 **Macro vs Micro Averaging**:
@@ -55,8 +55,8 @@ List[INT] y_true = [1, 0, 1, 1, 0];
 List[INT] y_pred = [1, 0, 1, 0, 0];
 
 FLOAT acc = machine.accuracy_score(y_true, y_pred);      -- 0.8
-FLOAT prec = machine.precision_score(y_true, y_pred);    -- 1.0
-FLOAT rec = machine.recall_score(y_true, y_pred);        -- 0.666...
+FLOAT prec = machine.precision_score(y_true, y_pred);    -- 0.833...
+FLOAT rec = machine.recall_score(y_true, y_pred);        -- 0.833...
 FLOAT f1 = machine.f1_score(y_true, y_pred);             -- 0.8
 ```
 

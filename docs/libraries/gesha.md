@@ -6,13 +6,13 @@ Gesha implements neural networks with KAFE and NUMK tensors. Import it with `ges
 import gesha;
 ```
 
-The current public path supports sequential multilayer perceptrons, convolutional networks, recurrent networks, and experimental soft clustering. The Functional API has backend components but is not yet a fully documented training path. All examples here use `gesha.sequential`.
+The architectures supported for training today are multilayer perceptrons (MLP), convolutional networks (CNN), and recurrent networks (RNN), assembled sequentially. Experimental soft clustering remains available as an experimental path with fixtures and its own page below. Functional graph training has a tested branch-and-merge fixture; broader graph configurations remain experimental. All examples here use `gesha.sequential`.
 
 ## Choose a topic
 
 | Topic | Read this when you need... |
 |---|---|
-| [Models and training](gesha/models-training.md) | Model assembly, compile, fit, prediction, evaluation, and errors. |
+| [Models and training](gesha/models-training.md) | Model assembly, compile, fit, epoch output, shared MACHINE metrics, and errors. |
 | [Dense networks](gesha/dense-networks.md) | Perceptrons, multilayer networks, activations, and losses. |
 | [Convolutional networks](gesha/convolutional-networks.md) | Image shapes, convolution, pooling, and spatial layers. |
 | [Recurrent networks](gesha/recurrent-networks.md) | Sequences, SimpleRNN, LSTM, GRU, and embeddings. |

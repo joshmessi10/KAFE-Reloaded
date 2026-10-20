@@ -82,6 +82,12 @@ def _target_label(target, loss):
     return target.index(max(target))
 
 
+def _squared_norm(values):
+    if isinstance(values, list):
+        return sum(_squared_norm(value) for value in values)
+    return values * values
+
+
 def _accumulate_into(target, source):
     """Suma `source` sobre `target` in-place (listas anidadas de float)."""
     for indice in range(len(target)):
@@ -208,14 +214,14 @@ class Model(ABC):
         if type(epochs) is not int or epochs < 0:
             raise ValueError("epochs debe ser entero no negativo")
         has_val = (
-            x_val is not None and y_val is not None
-            and isinstance(x_val, list) and len(x_val) > 0
+            x_val is not None
+            and y_val is not None
+            and isinstance(x_val, list)
+            and len(x_val) > 0
         )
         y_val_list = y_val if isinstance(y_val, list) else []
         if has_val and isinstance(x_val, list) and len(x_val) != len(y_val_list):
-            raise ValueError(
-                "x_val/y_val requieren X e Y no vacios de igual longitud"
-            )
+            raise ValueError("x_val/y_val requieren X e Y no vacios de igual longitud")
 
         active_callbacks = self.callbacks + list(callbacks or [])
         self.stop_training = False
@@ -235,22 +241,18 @@ class Model(ABC):
             correct_predictions = 0
             centroids = None
             if is_unsupervised:
-        # Centroides mu_k como promedios ponderados de los destinos
-        # (Soft K-Means) calculados con una pasada forward completa.
+                # Centroides mu_k como promedios ponderados de los destinos
+                # (Soft K-Means) calculados con una pasada forward completa.
                 z_all = [self.forward(xi) for xi in X]
                 k_num = len(z_all[0])
                 weights = [
-                    sum(z_all[idx][c] for idx in range(len(X)))
-                    for c in range(k_num)
+                    sum(z_all[idx][c] for idx in range(len(X))) for c in range(k_num)
                 ]
                 centroids = []
                 for c in range(k_num):
                     if weights[c] > 1e-6:
                         mu_c = [
-                            sum(
-                                z_all[idx][c] * X[idx][f]
-                                for idx in range(len(X))
-                            )
+                            sum(z_all[idx][c] * X[idx][f] for idx in range(len(X)))
                             / weights[c]
                             for f in range(len(X[0]))
                         ]
@@ -284,9 +286,7 @@ class Model(ABC):
                                 _prediction_label(y_pred)
                                 == _target_label(y, self._loss)
                             )
-                        self.backward(
-                            self._loss.backward(), regularization_lambda
-                        )
+                        self.backward(self._loss.backward(), regularization_lambda)
                     for parameter in batch_parameters:
                         if parameter.grad is not None:
                             if parameter.regularizer is not None:
@@ -297,6 +297,16 @@ class Model(ABC):
                                 total_loss += parameter.regularizer.penalty(
                                     parameter.data
                                 )
+                            if getattr(parameter, "l2_eligible", False):
+                                coefficient = regularization_lambda or getattr(
+                                    parameter, "l2_coefficient", 0.0
+                                )
+                                if coefficient > 0:
+                                    total_loss += (
+                                        0.5
+                                        * coefficient
+                                        * _squared_norm(parameter.data)
+                                    )
                             if parameter not in accumulated:
                                 accumulated[parameter] = _tensor(parameter.grad)
                             else:
@@ -304,20 +314,18 @@ class Model(ABC):
 
                 # El optimizador se aplica una vez por minibatch.
                 for parameter, gradient in accumulated.items():
-                     parameter.grad = _scalar_mul(
-                         1.0 / (batch_end - batch_start), gradient
-                     )
+                    parameter.grad = _scalar_mul(
+                        1.0 / (batch_end - batch_start), gradient
+                    )
                 self._optimizer.step(batch_parameters)
 
             avg_loss = total_loss / len(X)
             history["loss"].append(avg_loss)
-            loss_pct = avg_loss * 100.0
-            msg = f"Epoch {epoch + 1}/{epochs} — Loss {loss_pct:.2f}%"
+            msg = f"Epoch {epoch + 1}/{epochs} — Loss {avg_loss:.4f}"
             if is_classification and not is_unsupervised:
                 accuracy = correct_predictions / len(X)
                 history["accuracy"].append(accuracy)
-                if "accuracy" in self._metrics:
-                    msg += f" — Accuracy {accuracy * 100.0:.2f}%"
+                msg += f" — Accuracy {accuracy * 100.0:.2f}%"
 
             if has_val and isinstance(x_val, list):
                 val_preds = self.predict(x_val)
@@ -367,11 +375,11 @@ class Model(ABC):
             s_raw = sum(raw) + eps
             target = [r / s_raw for r in raw]
         else:
-            p_sq = [v ** 2 for v in p]
+            p_sq = [v**2 for v in p]
             s_sq = sum(p_sq) + eps
             target = [v / s_sq for v in p_sq]
 
-        loss_val = sum((p[c] - target[c]) ** 2 for c in range(k))
+        loss_val = sum((p[c] - target[c]) ** 2 for c in range(k)) / k
         grad_z = [2.0 * (p[c] - target[c]) / k for c in range(k)]
         return loss_val, grad_z
 
@@ -487,7 +495,15 @@ class Functional(Model):
         return results[0] if len(self.outputs) == 1 else results
 
     def backward(self, grad_output, regularization_lambda=0.0):
-        grads = {out_node: grad_output[:] for out_node in self.outputs}
+        if len(self.outputs) == 1:
+            grads = {self.outputs[0]: grad_output}
+        else:
+            if len(grad_output) != len(self.outputs):
+                raise ValueError("Functional: expected one gradient per output")
+            grads = {
+                out_node: grad
+                for out_node, grad in zip(self.outputs, grad_output, strict=True)
+            }
 
         for node in reversed(self._nodes):
             if node in self.inputs:
@@ -500,9 +516,7 @@ class Functional(Model):
                 grads[in_node] = (
                     local_grad
                     if in_node not in grads
-                    else _map_elements(
-                        lambda a, b: a + b, grads[in_node], local_grad
-                    )
+                    else _map_elements(lambda a, b: a + b, grads[in_node], local_grad)
                 )
             else:
                 for in_node, g in zip(node.inbound_nodes, local_grad, strict=False):
@@ -538,9 +552,7 @@ class GeshaPlaceholder(Model):
     en lugar de un traceback de Python.
     """
 
-    _UNASSIGNED_MESSAGE = (
-        "GESHA variable was used before being assigned"
-    )
+    _UNASSIGNED_MESSAGE = "GESHA variable was used before being assigned"
 
     def forward(self, x):
         raise RuntimeError(self._UNASSIGNED_MESSAGE)

@@ -52,6 +52,7 @@ The KAFE `grid_search_cv` and `randomized_search_cv` factories currently initial
 - Pipeline: `machine.pipeline(name1, step1, name2, step2, ...)`
 - Classification metrics: `accuracy_score`, `precision_score`, `recall_score`, `f1_score`, `confusion_matrix`, `classification_report`, `roc_auc_score`.
 - Regression metrics: `mean_squared_error`, `mean_absolute_error`, `root_mean_squared_error`, `r2_score`, `max_error`, `median_absolute_error`, `mean_absolute_percentage_error`, `explained_variance_score`.
+- Metric inputs: classification metrics take flat label vectors (Gesha: `predict_label`); the eight regression metrics and `roc_auc_score` additionally accept a single-column `List[List[FLOAT]]` Gesha batch prediction, one value per sample, and reject multi-output rows (ADR-0023).
 - Clustering metrics: `silhouette_score`.
 
 ## Rules
@@ -81,3 +82,11 @@ Unless explicitly requested otherwise, prioritize improvements in KafeMACHINE ov
 
 - Fixtures under `tests/KafeMACHINE/{linear,neighbors,tree,naive_bayes,preprocessing,metrics/classification,metrics/regression,clustering,model_selection,svm,ensemble}/`, wired in `tests/test_KafeMACHINE.py`.
 - Algorithm tests under `tests/Algorithms/`, wired in `tests/test_Algorithms.py`.
+
+## Evaluation invariants
+
+Cross-validation and hyperparameter search require an unfitted estimator and train an independent copy in each fold. MSE searches minimize the positive MSE; accuracy and R2 searches maximize their scores. SVM sigmoid score columns follow the order in classes_ and are not calibrated probabilities.
+
+## Gaussian numerical stability
+
+Gaussian Mixture and GaussianNB evaluate Gaussian log densities directly. Gaussian Mixture normalizes responsibilities with log-sum-exp, and BIC uses the natural logarithm of sample count (ADR-0027). This preserves likelihood ordering for high-dimensional and extreme samples without changing public return shapes.

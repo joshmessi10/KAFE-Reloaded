@@ -140,6 +140,22 @@ def test_binary_training_reports_accuracy_and_history(capsys):
     assert "Accuracy 0.00%" in capsys.readouterr().out
 
 
+def test_classification_epoch_reports_accuracy_without_metric_opt_in(capsys):
+    layer = Dense(1, "sigmoid", [1])
+    layer.w.data = [[0.0]]
+    layer.b.data = [0.0]
+    model = Sequential([layer])
+    model.compile(SGD(lr=0.1), "binary_crossentropy", metrics=[])
+
+    history = model.fit([[0.0], [1.0]], [[0.0], [1.0]], 1, 1)
+
+    assert history["accuracy"] == [pytest.approx(0.0)]
+    output = capsys.readouterr().out
+    assert "Epoch 1/1 — Loss " in output
+    assert " — Accuracy 0.00%" in output
+    assert f"Loss {history['loss'][0]:.4f}" in output
+
+
 def test_lazy_parameters_are_updated_in_first_epoch():
     layer = Dense(1, "linear", seed=42)
     assert layer.parameters() == []
@@ -169,7 +185,8 @@ def test_validation_restores_training_mode():
     dropout = Dropout(0.0)
     model = Sequential([Dense(1, "linear", [1]), dropout])
     model.compile("sgd", "mse")
-    model.fit([[1.0]], [[2.0]], 2, 1, ([[1.0]], [[2.0]]))
+    history = model.fit([[1.0]], [[2.0]], 2, 1, [[1.0]], [[2.0]])
+    assert len(history["val_loss"]) == 2
     assert dropout._training is True
 
 

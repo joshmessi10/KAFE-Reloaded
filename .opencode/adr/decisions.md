@@ -643,3 +643,133 @@ Three concrete problems follow:
 - **Keep two trees and leave the tuple:** rejected; keeps the legacy backend unremovable and duplicates every type-mapping change.
 - **Make models_v2.Model inherit from legacy Gesha:** rejected; it is the reverse of the intended direction (legacy is being retired) and would drag legacy internals into the new graph.
 - **Only delete unctions.py (the zero-importer file):** rejected as insufficient; it does not address the Gesha() bug nor unblock the rest.
+
+---
+
+## ADR-0023: Widen KafeMACHINE Metric Signatures to Accept Single-Column Gesha Predictions
+
+- **Status**: accepted
+- **Date**: 2026-10-20
+
+### Context
+
+Gesha models return batch predictions as a nested `List[List[FLOAT]]` with one value per row (`models_v2.Model.predict` maps each sample through `forward`, and a single-unit Dense returns `[value]`), while the KafeMACHINE regression metrics and `roc_auc_score` required a flat `List[INT]` / `List[FLOAT]` for their prediction argument. The `check_sig` decorator rejects the matrix before the metric body runs, so `machine.mean_squared_error(y_true, modelo.predict(X))` fails for gesha output even though the values are semantically one prediction per sample. This blocks uniform evaluation of machine and gesha learners with the same metric library.
+
+### Decision
+
+Additively widen the second parameter of the eight regression metrics (`mean_squared_error`, `mean_absolute_error`, `root_mean_squared_error`, `r2_score`, `max_error`, `median_absolute_error`, `mean_absolute_percentage_error`, `explained_variance_score`) plus `roc_auc_score` to also accept `numeric_matrix_types`, keeping the ground-truth parameter as a numeric vector. Normalize the incoming predictions with a module-private `_flatten_predictions` helper called before input validation, which accepts only single-column rows (inner length 1) and converts them to a flat vector.
+
+### Consequences
+
+- Both backends feed the same KafeMACHINE metrics: flat machine predictions and nested gesha batch predictions produce identical results.
+- The change is backward compatible; existing flat-vector fixtures and internal `r2_score` callers are unaffected.
+- Genuinely multi-output predictions are still rejected, with a clear error requiring one value per sample, instead of a silent length mismatch.
+- Classification metrics and `silhouette_score` are unchanged, because gesha `predict_label` already returns a flat label vector.
+
+### Alternatives Considered
+
+- **Wrap gesha predict to flatten at the call site:** rejected; it pushes the shape problem onto every learner and every program instead of the shared library.
+- **Add separate gesha-specific metrics:** rejected; it duplicates the library and breaks the uniform metric API across backends.
+- **Flatten inside every metric body without widening:** rejected; `check_sig` would reject the matrix argument before the body runs, so the behavior would never be reachable.
+
+---
+
+## ADR-0024: Report Classification Accuracy and Raw Loss in Every Gesha Epoch
+
+- **Status**: accepted
+- **Date**: 2026-10-20
+
+### Context
+
+Gesha computed classification accuracy for training history but printed it only when `metrics` explicitly contained `accuracy`. Most example programs passed `[]`, so users saw only loss. The previous output also multiplied the loss by 100 and labeled it as a percentage, although MSE and cross-entropy are not percentages.
+
+### Decision
+
+Print mean loss as a raw decimal on every epoch. For supervised training with binary, categorical, or sparse categorical cross-entropy, print training accuracy as a percentage on the same line regardless of the `metrics` argument. Keep the stored `history` values as fractions/raw losses and leave model predictions unchanged.
+
+### Consequences
+
+- Classification networks now have consistent epoch output across Dense, CNN, RNN, and Functional architectures.
+- Regression, reconstruction, and unsupervised training continue to show loss without a class accuracy.
+- Exact-output fixture snapshots change; downstream consumers parsing the old text format must update.
+
+### Alternatives Considered
+
+- Update only examples to pass `["accuracy"]`: rejected because other classification programs using `[]` would still appear inconsistent.
+- Keep loss with a percent suffix: rejected because it misrepresents the loss scale.
+
+---
+
+## ADR-0025: Align Published ML Metrics and Training Losses with Their Mathematical Definitions
+
+- **Status**: accepted
+- **Date**: 2026-10-20
+
+### Context
+
+The public `f1_score` returned the harmonic mean of macro precision and macro recall rather than macro F1. Silhouette assigned a singleton a score of one. Gesha displayed a clustering sum while optimizing a mean, and omitted scalar L2 penalties from training loss. These values can mislead evaluation even when predictions are unchanged.
+
+### Decision
+
+Define macro F1 as the mean of classwise F1 scores, weighted F1 as the support-weighted mean, and singleton silhouette as zero. Reject all-singleton partitions. Report the same mean soft-clustering objective whose gradient is used, and include the already applied scalar L2 penalty in Gesha's training loss. Preserve public function names and call signatures.
+
+### Consequences
+
+Numerical outputs and exact-output fixtures change. Users comparing historical runs must account for the corrected definitions. Prediction APIs and dataset formats remain unchanged.
+
+### Alternatives Considered
+
+Retaining the old numbers for snapshot compatibility was rejected because they do not represent the named metrics or optimized objective.
+
+---
+
+## ADR-0026: Isolate Evaluation Folds and Preserve Metric Meaning
+
+- **Status**: accepted
+- **Date**: 2026-10-20
+
+### Context
+
+Cross-validation reused the same estimator across folds and parameter combinations. A fitted input estimator could also carry learned data into every fold. Both searches maximized MSE, selecting worse regression models. SVM sigmoid columns contradicted `predict` class order and overflowed for large negative margins. Functional graphs with several outputs sent the entire gradient collection to every head.
+
+### Decision
+
+Require an unfitted model at the start of KafeMACHINE cross-validation and parameter search, and deep-copy it for each fold. Preserve positive MSE values but select their minimum; continue maximizing accuracy and R². Return SVM sigmoid scores in `classes_` order using a stable formula for either margin sign. Distribute Functional backward gradients by output position while retaining the single-output form.
+
+### Consequences
+
+- Fold scores no longer depend on training in earlier folds, and the caller's model is not trained by evaluation. Passing an already fitted estimator now raises a clear error.
+- MSE searches may select different parameters; SVM probabilities change column order and remain uncalibrated sigmoid scores.
+- Functional backward handles separate output heads. The current `fit` loop still supports one output and one loss.
+
+### Alternatives Considered
+
+- Reuse the caller's estimator and reset it between folds: rejected because KAFE estimators have no uniform reset contract.
+- Negate MSE values: rejected because a reported `best_score_` named MSE should remain a positive error.
+- Accept fitted estimators by copying their trained state: rejected because this can leak information from data outside each fold.
+
+---
+
+## ADR-0027: Compute Gaussian Model Likelihoods in Log Space
+
+- **Status**: accepted
+- **Date**: 2026-10-20
+
+### Context
+
+Gaussian Mixture multiplied feature density factors before taking a logarithm. With 800 features, all component densities underflowed to zero, EM assigned uniform memberships, and the model reported a zero negative log-likelihood. GaussianNB computed per-feature densities before taking their logarithms, so sufficiently distant observations made every class posterior negative infinity. Gaussian Mixture BIC also used a base-2 logarithm instead of the natural logarithm in its published formula.
+
+### Decision
+
+Evaluate Gaussian feature and diagonal component densities directly in log space. Use log-sum-exp to normalize GMM responsibilities and GaussianNB class posteriors. Preserve zero-variance GaussianNB behavior and public prediction shapes. Use the natural logarithm for BIC and reset GMM convergence state on each fit.
+
+### Consequences
+
+- High-dimensional and distant observations retain informative likelihood ordering without density underflow.
+- Tiny probability and score decimals, and BIC values, change to their mathematically correct values; affected exact-output fixtures are updated.
+- Time complexity remains O(iterations × samples × components × features) for GMM and O(samples × classes × features) for GaussianNB.
+
+### Alternatives Considered
+
+- Clamp densities to a tiny positive constant: rejected because distinct extremely unlikely observations would receive identical scores.
+- Ignore samples with zero density: rejected because this makes impossible observations appear artificially favorable.

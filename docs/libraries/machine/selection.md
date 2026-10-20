@@ -111,6 +111,8 @@ Object-oriented wrapper for evaluating models with K-fold cross-validation. It c
 | `cvs.mean_score_` | `FLOAT` | Mean score |
 | `cvs.std_score_` | `FLOAT` | Standard deviation of the scores |
 
+Cross-validation trains an independent copy of the model for each fold. Pass an unfitted model; the model passed to `fit` is not trained or modified.
+
 ### Scoring strategies
 
 | Strategy | Description |
@@ -168,6 +170,8 @@ GridSearchCV evaluates **all** possible parameter combinations defined in the gr
 | `gs.best_params_` | `Dict` | Best parameters found |
 | `gs.best_score_` | `FLOAT` | Best cross-validation score |
 | `gs.cv_results_` | `List[FLOAT]` | Mean score for each evaluated combination |
+
+Pass an unfitted estimator. Each fold trains a separate copy of it. For `"mse"`, lower scores are better; accuracy and R² are maximized. The original estimator is left untrained by cross-validation, while a parameter search sets its selected parameter values without fitting it.
 
 The KAFE factory currently initializes an empty grid and does not expose a parameter-grid argument. The underlying Python `GridSearchCV` constructor accepts `param_grid`, but a configured grid search is not currently available through this KAFE factory.
 

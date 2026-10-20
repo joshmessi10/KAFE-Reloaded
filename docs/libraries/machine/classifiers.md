@@ -340,6 +340,8 @@ Each $P(x_i|y)$ is modeled as a Gaussian distribution:
 
 $$P(x_i|y=c) = \frac{1}{\sqrt{2\pi\sigma_{c,i}^2}} \exp\left(-\frac{(x_i - \mu_{c,i})^2}{2\sigma_{c,i}^2}\right)$$
 
+KAFE sums feature log densities and normalizes class scores in log space, so very small densities do not turn into zero before classification.
+
 ### Methods
 
 | Method | Signature | Description |

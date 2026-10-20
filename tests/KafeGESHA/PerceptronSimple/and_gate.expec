@@ -1,20 +1,20 @@
 === Perceptron Simple: Compuerta AND ===
 Entrenando perceptron simple...
-Epoch 1/15 — Loss 70.42%
-Epoch 2/15 — Loss 67.78%
-Epoch 3/15 — Loss 65.26%
-Epoch 4/15 — Loss 62.85%
-Epoch 5/15 — Loss 60.52%
-Epoch 6/15 — Loss 58.32%
-Epoch 7/15 — Loss 56.20%
-Epoch 8/15 — Loss 54.19%
-Epoch 9/15 — Loss 52.26%
-Epoch 10/15 — Loss 50.42%
-Epoch 11/15 — Loss 48.67%
-Epoch 12/15 — Loss 47.01%
-Epoch 13/15 — Loss 45.42%
-Epoch 14/15 — Loss 43.92%
-Epoch 15/15 — Loss 42.49%
+Epoch 1/15 — Loss 0.7042 — Accuracy 25.00%
+Epoch 2/15 — Loss 0.6778 — Accuracy 50.00%
+Epoch 3/15 — Loss 0.6526 — Accuracy 50.00%
+Epoch 4/15 — Loss 0.6285 — Accuracy 50.00%
+Epoch 5/15 — Loss 0.6052 — Accuracy 50.00%
+Epoch 6/15 — Loss 0.5832 — Accuracy 100.00%
+Epoch 7/15 — Loss 0.5620 — Accuracy 100.00%
+Epoch 8/15 — Loss 0.5419 — Accuracy 100.00%
+Epoch 9/15 — Loss 0.5226 — Accuracy 100.00%
+Epoch 10/15 — Loss 0.5042 — Accuracy 100.00%
+Epoch 11/15 — Loss 0.4867 — Accuracy 100.00%
+Epoch 12/15 — Loss 0.4701 — Accuracy 100.00%
+Epoch 13/15 — Loss 0.4542 — Accuracy 100.00%
+Epoch 14/15 — Loss 0.4392 — Accuracy 100.00%
+Epoch 15/15 — Loss 0.4249 — Accuracy 100.00%
 
 Resultados:
 [0.0, 0.0] -> prob=0.18773580268953707, clase=0

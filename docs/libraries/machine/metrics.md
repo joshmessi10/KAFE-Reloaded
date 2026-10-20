@@ -1,4 +1,4 @@
-# MACHINE · Funciones y métricas
+# MACHINE · Functions and metrics
 
 [Return to Index](../machine.md)
 
@@ -33,6 +33,34 @@
 
 ---
 
+## One metric API for MACHINE and Gesha
+
+Import `machine` to calculate metrics for either library. Train the estimator or neural network with its own API, then pass true values and predictions to `machine.<metric>(y_true, y_pred)`. Accuracy and ROC AUC are fractions from 0 to 1; multiply accuracy by 100 only when displaying a percentage. Regression errors keep the target's units (or squared units for MSE), and R² can be negative.
+
+| Task | MACHINE prediction | Gesha prediction | Metric input |
+|---|---|---|---|
+| Classification accuracy | `model.predict(X_test)` | `network.predict_label(X_test)` | Class labels, then `machine.accuracy_score` |
+| Binary ROC AUC | Model probability/score output | `network.predict(X_test)` | Raw positive-class scores, then `machine.roc_auc_score` |
+| Single-output regression | `model.predict(X_test)` | `network.predict(X_test)` | Numeric predictions, then `machine.mean_squared_error`, `machine.r2_score`, etc. |
+
+For Gesha, batch `predict` returns rows such as `[[0.2], [0.9]]` for a single output. Regression metrics and binary ROC AUC accept this single-column shape as well as a flat vector. Classification metrics expect flat **labels**; use `predict_label`. Multi-output prediction rows such as `[[0.1, 0.9], ...]` cannot be reduced to one regression value per sample automatically.
+
+```kafe
+import machine;
+import gesha;
+
+List[List[FLOAT]] X = [[0.0], [1.0], [2.0], [3.0]];
+List[FLOAT] y = [0.0, 1.0, 2.0, 3.0];
+GESHA output = gesha.create_dense(1, "linear", [1], 0.0, 42);
+GESHA network = gesha.sequential([output]);
+network.compile("adam", "mse", []);
+network.fit(X, y, 5, 2);
+List[List[FLOAT]] predictions = network.predict(X);
+show(machine.mean_squared_error(y, predictions));
+```
+
+In a real workflow, split into training and test sets first and calculate this metric on `X_test` and `y_test`.
+
 ## Classification metrics
 
 | Function | Signature | Description |
@@ -40,7 +68,7 @@
 | `machine.accuracy_score(y_true, y_pred)` | `(List[NUM], List[NUM]) -> FLOAT` | Proportion of correct predictions |
 | `machine.precision_score(y_true, y_pred)` | `(List[NUM], List[NUM]) -> FLOAT` | Macro-average: TP / (TP + FP) per class |
 | `machine.recall_score(y_true, y_pred)` | `(List[NUM], List[NUM]) -> FLOAT` | Macro-average: TP / (TP + FN) per class |
-| `machine.f1_score(y_true, y_pred)` | `(List[NUM], List[NUM]) -> FLOAT` | Harmonic mean of macro-averaged precision and recall |
+| `machine.f1_score(y_true, y_pred)` | `(List[NUM], List[NUM]) -> FLOAT` | Mean of the per-class F1 scores (macro F1) |
 | `machine.confusion_matrix(y_true, y_pred)` | `(List[NUM], List[NUM]) -> List[List[INT]]` | N×N confusion matrix |
 | `machine.classification_report(y_true, y_pred)` | `(List[NUM], List[NUM]) -> STR` | scikit-learn-style text report |
 | `machine.roc_auc_score(y_true, y_score)` | `(List[NUM], List[NUM]) -> FLOAT` | Area under the ROC curve (binary classification) |
@@ -54,8 +82,8 @@ List[INT] y_true = [1, 0, 1, 1, 0];
 List[INT] y_pred = [1, 0, 1, 0, 0];
 
 FLOAT acc = machine.accuracy_score(y_true, y_pred);      -- 0.8
-FLOAT prec = machine.precision_score(y_true, y_pred);    -- 1.0
-FLOAT rec = machine.recall_score(y_true, y_pred);        -- 0.666...
+FLOAT prec = machine.precision_score(y_true, y_pred);    -- 0.833...
+FLOAT rec = machine.recall_score(y_true, y_pred);        -- 0.833...
 FLOAT f1 = machine.f1_score(y_true, y_pred);             -- 0.8
 
 List[List[INT]] cm = machine.confusion_matrix(y_true, y_pred);
@@ -93,7 +121,7 @@ show(auc);  -- 1.0
 
 | Function | Signature | Description |
 |---------|-------|-------------|
-| `machine.silhouette_score(X, labels)` | `(List[List[NUM]], List[INT]) -> FLOAT` | Mean silhouette score (-1 to 1) |
+| `machine.silhouette_score(X, labels)` | `(List[List[NUM]], List[INT]) -> FLOAT` | Mean silhouette score (-1 to 1); singleton clusters contribute 0, and all-singleton partitions are undefined |
 
 ### Example
 

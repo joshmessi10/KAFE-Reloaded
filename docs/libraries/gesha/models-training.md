@@ -1,6 +1,6 @@
 # Models and training
 
-A model is an ordered collection of layers. During training, the forward pass computes predictions; the loss compares predictions with targets; backpropagation applies the chain rule to obtain gradients; the optimizer updates parameters. Fit preprocessing on training data only, then evaluate on held-out data.
+A model is an ordered collection of layers. The architectures supported for training today are MLP, CNN, and RNN (assembled with `gesha.sequential`); Functional graph training has a tested branching example, while soft clustering remains experimental. During training, the forward pass computes predictions; the loss compares predictions with targets; backpropagation applies the chain rule to obtain gradients; the optimizer updates parameters. Fit preprocessing on training data only, then evaluate on held-out data.
 
 ## Model assembly
 
@@ -8,10 +8,10 @@ A model is an ordered collection of layers. During training, the forward pass co
 | Function | Signature | Description |
 |---------|-------|-------------|
 | `gesha.sequential` | `(layers) -> GESHA` | Stacks layers in the given order |
-| `gesha.functional` | `(inputs, outputs) -> GESHA` | DAG model (FUTURE WORK for training) |
+| `gesha.functional` | `(inputs, outputs) -> GESHA` | Directed graph model for explicit branches and merges; see the tested Functional fixture |
 | `gesha.input_layer` | `(shape) -> GESHA` | Symbolic input node for the graph |
 
-Layers can also be added after assembly with `model.add(layer)` (`Sequential` only).
+Layers can also be added after assembly with `model.add(layer)` (`Sequential` only). A Functional graph may expose several outputs and accepts one gradient per output in `backward`; the current `fit` training loop supports a single output and a single loss.
 
 ---
 
@@ -28,6 +28,29 @@ show(model.predict_label([1.0, 1.0]));
 ```
 
 The example uses binary cross-entropy because the output is a sigmoid probability. Use `mse` with a linear output for regression and sparse categorical cross-entropy with softmax for integer multiclass labels.
+
+## Epoch output and shared metrics
+
+Every supervised classification epoch using binary, categorical, or sparse categorical cross-entropy prints `Loss <value> — Accuracy <percent>%`, including when `metrics` is `[]`. Loss is the mean value of the configured loss function, not a percentage. Accuracy is the fraction of training samples whose predicted class matches the target, multiplied by 100 for display. The model also records fractions from 0 to 1 in `history["accuracy"]` for Python callers. The `metrics` argument remains accepted by `compile`, but passing `[]` does not suppress this built-in classification report. The epoch statistic uses predictions made while training proceeds; use a held-out test set for final evaluation. When L2 regularization is configured for Dense, Conv2D, or SimpleRNN, the reported training loss includes its $\lambda\lVert W\rVert_2^2/2$ penalty; validation loss measures the configured data loss without that penalty.
+
+Regression (`mse`, `mae`), reconstruction with an autoencoder, and unsupervised soft clustering print loss but no accuracy: those tasks do not have class labels to count. Models used only for `predict` without `fit` do not print epochs. A classifier trained with `mse` is treated as regression for epoch reporting; the synthetic XOR fixture `tests/KafeGESHA/logic_gates/neural_network_xor_gate.kf` is one such case. Use binary cross-entropy with sigmoid or categorical cross-entropy with softmax when classification accuracy should be tracked. The `neural_network_multiclass.kf` fixture uses empty targets and is therefore unsupervised despite its filename. For a test-set metric, import `machine` alongside `gesha` and call the same `machine.*` functions used by classical models.
+
+```kafe
+import gesha;
+import machine;
+
+List[List[FLOAT]] X = [[0.0, 0.0], [0.0, 1.0], [1.0, 0.0], [1.0, 1.0]];
+List[INT] y = [0, 0, 0, 1];
+GESHA layer = gesha.create_dense(1, "sigmoid", [2], 0.0, 42);
+GESHA model = gesha.sequential([layer]);
+model.compile("sgd", "binary_crossentropy", []);
+model.fit(X, y, 10, 1);
+List[INT] predicted = model.predict_label(X);
+FLOAT accuracy = machine.accuracy_score(y, predicted);
+show("Accuracy: " + str(accuracy * 100.0) + "%");
+```
+
+For binary ROC AUC, pass sigmoid scores from `model.predict(X)` to `machine.roc_auc_score(y, scores)`, not thresholded labels. Regression metrics such as `machine.mean_squared_error(y, model.predict(X))` accept Gesha batch predictions with one output per sample. Multiclass accuracy uses `predict_label`; multi-output regression matrices need a metric per output. See [the complete metric reference](../machine/metrics.md) for formulas and other options.
 
 ## Model methods
 

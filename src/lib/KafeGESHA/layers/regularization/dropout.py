@@ -1,5 +1,7 @@
 """Dropout elemento a elemento."""
 
+import random
+
 from lib.KafeNUMK import functions as numk
 
 from ..base.layer import Layer
@@ -12,15 +14,13 @@ class Dropout(Layer):
             raise ValueError("Dropout rate debe estar entre 0 y 1")
         self.rate = rate
         self.mask = None
-        if seed is not None:
-            import random as py_random
-
-            py_random.seed(seed)
+        self._rng = random.Random(seed) if seed is not None else None
 
     def forward(self, input_data):
         if not self._training:
             return input_data[:]
-        draws = numk.random_tensor(list(numk.shape(input_data)), 0.0, 1.0)
+        draw_seed = self._rng.randrange(2**32) if self._rng is not None else None
+        draws = numk.random_tensor(list(numk.shape(input_data)), 0.0, 1.0, draw_seed)
         self.mask = numk.map_elements(
             lambda value: 0.0 if value < self.rate else 1.0 / (1.0 - self.rate), draws
         )

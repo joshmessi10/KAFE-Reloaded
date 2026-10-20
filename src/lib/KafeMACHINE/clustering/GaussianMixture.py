@@ -1,7 +1,7 @@
 import random
+from math import exp, log, pi
 
 from global_utils import check_sig
-from lib.KafeMATH.functions import exp, log, sqrt
 from TypeUtils import numeric_matrix_types, pardos_type
 
 from ..BaseMachine import BaseMachine
@@ -73,51 +73,43 @@ class GaussianMixture(BaseMachine):
 
         self.weights_ = [1.0 / self.n_components] * self.n_components
 
-        self.covariances_ = [
-            [1.0] * n_features for _ in range(self.n_components)
+        self.covariances_ = [[1.0] * n_features for _ in range(self.n_components)]
+
+    def _log_gaussian_pdf(self, x, mean, cov):
+        """Log density for a diagonal Gaussian without multiplying tiny factors."""
+        return -0.5 * sum(
+            log(2.0 * pi * variance) + (value - center) ** 2 / variance
+            for value, center, variance in zip(x, mean, cov, strict=True)
+        )
+
+    def _log_component_probabilities(self, x):
+        return [
+            log(weight) + self._log_gaussian_pdf(x, mean, cov)
+            if weight > 0
+            else float("-inf")
+            for weight, mean, cov in zip(
+                self.weights_, self.means_, self.covariances_, strict=True
+            )
         ]
 
-    def _gaussian_pdf(self, x, mean, cov):
-        """Calculates the multivariate Gaussian probability density (diagonal)."""
-        n = len(x)
-        det = 1.0
-        for j in range(n):
-            det *= cov[j]
-
-        if det <= 0:
-            return 1e-300
-
-        exponent = 0.0
-        for j in range(n):
-            diff = x[j] - mean[j]
-            exponent += (diff * diff) / cov[j]
-
-        exponent = -0.5 * exponent
-
-        norm = 1.0
-        for j in range(n):
-            norm *= sqrt(2.0 * 3.141592653589793 * cov[j])
-
-        return (1.0 / norm) * exp(exponent)
+    @staticmethod
+    def _logsumexp(values):
+        largest = max(values)
+        if largest == float("-inf"):
+            return largest
+        return largest + log(sum(exp(value - largest) for value in values))
 
     def _e_step(self, X):
-        """E-step: calculates responsibilities γ(z_kn)."""
-        n_samples = len(X)
-        n_components = self.n_components
-
+        """E-step: normalize component log densities without underflow."""
         responsibilities = []
-        for i in range(n_samples):
-            probs = []
-            for k in range(n_components):
-                pdf = self._gaussian_pdf(X[i], self.means_[k], self.covariances_[k])
-                probs.append(self.weights_[k] * pdf)
-
-            total = sum(probs)
-            if total > 0:
-                responsibilities.append([p / total for p in probs])
-            else:
-                responsibilities.append([1.0 / n_components] * n_components)
-
+        for x in X:
+            component_logs = self._log_component_probabilities(x)
+            normalizer = self._logsumexp(component_logs)
+            if normalizer == float("-inf"):
+                raise ValueError("GaussianMixture: all component weights are zero")
+            responsibilities.append(
+                [exp(value - normalizer) for value in component_logs]
+            )
         return responsibilities
 
     def _m_step(self, X, responsibilities):
@@ -126,8 +118,10 @@ class GaussianMixture(BaseMachine):
         n_features = len(X[0])
         n_components = self.n_components
 
-        N_k = [sum(responsibilities[i][k] for i in range(n_samples))
-               for k in range(n_components)]
+        N_k = [
+            sum(responsibilities[i][k] for i in range(n_samples))
+            for k in range(n_components)
+        ]
 
         self.weights_ = [N_k[k] / n_samples for k in range(n_components)]
 
@@ -135,7 +129,8 @@ class GaussianMixture(BaseMachine):
         for k in range(n_components):
             if N_k[k] > 0:
                 mean_k = [
-                    sum(responsibilities[i][k] * X[i][j] for i in range(n_samples)) / N_k[k]
+                    sum(responsibilities[i][k] * X[i][j] for i in range(n_samples))
+                    / N_k[k]
                     for j in range(n_features)
                 ]
                 self.means_.append(mean_k)
@@ -147,10 +142,13 @@ class GaussianMixture(BaseMachine):
             if N_k[k] > 0:
                 cov_k = []
                 for j in range(n_features):
-                    var_kj = sum(
-                        responsibilities[i][k] * (X[i][j] - self.means_[k][j]) ** 2
-                        for i in range(n_samples)
-                    ) / N_k[k]
+                    var_kj = (
+                        sum(
+                            responsibilities[i][k] * (X[i][j] - self.means_[k][j]) ** 2
+                            for i in range(n_samples)
+                        )
+                        / N_k[k]
+                    )
                     var_kj = max(var_kj, 1e-6)
                     cov_k.append(var_kj)
                 self.covariances_.append(cov_k)
@@ -158,19 +156,8 @@ class GaussianMixture(BaseMachine):
                 self.covariances_.append([1.0] * n_features)
 
     def _compute_log_likelihood(self, X):
-        """Calculate the log-likelihood."""
-        n_samples = len(X)
-        log_likelihood = 0.0
-
-        for i in range(n_samples):
-            total = 0.0
-            for k in range(self.n_components):
-                pdf = self._gaussian_pdf(X[i], self.means_[k], self.covariances_[k])
-                total += self.weights_[k] * pdf
-            if total > 0:
-                log_likelihood += log(total)
-
-        return log_likelihood
+        """Sum sample log densities with log-sum-exp."""
+        return sum(self._logsumexp(self._log_component_probabilities(x)) for x in X)
 
     @check_sig([2], [pardos_type] + numeric_matrix_types, is_method=True)
     def fit(self, X):
@@ -180,12 +167,15 @@ class GaussianMixture(BaseMachine):
 
         n_samples = len(matrix)
         if self.n_components > n_samples:
-            raise Exception("GaussianMixture: n_components cannot be greater than number of samples")
+            raise Exception(
+                "GaussianMixture: n_components cannot be greater than number of samples"
+            )
 
         rng = random.Random(self.random_state if self.random_state != 0 else None)
         self._init_params(matrix, rng)
+        self.converged_ = False
 
-        prev_log_likelihood = float('-inf')
+        prev_log_likelihood = float("-inf")
 
         for iteration in range(self.max_iter):
             responsibilities = self._e_step(matrix)
@@ -223,11 +213,8 @@ class GaussianMixture(BaseMachine):
 
         labels = []
         for x in X:
-            probs = []
-            for k in range(self.n_components):
-                pdf = self._gaussian_pdf(x, self.means_[k], self.covariances_[k])
-                probs.append(self.weights_[k] * pdf)
-            labels.append(probs.index(max(probs)))
+            scores = self._log_component_probabilities(x)
+            labels.append(scores.index(max(scores)))
 
         return labels
 
@@ -270,7 +257,11 @@ class GaussianMixture(BaseMachine):
         n_features = len(X[0])
         log_likelihood = self._compute_log_likelihood(X)
 
-        n_params = (self.n_components - 1) + self.n_components * n_features + self.n_components * n_features
+        n_params = (
+            (self.n_components - 1)
+            + self.n_components * n_features
+            + self.n_components * n_features
+        )
 
         return 2 * n_params - 2 * log_likelihood
 
@@ -280,9 +271,13 @@ class GaussianMixture(BaseMachine):
         n_features = len(X[0])
         log_likelihood = self._compute_log_likelihood(X)
 
-        n_params = (self.n_components - 1) + self.n_components * n_features + self.n_components * n_features
+        n_params = (
+            (self.n_components - 1)
+            + self.n_components * n_features
+            + self.n_components * n_features
+        )
 
-        return n_params * log(n_samples, 2) - 2 * log_likelihood
+        return n_params * log(n_samples) - 2 * log_likelihood
 
     def __repr__(self):
         return (

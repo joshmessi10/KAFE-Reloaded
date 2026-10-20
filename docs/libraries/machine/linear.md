@@ -347,7 +347,7 @@ $$J(w) = \frac{1}{2}||w||^2 + C \sum_{i=1}^{n} \max(0, 1 - y_i \cdot f(x_i))$$
 |--------|-------|-------------|
 | `svm.fit(X, y)` | `(List[List[NUM]] or List[NUM], List[INT]) -> VOID` | Fits the classifier. `y` contains binary labels |
 | `svm.predict(X)` | `(List[List[NUM]] or List[NUM]) -> List[INT]` | Predicts classes (0 or 1) |
-| `svm.predict_proba(X)` | `(List[List[NUM]] or List[NUM]) -> List[List[FLOAT]]` | Probabilities [P(0), P(1)] via sigmoid |
+| `svm.predict_proba(X)` | `(List[List[NUM]] or List[NUM]) -> List[List[FLOAT]]` | Sigmoid scores in `classes_` order (uncalibrated probabilities) |
 | `svm.score(X, y)` | `(List[List[NUM]] or List[NUM], List[INT]) -> FLOAT` | Computes accuracy (default) or a custom metric |
 
 ### Constructor parameters

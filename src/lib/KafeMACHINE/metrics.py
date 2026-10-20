@@ -10,6 +10,22 @@ def _validate_inputs(func_name, y_true, y_pred):
         raise Exception(f"{func_name}: Input lists cannot be empty")
 
 
+def _flatten_predictions(values):
+    # Accept a flat vector or a single-column matrix of predictions.
+    # Gesha batch predict/predict_proba return List[List[FLOAT]] with one value per row.
+    if not values:
+        return values
+    if not isinstance(values[0], list):
+        return values
+    for row in values:
+        if not isinstance(row, list) or len(row) != 1:
+            raise Exception(
+                "predictions must be a flat vector or a single-column matrix; "
+                "the metric expects one value per sample"
+            )
+    return [row[0] for row in values]
+
+
 @check_sig([2], numeric_vector_types, numeric_vector_types)
 def accuracy_score(y_true, y_pred):
     _validate_inputs("accuracy_score", y_true, y_pred)
@@ -52,11 +68,12 @@ def recall_score(y_true, y_pred):
 @check_sig([2], numeric_vector_types, numeric_vector_types)
 def f1_score(y_true, y_pred):
     _validate_inputs("f1_score", y_true, y_pred)
-    p = precision_score(y_true, y_pred)
-    r = recall_score(y_true, y_pred)
-    if p + r == 0:
-        return 0.0
-    return 2.0 * p * r / (p + r)
+    precisions, recalls, _ = _precision_recall_f1_macro(y_true, y_pred)
+    per_class = [
+        2.0 * p * r / (p + r) if p + r else 0.0
+        for p, r in zip(precisions, recalls, strict=True)
+    ]
+    return sum(per_class) / len(per_class)
 
 
 @check_sig([2], numeric_vector_types, numeric_vector_types)
@@ -97,38 +114,42 @@ def classification_report(y_true, y_pred):
 
     macro_p = sum(v[0] for v in per_class.values()) / len(classes)
     macro_r = sum(v[1] for v in per_class.values()) / len(classes)
-    macro_f1 = 2.0 * macro_p * macro_r / (macro_p + macro_r) if (macro_p + macro_r) > 0 else 0.0
+    macro_f1 = sum(v[2] for v in per_class.values()) / len(classes)
     lines.append(f"{'macro avg':>8} {macro_p:>10.2f} {macro_r:>8.2f} {macro_f1:>9.2f} {total:>8}")
 
     weighted_p = sum(v[0] * v[3] for v in per_class.values()) / total
     weighted_r = sum(v[1] * v[3] for v in per_class.values()) / total
-    weighted_f1 = 2.0 * weighted_p * weighted_r / (weighted_p + weighted_r) if (weighted_p + weighted_r) > 0 else 0.0
+    weighted_f1 = sum(v[2] * v[3] for v in per_class.values()) / total
     lines.append(f"{'weighted avg':>8} {weighted_p:>10.2f} {weighted_r:>8.2f} {weighted_f1:>9.2f} {total:>8}")
 
     return "\n".join(lines)
 
 
-@check_sig([2], numeric_vector_types, numeric_vector_types)
+@check_sig([2], numeric_vector_types, numeric_vector_types + numeric_matrix_types)
 def mean_squared_error(y_true, y_pred):
+    y_pred = _flatten_predictions(y_pred)
     _validate_inputs("mean_squared_error", y_true, y_pred)
     return sum((t - p) ** 2 for t, p in zip(y_true, y_pred, strict=True)) / len(y_true)
 
 
-@check_sig([2], numeric_vector_types, numeric_vector_types)
+@check_sig([2], numeric_vector_types, numeric_vector_types + numeric_matrix_types)
 def mean_absolute_error(y_true, y_pred):
+    y_pred = _flatten_predictions(y_pred)
     _validate_inputs("mean_absolute_error", y_true, y_pred)
     return sum(abs(t - p) for t, p in zip(y_true, y_pred, strict=True)) / len(y_true)
 
 
-@check_sig([2], numeric_vector_types, numeric_vector_types)
+@check_sig([2], numeric_vector_types, numeric_vector_types + numeric_matrix_types)
 def root_mean_squared_error(y_true, y_pred):
+    y_pred = _flatten_predictions(y_pred)
     _validate_inputs("root_mean_squared_error", y_true, y_pred)
     mse = sum((t - p) ** 2 for t, p in zip(y_true, y_pred, strict=True)) / len(y_true)
     return sqrt(mse)
 
 
-@check_sig([2], numeric_vector_types, numeric_vector_types)
+@check_sig([2], numeric_vector_types, numeric_vector_types + numeric_matrix_types)
 def r2_score(y_true, y_pred):
+    y_pred = _flatten_predictions(y_pred)
     _validate_inputs("r2_score", y_true, y_pred)
     y_mean = sum(y_true) / len(y_true)
     ss_res = sum((t - p) ** 2 for t, p in zip(y_true, y_pred, strict=True))
@@ -138,14 +159,16 @@ def r2_score(y_true, y_pred):
     return 1.0 - ss_res / ss_tot
 
 
-@check_sig([2], numeric_vector_types, numeric_vector_types)
+@check_sig([2], numeric_vector_types, numeric_vector_types + numeric_matrix_types)
 def max_error(y_true, y_pred):
+    y_pred = _flatten_predictions(y_pred)
     _validate_inputs("max_error", y_true, y_pred)
     return float(max(abs(t - p) for t, p in zip(y_true, y_pred, strict=True)))
 
 
-@check_sig([2], numeric_vector_types, numeric_vector_types)
+@check_sig([2], numeric_vector_types, numeric_vector_types + numeric_matrix_types)
 def median_absolute_error(y_true, y_pred):
+    y_pred = _flatten_predictions(y_pred)
     _validate_inputs("median_absolute_error", y_true, y_pred)
     abs_errors = sorted(abs(t - p) for t, p in zip(y_true, y_pred, strict=True))
     n = len(abs_errors)
@@ -154,8 +177,9 @@ def median_absolute_error(y_true, y_pred):
     return (abs_errors[n // 2 - 1] + abs_errors[n // 2]) / 2.0
 
 
-@check_sig([2], numeric_vector_types, numeric_vector_types)
+@check_sig([2], numeric_vector_types, numeric_vector_types + numeric_matrix_types)
 def mean_absolute_percentage_error(y_true, y_pred):
+    y_pred = _flatten_predictions(y_pred)
     _validate_inputs("mean_absolute_percentage_error", y_true, y_pred)
     for t in y_true:
         if t == 0:
@@ -163,8 +187,9 @@ def mean_absolute_percentage_error(y_true, y_pred):
     return 100.0 / len(y_true) * sum(abs(t - p) / abs(t) for t, p in zip(y_true, y_pred, strict=True))
 
 
-@check_sig([2], numeric_vector_types, numeric_vector_types)
+@check_sig([2], numeric_vector_types, numeric_vector_types + numeric_matrix_types)
 def explained_variance_score(y_true, y_pred):
+    y_pred = _flatten_predictions(y_pred)
     _validate_inputs("explained_variance_score", y_true, y_pred)
     y_mean = sum(y_true) / len(y_true)
     err_mean = sum(t - p for t, p in zip(y_true, y_pred, strict=True)) / len(y_true)
@@ -175,7 +200,7 @@ def explained_variance_score(y_true, y_pred):
     return 1.0 - var_err / var_y
 
 
-@check_sig([2], numeric_vector_types, numeric_vector_types)
+@check_sig([2], numeric_vector_types, numeric_vector_types + numeric_matrix_types)
 def roc_auc_score(y_true, y_score):
     """
     Calculate the area under the ROC curve (AUC-ROC).
@@ -199,6 +224,7 @@ def roc_auc_score(y_true, y_score):
     Returns:
         FLOAT: area under the ROC curve
     """
+    y_score = _flatten_predictions(y_score)
     _validate_inputs("roc_auc_score", y_true, y_score)
 
     classes = sorted(set(y_true))
@@ -270,6 +296,8 @@ def silhouette_score(X, labels):
 
     if n_clusters < 2:
         raise Exception("silhouette_score: Need at least 2 clusters")
+    if n_clusters >= n:
+        raise Exception("silhouette_score: Need fewer clusters than samples")
 
     dist_matrix = [[0.0] * n for _ in range(n)]
     for i in range(n):
@@ -285,9 +313,9 @@ def silhouette_score(X, labels):
 
         same_cluster = [j for j in range(n) if labels[j] == cluster_i and j != i]
         if len(same_cluster) == 0:
-            a_i = 0.0
-        else:
-            a_i = sum(dist_matrix[i][j] for j in same_cluster) / len(same_cluster)
+            silhouette_values.append(0.0)
+            continue
+        a_i = sum(dist_matrix[i][j] for j in same_cluster) / len(same_cluster)
 
         b_i = float('inf')
         for other_cluster in unique_labels:

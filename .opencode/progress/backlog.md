@@ -16,6 +16,7 @@ The policy baseline is integrated locally. The locked uv dependency/setup migrat
 - **Functional-API fixture:** add a `.kf` fixture exercising the gesha Functional API under the unified backend. Currently only MLP/CNN/RNN are covered and Functional is documented as future work.
 - **Shared metrics:** make KafeMACHINE metrics callable on both `machine` and gesha outputs, so learners evaluate both backends uniformly.
 - **Deprecation window:** confirm the removal date for the `geshaDeep` / `geshaV2` aliases (ADR-0016 deferred them as documentation-only deprecations).
+- **Status 2026-10-20:** the first two bullets (Functional-API fixture and Shared metrics) are in progress under the re-opened Gesha follow-ups feature; the deprecation-window bullet is unchanged.
 
 ## Machine Learning
 

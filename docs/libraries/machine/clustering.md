@@ -133,7 +133,7 @@ MACHINE ac = machine.agglomerative_clustering(2, "ward");
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `n_clusters` | INT | 2 | Desired number of clusters |
+| `n_clusters` | INT | 2 | Desired number of clusters, from 1 to the number of samples |
 | `linkage` | STRING | "ward" | Linkage criterion: "single", "complete", "average", or "ward" |
 
 ### Properties
@@ -195,6 +195,8 @@ Here, $\pi_k$ is the weight of component $k$, $\boldsymbol{\mu}_k$ is its mean, 
 1. **E-step**: Compute responsibilities $\gamma(z_{kn})$, the probability that point $n$ belongs to component $k$.
 2. **M-step**: Update parameters using the responsibilities.
 3. Repeat until convergence.
+
+KAFE evaluates component densities and normalizes responsibilities in log space (log-sum-exp). This preserves meaningful scores and memberships when high-dimensional densities would underflow. The covariance is diagonal, so the model captures axis-aligned elliptical clusters.
 
 **Selecting K**: Use AIC ($2p - 2\ln(\hat{L})$) or BIC ($p\ln(n) - 2\ln(\hat{L})$); lower values are better.
 
@@ -358,7 +360,7 @@ show(acc);  -- 1.0
 
 1. **Initialization**: Uniform weights $w_i = 1/n$
 2. **For each iteration**:
-   - Train a decision stump with the current weights
+   - Train a decision stump with the current weights, checking both threshold orientations
    - Calculate the weighted error $\epsilon_t$
    - Calculate the stump weight $\alpha_t = 0.5 \cdot \ln((1 - \epsilon_t) / \epsilon_t)$
    - Update sample weights
@@ -445,7 +447,7 @@ show(acc);  -- 1.0
 
 ### Internal Algorithm
 
-1. **Initialization**: $F_0 = 0.5 \cdot \ln((1-p)/p)$
+1. **Initialization**: $F_0 = \ln(p/(1-p))$, where $p$ is the fraction of samples in the higher-valued class
 2. **For each iteration**:
    - Calculate probabilities with the sigmoid function
    - Calculate pseudo-residuals: $r_i = y_i - p_i$

@@ -75,6 +75,7 @@ class Conv2D(Layer):
         self.kernels = Parameter(
             values, name=f"{self.name}_kernels", regularizer=self.kernel_regularizer
         )
+        self.kernels.l2_eligible = True
         self.bias = Parameter(
             self.bias_initializer([self.filters]), name=f"{self.name}_bias"
         )

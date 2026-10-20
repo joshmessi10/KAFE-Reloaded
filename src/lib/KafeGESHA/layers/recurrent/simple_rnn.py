@@ -114,6 +114,8 @@ class SimpleRNN(Layer):
                 dw_recurrent,
                 numk.scalar_mul(regularization_lambda, self.w_recurrent.data),
             )
+        self.w_input.l2_eligible = True
+        self.w_recurrent.l2_eligible = True
         self.w_input.grad = dw_input
         self.w_recurrent.grad = dw_recurrent
         self.bias.grad = db

@@ -74,16 +74,19 @@ class AdaBoostClassifier(BaseMachine):
             ]
 
             for threshold in thresholds:
-                predictions = [-1 if X[i][feature_idx] <= threshold else 1
-                              for i in range(n_samples)]
+                for left, right in ((-1, 1), (1, -1)):
+                    error = sum(
+                        weights[i] for i in range(n_samples)
+                        if (left if values[i] <= threshold else right) != y[i]
+                    )
+                    if error < best_error:
+                        best_error = error
+                        best_stump = (feature_idx, threshold, left, right)
 
-                error = sum(weights[i] for i in range(n_samples)
-                          if predictions[i] != y[i])
-
-                if error < best_error:
-                    best_error = error
-                    best_stump = (feature_idx, threshold, -1, 1)
-
+        if best_stump is None:
+            majority = 1 if sum(weights[i] for i in range(n_samples) if y[i] == 1) >= 0.5 else -1
+            best_stump = (0, 0.0, majority, majority)
+            best_error = sum(weights[i] for i in range(n_samples) if y[i] != majority)
         return best_stump, best_error
 
     def _predict_stump(self, X, stump):
@@ -120,7 +123,7 @@ class AdaBoostClassifier(BaseMachine):
             error = max(error, 1e-10)
             error = min(error, 1 - 1e-10)
 
-            alpha = 0.5 * log((1 - error) / error, 2)
+            alpha = 0.5 * log((1 - error) / error)
             alpha *= self.learning_rate
 
             predictions = self._predict_stump(matrix, stump)

@@ -24,3 +24,7 @@ Deep learning and neural network components, implemented from scratch inside KAF
 ## Tests
 
 - Fixtures under `tests/KafeGESHA/`, wired in `tests/test_KafeGESHA.py`.
+
+## Functional graph gradients
+
+Functional.backward accepts one gradient per output for graphs with multiple output heads. The current Model.fit training loop supports a single output and loss.

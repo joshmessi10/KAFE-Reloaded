@@ -73,6 +73,8 @@ class Dense(Layer):
             name=f"{self.name}_w",
             regularizer=self.kernel_regularizer,
         )
+        self.w.l2_eligible = True
+        self.w.l2_coefficient = self.regularization_lambda
         self.b = Parameter(self.bias_initializer([self.units]), name=f"{self.name}_b")
 
     @property

@@ -46,6 +46,7 @@ def _valid_example_param(program, input_text, expected_stdout):
 )
 def test_valid_programs(program, input_text, expected_stdout):
     result = run_kafe_program(program, input_text=input_text, timeout=120)
+    assert_valid_kafe_result(result, program, expected_stdout)
 
     output_directory = os.path.dirname(program)
     program_basename = os.path.splitext(os.path.basename(program))[0]
@@ -75,7 +76,6 @@ def test_valid_programs(program, input_text, expected_stdout):
     assert generated_svg == expected_svg, (
         f"{expected_svg_path} doesn't match {generated_svg_path}"
     )
-    assert_valid_kafe_result(result, program, expected_stdout)
     relative_path = os.path.relpath(program, os.path.dirname(__file__)).replace(os.sep, "/")
     if relative_path in _GATE_LABELS:
         predictions = result.stdout.split("Resultados:", 1)[1].split("Esperado:", 1)[0]
