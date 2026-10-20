@@ -1,0 +1,6 @@
+import gesha;
+
+-- Using a declared-but-unassigned GESHA must raise a KAFE-level error.
+GESHA m;
+
+List[FLOAT] out = m.forward([1.0, 2.0]);

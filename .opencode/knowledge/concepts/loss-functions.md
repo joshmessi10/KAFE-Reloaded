@@ -201,26 +201,26 @@ MSE and MAE are the standard regression losses in KafeGESHA. Huber Loss, which c
 ## Usage Examples
 
 ```kafe
-import geshaDeep;
+import gesha;
 
 -- Regression with MSE
-GESHA reg_layer = geshaDeep.create_dense(16, "relu", [3], 0.0);
-GESHA reg_output = geshaDeep.create_dense(1, "linear", [], 0.0);
-GESHA reg = geshaDeep.sequential([reg_layer, reg_output]);
-geshaDeep.compile(reg, "sgd", "mse", []);
+GESHA reg_layer = gesha.create_dense(16, "relu", [3], 0.0);
+GESHA reg_output = gesha.create_dense(1, "linear", [], 0.0);
+GESHA reg = gesha.sequential([reg_layer, reg_output]);
+gesha.compile(reg, "sgd", "mse", []);
 reg.fit(x_train, y_train, 50, 1);
 
 -- Binary classification with Binary Cross-Entropy
-GESHA bin_hidden = geshaDeep.create_dense(8, "relu", [4], 0.0);
-GESHA bin_output = geshaDeep.create_dense(1, "sigmoid", [], 0.0);
-GESHA bin_model = geshaDeep.sequential([bin_hidden, bin_output]);
-geshaDeep.compile(bin_model, "adam", "binary_crossentropy", []);
+GESHA bin_hidden = gesha.create_dense(8, "relu", [4], 0.0);
+GESHA bin_output = gesha.create_dense(1, "sigmoid", [], 0.0);
+GESHA bin_model = gesha.sequential([bin_hidden, bin_output]);
+gesha.compile(bin_model, "adam", "binary_crossentropy", []);
 
 -- Multiclass classification with Categorical Cross-Entropy
-GESHA multi_hidden = geshaDeep.create_dense(32, "relu", [784], 0.0);
-GESHA multi_output = geshaDeep.create_dense(10, "softmax", [], 0.0);
-GESHA multi = geshaDeep.sequential([multi_hidden, multi_output]);
-geshaDeep.compile(multi, "adam", "categorical_crossentropy", []);
+GESHA multi_hidden = gesha.create_dense(32, "relu", [784], 0.0);
+GESHA multi_output = gesha.create_dense(10, "softmax", [], 0.0);
+GESHA multi = gesha.sequential([multi_hidden, multi_output]);
+gesha.compile(multi, "adam", "categorical_crossentropy", []);
 ```
 
 ## Implementation Location

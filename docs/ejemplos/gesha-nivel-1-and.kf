@@ -1,0 +1,21 @@
+-- Single perceptron: AND: binary classification with Truth table (generated in code).
+import gesha;
+
+List[List[FLOAT]] X = [[0.0, 0.0], [0.0, 1.0], [1.0, 0.0], [1.0, 1.0]];
+List[INT] y = [0, 0, 0, 1];
+GESHA output_layer = gesha.create_dense(1, "sigmoid", [2], 0.0, 42);
+GESHA model = gesha.sequential([output_layer]);
+model.compile("sgd", "binary_crossentropy", []);
+model.set_lr(0.1);
+model.fit(X, y, 1000, 1);
+
+INT correct = 0;
+for (i in range(0, len(X))):
+    INT pred = model.predict_label(X[i]);
+    show(str(X[i]) + " expected=" + str(y[i]) + " predicted=" + str(pred));
+    if (pred == y[i]):
+        correct = correct + 1;
+    ;
+;
+show("AND correct/4:");
+show(correct);

@@ -1,0 +1,1 @@
+done: history appended, session-log appended, current.md reset, active-work.md updated, session-commands updated; worktree dirty only with these lifecycle records. Commit 7d41ce0 APPROVED.

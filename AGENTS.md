@@ -193,7 +193,7 @@ Before declaring a task complete, verify all applicable items:
 - Required local Superpowers specs and plans exist and no Superpowers artifacts were staged or committed.
 - `AGENTS.md` and `CLAUDE.md` have identical substantive content.
 - Only necessary dependencies were introduced, using the applicable package-management policy.
-- New and edited prose follows the English policy; any remaining language migration debt is recorded.
+- New and edited prose follows the English/Spanish educational-content policy in ADR-0014.
 - Applicable validation, tests, coverage, lint, type checks, spelling, dependency audits, and CI passed with zero errors and zero warnings, subject only to documented unavoidable upstream warning exceptions.
 - Documentation, project knowledge, history, and planning records were updated as required.
 - Any unavailable or pending migration gate is explicitly reported as pending, not passed. A bounded documentation task does not complete the deferred English, uv, or CI migrations.
@@ -268,9 +268,9 @@ Applicable system/runtime instructions and the user's instructions govern execut
 
 KAFE is a Python 3.10+ educational DSL for functional programming, machine learning, and deep learning. `.kf` files are KAFE source programs. Its interpreter uses ANTLR 4 and the Visitor pattern. The repository contains the command-line interpreter, Python libraries and tests, and MkDocs documentation. It has no active JavaScript/TypeScript frontend, web backend, or application database. React, FastAPI, frontend routing, and database-normalization requirements do not apply to this architecture.
 
-All repository content must be in English, including source code, identifiers, comments, documentation, configuration, tests, file and directory names, commit messages, and user-facing text. The repository-wide English migration and final audit were completed on 2026-09-24; keep all newly authored content in English and resolve any newly discovered in-scope language debt. Write new prose in English and translate prose you edit. Changes to executable syntax, public identifiers, paths, and expected output require coordinated compatibility, documentation, and fixture updates in that migration; do not silently change runtime behavior during an instruction-only edit. Keep any confirmed debt explicit until resolved.
+English remains the default for source identifiers, configuration, file and directory names, and commit messages. Educational documentation, code comments, docstrings, historical records, examples, and user-facing text may be written in English or Spanish. Preserve the language of existing material when editing it unless the task calls for translation. Changes to executable syntax, public identifiers, paths, and expected output require coordinated compatibility, documentation, and fixture updates; do not silently change runtime behavior during an instruction-only edit. The completed 2026-09-24 English migration remains a historical event, not a ban on later Spanish educational content (ADR-0014).
 
-Add another language only for intentional internationalization. Use a well-known i18n/gettext-style library when needed, keep translations separate from application logic, and follow established internationalization practices. `codespell` checks spelling; it does not prove that content is English. These rules do not require a separate automatic language detector.
+English and Spanish are accepted authoring languages for educational content. Application localization, when needed, still uses a well-known i18n/gettext-style library and keeps translations separate from application logic. `codespell` checks English spelling and uses a reviewed Spanish-word list to avoid false positives; it does not determine the language of a document.
 
 ## Python package management and migration status
 
@@ -321,7 +321,7 @@ Stay on the current branch when continuing the same implementation line. Otherwi
 
 The Python quality gates are configured in `pyproject.toml` and enforced by `.github/workflows/tests.yml`: locked dependency audit, Ruff, basedpyright, hidden-file codespell, the authored-suppression policy checker, and the full pytest/coverage suite. Local verification commands are centralized in `.opencode/knowledge/verifications.md`. A configured workflow is not hosted-CI evidence; report remote checks only after they pass at the exact pushed commit.
 
-Ruff targets Python 3.10, enables `E4`, `E7`, `E9`, `F`, `B`, and `I`, and force-excludes only the generated `src/Kafe_GrammarLexer.py`, `src/Kafe_GrammarParser.py`, and `src/Kafe_GrammarVisitor.py`. basedpyright analyzes `src/` and `tests/` in `basic` mode for Python 3.10 with warnings treated as failures, ignoring only those same three generated modules. Coverage also omits only those generated modules. codespell scans hidden files and uses the reviewed case-sensitive word list `expec,mape,MAPE,FPR,Hart,le`; its skip paths cover local/build outputs and the generated ANTLR files, not source, tests, `.opencode/`, or normal documentation. The Python policy checker scans tracked `.py` files and rejects `# noqa` and `# pyright:` comment tokens; do not add such suppressions or broaden generated-file exclusions.
+Ruff targets Python 3.10, enables `E4`, `E7`, `E9`, `F`, `B`, and `I`, and force-excludes only the generated `src/Kafe_GrammarLexer.py`, `src/Kafe_GrammarParser.py`, and `src/Kafe_GrammarVisitor.py`. basedpyright analyzes `src/` and `tests/` in `basic` mode for Python 3.10 with warnings treated as failures, ignoring only those same three generated modules. Coverage also omits only those generated modules. codespell scans hidden files and uses the reviewed case-sensitive word list `expec,mape,MAPE,FPR,Hart,le` plus `.codespell-es.txt` for accepted Spanish vocabulary; its skip paths cover local/build outputs and the generated ANTLR files, not source, tests, `.opencode/`, or normal documentation. The Python policy checker scans tracked `.py` files and rejects `# noqa` and `# pyright:` comment tokens; do not add such suppressions or broaden generated-file exclusions.
 
 The fixture suite launches the KAFE interpreter in child Python processes. Its shared runner propagates `PYTHONWARNINGS=error`, captures complete stdout, stderr, and exit codes, and checks them against fixture expectations; Coverage.py is configured to collect and combine child-process coverage. Preserve those checks and verify their evidence whenever changing the harness or workflows. Parent-process pytest-cov and pytest warning filters alone do not prove interpreter coverage or warning enforcement. Preserve expected KAFE errors, error fixtures, exit codes, and current CLI semantics; an expected invalid-program result is not itself a quality-gate failure. Do not discard earlier child diagnostics merely because the final expected error line matches.
 
@@ -492,7 +492,7 @@ Modular implementations called by the visitor:
 | Library | Import key | Purpose |
 |---|---|---|
 | `KafeNUMK` | `numk` | NumPy-style arrays and matrices |
-| `KafeGESHA` | `geshaDeep` | Neural networks and deep learning primitives |
+| `KafeGESHA` | `gesha` | Neural networks and deep learning primitives |
 | `KafeMATH` | `math` | Math utilities |
 | `KafePLOT` | `plot` | Plotting and visualization |
 | `KafePARDOS` | `pardos` | DataFrames and CSV |

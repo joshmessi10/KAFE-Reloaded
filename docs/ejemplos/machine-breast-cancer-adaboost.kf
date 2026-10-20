@@ -1,0 +1,43 @@
+-- AdaBoost: classification with Breast Cancer Wisconsin.
+-- Five held-out predictions are printed below.
+import kaggle;
+import machine;
+
+List[STR] columnas = [
+    "radius_mean", "texture_mean", "smoothness_mean",
+    "compactness_mean", "concavity_mean", "symmetry_mean"
+];
+List[List[FLOAT]] X = kaggle.load_dataset_matrix(
+    "uciml/breast-cancer-wisconsin-data", columnas, "data.csv", 240
+);
+PARDOS df = kaggle.load_dataset("uciml/breast-cancer-wisconsin-data", "data.csv");
+List[STR] diagnosis = df.col("diagnosis");
+List[INT] y = [];
+INT i = 0;
+while (i < len(X)):
+    INT clase = 0;
+    if (diagnosis[i] == "M"):
+        clase = 1;
+    ;
+    append(y, clase);
+    i = i + 1;
+;
+MACHINE split = machine.stratified_train_test_split(X, y, 0.2, 42);
+List[List[FLOAT]] X_train = split[0];
+List[List[FLOAT]] X_test = split[1];
+List[INT] y_train = split[2];
+List[INT] y_test = split[3];
+
+show("Train/test:");
+show([len(X_train), len(X_test)]);
+
+MACHINE ada = machine.ada_boost_classifier(15, 0.8, 42);
+ada.fit(X_train, y_train);
+show("AdaBoost - Breast Cancer Wisconsin: accuracy:");
+show(machine.accuracy_score(y_test, ada.predict(X_test)));
+
+List[INT] pred_ejemplos = ada.predict(X_test);
+show("Five test cases: expected -> predicted:");
+for (j in range(0, 5)):
+    show(str(y_test[j]) + " -> " + str(pred_ejemplos[j]));
+;

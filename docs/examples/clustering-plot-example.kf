@@ -5,7 +5,7 @@
 -- Raw CSV data -> KafePARDOS preprocessing -> NumPy/matrix -> KafeGESHA model -> KafePlot visualization
 
 import pardos;
-import geshaDeep;
+import gesha;
 import plot;
 
 show("=== Data clustering with KafeGESHA and KafePlot ===");
@@ -20,9 +20,9 @@ for (point in X_train):
 ;
 
 -- 2. Define the neural network model with KafeGESHA
-GESHA layer1 = geshaDeep.create_dense(4, "relu", [2], 0.0, 42);
-GESHA layer2 = geshaDeep.create_dense(2, "softmax", [], 0.0, 42);
-GESHA model  = geshaDeep.sequential([layer1, layer2]);
+GESHA layer1 = gesha.create_dense(4, "relu", [2], 0.0, 42);
+GESHA layer2 = gesha.create_dense(2, "softmax", [], 0.0, 42);
+GESHA model  = gesha.sequential([layer1, layer2]);
 
 -- 3. Compile and train the unsupervised model (y = [])
 model.compile("adam", "mse", []);

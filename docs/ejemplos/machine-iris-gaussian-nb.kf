@@ -1,0 +1,41 @@
+-- Gaussian Naive Bayes: classification with Iris Species.
+-- Five held-out predictions are printed below.
+import kaggle;
+import machine;
+
+List[STR] columnas = ["SepalLengthCm", "SepalWidthCm", "PetalLengthCm", "PetalWidthCm"];
+List[List[FLOAT]] X = kaggle.load_dataset_matrix("uciml/iris", columnas, "Iris.csv", 0);
+PARDOS df = kaggle.load_dataset("uciml/iris", "Iris.csv");
+List[STR] especies = df.col("Species");
+List[INT] y = [];
+INT i = 0;
+while (i < len(especies)):
+    INT clase = 0;
+    if (especies[i] == "Iris-versicolor"):
+        clase = 1;
+    ;
+    if (especies[i] == "Iris-virginica"):
+        clase = 2;
+    ;
+    append(y, clase);
+    i = i + 1;
+;
+
+MACHINE split = machine.stratified_train_test_split(X, y, 0.2, 42);
+List[List[FLOAT]] X_train = split[0];
+List[List[FLOAT]] X_test = split[1];
+List[INT] y_train = split[2];
+List[INT] y_test = split[3];
+show("Train/test:");
+show([len(X_train), len(X_test)]);
+
+MACHINE bayes = machine.gaussian_nb();
+bayes.fit(X_train, y_train);
+show("Gaussian Naive Bayes - Iris Species: accuracy:");
+show(machine.accuracy_score(y_test, bayes.predict(X_test)));
+
+List[INT] pred_ejemplos = bayes.predict(X_test);
+show("Five test cases: expected -> predicted:");
+for (j in range(0, 5)):
+    show(str(y_test[j]) + " -> " + str(pred_ejemplos[j]));
+;

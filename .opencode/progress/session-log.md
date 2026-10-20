@@ -100,3 +100,13 @@ Format for each entry:
 - **Local result**: The final local suite passed 503 tests in 347.09 seconds at 83.86% coverage. Ruff, basedpyright, codespell, the suppression-policy checker, its five focused tests, `uv audit`, and the strict docs build passed. Workflow/configuration validation and `git diff --check` passed.
 - **Warning remediation**: The first hosted attempt annotated deprecated action runtimes, the moving Ubuntu runner image, and setup-uv cache-key contention. The workflow fix pins Ubuntu 24.04, updates active action versions, and separates setup-uv cache keys by job. The corrected hosted check runs above produced zero annotations.
 - **Git state**: The published branch remains unmerged. The active default-branch ruleset requires a pull request and one approving review; no required status-check rule was returned. No PR, merge, branch switch, or Nix workflow change occurred.
+## 2026-10-19 — Gesha unification (session close)
+- Branch: integration/Kafe_Gesha_Clustering_v2
+- Commit: 7d41ce0
+- Feature: Canonical gesha API + single runtime class graph (ADR-0016/0017); retire 11 legacy modules
+- Fixes: GESHA declaration sentinel; unsupervised Soft K-Means parity; optimizer fixture real comparison; stale test reconciled
+- Perf: XOR 84.5s->2.54s; full suite 721 passed, 4 skipped (209.88s)
+- Gates: ruff, basedpyright, codespell, check_quality_policy, mkdocs --strict all green
+- Review: APPROVED (.opencode/progress/review.md)
+- Status: closed
+

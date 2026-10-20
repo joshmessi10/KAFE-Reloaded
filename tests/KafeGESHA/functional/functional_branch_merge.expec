@@ -1,0 +1,26 @@
+=== Functional API: grafo ramificado (DAG) ===
+Entrenando Functional (tronco + 2 ramas + merge, 14 epocas)...
+Epoch 1/14 — Loss 0.6929 — Accuracy 25.00%
+Epoch 2/14 — Loss 0.6403 — Accuracy 75.00%
+Epoch 3/14 — Loss 0.5710 — Accuracy 75.00%
+Epoch 4/14 — Loss 0.4986 — Accuracy 75.00%
+Epoch 5/14 — Loss 0.4263 — Accuracy 75.00%
+Epoch 6/14 — Loss 0.3048 — Accuracy 75.00%
+Epoch 7/14 — Loss 0.2118 — Accuracy 100.00%
+Epoch 8/14 — Loss 0.1812 — Accuracy 100.00%
+Epoch 9/14 — Loss 0.1032 — Accuracy 100.00%
+Epoch 10/14 — Loss 0.0432 — Accuracy 100.00%
+Epoch 11/14 — Loss 0.0278 — Accuracy 100.00%
+Epoch 12/14 — Loss 0.0239 — Accuracy 100.00%
+Epoch 13/14 — Loss 0.0127 — Accuracy 100.00%
+Epoch 14/14 — Loss 0.0031 — Accuracy 100.00%
+Predicciones (clases):
+[0, 0, 0, 1]
+Accuracy:
+1.0
+
+Esperado:
+[0, 0] -> clase=0
+[0, 1] -> clase=0
+[1, 0] -> clase=0
+[1, 1] -> clase=1

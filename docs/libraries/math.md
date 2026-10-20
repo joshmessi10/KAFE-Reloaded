@@ -145,3 +145,26 @@ show(math.floor(3.7));         -- 3
 show(math.ceil(3.2));          -- 4
 show(math.sqrt(16));           -- 4.0
 ```
+
+## Choosing the right function
+
+MATH works on scalar numbers; use [NUMK](numk.md) for arrays. Trigonometric inputs use radians. `math.log(x)` is the natural logarithm; `math.log2` and `math.log10` use fixed bases. Logarithms need a positive argument, and `sqrt` needs a nonnegative argument.
+
+| Task | Functions |
+|---|---|
+| Convert angles | `degrees(radians)`, `radians(degrees)` |
+| Stable exponent calculations | `exp2(x)` for 2^x; `expm1(x)` for e^x − 1 near zero |
+| Compare and inspect floats | `isclose(a, b)`, `isfinite(x)`, `isinf(x)`, `isnan(x)`, `ulp(x)` |
+| Remainders and signs | `fmod(x, y)`, `remainder(x, y)`, `copysign(x, y)` |
+| Aggregate numbers | `fsum(values)`, `sum(values)`, `prod(values)`, `sumprod(a, b)` |
+| Distance and magnitude | `dist(a, b)`, `hypot(x, y, ...)` |
+| Special functions | `erf(x)`, `erfc(x)`, `gamma(x)`, `lgamma(x)` |
+
+```kafe
+import math;
+show(math.sin(math.radians(90)));  -- approximately 1.0
+show(math.isclose(math.sqrt(2) * math.sqrt(2), 2.0));
+show(math.dist([0.0, 0.0], [3.0, 4.0]));  -- 5.0
+```
+
+For model training, see [MACHINE metrics](machine/metrics.md), which take collections of predictions and targets rather than individual scalar values.

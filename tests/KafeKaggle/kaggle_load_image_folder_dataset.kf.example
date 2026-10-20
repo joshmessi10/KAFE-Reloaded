@@ -1,0 +1,8 @@
+import kaggle;
+MACHINE datos = kaggle.load_image_folder_dataset("ayush1220/cifar10", 32, 32, "rgb", 4, "train");
+List[List[List[List[FLOAT]]]] X = datos[0];
+List[INT] y = datos[1];
+show("Forma de X [N, C, H, W]:");
+show([len(X), len(X[0]), len(X[0][0]), len(X[0][0][0])]);
+show("Cantidad de etiquetas:");
+show(len(y));

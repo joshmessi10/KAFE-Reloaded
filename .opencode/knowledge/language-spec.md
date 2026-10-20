@@ -15,6 +15,7 @@
 `INT FLOAT STR BOOL VOID LIST GESHA PARDOS MACHINE` + function types.
 
 - `GESHA` — neural network / deep learning objects (KafeGESHA).
+- Lists of `GESHA` objects may combine different layer/model/initializer classes because they share the same KAFE type. Other list elements continue to require the existing homogeneous concrete type. This permits mixed-layer Sequential models without accepting mixed primitive lists.
 - `PARDOS` — DataFrames (KafePARDOS).
 - `MACHINE` — ML model objects (KafeMACHINE).
 

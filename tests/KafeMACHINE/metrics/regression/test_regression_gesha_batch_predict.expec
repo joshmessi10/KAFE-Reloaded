@@ -1,0 +1,26 @@
+Epoch 1/20 — Loss 66.5270
+Epoch 2/20 — Loss 30.8200
+Epoch 3/20 — Loss 14.2935
+Epoch 4/20 — Loss 6.6444
+Epoch 5/20 — Loss 3.1039
+Epoch 6/20 — Loss 1.4650
+Epoch 7/20 — Loss 0.7063
+Epoch 8/20 — Loss 0.3550
+Epoch 9/20 — Loss 0.1921
+Epoch 10/20 — Loss 0.1166
+Epoch 11/20 — Loss 0.0814
+Epoch 12/20 — Loss 0.0649
+Epoch 13/20 — Loss 0.0571
+Epoch 14/20 — Loss 0.0533
+Epoch 15/20 — Loss 0.0513
+Epoch 16/20 — Loss 0.0502
+Epoch 17/20 — Loss 0.0495
+Epoch 18/20 — Loss 0.0490
+Epoch 19/20 — Loss 0.0486
+Epoch 20/20 — Loss 0.0482
+shape [samples, outputs]:
+[6, 1]
+mse:
+0.04780343247512881
+r2:
+0.9959025629307032

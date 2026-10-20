@@ -1,0 +1,38 @@
+=== RNN sintético: suma de la secuencia ===
+Muestras (16) y forma de una secuencia:
+[16, 5, 1]
+Etiquetas:
+[1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0]
+Entrenando RNN (4 unidades, 25 epocas)...
+Epoch 1/25 — Loss 0.7582 — Accuracy 6.25%
+Epoch 2/25 — Loss 0.7218 — Accuracy 31.25%
+Epoch 3/25 — Loss 0.6918 — Accuracy 50.00%
+Epoch 4/25 — Loss 0.6624 — Accuracy 56.25%
+Epoch 5/25 — Loss 0.6327 — Accuracy 100.00%
+Epoch 6/25 — Loss 0.6004 — Accuracy 100.00%
+Epoch 7/25 — Loss 0.5633 — Accuracy 100.00%
+Epoch 8/25 — Loss 0.5175 — Accuracy 100.00%
+Epoch 9/25 — Loss 0.4578 — Accuracy 100.00%
+Epoch 10/25 — Loss 0.3794 — Accuracy 100.00%
+Epoch 11/25 — Loss 0.2840 — Accuracy 100.00%
+Epoch 12/25 — Loss 0.1865 — Accuracy 100.00%
+Epoch 13/25 — Loss 0.1100 — Accuracy 100.00%
+Epoch 14/25 — Loss 0.0638 — Accuracy 100.00%
+Epoch 15/25 — Loss 0.0398 — Accuracy 100.00%
+Epoch 16/25 — Loss 0.0276 — Accuracy 100.00%
+Epoch 17/25 — Loss 0.0208 — Accuracy 100.00%
+Epoch 18/25 — Loss 0.0168 — Accuracy 100.00%
+Epoch 19/25 — Loss 0.0142 — Accuracy 100.00%
+Epoch 20/25 — Loss 0.0123 — Accuracy 100.00%
+Epoch 21/25 — Loss 0.0110 — Accuracy 100.00%
+Epoch 22/25 — Loss 0.0099 — Accuracy 100.00%
+Epoch 23/25 — Loss 0.0090 — Accuracy 100.00%
+Epoch 24/25 — Loss 0.0083 — Accuracy 100.00%
+Epoch 25/25 — Loss 0.0077 — Accuracy 100.00%
+Accuracy: 
+1.0
+Primeras 4 predicciones (predicho vs real):
+1 vs 1
+0 vs 0
+1 vs 1
+0 vs 0

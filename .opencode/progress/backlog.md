@@ -10,6 +10,14 @@ The policy baseline is integrated locally. The locked uv dependency/setup migrat
 - **Complete English migration:** Tasks 1–7 migrated and audited source, identifiers, tests, fixtures, documentation, routes, repository guidance, and project records; only the three approved archived artifacts were removed. The final full suite passed 498 tests at 83.78% coverage with no warnings.
 - **Python quality gates (implementation complete on `chore/python-quality-gates`):** The implementation and workflows are complete; the Task 9 plan gates final branch acceptance on CI for the resulting evidence-update SHA. The branch configures Ruff (`E4,E7,E9,F,B,I`), basedpyright in Python 3.10 basic mode with warnings failing, hidden-file codespell, `uv audit`, a tracked-Python suppression-comment check, and the locked subprocess-aware test/coverage gate. The existing test workflow enforces these gates after ANTLR generation; docs and Nix workflow boundaries are preserved. Local and hosted evidence is recorded in `.opencode/progress/repository-alignment.md`. At exact SHA `c23163de6fee34b8da7d9a25b4f2896b331c22e1`, hosted tests passed (503 tests, 83.86% coverage) and strict docs validation passed; the branch remains unmerged.
 
+
+## Gesha Follow-ups (ADR-0016 / ADR-0017)
+
+- **Functional-API fixture:** add a `.kf` fixture exercising the gesha Functional API under the unified backend. Currently only MLP/CNN/RNN are covered and Functional is documented as future work.
+- **Shared metrics:** make KafeMACHINE metrics callable on both `machine` and gesha outputs, so learners evaluate both backends uniformly.
+- **Deprecation window:** confirm the removal date for the `geshaDeep` / `geshaV2` aliases (ADR-0016 deferred them as documentation-only deprecations).
+- **Status 2026-10-20:** the first two bullets (Functional-API fixture and Shared metrics) are in progress under the re-opened Gesha follow-ups feature; the deprecation-window bullet is unchanged.
+
 ## Machine Learning
 
 ## Deep Learning

@@ -105,6 +105,7 @@ def linear_regression():
     """
     return LinearRegression()
 
+
 @check_sig([0], [])
 def label_encoder():
     """
@@ -112,12 +113,14 @@ def label_encoder():
     """
     return LabelEncoder()
 
+
 @check_sig([0], [])
 def one_hot_encoder():
     """
     Create an instance of OneHotEncoder.
     """
     return OneHotEncoder()
+
 
 @check_sig([0], [])
 def ordinal_encoder():
@@ -127,6 +130,7 @@ def ordinal_encoder():
     """
     return OrdinalEncoder()
 
+
 @check_sig([1], [integer_type])
 def pca(n_components):
     """
@@ -134,12 +138,14 @@ def pca(n_components):
     """
     return PCA(n_components)
 
+
 @check_sig([0], [])
 def standard_scaler():
     """
     Create an instance of StandardScaler.
     """
     return StandardScaler()
+
 
 @check_sig([0], [])
 def minmax_scaler():
@@ -155,7 +161,9 @@ def simple_imputer(strategy):
     Creates a SimpleImputer instance with the specified strategy.
     """
     if strategy == "constant":
-        raise Exception("simple_imputer: use machine.simple_imputer_constant(fill_value) for constant strategy")
+        raise Exception(
+            "simple_imputer: use machine.simple_imputer_constant(fill_value) for constant strategy"
+        )
     return SimpleImputer(strategy)
 
 
@@ -183,8 +191,18 @@ def knn(k=3):
     return KNN(k)
 
 
-@check_sig({0: [], 1: [[string_type]], 2: [[string_type], [integer_type]], 3: [[string_type], [integer_type], [integer_type]], 4: [[string_type], [integer_type], [integer_type], [integer_type]]})
-def decision_tree_classifier(criterion="gini", max_depth=0, min_samples_split=2, min_samples_leaf=1):
+@check_sig(
+    {
+        0: [],
+        1: [[string_type]],
+        2: [[string_type], [integer_type]],
+        3: [[string_type], [integer_type], [integer_type]],
+        4: [[string_type], [integer_type], [integer_type], [integer_type]],
+    }
+)
+def decision_tree_classifier(
+    criterion="gini", max_depth=0, min_samples_split=2, min_samples_leaf=1
+):
     """
     Creates an instance of DecisionTreeClassifier.
 
@@ -193,10 +211,19 @@ def decision_tree_classifier(criterion="gini", max_depth=0, min_samples_split=2,
     min_samples_split: minimum number of samples to split a node
     min_samples_leaf: minimum number of samples on one sheet
     """
-    return DecisionTreeClassifier(criterion, max_depth, min_samples_split, min_samples_leaf)
+    return DecisionTreeClassifier(
+        criterion, max_depth, min_samples_split, min_samples_leaf
+    )
 
 
-@check_sig({0: [], 1: [[integer_type]], 2: [[integer_type], [integer_type]], 3: [[integer_type], [integer_type], [integer_type]]})
+@check_sig(
+    {
+        0: [],
+        1: [[integer_type]],
+        2: [[integer_type], [integer_type]],
+        3: [[integer_type], [integer_type], [integer_type]],
+    }
+)
 def kmeans(n_clusters=3, max_iter=100, random_state=0):
     """
     Create an instance of K-Means clustering.
@@ -216,7 +243,13 @@ def gaussian_nb():
     return GaussianNB()
 
 
-@check_sig({0: [], 1: [[float_type, integer_type]], 2: [[float_type, integer_type], [integer_type]]})
+@check_sig(
+    {
+        0: [],
+        1: [[float_type, integer_type]],
+        2: [[float_type, integer_type], [integer_type]],
+    }
+)
 def dbscan(eps=0.5, min_samples=5):
     """
     Create an instance of DBSCAN.
@@ -227,8 +260,18 @@ def dbscan(eps=0.5, min_samples=5):
     return DBSCAN(eps, min_samples)
 
 
-@check_sig({0: [], 1: [[integer_type]], 2: [[integer_type], [integer_type]], 3: [[integer_type], [integer_type], [integer_type]], 4: [[integer_type], [integer_type], [integer_type], [integer_type]]})
-def random_forest_classifier(n_estimators=10, max_depth=0, min_samples_split=2, min_samples_leaf=1):
+@check_sig(
+    {
+        0: [],
+        1: [[integer_type]],
+        2: [[integer_type], [integer_type]],
+        3: [[integer_type], [integer_type], [integer_type]],
+        4: [[integer_type], [integer_type], [integer_type], [integer_type]],
+    }
+)
+def random_forest_classifier(
+    n_estimators=10, max_depth=0, min_samples_split=2, min_samples_leaf=1
+):
     """
     Create an instance of Random Forest Classifier.
 
@@ -237,11 +280,23 @@ def random_forest_classifier(n_estimators=10, max_depth=0, min_samples_split=2, 
     min_samples_split: minimum number of samples to split a node
     min_samples_leaf: minimum number of samples on one sheet
     """
-    return RandomForestClassifier(n_estimators, max_depth, min_samples_split, min_samples_leaf)
+    return RandomForestClassifier(
+        n_estimators, max_depth, min_samples_split, min_samples_leaf
+    )
 
 
-@check_sig({0: [], 1: [[integer_type]], 2: [[integer_type], [integer_type]], 3: [[integer_type], [integer_type], [integer_type]], 4: [[integer_type], [integer_type], [integer_type], [integer_type]]})
-def random_forest_regressor(n_estimators=10, max_depth=0, min_samples_split=2, min_samples_leaf=1):
+@check_sig(
+    {
+        0: [],
+        1: [[integer_type]],
+        2: [[integer_type], [integer_type]],
+        3: [[integer_type], [integer_type], [integer_type]],
+        4: [[integer_type], [integer_type], [integer_type], [integer_type]],
+    }
+)
+def random_forest_regressor(
+    n_estimators=10, max_depth=0, min_samples_split=2, min_samples_leaf=1
+):
     """
     Create an instance of Random Forest Regressor.
 
@@ -250,10 +305,19 @@ def random_forest_regressor(n_estimators=10, max_depth=0, min_samples_split=2, m
     min_samples_split: minimum number of samples to split a node
     min_samples_leaf: minimum number of samples on one sheet
     """
-    return RandomForestRegressor(n_estimators, max_depth, min_samples_split, min_samples_leaf)
+    return RandomForestRegressor(
+        n_estimators, max_depth, min_samples_split, min_samples_leaf
+    )
 
 
-@check_sig({0: [], 1: [[float_type, integer_type]], 2: [[float_type, integer_type], [boolean_type]], 3: [[float_type, integer_type], [boolean_type], [integer_type]]})
+@check_sig(
+    {
+        0: [],
+        1: [[float_type, integer_type]],
+        2: [[float_type, integer_type], [boolean_type]],
+        3: [[float_type, integer_type], [boolean_type], [integer_type]],
+    }
+)
 def ridge_regression(alpha=1.0, fit_intercept=True, max_iter=1000):
     """
     Create an instance of Ridge Regression (L2 regularized).
@@ -265,7 +329,14 @@ def ridge_regression(alpha=1.0, fit_intercept=True, max_iter=1000):
     return RidgeRegression(alpha, fit_intercept, max_iter)
 
 
-@check_sig({0: [], 1: [[float_type, integer_type]], 2: [[float_type, integer_type], [boolean_type]], 3: [[float_type, integer_type], [boolean_type], [integer_type]]})
+@check_sig(
+    {
+        0: [],
+        1: [[float_type, integer_type]],
+        2: [[float_type, integer_type], [boolean_type]],
+        3: [[float_type, integer_type], [boolean_type], [integer_type]],
+    }
+)
 def lasso_regression(alpha=1.0, fit_intercept=True, max_iter=1000):
     """
     Create an instance of Lasso Regression (L1 regularized).
@@ -277,8 +348,15 @@ def lasso_regression(alpha=1.0, fit_intercept=True, max_iter=1000):
     return LassoRegression(alpha, fit_intercept, max_iter)
 
 
-@check_sig({0: [], 1: [[float_type]], 2: [[float_type], [float_type]], 3: [[float_type], [float_type], [string_type]]})
-def svr(C=1.0, epsilon=0.1, kernel='linear'):
+@check_sig(
+    {
+        0: [],
+        1: [[float_type]],
+        2: [[float_type], [float_type]],
+        3: [[float_type], [float_type], [string_type]],
+    }
+)
+def svr(C=1.0, epsilon=0.1, kernel="linear"):
     """
     Create an instance of Support Vector Regression.
 
@@ -289,8 +367,15 @@ def svr(C=1.0, epsilon=0.1, kernel='linear'):
     return SVR(C, epsilon, kernel)
 
 
-@check_sig({0: [], 1: [[float_type]], 2: [[float_type], [string_type]], 3: [[float_type], [string_type], [integer_type]]})
-def svm(C=1.0, kernel='linear', max_iter=1000):
+@check_sig(
+    {
+        0: [],
+        1: [[float_type]],
+        2: [[float_type], [string_type]],
+        3: [[float_type], [string_type], [integer_type]],
+    }
+)
+def svm(C=1.0, kernel="linear", max_iter=1000):
     """
     Creates an instance of Support Vector Machine Classifier.
 
@@ -301,12 +386,20 @@ def svm(C=1.0, kernel='linear', max_iter=1000):
     return SVM(C, kernel, max_iter=max_iter)
 
 
-@check_sig({
-    2: [numeric_matrix_types, numeric_vector_types],
-    3: [numeric_matrix_types, numeric_vector_types, float_type],
-    4: [numeric_matrix_types, numeric_vector_types, float_type, integer_type],
-    5: [numeric_matrix_types, numeric_vector_types, float_type, integer_type, boolean_type]
-})
+@check_sig(
+    {
+        2: [numeric_matrix_types, numeric_vector_types],
+        3: [numeric_matrix_types, numeric_vector_types, float_type],
+        4: [numeric_matrix_types, numeric_vector_types, float_type, integer_type],
+        5: [
+            numeric_matrix_types,
+            numeric_vector_types,
+            float_type,
+            integer_type,
+            boolean_type,
+        ],
+    }
+)
 def train_test_split(X, y, test_size=0.2, random_state=0, shuffle=True):
     """
     Splits data into training and test sets.
@@ -318,15 +411,40 @@ def train_test_split(X, y, test_size=0.2, random_state=0, shuffle=True):
     shuffle: whether data is shuffled (default: true)
     """
     from .model_selection.model_selection import train_test_split as _tts
+
     return _tts(X, y, test_size, random_state, shuffle)
 
 
-@check_sig({
-    1: [integer_type],
-    2: [integer_type, integer_type],
-    3: [integer_type, integer_type, boolean_type],
-    4: [integer_type, integer_type, boolean_type, integer_type]
-})
+@check_sig(
+    {
+        2: [any_list_types, numeric_vector_types],
+        3: [any_list_types, numeric_vector_types, float_type],
+        4: [any_list_types, numeric_vector_types, float_type, integer_type],
+    }
+)
+def stratified_train_test_split(X, y, test_size=0.2, random_state=0):
+    """Split samples while preserving each class proportion."""
+    from .model_selection.model_selection import stratified_train_test_split as split
+
+    return split(X, y, test_size, random_state)
+
+
+@check_sig({0: [], 1: [[integer_type]], 2: [[integer_type], [string_type]]})
+def tokenizer(num_words=0, oov_token=""):
+    """Create a tokenizer for integer encoded text sequences."""
+    from .preprocessing.Tokenizer import Tokenizer
+
+    return Tokenizer(num_words, oov_token)
+
+
+@check_sig(
+    {
+        1: [integer_type],
+        2: [integer_type, integer_type],
+        3: [integer_type, integer_type, boolean_type],
+        4: [integer_type, integer_type, boolean_type, integer_type],
+    }
+)
 def k_fold(n_samples, n_splits=5, shuffle=False, random_state=0):
     """
     Generates indexes for k-fold cross validation.
@@ -337,16 +455,19 @@ def k_fold(n_samples, n_splits=5, shuffle=False, random_state=0):
     random_state: seed for reproducibility (default: 0)
     """
     from .model_selection.model_selection import k_fold as _kf
+
     return _kf(n_samples, n_splits, shuffle, random_state)
 
 
-@check_sig({
-    0: [],
-    1: [integer_type],
-    2: [integer_type, string_type],
-    3: [integer_type, string_type, integer_type]
-})
-def cross_val_score(cv=5, scoring='accuracy', random_state=0):
+@check_sig(
+    {
+        0: [],
+        1: [integer_type],
+        2: [integer_type, string_type],
+        3: [integer_type, string_type, integer_type],
+    }
+)
+def cross_val_score(cv=5, scoring="accuracy", random_state=0):
     """
     Create an instance of CrossValScore to evaluate models with k-fold CV.
 
@@ -357,8 +478,15 @@ def cross_val_score(cv=5, scoring='accuracy', random_state=0):
     return CrossValScore(cv, scoring, random_state)
 
 
-@check_sig({0: [], 1: [[integer_type]], 2: [[integer_type], [string_type]], 3: [[integer_type], [string_type], [integer_type]]})
-def grid_search_cv(cv=5, scoring='accuracy', random_state=0):
+@check_sig(
+    {
+        0: [],
+        1: [[integer_type]],
+        2: [[integer_type], [string_type]],
+        3: [[integer_type], [string_type], [integer_type]],
+    }
+)
+def grid_search_cv(cv=5, scoring="accuracy", random_state=0):
     """
     Creates an instance of GridSearchCV for exhaustive hyperparameter search.
 
@@ -369,8 +497,16 @@ def grid_search_cv(cv=5, scoring='accuracy', random_state=0):
     return GridSearchCV({}, cv, scoring, random_state)
 
 
-@check_sig({0: [], 1: [[integer_type]], 2: [[integer_type], [integer_type]], 3: [[integer_type], [integer_type], [string_type]], 4: [[integer_type], [integer_type], [string_type], [integer_type]]})
-def randomized_search_cv(n_iter=10, cv=5, scoring='accuracy', random_state=0):
+@check_sig(
+    {
+        0: [],
+        1: [[integer_type]],
+        2: [[integer_type], [integer_type]],
+        3: [[integer_type], [integer_type], [string_type]],
+        4: [[integer_type], [integer_type], [string_type], [integer_type]],
+    }
+)
+def randomized_search_cv(n_iter=10, cv=5, scoring="accuracy", random_state=0):
     """
     Creates an instance of RandomizedSearchCV for random hyperparameter search.
 
@@ -392,7 +528,9 @@ def pipeline(*args):
     if len(args) < 2:
         raise Exception("pipeline: requires at least one name-step pair")
     if len(args) % 2 != 0:
-        raise Exception("pipeline: requires an even number of arguments (name, step pairs)")
+        raise Exception(
+            "pipeline: requires an even number of arguments (name, step pairs)"
+        )
 
     names = [args[i] for i in range(0, len(args), 2)]
     steps = [args[i] for i in range(1, len(args), 2)]
@@ -410,7 +548,15 @@ def polynomial_features(degree=2, include_bias=True):
     return PolynomialFeatures(degree, include_bias)
 
 
-@check_sig({0: [], 1: [[float_type]], 2: [[float_type], [float_type]], 3: [[float_type], [float_type], [boolean_type]], 4: [[float_type], [float_type], [boolean_type], [integer_type]]})
+@check_sig(
+    {
+        0: [],
+        1: [[float_type]],
+        2: [[float_type], [float_type]],
+        3: [[float_type], [float_type], [boolean_type]],
+        4: [[float_type], [float_type], [boolean_type], [integer_type]],
+    }
+)
 def elastic_net(alpha=1.0, l1_ratio=0.5, fit_intercept=True, max_iter=1000):
     """
     Create an instance of Elastic Net Regression.
@@ -424,7 +570,7 @@ def elastic_net(alpha=1.0, l1_ratio=0.5, fit_intercept=True, max_iter=1000):
 
 
 @check_sig({0: [], 1: [[integer_type]], 2: [[integer_type], [string_type]]})
-def agglomerative_clustering(n_clusters=2, linkage='ward'):
+def agglomerative_clustering(n_clusters=2, linkage="ward"):
     """
     Create an instance of Agglomerative Clustering.
 
@@ -434,7 +580,14 @@ def agglomerative_clustering(n_clusters=2, linkage='ward'):
     return AgglomerativeClustering(n_clusters, linkage)
 
 
-@check_sig({0: [], 1: [[integer_type]], 2: [[integer_type], [float_type]], 3: [[integer_type], [float_type], [integer_type]]})
+@check_sig(
+    {
+        0: [],
+        1: [[integer_type]],
+        2: [[integer_type], [float_type]],
+        3: [[integer_type], [float_type], [integer_type]],
+    }
+)
 def ada_boost_classifier(n_estimators=50, learning_rate=1.0, random_state=0):
     """
     Create an instance of AdaBoost Classifier.
@@ -446,7 +599,14 @@ def ada_boost_classifier(n_estimators=50, learning_rate=1.0, random_state=0):
     return AdaBoostClassifier(n_estimators, learning_rate, random_state)
 
 
-@check_sig({0: [], 1: [[integer_type]], 2: [[integer_type], [float_type]], 3: [[integer_type], [float_type], [integer_type]]})
+@check_sig(
+    {
+        0: [],
+        1: [[integer_type]],
+        2: [[integer_type], [float_type]],
+        3: [[integer_type], [float_type], [integer_type]],
+    }
+)
 def gradient_boosting_classifier(n_estimators=100, learning_rate=0.1, max_depth=3):
     """
     Creates an instance of Gradient Boosting Classifier.
@@ -458,7 +618,14 @@ def gradient_boosting_classifier(n_estimators=100, learning_rate=0.1, max_depth=
     return GradientBoostingClassifier(n_estimators, learning_rate, max_depth)
 
 
-@check_sig({0: [], 1: [[integer_type]], 2: [[integer_type], [float_type]], 3: [[integer_type], [float_type], [integer_type]]})
+@check_sig(
+    {
+        0: [],
+        1: [[integer_type]],
+        2: [[integer_type], [float_type]],
+        3: [[integer_type], [float_type], [integer_type]],
+    }
+)
 def gradient_boosting_regressor(n_estimators=100, learning_rate=0.1, max_depth=3):
     """
     Create an instance of Gradient Boosting Regressor.
@@ -491,8 +658,17 @@ def recursive_feature_elimination(n_features=1, max_iter=100):
     return RecursiveFeatureElimination(n_features=n_features)
 
 
-@check_sig({0: [], 1: [[integer_type]], 2: [[integer_type], [integer_type]], 3: [[integer_type], [integer_type], [integer_type]]})
-def robust_scaler(with_centering=1, with_scaling=1, quantile_low=25.0, quantile_high=75.0):
+@check_sig(
+    {
+        0: [],
+        1: [[integer_type]],
+        2: [[integer_type], [integer_type]],
+        3: [[integer_type], [integer_type], [integer_type]],
+    }
+)
+def robust_scaler(
+    with_centering=1, with_scaling=1, quantile_low=25.0, quantile_high=75.0
+):
     """
     Create a RobustScaler instance.
 
@@ -501,11 +677,23 @@ def robust_scaler(with_centering=1, with_scaling=1, quantile_low=25.0, quantile_
     quantile_low: lower percentile (default: 25.0)
     quantile_high: upper percentile (default: 75.0)
     """
-    return RobustScaler(bool(with_centering), bool(with_scaling), (quantile_low, quantile_high))
+    return RobustScaler(
+        bool(with_centering), bool(with_scaling), (quantile_low, quantile_high)
+    )
 
 
-@check_sig({0: [], 1: [[string_type]], 2: [[string_type], [integer_type]], 3: [[string_type], [integer_type], [integer_type]], 4: [[string_type], [integer_type], [integer_type], [integer_type]]})
-def decision_tree_regressor(criterion="mse", max_depth=0, min_samples_split=2, min_samples_leaf=1):
+@check_sig(
+    {
+        0: [],
+        1: [[string_type]],
+        2: [[string_type], [integer_type]],
+        3: [[string_type], [integer_type], [integer_type]],
+        4: [[string_type], [integer_type], [integer_type], [integer_type]],
+    }
+)
+def decision_tree_regressor(
+    criterion="mse", max_depth=0, min_samples_split=2, min_samples_leaf=1
+):
     """
     Creates a Decision Tree Regressor instance.
 
@@ -514,7 +702,9 @@ def decision_tree_regressor(criterion="mse", max_depth=0, min_samples_split=2, m
     min_samples_split: minimum samples to split (default: 2)
     min_samples_leaf: minimum samples per sheet (default: 1)
     """
-    return DecisionTreeRegressor(criterion, max_depth, min_samples_split, min_samples_leaf)
+    return DecisionTreeRegressor(
+        criterion, max_depth, min_samples_split, min_samples_leaf
+    )
 
 
 @check_sig({0: [], 1: [[integer_type]], 2: [[integer_type], [string_type]]})
@@ -528,7 +718,15 @@ def knn_regressor(k=5, weights="uniform"):
     return KNNRegressor(k, weights)
 
 
-@check_sig({0: [], 1: [[integer_type]], 2: [[integer_type], [integer_type]], 3: [[integer_type], [integer_type], [float_type]], 4: [[integer_type], [integer_type], [float_type], [integer_type]]})
+@check_sig(
+    {
+        0: [],
+        1: [[integer_type]],
+        2: [[integer_type], [integer_type]],
+        3: [[integer_type], [integer_type], [float_type]],
+        4: [[integer_type], [integer_type], [float_type], [integer_type]],
+    }
+)
 def gaussian_mixture(n_components=3, max_iter=100, tol=1e-3, random_state=0):
     """
     Create an instance of Gaussian Mixture Model.

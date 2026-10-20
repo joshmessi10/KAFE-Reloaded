@@ -8,6 +8,7 @@ from TypeUtils import (
     boolean_type,
     float_type,
     function_type,
+    gesha_type,
     get_data_type,
     integer_type,
     list_type,
@@ -81,8 +82,11 @@ def verify_homogeneity(items):
     items = flatten_list(items)
     if (len(items) != 0):
         data_type = type(items[0])
+        gesha_items = get_data_type(items[0]) == gesha_type
         for item in items:
-            if type(item) is not data_type:
+            if type(item) is not data_type and not (
+                gesha_items and get_data_type(item) == gesha_type
+            ):
                 return False
 
     return True
@@ -114,7 +118,7 @@ def check_sig(*args, **kwargs):
 
         def new_function(*received_args, **received_kwargs):
             received_count = len(received_args) + len(received_kwargs)
-            
+
             if received_count not in allowed_arg_counts:
                 raiseWrongNumberOfArgs(name, allowed_arg_counts, received_count)
 
@@ -131,14 +135,13 @@ def check_sig(*args, **kwargs):
             for i, arg in enumerate(received_args[start_idx:]):
                 # Extra arguments have already failed the argument count check.
                 if i >= len(types_to_validate):
-                    continue 
+                    continue
 
                 defined_types = types_to_validate[i]
                 if isinstance(defined_types, str):
                     defined_types = [defined_types]
-                matches = [is_correct_type(arg, declared_type) for declared_type in defined_types]
-
-                if not any(matches):
+                # Short-circuit to avoid building intermediate lists; preserves error semantics.
+                if not any(is_correct_type(arg, declared_type) for declared_type in defined_types):
                     # Display the broad list type as "lists" in diagnostics.
                     if set(any_list_types).issubset(defined_types):
                         error_types = list(set(defined_types) - set(any_list_types))
@@ -150,5 +153,6 @@ def check_sig(*args, **kwargs):
 
             return original_function(*received_args, **received_kwargs)
 
+        new_function.__wrapped__ = original_function
         return new_function
     return decorator

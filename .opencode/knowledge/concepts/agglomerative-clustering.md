@@ -34,7 +34,7 @@ Agglomerative Clustering is a bottom-up hierarchical clustering algorithm.
 
 ## Advantages
 
-1. **Does not require a predefined number of clusters** — a dendrogram can help select $k$.
+1. **Simple cluster-count control**: choose `n_clusters` between 1 and the sample count.
 2. **Captures hierarchical structure** — exposes nested relationships.
 3. **Flexible** — offers multiple linkage criteria.
 4. **Deterministic** — produces the same result for the same data.
@@ -61,7 +61,7 @@ Agglomerative Clustering is a bottom-up hierarchical clustering algorithm.
 
 ## Relationship with KAFE
 
-KAFE implements `AgglomerativeClustering` from scratch with four linkage criteria: single, complete, average, and ward. The algorithm is deterministic and does not require a random seed.
+KAFE implements `AgglomerativeClustering` from scratch with four linkage criteria: single, complete, average, and ward. The algorithm is deterministic and requires `1 <= n_clusters <= n_samples`.
 
 ## References
 

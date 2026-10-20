@@ -1,5 +1,3 @@
-from typing import Any, cast
-
 from errors import (
     raiseExpectedHomogeneousList,
     raiseIndexOutOfBounds,
@@ -10,7 +8,7 @@ from errors import (
     raiseVoidAsVariableType,
 )
 from global_utils import assign_variable, is_correct_type, verify_homogeneity
-from lib.KafeGESHA.core.model import Gesha
+from lib.KafeGESHA.models_v2 import GeshaPlaceholder
 from TypeUtils import (
     boolean_type,
     float_type,
@@ -50,9 +48,10 @@ def varDecl(self, ctx):
         elif data_type == boolean_type:
             val = False
         elif data_type == gesha_type:
-            val = cast(Any, Gesha)()
+            val = GeshaPlaceholder()
         elif data_type == pardos_type:
             from lib.KafePARDOS.DataFrame import DataFrame
+
             val = DataFrame([], [])
         elif data_type.startswith(list_type):
             val = []
@@ -170,13 +169,19 @@ def unaryExpression(self, ctx):
 
 
 def indexingExpr(self, ctx):
+    from lib.KafeMACHINE.model_selection.model_selection import TrainTestSplit
+
     collection = self.visit(ctx.primaryExpr())
     index = self.visit(ctx.expr())
 
     if type(index) is not int:
         raiseNonIntegerIndex(index)
 
-    if type(collection) is str or type(collection) is list:
+    if (
+        type(collection) is str
+        or type(collection) is list
+        or isinstance(collection, TrainTestSplit)
+    ):
         try:
             return collection[index]
         except IndexError:

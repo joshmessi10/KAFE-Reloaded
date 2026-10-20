@@ -1,0 +1,22 @@
+import machine;
+
+-- El split estratificado debe aceptar X de imagen 4D [N][C][H][W] (ADR-0018 / decisión A1).
+List[List[List[List[FLOAT]]]] X = [
+  [[[0.1, 0.2], [0.3, 0.4]]],
+  [[[0.2, 0.3], [0.4, 0.5]]],
+  [[[0.3, 0.4], [0.5, 0.6]]],
+  [[[0.4, 0.5], [0.6, 0.7]]],
+  [[[0.9, 0.8], [0.7, 0.6]]],
+  [[[0.8, 0.7], [0.6, 0.5]]],
+  [[[0.7, 0.6], [0.5, 0.4]]],
+  [[[0.6, 0.5], [0.4, 0.3]]]
+];
+List[INT] y = [0, 0, 0, 0, 1, 1, 1, 1];
+
+MACHINE split = machine.stratified_train_test_split(X, y, 0.25, 42);
+show(len(split[0]));
+show(len(split[1]));
+show(len(split[2]));
+show(len(split[3]));
+show(len(split[0][0]));
+show(len(split[0][0][0]));

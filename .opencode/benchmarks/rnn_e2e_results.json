@@ -1,0 +1,466 @@
+{
+  "fecha": "2026-10-18",
+  "entorno": {
+    "python": "3.13.11",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "cpus": 12,
+    "procesador": "Intel64 Family 6 Model 158 Stepping 13, GenuineIntel"
+  },
+  "S1": {
+    "ingesta_parse_mediana_3_s": 0.788304,
+    "ingesta_parse_cada_corrida_s": [
+      0.788304,
+      0.635666,
+      0.893302
+    ],
+    "fit_mediana_3_s": 0.000417,
+    "transform_mediana_3_s": 0.000314,
+    "n_textos": 50,
+    "etiquetas_int": true,
+    "vocabulario": 271,
+    "longitud_media_tokens": 10.2,
+    "secuencias_list_int": true,
+    "indices_en_rango": true,
+    "determinismo_dos_fits": true,
+    "secuencias_vacias": 0,
+    "escenario": "S1 - tokenizacion 50 frases",
+    "tiempo_escenario_s": 2.321,
+    "status": "OK"
+  },
+  "S2": {
+    "ingesta_s": 0.698046,
+    "tokenizer_fit_s": 0.003866,
+    "n_muestras": 300,
+    "n_train": 216,
+    "n_test": 60,
+    "train_balanceado_neg_pos": [
+      108,
+      108
+    ],
+    "vocabulario": 202,
+    "maxlen": 10,
+    "epocas": 5,
+    "batch": 8,
+    "tiempo_total_fit_s": 33.4849,
+    "tiempo_por_epoca_s": [
+      6.5155,
+      6.5865,
+      6.6379,
+      6.8266,
+      6.9184
+    ],
+    "media_por_epoca_s": 6.697,
+    "loss_inicial_pct": 69.3285,
+    "loss_final_pct": 21.5026,
+    "perdidas_negativas": [],
+    "accuracy_test": 0.6,
+    "matriz_confusion": "[[12, 15], [9, 24]]",
+    "lineas": [
+      "Epoch 1/1 — Loss 69.33% — Accuracy 55.56%",
+      "Epoch 1/1 — Loss 59.40% — Accuracy 75.46%",
+      "Epoch 1/1 — Loss 41.48% — Accuracy 79.17%",
+      "Epoch 1/1 — Loss 29.89% — Accuracy 86.57%",
+      "Epoch 1/1 — Loss 21.50% — Accuracy 91.20%"
+    ],
+    "escenario": "S2 - cadena texto 300 frases",
+    "tiempo_escenario_s": 34.594,
+    "pico_memoria_kib": 692.64,
+    "tiempo_paso_memoria_s": 147.498,
+    "status": "OK"
+  },
+  "S3": {
+    "casos": [
+      {
+        "caso": "transform con una sola frase",
+        "esperado": "ok",
+        "estado": "ok",
+        "esperado_cumplido": true,
+        "mensaje": "[[2, 1]]",
+        "ms": 0.054
+      },
+      {
+        "caso": "modelo.predict con lote de 1 secuencia",
+        "esperado": "ok",
+        "estado": "ok",
+        "esperado_cumplido": true,
+        "mensaje": "[[0.48491830156231774]]",
+        "ms": 2.574
+      },
+      {
+        "caso": "texto vacio: fit+transform",
+        "esperado": "ok",
+        "estado": "ok",
+        "esperado_cumplido": true,
+        "mensaje": "[[]]",
+        "ms": 0.061
+      },
+      {
+        "caso": "secuencia vacia [] al modelo Embedding+RNN",
+        "esperado": "excepcion",
+        "estado": "excepcion",
+        "esperado_cumplido": true,
+        "mensaje": "ValueError: SimpleRNN requiere entrada [timesteps, features]",
+        "ms": 0.027
+      },
+      {
+        "caso": "predict con lista vacia",
+        "esperado": "excepcion",
+        "estado": "excepcion",
+        "esperado_cumplido": true,
+        "mensaje": "ValueError: predict requiere datos no vacios",
+        "ms": 0.003
+      },
+      {
+        "caso": "fit con datos vacios",
+        "esperado": "excepcion",
+        "estado": "excepcion",
+        "esperado_cumplido": true,
+        "mensaje": "ValueError: fit requiere X e Y no vacios con igual numero de muestras",
+        "ms": 0.003
+      },
+      {
+        "caso": "tokenizer sin fit: transform",
+        "esperado": "excepcion",
+        "estado": "excepcion",
+        "esperado_cumplido": true,
+        "mensaje": "Exception: Tokenizer: Must call fit before transform",
+        "ms": 0.03
+      },
+      {
+        "caso": "num_words invalido: negativo",
+        "esperado": "excepcion",
+        "estado": "excepcion",
+        "esperado_cumplido": true,
+        "mensaje": "Exception: Tokenizer: 'num_words' debe ser un entero mayor o igual que 0; se recibió -1.",
+        "ms": 0.032
+      },
+      {
+        "caso": "num_words invalido: no entero",
+        "esperado": "excepcion",
+        "estado": "excepcion",
+        "esperado_cumplido": true,
+        "mensaje": "TypeError: Function tokenizer expects argument of type INT, got type STR",
+        "ms": 0.06
+      },
+      {
+        "caso": "load_text_dataset: label no entero (sin red)",
+        "esperado": "excepcion",
+        "estado": "excepcion",
+        "esperado_cumplido": true,
+        "mensaje": "Exception: kaggle: La columna de etiquetas (label_column=1) debe contener enteros; valores no válidos: ['x']",
+        "ms": 5.208
+      },
+      {
+        "caso": "load_text_dataset: archivo inexistente (sin red)",
+        "esperado": "excepcion",
+        "estado": "excepcion",
+        "esperado_cumplido": true,
+        "mensaje": "Exception: kaggle: No se encontró 'no_existe.txt' en el dataset. Archivos disponibles: ['datos.txt']",
+        "ms": 2.493
+      },
+      {
+        "caso": "Embedding: indice fuera de rango",
+        "esperado": "excepcion",
+        "estado": "excepcion",
+        "esperado_cumplido": true,
+        "mensaje": "ValueError: Embedding índice fuera de rango",
+        "ms": 0.195
+      },
+      {
+        "caso": "create_rnn: units 0",
+        "esperado": "excepcion",
+        "estado": "excepcion",
+        "esperado_cumplido": true,
+        "mensaje": "ValueError: SimpleRNN requiere units entero positivo",
+        "ms": 0.091
+      }
+    ],
+    "n_casos": 13,
+    "n_esperados_cumplidos": 13,
+    "crash_libre": true,
+    "escenario": "S3 - edge cases 13 casos",
+    "tiempo_escenario_s": 0.013,
+    "status": "OK"
+  },
+  "S4": {
+    "ingesta_s": 0.770471,
+    "dias": 300,
+    "ventanas_shape": [
+      293,
+      7,
+      1
+    ],
+    "train_test": [
+      234,
+      59
+    ],
+    "min_max_train": [
+      2.1,
+      25.0
+    ],
+    "epocas": 15,
+    "batch": 8,
+    "tiempo_total_fit_s": 116.7006,
+    "tiempo_por_epoca_s": [
+      7.8814,
+      8.0339,
+      7.9554,
+      7.8288,
+      8.1023,
+      8.1221,
+      7.7582,
+      7.6344,
+      8.52,
+      7.7243,
+      8.0026,
+      7.153,
+      7.0946,
+      7.8133,
+      7.0763
+    ],
+    "media_por_epoca_s": 7.78,
+    "loss_inicial": 0.077689,
+    "loss_final": 0.015583,
+    "perdidas_negativas": [],
+    "mae_celsius": 2.71475,
+    "mae_lt_5": true,
+    "predichas_vs_reales_5": [
+      [
+        7.137,
+        5.5
+      ],
+      [
+        4.981,
+        6.2
+      ],
+      [
+        5.972,
+        8.0
+      ],
+      [
+        7.062,
+        10.3
+      ],
+      [
+        8.691,
+        9.8
+      ]
+    ],
+    "lineas": [
+      "Epoch 1/1 — Loss 7.77%",
+      "Epoch 1/1 — Loss 3.52%",
+      "Epoch 1/1 — Loss 3.87%",
+      "Epoch 1/1 — Loss 3.71%",
+      "Epoch 1/1 — Loss 3.28%",
+      "Epoch 1/1 — Loss 2.36%",
+      "Epoch 1/1 — Loss 1.78%",
+      "Epoch 1/1 — Loss 1.53%",
+      "Epoch 1/1 — Loss 1.49%",
+      "Epoch 1/1 — Loss 1.52%",
+      "Epoch 1/1 — Loss 1.54%",
+      "Epoch 1/1 — Loss 1.54%",
+      "Epoch 1/1 — Loss 1.55%",
+      "Epoch 1/1 — Loss 1.55%",
+      "Epoch 1/1 — Loss 1.56%"
+    ],
+    "escenario": "S4 - serie 300 dias (replica EjemploRNN1)",
+    "tiempo_escenario_s": 118.233,
+    "pico_memoria_kib": 1560.03,
+    "tiempo_paso_memoria_s": 438.137,
+    "status": "OK"
+  },
+  "S5a": {
+    "ingesta_s": 0.617743,
+    "n_muestras": 1000,
+    "n_train": 800,
+    "n_test": 200,
+    "train_balanceado_neg_pos": [
+      400,
+      400
+    ],
+    "vocabulario": 1810,
+    "longitud_media_tokens": 11.11,
+    "truncado": false,
+    "epocas": 2,
+    "batch": 8,
+    "tiempo_total_fit_s": 130.2025,
+    "tiempo_por_epoca_s": [
+      59.3266,
+      70.8759
+    ],
+    "media_por_epoca_s": 65.1013,
+    "extrapolacion_8_epocas_s": 520.8104,
+    "loss_inicial_pct": 66.1963,
+    "loss_final_pct": 35.2788,
+    "perdidas_negativas": [],
+    "accuracy_test_2_epocas": 0.75,
+    "lineas": [
+      "Epoch 1/1 — Loss 66.20% — Accuracy 58.50%",
+      "Epoch 1/1 — Loss 35.28% — Accuracy 85.62%"
+    ],
+    "escenario": "S5a - stress sentimiento 1000 frases",
+    "tiempo_escenario_s": 132.725,
+    "pico_memoria_kib": 3998.73,
+    "tiempo_paso_memoria_s": 572.488,
+    "status": "OK"
+  },
+  "S5b": {
+    "ingesta_s": 0.868317,
+    "dias": 1000,
+    "celdas_imputadas_fila_datos_1based": [
+      566,
+      567
+    ],
+    "imputacion": "forward-fill con el ultimo valor valido (celdas ? del CSV)",
+    "ventanas_shape": [
+      986,
+      14,
+      1
+    ],
+    "train_test": [
+      788,
+      198
+    ],
+    "min_max_train": [
+      0.0,
+      26.3
+    ],
+    "epocas": 2,
+    "batch": 8,
+    "tiempo_total_fit_s": 93.5778,
+    "tiempo_por_epoca_s": [
+      46.6791,
+      46.8987
+    ],
+    "media_por_epoca_s": 46.7889,
+    "loss_inicial": 0.030792,
+    "loss_final": 0.014681,
+    "perdidas_negativas": [],
+    "mae_celsius": 6.299125,
+    "mae_lt_5": false,
+    "predichas_vs_reales_5": [
+      [
+        17.973,
+        15.2
+      ],
+      [
+        17.965,
+        13.1
+      ],
+      [
+        17.158,
+        13.2
+      ],
+      [
+        16.858,
+        12.5
+      ],
+      [
+        16.651,
+        15.2
+      ]
+    ],
+    "lineas": [
+      "Epoch 1/1 — Loss 3.08%",
+      "Epoch 1/1 — Loss 1.47%"
+    ],
+    "escenario": "S5b - stress serie 1000 dias",
+    "tiempo_escenario_s": 98.941,
+    "pico_memoria_kib": 3719.5,
+    "tiempo_paso_memoria_s": 425.096,
+    "status": "OK"
+  },
+  "H": {
+    "log": [
+      {
+        "x": 0.9,
+        "kafemath_log": -0.1053605156566898,
+        "math_log": -0.10536051565782628,
+        "error_k_menos_m": 1.1364797991575415e-12,
+        "signo_distinto": false
+      },
+      {
+        "x": 0.99,
+        "kafemath_log": -0.009377225466512651,
+        "math_log": -0.01005033585350145,
+        "error_k_menos_m": 0.0006731103869887997,
+        "signo_distinto": false
+      },
+      {
+        "x": 0.999,
+        "kafemath_log": 0.003116893542619459,
+        "math_log": -0.0010005003335835344,
+        "error_k_menos_m": 0.004117393876202993,
+        "signo_distinto": true
+      },
+      {
+        "x": 0.99999999,
+        "kafemath_log": 0.0050249787502596455,
+        "math_log": -1.0000000100247594e-08,
+        "error_k_menos_m": 0.005024988750259746,
+        "signo_distinto": true
+      },
+      {
+        "x": 0.5,
+        "kafemath_log": -0.6931471805599453,
+        "math_log": -0.6931471805599453,
+        "error_k_menos_m": 0.0,
+        "signo_distinto": false
+      },
+      {
+        "x": 0.1,
+        "kafemath_log": -2.3025850929940455,
+        "math_log": -2.3025850929940455,
+        "error_k_menos_m": 0.0,
+        "signo_distinto": false
+      }
+    ],
+    "bce": [
+      {
+        "y": 1.0,
+        "p": 0.9,
+        "bce": 0.1053605156566898
+      },
+      {
+        "y": 1.0,
+        "p": 0.99,
+        "bce": 0.009377225466512651
+      },
+      {
+        "y": 1.0,
+        "p": 0.999,
+        "bce": -0.003116893542619459
+      },
+      {
+        "y": 1.0,
+        "p": 0.99999999,
+        "bce": -0.0050249787502596455
+      },
+      {
+        "y": 0.0,
+        "p": 0.1,
+        "bce": 0.1053605156566898
+      },
+      {
+        "y": 0.0,
+        "p": 1e-08,
+        "bce": -0.0050249787502596455
+      },
+      {
+        "y": 1.0,
+        "p": 0.5,
+        "bce": 0.6931471805599453
+      },
+      {
+        "y": 0.0,
+        "p": 0.5,
+        "bce": 0.6931471805599453
+      }
+    ],
+    "bce_derivada_y1_p09999999": [
+      -0.5000000037561899
+    ],
+    "bce_negativa_observada": true,
+    "nota": "BCE.compute usa KafeMATH.log; BCE.derivative no usa log (binary_cross_entropy.py)."
+  }
+}

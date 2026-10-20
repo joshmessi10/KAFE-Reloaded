@@ -8,10 +8,12 @@ from .RecursiveFeatureElimination import RecursiveFeatureElimination
 from .RobustScaler import RobustScaler
 from .SimpleImputer import SimpleImputer
 from .StandardScaler import StandardScaler
+from .Tokenizer import Tokenizer
 from .VarianceThreshold import VarianceThreshold
 
 __all__ = [
     "StandardScaler",
+    "Tokenizer",
     "MinMaxScaler",
     "LabelEncoder",
     "OneHotEncoder",

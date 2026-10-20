@@ -166,3 +166,32 @@
 [data-md-color-scheme="slate"] .md-typeset blockquote {
   background-color: #2d2d00;
 }
+
+/* Always-visible, accessible documentation tree */
+:root, [data-md-color-scheme="slate"] {
+  --md-default-bg-color: #0b0d10;
+  --md-default-fg-color: #f3f4f5;
+  --md-typeset-color: #f3f4f5;
+  --md-accent-fg-color: #ffcf33;
+}
+.md-header, .md-tabs { background: #07090c; }
+.md-main, .md-content, .md-sidebar--primary, .md-sidebar--secondary { background: #0b0d10; }
+.md-sidebar--primary { border-right: 1px solid #3c3c35; }
+.md-nav__link, .md-nav__title, .md-nav__item, .md-header__title { color: #f3f4f5; }
+.md-nav__link:hover, .md-nav__link:focus-visible, .md-nav__link--active { color: #ffcf33; }
+.md-nav__item--active > .md-nav__link { color: #ffcf33; }
+.md-nav__link:focus-visible, .md-header__button:focus-visible { outline: 2px solid #ffcf33; outline-offset: 3px; }
+.md-nav__item .md-nav__item { border-left: 1px solid #3c3c35; margin-left: .45rem; padding-left: .45rem; }
+.md-typeset a { color: #ffcf33; }
+.md-typeset a:hover { color: #ffe590; }
+.md-typeset code { color: #fff; background: #20242b; }
+.md-typeset .admonition, .md-typeset details, .md-typeset blockquote { background: #1c1e20; }
+@media screen and (max-width: 76.234375em) {
+  .md-sidebar--primary { background: #0b0d10; }
+  .md-nav--primary .md-nav__title { background: #171a1f; color: #f3f4f5; }
+}
+
+/* SVGs with a white canvas remain visible on the dark theme. */
+.md-typeset img.example-chart { display: block; max-width: 100%; margin: 1.2rem auto; padding: .5rem; background: #fff; border: 1px solid #ffcf33; border-radius: .5rem; }
+
+.math-fallback { font-family: Cambria Math, STIX Two Math, serif; font-size: 1.08em; color: #fff; }

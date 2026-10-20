@@ -16,16 +16,15 @@ class GradientBoostingClassifier(BaseMachine):
     the errors of the previous one using gradient descent on the loss function.
 
     Mathematical foundation:
-        1. Initialize base prediction: F_0(x) = 0.5 * ln((1-p)/p)
+        1. Initialize base prediction: F_0(x) = ln(p/(1-p))
         2. For each iteration t = 1, ..., T:
            a. Calculate probabilities: p_i = sigmoid(F_{t-1}(x_i))
            b. Calculate residuals: r_i = y_i - p_i
            c. Train tree h_t to predict residuals r_i
            d. Update: F_t(x) = F_{t-1}(x) + η * h_t(x)
-        3. Final prediction: class = classes_[0] if sigmoid(F_T(x)) >= 0.5
+        3. Final prediction: class = classes_[1] if sigmoid(F_T(x)) >= 0.5
 
-        For classification with log-loss:
-            F_0(x) = 0.5 * ln((1-p)/p), where p = prop. negative class
+        For classification with log-loss, p is the positive-class proportion.
 
     Parameters:
         n_estimators: number of trees (default 100)
@@ -160,14 +159,11 @@ class GradientBoostingClassifier(BaseMachine):
         if len(self.classes_) != 2:
             raise Exception("GradientBoostingClassifier: only supports binary classification")
 
-        y_binary = [1.0 if yi == self.classes_[0] else -1.0 for yi in y]
+        y_binary = [1.0 if yi == self.classes_[1] else 0.0 for yi in y]
 
-        pos_count = sum(1 for yi in y if yi == self.classes_[0])
+        pos_count = sum(y_binary)
         neg_count = n - pos_count
-        if pos_count == 0 or neg_count == 0:
-            self.initial_prediction_ = 0.0
-        else:
-            self.initial_prediction_ = 0.5 * log(neg_count / pos_count)
+        self.initial_prediction_ = log(pos_count / neg_count)
 
         F = [self.initial_prediction_] * n
 
@@ -216,7 +212,7 @@ class GradientBoostingClassifier(BaseMachine):
                 score += self.learning_rate * pred
 
             prob = self._sigmoid(score)
-            predictions.append(self.classes_[0] if prob >= 0.5 else self.classes_[1])
+            predictions.append(self.classes_[1] if prob >= 0.5 else self.classes_[0])
 
         return predictions
 

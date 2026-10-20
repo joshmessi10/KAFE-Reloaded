@@ -23,7 +23,7 @@ def build_child_environment():
     return child_environment
 
 
-def run_child_process(command: Sequence[str], *, cwd, input_text=""):
+def run_child_process(command: Sequence[str], *, cwd, input_text="", timeout=None):
     """Run a child Python process while retaining its complete text result."""
     return subprocess.run(
         list(command),
@@ -33,15 +33,17 @@ def run_child_process(command: Sequence[str], *, cwd, input_text=""):
         input=input_text,
         cwd=cwd,
         env=build_child_environment(),
+        timeout=timeout,
     )
 
 
-def run_kafe_program(program, input_text=""):
+def run_kafe_program(program, input_text="", timeout=None):
     """Run a KAFE fixture with the existing CLI and src working directory."""
     return run_child_process(
         [sys.executable, get_kafe_path(), program],
         cwd=get_src_dir(),
         input_text=input_text,
+        timeout=timeout,
     )
 
 

@@ -134,9 +134,9 @@ Dense layers are essential building blocks in deep neural networks. KafeGESHA im
 
 ## Dependencies
 
-- `lib.KafeGESHA.layers.layer` — base class for neural-network layers.
+- `lib.KafeGESHA.layers.Dense` — the dense layer implementation (unified backend).
 - `lib.KafeGESHA.activations.ActivationFunctionLoader` — loads activation functions.
-- `lib.KafeGESHA.layers.utils` — regularization utilities.
+- `lib.KafeGESHA.regularizers` — regularization utilities.
 
 ## Related Concepts
 
@@ -175,12 +175,12 @@ When the selected activation is `"softmax"`, the layer applies it to the full ve
 ## Usage Examples
 
 ```kafe
-import geshaDeep;
+import gesha;
 
-GESHA hidden = geshaDeep.create_dense(32, "relu", [4], 0.0);
-GESHA output = geshaDeep.create_dense(3, "softmax", [], 0.0);
-GESHA model = geshaDeep.sequential([hidden, output]);
-geshaDeep.compile(model, "adam", "categorical_crossentropy", []);
+GESHA hidden = gesha.create_dense(32, "relu", [4], 0.0);
+GESHA output = gesha.create_dense(3, "softmax", [], 0.0);
+GESHA model = gesha.sequential([hidden, output]);
+gesha.compile(model, "adam", "categorical_crossentropy", []);
 model.fit(x_train, y_train, 100, 32);
 ```
 
@@ -193,7 +193,7 @@ model.fit(x_train, y_train, 100, 32);
 ## Public API
 
 - Constructor: `Dense(units, activation=None, input_shape=None, regularization_lambda=0.0, seed=None)`.
-- Interpreter factory: `geshaDeep.create_dense(units, activation, input_shape, regularization_lambda, seed=None)`.
+- Interpreter factory: `gesha.create_dense(units, activation, input_shape, regularization_lambda, seed=None)`.
 - Layer methods: `build(input_dim)`, `forward(x)`, `backward(output_error, learning_rate, regularization_lambda=None)`, `parameters()`, `summary()`.
 - `Dense` extends `Layer`.
 

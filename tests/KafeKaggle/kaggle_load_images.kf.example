@@ -1,0 +1,4 @@
+import kaggle;
+List[List[List[List[FLOAT]]]] imagenes = kaggle.load_images("ayush1220/cifar10", 32, 32, "rgb", 2);
+show("Forma de las imágenes cargadas [N, C, H, W]:");
+show([len(imagenes), len(imagenes[0]), len(imagenes[0][0]), len(imagenes[0][0][0])]);

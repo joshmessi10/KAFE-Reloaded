@@ -1,0 +1,20 @@
+import gesha;
+import machine;
+
+-- Gesha batch predict returns a single-column matrix of predictions.
+-- The metric must accept it and treat it as one value per sample.
+List[List[FLOAT]] X = [[1.0], [2.0], [3.0], [4.0], [5.0], [6.0]];
+List[FLOAT] y_true = [3.0, 5.0, 7.0, 9.0, 11.0, 13.0];
+
+GESHA layer = gesha.create_dense(1, "linear", [1], 0.0, 42);
+GESHA model = gesha.sequential([layer]);
+model.compile("sgd", "mse", []);
+model.fit(X, y_true, 20, 6);
+
+List[List[FLOAT]] preds = model.predict(X);
+show("shape [samples, outputs]:");
+show([len(preds), len(preds[0])]);
+show("mse:");
+show(machine.mean_squared_error(y_true, preds));
+show("r2:");
+show(machine.r2_score(y_true, preds));

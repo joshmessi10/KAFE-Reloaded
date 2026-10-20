@@ -47,14 +47,14 @@ $$\text{Silhouette Score} = \frac{1}{n} \sum_{i=1}^{n} s(i)$$
 
 ## Step-by-Step Algorithm
 
-1. Validate inputs: at least 2 samples, at least 2 non-empty clusters.
+1. Validate inputs: at least 2 samples and between 2 and `n - 1` non-empty clusters.
 2. Compute pairwise Euclidean distance matrix $D_{n \times n}$.
 3. For each point $i$:
    a. Compute $a(i)$: mean distance to other points in the same cluster.
    b. For each other cluster $l$, compute mean distance from $i$ to all points in $l$.
    c. Set $b(i)$ = minimum of those inter-cluster means.
    d. Compute $s(i) = (b(i) - a(i)) / \max(a(i), b(i))$.
-   e. If $\max(a(i), b(i)) = 0$, set $s(i) = 0$.
+   e. If the point is alone in its cluster, set $s(i) = 0$; also use zero when the denominator is zero.
 4. Return the mean of all $s(i)$.
 
 ## Motivation

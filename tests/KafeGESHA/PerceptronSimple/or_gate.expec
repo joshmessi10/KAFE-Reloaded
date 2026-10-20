@@ -1,0 +1,56 @@
+=== Perceptron Simple: Compuerta OR ===
+Entrenando perceptron simple...
+Epoch 1/40 — Loss 0.7881 — Accuracy 25.00%
+Epoch 2/40 — Loss 0.7083 — Accuracy 25.00%
+Epoch 3/40 — Loss 0.6400 — Accuracy 50.00%
+Epoch 4/40 — Loss 0.5831 — Accuracy 75.00%
+Epoch 5/40 — Loss 0.5370 — Accuracy 75.00%
+Epoch 6/40 — Loss 0.5007 — Accuracy 75.00%
+Epoch 7/40 — Loss 0.4728 — Accuracy 75.00%
+Epoch 8/40 — Loss 0.4518 — Accuracy 75.00%
+Epoch 9/40 — Loss 0.4361 — Accuracy 75.00%
+Epoch 10/40 — Loss 0.4244 — Accuracy 75.00%
+Epoch 11/40 — Loss 0.4153 — Accuracy 75.00%
+Epoch 12/40 — Loss 0.4079 — Accuracy 75.00%
+Epoch 13/40 — Loss 0.4014 — Accuracy 75.00%
+Epoch 14/40 — Loss 0.3951 — Accuracy 75.00%
+Epoch 15/40 — Loss 0.3889 — Accuracy 75.00%
+Epoch 16/40 — Loss 0.3823 — Accuracy 75.00%
+Epoch 17/40 — Loss 0.3753 — Accuracy 75.00%
+Epoch 18/40 — Loss 0.3679 — Accuracy 75.00%
+Epoch 19/40 — Loss 0.3600 — Accuracy 75.00%
+Epoch 20/40 — Loss 0.3518 — Accuracy 75.00%
+Epoch 21/40 — Loss 0.3433 — Accuracy 75.00%
+Epoch 22/40 — Loss 0.3345 — Accuracy 75.00%
+Epoch 23/40 — Loss 0.3256 — Accuracy 75.00%
+Epoch 24/40 — Loss 0.3166 — Accuracy 75.00%
+Epoch 25/40 — Loss 0.3077 — Accuracy 75.00%
+Epoch 26/40 — Loss 0.2989 — Accuracy 75.00%
+Epoch 27/40 — Loss 0.2902 — Accuracy 75.00%
+Epoch 28/40 — Loss 0.2817 — Accuracy 75.00%
+Epoch 29/40 — Loss 0.2735 — Accuracy 75.00%
+Epoch 30/40 — Loss 0.2657 — Accuracy 75.00%
+Epoch 31/40 — Loss 0.2581 — Accuracy 75.00%
+Epoch 32/40 — Loss 0.2509 — Accuracy 75.00%
+Epoch 33/40 — Loss 0.2441 — Accuracy 100.00%
+Epoch 34/40 — Loss 0.2376 — Accuracy 100.00%
+Epoch 35/40 — Loss 0.2315 — Accuracy 100.00%
+Epoch 36/40 — Loss 0.2257 — Accuracy 100.00%
+Epoch 37/40 — Loss 0.2202 — Accuracy 100.00%
+Epoch 38/40 — Loss 0.2150 — Accuracy 100.00%
+Epoch 39/40 — Loss 0.2101 — Accuracy 100.00%
+Epoch 40/40 — Loss 0.2054 — Accuracy 100.00%
+
+Resultados:
+[0.0, 0.0] -> prob=0.3785222339944759, clase=0
+[0.0, 1.0] -> prob=0.8293329270793373, clase=1
+[1.0, 0.0] -> prob=0.8831851569066683, clase=1
+[1.0, 1.0] -> prob=0.9836923200580506, clase=1
+
+Esperado:
+[0, 0] -> clase=0
+[0, 1] -> clase=1
+[1, 0] -> clase=1
+[1, 1] -> clase=1
+
+Perceptron simple entrenado exitosamente.

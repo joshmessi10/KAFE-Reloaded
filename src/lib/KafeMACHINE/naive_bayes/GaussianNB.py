@@ -1,5 +1,6 @@
+from math import exp, log, pi
+
 from global_utils import check_sig
-from lib.KafeMATH.functions import exp, log, pow_, sqrt
 from TypeUtils import numeric_matrix_types, numeric_vector_types, pardos_type
 
 from ..BaseMachine import BaseMachine
@@ -40,7 +41,12 @@ class GaussianNB(BaseMachine):
         self.var_ = []
         self.n_features_in_ = 0
 
-    @check_sig([3], [pardos_type] + numeric_vector_types + numeric_matrix_types, numeric_vector_types, is_method=True)
+    @check_sig(
+        [3],
+        [pardos_type] + numeric_vector_types + numeric_matrix_types,
+        numeric_vector_types,
+        is_method=True,
+    )
     def fit(self, X, y):
         """Fit Gaussian Naive Bayes with X, y."""
         matrix, cols, is_df = self._unwrap_data(X)
@@ -69,10 +75,7 @@ class GaussianNB(BaseMachine):
 
             self.class_prior_.append(n_c / n)
 
-            mean_c = [
-                sum(X_c[i][j] for i in range(n_c)) / n_c
-                for j in range(m)
-            ]
+            mean_c = [sum(X_c[i][j] for i in range(n_c)) / n_c for j in range(m)]
             self.theta_.append(mean_c)
 
             var_c = [
@@ -84,12 +87,22 @@ class GaussianNB(BaseMachine):
         self._is_fitted = True
         return self
 
-    def _gaussian_pdf(self, x, mean, var):
-        """Computes the Gaussian probability density function."""
+    def _gaussian_log_pdf(self, x, mean, var):
+        """Log density for one feature, including the zero-variance case."""
         if var == 0:
-            return 1.0 if x == mean else 0.0
-        two_pi_var = 2.0 * 3.141592653589793 * var
-        return (1.0 / sqrt(two_pi_var)) * exp(-pow_(x - mean, 2) / (2.0 * var))
+            return 0.0 if x == mean else float("-inf")
+        return -0.5 * (log(2.0 * pi * var) + (x - mean) ** 2 / var)
+
+    def _log_posteriors(self, x):
+        values = []
+        for prior, means, variances in zip(
+            self.class_prior_, self.theta_, self.var_, strict=True
+        ):
+            score = log(prior) if prior > 0 else float("-inf")
+            for value, mean, variance in zip(x, means, variances, strict=True):
+                score += self._gaussian_log_pdf(value, mean, variance)
+            values.append(score)
+        return values
 
     @check_sig([2], numeric_vector_types + numeric_matrix_types, is_method=True)
     def predict(self, X):
@@ -110,36 +123,9 @@ class GaussianNB(BaseMachine):
         return [self._predict_one(x) for x in X]
 
     def _predict_one(self, x):
-        """Predict the class for a single sample."""
-        log_posteriors = []
-
-        for idx in range(len(self.classes_)):
-            if self.class_prior_[idx] > 0:
-                log_prior = log(self.class_prior_[idx])
-            else:
-                log_prior = float('-inf')
-
-            log_likelihood = 0.0
-            pdf_zero = False
-            for j in range(len(x)):
-                pdf = self._gaussian_pdf(x[j], self.theta_[idx][j], self.var_[idx][j])
-                if pdf > 0:
-                    log_likelihood += log(pdf)
-                else:
-                    pdf_zero = True
-                    break
-
-            if pdf_zero:
-                log_posteriors.append(float('-inf'))
-            else:
-                log_posteriors.append(log_prior + log_likelihood)
-
-        best_idx = 0
-        for i in range(1, len(log_posteriors)):
-            if log_posteriors[i] > log_posteriors[best_idx]:
-                best_idx = i
-
-        return self.classes_[best_idx]
+        """Predict the class with the largest log posterior."""
+        scores = self._log_posteriors(x)
+        return self.classes_[scores.index(max(scores))]
 
     @check_sig([2], numeric_vector_types + numeric_matrix_types, is_method=True)
     def predict_proba(self, X):
@@ -160,51 +146,19 @@ class GaussianNB(BaseMachine):
         return [self._predict_proba_one(x) for x in X]
 
     def _predict_proba_one(self, x):
-        """Predict probabilities for a single sample."""
-        log_posteriors = []
-
-        for idx in range(len(self.classes_)):
-            if self.class_prior_[idx] > 0:
-                log_prior = log(self.class_prior_[idx])
-            else:
-                log_prior = float('-inf')
-
-            log_likelihood = 0.0
-            pdf_zero = False
-            for j in range(len(x)):
-                pdf = self._gaussian_pdf(x[j], self.theta_[idx][j], self.var_[idx][j])
-                if pdf > 0:
-                    log_likelihood += log(pdf)
-                else:
-                    pdf_zero = True
-                    break
-
-            if pdf_zero:
-                log_posteriors.append(float('-inf'))
-            else:
-                log_posteriors.append(log_prior + log_likelihood)
-
-        max_log = log_posteriors[0]
-        for i in range(1, len(log_posteriors)):
-            if log_posteriors[i] > max_log:
-                max_log = log_posteriors[i]
-
-        exps = [0.0] * len(self.classes_)
-        for i in range(len(exps)):
-            if log_posteriors[i] != float('-inf'):
-                exps[i] = exp(log_posteriors[i] - max_log)
-
-        total = 0.0
-        for e in exps:
-            total += e
-        if total == 0:
+        """Normalize class log posteriors without underflow."""
+        scores = self._log_posteriors(x)
+        largest = max(scores)
+        if largest == float("-inf"):
             return [1.0 / len(self.classes_)] * len(self.classes_)
-
-        return [e / total for e in exps]
+        weights = [exp(score - largest) for score in scores]
+        total = sum(weights)
+        return [weight / total for weight in weights]
 
     def score(self, X, y, metric=None):
         """Score using accuracy (default) or a custom metric."""
         from ..metrics import accuracy_score
+
         self._check_fitted("score")
         preds = self.predict(X)
         if metric is None:

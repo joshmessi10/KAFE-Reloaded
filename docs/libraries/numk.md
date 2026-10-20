@@ -86,3 +86,32 @@ show(numk.shape([[1,2,3],[4,5,6]])); -- [2, 3]
 
 !!! note "Supported types"
     NUMK operates on `INT` and `FLOAT`.
+
+## Working with tensors
+
+NUMK represents vectors, matrices and higher-dimensional tensors as nested KAFE lists. Shape is the length of each axis: `[[1, 2], [3, 4]]` has shape `[2, 2]`. Keep rows rectangular; operations that combine arrays require compatible dimensions. `mul` is matrix multiplication, while `emul` multiplies elements at matching positions.
+
+| Function | Use |
+|---|---|
+| `tensor(data)` | Validate/copy numeric nested data for tensor operations. |
+| `emul(a, b)` | Element-wise multiplication. |
+| `broadcast_add(a, b)`, `broadcast_sub(a, b)`, `broadcast_mul(a, b)`, `broadcast_div(a, b)` | Combine arrays with compatible broadcast shapes. |
+| `zeros_nd(shape)`, `ones(shape)` | Create an N-dimensional constant tensor. |
+| `random_tensor(shape, low, high, seed)`, `normal_tensor(shape, mean, stddev, seed)` | Create reproducible random inputs with a seed. |
+| `reshape(a, new_shape)`, `transpose_axes(a, axes)` | Change tensor layout without changing its values. |
+| `concatenate(values, axis)`, `split_sizes(data, sizes, axis)` | Join and split tensors along an axis. |
+| `sum_axis(a, axis)`, `max_axis(a, axis)`, `sum_all(a)` | Reduce numeric data. |
+| `scalar_mul(value, tensor)`, `abs_tensor(tensor)`, `exp_tensor(tensor)` | Transform values in a tensor. |
+
+### Choose matrix or element-wise multiplication
+
+```kafe
+import numk;
+List[List[INT]] a = [[1, 2], [3, 4]];
+List[List[INT]] b = [[2, 0], [0, 2]];
+show(numk.mul(a, b));   -- [[2, 4], [6, 8]]
+show(numk.emul(a, b));  -- [[2, 0], [0, 8]]
+show(numk.shape(a));    -- [2, 2]
+```
+
+`numk.tensor` returns numeric lists, which Gesha can accept directly as inputs. See [Gesha with NUMK](../ejemplos/gesha/numk-dense.md) for a complete training program.

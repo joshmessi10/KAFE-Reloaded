@@ -206,19 +206,19 @@ The Dense layer detects `self.activation_name == "softmax"` and applies `self.ac
 ## Usage Examples
 
 ```kafe
-import geshaDeep;
+import gesha;
 
 -- ReLU in hidden layers (the standard choice)
-GESHA hidden = geshaDeep.create_dense(64, "relu", [10], 0.0);
+GESHA hidden = gesha.create_dense(64, "relu", [10], 0.0);
 
 -- Softmax in the output layer (multiclass classification)
-GESHA output = geshaDeep.create_dense(5, "softmax", [], 0.0);
+GESHA output = gesha.create_dense(5, "softmax", [], 0.0);
 
 -- Sigmoid for binary classification
-GESHA binary = geshaDeep.sigmoid_layer();
+GESHA binary = gesha.sigmoid_layer();
 
 -- No activation (linear regression)
-GESHA regression = geshaDeep.create_dense(1, "linear", [3], 0.0);
+GESHA regression = gesha.create_dense(1, "linear", [3], 0.0);
 ```
 
 ## Implementation Location

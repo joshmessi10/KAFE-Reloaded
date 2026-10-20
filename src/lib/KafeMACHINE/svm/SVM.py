@@ -289,8 +289,12 @@ class SVM(BaseMachine):
         decisions = self._decision_function(X)
         probs = []
         for d in decisions:
-            prob_pos = 1.0 / (1.0 + pyexp(-d))
-            probs.append([1.0 - prob_pos, prob_pos])
+            if d >= 0:
+                prob_pos = 1.0 / (1.0 + pyexp(-d))
+            else:
+                exp_d = pyexp(d)
+                prob_pos = exp_d / (1.0 + exp_d)
+            probs.append([prob_pos, 1.0 - prob_pos])
         return probs
 
     def score(self, X, y, metric=None):

@@ -129,9 +129,9 @@ The neural approach uses learned representations and allows a point to have part
 
 ## Dependencies
 
-- `lib.KafeGESHA.layers.dense` — Dense layers used by the neural network.
+- `lib.KafeGESHA.layers.Dense` — Dense layers used by the neural network (unified backend).
 - `lib.KafeGESHA.activations` — Softmax produces soft assignments.
-- `lib.KafeGESHA.core.model` — implements unsupervised training and the Soft K-Means loss/gradient.
+- `lib.KafeGESHA.models_v2` — implements unsupervised training and the Soft K-Means loss/gradient.
 
 ## Related Concepts
 
@@ -147,12 +147,12 @@ The neural approach uses learned representations and allows a point to have part
 Unsupervised mode is selected by calling `fit(x_train)` without labels. The model computes soft weighted centroids and distance-based targets during training.
 
 ```kafe
-import geshaDeep;
+import gesha;
 
-GESHA hidden = geshaDeep.create_dense(8, "relu", [4], 0.0);
-GESHA assignments = geshaDeep.create_dense(3, "softmax", [], 0.0);
-GESHA model = geshaDeep.sequential([hidden, assignments]);
-geshaDeep.compile(model, "sgd", "mse", []);
+GESHA hidden = gesha.create_dense(8, "relu", [4], 0.0);
+GESHA assignments = gesha.create_dense(3, "softmax", [], 0.0);
+GESHA model = gesha.sequential([hidden, assignments]);
+gesha.compile(model, "sgd", "mse", []);
 model.fit(x_train, [], 10, 1);
 ```
 
@@ -185,13 +185,13 @@ Although `compile()` accepts optimizer names, the model's current training path 
 ## Usage Examples
 
 ```kafe
-import geshaDeep;
+import gesha;
 
 -- Unsupervised clustering with three clusters
-GESHA hidden = geshaDeep.create_dense(8, "relu", [4], 0.0);
-GESHA assignments = geshaDeep.create_dense(3, "softmax", [], 0.0);
-GESHA clustering = geshaDeep.sequential([hidden, assignments]);
-geshaDeep.compile(clustering, "sgd", "mse", []);
+GESHA hidden = gesha.create_dense(8, "relu", [4], 0.0);
+GESHA assignments = gesha.create_dense(3, "softmax", [], 0.0);
+GESHA clustering = gesha.sequential([hidden, assignments]);
+gesha.compile(clustering, "sgd", "mse", []);
 clustering.fit(x_data, [], 20, 1);
 
 -- Get soft cluster assignments
@@ -211,8 +211,8 @@ show(cluster);
 
 ## Public API
 
-- Build a model with `geshaDeep.sequential([...])`.
-- Compile with `geshaDeep.compile(model, optimizer, loss, metrics)`.
+- Build a model with `gesha.sequential([...])`.
+- Compile with `gesha.compile(model, optimizer, loss, metrics)`.
 - Call `model.fit(x_train, [], epochs, batch_size)` without labels for unsupervised training.
 - `model.predict(x)` returns the model's assignment vector.
 - `model.predict_label(x)` returns the index of the largest output.

@@ -83,6 +83,8 @@ The KAFE implementation (`GaussianMixture.py`) supports:
 | `aic(X)` | Computes the Akaike information criterion. |
 | `bic(X)` | Computes the Bayesian information criterion. |
 
+The implementation evaluates diagonal Gaussian densities in log space and uses log-sum-exp for responsibilities and likelihood. BIC uses $p\ln(n)$ with the natural logarithm.
+
 ## When to Use
 
 - Clustering data with elliptical shapes.

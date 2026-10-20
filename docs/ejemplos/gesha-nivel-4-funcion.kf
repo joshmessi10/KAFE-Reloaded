@@ -1,0 +1,39 @@
+-- Nonlinear function approximation: regression with Generated quadratic samples.
+import gesha;
+import machine;
+
+List[List[FLOAT]] X = [];
+List[FLOAT] y = [];
+INT i = -20;
+while (i <= 20):
+    FLOAT x = i / 20.0;
+    append(X, [x]);
+    append(y, x * x);
+    i = i + 1;
+;
+MACHINE split = machine.train_test_split(X, y, 0.2, 42);
+List[List[FLOAT]] X_train = split[0];
+List[List[FLOAT]] X_test = split[1];
+List[FLOAT] y_train = split[2];
+List[FLOAT] y_test = split[3];
+
+GESHA h1 = gesha.create_dense(16, "tanh", [1], 0.0, 41);
+GESHA h2 = gesha.create_dense(16, "tanh", [16], 0.0, 42);
+GESHA output_layer = gesha.create_dense(1, "linear", [16], 0.0, 43);
+GESHA model = gesha.sequential([h1, h2, output_layer]);
+model.compile("adam", "mse", []);
+model.set_lr(0.01);
+model.fit(X_train, y_train, 120, 8);
+
+FLOAT error = 0.0;
+for (j in range(0, len(X_test))):
+    FLOAT pred = model.predict(X_test[j])[0];
+    FLOAT difference = pred - y_test[j];
+    if (difference < 0.0):
+        difference = 0.0 - difference;
+    ;
+    error = error + difference;
+    show(str(X_test[j][0]) + " actual=" + str(y_test[j]) + " predicted=" + str(pred));
+;
+show("Test MAE:");
+show(error / len(X_test));

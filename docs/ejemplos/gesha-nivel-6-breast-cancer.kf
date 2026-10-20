@@ -1,0 +1,54 @@
+-- Binary MLP: Breast Cancer Wisconsin: experimental binary classification with Breast Cancer Wisconsin.
+import kaggle;
+import machine;
+import gesha;
+
+List[STR] columns = [
+    "radius_mean", "texture_mean", "perimeter_mean", "area_mean", "smoothness_mean",
+    "compactness_mean", "concavity_mean", "concave points_mean", "symmetry_mean", "fractal_dimension_mean",
+    "radius_se", "texture_se", "perimeter_se", "area_se", "smoothness_se",
+    "compactness_se", "concavity_se", "concave points_se", "symmetry_se", "fractal_dimension_se",
+    "radius_worst", "texture_worst", "perimeter_worst", "area_worst", "smoothness_worst",
+    "compactness_worst", "concavity_worst", "concave points_worst", "symmetry_worst", "fractal_dimension_worst"
+];
+List[List[FLOAT]] X = kaggle.load_dataset_matrix("uciml/breast-cancer-wisconsin-data", columns, "data.csv", 240);
+PARDOS df = kaggle.load_dataset("uciml/breast-cancer-wisconsin-data", "data.csv");
+List[STR] diagnoses = df.col("diagnosis");
+List[INT] y = [];
+for (i in range(0, len(X))):
+    INT class_label = 0;
+    if (diagnoses[i] == "M"):
+        class_label = 1;
+    ;
+    append(y, class_label);
+;
+MACHINE split = machine.stratified_train_test_split(X, y, 0.2, 42);
+List[List[FLOAT]] X_train = split[0];
+List[List[FLOAT]] X_test = split[1];
+List[INT] y_train = split[2];
+List[INT] y_test = split[3];
+MACHINE scaler = machine.standard_scaler();
+scaler.fit(X_train);
+List[List[FLOAT]] train_scaled = scaler.transform(X_train);
+List[List[FLOAT]] test_scaled = scaler.transform(X_test);
+
+GESHA h1 = gesha.create_dense(16, "relu", [30], 0.0, 42, gesha.he_normal(42));
+GESHA h2 = gesha.create_dense(8, "relu", [16], 0.0, 43, gesha.he_normal(43));
+GESHA output_layer = gesha.create_dense(1, "sigmoid", [8], 0.0, 44);
+GESHA model = gesha.sequential([h1, h2, output_layer]);
+model.compile("adam", "binary_crossentropy", []);
+model.set_lr(0.005);
+model.fit(train_scaled, y_train, 30, 16);
+
+List[INT] predictions = model.predict_label(test_scaled);
+INT correct = 0;
+for (i in range(0, len(y_test))):
+    if (predictions[i] == y_test[i]):
+        correct = correct + 1;
+    ;
+    if (i < 5):
+        show("Experimental diagnosis actual=" + str(y_test[i]) + " predicted=" + str(predictions[i]));
+    ;
+;
+show("Breast Cancer accuracy test:");
+show(correct / len(y_test));

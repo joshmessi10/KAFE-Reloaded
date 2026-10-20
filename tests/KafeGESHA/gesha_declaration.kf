@@ -1,0 +1,14 @@
+import gesha;
+
+-- GESHA declaration without a value must succeed (ADR-0017).
+GESHA m;
+show("declared");
+
+-- A later assignment binds a real model correctly.
+GESHA layer = gesha.create_dense(2, "sigmoid", [2], 0.0, 42);
+m = gesha.sequential([layer]);
+show("assigned");
+
+-- The bound model works as GESHA.
+List[FLOAT] out = m.forward([0.5, -0.5]);
+show(len(out));

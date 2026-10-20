@@ -1,0 +1,16 @@
+-- Dataset de texto etiquetado: frases de reseñas de Yelp separadas por TAB
+-- con etiqueta 0/1 y SIN encabezado (formato texto<TAB>etiqueta).
+-- load_text_dataset valida cada fila (celdas suficientes y etiqueta entera)
+-- y devuelve un DataFrame de PARDOS con columnas text (STR) y label (INT).
+-- Se usa la ruta completa del archivo: el dataset contiene una copia anidada
+-- y solo la ruta exacta resuelve sin ambigüedad.
+import kaggle;
+PARDOS df = kaggle.load_text_dataset("marklvl/sentiment-labelled-sentences-data-set", "sentiment labelled sentences/yelp_labelled.txt");
+show("Forma [filas, columnas]:");
+show(df.shape());
+List[STR] textos = df.col("text");
+List[INT] etiquetas = df.col("label");
+show("Primer texto:");
+show(textos[0]);
+show("Etiqueta del primer texto:");
+show(etiquetas[0]);

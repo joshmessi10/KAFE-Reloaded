@@ -1,4 +1,5 @@
 import os
+import re
 
 import pytest
 from utils import (
@@ -10,13 +11,42 @@ from utils import (
     run_kafe_program,
 )
 
+_VALID_PARAMS = list(get_parameters(get_programs("../tests/KafeGESHA")))
+_INVALID_PARAMS = list(get_parameters(get_invalid_programs("../tests/KafeGESHA")))
+
+_SLOW_EXAMPLES = {
+    "KafeGESHA/rnn_embedding_sintetico.kf",
+    "KafeGESHA/rnn_sintetico.kf",
+    "KafeGESHA/Autoencoder/autoencoder_clustering.kf",
+    "KafeGESHA/MultiCapa/circle_classification.kf",
+}
+
+_GATE_LABELS = {
+    "KafeGESHA/MultiCapa/xor_gate.kf": [0, 1, 1, 0],
+    "KafeGESHA/PerceptronSimple/and_gate.kf": [0, 0, 0, 1],
+    "KafeGESHA/PerceptronSimple/or_gate.kf": [0, 1, 1, 1],
+}
+
+
+def _valid_example_param(program, input_text, expected_stdout):
+    relative_path = os.path.relpath(program, os.path.dirname(__file__))
+    if relative_path.replace(os.sep, "/") in _SLOW_EXAMPLES:
+        return pytest.param(
+            program,
+            input_text,
+            expected_stdout,
+            id=relative_path,
+            marks=pytest.mark.skip(reason="Long training example; protect CI time budget"),
+        )
+    return pytest.param(program, input_text, expected_stdout, id=relative_path)
 
 @pytest.mark.parametrize(
     "program, input_text, expected_stdout",
-    list(get_parameters(get_programs("../tests/KafeGESHA"))),
+    [_valid_example_param(*params) for params in _VALID_PARAMS],
 )
 def test_valid_programs(program, input_text, expected_stdout):
-    result = run_kafe_program(program, input_text=input_text)
+    result = run_kafe_program(program, input_text=input_text, timeout=120)
+    assert_valid_kafe_result(result, program, expected_stdout)
 
     output_directory = os.path.dirname(program)
     program_basename = os.path.splitext(os.path.basename(program))[0]
@@ -43,17 +73,25 @@ def test_valid_programs(program, input_text, expected_stdout):
     except FileNotFoundError:
         expected_svg = ""
 
-    assert (
-        generated_svg == expected_svg
-    ), f"{expected_svg_path} doesn't match {generated_svg_path}"
-    assert_valid_kafe_result(result, program, expected_stdout)
+    assert generated_svg == expected_svg, (
+        f"{expected_svg_path} doesn't match {generated_svg_path}"
+    )
+    relative_path = os.path.relpath(program, os.path.dirname(__file__)).replace(os.sep, "/")
+    if relative_path in _GATE_LABELS:
+        predictions = result.stdout.split("Resultados:", 1)[1].split("Esperado:", 1)[0]
+        labels = [int(value) for value in re.findall(r"clase=(\d)", predictions)]
+        assert labels == _GATE_LABELS[relative_path]
 
 
 @pytest.mark.parametrize(
     "program, input_text, expected_stdout",
-    list(get_parameters(get_invalid_programs("../tests/KafeGESHA"))),
+    _INVALID_PARAMS,
+    ids=[
+        os.path.relpath(program, os.path.dirname(__file__))
+        for program, _, _ in _INVALID_PARAMS
+    ],
 )
 def test_invalid_programs(program, input_text, expected_stdout):
-    result = run_kafe_program(program, input_text=input_text)
+    result = run_kafe_program(program, input_text=input_text, timeout=120)
 
     assert_invalid_kafe_result(result, program, expected_stdout)

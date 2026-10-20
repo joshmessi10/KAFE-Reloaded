@@ -1,290 +1,468 @@
 import random as _random_module
+from typing import Any
 
 from global_utils import check_sig
-from TypeUtils import (
-    any_list_types,
-    any_matrix_type,
-    float_type,
-    integer_type,
-    numeric_matrix_types,
-    numeric_vector_types,
-)
+from TypeUtils import any_list_types as lista_cualquiera_t
+from TypeUtils import any_matrix_type as matriz_cualquiera_t
+from TypeUtils import float_type as flotante_t
+from TypeUtils import integer_type as entero_t
+from TypeUtils import numeric_matrix_types as matriz_numeros_t
+from TypeUtils import numeric_vector_types as vector_numeros_t
 
 from .errors import raiseDifferentDimension, raiseNonUniformMatrix
 from .utils import (
-    _broadcast_to_nd,
-    _broadcastable,
+    _broadcast_op,
+    _map_nd,
     _max_nd,
-    _op_nd,
     _reshape_nd,
     _shape_nd,
     _sum_nd,
-    apply_matrix_operation,
-    has_same_dimensions,
-    is_uniform_matrix,
+    _validate_dimensions,
+    es_misma_dimension,
+    es_uniforme,
+    operar_matrices,
 )
 
+_numeric_nd = [entero_t, flotante_t] + lista_cualquiera_t
 
-@check_sig([2], numeric_matrix_types, numeric_matrix_types)
-def add(matrix1, matrix2):
-    if not has_same_dimensions(matrix1, matrix2):
-        raiseDifferentDimension('add')
 
-    return apply_matrix_operation(matrix1, matrix2, lambda x, y: x + y)
+def map_elements(operation, *values):
+    """API Python para aplicar una operación escalar a listas de igual forma.
 
-@check_sig([2], numeric_matrix_types, numeric_matrix_types)
-def sub(matrix1, matrix2):
-    if not has_same_dimensions(matrix1, matrix2):
-        raiseDifferentDimension('sub')
+    Centraliza el recorrido N-dimensional usado por las bibliotecas. No hace
+    broadcasting ni acepta truncamientos implícitos entre formas diferentes.
+    """
+    if not values:
+        raise ValueError("NUMK: map_elements requiere datos")
+    expected = _shape_nd(values[0])
+    if any(_shape_nd(value) != expected for value in values[1:]):
+        raise ValueError("NUMK: formas incompatibles")
+    return _map_nd(operation, *values)
 
-    return apply_matrix_operation(matrix1, matrix2, lambda x, y: x - y)
 
-@check_sig([2], numeric_matrix_types, numeric_matrix_types)
-def mul(matrix1, matrix2):
-    if not is_uniform_matrix(matrix1) or not is_uniform_matrix(matrix2):
-        raiseNonUniformMatrix('mul')
+@check_sig([1], _numeric_nd)
+def tensor(data) -> Any:
+    """Valida y copia datos numéricos; devuelve listas, nunca un wrapper."""
+    return map_elements(lambda value: value, data)
 
-    if not matrix1 or not matrix2:
+
+@check_sig([1], _numeric_nd)
+def exp_tensor(data):
+    """Exponencial elemento a elemento mediante KafeMATH."""
+    from lib.KafeMATH.functions import exp
+
+    return map_elements(exp, data)
+
+
+@check_sig([2], _numeric_nd, _numeric_nd)
+def broadcast_div(a, b):
+    """División con broadcasting; divisor cero produce ZeroDivisionError."""
+    return _broadcast_op(a, b, lambda x, y: x / y)
+
+
+@check_sig([2], matriz_numeros_t, matriz_numeros_t)
+def add(matriz1, matriz2):
+    if not es_misma_dimension(matriz1, matriz2):
+        raiseDifferentDimension("add")
+
+    return operar_matrices(matriz1, matriz2, lambda x, y: x + y)
+
+
+@check_sig([2], matriz_numeros_t, matriz_numeros_t)
+def sub(matriz1, matriz2):
+    if not es_misma_dimension(matriz1, matriz2):
+        raiseDifferentDimension("sub")
+
+    return operar_matrices(matriz1, matriz2, lambda x, y: x - y)
+
+
+@check_sig([2], matriz_numeros_t, matriz_numeros_t)
+def mul(matriz1, matriz2):
+    if not es_uniforme(matriz1) or not es_uniforme(matriz2):
+        raiseNonUniformMatrix("mul")
+
+    if not matriz1 or not matriz2:
         return []
 
-    if len(matrix1) != 0 and len(matrix1[0]) != len(matrix2):
+    if len(matriz1) != 0 and len(matriz1[0]) != len(matriz2):
         raise Exception("mul: Matrices are not compatible for multiplication")
 
-    result = []
-    for i in range(len(matrix1)):
-        row = []
-        for j in range(len(matrix2[0])):
-            total = 0
-            for k in range(len(matrix2)):
-                total += matrix1[i][k] * matrix2[k][j]
-            row.append(total)
-        result.append(row)
+    resultado = []
+    for i in range(len(matriz1)):
+        fila = []
+        for j in range(len(matriz2[0])):
+            suma = 0
+            for k in range(len(matriz2)):
+                suma += matriz1[i][k] * matriz2[k][j]
+            fila.append(suma)
+        resultado.append(fila)
 
-    return result
+    return resultado
 
-@check_sig([1], numeric_matrix_types)
-def inv(matrix):
-    if not is_uniform_matrix(matrix):
-        raiseNonUniformMatrix('inv')
 
-    if not matrix or not matrix[0]:
+@check_sig([1], matriz_numeros_t)
+def inv(matriz):
+    if not es_uniforme(matriz):
+        raiseNonUniformMatrix("inv")
+
+    if not matriz or not matriz[0]:
         raise Exception("inv: Matrix is empty")
 
-    if len(matrix) != 0 and len(matrix) != len(matrix[0]):
+    if len(matriz) != 0 and len(matriz) != len(matriz[0]):
         raise Exception("inv: Matrix is not square")
 
-    n = len(matrix)
-    m = len(matrix[0])
+    n = len(matriz)
+    m = len(matriz[0])
 
-    identity = [[0 for _ in range(m)] for _ in range(n)]
+    identidad = [[0 for _ in range(m)] for _ in range(n)]
     for i in range(n):
-        identity[i][i] = 1
+        identidad[i][i] = 1
 
-    augmented_matrix = [row + identity[i] for i, row in enumerate(matrix)]
+    matriz_aumentada = [fila + identidad[i] for i, fila in enumerate(matriz)]
 
     m *= 2
 
     for i in range(n):
-        factor = augmented_matrix[i][i]
+        factor = matriz_aumentada[i][i]
         if factor == 0:
             raise Exception("inv: Matrix is singular")
         for j in range(m):
-            augmented_matrix[i][j] /= factor
+            matriz_aumentada[i][j] /= factor
         for k in range(n):
             if k != i:
-                factor = augmented_matrix[k][i]
+                factor = matriz_aumentada[k][i]
                 for j in range(m):
-                    augmented_matrix[k][j] -= factor * augmented_matrix[i][j]
+                    matriz_aumentada[k][j] -= factor * matriz_aumentada[i][j]
 
-    inverse = [row[n:] for row in augmented_matrix]
+    inversa = [fila[n:] for fila in matriz_aumentada]
 
-    return inverse
-
-@check_sig([1], [any_matrix_type])
-def transpose(matrix):
-    return list(map(list, zip(*matrix, strict=False)))
+    return inversa
 
 
+@check_sig([1], [matriz_cualquiera_t])
+def transpose(matriz):
+    return list(map(list, zip(*matriz, strict=False)))
 
-@check_sig([2], numeric_vector_types, numeric_vector_types)
+
+@check_sig([2], vector_numeros_t, vector_numeros_t)
 def dot(vec1, vec2):
     if len(vec1) != len(vec2):
-        raiseDifferentDimension('dot')
+        raiseDifferentDimension("dot")
 
-    return sum(x * y for x, y in zip(vec1, vec2, strict=True))
+    return sum(x * y for x, y in zip(vec1, vec2, strict=False))
 
 
-@check_sig([2], numeric_matrix_types, numeric_matrix_types)
+@check_sig([2], matriz_numeros_t, matriz_numeros_t)
 def dot_matrix(m1, m2):
-    if not is_uniform_matrix(m1) or not is_uniform_matrix(m2):
-        raiseNonUniformMatrix('dot')
+    if not es_uniforme(m1) or not es_uniforme(m2):
+        raiseNonUniformMatrix("dot")
 
     if not m1 or not m2:
         return []
 
     if len(m1[0]) != len(m2):
-        raiseDifferentDimension('dot_matrix')
+        raiseDifferentDimension("dot_matrix")
 
-    result = []
+    resultado = []
     for i in range(len(m1)):
-        row = []
+        fila = []
         for j in range(len(m2[0])):
-            total = 0
+            suma = 0
             for k in range(len(m2)):
-                total += m1[i][k] * m2[k][j]
-            row.append(total)
-        result.append(row)
-    return result
+                suma += m1[i][k] * m2[k][j]
+            fila.append(suma)
+        resultado.append(fila)
+    return resultado
 
-@check_sig([1], [integer_type])
+
+@check_sig([1], [entero_t])
 def zeros(n):
-    """Generates a vector of zeros of size n"""
+    """Genera un vector de ceros de tamaño n"""
     return [0 for _ in range(n)]
 
-@check_sig([2], [integer_type], [integer_type])
-def zeros_matrix(rows, columns):
-    """Generates a matrix of zeros of size rows x columns"""
-    return [[0 for _ in range(columns)] for _ in range(rows)]
 
-@check_sig([1], numeric_vector_types)
-def zeros_nd(shape):
+@check_sig([2], [entero_t], [entero_t])
+def zeros_matrix(filas, columnas):
+    """Genera una matriz de ceros tamaño filas x columnas"""
+    return [[0 for _ in range(columnas)] for _ in range(filas)]
+
+
+@check_sig([1], vector_numeros_t)
+def zeros_nd(shape) -> Any:
     """
-    Creates an N-dimensional tensor of zeros with the given form.
-    
+    Crea un tensor N-dimensional de ceros con la forma dada.
+
     zeros_nd([3]) → [0, 0, 0]
     zeros_nd([2, 3]) → [[0,0,0],[0,0,0]]
     zeros_nd([2, 2, 2]) → [[[0,0],[0,0]],[[0,0],[0,0]]]
     """
+    _validate_dimensions(shape)
+
     def _create(s):
         if len(s) == 0:
             return 0.0
         if len(s) == 1:
             return [0.0 for _ in range(s[0])]
         return [_create(s[1:]) for _ in range(s[0])]
+
     return _create(list(shape))
 
-@check_sig([1], any_list_types)
-def shape(obj):
-    dimensions = []
-    while isinstance(obj, list):
-        dimensions.append(len(obj))
-        if len(obj) == 0:
-            break
-        obj = obj[0]
-    return tuple(dimensions)
+
+@check_sig([1], lista_cualquiera_t)
+def shape(obj) -> tuple[int, ...]:
+    return _shape_nd(obj)
 
 
 # ============================================================
 # N-D EXTENSIONS — Element-wise operations
 # ============================================================
 
-@check_sig([2], numeric_matrix_types + numeric_vector_types, numeric_matrix_types + numeric_vector_types)
+
+@check_sig([2], _numeric_nd, _numeric_nd)
 def emul(a, b):
     """
-    Element-by-element multiplication (Hadamard product).
-    Supports any dimensionality.
-    
+    Multiplicación elemento a elemento (Hadamard product).
+    Soporta cualquier dimensionalidad.
+
     emul([1,2,3], [4,5,6]) → [4, 10, 18]
     emul([[1,2],[3,4]], [[5,6],[7,8]]) → [[5,12],[21,32]]
     """
-    return _op_nd(a, b, lambda x, y: x * y)
+    return map_elements(lambda x, y: x * y, a, b)
 
 
 # ============================================================
 # N-D EXTENSIONS — Broadcasting
 # ============================================================
 
-@check_sig([2], numeric_matrix_types + numeric_vector_types, numeric_matrix_types + numeric_vector_types)
+
+@check_sig([2], _numeric_nd, _numeric_nd)
 def broadcast_add(a, b):
     """
-    Sum with broadcasting support.
-    It allows adding tensors of different shapes when they are compatible.
-    
+    Suma con soporte de broadcasting.
+    Permite sumar tensores de diferentes formas cuando son compatibles.
+
     broadcast_add([[1,2],[3,4]], [0.1, 0.2]) → [[1.1,2.2],[3.1,4.2]]
     broadcast_add([[1,2],[3,4]], [[10],[20]]) → [[11,12],[23,24]]
     """
-    s1 = _shape_nd(a)
-    s2 = _shape_nd(b)
-    if not _broadcastable(s1, s2):
-        raise ValueError(
-            f"broadcast_add: Shapes {s1} and {s2} are not broadcastable"
-        )
-    # Pad to same length
-    max_len = max(len(s1), len(s2))
-    s1_padded = (1,) * (max_len - len(s1)) + s1
-    s2_padded = (1,) * (max_len - len(s2)) + s2
-
-    # Broadcast both to target shape
-    target = tuple(max(d1, d2) for d1, d2 in zip(s1_padded, s2_padded, strict=True))
-    a_bc = _broadcast_to_nd(a, target, s1)
-    b_bc = _broadcast_to_nd(b, target, s2)
-    return _op_nd(a_bc, b_bc, lambda x, y: x + y)
+    return _broadcast_op(a, b, lambda x, y: x + y)
 
 
-@check_sig([2], numeric_matrix_types + numeric_vector_types, numeric_matrix_types + numeric_vector_types)
+@check_sig([2], _numeric_nd, _numeric_nd)
 def broadcast_sub(a, b):
     """
-    Subtraction with broadcasting support.
+    Resta con soporte de broadcasting.
     """
-    s1 = _shape_nd(a)
-    s2 = _shape_nd(b)
-    if not _broadcastable(s1, s2):
-        raise ValueError(
-            f"broadcast_sub: Shapes {s1} and {s2} are not broadcastable"
-        )
-    max_len = max(len(s1), len(s2))
-    s1_padded = (1,) * (max_len - len(s1)) + s1
-    s2_padded = (1,) * (max_len - len(s2)) + s2
-    target = tuple(max(d1, d2) for d1, d2 in zip(s1_padded, s2_padded, strict=True))
-    a_bc = _broadcast_to_nd(a, target, s1)
-    b_bc = _broadcast_to_nd(b, target, s2)
-    return _op_nd(a_bc, b_bc, lambda x, y: x - y)
+    return _broadcast_op(a, b, lambda x, y: x - y)
 
 
-@check_sig([2], numeric_matrix_types + numeric_vector_types, numeric_matrix_types + numeric_vector_types)
+@check_sig([2], _numeric_nd, _numeric_nd)
 def broadcast_mul(a, b):
     """
-    Multiplication with broadcasting support.
+    Multiplicación con soporte de broadcasting.
     """
-    s1 = _shape_nd(a)
-    s2 = _shape_nd(b)
-    if not _broadcastable(s1, s2):
-        raise ValueError(
-            f"broadcast_mul: Shapes {s1} and {s2} are not broadcastable"
-        )
-    max_len = max(len(s1), len(s2))
-    s1_padded = (1,) * (max_len - len(s1)) + s1
-    s2_padded = (1,) * (max_len - len(s2)) + s2
-    target = tuple(max(d1, d2) for d1, d2 in zip(s1_padded, s2_padded, strict=True))
-    a_bc = _broadcast_to_nd(a, target, s1)
-    b_bc = _broadcast_to_nd(b, target, s2)
-    return _op_nd(a_bc, b_bc, lambda x, y: x * y)
+    return _broadcast_op(a, b, lambda x, y: x * y)
+
+
+def conv2d_chw(input_data, kernels, bias, stride=1, padding="valid"):
+    """Convolución 2D para CHW y kernels [F,C,KH,KW]."""
+    in_shape = shape(input_data)
+    kernel_shape = shape(kernels)
+    if len(in_shape) != 3 or len(kernel_shape) != 4:
+        raise ValueError("NUMK: conv2d_chw requiere CHW y kernels FCHW")
+    channels, height, width = in_shape
+    filters, kernel_channels, kh, kw = kernel_shape
+    if channels != kernel_channels or len(bias) != filters:
+        raise ValueError("NUMK: canales o bias incompatibles en conv2d")
+    if type(stride) is not int or stride <= 0:
+        raise ValueError("NUMK: stride debe ser entero positivo")
+    if padding not in ("valid", "same"):
+        raise ValueError("NUMK: padding debe ser valid o same")
+    pad_h = (kh - 1) // 2 if padding == "same" else 0
+    pad_w = (kw - 1) // 2 if padding == "same" else 0
+    out_h = (height + 2 * pad_h - kh) // stride + 1
+    out_w = (width + 2 * pad_w - kw) // stride + 1
+    if out_h <= 0 or out_w <= 0:
+        raise ValueError("NUMK: kernel mayor que la entrada")
+    output = zeros_nd([filters, out_h, out_w])
+    for f in range(filters):
+        kernel_f = kernels[f]
+        output_f = output[f]
+        for oy in range(out_h):
+            output_row = output_f[oy]
+            base_y = oy * stride - pad_h
+            for ox in range(out_w):
+                base_x = ox * stride - pad_w
+                kx_start = 0 if base_x >= 0 else -base_x
+                kx_end = kw if base_x + kw <= width else width - base_x
+                value = bias[f]
+                for c in range(channels):
+                    channel = input_data[c]
+                    kernel_fc = kernel_f[c]
+                    for ky in range(kh):
+                        iy = base_y + ky
+                        if iy < 0 or iy >= height:
+                            continue
+                        row = channel[iy]
+                        kernel_row = kernel_fc[ky]
+                        for kx in range(kx_start, kx_end):
+                            value += row[base_x + kx] * kernel_row[kx]
+                output_row[ox] = value
+    return output
+
+
+def conv2d_chw_backward(input_data, kernels, grad_output, stride=1, padding="valid"):
+    """Gradientes (entrada, kernels, bias) de :func:`conv2d_chw`."""
+    channels, height, width = shape(input_data)
+    filters, kernel_channels, kh, kw = shape(kernels)
+    if channels != kernel_channels:
+        raise ValueError("NUMK: canales incompatibles en backward conv2d")
+    if type(stride) is not int or stride <= 0:
+        raise ValueError("NUMK: stride debe ser entero positivo")
+    if padding not in ("valid", "same"):
+        raise ValueError("NUMK: padding debe ser valid o same")
+    pad_h = (kh - 1) // 2 if padding == "same" else 0
+    pad_w = (kw - 1) // 2 if padding == "same" else 0
+    out_h = (height + 2 * pad_h - kh) // stride + 1
+    out_w = (width + 2 * pad_w - kw) // stride + 1
+    if out_h <= 0 or out_w <= 0:
+        raise ValueError("NUMK: kernel mayor que la entrada")
+    expected = (filters, out_h, out_w)
+    if shape(grad_output) != expected:
+        raise ValueError("NUMK: grad_output incompatible en backward conv2d")
+    dx = zeros_nd([channels, height, width])
+    dw = zeros_nd([filters, channels, kh, kw])
+    db = zeros_nd([filters])
+    for f in range(filters):
+        grad_f = grad_output[f]
+        dw_f = dw[f]
+        for oy in range(out_h):
+            grad_row = grad_f[oy]
+            base_y = oy * stride - pad_h
+            for ox in range(out_w):
+                grad = grad_row[ox]
+                db[f] += grad
+                base_x = ox * stride - pad_w
+                kx_start = 0 if base_x >= 0 else -base_x
+                kx_end = kw if base_x + kw <= width else width - base_x
+                for c in range(channels):
+                    input_channel = input_data[c]
+                    kernel_fc = kernels[f][c]
+                    dw_fc = dw_f[c]
+                    dx_channel = dx[c]
+                    for ky in range(kh):
+                        iy = base_y + ky
+                        if iy < 0 or iy >= height:
+                            continue
+                        dw_row = dw_fc[ky]
+                        input_row = input_channel[iy]
+                        for kx in range(kx_start, kx_end):
+                            ix = base_x + kx
+                            dw_row[kx] += input_row[ix] * grad
+                            dx_channel[iy][ix] += kernel_fc[ky][kx] * grad
+    return dx, dw, db
+
+
+def transpose_axes(data, axes):
+    """Permuta ejes N-dimensionales sin introducir un wrapper Tensor."""
+    source_shape = shape(data)
+    if sorted(axes) != list(range(len(source_shape))):
+        raise ValueError("NUMK: axes debe ser una permutación")
+    output_shape = [source_shape[axis] for axis in axes]
+    output = zeros_nd(output_shape)
+
+    def get_value(indices):
+        value = data
+        for index in indices:
+            value = value[index]
+        return value
+
+    def set_value(indices, value):
+        target = output
+        for index in indices[:-1]:
+            target = target[index]
+        target[indices[-1]] = value
+
+    def visit(indices, depth):
+        if depth == len(output_shape):
+            source_indices = [0] * len(axes)
+            for output_axis, source_axis in enumerate(axes):
+                source_indices[source_axis] = indices[output_axis]
+            set_value(indices, get_value(source_indices))
+            return
+        for index in range(output_shape[depth]):
+            visit(indices + [index], depth + 1)
+
+    visit([], 0)
+    return output
+
+
+def concatenate(values, axis=0):
+    """Concatena listas ND con formas iguales excepto en ``axis``."""
+    if not values:
+        raise ValueError("NUMK: concatenate requiere entradas")
+    shapes = [shape(value) for value in values]
+    rank = len(shapes[0])
+    if axis < 0:
+        axis += rank
+    if not 0 <= axis < rank or any(len(item) != rank for item in shapes):
+        raise ValueError("NUMK: axis/rangos incompatibles")
+    for dimension in range(rank):
+        if dimension != axis and len({item[dimension] for item in shapes}) != 1:
+            raise ValueError("NUMK: formas incompatibles para concatenate")
+    if axis == 0:
+        result = []
+        for value in values:
+            result.extend(tensor(value))
+        return result
+    return [
+        concatenate([value[index] for value in values], axis - 1)
+        for index in range(shapes[0][0])
+    ]
+
+
+def split_sizes(data, sizes, axis=0):
+    """Operación inversa de concatenate para tamaños explícitos."""
+    if axis < 0:
+        axis += len(shape(data))
+    if axis == 0:
+        result, start = [], 0
+        for size in sizes:
+            result.append(tensor(data[start : start + size]))
+            start += size
+        return result
+    child_splits = [split_sizes(child, sizes, axis - 1) for child in data]
+    return [[child[index] for child in child_splits] for index in range(len(sizes))]
 
 
 # ============================================================
 # N-D EXTENSIONS — Axis reduction
 # ============================================================
 
-@check_sig([2], numeric_matrix_types + numeric_vector_types, [integer_type])
+
+@check_sig([2], lista_cualquiera_t, [entero_t])
 def sum_axis(a, axis):
     """
-    Sum along the specified axis.
-    
-    sum_axis([[1,2],[3,4]], 0) → [4, 6]       (sum across rows)
-    sum_axis([[1,2],[3,4]], 1) → [3, 7]       (sum across columns)
+    Suma a lo largo del eje especificado.
+
+    sum_axis([[1,2],[3,4]], 0) → [4, 6]       (suma filas)
+    sum_axis([[1,2],[3,4]], 1) → [3, 7]       (suma columnas)
     sum_axis([[[1,2],[3,4]],[[5,6],[7,8]]], 0) → [[6,8],[10,12]]
     """
+    if not -len(shape(a)) <= axis < len(shape(a)):
+        raise ValueError("NUMK: eje fuera de rango")
     return _sum_nd(a, axis)
 
 
-@check_sig([2], numeric_matrix_types + numeric_vector_types, [integer_type])
+@check_sig([2], lista_cualquiera_t, [entero_t])
 def max_axis(a, axis):
     """
-    Maximum along the specified axis.
-    
-    max_axis([[1,2],[3,4]], 0) → [3, 4] (max rows)
-    max_axis([[1,2],[3,4]], 1) → [2, 4] (max of columns)
+    Máximo a lo largo del eje especificado.
+
+    max_axis([[1,2],[3,4]], 0) → [3, 4]       (max de filas)
+    max_axis([[1,2],[3,4]], 1) → [2, 4]       (max de columnas)
     """
+    if not -len(shape(a)) <= axis < len(shape(a)):
+        raise ValueError("NUMK: eje fuera de rango")
     return _max_nd(a, axis)
 
 
@@ -292,15 +470,18 @@ def max_axis(a, axis):
 # N-D EXTENSIONS — Reshape
 # ============================================================
 
-@check_sig([2], numeric_matrix_types + numeric_vector_types, any_list_types)
+
+@check_sig([2], _numeric_nd, lista_cualquiera_t)
 def reshape(a, new_shape):
     """
-    Rearrange a tensor to a new shape.
-    
+    Reorganiza un tensor a una nueva forma.
+
     reshape([1,2,3,4], [2,2]) → [[1,2],[3,4]]
     reshape([[1,2],[3,4]], [4]) → [1,2,3,4]
     reshape([1,2,3,4,5,6], [3,2]) → [[1,2],[3,4],[5,6]]
     """
+    _shape_nd(a)
+    _validate_dimensions(new_shape)
     shape_tuple = tuple(new_shape)
     return _reshape_nd(a, shape_tuple)
 
@@ -309,81 +490,116 @@ def reshape(a, new_shape):
 # N-D EXTENSIONS — Creation functions
 # ============================================================
 
-@check_sig([1], numeric_vector_types)
+
+@check_sig([1], vector_numeros_t)
 def ones(shape):
     """
-    Create a ones tensor with the given shape.
-    
+    Crea un tensor de unos con la forma dada.
+
     ones([3]) → [1, 1, 1]
     ones([2, 3]) → [[1, 1, 1], [1, 1, 1]]
     ones([2, 2, 2]) → [[[1, 1], [1, 1]], [[1, 1], [1, 1]]]
     """
+    _validate_dimensions(shape)
+
     def _create(shape, val):
         if len(shape) == 0:
             return val
         if len(shape) == 1:
             return [val for _ in range(shape[0])]
         return [_create(shape[1:], val) for _ in range(shape[0])]
+
     return _create(list(shape), 1.0)
 
 
-@check_sig([1, 3], numeric_vector_types, [float_type, integer_type], [float_type, integer_type])
-def random_tensor(shape, low=-0.5, high=0.5):
+@check_sig(
+    [1, 3, 4],
+    vector_numeros_t,
+    [flotante_t, entero_t],
+    [flotante_t, entero_t],
+    [entero_t, "VOID"],
+)
+def random_tensor(shape, low=-0.5, high=0.5, seed=None) -> Any:
     """
-    Create a tensor with random values ​​in the range [low, high].
-    
+    Crea un tensor con valores aleatorios en el rango [low, high].
+
     random_tensor([3]) → [0.12, -0.34, 0.56]
     random_tensor([2, 2], -1.0, 1.0) → [[...], [...]]
     """
+    _validate_dimensions(shape)
+    rng = _random_module if seed is None else _random_module.Random(seed)
+
     def _rand(shape):
+        if not shape:
+            return rng.uniform(low, high)
         if len(shape) == 1:
-            return [_random_module.uniform(low, high) for _ in range(shape[0])]
+            return [rng.uniform(low, high) for _ in range(shape[0])]
         return [_rand(shape[1:]) for _ in range(shape[0])]
+
     return _rand(list(shape))
 
 
-@check_sig([2], [float_type, integer_type], numeric_matrix_types + numeric_vector_types)
+@check_sig(
+    [1, 2, 3, 4],
+    vector_numeros_t,
+    [flotante_t, entero_t],
+    [flotante_t, entero_t],
+    [entero_t, "VOID"],
+)
+def normal_tensor(shape, mean=0.0, stddev=1.0, seed=None) -> Any:
+    """Crea un tensor N-dimensional con muestras gaussianas."""
+    _validate_dimensions(shape)
+    if stddev < 0:
+        raise ValueError("normal_tensor: stddev debe ser no negativo")
+    rng = _random_module if seed is None else _random_module.Random(seed)
+
+    def _rand(dims):
+        if not dims:
+            return rng.gauss(mean, stddev)
+        return [_rand(dims[1:]) for _ in range(dims[0])]
+
+    return _rand(list(shape))
+
+
+@check_sig([2], [flotante_t, entero_t], _numeric_nd)
 def scalar_mul(scalar, tensor):
     """
-    Multiply a tensor by a scalar.
-    
+    Multiplica un tensor por un escalar.
+
     scalar_mul(3.0, [1, 2, 3]) → [3.0, 6.0, 9.0]
     scalar_mul(2.0, [[1,2],[3,4]]) → [[2.0,4.0],[6.0,8.0]]
     """
-    def _mul(t):
-        if isinstance(t, list):
-            return [_mul(item) for item in t]
-        return scalar * t
-    return _mul(tensor)
+    return map_elements(lambda value: scalar * value, tensor)
 
 
-@check_sig([1], numeric_matrix_types + numeric_vector_types)
+@check_sig([1], _numeric_nd)
 def sum_all(tensor):
     """
-    Add all the elements of a tensor.
-    
+    Suma todos los elementos de un tensor.
+
     sum_all([[1,2],[3,4]]) → 10
     sum_all([1, 2, 3]) → 6
     """
+    _shape_nd(tensor)
     total = 0.0
+
     def _sum(t):
         nonlocal total
         if isinstance(t, list):
             for item in t:
                 _sum(item)
         else:
+            if type(t) not in (int, float):
+                raise ValueError("NUMK: se requieren valores numericos")
             total += t
+
     _sum(tensor)
     return total
 
 
-@check_sig([1], numeric_matrix_types + numeric_vector_types)
+@check_sig([1], _numeric_nd)
 def abs_tensor(tensor):
     """
-    Absolute value of each element.
+    Valor absoluto de cada elemento.
     """
-    def _abs(t):
-        if isinstance(t, list):
-            return [_abs(item) for item in t]
-        return t if t >= 0 else -t
-    return _abs(tensor)
+    return map_elements(abs, tensor)

@@ -21,6 +21,7 @@ from .model_selection.model_selection import (
     Pipeline,
     RandomizedSearchCV,
     k_fold,
+    stratified_train_test_split,
     train_test_split,
 )
 from .naive_bayes.GaussianNB import GaussianNB
@@ -36,6 +37,7 @@ from .preprocessing import (
     RobustScaler,
     SimpleImputer,
     StandardScaler,
+    Tokenizer,
     VarianceThreshold,
 )
 from .svm.SVM import SVM
@@ -67,12 +69,14 @@ __all__ = [
     "GaussianMixture",
     "LinearDiscriminantAnalysis",
     "train_test_split",
+    "stratified_train_test_split",
     "k_fold",
     "CrossValScore",
     "GridSearchCV",
     "RandomizedSearchCV",
     "Pipeline",
     "StandardScaler",
+    "Tokenizer",
     "MinMaxScaler",
     "LabelEncoder",
     "OneHotEncoder",

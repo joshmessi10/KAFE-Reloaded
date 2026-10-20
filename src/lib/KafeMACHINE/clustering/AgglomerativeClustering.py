@@ -110,7 +110,9 @@ class AgglomerativeClustering(BaseMachine):
         matrix = self._validate_matrix_shape(matrix)
 
         n = len(matrix)
-        if self.n_clusters >= n:
+        if self.n_clusters > n:
+            raise ValueError("AgglomerativeClustering: n_clusters cannot exceed samples")
+        if self.n_clusters == n:
             self.labels_ = list(range(n))
             self.children_ = []
             self.distances_ = []

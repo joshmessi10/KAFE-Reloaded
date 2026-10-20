@@ -1,7 +1,9 @@
+import copy
 import random
 
 from global_utils import check_sig
 from TypeUtils import (
+    any_list_types,
     boolean_type,
     float_type,
     integer_type,
@@ -12,9 +14,35 @@ from TypeUtils import (
 from ..BaseMachine import BaseMachine
 
 
+class TrainTestSplit(BaseMachine):
+    """Indexable train/test result that KAFE can type as MACHINE."""
+
+    def __init__(self, X_train, X_test, y_train, y_test):
+        super().__init__()
+        self._parts = (X_train, X_test, y_train, y_test)
+
+    def __getitem__(self, index):
+        return self._parts[index]
+
+    def __iter__(self):
+        return iter(self._parts)
+
+    def __len__(self):
+        return len(self._parts)
+
+    def __eq__(self, other):
+        return isinstance(other, TrainTestSplit) and self._parts == other._parts
+
+
 def _validate_non_empty(data, name):
     if not data:
         raise Exception(f"{name}: Empty input data")
+
+
+def _require_unfitted_model(model):
+    """Avoid copying learned state into every validation fold."""
+    if getattr(model, "_is_fitted", False) or getattr(model, "steps_", None):
+        raise ValueError("Cross-validation requires an unfitted model")
 
 
 def _make_folds(n_samples, n_splits, shuffle=False, random_state=0):
@@ -34,7 +62,7 @@ def _make_folds(n_samples, n_splits, shuffle=False, random_state=0):
     current = 0
     fold_indices = []
     for fold_size in fold_sizes:
-        fold_indices.append(indices[current:current + fold_size])
+        fold_indices.append(indices[current : current + fold_size])
         current += fold_size
 
     result = []
@@ -49,12 +77,20 @@ def _make_folds(n_samples, n_splits, shuffle=False, random_state=0):
     return result
 
 
-@check_sig({
-    2: [numeric_matrix_types, numeric_vector_types],
-    3: [numeric_matrix_types, numeric_vector_types, float_type],
-    4: [numeric_matrix_types, numeric_vector_types, float_type, integer_type],
-    5: [numeric_matrix_types, numeric_vector_types, float_type, integer_type, boolean_type]
-})
+@check_sig(
+    {
+        2: [numeric_matrix_types, numeric_vector_types],
+        3: [numeric_matrix_types, numeric_vector_types, float_type],
+        4: [numeric_matrix_types, numeric_vector_types, float_type, integer_type],
+        5: [
+            numeric_matrix_types,
+            numeric_vector_types,
+            float_type,
+            integer_type,
+            boolean_type,
+        ],
+    }
+)
 def train_test_split(X, y, test_size=0.2, random_state=0, shuffle=True):
     """
     Divide arrays into random train and test subsets.
@@ -77,9 +113,13 @@ def train_test_split(X, y, test_size=0.2, random_state=0, shuffle=True):
     """
     _validate_non_empty(X, "train_test_split")
     if len(X) != len(y):
-        raise Exception("train_test_split: X and y must have the same number of samples")
+        raise Exception(
+            "train_test_split: X and y must have the same number of samples"
+        )
     if test_size <= 0 or test_size >= 1:
-        raise Exception("train_test_split: test_size must be between 0 and 1 (exclusive)")
+        raise Exception(
+            "train_test_split: test_size must be between 0 and 1 (exclusive)"
+        )
 
     n = len(X)
     rng = random.Random(random_state if random_state != 0 else None)
@@ -99,15 +139,61 @@ def train_test_split(X, y, test_size=0.2, random_state=0, shuffle=True):
     y_train = [y[i] for i in train_indices]
     y_test = [y[i] for i in test_indices]
 
-    return [X_train, X_test, y_train, y_test]
+    return TrainTestSplit(X_train, X_test, y_train, y_test)
 
 
-@check_sig({
-    1: [integer_type],
-    2: [integer_type, integer_type],
-    3: [integer_type, integer_type, boolean_type],
-    4: [integer_type, integer_type, boolean_type, integer_type]
-})
+@check_sig(
+    {
+        2: [any_list_types, numeric_vector_types],
+        3: [any_list_types, numeric_vector_types, float_type],
+        4: [any_list_types, numeric_vector_types, float_type, integer_type],
+    }
+)
+def stratified_train_test_split(X, y, test_size=0.2, random_state=0):
+    """Split each label proportionally between training and test samples."""
+    _validate_non_empty(X, "stratified_train_test_split")
+    if len(X) != len(y):
+        raise Exception(
+            "stratified_train_test_split: X and y must have the same number of samples"
+        )
+    if not 0 < test_size < 1:
+        raise Exception(
+            "stratified_train_test_split: test_size must be between 0 and 1 (exclusive)"
+        )
+
+    by_label = {}
+    for index, label in enumerate(y):
+        by_label.setdefault(label, []).append(index)
+
+    rng = random.Random(random_state if random_state != 0 else None)
+    train_indices = []
+    test_indices = []
+    for indices in by_label.values():
+        rng.shuffle(indices)
+        test_count = int(len(indices) * test_size)
+        if len(indices) > 1:
+            test_count = max(1, min(len(indices) - 1, test_count))
+        test_indices.extend(indices[:test_count])
+        train_indices.extend(indices[test_count:])
+
+    rng.shuffle(train_indices)
+    rng.shuffle(test_indices)
+    return TrainTestSplit(
+        [X[index] for index in train_indices],
+        [X[index] for index in test_indices],
+        [y[index] for index in train_indices],
+        [y[index] for index in test_indices],
+    )
+
+
+@check_sig(
+    {
+        1: [integer_type],
+        2: [integer_type, integer_type],
+        3: [integer_type, integer_type, boolean_type],
+        4: [integer_type, integer_type, boolean_type, integer_type],
+    }
+)
 def k_fold(n_samples, n_splits=5, shuffle=False, random_state=0):
     """
     Generate k-fold cross validation splits.
@@ -151,7 +237,7 @@ def k_fold(n_samples, n_splits=5, shuffle=False, random_state=0):
     current = 0
     fold_indices = []
     for fold_size in fold_sizes:
-        fold_indices.append(indices[current:current + fold_size])
+        fold_indices.append(indices[current : current + fold_size])
         current += fold_size
 
     result = []
@@ -173,7 +259,7 @@ class CrossValScore(BaseMachine):
     Evaluate a model using k-fold cross validation.
     """
 
-    def __init__(self, cv=5, scoring='accuracy', random_state=0):
+    def __init__(self, cv=5, scoring="accuracy", random_state=0):
         super().__init__()
         self.cv = cv
         self.scoring = scoring
@@ -186,10 +272,13 @@ class CrossValScore(BaseMachine):
         """
         Evaluate model using k-fold cross validation.
         """
+        _require_unfitted_model(model)
         if not X or not y:
             raise Exception("cross_val_score: Empty input data")
         if len(X) != len(y):
-            raise Exception("cross_val_score: X and y must have the same number of samples")
+            raise Exception(
+                "cross_val_score: X and y must have the same number of samples"
+            )
 
         folds = k_fold(len(X), self.cv, shuffle=True, random_state=self.random_state)
 
@@ -200,23 +289,26 @@ class CrossValScore(BaseMachine):
             y_train = [y[i] for i in train_indices]
             y_test = [y[i] for i in test_indices]
 
-            model.fit(X_train, y_train)
+            fold_model = copy.deepcopy(model)
+            fold_model.fit(X_train, y_train)
 
-            if self.scoring == 'accuracy':
-                preds = model.predict(X_test)
+            if self.scoring == "accuracy":
+                preds = fold_model.predict(X_test)
                 correct = sum(1 for i in range(len(y_test)) if preds[i] == y_test[i])
                 score = correct / len(y_test) if len(y_test) > 0 else 0.0
-            elif self.scoring == 'r2':
-                preds = model.predict(X_test)
+            elif self.scoring == "r2":
+                preds = fold_model.predict(X_test)
                 mean_y = sum(y_test) / len(y_test)
                 ss_res = sum((y_test[i] - preds[i]) ** 2 for i in range(len(y_test)))
                 ss_tot = sum((y_test[i] - mean_y) ** 2 for i in range(len(y_test)))
                 score = 1.0 - (ss_res / ss_tot) if ss_tot > 0 else 0.0
-            elif self.scoring == 'mse':
-                preds = model.predict(X_test)
-                score = sum((y_test[i] - preds[i]) ** 2 for i in range(len(y_test))) / len(y_test)
+            elif self.scoring == "mse":
+                preds = fold_model.predict(X_test)
+                score = sum(
+                    (y_test[i] - preds[i]) ** 2 for i in range(len(y_test))
+                ) / len(y_test)
             else:
-                score = model.score(X_test, y_test)
+                score = fold_model.score(X_test, y_test)
 
             scores.append(score)
 
@@ -224,7 +316,9 @@ class CrossValScore(BaseMachine):
         self.mean_score_ = sum(scores) / len(scores) if scores else 0.0
         if len(scores) > 1:
             mean = self.mean_score_
-            self.std_score_ = (sum((s - mean) ** 2 for s in scores) / (len(scores) - 1)) ** 0.5
+            self.std_score_ = (
+                sum((s - mean) ** 2 for s in scores) / (len(scores) - 1)
+            ) ** 0.5
         else:
             self.std_score_ = 0.0
         return self
@@ -284,7 +378,7 @@ class GridSearchCV(BaseMachine):
         n_splits_: number of folds used
     """
 
-    def __init__(self, param_grid, cv=5, scoring='accuracy', random_state=0):
+    def __init__(self, param_grid, cv=5, scoring="accuracy", random_state=0):
         super().__init__()
         if cv <= 1:
             raise Exception("GridSearchCV: cv must be greater than 1")
@@ -294,16 +388,15 @@ class GridSearchCV(BaseMachine):
         self.scoring = scoring
         self.random_state = random_state
         self.best_params_ = {}
-        self.best_score_ = -float('inf')
+        self.best_score_ = -float("inf")
         self.cv_results_ = []
         self.n_splits_ = cv
 
     def _evaluate_params(self, model, X, y, params):
         """Evaluates a combination of parameters using k-fold CV."""
-        for key, value in params.items():
-            setattr(model, key, value)
-
-        folds = _make_folds(len(X), self.cv, shuffle=True, random_state=self.random_state)
+        folds = _make_folds(
+            len(X), self.cv, shuffle=True, random_state=self.random_state
+        )
 
         scores = []
         for train_indices, test_indices in folds:
@@ -312,23 +405,28 @@ class GridSearchCV(BaseMachine):
             y_train = [y[i] for i in train_indices]
             y_test = [y[i] for i in test_indices]
 
-            model.fit(X_train, y_train)
+            fold_model = copy.deepcopy(model)
+            for key, value in params.items():
+                setattr(fold_model, key, value)
+            fold_model.fit(X_train, y_train)
 
-            if self.scoring == 'accuracy':
-                preds = model.predict(X_test)
+            if self.scoring == "accuracy":
+                preds = fold_model.predict(X_test)
                 correct = sum(1 for i in range(len(y_test)) if preds[i] == y_test[i])
                 score = correct / len(y_test) if len(y_test) > 0 else 0.0
-            elif self.scoring == 'r2':
-                preds = model.predict(X_test)
+            elif self.scoring == "r2":
+                preds = fold_model.predict(X_test)
                 mean_y = sum(y_test) / len(y_test)
                 ss_res = sum((y_test[i] - preds[i]) ** 2 for i in range(len(y_test)))
                 ss_tot = sum((y_test[i] - mean_y) ** 2 for i in range(len(y_test)))
                 score = 1.0 - (ss_res / ss_tot) if ss_tot > 0 else 0.0
-            elif self.scoring == 'mse':
-                preds = model.predict(X_test)
-                score = sum((y_test[i] - preds[i]) ** 2 for i in range(len(y_test))) / len(y_test)
+            elif self.scoring == "mse":
+                preds = fold_model.predict(X_test)
+                score = sum(
+                    (y_test[i] - preds[i]) ** 2 for i in range(len(y_test))
+                ) / len(y_test)
             else:
-                score = model.score(X_test, y_test)
+                score = fold_model.score(X_test, y_test)
 
             scores.append(score)
 
@@ -339,15 +437,18 @@ class GridSearchCV(BaseMachine):
         """
         Evaluates all combinations of the parameter grid.
         """
+        _require_unfitted_model(model)
         if not X or not y:
             raise Exception("GridSearchCV: Empty input data")
         if len(X) != len(y):
-            raise Exception("GridSearchCV: X and y must have the same number of samples")
+            raise Exception(
+                "GridSearchCV: X and y must have the same number of samples"
+            )
 
         combinations = _generate_param_grid(self.param_grid)
 
         self.cv_results_ = []
-        self.best_score_ = -float('inf')
+        self.best_score_ = float("inf") if self.scoring == "mse" else -float("inf")
         self.best_params_ = {}
 
         for params in combinations:
@@ -355,7 +456,12 @@ class GridSearchCV(BaseMachine):
 
             self.cv_results_.append(score)
 
-            if score > self.best_score_:
+            improved = (
+                score < self.best_score_
+                if self.scoring == "mse"
+                else score > self.best_score_
+            )
+            if improved:
                 self.best_score_ = score
                 self.best_params_ = params.copy()
 
@@ -392,7 +498,9 @@ class RandomizedSearchCV(BaseMachine):
         n_iter_: number of iterations performed
     """
 
-    def __init__(self, param_distributions, n_iter=10, cv=5, scoring='accuracy', random_state=0):
+    def __init__(
+        self, param_distributions, n_iter=10, cv=5, scoring="accuracy", random_state=0
+    ):
         super().__init__()
         if n_iter <= 0:
             raise Exception("RandomizedSearchCV: n_iter must be positive")
@@ -405,7 +513,7 @@ class RandomizedSearchCV(BaseMachine):
         self.scoring = scoring
         self.random_state = random_state
         self.best_params_ = {}
-        self.best_score_ = -float('inf')
+        self.best_score_ = -float("inf")
         self.cv_results_ = []
         self.n_iter_ = n_iter
         self.n_splits_ = cv
@@ -422,10 +530,9 @@ class RandomizedSearchCV(BaseMachine):
 
     def _evaluate_params(self, model, X, y, params):
         """Evaluates a combination of parameters using k-fold CV."""
-        for key, value in params.items():
-            setattr(model, key, value)
-
-        folds = _make_folds(len(X), self.cv, shuffle=True, random_state=self.random_state)
+        folds = _make_folds(
+            len(X), self.cv, shuffle=True, random_state=self.random_state
+        )
 
         scores = []
         for train_indices, test_indices in folds:
@@ -434,23 +541,28 @@ class RandomizedSearchCV(BaseMachine):
             y_train = [y[i] for i in train_indices]
             y_test = [y[i] for i in test_indices]
 
-            model.fit(X_train, y_train)
+            fold_model = copy.deepcopy(model)
+            for key, value in params.items():
+                setattr(fold_model, key, value)
+            fold_model.fit(X_train, y_train)
 
-            if self.scoring == 'accuracy':
-                preds = model.predict(X_test)
+            if self.scoring == "accuracy":
+                preds = fold_model.predict(X_test)
                 correct = sum(1 for i in range(len(y_test)) if preds[i] == y_test[i])
                 score = correct / len(y_test) if len(y_test) > 0 else 0.0
-            elif self.scoring == 'r2':
-                preds = model.predict(X_test)
+            elif self.scoring == "r2":
+                preds = fold_model.predict(X_test)
                 mean_y = sum(y_test) / len(y_test)
                 ss_res = sum((y_test[i] - preds[i]) ** 2 for i in range(len(y_test)))
                 ss_tot = sum((y_test[i] - mean_y) ** 2 for i in range(len(y_test)))
                 score = 1.0 - (ss_res / ss_tot) if ss_tot > 0 else 0.0
-            elif self.scoring == 'mse':
-                preds = model.predict(X_test)
-                score = sum((y_test[i] - preds[i]) ** 2 for i in range(len(y_test))) / len(y_test)
+            elif self.scoring == "mse":
+                preds = fold_model.predict(X_test)
+                score = sum(
+                    (y_test[i] - preds[i]) ** 2 for i in range(len(y_test))
+                ) / len(y_test)
             else:
-                score = model.score(X_test, y_test)
+                score = fold_model.score(X_test, y_test)
 
             scores.append(score)
 
@@ -461,15 +573,18 @@ class RandomizedSearchCV(BaseMachine):
         """
         Evaluates sampled combinations of parameters.
         """
+        _require_unfitted_model(model)
         if not X or not y:
             raise Exception("RandomizedSearchCV: Empty input data")
         if len(X) != len(y):
-            raise Exception("RandomizedSearchCV: X and y must have the same number of samples")
+            raise Exception(
+                "RandomizedSearchCV: X and y must have the same number of samples"
+            )
 
         rng = random.Random(self.random_state if self.random_state != 0 else None)
 
         self.cv_results_ = []
-        self.best_score_ = -float('inf')
+        self.best_score_ = float("inf") if self.scoring == "mse" else -float("inf")
         self.best_params_ = {}
 
         for _ in range(self.n_iter):
@@ -479,7 +594,12 @@ class RandomizedSearchCV(BaseMachine):
 
             self.cv_results_.append(score)
 
-            if score > self.best_score_:
+            improved = (
+                score < self.best_score_
+                if self.scoring == "mse"
+                else score > self.best_score_
+            )
+            if improved:
                 self.best_score_ = score
                 self.best_params_ = params.copy()
 
@@ -550,12 +670,12 @@ class Pipeline(BaseMachine):
         current_X = [row[:] for row in X]
 
         for name, step in self.steps:
-            is_last = (step == self.steps[-1][1])
+            is_last = step == self.steps[-1][1]
 
             if is_last:
                 step.fit(current_X, y)
             else:
-                if hasattr(step, 'fit_transform'):
+                if hasattr(step, "fit_transform"):
                     current_X = step.fit_transform(current_X)
                 else:
                     step.fit(current_X)
@@ -578,7 +698,7 @@ class Pipeline(BaseMachine):
         current_X = [row[:] for row in X]
 
         for _name, step in self.steps_:
-            is_last = (step == self.steps_[-1][1])
+            is_last = step == self.steps_[-1][1]
 
             if is_last:
                 return step.predict(current_X)
@@ -614,7 +734,7 @@ class Pipeline(BaseMachine):
         current_X = [row[:] for row in X]
 
         for _name, step in self.steps_:
-            is_last = (step == self.steps_[-1][1])
+            is_last = step == self.steps_[-1][1]
             if not is_last:
                 current_X = step.transform(current_X)
 

@@ -1,0 +1,79 @@
+-- ============================================
+-- Functional API: grafo ramificado con merge
+-- ============================================
+-- Teoria:
+--   La Functional API ensambla un grafo dirigido
+--   aciclico (DAG). Cada layer.connect(nodo)
+--   devuelve un Node simbolico; gesha.functional
+--   ordena los nodos topologicamente y propaga
+--   gradientes sumando las contribuciones de cada
+--   rama en los nodos de fusion (merge).
+--
+--   Grafo ensamblado aqui:
+--     entrada(2) -> tronco Dense(4,tanh)
+--                      |            |
+--                 izq Dense(3)   der Dense(3)
+--                      |            |
+--                      +--- Add ----+
+--                            |
+--                     salida Dense(1,sigmoid)
+--
+--   El tronco compartido acumula gradientes de
+--   AMBAS ramas en cada backward (gradient
+--   accumulation en el nodo de bifurcacion).
+--
+--   Tarea: compuerta AND (linealmente separable),
+--   4 muestras, semillas fijas para reproducibilidad.
+-- ============================================
+
+import gesha;
+import machine;
+
+show("=== Functional API: grafo ramificado (DAG) ===");
+
+-- Datos de entrenamiento: compuerta AND
+List[List[FLOAT]] x_train = [[0.0, 0.0], [0.0, 1.0], [1.0, 0.0], [1.0, 1.0]];
+List[INT] y_train = [0, 0, 0, 1];
+
+-- Entrada simbolica unica del grafo
+GESHA entrada = gesha.input_layer([2]);
+
+-- Tronco compartido (semilla fija)
+GESHA tronco = gesha.create_dense(4, "tanh", [2], 0.0, 11);
+
+-- Dos capas sobre el mismo nodo: las dos ramas del DAG
+GESHA capa_izq = gesha.create_dense(3, "tanh", [4], 0.0, 12);
+GESHA capa_der = gesha.create_dense(3, "tanh", [4], 0.0, 13);
+
+-- Capa de fusion (suma) de las ramas
+GESHA suma = gesha.add_layer();
+
+-- Capa de salida
+GESHA capa_salida = gesha.create_dense(1, "sigmoid", [3], 0.0, 14);
+
+-- Construccion del grafo: cada connect devuelve un Node
+GESHA compartido = tronco.connect(entrada);
+GESHA rama_izq = capa_izq.connect(compartido);
+GESHA rama_der = capa_der.connect(compartido);
+GESHA fusion = suma.connect([rama_izq, rama_der]);
+GESHA salida = capa_salida.connect(fusion);
+
+-- Ensamblaje del modelo DAG
+GESHA model = gesha.functional(entrada, salida);
+model.compile("adam", "bce", []);
+model.set_lr(0.1);
+
+show("Entrenando Functional (tronco + 2 ramas + merge, 14 epocas)...");
+model.fit(x_train, y_train, 14, 4);
+
+List[INT] pred = model.predict_label(x_train);
+show("Predicciones (clases):");
+show(pred);
+show("Accuracy:");
+show(machine.accuracy_score(y_train, pred));
+
+show("\nEsperado:");
+show("[0, 0] -> clase=0");
+show("[0, 1] -> clase=0");
+show("[1, 0] -> clase=0");
+show("[1, 1] -> clase=1");

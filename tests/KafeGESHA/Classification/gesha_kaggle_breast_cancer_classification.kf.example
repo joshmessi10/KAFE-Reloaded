@@ -1,0 +1,63 @@
+-- Ejemplo integrado: Kaggle -> PARDOS -> GESHA -> KafePLOT
+-- Breast Cancer Wisconsin Diagnostic: clasificación binaria con 30 medidas.
+-- Es un .example porque descarga un dataset externo y no debe depender de red en CI.
+
+import kaggle;
+import pardos;
+import geshaDeep;
+import machine;
+import plot;
+
+show("=== Clasificación de cáncer de mama con GESHA ===");
+
+PARDOS datos = kaggle.load_dataset("uciml/breast-cancer-wisconsin-data", "data.csv");
+PARDOS sin_id = datos.drop("id");
+List[STR] diagnosticos = sin_id.col("diagnosis");
+
+-- B=0 y M=1, por lo que Sigmoid representa P(maligno).
+MACHINE codificador = machine.label_encoder();
+List[INT] y = codificador.fit_transform(diagnosticos);
+PARDOS caracteristicas = sin_id.drop("diagnosis");
+List[List[FLOAT]] X = pardos.to_matrix(caracteristicas);
+show("Muestras y características [filas, medidas]:");
+show([len(X), len(X[0])]);
+
+MACHINE division = machine.stratified_train_test_split(X, y, 0.2, 42);
+List[List[FLOAT]] X_train = division[0];
+List[List[FLOAT]] X_test = division[1];
+List[INT] y_train = division[2];
+List[INT] y_test = division[3];
+
+MACHINE scaler = machine.standard_scaler();
+scaler.fit(X_train);
+List[List[FLOAT]] X_train_normalizado = scaler.transform(X_train);
+List[List[FLOAT]] X_test_normalizado = scaler.transform(X_test);
+
+GESHA dense1 = geshaDeep.create_dense(64, "relu", [30], 0.0, 101, geshaDeep.he_normal(101));
+GESHA dropout = geshaDeep.dropout_layer(0.2, 102);
+GESHA dense2 = geshaDeep.create_dense(32, "relu", [64], 0.0, 103, geshaDeep.he_normal(103));
+GESHA dense3 = geshaDeep.create_dense(16, "relu", [32], 0.0, 104, geshaDeep.he_normal(104));
+GESHA salida = geshaDeep.create_dense(1, "sigmoid", [16], 0.0, 105, geshaDeep.glorot_uniform(105));
+GESHA clasificador = geshaDeep.sequential([dense1, dropout, dense2, dense3, salida]);
+clasificador.compile("adam", "binary_crossentropy", []);
+clasificador.set_lr(0.001);
+clasificador.fit(X_train_normalizado, y_train, 150, 16);
+
+List[INT] y_pred = clasificador.predict_label(X_test_normalizado);
+List[List[FLOAT]] probabilidades_test = clasificador.predict(X_test_normalizado);
+show("=== Predicciones del conjunto de prueba ===");
+for (i in range(0, len(y_test))):
+    show("Real: " + codificador.inverse_transform([y_test[i]])[0] + " | Predicción: " + codificador.inverse_transform([y_pred[i]])[0]);
+;
+
+List[List[INT]] matriz_confusion = machine.confusion_matrix(y_test, y_pred);
+show("Matriz de confusión [[B->B, B->M], [M->B, M->M]]:");
+show(matriz_confusion);
+
+List[STR] etiquetas_cm = ["B real / B predicho", "B real / M predicho", "M real / B predicho", "M real / M predicho"];
+List[INT] valores_cm = [matriz_confusion[0][0], matriz_confusion[0][1], matriz_confusion[1][0], matriz_confusion[1][1]];
+plot.figure();
+plot.title("Matriz de confusión: cáncer de mama");
+plot.ylabel("Cantidad de muestras");
+plot.barValues(True);
+plot.bar(etiquetas_cm, valores_cm);

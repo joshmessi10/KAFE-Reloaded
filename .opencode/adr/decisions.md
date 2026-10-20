@@ -513,3 +513,263 @@ The repository now uses a committed uv lock for Python runtime, development, doc
 - **Analyze generated ANTLR modules:** rejected because their output is generated and not project-authored.
 - **Replace existing workflows with a generic Python CI job:** rejected because it would risk dropping Java/ANTLR setup, docs deployment, or Nix ownership.
 - **Mark migration complete after local checks alone:** rejected because hosted CI and deployment behavior must be observed at the exact pushed commit.
+
+---
+
+## ADR-0013: Preserve the Existing Gesha API During Branch Integration
+
+- **Status**: accepted
+- **Date**: 2026-10-19
+
+### Context
+
+`feature/Kafe_Gesha_Clustering` and `main` diverged from identical trees but have unrelated commit histories. The feature redesigns Gesha models, layers, activation classes, and optimizers. Replacing the current `geshaDeep` implementation with those files broke existing interpreter fixtures in the previous integration branch.
+
+### Decision
+
+Keep `geshaDeep` and its existing model, core, activation, and optimizer modules as the compatibility API. Register the redesigned backend under `geshaV2`, backed by `KafeGESHA/functions_v2.py`. Keep the redesigned model and core in `models_v2.py` and `core_v2.py`; export its public classes from the package. New examples and fixtures import `geshaV2`. Preserve the established `KafeNUMK` and other `main` APIs while adding the new tensor operations and libraries.
+
+### Consequences
+
+Both Gesha APIs remain available during migration. Existing programs retain their behavior, and the new backend can be tested independently. Shared utility changes require regression tests for both APIs. A future replacement of `geshaDeep` requires a separate compatibility decision and migration plan.
+
+---
+
+## ADR-0014: Admit Spanish Educational Content
+
+- **Status**: accepted
+- **Date**: 2026-10-19
+
+### Context
+
+The Gesha feature adds educational documentation, source comments, examples, fixture text, and project records in Spanish. The user explicitly chose to admit Spanish rather than translate this material during integration. The prior English-only rule in ADR-0011 and the fixed codespell vocabulary in ADR-0012 would reject that choice.
+
+### Decision
+
+1. Keep English as the default for source identifiers, paths, configuration, and commit messages. Educational prose, comments, docstrings, examples, records, and user-facing text may use English or Spanish. Preserve existing text when editing unless translation is part of the task.
+2. Continue running codespell over source, tests, ordinary documentation, and hidden project records. Keep the original `ignore-words-list`; add the reviewed `.codespell-es.txt` file for Spanish words that codespell mistakes for English typos. Do not add broad skips or disable the spelling check.
+3. Mirror the language policy in `AGENTS.md` and `CLAUDE.md` and update the knowledge and verification references. This decision supersedes only the English-only authoring requirement of ADR-0011 and the fixed-vocabulary part of ADR-0012. The historical English migration and all other quality gates remain in force.
+
+### Consequences
+
+Spanish educational material can be merged without distorting its wording to satisfy an English spelling dictionary. New Spanish words that trigger codespell require review before adding them to the vocabulary file. True typos, including those in English content, remain errors.
+
+---
+
+## ADR-0015: Use the KAFE GESHA Type for Mixed Layer Lists
+
+- **Status**: accepted
+- **Date**: 2026-10-19
+
+### Context
+
+The redesigned Sequential API accepts lists containing different layer classes. The interpreter previously compared concrete Python classes when checking list homogeneity, so it rejected valid `GESHA` lists before library dispatch. Initializer objects were also identified as callable `FUNC` values.
+
+### Decision
+
+Classify Gesha layers, models, initializers, regularizers, optimizers, losses, and callbacks as KAFE `GESHA`. During list homogeneity validation, allow different concrete Python classes only when every flattened element has KAFE type `GESHA`. Keep concrete-class validation for all other types.
+
+### Consequences
+
+Mixed-layer Sequential programs can execute through the interpreter. Mixed primitive lists remain invalid. The scope of `GESHA` now includes configuration objects that belong to its model-building API. The change is verified by interpreter fixtures and focused list typing checks.
+
+---
+
+## ADR-0016: Unify Gesha into a Single Public API
+
+- **Status**: accepted
+- **Date**: 2026-10-19
+
+### Context
+
+ADR-0013 kept geshaDeep as a compatibility API and registered the redesigned backend as geshaV2 because replacing geshaDeep broke existing interpreter fixtures. Two near-identical Gesha APIs now coexist: 18 test fixtures use geshaDeep and 7 use geshaV2, and documentation and examples are split. Shared utility changes require regression tests for both APIs, and the duplicated naming confuses learners.
+
+### Decision
+
+1. Adopt a single canonical KAFE import key, gesha, backed by the redesigned implementation (functions_v2.py, models_v2.py, core_v2.py).
+2. Keep geshaDeep and geshaV2 registered as deprecated aliases to the same module during a migration window. Deprecation is documented only; no runtime warning is emitted, because the fixture harness treats Python warnings as errors.
+3. Migrate fixtures, examples, and documentation to gesha.
+4. Retire the legacy implementation modules once no importer references them.
+5. Preserve the established KafeNUMK and other public APIs.
+
+### Consequences
+
+- One Gesha implementation behind one canonical name; geshaDeep and geshaV2 remain functional during the transition.
+- The legacy single-sample predict shape and scalar predict_proba must be reconciled with the redesigned batch shape while migrating fixtures.
+- Removing geshaDeep and geshaV2 later requires a follow-up compatibility decision.
+
+### Alternatives Considered
+
+- **Keep two APIs:** rejected; it duplicates maintenance and hurts the educational goal.
+- **Name the single API geshaDeep:** rejected; the redesign is a new API and a clean name matches KafeGESHA.
+- **Emit runtime deprecation warnings:** rejected; the harness treats warnings as errors.
+
+---
+
+## ADR-0017: Unify the Gesha Class Hierarchy Behind One Runtime Type
+
+- **Status**: accepted
+- **Date**: 2026-10-19
+
+### Context
+
+ADR-0016 unified the Gesha *import key* behind gesha, but the class hierarchy stayed split. TypeUtils.get_data_type() classifies the KAFE GESHA type with one isinstance tuple that must list classes from BOTH backends, because models_v2.Model does not inherit from the legacy core.model.Gesha:
+
+- legacy Gesha = core.model.Model, MRO [Model, ABC, object]
+- models_v2.Model, MRO [Model, ABC, object], unrelated tree
+- isinstance(models_v2.Sequential(), legacy Gesha) is False
+
+Three concrete problems follow:
+
+1. TypeUtils.py and language_components/base/functions.py import from lib.KafeGESHA.core.model, so the legacy module cannot be retired.
+2. language_components/base/functions.py line 53 does al = cast(Any, Gesha)() to build a default value for GESHA x;. Both candidate classes are abstract, so that statement raises TypeError: Can't instantiate abstract class. A live interpreter bug, currently uncovered by any fixture.
+3. src/lib/KafeGESHA/__init__.py re-exports Gesha, Model from core.model and Sequential/Functional/Add from models.sequential/models.functional, while models/__init__.py already re-exports from models_v2. The package is half-migrated.
+
+### Decision
+
+1. Make the KAFE runtime type GESHA map to a single class in the redesigned module graph.
+2. Re-point KafeGESHA/__init__.py, models/__init__.py, TypeUtils.py, and language_components/base/functions.py at that single graph.
+3. Retire the legacy modules once no importer remains: unctions.py (already zero importers), and the legacy models/sequential.py / models/functional.py / core/model.py where the unified graph replaces them.
+4. Keep the public KAFE type name GESHA and all user-facing type-error messages unchanged.
+
+### Consequences
+
+- One class graph; TypeUtils gets one isinstance tree instead of two.
+- The legacy Gesha backend becomes fully removable, closing ADR-0013.
+- GESHA x; must be fixed: a declared-but-unassigned GESHA value needs a valid sentinel that is not an abstract class.
+
+### Alternatives Considered
+
+- **Keep two trees and leave the tuple:** rejected; keeps the legacy backend unremovable and duplicates every type-mapping change.
+- **Make models_v2.Model inherit from legacy Gesha:** rejected; it is the reverse of the intended direction (legacy is being retired) and would drag legacy internals into the new graph.
+- **Only delete unctions.py (the zero-importer file):** rejected as insufficient; it does not address the Gesha() bug nor unblock the rest.
+
+---
+
+## ADR-0023: Widen KafeMACHINE Metric Signatures to Accept Single-Column Gesha Predictions
+
+- **Status**: accepted
+- **Date**: 2026-10-20
+
+### Context
+
+Gesha models return batch predictions as a nested `List[List[FLOAT]]` with one value per row (`models_v2.Model.predict` maps each sample through `forward`, and a single-unit Dense returns `[value]`), while the KafeMACHINE regression metrics and `roc_auc_score` required a flat `List[INT]` / `List[FLOAT]` for their prediction argument. The `check_sig` decorator rejects the matrix before the metric body runs, so `machine.mean_squared_error(y_true, modelo.predict(X))` fails for gesha output even though the values are semantically one prediction per sample. This blocks uniform evaluation of machine and gesha learners with the same metric library.
+
+### Decision
+
+Additively widen the second parameter of the eight regression metrics (`mean_squared_error`, `mean_absolute_error`, `root_mean_squared_error`, `r2_score`, `max_error`, `median_absolute_error`, `mean_absolute_percentage_error`, `explained_variance_score`) plus `roc_auc_score` to also accept `numeric_matrix_types`, keeping the ground-truth parameter as a numeric vector. Normalize the incoming predictions with a module-private `_flatten_predictions` helper called before input validation, which accepts only single-column rows (inner length 1) and converts them to a flat vector.
+
+### Consequences
+
+- Both backends feed the same KafeMACHINE metrics: flat machine predictions and nested gesha batch predictions produce identical results.
+- The change is backward compatible; existing flat-vector fixtures and internal `r2_score` callers are unaffected.
+- Genuinely multi-output predictions are still rejected, with a clear error requiring one value per sample, instead of a silent length mismatch.
+- Classification metrics and `silhouette_score` are unchanged, because gesha `predict_label` already returns a flat label vector.
+
+### Alternatives Considered
+
+- **Wrap gesha predict to flatten at the call site:** rejected; it pushes the shape problem onto every learner and every program instead of the shared library.
+- **Add separate gesha-specific metrics:** rejected; it duplicates the library and breaks the uniform metric API across backends.
+- **Flatten inside every metric body without widening:** rejected; `check_sig` would reject the matrix argument before the body runs, so the behavior would never be reachable.
+
+---
+
+## ADR-0024: Report Classification Accuracy and Raw Loss in Every Gesha Epoch
+
+- **Status**: accepted
+- **Date**: 2026-10-20
+
+### Context
+
+Gesha computed classification accuracy for training history but printed it only when `metrics` explicitly contained `accuracy`. Most example programs passed `[]`, so users saw only loss. The previous output also multiplied the loss by 100 and labeled it as a percentage, although MSE and cross-entropy are not percentages.
+
+### Decision
+
+Print mean loss as a raw decimal on every epoch. For supervised training with binary, categorical, or sparse categorical cross-entropy, print training accuracy as a percentage on the same line regardless of the `metrics` argument. Keep the stored `history` values as fractions/raw losses and leave model predictions unchanged.
+
+### Consequences
+
+- Classification networks now have consistent epoch output across Dense, CNN, RNN, and Functional architectures.
+- Regression, reconstruction, and unsupervised training continue to show loss without a class accuracy.
+- Exact-output fixture snapshots change; downstream consumers parsing the old text format must update.
+
+### Alternatives Considered
+
+- Update only examples to pass `["accuracy"]`: rejected because other classification programs using `[]` would still appear inconsistent.
+- Keep loss with a percent suffix: rejected because it misrepresents the loss scale.
+
+---
+
+## ADR-0025: Align Published ML Metrics and Training Losses with Their Mathematical Definitions
+
+- **Status**: accepted
+- **Date**: 2026-10-20
+
+### Context
+
+The public `f1_score` returned the harmonic mean of macro precision and macro recall rather than macro F1. Silhouette assigned a singleton a score of one. Gesha displayed a clustering sum while optimizing a mean, and omitted scalar L2 penalties from training loss. These values can mislead evaluation even when predictions are unchanged.
+
+### Decision
+
+Define macro F1 as the mean of classwise F1 scores, weighted F1 as the support-weighted mean, and singleton silhouette as zero. Reject all-singleton partitions. Report the same mean soft-clustering objective whose gradient is used, and include the already applied scalar L2 penalty in Gesha's training loss. Preserve public function names and call signatures.
+
+### Consequences
+
+Numerical outputs and exact-output fixtures change. Users comparing historical runs must account for the corrected definitions. Prediction APIs and dataset formats remain unchanged.
+
+### Alternatives Considered
+
+Retaining the old numbers for snapshot compatibility was rejected because they do not represent the named metrics or optimized objective.
+
+---
+
+## ADR-0026: Isolate Evaluation Folds and Preserve Metric Meaning
+
+- **Status**: accepted
+- **Date**: 2026-10-20
+
+### Context
+
+Cross-validation reused the same estimator across folds and parameter combinations. A fitted input estimator could also carry learned data into every fold. Both searches maximized MSE, selecting worse regression models. SVM sigmoid columns contradicted `predict` class order and overflowed for large negative margins. Functional graphs with several outputs sent the entire gradient collection to every head.
+
+### Decision
+
+Require an unfitted model at the start of KafeMACHINE cross-validation and parameter search, and deep-copy it for each fold. Preserve positive MSE values but select their minimum; continue maximizing accuracy and R². Return SVM sigmoid scores in `classes_` order using a stable formula for either margin sign. Distribute Functional backward gradients by output position while retaining the single-output form.
+
+### Consequences
+
+- Fold scores no longer depend on training in earlier folds, and the caller's model is not trained by evaluation. Passing an already fitted estimator now raises a clear error.
+- MSE searches may select different parameters; SVM probabilities change column order and remain uncalibrated sigmoid scores.
+- Functional backward handles separate output heads. The current `fit` loop still supports one output and one loss.
+
+### Alternatives Considered
+
+- Reuse the caller's estimator and reset it between folds: rejected because KAFE estimators have no uniform reset contract.
+- Negate MSE values: rejected because a reported `best_score_` named MSE should remain a positive error.
+- Accept fitted estimators by copying their trained state: rejected because this can leak information from data outside each fold.
+
+---
+
+## ADR-0027: Compute Gaussian Model Likelihoods in Log Space
+
+- **Status**: accepted
+- **Date**: 2026-10-20
+
+### Context
+
+Gaussian Mixture multiplied feature density factors before taking a logarithm. With 800 features, all component densities underflowed to zero, EM assigned uniform memberships, and the model reported a zero negative log-likelihood. GaussianNB computed per-feature densities before taking their logarithms, so sufficiently distant observations made every class posterior negative infinity. Gaussian Mixture BIC also used a base-2 logarithm instead of the natural logarithm in its published formula.
+
+### Decision
+
+Evaluate Gaussian feature and diagonal component densities directly in log space. Use log-sum-exp to normalize GMM responsibilities and GaussianNB class posteriors. Preserve zero-variance GaussianNB behavior and public prediction shapes. Use the natural logarithm for BIC and reset GMM convergence state on each fit.
+
+### Consequences
+
+- High-dimensional and distant observations retain informative likelihood ordering without density underflow.
+- Tiny probability and score decimals, and BIC values, change to their mathematically correct values; affected exact-output fixtures are updated.
+- Time complexity remains O(iterations × samples × components × features) for GMM and O(samples × classes × features) for GaussianNB.
+
+### Alternatives Considered
+
+- Clamp densities to a tiny positive constant: rejected because distinct extremely unlikely observations would receive identical scores.
+- Ignore samples with zero density: rejected because this makes impossible observations appear artificially favorable.

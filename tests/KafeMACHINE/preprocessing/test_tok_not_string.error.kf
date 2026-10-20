@@ -1,0 +1,6 @@
+import machine;
+
+List[STR] malos = ["bien"];
+append(malos, 42);
+MACHINE tok = machine.tokenizer();
+tok.fit(malos);

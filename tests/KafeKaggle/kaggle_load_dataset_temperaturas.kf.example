@@ -1,0 +1,3 @@
+import kaggle;
+PARDOS df = kaggle.load_dataset("paulbrabban/daily-minimum-temperatures-in-melbourne");
+show(df.shape());
