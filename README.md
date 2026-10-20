@@ -297,7 +297,7 @@ pytest tests/
 
 Si prefieres evitar instalar dependencias manualmente, puedes utilizar nuestro entorno preconfigurado con **Nix Flake**. Este entorno contiene todas las herramientas necesarias para compilar y ejecutar KAFE, incluyendo:
 
-- Python 3.10+
+- Python 3.11+
 - ANTLR 4 runtime
 - OpenJDK (para ANTLR)
 - Git

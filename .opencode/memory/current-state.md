@@ -2,7 +2,7 @@
 
 ## Architecture Status
 
-KAFE is an educational Python 3.10+ DSL with an ANTLR 4 parser and Visitor-based interpreter. Its command-line interpreter, Python libraries, tests, and MkDocs documentation are active; it has no active JavaScript/TypeScript frontend, web backend, or application database.
+KAFE is an educational Python 3.11+ DSL with an ANTLR 4 parser and Visitor-based interpreter. Its command-line interpreter, Python libraries, tests, and MkDocs documentation are active; it has no active JavaScript/TypeScript frontend, web backend, or application database.
 
 The repository engineering system under `.opencode/` is established. KafeMACHINE's model-selection and preprocessing components and KafeGESHA's dense layer, activations, optimizers, and soft-clustering support are implemented. Conv2D, LSTM, Transformer, and performance work remain on the product roadmap.
 

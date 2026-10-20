@@ -2,7 +2,7 @@
 
 ## Requirements
 
-- Python 3.10 or later
+- Python 3.11 or later
 - Git
 - uv, installed using the [official instructions](https://docs.astral.sh/uv/getting-started/installation/)
 - Java JDK 11 or later and ANTLR 4.13.2 for parser generation on fresh clones or after grammar changes

@@ -4,7 +4,7 @@ Project-specific testing, validation, benchmarks, and Definition of Done. Apply 
 
 ## Setup
 
-The Python project uses `pyproject.toml` and the committed `uv.lock`. It requires Python >= 3.10, pins `antlr4-python3-runtime==4.13.2`, and provides pytest in the `dev` group. MkDocs dependencies are in `docs`; Hugging Face `datasets` remains opt-in through the `huggingface` extra.
+The Python project uses `pyproject.toml` and the committed `uv.lock`. It requires Python >= 3.11, pins `antlr4-python3-runtime==4.13.2`, and provides pytest in the `dev` group. MkDocs dependencies are in `docs`; Hugging Face `datasets` remains opt-in through the `huggingface` extra.
 
 1. Install uv using the [official instructions](https://docs.astral.sh/uv/getting-started/installation/), then run `uv sync --locked --group dev` from the repository root.
 2. On a fresh clone, generate the ignored parser outputs as described below before running any interpreter program or fixture suite.
@@ -82,22 +82,22 @@ Repository-wide migrations and missing gates must remain visibly PENDING. Their 
 For code tasks and other changes whose approved validation requires the application suite:
 
 1. Generate the parser if outputs are missing or the grammar changed (see Parser Regeneration above).
-2. Run the focused category: `uv run --locked --python 3.10 --group dev pytest tests/test_KafeMACHINE.py` (single case via `uv run --locked --python 3.10 --group dev pytest tests/test_base.py::test_valid_programs -k <name>`).
+2. Run the focused category: `uv run --locked --python 3.11 --group dev pytest tests/test_KafeMACHINE.py` (single case via `uv run --locked --python 3.11 --group dev pytest tests/test_base.py::test_valid_programs -k <name>`).
 3. Run the complete local quality gate from the repository root in PowerShell:
 
    ```powershell
    $repo = (Get-Location).Path
-   uv run --locked --python 3.10 --group dev pytest tests/ -v "--cov=$repo/src" "--cov-config=$repo/pyproject.toml" --cov-report=term-missing --cov-fail-under=80
+   uv run --locked --python 3.11 --group dev pytest tests/ -v "--cov=$repo/src" "--cov-config=$repo/pyproject.toml" --cov-report=term-missing --cov-fail-under=80
    ```
 
 Coverage measures `src`, collects data from interpreter subprocesses, and includes namespace-package directories so unimported owned source is visible in the report. Only the three generated ANTLR files listed in `pyproject.toml` are omitted.
 
 ## Quality Gates
 
-Install the locked development tools from the repository root with Python 3.10:
+Install the locked development tools from the repository root with Python 3.11:
 
 ```powershell
-uv sync --locked --python 3.10 --group dev
+uv sync --locked --python 3.11 --group dev
 ```
 
 Run the configured local quality gates from the same root:
@@ -126,9 +126,9 @@ See [Verification Process](#verification-process) for the exact PowerShell full-
 For a strict local documentation build, install the locked docs group and set the documented upstream warning exception only for that build:
 
 ```powershell
-uv sync --locked --python 3.10 --group docs --no-dev
+uv sync --locked --python 3.11 --group docs --no-dev
 $env:NO_MKDOCS_2_WARNING = "1"
-uv run --locked --python 3.10 --group docs --no-dev mkdocs build --strict
+uv run --locked --python 3.11 --group docs --no-dev mkdocs build --strict
 Remove-Item Env:\NO_MKDOCS_2_WARNING
 ```
 

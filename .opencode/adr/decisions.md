@@ -773,3 +773,40 @@ Evaluate Gaussian feature and diagonal component densities directly in log space
 
 - Clamp densities to a tiny positive constant: rejected because distinct extremely unlikely observations would receive identical scores.
 - Ignore samples with zero density: rejected because this makes impossible observations appear artificially favorable.
+
+---
+
+## ADR-0028: Require Python 3.11 for the Stable VS Code Runtime
+
+- **Status**: accepted
+- **Date**: 2026-10-20
+
+### Context
+
+The stable VS Code extension installs a checksum-pinned KAFE runtime from the
+repository lock. The dependency audit reports nine memory-safety and denial-of-
+service advisories for Pillow 12.3.0. Pillow 13.0.0 fixes them but no longer
+supports Python 3.10. Keeping Python 3.10 would prevent the required clean
+release audit.
+
+### Decision
+
+Raise KAFE's minimum supported Python version, Ruff target, basedpyright target,
+CI runtime and managed-extension runtime declaration from 3.10 to 3.11. Resolve
+the lock with Pillow 13.0.0 and retain the package-age quarantine, with narrowly
+documented security-update exceptions for Pillow and certifi.
+
+### Consequences
+
+- Python 3.10 users must upgrade Python before installing the managed KAFE 0.2.0
+  runtime.
+- The extension can install the fixed Pillow release and pass the dependency
+  audit.
+- KAFE language syntax and program behavior do not change.
+
+### Alternatives Considered
+
+- Keep Python 3.10 and publish with known vulnerabilities: rejected because it
+  violates the release quality gate.
+- Remove image ingestion dependencies from verification: rejected because it
+  would hide a supported KafeKaggle capability from the stable release.

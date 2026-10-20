@@ -8,7 +8,7 @@ KAFE is an educational DSL focused on machine learning and deep learning, implem
 
 ## Important Assumptions
 
-- Python >= 3.10; `pyproject.toml` and the committed `uv.lock` own runtime, development, documentation, and optional dependencies. Nix supplies Python, uv, Java, ANTLR, and other system tools. The `huggingface` extra keeps `datasets` out of the default environment.
+- Python >= 3.11; `pyproject.toml` and the committed `uv.lock` own runtime, development, documentation, and optional dependencies. Nix supplies Python, uv, Java, ANTLR, and other system tools. The `huggingface` extra keeps `datasets` out of the default environment.
 - Java JDK 11+ is needed to generate ignored ANTLR parser outputs on fresh clones and after grammar changes. Execution uses generated outputs without Java. Never stage or commit those outputs.
 - Fixture tests run the interpreter in child processes using the shared runner in `tests/utils.py`, from `src/` (`cwd=src/`). Child coverage, warning propagation, complete stream checks, and exit-code checks are implemented and covered by the quality-evidence branch.
 - Dependencies are forbidden by default; external ML/DL algorithm implementations are prohibited.
