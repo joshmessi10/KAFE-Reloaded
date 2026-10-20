@@ -163,3 +163,29 @@ PARDOS result2 = df.query("(age > 25 && salary > 40000) || city == 'Bogotá'");
 | **Column not found** | Invalid column name in `col`, `query`, etc. |
 | **Inconsistent dimensions** | Number of columns does not match the data |
 | **Incorrect types** | Operation is not valid for the column type |
+
+## Preparing tabular data for ML
+
+Inspect columns before turning a table into model features. `pardos.to_matrix(df)` keeps numeric columns and converts values to floats; string labels should be extracted with `df.col` first and encoded for the model. Split samples before fitting a scaler; see the [MACHINE workflow](../ejemplos/machine-kaggle.md).
+
+| Operation | Use |
+|---|---|
+| `pardos.read_json(path)` | Read a JSON array of records into a DataFrame. |
+| `pardos.to_matrix(df)` / `pardos.df_to_matrix(df)` | Extract numeric columns as a matrix. |
+| `pardos.flatten(nested)` | Flatten nested lists. |
+| `pardos.concat(a, b)` / `a.concat(b)` | Stack compatible DataFrames vertically. |
+| `pardos.merge(a, b, key, how)` / `a.merge(b, key, how)` | Join tables on a shared column. |
+| `df.rename(old, new)` / `df.drop(name)` | Change or remove a column. |
+| `df.fillna(value)` / `df.dropna()` / `df.ffill()` / `df.bfill()` | Handle missing values. |
+| `df.to_csv(path)` / `df.to_json(path)` | Save a table. |
+| `df.groupby(name)` | Group by a column; then call `mean()`, `sum()` or `count()`. |
+
+```kafe
+import pardos;
+PARDOS data = pardos.DataFrame(["hours", "score"], [[2, 60], [4, 75], [6, 90]]);
+show(data.head(2));
+show(data.mean("score"));
+show(pardos.to_matrix(data));
+```
+
+`read_csv` uses a simple delimiter-based parser that detects comma or semicolon from the file contents. Check the imported columns before training when fields may contain embedded delimiters or missing values.

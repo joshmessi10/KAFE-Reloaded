@@ -1,5 +1,4 @@
--- Nivel 4: aproximar y = x*x con datos generados. 1 -> 16 -> 16 -> 1.
--- La particion deja fuera valores intermedios para medir generalizacion.
+-- Nonlinear function approximation: regression with Generated quadratic samples.
 import gesha;
 import machine;
 
@@ -12,29 +11,29 @@ while (i <= 20):
     append(y, x * x);
     i = i + 1;
 ;
-MACHINE division = machine.train_test_split(X, y, 0.2, 42);
-List[List[FLOAT]] X_train = division[0];
-List[List[FLOAT]] X_test = division[1];
-List[FLOAT] y_train = division[2];
-List[FLOAT] y_test = division[3];
+MACHINE split = machine.train_test_split(X, y, 0.2, 42);
+List[List[FLOAT]] X_train = split[0];
+List[List[FLOAT]] X_test = split[1];
+List[FLOAT] y_train = split[2];
+List[FLOAT] y_test = split[3];
 
 GESHA h1 = gesha.create_dense(16, "tanh", [1], 0.0, 41);
 GESHA h2 = gesha.create_dense(16, "tanh", [16], 0.0, 42);
-GESHA salida = gesha.create_dense(1, "linear", [16], 0.0, 43);
-GESHA modelo = gesha.sequential([h1, h2, salida]);
-modelo.compile("adam", "mse", []);
-modelo.set_lr(0.01);
-modelo.fit(X_train, y_train, 120, 8);
+GESHA output_layer = gesha.create_dense(1, "linear", [16], 0.0, 43);
+GESHA model = gesha.sequential([h1, h2, output_layer]);
+model.compile("adam", "mse", []);
+model.set_lr(0.01);
+model.fit(X_train, y_train, 120, 8);
 
 FLOAT error = 0.0;
 for (j in range(0, len(X_test))):
-    FLOAT pred = modelo.predict(X_test[j])[0];
-    FLOAT diferencia = pred - y_test[j];
-    if (diferencia < 0.0):
-        diferencia = 0.0 - diferencia;
+    FLOAT pred = model.predict(X_test[j])[0];
+    FLOAT difference = pred - y_test[j];
+    if (difference < 0.0):
+        difference = 0.0 - difference;
     ;
-    error = error + diferencia;
-    show(str(X_test[j][0]) + " real=" + str(y_test[j]) + " predicho=" + str(pred));
+    error = error + difference;
+    show(str(X_test[j][0]) + " actual=" + str(y_test[j]) + " predicted=" + str(pred));
 ;
-show("MAE de prueba:");
+show("Test MAE:");
 show(error / len(X_test));

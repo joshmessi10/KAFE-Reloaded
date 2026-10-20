@@ -42,8 +42,8 @@ while (i < len(centros)):
 ;
 plot.figure();
 plot.title("Mall Customers - K-Means");
-plot.xlabel("Ingreso anual estandarizado");
-plot.ylabel("Gasto estandarizado");
+plot.xlabel("Standardized annual income");
+plot.ylabel("Standardized spending score");
 plot.pointColor("blue");
 plot.graph(ingresos, gasto, "point");
 plot.pointColor("red");
@@ -54,7 +54,7 @@ plot.render();
 List[List[FLOAT]] nuevos = [[25.0, 80.0], [80.0, 20.0], [50.0, 50.0], [100.0, 90.0], [20.0, 20.0]];
 List[List[FLOAT]] nuevos_scaled = scaler.transform(nuevos);
 List[INT] nuevos_grupos = kmeans.predict(nuevos_scaled);
-show("Cinco casos de evaluacion: ingreso, gasto, grupo:");
+show("Five examples: income, spending score, cluster:");
 for (j in range(0, len(nuevos))):
     show(str(nuevos[j]) + " -> " + str(nuevos_grupos[j]));
 ;

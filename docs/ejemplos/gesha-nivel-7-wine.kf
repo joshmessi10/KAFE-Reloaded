@@ -1,25 +1,24 @@
--- Nivel 7: Red Wine Quality, 11 -> 32 -> 16 -> 1.
--- Dataset: https://www.kaggle.com/datasets/uciml/red-wine-quality-cortez-et-al-2009
+-- Regression MLP: Red Wine Quality: multivariable regression with Red Wine Quality.
 import kaggle;
 import machine;
 import gesha;
 
-List[STR] columnas = [
+List[STR] columns = [
     "fixed acidity", "volatile acidity", "citric acid", "residual sugar", "chlorides",
     "free sulfur dioxide", "total sulfur dioxide", "density", "pH", "sulphates", "alcohol"
 ];
-List[List[FLOAT]] X = kaggle.load_dataset_matrix("uciml/red-wine-quality-cortez-et-al-2009", columnas, "winequality-red.csv", 240);
+List[List[FLOAT]] X = kaggle.load_dataset_matrix("uciml/red-wine-quality-cortez-et-al-2009", columns, "winequality-red.csv", 240);
 PARDOS df = kaggle.load_dataset("uciml/red-wine-quality-cortez-et-al-2009", "winequality-red.csv");
-List[INT] calidad = df.col("quality");
+List[INT] quality = df.col("quality");
 List[FLOAT] y = [];
 for (i in range(0, len(X))):
-    append(y, (float(calidad[i]) - 3.0) / 5.0);
+    append(y, (float(quality[i]) - 3.0) / 5.0);
 ;
-MACHINE division = machine.train_test_split(X, y, 0.2, 42);
-List[List[FLOAT]] X_train = division[0];
-List[List[FLOAT]] X_test = division[1];
-List[FLOAT] y_train = division[2];
-List[FLOAT] y_test = division[3];
+MACHINE split = machine.train_test_split(X, y, 0.2, 42);
+List[List[FLOAT]] X_train = split[0];
+List[List[FLOAT]] X_test = split[1];
+List[FLOAT] y_train = split[2];
+List[FLOAT] y_test = split[3];
 MACHINE scaler = machine.standard_scaler();
 scaler.fit(X_train);
 List[List[FLOAT]] train_scaled = scaler.transform(X_train);
@@ -27,24 +26,24 @@ List[List[FLOAT]] test_scaled = scaler.transform(X_test);
 
 GESHA h1 = gesha.create_dense(32, "relu", [11], 0.0, 42, gesha.he_normal(42));
 GESHA h2 = gesha.create_dense(16, "relu", [32], 0.0, 43, gesha.he_normal(43));
-GESHA salida = gesha.create_dense(1, "linear", [16], 0.0, 44);
-GESHA modelo = gesha.sequential([h1, h2, salida]);
-modelo.compile("adam", "mse", []);
-modelo.set_lr(0.005);
-modelo.fit(train_scaled, y_train, 30, 16);
+GESHA output_layer = gesha.create_dense(1, "linear", [16], 0.0, 44);
+GESHA model = gesha.sequential([h1, h2, output_layer]);
+model.compile("adam", "mse", []);
+model.set_lr(0.005);
+model.fit(train_scaled, y_train, 30, 16);
 
 FLOAT error = 0.0;
 for (i in range(0, len(y_test))):
-    FLOAT pred = modelo.predict(test_scaled[i])[0] * 5.0 + 3.0;
-    FLOAT real = y_test[i] * 5.0 + 3.0;
-    FLOAT diferencia = pred - real;
-    if (diferencia < 0.0):
-        diferencia = 0.0 - diferencia;
+    FLOAT pred = model.predict(test_scaled[i])[0] * 5.0 + 3.0;
+    FLOAT actual = y_test[i] * 5.0 + 3.0;
+    FLOAT difference = pred - actual;
+    if (difference < 0.0):
+        difference = 0.0 - difference;
     ;
-    error = error + diferencia;
+    error = error + difference;
     if (i < 5):
-        show("Vino real=" + str(real) + " predicho=" + str(pred));
+        show("Wine actual=" + str(actual) + " predicted=" + str(pred));
     ;
 ;
-show("Red Wine MAE test en puntos de calidad:");
+show("Red Wine MAE test en puntos de quality:");
 show(error / len(y_test));

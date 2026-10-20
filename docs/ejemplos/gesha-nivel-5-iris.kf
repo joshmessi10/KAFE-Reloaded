@@ -1,50 +1,49 @@
--- Nivel 5: Iris Species, 4 -> 8 -> 3; especies 0=setosa, 1=versicolor, 2=virginica.
--- Dataset: https://www.kaggle.com/datasets/uciml/iris
+-- Multiclass MLP: Iris: multiclass classification with Iris Species.
 import kaggle;
 import machine;
 import gesha;
 
-List[STR] columnas = ["SepalLengthCm", "SepalWidthCm", "PetalLengthCm", "PetalWidthCm"];
-List[List[FLOAT]] X = kaggle.load_dataset_matrix("uciml/iris", columnas, "Iris.csv", 0);
+List[STR] columns = ["SepalLengthCm", "SepalWidthCm", "PetalLengthCm", "PetalWidthCm"];
+List[List[FLOAT]] X = kaggle.load_dataset_matrix("uciml/iris", columns, "Iris.csv", 0);
 PARDOS df = kaggle.load_dataset("uciml/iris", "Iris.csv");
-List[STR] especies = df.col("Species");
+List[STR] species = df.col("Species");
 List[INT] y = [];
 for (i in range(0, len(X))):
-    INT clase = 0;
-    if (especies[i] == "Iris-versicolor"):
-        clase = 1;
+    INT class_label = 0;
+    if (species[i] == "Iris-versicolor"):
+        class_label = 1;
     ;
-    if (especies[i] == "Iris-virginica"):
-        clase = 2;
+    if (species[i] == "Iris-virginica"):
+        class_label = 2;
     ;
-    append(y, clase);
+    append(y, class_label);
 ;
-MACHINE division = machine.stratified_train_test_split(X, y, 0.2, 42);
-List[List[FLOAT]] X_train = division[0];
-List[List[FLOAT]] X_test = division[1];
-List[INT] y_train = division[2];
-List[INT] y_test = division[3];
+MACHINE split = machine.stratified_train_test_split(X, y, 0.2, 42);
+List[List[FLOAT]] X_train = split[0];
+List[List[FLOAT]] X_test = split[1];
+List[INT] y_train = split[2];
+List[INT] y_test = split[3];
 MACHINE scaler = machine.standard_scaler();
 scaler.fit(X_train);
 List[List[FLOAT]] train_scaled = scaler.transform(X_train);
 List[List[FLOAT]] test_scaled = scaler.transform(X_test);
 
-GESHA oculta = gesha.create_dense(8, "relu", [4], 0.0, 42, gesha.he_normal(42));
-GESHA salida = gesha.create_dense(3, "softmax", [8], 0.0, 43, gesha.glorot_uniform(43));
-GESHA modelo = gesha.sequential([oculta, salida]);
-modelo.compile("adam", "sparse_categorical_crossentropy", []);
-modelo.set_lr(0.01);
-modelo.fit(train_scaled, y_train, 80, 16);
+GESHA hidden_layer = gesha.create_dense(8, "relu", [4], 0.0, 42, gesha.he_normal(42));
+GESHA output_layer = gesha.create_dense(3, "softmax", [8], 0.0, 43, gesha.glorot_uniform(43));
+GESHA model = gesha.sequential([hidden_layer, output_layer]);
+model.compile("adam", "sparse_categorical_crossentropy", []);
+model.set_lr(0.01);
+model.fit(train_scaled, y_train, 80, 16);
 
-List[INT] predicciones = modelo.predict_label(test_scaled);
-INT aciertos = 0;
+List[INT] predictions = model.predict_label(test_scaled);
+INT correct = 0;
 for (i in range(0, len(y_test))):
-    if (predicciones[i] == y_test[i]):
-        aciertos = aciertos + 1;
+    if (predictions[i] == y_test[i]):
+        correct = correct + 1;
     ;
     if (i < 5):
-        show("Iris real=" + str(y_test[i]) + " predicho=" + str(predicciones[i]));
+        show("Iris actual=" + str(y_test[i]) + " predicted=" + str(predictions[i]));
     ;
 ;
 show("Iris accuracy test:");
-show(aciertos / len(y_test));
+show(correct / len(y_test));

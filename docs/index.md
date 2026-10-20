@@ -29,16 +29,23 @@ show(fibonacci(7));  -- 13
 
 ---
 
+## Learn KAFE step by step
+
+1. [Install KAFE](getting-started/installation.md) and [write your first program](getting-started/first-program.md).
+2. Learn [types](language/type-system.md), [control flow](language/control-structures.md), [functions](language/functions.md), and [imports](language/imports.md).
+3. Choose a [library](libraries/numk.md) for the task: [PARDOS](libraries/pardos.md) for tables, [MACHINE](libraries/machine.md) for classical ML, or [Gesha](libraries/gesha.md) for neural networks.
+4. Follow a complete [MACHINE example](ejemplos/machine-kaggle.md) or [Gesha example](ejemplos/gesha-examples.md), then adapt its input data and inspect predictions.
+
 ## Navigation
 
 | Section | Description |
 |---------|-------------|
 | [**Getting started**](getting-started/installation.md) | Installation, first steps, and basic examples |
-| [**Language**](language/lexical-structure.md) | Complete language reference: types, operators, and functions |
-| [**Libraries**](libraries/numk.md) | Documentation for NUMK, MATH, PLOT, FILES, Gesha, PARDOS, and MACHINE |
+| [**Language**](language/lexical-structure.md) | Learn syntax, types, control flow, functions, lists, and imports |
+| [**Libraries**](libraries/numk.md) | Choose built-in functions for math, tensors, data, visualization, ML, and deep learning |
 | [**Specification**](specification/ebnf-grammar.md) | EBNF grammar, operational semantics, and execution pipeline |
 | [**Errors**](errors/error-types.md) | Complete reference for the error system |
-| [**Examples**](examples/hello-world.kf) | Progressive sample programs |
+| [**Examples**](examples/hello-world.kf) | Complete programs for language features, MACHINE methods, and Gesha architectures |
 
 ---
 

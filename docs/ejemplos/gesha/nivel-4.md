@@ -1,8 +1,3 @@
-# Nivel 4 · Aproximación de funciones
+# Nonlinear function approximation
 
-```kafe
---8<-- "docs/ejemplos/gesha-nivel-4-funcion.kf"
-```
-
-
-[Descargar programa KAFE](../gesha-nivel-4-funcion.kf) · [Volver a los ocho niveles](../gesha-niveles.md)
+This example is now documented as [Nonlinear function approximation](function-approximation.md).

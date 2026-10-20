@@ -44,7 +44,6 @@ nav:
       - MATH (Mathematics): libraries/math.md
       - PLOT (Visualization): libraries/plot.md
       - FILES (File Operations): libraries/files.md
-      - GeshaDeep (Deep Learning): libraries/gesha.md
       - Kaggle Dataset Ingestion: bibliotecas/kaggle.md
       - Hugging Face Numeric Ingestion: bibliotecas/huggingface.md
       - PARDOS (DataFrames): libraries/pardos.md
@@ -56,6 +55,14 @@ nav:
           - Classification and trees: libraries/machine/classifiers.md
           - Clustering and ensembles: libraries/machine/clustering.md
           - Preprocessing and reduction: libraries/machine/preprocessing.md
+      - Gesha (Deep Learning):
+          - Overview: libraries/gesha.md
+          - Models and training: libraries/gesha/models-training.md
+          - Dense networks: libraries/gesha/dense-networks.md
+          - Convolutional networks: libraries/gesha/convolutional-networks.md
+          - Recurrent networks: libraries/gesha/recurrent-networks.md
+          - Training tools: libraries/gesha/training-tools.md
+          - Soft clustering: libraries/gesha/soft-clustering.md
   - Specification:
       - Formal Grammar (EBNF): specification/ebnf-grammar.md
       - Operational Semantics: specification/operational-semantics.md
@@ -96,21 +103,28 @@ nav:
           - "Linear Regression": ejemplos/machine/linear-regression.md
           - "Support Vector Regression": ejemplos/machine/svr.md
           - Interpret Results: ejemplos/machine/interpret-results.md
-      - Gesha Learning Levels:
-          - Overview: ejemplos/gesha-niveles.md
-          - "Nivel 1 · AND": ejemplos/gesha/nivel-1.md
-          - "Nivel 2 · OR": ejemplos/gesha/nivel-2.md
-          - "Nivel 3 · XOR": ejemplos/gesha/nivel-3.md
-          - "Nivel 4 · Aproximación de funciones": ejemplos/gesha/nivel-4.md
-          - "Nivel 5 · Iris Species": ejemplos/gesha/nivel-5.md
-          - "Nivel 6 · Breast Cancer Wisconsin": ejemplos/gesha/nivel-6.md
-          - "Nivel 7 · Red Wine Quality": ejemplos/gesha/nivel-7.md
-          - "Nivel 8 · MNIST": ejemplos/gesha/nivel-8.md
+      - Gesha examples:
+          - Overview: ejemplos/gesha-examples.md
+          - "Single perceptron: AND": ejemplos/gesha/perceptron-and.md
+          - "Single perceptron: OR": ejemplos/gesha/perceptron-or.md
+          - "Multilayer perceptron: XOR": ejemplos/gesha/mlp-xor.md
+          - "Nonlinear function approximation": ejemplos/gesha/function-approximation.md
+          - "Multiclass MLP: Iris": ejemplos/gesha/iris-mlp.md
+          - "Binary MLP: Breast Cancer Wisconsin": ejemplos/gesha/breast-cancer-mlp.md
+          - "Regression MLP: Red Wine Quality": ejemplos/gesha/wine-regression-mlp.md
+          - "Dense classifier: MNIST digits": ejemplos/gesha/mnist-dense-classifier.md
+          - "CNN: CIFAR-10": ejemplos/gesha/cnn-cifar10.md
+          - "CNN: small image classifier": ejemplos/gesha/cnn-small.md
+          - "Depthwise CNN block": ejemplos/gesha/cnn-depthwise.md
+          - "RNN: sequence classification": ejemplos/gesha/rnn-sequences.md
+          - "RNN: temperature forecasting": ejemplos/gesha/rnn-temperature.md
+          - "Embedding and RNN: sentiment": ejemplos/gesha/rnn-sentiment.md
+          - "Bidirectional LSTM: token vectors": ejemplos/gesha/lstm-embedding.md
+          - "NUMK and dense classifier": ejemplos/gesha/numk-dense.md
+          - "Autoencoder and K-Means: Iris": ejemplos/gesha/autoencoder-clustering.md
   - About:
       - Credits: about/credits.md
       - License: about/license.md
-  - Migration:
-      - English Repository Migration: migration/english-repository-migration.md
 
 markdown_extensions:
   - admonition
@@ -153,6 +167,16 @@ plugins:
 
 exclude_docs: |
   /superpowers/
+  /migration/
 
 not_in_nav: |
   /documentation-plan.md
+  /ejemplos/gesha-niveles.md
+  /ejemplos/gesha/nivel-1.md
+  /ejemplos/gesha/nivel-2.md
+  /ejemplos/gesha/nivel-3.md
+  /ejemplos/gesha/nivel-4.md
+  /ejemplos/gesha/nivel-5.md
+  /ejemplos/gesha/nivel-6.md
+  /ejemplos/gesha/nivel-7.md
+  /ejemplos/gesha/nivel-8.md
