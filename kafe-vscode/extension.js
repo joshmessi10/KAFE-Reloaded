@@ -418,10 +418,21 @@ function createRunFileHandler({ vscode, runtimeManager, fs: fileSystem = fs, pat
     }
     if (!current()) return finish('cancelled');
     if (runtime.status !== 'ready') {
-      await vscode.window.showInformationMessage(runtime.message ?? 'The KAFE runtime is not ready. Run KAFE: Install Runtime after the pinned release is published.');
       const code = runtime.runtimeMode === 'contributor' ? 'contributor_runtime_unavailable' :
         runtime.status === 'unsupported' ? 'runtime_unsupported' :
           ['missing', 'unavailable'].includes(runtime.status) ? 'runtime_unavailable' : undefined;
+      if (code === 'runtime_unavailable' && typeof vscode.commands?.executeCommand === 'function') {
+        const choice = await vscode.window.showInformationMessage(
+          runtime.message ?? 'The KAFE runtime is not installed yet.',
+          'Install Runtime',
+          'Cancel',
+        );
+        if (choice === 'Install Runtime') {
+          await vscode.commands.executeCommand('kafe.installRuntime');
+        }
+      } else {
+        await vscode.window.showInformationMessage(runtime.message ?? 'The KAFE runtime is not ready. Run KAFE: Install Runtime after the pinned release is published.');
+      }
       return finish('unavailable', code);
     }
     const runtimeRoot = runtime.runtimeRoot;
@@ -508,14 +519,7 @@ function activate(context) {
   const vscode = require('vscode');
   const runtimeManager = createRuntimeManager({
     storageRoot: context.globalStorageUri.fsPath,
-    confirmDownload: async ({ runtimeVersion, uvVersion }) => {
-      const selected = await vscode.window.showWarningMessage(
-        `Download the pinned KAFE ${runtimeVersion} runtime and uv ${uvVersion} into this VS Code profile?`,
-        { modal: true },
-        'Download',
-      );
-      return selected === 'Download';
-    },
+    confirmDownload: async () => true,
   });
   const host = createTutorHost({ vscode, extensionUri: context.extensionUri,
     secrets: context.secrets, workspaceState: context.workspaceState, runtimeManager,
@@ -532,7 +536,25 @@ function activate(context) {
         await vscode.window.showErrorMessage(message);
         return { status: 'blocked', message };
       }
-      const result = await runtimeManager.installRuntime();
+      let result;
+      if (typeof vscode.window.withProgress === 'function') {
+        result = await vscode.window.withProgress({
+          location: vscode.ProgressLocation.Notification,
+          title: 'KAFE: Instalando runtime...',
+          cancellable: false,
+        }, async progress => {
+          progress.report({ message: 'Preparando instalación...' });
+          return runtimeManager.installRuntime({
+            onProgress: ({ stage }) => {
+              if (stage === 'downloading') progress.report({ message: 'Descargando runtime y uv...' });
+              else if (stage === 'extracting') progress.report({ message: 'Extrayendo componentes...' });
+              else if (stage === 'syncing') progress.report({ message: 'Configurando entorno...' });
+            },
+          });
+        });
+      } else {
+        result = await runtimeManager.installRuntime();
+      }
       if (result.status === 'ready') {
         await vscode.window.showInformationMessage(`KAFE runtime ${result.runtimeVersion} is ready.`);
       } else if (result.status !== 'cancelled') {
@@ -550,6 +572,27 @@ function activate(context) {
     vscode.commands.registerCommand('kafe.learningPreferences', () => host.openLearningPreferences()),
     vscode.commands.registerCommand('kafe.toggleTeachingPause', () => host.toggleTeachingPause()),
   );
+
+  if (vscode.workspace.isTrusted && typeof vscode.window.withProgress === 'function') {
+    runtimeManager.getReadyRuntime().then(async ready => {
+      if (ready.status !== 'ready' && runtimeManager.manifest?.runtime?.releasePublished) {
+        await vscode.window.withProgress({
+          location: vscode.ProgressLocation.Notification,
+          title: 'KAFE: Configurando entorno...',
+          cancellable: false,
+        }, async progress => {
+          progress.report({ message: 'Instalando runtime de KAFE...' });
+          await runtimeManager.installRuntime({
+            onProgress: ({ stage }) => {
+              if (stage === 'downloading') progress.report({ message: 'Descargando runtime y uv...' });
+              else if (stage === 'extracting') progress.report({ message: 'Extrayendo componentes...' });
+              else if (stage === 'syncing') progress.report({ message: 'Configurando dependencias...' });
+            },
+          });
+        });
+      }
+    }).catch(() => {});
+  }
 }
 
 function deactivate() {}
