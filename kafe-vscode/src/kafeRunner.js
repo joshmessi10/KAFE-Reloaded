@@ -10,7 +10,9 @@ function startKafeFile({ filePath, runtimeRoot, runtimeMode, uvPath, env, spawnP
   }
   const args = ['run', '--locked'];
   if (runtimeMode === 'managed') args.push('--no-dev');
-  args.push('python', 'src/Kafe.py', filePath);
+  args.push('python');
+  if (runtimeMode === 'managed') args.push('-B');
+  args.push('src/Kafe.py', filePath);
   const spawnOptions = { cwd: runtimeRoot, shell: false, stdio: ['pipe', 'pipe', 'pipe'] };
   if (env) spawnOptions.env = { ...process.env, ...env };
   const child = spawnProcess(uvPath, args, spawnOptions);

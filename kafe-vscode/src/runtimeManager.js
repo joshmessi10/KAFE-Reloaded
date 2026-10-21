@@ -544,6 +544,7 @@ function archiveTree(entries, extraFiles = []) {
 
 async function matchesExtractedTree(root, entries, fileSystem, pathApi, { extraFiles = [] } = {}) {
   const expected = archiveTree(entries, extraFiles);
+  if (expected.has('src/stderr.txt')) expected.set('src/stderr.txt', { type: 'file' });
   const actual = new Map();
   const foldedPaths = new Set();
   const statPath = async filePath => {
@@ -557,16 +558,34 @@ async function matchesExtractedTree(root, entries, fileSystem, pathApi, { extraF
   const rootInfo = await statPath(root);
   if (!rootInfo || rootInfo.type !== 'directory') return false;
 
+  async function isPythonCache(directory) {
+    const children = await fileSystem.readdir(directory);
+    for (const name of children) {
+      if (typeof name !== 'string' || !name || name === '.' || name === '..' ||
+        name.includes('/') || name.includes('\\') || pathApi.basename(name) !== name) return false;
+      const child = await statPath(pathApi.join(directory, name));
+      if (!child) return false;
+      if (child.type === 'directory') {
+        if (!await isPythonCache(pathApi.join(directory, name))) return false;
+      } else if (!name.endsWith('.pyc')) return false;
+    }
+    return true;
+  }
+
   async function walk(directory, prefix = '') {
     const children = await fileSystem.readdir(directory);
     for (const name of children) {
-      if (actual.size >= expected.size) return false;
       if (typeof name !== 'string' || !name || name === '.' || name === '..' ||
         name.includes('/') || name.includes('\\') || pathApi.basename(name) !== name) return false;
       const filePath = pathApi.join(directory, name);
       const relative = prefix ? `${prefix}/${name}` : name;
       const kind = await statPath(filePath);
       if (!kind) return false;
+      if (kind.type === 'directory' && name === '__pycache__' && relative.startsWith('src/')) {
+        if (!await isPythonCache(filePath)) return false;
+        continue;
+      }
+      if (kind.type === 'file' && relative === 'src/stderr.txt' && !expected.has(relative)) continue;
       let safe;
       try { safe = canonicalMemberPath(relative, kind.type === 'directory'); }
       catch { return false; }
@@ -849,7 +868,7 @@ function createRuntimeManager({
     if (cached.status === 'unsupported') return cached;
     return {
       status: 'unavailable', runtimeMode: 'managed',
-      message: `The pinned KAFE runtime ${manifest.runtime.version} is not available in this extension package yet. Use KAFE: Install Runtime after the release is published.`,
+      message: `The pinned KAFE runtime ${manifest.runtime.version} is not installed or its local files are invalid. Use KAFE: Install Runtime to repair it.`,
     };
   }
 

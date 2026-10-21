@@ -53,7 +53,7 @@ test('managed runner adds --no-dev and streams stdout and stderr separately', as
     spawnProcess: (...args) => { calls.push(args); return child; },
     onStdout: text => stdout.push(text), onStderr: text => stderr.push(text),
   });
-  assert.deepEqual(calls[0][1].slice(0, 4), ['run', '--locked', '--no-dev', 'python']);
+  assert.deepEqual(calls[0][1].slice(0, 5), ['run', '--locked', '--no-dev', 'python', '-B']);
   child.stdout.emit('data', Buffer.from('hello'));
   child.stderr.emit('data', Buffer.from('error'));
   child.emit('close', 0);
@@ -73,7 +73,7 @@ test('runner scopes managed uv environment while preserving the no-shell argumen
   });
   const [executable, args, options] = calls[0];
   assert.equal(executable, 'C:/storage/uv.exe');
-  assert.deepEqual(args.slice(0, 4), ['run', '--locked', '--no-dev', 'python']);
+  assert.deepEqual(args.slice(0, 5), ['run', '--locked', '--no-dev', 'python', '-B']);
   assert.equal(options.shell, false);
   assert.equal(options.cwd, 'C:/managed');
   assert.equal(options.env.UV_PROJECT_ENVIRONMENT, 'C:/storage/python/env');

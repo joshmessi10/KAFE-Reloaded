@@ -431,7 +431,7 @@ function createRunFileHandler({ vscode, runtimeManager, fs: fileSystem = fs, pat
           await vscode.commands.executeCommand('kafe.installRuntime');
         }
       } else {
-        await vscode.window.showInformationMessage(runtime.message ?? 'The KAFE runtime is not ready. Run KAFE: Install Runtime after the pinned release is published.');
+        await vscode.window.showInformationMessage(runtime.message ?? 'The KAFE runtime is not ready. Run KAFE: Install Runtime to install or repair it.');
       }
       return finish('unavailable', code);
     }
