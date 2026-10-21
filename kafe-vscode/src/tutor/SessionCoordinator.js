@@ -322,7 +322,7 @@ class SessionCoordinator {
     }
   }
 
-  recordRunResult(result, { entryId } = {}) {
+  recordRunResult(result) {
     if (this.disposed) return false;
     if (!result) throw new Error('Invalid learner-started KAFE run result.');
     validateRunResult(result);
@@ -342,9 +342,6 @@ class SessionCoordinator {
       sourcePath.split('/').every(segment => segment && segment !== '.' && segment !== '..')) {
       this.evidence.sourcePath = sourcePath;
     }
-    const data = { runSequence: result.runSequence, exitCode: result.exitCode, sourceUri: result.sourceUri, outputTruncated: result.outputTruncated };
-    if (entryId && this.snapshot().entries.some(e => e.id === entryId && e.kind === 'run')) this.session.updateEntry(entryId, { status: 'completed', text: 'Learner-started KAFE run completed.', data });
-    else this.session.appendEntry({ kind: 'run', status: 'completed', text: 'Learner-started KAFE run completed.', data });
     return true;
   }
 

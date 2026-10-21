@@ -15,14 +15,16 @@ function fixture(options = {}) {
   return { session, saved, coordinator, actions };
 }
 
-test('host settled null-exit result reaches renderer with bounded diagnostics and no new Run', () => {
+test('host keeps completed Run evidence private and never projects it into the Tutor timeline', () => {
   const { loadView } = require('../helpers/tutorViewHarness');
   let launches = 0; const f = fixture({runFile:() => { launches++; }}), v = loadView();
   f.actions.recordRunState({runSequence:1,sourceUri:'file:///workspace/a.kf',status:'running'});
   v.render(f.session.snapshot()); assert.equal(v.byId('timeline').querySelector('details'), null);
   assert.equal(f.actions.recordRunResult({runSequence:1,sourceUri:'file:///workspace/a.kf',stdout:'PARTIAL',stderr:'child failed',exitCode:null,outputTruncated:true,runtimeVersion:'1',knowledgePackVersion:'1'}), true);
   v.render(f.session.snapshot());
-  assert.match(v.byId('timeline').textContent,/Exit code: unknown/); assert.match(v.byId('timeline').querySelector('details').textContent,/child failed/);
+  assert.equal(f.session.snapshot().entries.length, 0);
+  assert.equal(v.byId('timeline').querySelector('details'), null);
+  assert.doesNotMatch(v.byId('timeline').textContent, /PARTIAL|child failed|Exit code/);
   assert.equal(f.coordinator.evidence.exitCode,null); assert.equal(launches,0); assert.deepEqual(v.sent,[]);
 });
 function envelope(session, type, entryId) {
@@ -70,40 +72,32 @@ test('forged and replayed mutation capabilities perform no second side effect', 
   assert.equal(calls, 1);
 });
 
-test('unpublished install settles its initiating entry with zero downloads', async () => {
+test('runtime-unavailable Run remains outside Tutor actions and downloads', async () => {
   let downloads = 0;
   const f = fixture({ runFile: async () => ({ status: 'unavailable', code: 'runtime_unavailable' }), runtimeManager: { async installRuntime({ onProgress }) { onProgress({ stage: 'checking' }); return { status: 'unavailable' }; }, download() { downloads++; } } });
   issue(f, 'configureProviderKey');
   activeRun(f); await f.actions.dispatch(envelope(f.session, 'runFile'));
-  const e = envelope(f.session, 'installRuntime');
-  assert.equal((await f.actions.dispatch(e)).status, 'unavailable');
-  assert.equal(f.session.snapshot().entries.find(x => x.id === e.entryId).status, 'unavailable');
+  assert.equal(f.session.snapshot().entries.some(entry => entry.kind === 'run'), false);
+  assert.equal(f.session.snapshot().entries.some(entry => entry.actions.some(action => action.type === 'installRuntime')), false);
   assert.equal(downloads, 0);
 });
 module.exports = { fixture, envelope };
 
 
-test('Run completion patches one initiating entry and keeps terminal handles outside snapshots', () => {
+test('Run completion remains private evidence and creates no Tutor entries', () => {
   const f = fixture();
   f.actions.recordRunState({ runSequence: 1, sourceUri: 'file:///workspace/a.kf', documentVersion: 4, terminal: { show() {} }, status: 'running' });
   f.actions.recordRunResult({ stdout: 'bounded output', stderr: '', exitCode: 0, outputTruncated: false, runtimeMode: 'contributor', runtimeVersion: null, knowledgePackVersion: null, sourceUri: 'file:///workspace/a.kf', runSequence: 1 });
-  const runs = f.session.snapshot().entries.filter(e => e.kind === 'run');
-  assert.equal(runs.length, 1);
-  assert.equal(runs[0].data.documentVersion, 4);
-  assert.equal(runs[0].data.stdout, 'bounded output');
-  assert.equal(runs[0].data.sourceRelationship, 'unknown');
-  assert.equal(runs[0].data.exactExecutedBytes, 'unknown');
-  assert.ok(!Object.hasOwn(runs[0].data, 'terminal'));
-  assert.ok(runs[0].actions.some(a => a.type === 'openTerminal' && a.enabled));
+  assert.deepEqual(f.session.snapshot().entries, []);
+  assert.equal(f.coordinator.evidence.stdout, 'bounded output');
+  assert.equal(f.coordinator.evidence.runSequence, 1);
 });
 
-test('cancelled Run settles its entry without turning cancellation into reviewed evidence', () => {
+test('cancelled Run stays outside the Tutor and does not become evidence', () => {
   const f = fixture();
   f.actions.recordRunState({ runSequence: 1, sourceUri: 'file:///workspace/a.kf', status: 'running' });
   f.actions.recordRunState({ runSequence: 1, sourceUri: 'file:///workspace/a.kf', status: 'cancelled' });
-  const runs = f.session.snapshot().entries.filter(e => e.kind === 'run');
-  assert.equal(runs.length, 1);
-  assert.equal(runs[0].status, 'cancelled');
+  assert.deepEqual(f.session.snapshot().entries, []);
   assert.equal(f.coordinator.evidence, null);
 });
 
@@ -136,12 +130,12 @@ test('cleared session ignores completion of an earlier Run', async () => {
   assert.equal(f.session.snapshot().entries.filter(e => e.kind === 'run').length, 0);
 });
 
-test('cancelled chat Run publishes explicit local status and no evidence', async () => {
+test('cancelled chat Run creates no Tutor status and no evidence', async () => {
   const f = fixture({ getReadiness: async () => ({ trusted: true, targetUri: 'file:///workspace/a.kf' }), runFile: async () => ({ status: 'cancelled' }) });
   issue(f, 'configureProviderKey');
   activeRun(f);
   assert.equal((await f.actions.dispatch(envelope(f.session, 'runFile'))).status, 'cancelled');
-  assert.ok(f.session.snapshot().entries.some(e => e.kind === 'run' && e.status === 'cancelled' && e.data.sourceUri === 'file:///workspace/a.kf'));
+  assert.equal(f.session.snapshot().entries.some(e => e.kind === 'run'), false);
   assert.equal(f.coordinator.evidence, null);
 });
 

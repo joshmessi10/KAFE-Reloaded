@@ -113,6 +113,8 @@ test('teaching request fixtures carry direct concepts, learner-owned decisions, 
     assert.match(policy, /hints, options.*worked examples.*requested/i);
     assert.match(policy, /skip.*named reasoning step/i);
     assert.match(policy, /onboarding.*optional.*one question/i);
+    assert.match(policy, /never provide the final answer.*complete ready-to-submit solution.*verbatim copy.*fixture/i);
+    assert.match(policy, /Private Run evidence.*Do not reproduce raw Run output/i);
     assert.doesNotMatch(policy, /Start with a hint/i);
     assert.equal(result.payload.messages.at(-1).content, request);
     assert.equal(result.learning.preferences.level, 'beginner');

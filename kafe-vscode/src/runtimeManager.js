@@ -971,7 +971,7 @@ function createRuntimeManager({
       await fileSystem.rename(paths.uvStageRoot, paths.uvRoot);
 
       progress('syncing');
-      const sync = await processRunner(paths.uvPath, ['sync', '--locked', '--no-dev', '--project', paths.stagingRoot], {
+      const sync = await processRunner(paths.uvPath, ['sync', '--locked', '--no-dev', '--extra', 'extension', '--project', paths.stagingRoot], {
         cwd: paths.stagingRoot,
         env: makeUvEnvironment(paths),
         shell: false,
@@ -980,7 +980,7 @@ function createRuntimeManager({
       if (signal?.aborted) throw abortError();
       if (sync.exitCode !== 0) {
         const detail = [sync.stderr, sync.stdout].filter(Boolean).join('\n').trim();
-        throw new Error(`uv sync --locked --no-dev failed${detail ? `: ${detail}` : '.'}`);
+        throw new Error(`uv sync --locked --no-dev --extra extension failed${detail ? `: ${detail}` : '.'}`);
       }
       const marker = {
         runtimeVersion: manifest.runtime.version,

@@ -8,6 +8,12 @@ dependencies = [
 
 [project.optional-dependencies]
 huggingface = ["datasets"]
+extension = [
+    "datasets",
+    "kagglehub",
+    "pillow",
+    "py7zr",
+]
 
 [dependency-groups]
 dev = [

@@ -46,6 +46,8 @@ self.libraries = {
 
 KafeHF's wrapper is imported and registered by the visitor in the default environment. Its external `datasets` dependency is optional and absent from the default uv environment: `import huggingface;` works without that package, while a dataset-loading call reports the missing dependency. Preserve the baseline without `datasets`, including `tests/KafeHF/hf_load_dataset_no_dep.error.kf`, and keep any environment for exercising the installed integration distinct from that baseline. Enable the integration with `uv sync --locked --extra huggingface`; the missing-dependency diagnostic points to this command and its paired expected-output fixture records the exact message.
 
+The VS Code managed runtime uses `uv sync --locked --no-dev --extra extension`. That extra installs `datasets`, `kagglehub`, Pillow, and `py7zr` for learner workspaces while the repository's baseline developer environment remains unchanged.
+
 ## Adding a New Library
 
 1. Create `src/lib/KafeXXX/functions.py` (mirror an existing library's `functions.py`).

@@ -1,13 +1,10 @@
 const { randomUUID } = require('node:crypto');
-const { runObservation } = require('./ActionEvidence');
 /** Host authority for ActionEnvelope capabilities. Services never receive webview action types. */
 class TutorHostActions {
   constructor({ session, controller, coordinator, proposalProvider, runtimeManager,
     configureProvider, runFile, getReadiness, authorizeRunTarget = () => false }) {
     Object.assign(this, { session, controller, coordinator, proposalProvider, runtimeManager,
       configureProvider, runFile, getReadiness, authorizeRunTarget });
-    this.terminals = new Map();
-    this.runEntries = new Map();
     this.runGenerations = new Map();
     this.runRequests = new Map();
     this.disposed = false;
@@ -161,15 +158,8 @@ class TutorHostActions {
           const runOwner = this.captureRunOwner(args.targetUri);
           result = await this.runFile?.({ targetUri: args.targetUri, runOwner }) || { status: 'unavailable' };
           if (current() && result.status !== 'completed') this.recordRunState({ owner: runOwner, sourceUri: args.targetUri, status: result.status });
-          if (current() && result.status === 'unavailable' && result.code === 'runtime_unavailable' && this.authorizeRunTarget(args.targetUri)) {
-            const entryId = this.runRequests.get(runOwner.requestId)?.entryId;
-            if (entryId) this.action(entryId, 'installRuntime', 'Install KAFE runtime', { targetUri: args.targetUri });
-          }
           break;
         }
-        case 'openTerminal':
-          if (!this.terminals.has(args.runSequence)) return { status: 'stale' };
-          this.terminals.get(args.runSequence).show(); break;
         case 'reviewProposal': {
           const reviewed = await this.proposalProvider.open(args.id, { isCurrent: () => current() && this.session.snapshot().entries.some(e => e.id === envelope.entryId && e.status === 'ready' && e.data.proposalId === args.id) });
           result = { status: reviewed.status === 'opened' ? 'completed' : reviewed.status === 'cancelled' ? 'cancelled' : reviewed.status === 'stale' || reviewed.status === 'invalid' ? 'stale' : 'failed' };
@@ -212,8 +202,7 @@ class TutorHostActions {
   captureRunOwner(sourceUri) {
     const { sessionId, generation } = this.session.snapshot();
     const requestId = randomUUID();
-    const entryId = this.entry('run', 'Preparing learner-started KAFE run.', typeof sourceUri === 'string' ? { sourceUri } : {}, 'preparing');
-    this.runRequests.set(requestId, { sessionId, generation, entryId });
+    this.runRequests.set(requestId, { sessionId, generation, sourceUri });
     return { sessionId, generation, requestId, isCurrent: () => this.live(generation) && this.session.snapshot().sessionId === sessionId };
   }
   recordRunState(event) {
@@ -221,17 +210,9 @@ class TutorHostActions {
     if (event.owner) {
       const request = this.runRequests.get(event.owner.requestId);
       if (!request || request.sessionId !== event.owner.sessionId || request.generation !== event.owner.generation || !this.live(request.generation)) return;
-      const entry = this.session.snapshot().entries.find(e => e.id === request.entryId);
-      if (!entry) return;
       try { this.coordinator.actionEvidence.recordRunState(event); } catch { /* Preserve native action outcome. */ }
-      const data = { ...entry.data, ...(typeof event.sourceUri === 'string' ? { sourceUri: event.sourceUri } : {}),
-        ...(Number.isSafeInteger(event.documentVersion) ? { documentVersion: event.documentVersion } : {}),
-        ...(Number.isSafeInteger(event.runSequence) ? { runSequence: event.runSequence } : {}) };
-      this.session.updateEntry(entry.id, { status: event.status, text: `Learner-started KAFE run ${event.status}.`, data });
       if (Number.isSafeInteger(event.runSequence)) {
         this.runGenerations.set(event.runSequence, request.generation);
-        this.runEntries.set(event.runSequence, entry.id);
-        if (event.terminal && !this.terminals.has(event.runSequence)) { this.terminals.set(event.runSequence, event.terminal); this.action(entry.id, 'openTerminal', 'Open terminal', { runSequence: event.runSequence }); }
       }
       return;
     }
@@ -239,11 +220,6 @@ class TutorHostActions {
     if (this.runGenerations.has(event.runSequence) && !this.live(this.runGenerations.get(event.runSequence))) return;
     try { this.coordinator.actionEvidence.recordRunState(event); } catch { /* Preserve native action outcome. */ }
     this.runGenerations.set(event.runSequence, this.session.snapshot().generation);
-    const prior = this.runEntries.get(event.runSequence);
-    if (prior) { this.session.updateEntry(prior, { status: event.status, text: `Learner-started KAFE run ${event.status}.` }); return; }
-    const id = this.entry('run', 'Learner-started KAFE run running.', { runSequence: event.runSequence, sourceUri: event.sourceUri, ...(Number.isSafeInteger(event.documentVersion) ? { documentVersion: event.documentVersion } : {}) }, 'running');
-    this.runEntries.set(event.runSequence, id);
-    if (event.terminal) { this.terminals.set(event.runSequence, event.terminal); this.action(id, 'openTerminal', 'Open terminal', { runSequence: event.runSequence }); }
   }
   recordRunResult(result) {
     if (this.disposed) return false;
@@ -252,18 +228,8 @@ class TutorHostActions {
       if (!request || request.sessionId !== result.owner.sessionId || request.generation !== result.owner.generation || !this.live(request.generation)) return false;
     }
     if (this.runGenerations.has(result.runSequence) && !this.live(this.runGenerations.get(result.runSequence))) return false;
-    const id = this.runEntries.get(result.runSequence);
-    const previous = id && this.session.snapshot().entries.find(e => e.id === id);
-    if (previous?.status === 'completed') return false;
-    const recorded = this.coordinator.recordRunResult(result, { entryId: id });
-    const entry = id ? this.session.snapshot().entries.find(e => e.id === id) : recorded ? this.session.snapshot().entries.at(-1) : null;
-    if (!entry) return false;
-    this.session.updateEntry(entry.id, { status: 'completed', text: 'Learner-started KAFE run completed.', data: { ...entry.data, ...(previous?.data || {}),
-      runSequence: result.runSequence, sourceUri: result.sourceUri, exitCode: result.exitCode, outputTruncated: result.outputTruncated,
-      stdout: result.stdout, stderr: result.stderr, runtimeMode: result.runtimeMode || null, runtimeVersion: result.runtimeVersion, knowledgePackVersion: result.knowledgePackVersion,
-      ...runObservation(result) } });
-    return recorded;
+    return this.coordinator.recordRunResult(result);
   }
-  dispose() { this.disposed = true; this.unsubscribe?.(); this.terminals.clear(); this.runEntries.clear(); this.runGenerations.clear(); this.runRequests.clear(); }
+  dispose() { this.disposed = true; this.unsubscribe?.(); this.runGenerations.clear(); this.runRequests.clear(); }
 }
 module.exports = { TutorHostActions };

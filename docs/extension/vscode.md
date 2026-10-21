@@ -2,6 +2,8 @@
 
 The extension provides KAFE `.kf` highlighting, snippets, learner-started execution and a Tutor conversation in VS Code 1.96.0 or later. Open **KAFE: Open Tutor**.
 
+Program output, errors and interactive input appear only in the local **KAFE Run** terminal. Run lifecycle events do not create Tutor messages. The latest matching result remains bounded in host memory so the Tutor can use it when the learner asks for help.
+
 ## Conversation
 
 Type a message and press **Send** or Enter once. Shift+Enter inserts a newline. One answer streams in place. **Stop** replaces Send during a response while the next draft stays editable. **Retry** uses the original question and current authorized context, preserves the next draft and does not duplicate the learner message. Key configuration never sends automatically.
@@ -10,7 +12,7 @@ The included whole-file indicators identify the active eligible `.kf` and select
 
 ## Guided learning and permissions
 
-Concept questions can receive direct explanations. For meaningful design decisions, the Tutor asks for learner reasoning, discusses requested options and may propose a Design or Implementation checkpoint. Guided learning defaults to Normal frequency, open-ended reasoning, AI preparation and unknown familiarity. **Guided learning** beside the composer or **KAFE: Learning Preferences** opens native, optional memory-only preferences, including pause/resume. Changes during a response queue until settlement. Ordinary typed discussion remains available; no onboarding wizard is required.
+Concept questions can receive direct explanations. For exercises, the Tutor asks diagnostic questions and provides progressively stronger hints without giving the final answer, a complete ready-to-submit solution, or a verbatim repository fixture. Reviewed MACHINE and GESHA fixtures ground its syntax and API knowledge. **Guided learning** beside the composer or **KAFE: Learning Preferences** opens native, optional memory-only preferences, including pause/resume.
 
 A checkpoint's learner-proposal summary is explicitly an unconfirmed Tutor summary. **Confirm and continue** records adoption and continues discussion; it does not establish learner authorship, understanding or mastery. **Discuss** and **Skip** confer no preparation grant. Waiting for reasoning is settled, with no work spinner or Stop.
 
@@ -36,7 +38,7 @@ Transcripts, credentials, source bytes, requests, checkpoint text and raw transp
 
 ## Runtime and knowledge
 
-The managed runtime is pinned to KAFE 0.1.0 and uv 0.11.3. Its release remains unpublished, so **KAFE: Install Runtime** reports unavailable and downloads nothing. When a release is published, setup requires explicit consent before its first download. Ordinary conversation with a configured provider can proceed without an executable runtime or knowledge pack; requests disclose unavailable knowledge. Available validated cached knowledge can be used independently of executable readiness. Invalid or changed knowledge must never be represented as valid grounding.
+The managed runtime is checksum-pinned and installed with uv 0.11.3. It includes the locked `extension` dependency extra for Hugging Face datasets, Kaggle downloads, images and 7z archives. Ordinary conversation with a configured provider can proceed without an executable runtime or knowledge pack; requests disclose unavailable knowledge. Invalid or changed knowledge is never represented as valid grounding.
 
 Contributor Run can use a prepared KAFE checkout and installed tools. An Extension Development Host can use an explicitly validated development knowledge pack. Production installations do not read a development checkout as a fallback. These development paths do not establish managed-release readiness. Supported managed targets are Windows x64, macOS x64/arm64 and Linux x64.
 

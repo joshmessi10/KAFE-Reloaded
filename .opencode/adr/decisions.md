@@ -810,3 +810,33 @@ documented security-update exceptions for Pillow and certifi.
   violates the release quality gate.
 - Remove image ingestion dependencies from verification: rejected because it
   would hide a supported KafeKaggle capability from the stable release.
+
+---
+
+## ADR-0029: Separate Terminal Execution from Guided Tutor Evidence
+
+- **Status**: accepted
+- **Date**: 2026-10-21
+
+### Context
+
+Learner-started executions were streamed to a VS Code terminal and also projected as Run entries in the Tutor timeline. This duplicated output, filled the conversation with lifecycle records, and blurred the boundary between program execution and pedagogical assistance. The managed runtime also omitted the external dependencies needed by the registered Kaggle and Hugging Face libraries.
+
+### Decision
+
+Keep all visible execution output in the local KAFE terminal. Store the latest matching Run result only as bounded, in-memory evidence that the Tutor may use after a learner asks for help; do not create Tutor transcript entries for Run preparation, completion, failure, or cancellation. Ground the Tutor in reviewed MACHINE and GESHA fixtures while prohibiting final exercise answers, complete ready-to-submit solutions, and verbatim fixture copies.
+
+Add a locked `extension` optional dependency extra containing `datasets`, `kagglehub`, Pillow, and `py7zr`. Managed runtime setup installs that extra; the default developer environment continues to omit `datasets` so the missing-dependency fixture remains deterministic.
+
+### Consequences
+
+- Run output and interactive input have one visible owner: the local terminal.
+- The Tutor can diagnose the learner's actual result without automatically exposing raw output in chat.
+- Managed-extension users receive Kaggle and Hugging Face support during runtime setup.
+- Runtime 0.3.0 and a new checksum-pinned GitHub release are required because runtime 0.2.0 is immutable.
+
+### Alternatives Considered
+
+- Remove Run evidence from the Tutor entirely: rejected because it prevents grounded diagnostic guidance.
+- Continue showing collapsible Run cards: rejected because execution output belongs to the terminal and overwhelms the learning conversation.
+- Install integrations dynamically with pip: rejected because it bypasses the committed uv lock and makes learner environments non-reproducible.

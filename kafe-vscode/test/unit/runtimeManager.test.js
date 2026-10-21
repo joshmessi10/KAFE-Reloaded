@@ -385,7 +385,7 @@ test('valid runtime and uv checksums stage, sync with isolated paths, and atomic
   assert.equal(fixture.requests.length, 3);
   const sync = fixture.processCalls.find(call => call.args[0] === 'sync');
   assert.ok(sync);
-  assert.deepEqual(sync.args, ['sync', '--locked', '--no-dev', '--project', fixture.manager.paths.stagingRoot]);
+  assert.deepEqual(sync.args, ['sync', '--locked', '--no-dev', '--extra', 'extension', '--project', fixture.manager.paths.stagingRoot]);
   assert.equal(sync.options.cwd, fixture.manager.paths.stagingRoot);
   assert.equal(sync.options.shell, false);
   assert.equal(sync.options.env.UV_PROJECT_ENVIRONMENT, result.pythonEnvironment);

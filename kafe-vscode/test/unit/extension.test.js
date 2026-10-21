@@ -149,9 +149,8 @@ test('runtime setup is issued only for an explicit native Run with typed missing
     await f.host.readiness; assert.equal(checks, 0); assert.equal(installs, 0);
     assert.deepEqual(f.host.coordinator.snapshot().entries, []);
     assert.equal((await f.host.tutorView.onMessage(contextRunEnvelope(f.host))).code, 'runtime_unavailable');
-    const setup = actionEnvelope(f.host, 'installRuntime'); assert.equal(installs, 0); assert.equal(checks, 0);
-    assert.equal((await f.host.tutorView.onMessage(setup)).status, 'unavailable'); assert.equal(installs, 1);
-    assert.equal((await f.host.tutorView.onMessage(setup)).status, 'stale'); assert.equal(installs, 1);
+    assert.equal(installs, 0); assert.equal(checks, 0);
+    assert.deepEqual(f.host.coordinator.snapshot().entries, []);
   } finally { f.host.dispose(); }
 });
 
@@ -552,8 +551,8 @@ test('controlled learning flow uses rendered host capabilities through design ad
     assert.equal((await f.host.tutorView.onMessage(run)).status, 'completed'); assert.equal(runs, 0);
     terminals[0].pty.open(); await new Promise(resolve => setImmediate(resolve)); assert.equal(runs, 1);
     view.render(f.host.coordinator.snapshot());
-    assert.match(view.byId('timeline').textContent, /Exit code: 0/); assert.match(view.byId('timeline').textContent, /Exact executed bytes: unknown\. Correctness: not established/);
-    assert.match(view.byId('timeline').textContent, /Current editor: unknown/);
+    assert.doesNotMatch(view.byId('timeline').textContent, /Exit code: 0|Exact executed bytes|Current editor/);
+    assert.equal(f.host.coordinator.snapshot().entries.some(entry => entry.kind === 'run'), false);
     assert.equal(f.host.coordinator.snapshot().draft, 'Independent next reasoning');
     await send('Explain the observed output');
     assert.ok(requests.at(-1).messages.some(m => m.content.includes('"outcome":"applied"')));
@@ -1010,7 +1009,7 @@ test('provider Stop preserves ownership of a Run waiting in runtime resolution',
   f.calls.terminals[0].pty.open(); await new Promise(r => setImmediate(r));
   assert.equal(f.calls.runner.length, 1); assert.equal(f.calls.cancellations, 0);
   assert.equal(host.coordinator.evidence.runSequence, 1);
-  assert.equal(host.coordinator.snapshot().entries.filter(e => e.kind === 'run').length, 1);
+  assert.equal(host.coordinator.snapshot().entries.filter(e => e.kind === 'run').length, 0);
   host.dispose();
 });
 for (const change of ['dirty', 'version', 'deauthorized', 'new-conversation']) {
@@ -1031,12 +1030,7 @@ for (const change of ['dirty', 'version', 'deauthorized', 'new-conversation']) {
     f.calls.terminals[0].pty.open();
     assert.equal(f.calls.runner.length, 0);
     if (change === 'new-conversation') assert.deepEqual(host.coordinator.snapshot(), before);
-    else {
-      const runs = host.coordinator.snapshot().entries.filter(e => e.kind === 'run');
-      assert.equal(runs.length, 1);
-      assert.equal(runs[0].status, 'cancelled');
-      assert.equal(Object.hasOwn(runs[0].data, 'runSequence'), false);
-    }
+    else assert.equal(host.coordinator.snapshot().entries.some(entry => entry.kind === 'run'), false);
     host.dispose();
   });
 }
