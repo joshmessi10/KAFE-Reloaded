@@ -11,8 +11,8 @@ const { isDeepStrictEqual } = require('node:util');
 const PINNED_MANIFEST = require('./runtimeManifest.json');
 const MAX_DOWNLOAD_BYTES = 64 * 1024 * 1024;
 const MAX_METADATA_BYTES = 64 * 1024;
-const MAX_EXPANDED_BYTES = 128 * 1024 * 1024;
-const MAX_MEMBER_BYTES = 32 * 1024 * 1024;
+const MAX_EXPANDED_BYTES = 256 * 1024 * 1024;
+const MAX_MEMBER_BYTES = 128 * 1024 * 1024;
 const MAX_ARCHIVE_MEMBERS = 4096;
 const MAX_REDIRECTS = 4;
 const REQUIRED_RUNTIME_MEMBERS = [
@@ -113,7 +113,7 @@ function defaultHttpsRequest(url, { signal } = {}) {
       response.on('data', chunk => {
         received += chunk.length;
         if (received > MAX_DOWNLOAD_BYTES) {
-          request.destroy(new Error('KAFE release asset exceeds the 64 MiB download limit.'));
+          request.destroy(new Error(`KAFE release asset exceeds the ${MAX_DOWNLOAD_BYTES / (1024 * 1024)} MiB download limit.`));
           return;
         }
         chunks.push(chunk);
@@ -199,7 +199,7 @@ function validateMemberSet(entries) {
       throw new Error(`Archive member exceeds the ${MAX_MEMBER_BYTES} byte per-file limit: ${entry.fileName}`);
     }
     expandedBytes += entry.uncompressedSize;
-    if (expandedBytes > MAX_EXPANDED_BYTES) throw new Error('Archive exceeds the 128 MiB expanded-size limit.');
+    if (expandedBytes > MAX_EXPANDED_BYTES) throw new Error(`Archive exceeds the ${MAX_EXPANDED_BYTES / (1024 * 1024)} MiB expanded-size limit.`);
     const type = entry.isDirectory ? 'directory' : 'file';
     if (memberMap.has(safe.key)) throw new Error(`Duplicate or colliding archive member: ${entry.fileName}`);
     const parts = safe.key.split('/');
@@ -473,7 +473,7 @@ function inspectTarGz(buffer) {
     if (isDirectory && size !== 0) throw new Error(`TAR directory member has data: ${fileName}`);
     if (size > MAX_MEMBER_BYTES) throw new Error(`Archive member exceeds the ${MAX_MEMBER_BYTES} byte per-file limit: ${fileName}`);
     expandedBytes += size;
-    if (expandedBytes > MAX_EXPANDED_BYTES) throw new Error('Archive exceeds the 128 MiB expanded-size limit.');
+    if (expandedBytes > MAX_EXPANDED_BYTES) throw new Error(`Archive exceeds the ${MAX_EXPANDED_BYTES / (1024 * 1024)} MiB expanded-size limit.`);
     const dataOffset = offset + 512;
     if (dataOffset + size > tar.length) throw new Error(`TAR member data is truncated: ${fileName}`);
     entries.push({ fileName: safe.name, isDirectory, uncompressedSize: size, mode, data: tar.subarray(dataOffset, dataOffset + size) });

@@ -645,6 +645,32 @@ test('rejects traversal, backslash, symlink, hardlink, and special members in ta
   }
 });
 
+test('rejects archive members exceeding the 128 MiB per-file limit in tar.gz uv archives', async () => {
+  const header = Buffer.alloc(512);
+  const writeText = (value, start, length) => header.write(value, start, Math.min(Buffer.byteLength(value), length), 'utf8');
+  const writeOctal = (value, start, length) => header.write(value.toString(8).padStart(length - 1, '0') + '\0', start, length, 'ascii');
+  writeText('uv-x86_64-unknown-linux-gnu/uv', 0, 100);
+  writeOctal(0o755, 100, 8);
+  writeOctal(0, 108, 8);
+  writeOctal(0, 116, 8);
+  writeOctal(128 * 1024 * 1024 + 1, 124, 12);
+  writeOctal(0, 136, 12);
+  header.fill(0x20, 148, 156);
+  header[156] = 0x30;
+  writeText('ustar\0', 257, 6);
+  writeText('00', 263, 2);
+  const checksum = header.reduce((sum, byte) => sum + byte, 0);
+  writeOctal(checksum, 148, 8);
+  const uvBytes = gzipSync(Buffer.concat([header, Buffer.alloc(1024)]));
+  const fixture = makeFixture({ uvBytes });
+  fixture.manager.platform = 'linux';
+  fixture.manifest.uv.targets['linux-x64'].sha256 = digest(uvBytes);
+  fixture.manifest.uv.targets['linux-x64'].url = 'https://releases.astral.sh/github/uv/releases/download/0.11.3/uv-x86_64-unknown-linux-gnu.tar.gz';
+  const result = await fixture.manager.installRuntime();
+  assert.equal(result.status, 'error');
+  assert.match(result.message, /exceeds the 134217728 byte per-file limit/i);
+});
+
 test('removes partial staging, environment, and downloaded artifacts after uv sync failure', async () => {
   const fixture = makeFixture({ processRunner: async (executable, args, options) => {
     fixture.processCalls.push({ executable, args, options });
