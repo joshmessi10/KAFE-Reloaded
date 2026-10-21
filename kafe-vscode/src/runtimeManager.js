@@ -816,11 +816,25 @@ function createRuntimeManager({
 
   async function resolveWorkspace(workspaceRoot) {
     if (await isContributorRoot(workspaceRoot)) {
+      let uvPath = 'uv';
+      let uvEnvironment = {};
       let result;
       try {
-        result = await processRunner('uv', ['--version'], { cwd: workspaceRoot, shell: false });
+        result = await processRunner(uvPath, ['--version'], { cwd: workspaceRoot, shell: false });
       } catch (error) {
-        return { status: 'unavailable', runtimeMode: 'contributor', message: `Install uv from https://docs.astral.sh/uv/getting-started/installation/ to run KAFE in this contributor checkout. ${error.message}` };
+        const cached = await readReadyRuntime();
+        if (cached.status === 'ready' && cached.uvPath) {
+          uvPath = cached.uvPath;
+          uvEnvironment = cached.uvEnvironment ?? {};
+          try {
+            result = await processRunner(uvPath, ['--version'], { cwd: workspaceRoot, env: uvEnvironment, shell: false });
+          } catch {
+            result = null;
+          }
+        }
+        if (!result) {
+          return { status: 'unavailable', runtimeMode: 'contributor', message: `Install uv from https://docs.astral.sh/uv/getting-started/installation/ to run KAFE in this contributor checkout. ${error.message}` };
+        }
       }
       if (result.exitCode !== 0 || !/^uv \d+\.\d+\.\d+(?:\s|$)/.test(result.stdout.trim())) {
         return {
@@ -828,7 +842,7 @@ function createRuntimeManager({
           message: `Install uv ${manifest.uv.version} or a compatible uv release from https://docs.astral.sh/uv/getting-started/installation/ to run KAFE in this contributor checkout. Editing remains available.`,
         };
       }
-      return { status: 'ready', runtimeMode: 'contributor', runtimeRoot: workspaceRoot, uvPath: 'uv', uvEnvironment: {} };
+      return { status: 'ready', runtimeMode: 'contributor', runtimeRoot: workspaceRoot, uvPath, uvEnvironment };
     }
     const cached = await readReadyRuntime();
     if (cached.status === 'ready') return cached;
