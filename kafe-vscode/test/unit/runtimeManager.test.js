@@ -311,8 +311,8 @@ test('maps only the four pinned uv platforms and rejects unsupported targets', (
 
 test('runtime manifest pins the published KAFE assets and official uv 0.11.3 checksums', () => {
   assert.equal(manifestTemplate.runtime.releasePublished, true);
-  assert.equal(manifestTemplate.runtime.archiveUrl, 'https://github.com/joshmessi10/KAFE-Reloaded/releases/download/kafe-runtime-v0.2.0/kafe-runtime-0.2.0.zip');
-  assert.equal(manifestTemplate.runtime.manifestUrl, 'https://github.com/joshmessi10/KAFE-Reloaded/releases/download/kafe-runtime-v0.2.0/kafe-runtime-0.2.0.manifest.json');
+  assert.equal(manifestTemplate.runtime.archiveUrl, 'https://github.com/joshmessi10/KAFE-Reloaded/releases/download/kafe-runtime-v0.3.0/kafe-runtime-0.3.0.zip');
+  assert.equal(manifestTemplate.runtime.manifestUrl, 'https://github.com/joshmessi10/KAFE-Reloaded/releases/download/kafe-runtime-v0.3.0/kafe-runtime-0.3.0.manifest.json');
   assert.deepEqual(Object.fromEntries(Object.entries(manifestTemplate.uv.targets).map(([key, value]) => [key, value.sha256])), {
     'win32-x64': 'ae681c0aaec7cc96af184648cb88d73f8393ed60fa5880abdd6bdb910f9b227c',
     'darwin-x64': 'b0e05e0b43a000fdc2132ee3f3400ba5dee427bc2337d3ec4eb8cf4f3d5722af',
@@ -381,7 +381,7 @@ test('valid runtime and uv checksums stage, sync with isolated paths, and atomic
   const fixture = makeFixture();
   const result = await fixture.manager.installRuntime();
   assert.equal(result.status, 'ready', result.message);
-  assert.equal(result.runtimeVersion, '0.2.0');
+  assert.equal(result.runtimeVersion, '0.3.0');
   assert.equal(fixture.requests.length, 3);
   const sync = fixture.processCalls.find(call => call.args[0] === 'sync');
   assert.ok(sync);
@@ -474,7 +474,7 @@ test('knowledge paths do not depend on uv target', async () => {
   fixture.processCalls.length = 0;
   const knowledge = await fixture.manager.getReadyKnowledgePack();
   assert.equal(knowledge.status, 'ready');
-  assert.equal(knowledge.knowledgeRoot, path.join(fixture.manager.storageRoot, 'kafe-runtime', 'runtime-0.2.0', 'knowledge-pack'));
+  assert.equal(knowledge.knowledgeRoot, path.join(fixture.manager.storageRoot, 'kafe-runtime', 'runtime-0.3.0', 'knowledge-pack'));
   assert.equal((await fixture.manager.getReadyRuntime()).status, 'unsupported');
   assert.deepEqual(fixture.requests, []);
   assert.deepEqual(fixture.processCalls, []);

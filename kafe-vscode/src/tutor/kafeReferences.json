@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
   "referenceVersion": 1,
-  "runtimeVersion": "0.2.0",
-  "runtimeSourceRevision": "8441cec35ffa8cf76e2595313d77256f118e5175",
+  "runtimeVersion": "0.3.0",
+  "runtimeSourceRevision": "6ee33f742909f74a3d597379e713aedc3a5703b2",
   "sourceFingerprint": "148ebb295fd60e5e209712aad0f4cdfa12064f0f76010366e1fbc3fccf55321c",
   "runtimeSourceFingerprint": "148ebb295fd60e5e209712aad0f4cdfa12064f0f76010366e1fbc3fccf55321c",
   "fixtureFingerprint": "fe2f38d1dd5df4e4787ea91b65a21d63f5618568f15f067089612b06c0acc5ea",
@@ -943,5 +943,5 @@
     "tests/loops/while_nested_loops.kf",
     "tests/loops/while_with_break_continue.kf"
   ],
-  "contentSha256": "c44acda7f099f2a4d7976fce01bcf03fcc7826f5e460863312c309aec1edb557"
+  "contentSha256": "b24a407579e4eb90917213b71197e060a299a2bd980f74aca5e9ecddc5ecc09d"
 }
