@@ -1,5 +1,6 @@
 const { randomUUID } = require('node:crypto');
 const { isDeepStrictEqual } = require('node:util');
+const { normalizeContent } = require('./ConversationStore');
 
 /**
  * @typedef {{id:string,uri:string,label:string,category:'active-file'|'selected-file',included:boolean}} SourceChoice
@@ -261,18 +262,34 @@ class ConversationSession {
   /** @returns {HistoryPair[]} */
   historyPairs() { return structuredClone(this.#pairs); }
 
-  reset() {
+  /** Restore display and eligible history only; archived entries never issue native capabilities. */
+  restoreConversation(content) {
+    const normalized = normalizeContent(content);
+    const entries = normalized.entries.map(entry => {
+      const pending = ['ready', 'preparing', 'responding', 'processing-tools'].includes(entry.status);
+      const historicalAuthority = entry.kind === 'proposal' || entry.kind === 'checkpoint' ||
+        (entry.kind === 'host' && entry.data?.scopeSummary);
+      const status = pending && historicalAuthority ? 'stale' :
+        ['preparing', 'responding', 'processing-tools'].includes(entry.status) ? 'cancelled' : entry.status;
+      return { ...entry, status, actions: [] };
+    });
+    this.#replaceConversation({ ...normalized, entries });
+  }
+
+  #replaceConversation({ draft = '', entries = [], historyPairs = [] } = {}) {
     this.#generation += 1;
     this.#inputRevision += 1;
-    this.#draft = '';
+    this.#draft = draft;
     this.#context = { revision: this.#context.revision + 1, activeSource: null, sources: [], restricted: false };
     this.#contextActions = { entryId: randomUUID(), actions: [] };
-    this.#entries = [];
+    this.#entries = structuredClone(entries);
     this.#turn = null;
     this.#actions.clear();
-    this.#pairs = [];
+    this.#pairs = structuredClone(historyPairs);
     this.#publish();
   }
+
+  reset() { this.#replaceConversation(); }
 }
 
 module.exports = { ConversationSession };

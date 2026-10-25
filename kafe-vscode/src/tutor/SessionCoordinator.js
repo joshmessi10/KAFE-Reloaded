@@ -8,6 +8,7 @@ const { checkpointDependencies } = require('./LearningCheckpoint');
 const { randomUUID } = require('node:crypto');
 const { LearningSession } = require('./LearningSession');
 const { ActionEvidence } = require('./ActionEvidence');
+const { normalizeContent } = require('./ConversationStore');
 
 /** Host context and memory-only learning owner. No reviewed-request capabilities. */
 class SessionCoordinator {
@@ -60,8 +61,8 @@ class SessionCoordinator {
     const unsubscribe = this.session.subscribe(() => listener(this.snapshot()));
     return () => { this.learningListeners.delete(listener); unsubscribe(); };
   }
-  settleLearningPreferences() {
-    if (this.controller.isBusy()) return;
+  settleLearningPreferences({ responseStopped = false } = {}) {
+    if (this.controller.isBusy() && !responseStopped) return;
     const result = this.learningSession.settlePreferences(), queued = this.preferenceChangeQueued;
     this.preferenceChangeQueued = false;
     if (result.status === 'updated' || queued) this.publishLearning();
@@ -136,14 +137,57 @@ class SessionCoordinator {
   publishLearning() { this.learningDisplayRevision++; for (const listener of [...this.learningListeners]) listener(this.snapshot()); }
   dispose() { this.controller.dispose(); this.disposed = true; this.contextRefresh++; this.learningListeners.clear(); this.unsubscribeEvidence(); }
 
-  /** Reset conversation memory; independent native processes and legacy storage remain owned elsewhere. */
-  newConversation() {
-    if (this.disposed) return;
+  /** Pure archive projection; saving or exporting must never stop a live response. */
+  captureConversation() {
+    const { draft, entries } = this.session.snapshot();
+    return normalizeContent({ draft, entries, historyPairs: this.session.historyPairs(),
+      preferences: this.learningSession.snapshot().preferences });
+  }
+
+  canTransitionConversation() {
+    return !this.disposed && this.acceptingProposalId === null &&
+      this.proposalProvider?.pending?.phase !== 'applying' && !this.proposalProvider?.isResetPending?.();
+  }
+
+  /** Native Apply is independent of provider cancellation and must settle before transitioning. */
+  stopConversationResponse() {
+    if (!this.canTransitionConversation()) return { status: 'busy' };
+    const turn = this.session.snapshot().turn;
+    if (turn && ['preparing', 'responding', 'processing-tools'].includes(turn.status)) {
+      if (this.controller.stop({ turnId: turn.id, turnGeneration: turn.turnGeneration })) {
+        this.settleLearningPreferences({ responseStopped: true });
+      }
+    }
+    return { status: 'completed' };
+  }
+
+  /** Validation precedes mutation; restored sources and capabilities receive no authority. */
+  restoreConversation(content) {
+    if (!this.canTransitionConversation()) return { status: 'busy' };
+    let normalized;
+    try { normalized = normalizeContent(content); }
+    catch { return { status: 'unavailable', code: 'invalid_conversation' }; }
+    if (this.stopConversationResponse().status === 'busy') return { status: 'busy' };
+    this.#resetConversationMemory();
+    this.learningSession.setPreferences(normalized.preferences);
+    this.session.restoreConversation(normalized);
+    this.proposalProvider?.clear(); this.proposal = null;
+    void this.refreshContext().catch(() => {});
+    return { status: 'completed' };
+  }
+
+  #resetConversationMemory() {
     this.contextRefresh++;
     this.includedSourceUris.clear(); this.evidence = null;
     this.actionEvidence.reset(); this.proposalEvidenceGenerations.clear();
     this.learningSession.reset();
     this.preferenceChangeQueued = false; this.learningDisplayRevision++;
+  }
+
+  /** Reset conversation memory; independent native processes and legacy storage remain owned elsewhere. */
+  newConversation() {
+    if (this.disposed) return;
+    this.#resetConversationMemory();
     this.session.reset();
     this.proposalProvider?.clear(); this.proposal = null;
     void this.refreshContext().catch(() => {});
