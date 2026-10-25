@@ -26,7 +26,7 @@ for (const change of ['unchanged', 'during-run', 'read-failure']) test(`Run capt
 });
 
 const deferred = () => { let resolve; const promise = new Promise(r => { resolve = r; }); return { promise, resolve }; };
-function conversationHostFixture() {
+function conversationHostFixture({ workspaceState } = {}) {
   const listeners = {}, calls = [], reads = [], watcher = {}, disposals = [];
   const uri = name => ({ scheme: 'file', fsPath: `C:/workspace/${name}`, toString: () => `file:///C:/workspace/${name}` });
   const document = (name, text) => ({ uri: uri(name), languageId: 'kafe', version: 1, text, getText() { reads.push(name); return this.text; } });
@@ -42,7 +42,7 @@ function conversationHostFixture() {
       onDidChangeWorkspaceFolders: on('workspace'), onDidGrantWorkspaceTrust: on('trust'),
       createFileSystemWatcher() { for (const name of ['Change', 'Create', 'Delete']) watcher[`onDid${name}`] = fn => { watcher[name.toLowerCase()] = fn; return { dispose() {} }; }; watcher.dispose = () => disposals.push('watcher'); return watcher; } } };
   let availabilityHook;
-  const host = createTutorHost({ vscode, extensionUri: {}, secrets: {}, runtimeManager: {
+  const host = createTutorHost({ vscode, extensionUri: {}, secrets: {}, workspaceState, runtimeManager: {
     getReadyKnowledgePack: async () => { if (availabilityHook) await availabilityHook(); return { status: 'unavailable', code: 'knowledge_missing' }; } },
     provider: { async *stream({ request }) { calls.push(request); yield { type: 'complete', text: 'Answer', toolCalls: [], finishReason: 'stop' }; } } });
   return { host, vscode, listeners, watcher, active, optional, excluded, reads, calls, disposals,
@@ -57,6 +57,33 @@ function contextRunEnvelope(host) {
   return { type: 'invokeAction', sessionId: s.sessionId, generation: s.generation,
     entryId: s.contextActions.entryId, actionId: action.id, args: action.args };
 }
+
+test('production host restores workspace chats and rejects old webview envelopes after switching', async () => {
+  const values = new Map();
+  const workspaceState = { get: key => values.get(key), async update(key, value) { values.set(key, structuredClone(value)); } };
+  const first = conversationHostFixture({ workspaceState });
+  await first.host.readiness;
+  const originalId = first.host.conversations.activeId, oldState = first.host.coordinator.snapshot();
+  assert.equal((await first.host.tutorView.onMessage({ type: 'setDraft', sessionId: oldState.sessionId, generation: oldState.generation, text: 'Original draft' })).status, 'completed');
+  await first.host.conversationCommands.newConversation();
+  const secondId = first.host.conversations.activeId;
+  assert.notEqual(secondId, originalId);
+  assert.equal((await first.host.tutorView.onMessage({ type: 'setDraft', sessionId: oldState.sessionId, generation: oldState.generation, text: 'Stale draft' })).status, 'stale');
+  assert.equal(first.host.coordinator.snapshot().draft, '');
+  first.host.coordinator.session.setDraft('Second draft');
+  await first.host.conversations.flush(); await first.host.conversations.dispose(); first.host.dispose();
+  const restarted = conversationHostFixture({ workspaceState });
+  try {
+    await restarted.host.readiness;
+    assert.equal(restarted.host.conversations.activeId, secondId);
+    assert.equal(restarted.host.coordinator.snapshot().draft, 'Second draft');
+    restarted.vscode.window.showQuickPick = async choices => choices.find(item => item.id === originalId);
+    assert.equal((await restarted.host.conversationCommands.switchConversation()).status, 'completed');
+    assert.equal(restarted.host.coordinator.snapshot().draft, 'Original draft');
+    assert.equal(restarted.host.tutorView.conversationTitle, 'New conversation');
+    assert.doesNotMatch(JSON.stringify([...values.values()]), /OPTIONAL_OLD|EXCLUDED|\"ACTIVE\"/);
+  } finally { await restarted.host.conversations.dispose(); restarted.host.dispose(); }
+});
 
 test('actual host tool failure reaches bounded diagnostic channel and disposes it', async () => {
   const f = conversationHostFixture(), lines = []; let disposed = 0, streams = 0;

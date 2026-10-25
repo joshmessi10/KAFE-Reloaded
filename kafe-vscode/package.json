@@ -2,7 +2,7 @@
   "name": "kafe-neural-suite",
   "displayName": "KAFE - Neural Language Suite",
   "description": "Edit and run KAFE programs with a guided AI tutor.",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "publisher": "KAFEGROUP",
   "icon": "icon.png",
   "license": "MIT",
@@ -44,6 +44,10 @@
     "onCommand:kafe.clearProviderKey",
     "onCommand:kafe.clearTutorProgress",
     "onCommand:kafe.newConversation",
+    "onCommand:kafe.switchConversation",
+    "onCommand:kafe.renameConversation",
+    "onCommand:kafe.deleteConversation",
+    "onCommand:kafe.exportConversation",
     "onCommand:kafe.learningPreferences",
     "onCommand:kafe.toggleTeachingPause",
     "onView:kafeTutorView"
@@ -107,7 +111,25 @@
       },
       {
         "command": "kafe.newConversation",
-        "title": "KAFE: New Conversation"
+        "title": "KAFE: New Conversation",
+        "icon": "$(add)"
+      },
+      {
+        "command": "kafe.switchConversation",
+        "title": "KAFE: Switch Conversation",
+        "icon": "$(history)"
+      },
+      {
+        "command": "kafe.renameConversation",
+        "title": "KAFE: Rename Conversation"
+      },
+      {
+        "command": "kafe.deleteConversation",
+        "title": "KAFE: Delete Conversation"
+      },
+      {
+        "command": "kafe.exportConversation",
+        "title": "KAFE: Export Conversation"
       },
       {
         "command": "kafe.learningPreferences",
@@ -161,6 +183,26 @@
         },
         {
           "command": "kafe.newConversation",
+          "when": "view == kafeTutorView",
+          "group": "2_conversation@1"
+        },
+        {
+          "command": "kafe.switchConversation",
+          "when": "view == kafeTutorView",
+          "group": "navigation@2"
+        },
+        {
+          "command": "kafe.renameConversation",
+          "when": "view == kafeTutorView",
+          "group": "2_conversation"
+        },
+        {
+          "command": "kafe.exportConversation",
+          "when": "view == kafeTutorView",
+          "group": "2_conversation"
+        },
+        {
+          "command": "kafe.deleteConversation",
           "when": "view == kafeTutorView",
           "group": "2_conversation"
         },

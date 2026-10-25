@@ -68,6 +68,7 @@ class TutorViewProvider {
   resolveWebviewView(view) {
     this.releaseView?.();
     this.view = view;
+    if (this.conversationTitle) view.description = this.conversationTitle;
     const { webview } = view;
     const resourceRoot = this.vscode.Uri.joinPath(this.extensionUri, 'src', 'tutor');
     webview.options = { enableScripts: true, localResourceRoots: [resourceRoot] };
@@ -114,6 +115,11 @@ class TutorViewProvider {
   }
 
   dispose() { this.releaseView?.(); this.releaseView = undefined; }
+
+  setConversationTitle(title) {
+    this.conversationTitle = title;
+    if (this.view) this.view.description = title;
+  }
 
   render(state) {
     if (!this.view) return;

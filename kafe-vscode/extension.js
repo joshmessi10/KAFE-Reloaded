@@ -19,6 +19,10 @@ const { isTutorMessage } = require('./src/tutor/TutorViewProvider');
 const { metadataLineage } = require('./src/tutor/ToolRouter');
 const { createTutorDiagnostics } = require('./src/tutor/TutorDiagnostics');
 const { savedSourceHash } = require('./src/tutor/ActionEvidence');
+const { ConversationManager } = require('./src/tutor/ConversationManager');
+const { createConversationCommands } = require('./src/tutor/ConversationCommands');
+
+const conversationManagers = new Set();
 
 const ANTLR_COMMAND = 'java -jar antlr-4.13.2-complete.jar -no-listener -visitor -Dlanguage=Python3 Kafe_Grammar.g4';
 const REQUIRED_PARSER = ['Kafe_GrammarLexer.py', 'Kafe_GrammarParser.py', 'Kafe_GrammarVisitor.py'];
@@ -245,6 +249,7 @@ function createTutorHost({ vscode, extensionUri, secrets, workspaceState, runtim
   const toggleTeachingPause = () => coordinator.handleLearnerMessage({ type: 'toggleTeachingPause' });
   const onMessage = async message => {
     if (!isTutorMessage(message, coordinator.session)) return { status: 'stale' };
+    if (conversations.transitioning && message.type !== 'setDraft') return { status: 'busy' };
     try {
       if (message.type === 'invokeAction') return await actions.dispatch(message);
       if (message.type === 'setDraft') return await coordinator.handleLearnerMessage({ type: 'setDraft', text: message.text });
@@ -347,10 +352,17 @@ function createTutorHost({ vscode, extensionUri, secrets, workspaceState, runtim
     subscriptions.push(watcher.onDidCreate(uri => { unavailableSources.delete(uri.toString()); sourceEvent(uri); refresh(); }));
     subscriptions.push(watcher.onDidDelete(uri => sourceEvent(uri, true)));
   }
+  const conversations = new ConversationManager({ coordinator, workspaceState,
+    onError: message => vscode.window.showErrorMessage?.(message),
+    onChanged: ({ title }) => tutorView.setConversationTitle(title) });
+  conversationManagers.add(conversations);
+  const conversationCommands = createConversationCommands({ vscode, manager: conversations, refreshContext: () => actions.refreshContext() });
   const readiness = actions.refreshContext();
   return { tutorView, coordinator, proposalProvider, progressStore, actions, runFile, keyHandlers, readiness, openLearningPreferences, toggleTeachingPause,
-    resolveKnowledge, knowledgeRetriever,
-    dispose() { hostDisposed = true; actions.dispose(); coordinator.dispose(); tutorView.dispose(); diagnostics.dispose(); for (const subscription of subscriptions) subscription.dispose(); } };
+    resolveKnowledge, knowledgeRetriever, conversations, conversationCommands,
+    dispose() { hostDisposed = true;
+      void conversations.dispose().finally(() => conversationManagers.delete(conversations));
+      actions.dispose(); coordinator.dispose(); tutorView.dispose(); diagnostics.dispose(); for (const subscription of subscriptions) subscription.dispose(); } };
 }
 
 function createRunFileHandler({ vscode, runtimeManager, fs: fileSystem = fs, path: paths = path,
@@ -568,7 +580,11 @@ function activate(context) {
     vscode.commands.registerCommand('kafe.configureProvider', keyHandlers.configure),
     vscode.commands.registerCommand('kafe.clearProviderKey', keyHandlers.clear),
     vscode.commands.registerCommand('kafe.clearTutorProgress', createClearProgressHandler({ vscode, progressStore })),
-    vscode.commands.registerCommand('kafe.newConversation', () => coordinator.newConversation()),
+    vscode.commands.registerCommand('kafe.newConversation', host.conversationCommands.newConversation),
+    vscode.commands.registerCommand('kafe.switchConversation', host.conversationCommands.switchConversation),
+    vscode.commands.registerCommand('kafe.renameConversation', host.conversationCommands.renameConversation),
+    vscode.commands.registerCommand('kafe.deleteConversation', host.conversationCommands.deleteConversation),
+    vscode.commands.registerCommand('kafe.exportConversation', host.conversationCommands.exportConversation),
     vscode.commands.registerCommand('kafe.learningPreferences', () => host.openLearningPreferences()),
     vscode.commands.registerCommand('kafe.toggleTeachingPause', () => host.toggleTeachingPause()),
   );
@@ -595,7 +611,9 @@ function activate(context) {
   }
 }
 
-function deactivate() {}
+async function deactivate() {
+  await Promise.allSettled([...conversationManagers].map(manager => manager.flush()));
+}
 
 module.exports = { activate, deactivate, createRunFileHandler, createProviderKeyHandlers,
   createClearProgressHandler, createTutorHost, ANTLR_COMMAND };
