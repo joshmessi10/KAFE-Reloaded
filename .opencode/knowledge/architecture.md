@@ -64,6 +64,20 @@ Source layout:
 - Library functions receive evaluated KAFE arguments (lists as Python lists; GESHA/PARDOS/MACHINE objects as their Python classes).
 - KAFE values map to Python types via `TypeUtils.py`.
 
+## VS Code Tutor conversations
+
+Extension 2.2.0 is the local candidate for persistent conversations (ADR-0030). The JavaScript host and existing sidebar webview retain one active conversation/composer. `ConversationManager` owns the workspace archive; `SessionCoordinator` and its stable `ConversationSession` object own the active transcript, provider turn and current native authorization.
+
+`ConversationStore` validates versioned records under `kafeTutor.conversations.v1` in VS Code `workspaceState`. Each record contains a stable ID, title, timestamps and declarative content: full display entries, draft, completed learner/assistant pairs and learning `{mode, level}`. Local history preserves file URI and knowledge-lineage dependencies so restored context can be checked against current authorization. It does not restore optional-source inclusion or grant permission to read an old source. Existing legacy progress and SecretStorage remain separate.
+
+The manager captures changes without stopping a response, debounces autosave for 250 ms, serializes writes and flushes before a conversation transition. New preserves the departing record. Switch restores the selected record and its draft/preferences; Rename edits its title; Delete requires native confirmation and creates an empty conversation when removing the last one. Native commands and the picker live in `ConversationCommands`; the view description shows the active title.
+
+Only one provider response can be active. Transitions stop it before saving partial text as cancelled, then advance the stable session's generation. A native Apply/reset in progress blocks the transition. Restoration clears live learning decisions/observations, included source grants, pending proposals, request snapshots and private action/Run evidence. Historical checkpoint/proposal summaries are inert, and old action envelopes fail the generation/registry checks. Native processes continue independently; ownership fences reject their late results in another chat.
+
+The archive is bounded to 200 conversations, 4 MiB per content record and 16 MiB total, with at most 10,000 entries and 5,000 history pairs per conversation. Limits reject saves without silently evicting records. A malformed existing archive is left untouched and reported while the current chat remains temporary. A failed save preserves the live chat so the learner can retry or export before closing. The full archived transcript is independent of `ConversationHistory`'s provider-selection limit of eight eligible completed pairs / 32 KiB.
+
+`Export Conversation` snapshots the selected conversation before the native Save dialog and writes versioned UTF-8 JSON, bounded separately to 16 MiB. It includes visible entries/statuses and safe summaries plus record identity/title/dates. It omits draft, preferences, provider-history dependencies, source metadata and executable handles; cancellation writes nothing. Learner-entered text/code is transcript content and is preserved. Attached source snapshots, SecretStorage values, raw requests, private Run evidence and raw transport errors are excluded from both archive and export. Tutor diagnostics continue to contain fixed metadata rather than transcript/private content.
+
 ## Extension Points
 
 - New language component: create `src/language_components/<feature>/functions.py`, wire dispatch in `InterpreterVisitor.py`.

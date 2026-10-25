@@ -4,11 +4,31 @@ For test-backed code guidance, reference freshness checks, and the contributor w
 
 The extension provides KAFE `.kf` highlighting, snippets, learner-started execution and a Tutor conversation in VS Code 1.96.0 or later. Open **KAFE: Open Tutor**.
 
+Local candidate **2.2.0** adds saved workspace conversations and JSON export.
+
 ## Conversation
 
 Type a message and press **Send** or Enter once. Shift+Enter inserts a newline. One answer streams in place. **Stop** replaces Send during a response while the next draft stays editable. **Retry** uses the original question and current authorized context, preserves the next draft and does not duplicate the learner message. Key configuration never sends automatically.
 
 The included whole-file indicators identify the active eligible `.kf` and selected optional files. **Add context** lists visible same-workspace `.kf` metadata without reading optional contents; explicit inclusion permits capture at Send. Indicators reveal their named file natively; optional indicators can be removed. Accessible names and tooltips retain full identities, including duplicate basenames. Optional selection survives becoming active and closing its editors. Source/trust/knowledge changes fence admission and invalidate dependent authority. Restricted Mode permits message-only learning while excluding workspace files, edits and Run.
+
+## Saved conversations and export
+
+Each VS Code workspace keeps its own Tutor conversations. Messages, unsent drafts and each conversation's learning level and guided/paused mode are saved locally after a 250 ms pause in changes. Reopening the same workspace restores the last selected conversation. History follows VS Code's workspace storage scope; it is not shared across projects.
+
+Use the Tutor view-title actions or the Command Palette:
+
+| Command | Behavior |
+| --- | --- |
+| **KAFE: New Conversation** | Preserves the current chat and opens an empty conversation with guided Beginner preferences. |
+| **KAFE: Switch Conversation** | Lists saved conversations with their updated dates; reopens the chosen chat and its draft/preferences. |
+| **KAFE: Rename Conversation** | Changes the active conversation's title. A new chat initially takes its title from the first learner message. |
+| **KAFE: Delete Conversation** | Requests native confirmation before removing the active chat and draft. Deleting the last chat creates an empty conversation. |
+| **KAFE: Export Conversation** | Opens a native Save dialog for a JSON snapshot of the selected conversation. Cancelling saves nothing. |
+
+New, Switch and Delete stop a streaming response and preserve its partial reply as cancelled. Finish a current **Apply** before changing conversations. Archived checkpoints and proposals remain readable; their old Review/Apply/Run actions cannot be reused. An independently running KAFE program continues in its own terminal.
+
+Export includes the full visible transcript, message statuses, title/dates and safe checkpoint/proposal summaries. It preserves Unicode, message text and code exactly, including text or code you pasted. Drafts, learning preferences, provider history/dependencies, attached-source metadata and executable actions are omitted. The export belongs to the conversation selected when the Save dialog opened, even if you switch chats before choosing the destination. Export does not stop an active response; its snapshot can contain a partial reply marked responding.
 
 ## Guided learning and permissions
 
@@ -18,7 +38,7 @@ Concept questions can receive direct explanations. For meaningful design decisio
 - **Intermediate**: shorter explanations, hints and trade-offs, collaborative preparation and occasional checkpoints.
 - **Expert**: direct technical answers, minimal introductory explanation and checkpoints for major decisions.
 
-Levels select a teaching style, not measured ability. Each selection applies a complete preset; independent frequency, reasoning, preparation and familiarity menus are no longer exposed. All levels use the same KAFE references and explicit preparation, Review, Apply and Run permissions. **KAFE: Pause/Resume Teaching** separately toggles teaching without changing the selected level; selecting a different level does not resume paused teaching. Changes during a response queue until settlement. Repeated pause/resume requests act on the queued selection. The button shows the active level, including paused status; queued changes are announced when queued and when applied. Preferences stay in memory for the conversation; New conversation resets to guided Beginner. Ordinary typed discussion remains available; no onboarding wizard is required.
+Levels select a teaching style, not measured ability. Each selection applies a complete preset; independent frequency, reasoning, preparation and familiarity menus are no longer exposed. All levels use the same KAFE references and explicit preparation, Review, Apply and Run permissions. **KAFE: Pause/Resume Teaching** separately toggles teaching without changing the selected level; selecting a different level does not resume paused teaching. Changes during a response queue until settlement. Repeated pause/resume requests act on the queued selection. The button shows the active level, including paused status; queued changes are announced when queued and when applied. Each saved conversation retains its own level and guided/paused mode; New conversation starts with guided Beginner. Ordinary typed discussion remains available; no onboarding wizard is required.
 
 A checkpoint's learner-proposal summary is explicitly an unconfirmed Tutor summary. **Confirm and continue** records adoption and continues discussion; it does not establish learner authorship, understanding or mastery. **Discuss** and **Skip** confer no preparation grant. Waiting for reasoning is settled, with no work spinner or Stop.
 
@@ -36,11 +56,13 @@ Run evidence distinguishes host-observed launch/completion/current saved-source 
 
 ## Retention and limits
 
-Conversation, drafts, selection, learning preferences/checkpoints/observations, requests and action/output evidence stay in host memory. View recreation retains the same owner. **New conversation** and host restart clear this new state and restore learning defaults. Credentials and legacy progress remain independent. Legacy progress is neither imported into learning nor transmitted to the provider. **KAFE: Clear Tutor Progress** requests separate native confirmation and preserves live chat and credentials.
+The workspace archive retains transcripts, drafts, completed history and learning preferences across restarts. Source selections, live learning decisions/observations, pending proposals, request snapshots and action/output evidence remain transient. Switching or restoring a conversation clears that authority and checks current workspace context again; a historical transcript does not restore permission to read a file, apply a change or run a program. Credentials and legacy progress remain independent. Legacy progress is neither imported into learning nor transmitted to the provider. **KAFE: Clear Tutor Progress** requests separate native confirmation and preserves saved/live chat and credentials.
+
+The archive allows 200 conversations, 4 MiB per conversation and 16 MiB total, including at most 10,000 entries and 5,000 completed history pairs per conversation. Reaching a limit reports a save failure without silently removing old chats. A failed write leaves the current chat open; retry or export it before closing VS Code. If existing storage is malformed, the original data is preserved and a warning explains that the current chat is temporary. JSON export has its own 16 MiB limit and can preserve a live conversation when its archive save fails.
 
 Follow-ups retain at most eight eligible completed whole learner/assistant pairs within 32 KiB UTF-8. Failed/interrupted pairs are excluded; removed or changed source/knowledge grounding omits dependent context without reviving it through learning records. Source snapshots are limited to 64 KiB each and Run output to 1 MiB. The five permitted tools retain four calls per response and four rounds per turn. Checkpoints are bounded to 16 KiB each; teaching retains at most 32 decisions, 32 observations and 64 KiB total state. Exhaustion rejects the admission without silently evicting pending records; New conversation clears this state. Host action evidence retains at most 32 whole records, 8 KiB each and 64 KiB total/projection text. Old discussion and adopted decisions are not current execution proof.
 
-Transcripts, credentials, source bytes, requests, checkpoint text and raw transport errors are not persisted or added to Tutor diagnostics.
+The saved transcript is separate from that bounded provider context: older visible messages remain available and exportable even when they are outside the follow-up window. The archive excludes SecretStorage values, attached source snapshots, raw requests, private Run evidence and raw transport errors. Message text, code and safe checkpoint summaries are retained. Tutor diagnostics continue to exclude transcript text and those private values.
 
 ## Runtime and knowledge
 

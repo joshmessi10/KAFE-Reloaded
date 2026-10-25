@@ -16,7 +16,7 @@ KAFE is an educational DevKit with `.kf` editing, highlighting, snippets, explic
 
 ## Operating Context
 
-One sidebar conversation and one composer. Enter or Send submits once and streams one answer. Compact metadata identifies file context; optional files require inclusion. Stop replaces Send during a response while the next draft stays editable. New conversation is a secondary view-title action. Errors, proposals and Run results appear only when relevant. Credentials, diffs and terminals use native VS Code controls.
+One active sidebar conversation and one composer, with saved conversations scoped to the current VS Code workspace. Enter or Send submits once and streams one answer. Compact metadata identifies file context; optional files require inclusion. Stop replaces Send during a response while the next draft stays editable. Native title actions and the Command Palette provide New, Switch, Rename, Delete and Export; the view description identifies the active conversation. Credentials, diffs and terminals use native VS Code controls.
 
 ## Capabilities and Constraints
 
@@ -28,7 +28,11 @@ One sidebar conversation and one composer. Enter or Send submits once and stream
 - Confirmation adopts a Tutor-proposed checkpoint; it does not establish authorship, understanding or mastery. Discuss/Skip confer no grant. Native optional learning levels offer Beginner (default), Intermediate and Expert as complete teaching presets. A separate Pause/Resume Teaching command preserves the selected level; busy changes queue until settlement. Levels describe guidance preferences, not measured ability.
 - Exact target/scope permission admits one proposal preparation. Missing keys, failure or cancellation require fresh permission; Review, Apply and Run remain separate.
 - Host-observed staging, Apply and Run facts retain source/knowledge dependencies. Saved-source boundary equality and zero exit do not prove executed bytes or correctness; unavailable comparisons remain unknown.
-- Conversation, draft, source selection, teaching preferences/records, requests and action/output evidence are memory-only. View recreation retains its owner. New conversation and host restart discard ephemeral state and reset teaching defaults. Existing legacy progress is preserved without entering chat or model context; confirmed legacy clearing is independent of live chat and credentials.
+- Conversation transcripts, drafts, completed history and learning level/mode are saved locally per workspace, with a 250 ms autosave debounce and restoration of the last selected conversation across restarts. New preserves the previous conversation and starts with guided Beginner preferences; returning to a saved conversation restores its own draft and preferences.
+- One live session owns all native authority. Changing conversations stops a streaming response and retains its partial text as cancelled. A current Apply must finish first. Source selection, transient learning decisions/observations, pending proposals, request snapshots and action/output evidence are cleared on transition or restart. Historical checkpoint/proposal summaries remain readable and inert; current authorization is required for new actions. Independently running programs retain their terminal owner.
+- The local archive is limited to 200 conversations, 4 MiB per conversation and 16 MiB total, without silent eviction. Its full transcript is separate from the eight eligible completed pairs / 32 KiB provider context window. Malformed saved data is preserved and the current chat is marked temporary; failed writes keep the current chat live and report the failure.
+- Export saves the selected conversation as versioned UTF-8 JSON through a native Save dialog, including complete visible messages, statuses and safe summaries. It omits draft, preferences, provider history/dependencies, source metadata and executable handles. Message text and code entered by the learner remain part of saved/exported content. Export has a separate 16 MiB bound and does not stop the response.
+- Credentials remain in SecretStorage; attached source snapshots, raw requests, private Run evidence and raw transport errors are excluded from the conversation archive and export. Existing legacy progress remains separate from saved conversations and model context; confirmed legacy clearing preserves live chat and credentials.
 - The managed runtime uses separately published, checksum-pinned KAFE and uv assets. Deterministic services do not prove real-provider behavior, physical IME, screen-reader speech or learning efficacy.
 
 ## Brand Commitments
@@ -45,6 +49,7 @@ The approved conversation simplification supersedes the historical pure-chat wor
 - Make included file context clear before submission.
 - Keep execution, credentials, edits and legacy deletion under explicit authority.
 - Preserve drafting, focus, reading position and selection during streaming.
+- Keep conversations independent, durable within their workspace, and exportable through native file controls.
 - Treat execution results as evidence, not proof of understanding.
 
 ## Accessibility & Inclusion

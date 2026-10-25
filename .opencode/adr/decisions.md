@@ -840,3 +840,46 @@ Add a locked `extension` optional dependency extra containing `datasets`, `kaggl
 - Remove Run evidence from the Tutor entirely: rejected because it prevents grounded diagnostic guidance.
 - Continue showing collapsible Run cards: rejected because execution output belongs to the terminal and overwhelms the learning conversation.
 - Install integrations dynamically with pip: rejected because it bypasses the committed uv lock and makes learner environments non-reproducible.
+
+---
+
+## ADR-0030: Save Workspace Tutor Conversations and Export Inert Transcripts
+
+- **Status**: accepted
+- **Date**: 2026-10-25
+
+### Context
+
+The Tutor previously owned one memory-only conversation. New Conversation reset that transcript and learning state, and restarting the extension host discarded it. Learners need independent conversations they can revisit within a project and export for use outside VS Code. Retaining live action registries with archived conversations would also retain stale preparation, file and execution authority. The provider's eight-pair / 32 KiB context window cannot serve as a full transcript archive.
+
+### Decision
+
+Save multiple conversations locally in VS Code `workspaceState` under the versioned `kafeTutor.conversations.v1` key. Keep one active `SessionCoordinator` and the same live `ConversationSession` object. Archive stable identity/title/timestamps, full safe display entries, draft, completed history with source/knowledge dependency references, and learning level plus guided/paused mode. Debounce autosave for 250 ms, serialize writes and flush before transitions. New, Switch, Rename and confirmed Delete use native title/Command Palette actions; the view description identifies the active conversation.
+
+Stop an active provider turn before changing conversations and preserve partial text as cancelled. Advance generation when restoring declarative state, clear optional-source grants and transient learning/evidence/request/proposal state, and never restore executable action handles or live decisions. Block transitions while native Apply/reset is in progress. Continue independent native processes under their original ownership fences. Restored history must pass current source and knowledge eligibility before entering a request.
+
+Bound the local archive to 200 conversations, 4 MiB per conversation and 16 MiB total, with no silent eviction. A malformed existing archive is preserved and reported while the current chat is temporary; failed writes keep the live chat available for retry or export. The archive allows up to 10,000 entries and 5,000 completed pairs per conversation. These archive limits remain distinct from the provider context window.
+
+Export only the selected conversation as one versioned UTF-8 JSON document through a native Save dialog. Capture the selection and transcript before opening that dialog. Include record metadata, complete visible entries/statuses and safe display summaries; omit draft, learning preferences, provider history/dependencies, source metadata and all executable handles. Use a separate 16 MiB export bound so archive-save limits do not prevent a bounded recovery export. Preserve message text, code and Unicode, including learner-entered content. Exclude SecretStorage values, attached-file snapshots, raw requests, private Run evidence and raw transport errors from archive/export and keep existing diagnostic exclusions.
+
+### Rationale
+
+Workspace storage gives each project independent local history using the extension's existing VS Code infrastructure. One active coordinator reuses generation, source and native-action ownership checks without retaining multiple live providers or action registries. Separate archive/provider/export projections preserve a complete readable record while exposing only the data needed by each operation. Native pickers, confirmation and Save controls fit the existing sidebar and explicit action model.
+
+### Consequences
+
+- Messages, drafts and learning preferences now persist across restarts in their workspace; saved checkpoint/proposal summaries remain historical display data. This replaces the previous memory-only transcript contract.
+- A new chat starts at guided Beginner defaults; switching back restores that chat's level/mode and draft. Current source grants, live learning decisions and execution evidence must be obtained again.
+- Local history retains dependency references for current eligibility checks. Public JSON omits those references and internal continuation state, while preserving text/code already entered in the conversation.
+- Save failures and capacity limits are visible instead of silently removing data. Existing malformed storage is not overwritten, and a live transcript can be exported within the separate export limit.
+- JSON export is a transcript format for this release. Import, Markdown, all-chat export, cloud sync and simultaneous background responses remain outside the approved scope.
+- Extension 2.2.0 is a local candidate. Publication and broader integration/release verification require their own evidence.
+
+### Alternatives Considered
+
+- Keep transcripts only in memory: rejected because conversations must survive workspace restarts.
+- Retain a live coordinator/provider for every archived conversation: rejected because this multiplies lifecycle owners and risks preserving stale execution authority.
+- Use a global cross-workspace archive: rejected because the approved scope isolates conversations by workspace.
+- Persist raw session/request objects or restore old actions: rejected because transcript restoration cannot grant file, Apply or Run authority.
+- Save/export only the bounded provider history: rejected because it would omit older visible messages.
+- Silently evict old conversations at capacity: rejected because learners must control deletion and retain a recovery option.

@@ -18,7 +18,7 @@ The separate `test/interpreter-quality-evidence` milestone is complete but remai
 2. Check whether a matching remote branch already exists before pushing; do not create, rename, or switch branches without explicit authorization.
 3. After repository alignment, resume KafeGESHA layer development, legacy reviews, and performance work according to the roadmap or user reprioritization.
 
-The active `feature/vsc-extension` release line is preparing extension 2.1.0 and runtime 0.3.0. Visible Run output is terminal-only, private evidence remains available for guided help, MACHINE/GESHA reviewed fixtures ground the Tutor, and the managed runtime installs the locked data-integration extra.
+The active `feature/vsc-extension` release line has a local extension 2.2.0 candidate over runtime 0.3.0. Tutor conversations, drafts and learning preferences are saved per workspace, with New/Switch/Rename/Delete and selected JSON export (ADR-0030). One active session restores only inert transcript data and current context eligibility; transient decisions/grants/evidence reset on transitions. Visible Run output remains terminal-only, MACHINE/GESHA reviewed fixtures ground the Tutor, and the managed runtime installs the locked data-integration extra. Broader integration/release checks and publication require their own evidence.
 
 ## Current Blockers and Pending Gates
 
