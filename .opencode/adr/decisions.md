@@ -932,3 +932,35 @@ Bundling removes runtime-install dependence from educational API guidance while 
 The user subsequently supplied the evaluation proposal and response regressions and authorized all alignment fixes. Add eight reviewed conceptual topics to the same bundled, hashed reference model. `LearningTopics` selects current-question guidance; conceptual questions lead with an explanation, while exact/API-form requests retain contract precedence. The generator requires all eight objective identities and valid related APIs. Assessment items and answer keys are excluded from production content.
 
 Teaching policy 3 preserves the Tutor role after tools, uses grounding quietly and leaves practical comparisons/experiments with the learner. It distinguishes positive-class sensitivity from the runtime's macro recall, uses available authorized Run values and asks only for indispensable missing values. Source-change labels and conversation isolation remain authoritative. Explicit closed-book assessments and research sharing have separate conditions; no automatic scoring, collection or claim of learning efficacy is introduced. Deterministic context/instruction tests and synthetic bilingual evaluations support review, while actual model answers and research instruments require separate empirical validation.
+
+---
+
+## ADR-0032: Repair Dependency Audits with Targeted Patches and Supported Developer Tooling
+
+### Status
+
+Accepted 2026-10-26. The user explicitly requested correcting failed GitHub CI and authorized autonomous completion while away; earlier commit/push authorization remains applicable.
+
+### Context
+
+The general Python workflow stopped at seven findings in three transitive packages, before its tests. The extension development graph separately reported five findings. The existing pinned developer tools require Node 22 or newer, while CI selected Node 20. Disabling audits or broadly updating unrelated dependencies would weaken or obscure the verification goal.
+
+### Decision
+
+- Lock Brotli 1.2.1, brotlicffi 1.2.1.0 and filelock 4.2.1. Preserve the global seven-day uv cooldown; extend the existing security fast lane only to the two recent Brotli fixes. No new direct Python dependency is added.
+- Keep direct extension/runtime tool versions unchanged. Scope MSAL 7.1.0 to Azure Identity and update the existing serializer override to 7.1.3. Review retained parent APIs and exercise actual offline credential/serialization flows because the MSAL override crosses a major boundary.
+- Use Node 24 LTS in developer CI while retaining the actual VS Code 1.96.0 host and product engine constraint. Audit the complete npm graph once in the Ubuntu unit job, with low severity as the failure threshold.
+- Explicitly deny the unused signing-helper install script. Verify ordinary unsigned VSIX packaging without that binary; do not grant additional install-script execution permissions to remove a warning.
+- Retain all Python warnings, exact stream, coverage, audit and native gates. Document the upstream Mocha/glob installer deprecation narrowly, without log filters, audit exclusions or an unrelated major override.
+
+### Compatibility and consequences
+
+Filelock's changed read/write-lock protocol is distinct from the classic FileLock/SoftFileLock APIs used by the locked datasets and Hugging Face hub consumers. A private optional environment exercises those consumers and actual KAFE local-file wrappers; the baseline still excludes datasets. Brotli and a Brotli-compressed 7z archive receive explicit round-trip checks. The optional CSV builder's resource warning is reproduced with old and new filelock and remains a separately recorded upstream limitation, not a clean-pass claim.
+
+These changes repair current repository locks and CI tooling. They do not change interpreter source, language behavior or published runtime 0.3.0 assets/source/checksums. A patched managed-runtime archive requires a separately versioned release. Local checks do not establish hosted CI success; observe every workflow at the final pushed revision.
+
+### References
+
+- [Brotli security release](https://github.com/google/brotli/releases/tag/v1.2.1), [Filelock 4.2.1](https://github.com/tox-dev/filelock/releases/tag/4.2.1).
+- [MSAL advisory](https://github.com/advisories/GHSA-xcx6-jx8p-x3h5), [serializer advisory](https://github.com/yahoo/serialize-javascript/security/advisories/GHSA-m5mm-p8h7-m29v).
+- [uv package-specific cooldowns](https://docs.astral.sh/uv/concepts/resolution/#reproducible-resolutions), [Node release support](https://nodejs.org/en/about/previous-releases), [npm install-script policy](https://docs.npmjs.com/cli/v11/commands/npm-install-scripts/).

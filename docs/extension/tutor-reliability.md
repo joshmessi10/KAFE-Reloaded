@@ -49,7 +49,7 @@ Learning level is one of Beginner, Intermediate or Expert, with Beginner as the 
 
 Suggested code remains a suggestion. Preparation, native Review, Apply, and learner-started Run retain separate permissions. A no-file proposal request receives an unavailable tool result and conversation can continue. A valid file target still requires current scope confirmation. Editing or removing a dependency invalidates a stale scope.
 
-The 2.3.0 reference work does not resolve the seven previously observed dependency advisories or provide the unavailable local native VS Code 1.96.0 host. Those remain separate audit/native release gates until new evidence resolves them. Full integration checks, real-provider evaluation, managed-install acceptance and publication must be reported from their actual results.
+Reference completeness does not establish dependency security or managed-install acceptance. The dependency repair uses patched locked packages, retains mandatory audits and keeps the global seven-day uv waiting period with narrow security exceptions. Native host verification runs in GitHub CI when the pinned local host is unavailable. Report exact-revision workflow results separately from local checks. Existing published runtime assets remain unchanged; rebuilding or publishing an updated managed runtime is a separate release step. Real-provider evaluation and learning efficacy still require their own evidence.
 
 ## Rendered layout regression
 
