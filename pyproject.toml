@@ -35,7 +35,7 @@ docs = [
 package = false
 exclude-newer = "7 days"
 # Security fixes must not wait for the normal package-age quarantine.
-exclude-newer-package = { certifi = false, pillow = false }
+exclude-newer-package = { brotli = false, brotlicffi = false, certifi = false, pillow = false }
 
 [tool.pytest.ini_options]
 filterwarnings = ["error"]
