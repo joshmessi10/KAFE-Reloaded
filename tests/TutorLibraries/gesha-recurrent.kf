@@ -1,0 +1,22 @@
+import gesha;
+
+List[List[FLOAT]] sequence = [[1.0, 0.0], [0.0, 1.0]];
+GESHA rnn = gesha.create_rnn(2, "tanh", [2, 2], False, 7);
+GESHA lstm = gesha.create_lstm(2, [2, 2], True, 7);
+GESHA gru = gesha.create_gru(2, [2, 2], False, 7);
+GESHA both = gesha.bidirectional(gesha.create_rnn(2, "tanh", [2, 2], True, 7));
+show(len(rnn.forward(sequence)));
+show(len(lstm.forward(sequence)));
+show(len(lstm.backward([[0.0, 0.0], [0.0, 0.0]])));
+show(len(gru.forward(sequence)));
+List[List[FLOAT]] bidirectional = both.forward(sequence);
+show([len(bidirectional), len(bidirectional[0])]);
+
+GESHA words = gesha.embedding(4, 2, 7);
+List[List[FLOAT]] vectors = words.forward([1, 2]);
+show([len(vectors), len(vectors[0])]);
+show(words.backward([[0.0, 0.0], [0.0, 0.0]]));
+
+GESHA model = gesha.sequential([rnn]);
+show(len(model.predict([sequence])));
+-- The outer list is the batch; each recurrent sample is [timesteps, features].

@@ -2,6 +2,8 @@
 
 [Return to Index](../machine.md)
 
+[Pinned KAFE call contracts and limits](contracts.md) specify accepted positional arguments, return shapes and backend-only restrictions.
+
 ## Main functions
 
 | Function | Signature | Description |

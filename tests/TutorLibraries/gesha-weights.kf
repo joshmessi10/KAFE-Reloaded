@@ -1,0 +1,16 @@
+import gesha;
+
+-- ISOLATED FIXTURE: writes only this relative local weight file.
+GESHA layer = gesha.create_dense(1, "linear", [1], 0.0, 7, gesha.ones_initializer());
+GESHA model = gesha.sequential([layer]);
+model.compile("sgd", "mse", []);
+GESHA checkpoint = gesha.model_checkpoint("gesha-weights.json", "loss", True, "min");
+model.add_callback(checkpoint);
+model.fit([[0.0]], [[0.0]], 1, 1);
+model.save_weights("gesha-weights.json");
+
+GESHA restored_layer = gesha.create_dense(1, "linear", [1], 0.0, 7, gesha.zeros_initializer());
+GESHA restored = gesha.sequential([restored_layer]);
+restored.load_weights("gesha-weights.json");
+show(restored.predict([2.0]));
+show("Weights loaded into an already-built matching architecture.");

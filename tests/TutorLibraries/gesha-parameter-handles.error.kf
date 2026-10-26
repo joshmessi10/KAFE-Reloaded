@@ -1,0 +1,5 @@
+import gesha;
+GESHA layer = gesha.create_dense(1, "linear", [1]);
+GESHA model = gesha.sequential([layer]);
+-- Parameter handles are backend objects, not GESHA learner values.
+List[GESHA] handles = model.parameters();

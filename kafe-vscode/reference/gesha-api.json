@@ -1,0 +1,4042 @@
+{
+  "schemaVersion": 1,
+  "library": "gesha",
+  "reviewedSourceFingerprint": "148ebb295fd60e5e209712aad0f4cdfa12064f0f76010366e1fbc3fccf55321c",
+  "runtimeSourceRevision": "6ee33f742909f74a3d597379e713aedc3a5703b2",
+  "entries": [
+    {
+      "id": "gesha.create_dense",
+      "kind": "function",
+      "status": "supported",
+      "signatures": [
+        "gesha.create_dense(units, activation, input_shape)",
+        "gesha.create_dense(units, activation, input_shape, regularization_lambda)",
+        "gesha.create_dense(units, activation, input_shape, regularization_lambda, seed)",
+        "gesha.create_dense(units, activation, input_shape, regularization_lambda, seed, kernel_initializer)",
+        "gesha.create_dense(units, activation, input_shape, regularization_lambda, seed, kernel_initializer, kernel_regularizer)"
+      ],
+      "summary": "Create a fully connected layer: activation(Wx+b), optionally with a seeded initializer and kernel penalty.",
+      "parameters": [
+        "units: INT; required by this wrapper.",
+        "activation: STR or VOID value (or omit the optional argument); required by this wrapper.",
+        "input_shape: List[INT] or List[FLOAT] or VOID value (or omit the optional argument); required by this wrapper.",
+        "regularization_lambda: FLOAT or INT; omitted default 0.0.",
+        "seed: INT or VOID value (or omit the optional argument); omitted default is Python None; None is not a KAFE literal.",
+        "kernel_initializer: GESHA or STR; omitted default is Python None; None is not a KAFE literal.",
+        "kernel_regularizer: GESHA or STR or VOID value (or omit the optional argument); omitted default is Python None; None is not a KAFE literal."
+      ],
+      "returns": "GESHA object",
+      "constraints": [
+        "Import gesha; every call shown uses positional KAFE arguments, not Python keyword arguments.",
+        "units must be positive; input_shape is [features] or [] for lazy construction.",
+        "The wrapper requires units, activation and input_shape even though the Python constructor has additional defaults.",
+        "name and bias_initializer are Python constructor options, not parameters of this intended wrapper.",
+        "A direct ReLU output mixing INT zero and FLOAT values is rejected by DSL homogeneous-list validation."
+      ],
+      "aliases": [
+        "create dense",
+        "dense layer",
+        "perceptron",
+        "capa densa",
+        "perceptrón",
+        "red neuronal",
+        "fully connected layer",
+        "capa totalmente conectada"
+      ],
+      "sources": [
+        "src/lib/KafeGESHA/functions_v2.py",
+        "src/lib/KafeGESHA/layers/core/dense.py",
+        "docs/libraries/gesha/dense-networks.md"
+      ],
+      "examples": [
+        "tests/TutorLibraries/gesha-initializers.kf"
+      ],
+      "evidence": [
+        "tests/test_gesha_numk_backend.py"
+      ],
+      "related": []
+    },
+    {
+      "id": "gesha.zeros_initializer",
+      "kind": "function",
+      "status": "supported",
+      "signatures": [
+        "gesha.zeros_initializer()"
+      ],
+      "summary": "Create an initializer that fills requested parameter shapes with zero.",
+      "parameters": [],
+      "returns": "GESHA initializer",
+      "constraints": [
+        "Import gesha; every call shown uses positional KAFE arguments, not Python keyword arguments."
+      ],
+      "aliases": [
+        "zeros initializer",
+        "weight initialization",
+        "inicialización de pesos",
+        "semilla",
+        "zero initializer",
+        "inicializador de ceros"
+      ],
+      "sources": [
+        "src/lib/KafeGESHA/functions_v2.py",
+        "src/lib/KafeGESHA/initializers/constant.py",
+        "docs/libraries/gesha/training-tools.md"
+      ],
+      "examples": [
+        "tests/TutorLibraries/gesha-initializers.kf"
+      ],
+      "evidence": [
+        "tests/test_gesha_training_utilities.py"
+      ],
+      "related": []
+    },
+    {
+      "id": "gesha.ones_initializer",
+      "kind": "function",
+      "status": "supported",
+      "signatures": [
+        "gesha.ones_initializer()"
+      ],
+      "summary": "Create an initializer that fills requested parameter shapes with one.",
+      "parameters": [],
+      "returns": "GESHA initializer",
+      "constraints": [
+        "Import gesha; every call shown uses positional KAFE arguments, not Python keyword arguments."
+      ],
+      "aliases": [
+        "ones initializer",
+        "weight initialization",
+        "inicialización de pesos",
+        "semilla",
+        "one initializer",
+        "inicializador de unos"
+      ],
+      "sources": [
+        "src/lib/KafeGESHA/functions_v2.py",
+        "src/lib/KafeGESHA/initializers/constant.py",
+        "docs/libraries/gesha/training-tools.md"
+      ],
+      "examples": [
+        "tests/TutorLibraries/gesha-initializers.kf"
+      ],
+      "evidence": [
+        "tests/test_gesha_training_utilities.py"
+      ],
+      "related": []
+    },
+    {
+      "id": "gesha.random_uniform",
+      "kind": "function",
+      "status": "supported",
+      "signatures": [
+        "gesha.random_uniform()",
+        "gesha.random_uniform(minval)",
+        "gesha.random_uniform(minval, maxval)",
+        "gesha.random_uniform(minval, maxval, seed)"
+      ],
+      "summary": "Create a seeded uniform initializer over the requested interval.",
+      "parameters": [
+        "minval: FLOAT or INT; omitted default -0.05.",
+        "maxval: FLOAT or INT; omitted default 0.05.",
+        "seed: INT or VOID value (or omit the optional argument); omitted default is Python None; None is not a KAFE literal."
+      ],
+      "returns": "GESHA initializer",
+      "constraints": [
+        "Import gesha; every call shown uses positional KAFE arguments, not Python keyword arguments.",
+        "minval must not exceed maxval."
+      ],
+      "aliases": [
+        "random uniform",
+        "weight initialization",
+        "inicialización de pesos",
+        "semilla",
+        "uniform random initializer",
+        "inicializador aleatorio uniforme"
+      ],
+      "sources": [
+        "src/lib/KafeGESHA/functions_v2.py",
+        "src/lib/KafeGESHA/initializers/random.py",
+        "docs/libraries/gesha/training-tools.md"
+      ],
+      "examples": [
+        "tests/TutorLibraries/gesha-initializers.kf"
+      ],
+      "evidence": [
+        "tests/test_gesha_training_utilities.py"
+      ],
+      "related": []
+    },
+    {
+      "id": "gesha.random_normal",
+      "kind": "function",
+      "status": "supported",
+      "signatures": [
+        "gesha.random_normal()",
+        "gesha.random_normal(mean)",
+        "gesha.random_normal(mean, stddev)",
+        "gesha.random_normal(mean, stddev, seed)"
+      ],
+      "summary": "Create a seeded normal initializer with the requested mean and standard deviation.",
+      "parameters": [
+        "mean: FLOAT or INT; omitted default 0.0.",
+        "stddev: FLOAT or INT; omitted default 0.05.",
+        "seed: INT or VOID value (or omit the optional argument); omitted default is Python None; None is not a KAFE literal."
+      ],
+      "returns": "GESHA initializer",
+      "constraints": [
+        "Import gesha; every call shown uses positional KAFE arguments, not Python keyword arguments.",
+        "stddev must be non-negative."
+      ],
+      "aliases": [
+        "random normal",
+        "weight initialization",
+        "inicialización de pesos",
+        "semilla",
+        "normal random initializer",
+        "inicializador aleatorio normal"
+      ],
+      "sources": [
+        "src/lib/KafeGESHA/functions_v2.py",
+        "src/lib/KafeGESHA/initializers/random.py",
+        "docs/libraries/gesha/training-tools.md"
+      ],
+      "examples": [
+        "tests/TutorLibraries/gesha-initializers.kf"
+      ],
+      "evidence": [
+        "tests/test_gesha_training_utilities.py"
+      ],
+      "related": []
+    },
+    {
+      "id": "gesha.glorot_uniform",
+      "kind": "function",
+      "status": "supported",
+      "signatures": [
+        "gesha.glorot_uniform()",
+        "gesha.glorot_uniform(seed)"
+      ],
+      "summary": "Create a Glorot/Xavier uniform initializer using fan-in and fan-out.",
+      "parameters": [
+        "seed: INT or VOID value (or omit the optional argument); omitted default is Python None; None is not a KAFE literal."
+      ],
+      "returns": "GESHA initializer",
+      "constraints": [
+        "Import gesha; every call shown uses positional KAFE arguments, not Python keyword arguments."
+      ],
+      "aliases": [
+        "glorot uniform",
+        "weight initialization",
+        "inicialización de pesos",
+        "semilla",
+        "Xavier uniform initializer",
+        "inicializador Glorot uniforme"
+      ],
+      "sources": [
+        "src/lib/KafeGESHA/functions_v2.py",
+        "src/lib/KafeGESHA/initializers/random.py",
+        "docs/libraries/gesha/training-tools.md"
+      ],
+      "examples": [
+        "tests/TutorLibraries/gesha-initializers.kf"
+      ],
+      "evidence": [
+        "tests/test_gesha_training_utilities.py"
+      ],
+      "related": []
+    },
+    {
+      "id": "gesha.glorot_normal",
+      "kind": "function",
+      "status": "supported",
+      "signatures": [
+        "gesha.glorot_normal()",
+        "gesha.glorot_normal(seed)"
+      ],
+      "summary": "Create a Glorot/Xavier normal initializer using fan-in and fan-out.",
+      "parameters": [
+        "seed: INT or VOID value (or omit the optional argument); omitted default is Python None; None is not a KAFE literal."
+      ],
+      "returns": "GESHA initializer",
+      "constraints": [
+        "Import gesha; every call shown uses positional KAFE arguments, not Python keyword arguments."
+      ],
+      "aliases": [
+        "glorot normal",
+        "weight initialization",
+        "inicialización de pesos",
+        "semilla",
+        "Xavier normal initializer",
+        "inicializador Glorot normal"
+      ],
+      "sources": [
+        "src/lib/KafeGESHA/functions_v2.py",
+        "src/lib/KafeGESHA/initializers/random.py",
+        "docs/libraries/gesha/training-tools.md"
+      ],
+      "examples": [
+        "tests/TutorLibraries/gesha-initializers.kf"
+      ],
+      "evidence": [
+        "tests/test_gesha_training_utilities.py"
+      ],
+      "related": []
+    },
+    {
+      "id": "gesha.he_uniform",
+      "kind": "function",
+      "status": "supported",
+      "signatures": [
+        "gesha.he_uniform()",
+        "gesha.he_uniform(seed)"
+      ],
+      "summary": "Create a He uniform initializer scaled by fan-in for rectified networks.",
+      "parameters": [
+        "seed: INT or VOID value (or omit the optional argument); omitted default is Python None; None is not a KAFE literal."
+      ],
+      "returns": "GESHA initializer",
+      "constraints": [
+        "Import gesha; every call shown uses positional KAFE arguments, not Python keyword arguments."
+      ],
+      "aliases": [
+        "he uniform",
+        "weight initialization",
+        "inicialización de pesos",
+        "semilla",
+        "He uniform initializer",
+        "inicializador He uniforme"
+      ],
+      "sources": [
+        "src/lib/KafeGESHA/functions_v2.py",
+        "src/lib/KafeGESHA/initializers/random.py",
+        "docs/libraries/gesha/training-tools.md"
+      ],
+      "examples": [
+        "tests/TutorLibraries/gesha-initializers.kf"
+      ],
+      "evidence": [
+        "tests/test_gesha_training_utilities.py"
+      ],
+      "related": []
+    },
+    {
+      "id": "gesha.he_normal",
+      "kind": "function",
+      "status": "supported",
+      "signatures": [
+        "gesha.he_normal()",
+        "gesha.he_normal(seed)"
+      ],
+      "summary": "Create a He normal initializer scaled by fan-in for rectified networks.",
+      "parameters": [
+        "seed: INT or VOID value (or omit the optional argument); omitted default is Python None; None is not a KAFE literal."
+      ],
+      "returns": "GESHA initializer",
+      "constraints": [
+        "Import gesha; every call shown uses positional KAFE arguments, not Python keyword arguments."
+      ],
+      "aliases": [
+        "he normal",
+        "weight initialization",
+        "inicialización de pesos",
+        "semilla",
+        "He normal initializer",
+        "inicializador He normal"
+      ],
+      "sources": [
+        "src/lib/KafeGESHA/functions_v2.py",
+        "src/lib/KafeGESHA/initializers/random.py",
+        "docs/libraries/gesha/training-tools.md"
+      ],
+      "examples": [
+        "tests/TutorLibraries/gesha-initializers.kf"
+      ],
+      "evidence": [
+        "tests/test_gesha_training_utilities.py"
+      ],
+      "related": []
+    },
+    {
+      "id": "gesha.orthogonal",
+      "kind": "function",
+      "status": "supported",
+      "signatures": [
+        "gesha.orthogonal()",
+        "gesha.orthogonal(gain)",
+        "gesha.orthogonal(gain, seed)"
+      ],
+      "summary": "Create a seeded orthogonal matrix initializer with a gain multiplier.",
+      "parameters": [
+        "gain: FLOAT or INT; omitted default 1.0.",
+        "seed: INT or VOID value (or omit the optional argument); omitted default is Python None; None is not a KAFE literal."
+      ],
+      "returns": "GESHA initializer",
+      "constraints": [
+        "Import gesha; every call shown uses positional KAFE arguments, not Python keyword arguments.",
+        "The parameter shape must have at least two dimensions; gain rescales the orthogonal basis."
+      ],
+      "aliases": [
+        "orthogonal",
+        "weight initialization",
+        "inicialización de pesos",
+        "semilla",
+        "orthogonal initializer",
+        "inicializador ortogonal"
+      ],
+      "sources": [
+        "src/lib/KafeGESHA/functions_v2.py",
+        "src/lib/KafeGESHA/initializers/orthogonal.py",
+        "docs/libraries/gesha/training-tools.md"
+      ],
+      "examples": [
+        "tests/TutorLibraries/gesha-initializers.kf"
+      ],
+      "evidence": [
+        "tests/test_gesha_training_utilities.py"
+      ],
+      "related": []
+    },
+    {
+      "id": "gesha.constant_initializer",
+      "kind": "function",
+      "status": "supported",
+      "signatures": [
+        "gesha.constant_initializer(value)"
+      ],
+      "summary": "Create an initializer that fills parameters with one chosen numeric constant.",
+      "parameters": [
+        "value: FLOAT or INT; required by this wrapper."
+      ],
+      "returns": "GESHA initializer",
+      "constraints": [
+        "Import gesha; every call shown uses positional KAFE arguments, not Python keyword arguments."
+      ],
+      "aliases": [
+        "constant initializer",
+        "weight initialization",
+        "inicialización de pesos",
+        "semilla",
+        "constant value initializer",
+        "inicializador constante"
+      ],
+      "sources": [
+        "src/lib/KafeGESHA/functions_v2.py",
+        "src/lib/KafeGESHA/initializers/constant.py",
+        "docs/libraries/gesha/training-tools.md"
+      ],
+      "examples": [
+        "tests/TutorLibraries/gesha-initializers.kf"
+      ],
+      "evidence": [
+        "tests/test_gesha_training_utilities.py"
+      ],
+      "related": []
+    },
+    {
+      "id": "gesha.l1_regularizer",
+      "kind": "function",
+      "status": "supported",
+      "signatures": [
+        "gesha.l1_regularizer()",
+        "gesha.l1_regularizer(value)"
+      ],
+      "summary": "Create an L1 penalty and gradient object for absolute parameter magnitudes.",
+      "parameters": [
+        "value: FLOAT or INT; omitted default 0.01."
+      ],
+      "returns": "GESHA regularizer object usable as kernel_regularizer.",
+      "constraints": [
+        "Import gesha; every call shown uses positional KAFE arguments, not Python keyword arguments.",
+        "value is non-negative; penalty=lambda*sum(abs(weights))."
+      ],
+      "aliases": [
+        "l1 regularizer",
+        "regularization",
+        "regularización",
+        "penalización",
+        "L1 penalty",
+        "regularizador L1"
+      ],
+      "sources": [
+        "src/lib/KafeGESHA/functions_v2.py",
+        "src/lib/KafeGESHA/regularizers/l1.py",
+        "docs/libraries/gesha/training-tools.md"
+      ],
+      "examples": [
+        "tests/TutorLibraries/gesha-initializers.kf"
+      ],
+      "evidence": [
+        "tests/test_gesha_training_utilities.py"
+      ],
+      "related": []
+    },
+    {
+      "id": "gesha.l2_regularizer",
+      "kind": "function",
+      "status": "supported",
+      "signatures": [
+        "gesha.l2_regularizer()",
+        "gesha.l2_regularizer(value)"
+      ],
+      "summary": "Create an L2 penalty and gradient object for squared parameter magnitudes.",
+      "parameters": [
+        "value: FLOAT or INT; omitted default 0.01."
+      ],
+      "returns": "GESHA regularizer object usable as kernel_regularizer.",
+      "constraints": [
+        "Import gesha; every call shown uses positional KAFE arguments, not Python keyword arguments.",
+        "value is non-negative; penalty=lambda*sum(weights^2), gradient=2*lambda*weights."
+      ],
+      "aliases": [
+        "l2 regularizer",
+        "regularization",
+        "regularización",
+        "penalización",
+        "L2 penalty",
+        "regularizador L2"
+      ],
+      "sources": [
+        "src/lib/KafeGESHA/functions_v2.py",
+        "src/lib/KafeGESHA/regularizers/l2.py",
+        "docs/libraries/gesha/training-tools.md"
+      ],
+      "examples": [
+        "tests/TutorLibraries/gesha-initializers.kf"
+      ],
+      "evidence": [
+        "tests/test_gesha_training_utilities.py"
+      ],
+      "related": []
+    },
+    {
+      "id": "gesha.l1_l2_regularizer",
+      "kind": "function",
+      "status": "unsupported",
+      "signatures": [
+        "gesha.l1_l2_regularizer()",
+        "gesha.l1_l2_regularizer(l1)",
+        "gesha.l1_l2_regularizer(l1, l2)"
+      ],
+      "summary": "Known pinned-runtime boundary: this factory returns a backend L1L2 object that is not registered as a KAFE GESHA value.",
+      "parameters": [
+        "l1: FLOAT or INT; omitted default 0.01.",
+        "l2: FLOAT or INT; omitted default 0.01."
+      ],
+      "returns": "Backend L1L2 object; not bindable as KAFE GESHA in runtime 0.3.0.",
+      "constraints": [
+        "Import gesha; every call shown uses positional KAFE arguments, not Python keyword arguments.",
+        "Binding the result to GESHA raises KeyError for L1L2 in runtime 0.3.0.",
+        "Use the string \"l1_l2\" as create_dense/create_conv2d kernel_regularizer for the implemented combined default penalty; do not promise a usable factory object."
+      ],
+      "aliases": [
+        "l1 l2 regularizer",
+        "regularization",
+        "regularización",
+        "penalización",
+        "combined L1 L2 regularizer",
+        "regularizador combinado L1 L2"
+      ],
+      "sources": [
+        "src/lib/KafeGESHA/functions_v2.py",
+        "src/lib/KafeGESHA/regularizers/l1_l2.py",
+        "docs/libraries/gesha/training-tools.md"
+      ],
+      "examples": [
+        "tests/TutorLibraries/gesha-l1-l2-unavailable.error.kf"
+      ],
+      "evidence": [
+        "tests/test_gesha_training_utilities.py"
+      ],
+      "related": []
+    },
+    {
+      "id": "gesha.early_stopping",
+      "kind": "function",
+      "status": "supported",
+      "signatures": [
+        "gesha.early_stopping()",
+        "gesha.early_stopping(monitor)",
+        "gesha.early_stopping(monitor, patience)",
+        "gesha.early_stopping(monitor, patience, min_delta)",
+        "gesha.early_stopping(monitor, patience, min_delta, mode)",
+        "gesha.early_stopping(monitor, patience, min_delta, mode, restore_best_weights)"
+      ],
+      "summary": "Create a callback that monitors training logs and can stop after non-improving epochs.",
+      "parameters": [
+        "monitor: STR; omitted default \"val_loss\".",
+        "patience: INT; omitted default 0.",
+        "min_delta: FLOAT or INT; omitted default 0.0.",
+        "mode: STR; omitted default \"min\".",
+        "restore_best_weights: BOOL; omitted default false."
+      ],
+      "returns": "GESHA callback object to attach to model training.",
+      "constraints": [
+        "Import gesha; every call shown uses positional KAFE arguments, not Python keyword arguments.",
+        "Default monitor is val_loss: supply validation data or choose loss/accuracy actually present in logs.",
+        "mode is min or max; patience is non-negative. The implementation stops when wait > patience.",
+        "restore_best_weights restores parameters only, not optimizer or normalization running state."
+      ],
+      "aliases": [
+        "early stopping",
+        "neural model workflow",
+        "entrenamiento de red",
+        "modelo neuronal",
+        "parada temprana",
+        "detención temprana"
+      ],
+      "sources": [
+        "src/lib/KafeGESHA/functions_v2.py",
+        "src/lib/KafeGESHA/callbacks/early_stopping.py",
+        "docs/libraries/gesha/models-training.md"
+      ],
+      "examples": [
+        "tests/TutorLibraries/gesha-merge-training.kf"
+      ],
+      "evidence": [
+        "tests/test_gesha_numk_backend.py",
+        "tests/test_gesha_training_utilities.py"
+      ],
+      "related": []
+    },
+    {
+      "id": "gesha.model_checkpoint",
+      "kind": "function",
+      "status": "supported",
+      "signatures": [
+        "gesha.model_checkpoint(filepath)",
+        "gesha.model_checkpoint(filepath, monitor)",
+        "gesha.model_checkpoint(filepath, monitor, save_best_only)",
+        "gesha.model_checkpoint(filepath, monitor, save_best_only, mode)"
+      ],
+      "summary": "Create a callback that writes parameter-only JSON files at epoch end.",
+      "parameters": [
+        "filepath: STR; required by this wrapper.",
+        "monitor: STR; omitted default \"val_loss\".",
+        "save_best_only: BOOL; omitted default false.",
+        "mode: STR; omitted default \"min\"."
+      ],
+      "returns": "GESHA callback object to attach to model training.",
+      "constraints": [
+        "Import gesha; every call shown uses positional KAFE arguments, not Python keyword arguments.",
+        "Filesystem-writing evidence is isolated-only, never an ordinary pure Tutor reference execution.",
+        "save_best_only=True requires an observed improvement of the monitored log; False writes each epoch even if the monitor is absent.",
+        "This is parameter JSON, not a full architecture/preprocessing/optimizer checkpoint."
+      ],
+      "aliases": [
+        "model checkpoint",
+        "save best weights",
+        "checkpoint",
+        "guardar pesos",
+        "punto de control",
+        "guardar los mejores pesos"
+      ],
+      "sources": [
+        "src/lib/KafeGESHA/functions_v2.py",
+        "src/lib/KafeGESHA/callbacks/model_checkpoint.py",
+        "docs/libraries/gesha/training-tools.md"
+      ],
+      "examples": [
+        "tests/TutorLibraries/gesha-weights.kf"
+      ],
+      "evidence": [
+        "tests/test_gesha_training_utilities.py"
+      ],
+      "related": []
+    },
+    {
+      "id": "gesha.add_callback",
+      "kind": "function",
+      "status": "supported",
+      "signatures": [
+        "gesha.add_callback(model, callback)"
+      ],
+      "summary": "Attach a callback to a model; fit owns its lifecycle and monitored logs.",
+      "parameters": [
+        "model: GESHA; required by this wrapper.",
+        "callback: GESHA; required by this wrapper."
+      ],
+      "returns": "VOID; use as a statement.",
+      "constraints": [
+        "Import gesha; every call shown uses positional KAFE arguments, not Python keyword arguments.",
+        "Attach a callback object created by a callback factory, not arbitrary GESHA layers."
+      ],
+      "aliases": [
+        "add callback",
+        "neural model workflow",
+        "entrenamiento de red",
+        "modelo neuronal",
+        "attach callback",
+        "agregar callback"
+      ],
+      "sources": [
+        "src/lib/KafeGESHA/functions_v2.py",
+        "src/lib/KafeGESHA/models_v2.py",
+        "docs/libraries/gesha/models-training.md"
+      ],
+      "examples": [
+        "tests/TutorLibraries/gesha-merge-training.kf"
+      ],
+      "evidence": [
+        "tests/test_gesha_numk_backend.py",
+        "tests/test_gesha_training_utilities.py"
+      ],
+      "related": []
+    },
+    {
+      "id": "gesha.create_conv2d",
+      "kind": "function",
+      "status": "supported",
+      "signatures": [
+        "gesha.create_conv2d(filters, kernel_size, activation)",
+        "gesha.create_conv2d(filters, kernel_size, activation, input_shape)",
+        "gesha.create_conv2d(filters, kernel_size, activation, input_shape, stride)",
+        "gesha.create_conv2d(filters, kernel_size, activation, input_shape, stride, padding)",
+        "gesha.create_conv2d(filters, kernel_size, activation, input_shape, stride, padding, seed)",
+        "gesha.create_conv2d(filters, kernel_size, activation, input_shape, stride, padding, seed, kernel_initializer)",
+        "gesha.create_conv2d(filters, kernel_size, activation, input_shape, stride, padding, seed, kernel_initializer, kernel_regularizer)"
+      ],
+      "summary": "Create a channel-first 2-D convolution with shared spatial kernels and optional initialization/regularization.",
+      "parameters": [
+        "filters: INT; required by this wrapper.",
+        "kernel_size: List[INT] with exactly two positive dimensions [Kh,Kw]; the backend rejects FLOAT dimensions; required by this wrapper.",
+        "activation: STR; omitted default \"linear\"; required by this wrapper.",
+        "input_shape: List[INT] or List[FLOAT] or VOID value (or omit the optional argument); omitted default is Python None; None is not a KAFE literal.",
+        "stride: INT; omitted default 1.",
+        "padding: STR; omitted default \"valid\".",
+        "seed: INT or VOID value (or omit the optional argument); omitted default is Python None; None is not a KAFE literal.",
+        "kernel_initializer: GESHA or STR; omitted default is Python None; None is not a KAFE literal.",
+        "kernel_regularizer: GESHA or STR or VOID value (or omit the optional argument); omitted default is Python None; None is not a KAFE literal."
+      ],
+      "returns": "GESHA object",
+      "constraints": [
+        "Import gesha; every call shown uses positional KAFE arguments, not Python keyword arguments.",
+        "One sample is [C,H,W]; filters and stride are positive integers; kernel_size is [Kh,Kw].",
+        "kernel_size contains exactly two positive INTs; same padding requires both kernel dimensions odd.",
+        "padding is valid or same; check resulting spatial sizes before pooling.",
+        "The wrapper requires three arguments including activation."
+      ],
+      "aliases": [
+        "create conv2d",
+        "convolutional network",
+        "CNN",
+        "red convolucional",
+        "forma de imagen",
+        "Conv2D",
+        "convolución bidimensional",
+        "channel first CHW",
+        "two dimensional convolution",
+        "convolución de dos dimensiones"
+      ],
+      "sources": [
+        "src/lib/KafeGESHA/functions_v2.py",
+        "src/lib/KafeGESHA/layers/convolutional/conv2d.py",
+        "docs/libraries/gesha/convolutional-networks.md"
+      ],
+      "examples": [
+        "tests/TutorLibraries/gesha-cnn.kf"
+      ],
+      "evidence": [
+        "tests/test_gesha_cnn_rnn_layers.py",
+        "tests/test_gesha_conv_rnn_backend.py"
+      ],
+      "related": []
+    },
+    {
+      "id": "gesha.create_rnn",
+      "kind": "function",
+      "status": "supported",
+      "signatures": [
+        "gesha.create_rnn(units)",
+        "gesha.create_rnn(units, activation)",
+        "gesha.create_rnn(units, activation, input_shape)",
+        "gesha.create_rnn(units, activation, input_shape, return_sequences)",
+        "gesha.create_rnn(units, activation, input_shape, return_sequences, seed)"
+      ],
+      "summary": "Create an Elman SimpleRNN with full backpropagation through time for one [T,F] sample.",
+      "parameters": [
+        "units: INT; required by this wrapper.",
+        "activation: STR; omitted default \"tanh\".",
+        "input_shape: List[INT] or List[FLOAT] or VOID value (or omit the optional argument); omitted default is Python None; None is not a KAFE literal.",
+        "return_sequences: BOOL; omitted default false.",
+        "seed: INT or VOID value (or omit the optional argument); omitted default is Python None; None is not a KAFE literal."
+      ],
+      "returns": "GESHA object",
+      "constraints": [
+        "Import gesha; every call shown uses positional KAFE arguments, not Python keyword arguments.",
+        "A sample is [T,F]; return_sequences=False gives [units], True gives [T,units].",
+        "The state is initialized per forward sample; no stateful or return_state option is exposed."
+      ],
+      "aliases": [
+        "create rnn",
+        "recurrent network",
+        "sequence",
+        "red recurrente",
+        "secuencia",
+        "simple recurrent network",
+        "red recurrente simple"
+      ],
+      "sources": [
+        "src/lib/KafeGESHA/functions_v2.py",
+        "src/lib/KafeGESHA/layers/recurrent/simple_rnn.py",
+        "docs/libraries/gesha/recurrent-networks.md"
+      ],
+      "examples": [
+        "tests/TutorLibraries/gesha-recurrent.kf"
+      ],
+      "evidence": [
+        "tests/test_gesha_cnn_rnn_layers.py",
+        "tests/test_gesha_conv_rnn_backend.py"
+      ],
+      "related": []
+    },
+    {
+      "id": "gesha.create_conv1d",
+      "kind": "function",
+      "status": "supported",
+      "signatures": [
+        "gesha.create_conv1d(filters, kernel_size)",
+        "gesha.create_conv1d(filters, kernel_size, activation)",
+        "gesha.create_conv1d(filters, kernel_size, activation, input_shape)",
+        "gesha.create_conv1d(filters, kernel_size, activation, input_shape, stride)",
+        "gesha.create_conv1d(filters, kernel_size, activation, input_shape, stride, padding)",
+        "gesha.create_conv1d(filters, kernel_size, activation, input_shape, stride, padding, seed)"
+      ],
+      "summary": "Create a temporal convolution over channel-first [channels,length] samples; this is not the RNN [T,F] layout.",
+      "parameters": [
+        "filters: INT; required by this wrapper.",
+        "kernel_size: INT; required by this wrapper.",
+        "activation: STR; omitted default \"linear\".",
+        "input_shape: List[INT] or List[FLOAT] or VOID value (or omit the optional argument); omitted default is Python None; None is not a KAFE literal.",
+        "stride: INT; omitted default 1.",
+        "padding: STR; omitted default \"valid\".",
+        "seed: INT or VOID value (or omit the optional argument); omitted default is Python None; None is not a KAFE literal."
+      ],
+      "returns": "GESHA object",
+      "constraints": [
+        "Import gesha; every call shown uses positional KAFE arguments, not Python keyword arguments.",
+        "One sample is [channels,length], not [timesteps,features].",
+        "filters/kernel_size/stride are positive integers; same padding requires an odd kernel.",
+        "A following RNN needs an explicit compatible axis transformation."
+      ],
+      "aliases": [
+        "create conv1d",
+        "convolutional network",
+        "CNN",
+        "red convolucional",
+        "forma de imagen",
+        "Conv1D",
+        "convolución unidimensional",
+        "channels length",
+        "one dimensional convolution",
+        "convolución de una dimensión"
+      ],
+      "sources": [
+        "src/lib/KafeGESHA/functions_v2.py",
+        "src/lib/KafeGESHA/layers/convolutional/conv1d.py",
+        "docs/libraries/gesha/convolutional-networks.md"
+      ],
+      "examples": [
+        "tests/TutorLibraries/gesha-cnn.kf"
+      ],
+      "evidence": [
+        "tests/test_gesha_cnn_rnn_layers.py",
+        "tests/test_gesha_conv_rnn_backend.py"
+      ],
+      "related": []
+    },
+    {
+      "id": "gesha.create_depthwise_conv2d",
+      "kind": "function",
+      "status": "supported",
+      "signatures": [
+        "gesha.create_depthwise_conv2d(kernel_size)",
+        "gesha.create_depthwise_conv2d(kernel_size, depth_multiplier)",
+        "gesha.create_depthwise_conv2d(kernel_size, depth_multiplier, activation)",
+        "gesha.create_depthwise_conv2d(kernel_size, depth_multiplier, activation, input_shape)",
+        "gesha.create_depthwise_conv2d(kernel_size, depth_multiplier, activation, input_shape, stride)",
+        "gesha.create_depthwise_conv2d(kernel_size, depth_multiplier, activation, input_shape, stride, padding)",
+        "gesha.create_depthwise_conv2d(kernel_size, depth_multiplier, activation, input_shape, stride, padding, seed)"
+      ],
+      "summary": "Create separate spatial kernels for each input channel and depth multiplier.",
+      "parameters": [
+        "kernel_size: List[INT] with exactly two positive dimensions [Kh,Kw]; the backend rejects FLOAT dimensions; required by this wrapper.",
+        "depth_multiplier: INT; omitted default 1.",
+        "activation: STR; omitted default \"linear\".",
+        "input_shape: List[INT] or List[FLOAT] or VOID value (or omit the optional argument); omitted default is Python None; None is not a KAFE literal.",
+        "stride: INT; omitted default 1.",
+        "padding: STR; omitted default \"valid\".",
+        "seed: INT or VOID value (or omit the optional argument); omitted default is Python None; None is not a KAFE literal."
+      ],
+      "returns": "GESHA object",
+      "constraints": [
+        "Import gesha; every call shown uses positional KAFE arguments, not Python keyword arguments.",
+        "One sample is CHW; output channels equal input channels*depth_multiplier.",
+        "kernel_size is exactly two positive INTs; depth_multiplier and stride are positive INTs.",
+        "padding is valid or same; same padding requires both kernel dimensions odd."
+      ],
+      "aliases": [
+        "create depthwise conv2d",
+        "convolutional network",
+        "CNN",
+        "red convolucional",
+        "forma de imagen",
+        "depthwise convolution",
+        "convolución por canal"
+      ],
+      "sources": [
+        "src/lib/KafeGESHA/functions_v2.py",
+        "src/lib/KafeGESHA/layers/convolutional/depthwise_conv2d.py",
+        "docs/libraries/gesha/convolutional-networks.md"
+      ],
+      "examples": [
+        "tests/TutorLibraries/gesha-cnn.kf"
+      ],
+      "evidence": [
+        "tests/test_gesha_cnn_rnn_layers.py",
+        "tests/test_gesha_conv_rnn_backend.py"
+      ],
+      "related": []
+    },
+    {
+      "id": "gesha.create_conv2d_transpose",
+      "kind": "function",
+      "status": "supported",
+      "signatures": [
+        "gesha.create_conv2d_transpose(filters, kernel_size)",
+        "gesha.create_conv2d_transpose(filters, kernel_size, activation)",
+        "gesha.create_conv2d_transpose(filters, kernel_size, activation, input_shape)",
+        "gesha.create_conv2d_transpose(filters, kernel_size, activation, input_shape, stride)",
+        "gesha.create_conv2d_transpose(filters, kernel_size, activation, input_shape, stride, padding)",
+        "gesha.create_conv2d_transpose(filters, kernel_size, activation, input_shape, stride, padding, seed)"
+      ],
+      "summary": "Create a transposed convolution that expands a channel-first spatial representation.",
+      "parameters": [
+        "filters: INT; required by this wrapper.",
+        "kernel_size: List[INT] with exactly two positive dimensions [Kh,Kw]; the backend rejects FLOAT dimensions; required by this wrapper.",
+        "activation: STR; omitted default \"linear\".",
+        "input_shape: List[INT] or List[FLOAT] or VOID value (or omit the optional argument); omitted default is Python None; None is not a KAFE literal.",
+        "stride: INT; omitted default 1.",
+        "padding: STR; omitted default \"valid\".",
+        "seed: INT or VOID value (or omit the optional argument); omitted default is Python None; None is not a KAFE literal."
+      ],
+      "returns": "GESHA object",
+      "constraints": [
+        "Import gesha; every call shown uses positional KAFE arguments, not Python keyword arguments.",
+        "One sample is CHW; output shape depends on kernel, stride and valid/same padding.",
+        "kernel_size is exactly two positive INTs; filters and stride are positive INTs."
+      ],
+      "aliases": [
+        "create conv2d transpose",
+        "convolutional network",
+        "CNN",
+        "red convolucional",
+        "forma de imagen",
+        "transposed convolution",
+        "convolución transpuesta",
+        "deconvolution",
+        "deconvolución"
+      ],
+      "sources": [
+        "src/lib/KafeGESHA/functions_v2.py",
+        "src/lib/KafeGESHA/layers/convolutional/conv2d_transpose.py",
+        "docs/libraries/gesha/convolutional-networks.md"
+      ],
+      "examples": [
+        "tests/TutorLibraries/gesha-cnn.kf"
+      ],
+      "evidence": [
+        "tests/test_gesha_cnn_rnn_layers.py",
+        "tests/test_gesha_conv_rnn_backend.py"
+      ],
+      "related": []
+    },
+    {
+      "id": "gesha.max_pooling1d",
+      "kind": "function",
+      "status": "supported",
+      "signatures": [
+        "gesha.max_pooling1d()",
+        "gesha.max_pooling1d(pool_size)",
+        "gesha.max_pooling1d(pool_size, stride)"
+      ],
+      "summary": "Create max pooling along the length axis of channel-first [channels,length] samples.",
+      "parameters": [
+        "pool_size: INT; omitted default 2.",
+        "stride: INT or VOID value (or omit the optional argument); omitted default is Python None; None is not a KAFE literal."
+      ],
+      "returns": "GESHA object",
+      "constraints": [
+        "Import gesha; every call shown uses positional KAFE arguments, not Python keyword arguments.",
+        "One sample is [channels,length]; pool_size and stride are positive integer choices."
+      ],
+      "aliases": [
+        "max pooling1d",
+        "convolutional network",
+        "CNN",
+        "red convolucional",
+        "forma de imagen",
+        "one dimensional max pooling",
+        "agrupación máxima unidimensional"
+      ],
+      "sources": [
+        "src/lib/KafeGESHA/functions_v2.py",
+        "src/lib/KafeGESHA/layers/pooling/max_pooling1d.py",
+        "docs/libraries/gesha/convolutional-networks.md"
+      ],
+      "examples": [
+        "tests/TutorLibraries/gesha-cnn.kf"
+      ],
+      "evidence": [
+        "tests/test_gesha_cnn_rnn_layers.py",
+        "tests/test_gesha_conv_rnn_backend.py"
+      ],
+      "related": []
+    },
+    {
+      "id": "gesha.max_pooling2d",
+      "kind": "function",
+      "status": "supported",
+      "signatures": [
+        "gesha.max_pooling2d()",
+        "gesha.max_pooling2d(pool_size)",
+        "gesha.max_pooling2d(pool_size, stride)"
+      ],
+      "summary": "Create maximum pooling over local windows in a CHW image.",
+      "parameters": [
+        "pool_size: List[INT] with exactly two positive pool dimensions; omitted default is Python None; None is not a KAFE literal.",
+        "stride: INT or VOID value (or omit the optional argument); omitted default is Python None; None is not a KAFE literal."
+      ],
+      "returns": "GESHA object",
+      "constraints": [
+        "Import gesha; every call shown uses positional KAFE arguments, not Python keyword arguments.",
+        "One sample is CHW; pool_size is two positive INTs, default [2,2]; omitted stride follows the first pool dimension."
+      ],
+      "aliases": [
+        "max pooling2d",
+        "convolutional network",
+        "CNN",
+        "red convolucional",
+        "forma de imagen",
+        "two dimensional max pooling",
+        "agrupación máxima bidimensional"
+      ],
+      "sources": [
+        "src/lib/KafeGESHA/functions_v2.py",
+        "src/lib/KafeGESHA/layers/pooling/max_pooling2d.py",
+        "docs/libraries/gesha/convolutional-networks.md"
+      ],
+      "examples": [
+        "tests/TutorLibraries/gesha-cnn.kf"
+      ],
+      "evidence": [
+        "tests/test_gesha_cnn_rnn_layers.py",
+        "tests/test_gesha_conv_rnn_backend.py"
+      ],
+      "related": []
+    },
+    {
+      "id": "gesha.average_pooling2d",
+      "kind": "function",
+      "status": "supported",
+      "signatures": [
+        "gesha.average_pooling2d()",
+        "gesha.average_pooling2d(pool_size)",
+        "gesha.average_pooling2d(pool_size, stride)"
+      ],
+      "summary": "Create average pooling over local windows in a CHW image.",
+      "parameters": [
+        "pool_size: List[INT] with exactly two positive pool dimensions; omitted default is Python None; None is not a KAFE literal.",
+        "stride: INT or VOID value (or omit the optional argument); omitted default is Python None; None is not a KAFE literal."
+      ],
+      "returns": "GESHA object",
+      "constraints": [
+        "Import gesha; every call shown uses positional KAFE arguments, not Python keyword arguments.",
+        "One sample is CHW; pool_size is two positive INTs, default [2,2]."
+      ],
+      "aliases": [
+        "average pooling2d",
+        "convolutional network",
+        "CNN",
+        "red convolucional",
+        "forma de imagen",
+        "average pooling",
+        "agrupación promedio bidimensional"
+      ],
+      "sources": [
+        "src/lib/KafeGESHA/functions_v2.py",
+        "src/lib/KafeGESHA/layers/pooling/average_pooling2d.py",
+        "docs/libraries/gesha/convolutional-networks.md"
+      ],
+      "examples": [
+        "tests/TutorLibraries/gesha-cnn.kf"
+      ],
+      "evidence": [
+        "tests/test_gesha_cnn_rnn_layers.py",
+        "tests/test_gesha_conv_rnn_backend.py"
+      ],
+      "related": []
+    },
+    {
+      "id": "gesha.global_average_pooling2d",
+      "kind": "function",
+      "status": "supported",
+      "signatures": [
+        "gesha.global_average_pooling2d()"
+      ],
+      "summary": "Collapse each CHW channel to its spatial average, producing a feature vector.",
+      "parameters": [],
+      "returns": "GESHA object",
+      "constraints": [
+        "Import gesha; every call shown uses positional KAFE arguments, not Python keyword arguments.",
+        "Input is CHW; output is a vector with one value per channel."
+      ],
+      "aliases": [
+        "global average pooling2d",
+        "convolutional network",
+        "CNN",
+        "red convolucional",
+        "forma de imagen",
+        "global average pooling",
+        "agrupación promedio global"
+      ],
+      "sources": [
+        "src/lib/KafeGESHA/functions_v2.py",
+        "src/lib/KafeGESHA/layers/pooling/global_average_pooling2d.py",
+        "docs/libraries/gesha/convolutional-networks.md"
+      ],
+      "examples": [
+        "tests/TutorLibraries/gesha-cnn.kf"
+      ],
+      "evidence": [
+        "tests/test_gesha_cnn_rnn_layers.py",
+        "tests/test_gesha_conv_rnn_backend.py"
+      ],
+      "related": []
+    },
+    {
+      "id": "gesha.global_max_pooling2d",
+      "kind": "function",
+      "status": "supported",
+      "signatures": [
+        "gesha.global_max_pooling2d()"
+      ],
+      "summary": "Collapse each CHW channel to its spatial maximum, producing a feature vector.",
+      "parameters": [],
+      "returns": "GESHA object",
+      "constraints": [
+        "Import gesha; every call shown uses positional KAFE arguments, not Python keyword arguments.",
+        "Input is CHW; output is a vector with one value per channel."
+      ],
+      "aliases": [
+        "global max pooling2d",
+        "convolutional network",
+        "CNN",
+        "red convolucional",
+        "forma de imagen",
+        "global max pooling",
+        "agrupación máxima global"
+      ],
+      "sources": [
+        "src/lib/KafeGESHA/functions_v2.py",
+        "src/lib/KafeGESHA/layers/pooling/global_max_pooling2d.py",
+        "docs/libraries/gesha/convolutional-networks.md"
+      ],
+      "examples": [
+        "tests/TutorLibraries/gesha-cnn.kf"
+      ],
+      "evidence": [
+        "tests/test_gesha_cnn_rnn_layers.py",
+        "tests/test_gesha_conv_rnn_backend.py"
+      ],
+      "related": []
+    },
+    {
+      "id": "gesha.batch_normalization",
+      "kind": "function",
+      "status": "limited",
+      "signatures": [
+        "gesha.batch_normalization()",
+        "gesha.batch_normalization(epsilon)",
+        "gesha.batch_normalization(epsilon, momentum)"
+      ],
+      "summary": "Create the implemented CHW per-channel spatial normalization layer; it does not compute a generic minibatch statistic.",
+      "parameters": [
+        "epsilon: FLOAT or INT; omitted default 1e-05.",
+        "momentum: FLOAT or INT; omitted default 0.9."
+      ],
+      "returns": "GESHA object",
+      "constraints": [
+        "Import gesha; every call shown uses positional KAFE arguments, not Python keyword arguments.",
+        "Input must be CHW; dense vectors and generic [batch,features] matrices are not accepted.",
+        "Statistics are computed over spatial positions in one channel of one sample.",
+        "Prediction uses running statistics; save_weights omits those statistics."
+      ],
+      "aliases": [
+        "batch normalization",
+        "convolutional network",
+        "CNN",
+        "red convolucional",
+        "forma de imagen",
+        "normalización por lotes"
+      ],
+      "sources": [
+        "src/lib/KafeGESHA/functions_v2.py",
+        "src/lib/KafeGESHA/layers/normalization/batch_normalization.py",
+        "docs/libraries/gesha/convolutional-networks.md"
+      ],
+      "examples": [
+        "tests/TutorLibraries/gesha-cnn.kf"
+      ],
+      "evidence": [
+        "tests/test_gesha_cnn_rnn_layers.py",
+        "tests/test_gesha_conv_rnn_backend.py"
+      ],
+      "related": []
+    },
+    {
+      "id": "gesha.zero_padding2d",
+      "kind": "function",
+      "status": "supported",
+      "signatures": [
+        "gesha.zero_padding2d()",
+        "gesha.zero_padding2d(padding)"
+      ],
+      "summary": "Pad the spatial borders of every channel with zeros.",
+      "parameters": [
+        "padding: List[INT] or List[FLOAT]; omitted default is Python None; None is not a KAFE literal."
+      ],
+      "returns": "GESHA object",
+      "constraints": [
+        "Import gesha; every call shown uses positional KAFE arguments, not Python keyword arguments.",
+        "Input is CHW; choose nonnegative INT padding [height,width], default [1,1]."
+      ],
+      "aliases": [
+        "zero padding2d",
+        "convolutional network",
+        "CNN",
+        "red convolucional",
+        "forma de imagen",
+        "zero padding",
+        "relleno de ceros"
+      ],
+      "sources": [
+        "src/lib/KafeGESHA/functions_v2.py",
+        "src/lib/KafeGESHA/layers/spatial/zero_padding2d.py",
+        "docs/libraries/gesha/convolutional-networks.md"
+      ],
+      "examples": [
+        "tests/TutorLibraries/gesha-cnn.kf"
+      ],
+      "evidence": [
+        "tests/test_gesha_cnn_rnn_layers.py",
+        "tests/test_gesha_conv_rnn_backend.py"
+      ],
+      "related": []
+    },
+    {
+      "id": "gesha.up_sampling2d",
+      "kind": "function",
+      "status": "supported",
+      "signatures": [
+        "gesha.up_sampling2d()",
+        "gesha.up_sampling2d(size)"
+      ],
+      "summary": "Repeat each spatial position by the requested integer height/width factors.",
+      "parameters": [
+        "size: List[INT] or List[FLOAT]; omitted default is Python None; None is not a KAFE literal."
+      ],
+      "returns": "GESHA object",
+      "constraints": [
+        "Import gesha; every call shown uses positional KAFE arguments, not Python keyword arguments.",
+        "Input is CHW; choose positive INT size [height_factor,width_factor], default [2,2]."
+      ],
+      "aliases": [
+        "up sampling2d",
+        "convolutional network",
+        "CNN",
+        "red convolucional",
+        "forma de imagen",
+        "nearest neighbor upsampling",
+        "aumento de resolución"
+      ],
+      "sources": [
+        "src/lib/KafeGESHA/functions_v2.py",
+        "src/lib/KafeGESHA/layers/spatial/up_sampling2d.py",
+        "docs/libraries/gesha/convolutional-networks.md"
+      ],
+      "examples": [
+        "tests/TutorLibraries/gesha-cnn.kf"
+      ],
+      "evidence": [
+        "tests/test_gesha_cnn_rnn_layers.py",
+        "tests/test_gesha_conv_rnn_backend.py"
+      ],
+      "related": []
+    },
+    {
+      "id": "gesha.reshape_layer",
+      "kind": "function",
+      "status": "supported",
+      "signatures": [
+        "gesha.reshape_layer(target_shape)"
+      ],
+      "summary": "Create a shape transformation that preserves the number of scalar elements.",
+      "parameters": [
+        "target_shape: List[INT] or List[FLOAT]; required by this wrapper."
+      ],
+      "returns": "GESHA object",
+      "constraints": [
+        "Import gesha; every call shown uses positional KAFE arguments, not Python keyword arguments.",
+        "The target element count must match the input; reshape is not an axis permutation."
+      ],
+      "aliases": [
+        "reshape layer",
+        "convolutional network",
+        "CNN",
+        "red convolucional",
+        "forma de imagen",
+        "reshape tensor",
+        "cambiar la forma del tensor"
+      ],
+      "sources": [
+        "src/lib/KafeGESHA/functions_v2.py",
+        "src/lib/KafeGESHA/layers/spatial/reshape.py",
+        "docs/libraries/gesha/convolutional-networks.md"
+      ],
+      "examples": [
+        "tests/TutorLibraries/gesha-cnn.kf"
+      ],
+      "evidence": [
+        "tests/test_gesha_cnn_rnn_layers.py",
+        "tests/test_gesha_conv_rnn_backend.py"
+      ],
+      "related": []
+    },
+    {
+      "id": "gesha.permute_layer",
+      "kind": "function",
+      "status": "supported",
+      "signatures": [
+        "gesha.permute_layer(dims)"
+      ],
+      "summary": "Create an axis permutation using zero-based axis indices.",
+      "parameters": [
+        "dims: List[INT] or List[FLOAT]; required by this wrapper."
+      ],
+      "returns": "GESHA object",
+      "constraints": [
+        "Import gesha; every call shown uses positional KAFE arguments, not Python keyword arguments.",
+        "dims must be a zero-based permutation of all axes, for example [1,2,0] for CHW to HWC."
+      ],
+      "aliases": [
+        "permute layer",
+        "convolutional network",
+        "CNN",
+        "red convolucional",
+        "forma de imagen",
+        "permute tensor axes",
+        "permutar ejes"
+      ],
+      "sources": [
+        "src/lib/KafeGESHA/functions_v2.py",
+        "src/lib/KafeGESHA/layers/spatial/permute.py",
+        "docs/libraries/gesha/convolutional-networks.md"
+      ],
+      "examples": [
+        "tests/TutorLibraries/gesha-cnn.kf"
+      ],
+      "evidence": [
+        "tests/test_gesha_cnn_rnn_layers.py",
+        "tests/test_gesha_conv_rnn_backend.py"
+      ],
+      "related": []
+    },
+    {
+      "id": "gesha.concatenate_layer",
+      "kind": "function",
+      "status": "supported",
+      "signatures": [
+        "gesha.concatenate_layer()",
+        "gesha.concatenate_layer(axis)"
+      ],
+      "summary": "Create a merge layer concatenating branch values along the chosen axis.",
+      "parameters": [
+        "axis: INT; omitted default 0."
+      ],
+      "returns": "GESHA object",
+      "constraints": [
+        "Import gesha; every call shown uses positional KAFE arguments, not Python keyword arguments.",
+        "Inputs have equal non-concatenated dimensions; axes are zero-based."
+      ],
+      "aliases": [
+        "concatenate layer",
+        "neural model workflow",
+        "entrenamiento de red",
+        "modelo neuronal",
+        "concatenate tensors",
+        "concatenar tensores"
+      ],
+      "sources": [
+        "src/lib/KafeGESHA/functions_v2.py",
+        "src/lib/KafeGESHA/layers/merge/concatenate.py",
+        "docs/libraries/gesha/models-training.md"
+      ],
+      "examples": [
+        "tests/TutorLibraries/gesha-merge-training.kf"
+      ],
+      "evidence": [
+        "tests/test_gesha_numk_backend.py",
+        "tests/test_gesha_training_utilities.py"
+      ],
+      "related": []
+    },
+    {
+      "id": "gesha.multiply_layer",
+      "kind": "function",
+      "status": "supported",
+      "signatures": [
+        "gesha.multiply_layer()"
+      ],
+      "summary": "Create an element-wise product merge layer for compatible branch values.",
+      "parameters": [],
+      "returns": "GESHA object",
+      "constraints": [
+        "Import gesha; every call shown uses positional KAFE arguments, not Python keyword arguments.",
+        "Provide compatible branch tensors; this is not matrix multiplication."
+      ],
+      "aliases": [
+        "multiply layer",
+        "neural model workflow",
+        "entrenamiento de red",
+        "modelo neuronal",
+        "elementwise multiplication",
+        "multiplicar tensores elemento a elemento"
+      ],
+      "sources": [
+        "src/lib/KafeGESHA/functions_v2.py",
+        "src/lib/KafeGESHA/layers/merge/multiply.py",
+        "docs/libraries/gesha/models-training.md"
+      ],
+      "examples": [
+        "tests/TutorLibraries/gesha-merge-training.kf"
+      ],
+      "evidence": [
+        "tests/test_gesha_numk_backend.py",
+        "tests/test_gesha_training_utilities.py"
+      ],
+      "related": []
+    },
+    {
+      "id": "gesha.spatial_dropout2d",
+      "kind": "function",
+      "status": "supported",
+      "signatures": [
+        "gesha.spatial_dropout2d()",
+        "gesha.spatial_dropout2d(rate)",
+        "gesha.spatial_dropout2d(rate, seed)"
+      ],
+      "summary": "Create training-only channel dropout for CHW feature maps.",
+      "parameters": [
+        "rate: FLOAT or INT; omitted default 0.5.",
+        "seed: INT or VOID value (or omit the optional argument); omitted default is Python None; None is not a KAFE literal."
+      ],
+      "returns": "GESHA object",
+      "constraints": [
+        "Import gesha; every call shown uses positional KAFE arguments, not Python keyword arguments.",
+        "Input is CHW; rate is in [0,1). Prediction disables masking."
+      ],
+      "aliases": [
+        "spatial dropout2d",
+        "convolutional network",
+        "CNN",
+        "red convolucional",
+        "forma de imagen",
+        "spatial dropout",
+        "descarte espacial de canales"
+      ],
+      "sources": [
+        "src/lib/KafeGESHA/functions_v2.py",
+        "src/lib/KafeGESHA/layers/regularization/spatial_dropout2d.py",
+        "docs/libraries/gesha/convolutional-networks.md"
+      ],
+      "examples": [
+        "tests/TutorLibraries/gesha-cnn.kf"
+      ],
+      "evidence": [
+        "tests/test_gesha_cnn_rnn_layers.py",
+        "tests/test_gesha_conv_rnn_backend.py"
+      ],
+      "related": []
+    },
+    {
+      "id": "gesha.create_lstm",
+      "kind": "function",
+      "status": "supported",
+      "signatures": [
+        "gesha.create_lstm(units)",
+        "gesha.create_lstm(units, input_shape)",
+        "gesha.create_lstm(units, input_shape, return_sequences)",
+        "gesha.create_lstm(units, input_shape, return_sequences, seed)"
+      ],
+      "summary": "Create an educational gated LSTM returning a final representation or the full sequence.",
+      "parameters": [
+        "units: INT; required by this wrapper.",
+        "input_shape: List[INT] or List[FLOAT] or VOID value (or omit the optional argument); omitted default is Python None; None is not a KAFE literal.",
+        "return_sequences: BOOL; omitted default false.",
+        "seed: INT or VOID value (or omit the optional argument); omitted default is Python None; None is not a KAFE literal."
+      ],
+      "returns": "GESHA object",
+      "constraints": [
+        "Import gesha; every call shown uses positional KAFE arguments, not Python keyword arguments.",
+        "A sample is [T,F]; False returns [units], True returns [T,units].",
+        "The bounded DSL fixture checks construction, forward and backward shapes, not convergence on arbitrary tasks."
+      ],
+      "aliases": [
+        "create lstm",
+        "recurrent network",
+        "sequence",
+        "red recurrente",
+        "secuencia",
+        "LSTM",
+        "long short term memory",
+        "memoria a largo corto plazo",
+        "red LSTM"
+      ],
+      "sources": [
+        "src/lib/KafeGESHA/functions_v2.py",
+        "src/lib/KafeGESHA/layers/recurrent/lstm.py",
+        "docs/libraries/gesha/recurrent-networks.md"
+      ],
+      "examples": [
+        "tests/TutorLibraries/gesha-recurrent.kf"
+      ],
+      "evidence": [
+        "tests/test_gesha_cnn_rnn_layers.py",
+        "tests/test_gesha_conv_rnn_backend.py"
+      ],
+      "related": []
+    },
+    {
+      "id": "gesha.create_gru",
+      "kind": "function",
+      "status": "supported",
+      "signatures": [
+        "gesha.create_gru(units)",
+        "gesha.create_gru(units, input_shape)",
+        "gesha.create_gru(units, input_shape, return_sequences)",
+        "gesha.create_gru(units, input_shape, return_sequences, seed)"
+      ],
+      "summary": "Create an educational gated GRU returning a final representation or the full sequence.",
+      "parameters": [
+        "units: INT; required by this wrapper.",
+        "input_shape: List[INT] or List[FLOAT] or VOID value (or omit the optional argument); omitted default is Python None; None is not a KAFE literal.",
+        "return_sequences: BOOL; omitted default false.",
+        "seed: INT or VOID value (or omit the optional argument); omitted default is Python None; None is not a KAFE literal."
+      ],
+      "returns": "GESHA object",
+      "constraints": [
+        "Import gesha; every call shown uses positional KAFE arguments, not Python keyword arguments.",
+        "A sample is [T,F]; False returns [units], True returns [T,units].",
+        "No dropout, stateful, mask_zero or return_state keyword option is exposed."
+      ],
+      "aliases": [
+        "create gru",
+        "recurrent network",
+        "sequence",
+        "red recurrente",
+        "secuencia",
+        "GRU",
+        "gated recurrent unit",
+        "unidad recurrente con compuertas",
+        "red GRU"
+      ],
+      "sources": [
+        "src/lib/KafeGESHA/functions_v2.py",
+        "src/lib/KafeGESHA/layers/recurrent/gru.py",
+        "docs/libraries/gesha/recurrent-networks.md"
+      ],
+      "examples": [
+        "tests/TutorLibraries/gesha-recurrent.kf"
+      ],
+      "evidence": [
+        "tests/test_gesha_cnn_rnn_layers.py",
+        "tests/test_gesha_conv_rnn_backend.py"
+      ],
+      "related": []
+    },
+    {
+      "id": "gesha.bidirectional",
+      "kind": "function",
+      "status": "supported",
+      "signatures": [
+        "gesha.bidirectional(layer)"
+      ],
+      "summary": "Wrap a SimpleRNN, LSTM or GRU in forward/backward passes and concatenate their features.",
+      "parameters": [
+        "layer: GESHA; required by this wrapper."
+      ],
+      "returns": "GESHA object",
+      "constraints": [
+        "Import gesha; every call shown uses positional KAFE arguments, not Python keyword arguments.",
+        "layer must be SimpleRNN/LSTM/GRU; the wrapper concatenates directions, doubling the final feature dimension.",
+        "Use when the complete sequence is available, not as a causal forecasting claim."
+      ],
+      "aliases": [
+        "bidirectional",
+        "recurrent network",
+        "sequence",
+        "red recurrente",
+        "secuencia",
+        "bidirectional recurrent layer",
+        "capa recurrente bidireccional"
+      ],
+      "sources": [
+        "src/lib/KafeGESHA/functions_v2.py",
+        "src/lib/KafeGESHA/layers/recurrent/bidirectional.py",
+        "docs/libraries/gesha/recurrent-networks.md"
+      ],
+      "examples": [
+        "tests/TutorLibraries/gesha-recurrent.kf"
+      ],
+      "evidence": [
+        "tests/test_gesha_cnn_rnn_layers.py",
+        "tests/test_gesha_conv_rnn_backend.py"
+      ],
+      "related": []
+    },
+    {
+      "id": "gesha.embedding",
+      "kind": "function",
+      "status": "supported",
+      "signatures": [
+        "gesha.embedding(input_dim, output_dim)",
+        "gesha.embedding(input_dim, output_dim, seed)"
+      ],
+      "summary": "Create a trainable lookup table mapping integer token indices to dense vectors.",
+      "parameters": [
+        "input_dim: INT; required by this wrapper.",
+        "output_dim: INT; required by this wrapper.",
+        "seed: INT or VOID value (or omit the optional argument); omitted default is Python None; None is not a KAFE literal."
+      ],
+      "returns": "GESHA object",
+      "constraints": [
+        "Import gesha; every call shown uses positional KAFE arguments, not Python keyword arguments.",
+        "input_dim/output_dim are positive; each token ID is an INT in [0,input_dim).",
+        "One token sequence [T] becomes [T,output_dim]; fit a vocabulary on training text only."
+      ],
+      "aliases": [
+        "embedding",
+        "recurrent network",
+        "sequence",
+        "red recurrente",
+        "secuencia",
+        "word embeddings",
+        "representaciones de palabras",
+        "índice de token",
+        "tabla de embeddings"
+      ],
+      "sources": [
+        "src/lib/KafeGESHA/functions_v2.py",
+        "src/lib/KafeGESHA/layers/recurrent/embedding.py",
+        "docs/libraries/gesha/recurrent-networks.md"
+      ],
+      "examples": [
+        "tests/TutorLibraries/gesha-recurrent.kf"
+      ],
+      "evidence": [
+        "tests/test_gesha_cnn_rnn_layers.py",
+        "tests/test_gesha_conv_rnn_backend.py"
+      ],
+      "related": []
+    },
+    {
+      "id": "gesha.sequential",
+      "kind": "function",
+      "status": "supported",
+      "signatures": [
+        "gesha.sequential()",
+        "gesha.sequential(layers)"
+      ],
+      "summary": "Create a model applying layers in their declared order.",
+      "parameters": [
+        "layers: nested List or List[GESHA] or VOID value (or omit the optional argument); omitted default is Python None; None is not a KAFE literal."
+      ],
+      "returns": "GESHA Sequential model.",
+      "constraints": [
+        "Import gesha; every call shown uses positional KAFE arguments, not Python keyword arguments.",
+        "Use a List[GESHA] of actual compatible layers or omit layers and call model.add.",
+        "Do not use built-in len(model.layers): this runtime rejects List[GESHA] there; indexing and assignment are supported."
+      ],
+      "aliases": [
+        "sequential",
+        "neural model workflow",
+        "entrenamiento de red",
+        "modelo neuronal",
+        "sequential model",
+        "modelo secuencial"
+      ],
+      "sources": [
+        "src/lib/KafeGESHA/functions_v2.py",
+        "src/lib/KafeGESHA/models_v2.py",
+        "docs/libraries/gesha/models-training.md"
+      ],
+      "examples": [
+        "tests/TutorLibraries/gesha-merge-training.kf"
+      ],
+      "evidence": [
+        "tests/test_gesha_numk_backend.py",
+        "tests/test_gesha_training_utilities.py"
+      ],
+      "related": []
+    },
+    {
+      "id": "gesha.functional",
+      "kind": "function",
+      "status": "experimental",
+      "signatures": [
+        "gesha.functional(inputs, outputs)"
+      ],
+      "summary": "Create an experimental symbolic DAG from one input node and one output node through the intended KAFE wrapper.",
+      "parameters": [
+        "inputs: GESHA; required by this wrapper.",
+        "outputs: GESHA; required by this wrapper."
+      ],
+      "returns": "GESHA Functional model using symbolic input/output nodes.",
+      "constraints": [
+        "Import gesha; every call shown uses positional KAFE arguments, not Python keyword arguments.",
+        "The intended wrapper requires GESHA input and output nodes, so lists of multiple inputs/outputs are rejected.",
+        "A single-input branch/Add-merge/single-output training fixture is tested; broader graph configurations remain experimental.",
+        "The Python backend supports more graph forms than the intended wrapper and single-loss fit loop."
+      ],
+      "aliases": [
+        "functional",
+        "neural model workflow",
+        "entrenamiento de red",
+        "modelo neuronal",
+        "functional model",
+        "modelo funcional"
+      ],
+      "sources": [
+        "src/lib/KafeGESHA/functions_v2.py",
+        "src/lib/KafeGESHA/models_v2.py",
+        "docs/libraries/gesha/models-training.md"
+      ],
+      "examples": [
+        "tests/TutorLibraries/gesha-merge-training.kf",
+        "tests/KafeGESHA/functional/functional_branch_merge.kf",
+        "tests/TutorLibraries/gesha-functional-many-inputs.error.kf"
+      ],
+      "evidence": [
+        "tests/test_gesha_numk_backend.py",
+        "tests/test_gesha_training_utilities.py"
+      ],
+      "related": []
+    },
+    {
+      "id": "gesha.input_layer",
+      "kind": "function",
+      "status": "supported",
+      "signatures": [
+        "gesha.input_layer(shape)"
+      ],
+      "summary": "Create a symbolic input node used by layer.connect and the Functional factory; it contains no training observations.",
+      "parameters": [
+        "shape: List[INT] or List[FLOAT]; required by this wrapper."
+      ],
+      "returns": "GESHA symbolic Input node.",
+      "constraints": [
+        "Import gesha; every call shown uses positional KAFE arguments, not Python keyword arguments.",
+        "shape describes one sample, excludes the batch dimension, and belongs to symbolic graph construction."
+      ],
+      "aliases": [
+        "input layer",
+        "neural model workflow",
+        "entrenamiento de red",
+        "modelo neuronal",
+        "input placeholder",
+        "capa de entrada"
+      ],
+      "sources": [
+        "src/lib/KafeGESHA/functions_v2.py",
+        "src/lib/KafeGESHA/layers/base/layer.py",
+        "docs/libraries/gesha/models-training.md"
+      ],
+      "examples": [
+        "tests/TutorLibraries/gesha-merge-training.kf"
+      ],
+      "evidence": [
+        "tests/test_gesha_numk_backend.py",
+        "tests/test_gesha_training_utilities.py"
+      ],
+      "related": []
+    },
+    {
+      "id": "gesha.compile",
+      "kind": "function",
+      "status": "supported",
+      "signatures": [
+        "gesha.compile(model, optimizer, loss, metrics)"
+      ],
+      "summary": "Configure a model using optimizer/loss names; this functional form requires all four arguments.",
+      "parameters": [
+        "model: GESHA; required by this wrapper.",
+        "optimizer: STR; required by this wrapper.",
+        "loss: STR; required by this wrapper.",
+        "metrics: List[STR]; required by this wrapper."
+      ],
+      "returns": "VOID; use as a statement.",
+      "constraints": [
+        "Import gesha; every call shown uses positional KAFE arguments, not Python keyword arguments.",
+        "optimizer names: sgd, rmsprop, adam, adamw. Loss names/aliases: mse/mean_squared_error, mae/mean_absolute_error, bce/binary_crossentropy, cce/categorical_crossentropy, scce/sparse_categorical_crossentropy.",
+        "metrics is a List[STR] but not a generic metric runner. Supervised cross-entropy epochs compute built-in accuracy even when metrics=[].",
+        "Optimizer objects and custom optimizer hyperparameters are not factory arguments here; set the learning rate with set_lr."
+      ],
+      "aliases": [
+        "compile",
+        "neural model workflow",
+        "entrenamiento de red",
+        "modelo neuronal",
+        "compile model",
+        "compilar modelo"
+      ],
+      "sources": [
+        "src/lib/KafeGESHA/functions_v2.py",
+        "src/lib/KafeGESHA/models_v2.py",
+        "docs/libraries/gesha/models-training.md"
+      ],
+      "examples": [
+        "tests/TutorLibraries/gesha-merge-training.kf",
+        "tests/KafeGESHA/errors/invalid_optimizer.error.kf",
+        "tests/KafeGESHA/errors/invalid_loss.error.kf"
+      ],
+      "evidence": [
+        "tests/test_gesha_numk_backend.py",
+        "tests/test_gesha_training_utilities.py"
+      ],
+      "related": []
+    },
+    {
+      "id": "gesha.set_lr",
+      "kind": "function",
+      "status": "supported",
+      "signatures": [
+        "gesha.set_lr(model, new_lr)"
+      ],
+      "summary": "Set the learning rate on a previously compiled model.",
+      "parameters": [
+        "model: GESHA; required by this wrapper.",
+        "new_lr: FLOAT or INT; required by this wrapper."
+      ],
+      "returns": "VOID; use as a statement.",
+      "constraints": [
+        "Import gesha; every call shown uses positional KAFE arguments, not Python keyword arguments.",
+        "Compile first. Choose a positive numeric learning rate; the pinned setter does not reject negative numbers."
+      ],
+      "aliases": [
+        "set lr",
+        "neural model workflow",
+        "entrenamiento de red",
+        "modelo neuronal",
+        "set learning rate",
+        "cambiar tasa de aprendizaje"
+      ],
+      "sources": [
+        "src/lib/KafeGESHA/functions_v2.py",
+        "src/lib/KafeGESHA/models_v2.py",
+        "docs/libraries/gesha/models-training.md"
+      ],
+      "examples": [
+        "tests/TutorLibraries/gesha-merge-training.kf",
+        "tests/KafeGESHA/errors/set_lr_before_compile.error.kf"
+      ],
+      "evidence": [
+        "tests/test_gesha_numk_backend.py",
+        "tests/test_gesha_training_utilities.py"
+      ],
+      "related": []
+    },
+    {
+      "id": "gesha.dropout_layer",
+      "kind": "function",
+      "status": "supported",
+      "signatures": [
+        "gesha.dropout_layer()",
+        "gesha.dropout_layer(rate)",
+        "gesha.dropout_layer(rate, seed)"
+      ],
+      "summary": "Create element-wise inverted dropout, active in training and bypassed in prediction.",
+      "parameters": [
+        "rate: FLOAT or INT; omitted default 0.5.",
+        "seed: INT or VOID value (or omit the optional argument); omitted default is Python None; None is not a KAFE literal."
+      ],
+      "returns": "GESHA object",
+      "constraints": [
+        "Import gesha; every call shown uses positional KAFE arguments, not Python keyword arguments.",
+        "rate is in [0,1). Training applies inverted masking; prediction is unchanged.",
+        "A seed controls reproducible random draws; successive training forwards advance the seeded generator."
+      ],
+      "aliases": [
+        "dropout layer",
+        "neural model workflow",
+        "entrenamiento de red",
+        "modelo neuronal",
+        "descarte aleatorio de activaciones"
+      ],
+      "sources": [
+        "src/lib/KafeGESHA/functions_v2.py",
+        "src/lib/KafeGESHA/layers/regularization/dropout.py",
+        "docs/libraries/gesha/models-training.md"
+      ],
+      "examples": [
+        "tests/TutorLibraries/gesha-merge-training.kf"
+      ],
+      "evidence": [
+        "tests/test_gesha_numk_backend.py",
+        "tests/test_gesha_training_utilities.py"
+      ],
+      "related": []
+    },
+    {
+      "id": "gesha.flatten_layer",
+      "kind": "function",
+      "status": "supported",
+      "signatures": [
+        "gesha.flatten_layer()",
+        "gesha.flatten_layer(input_shape)"
+      ],
+      "summary": "Flatten a numeric sample to a vector before a dense layer.",
+      "parameters": [
+        "input_shape: List[INT] or List[FLOAT] or VOID value (or omit the optional argument); omitted default is Python None; None is not a KAFE literal."
+      ],
+      "returns": "GESHA object",
+      "constraints": [
+        "Import gesha; every call shown uses positional KAFE arguments, not Python keyword arguments.",
+        "Forward stores the original sample shape; backward requires a preceding matching forward."
+      ],
+      "aliases": [
+        "flatten layer",
+        "convolutional network",
+        "CNN",
+        "red convolucional",
+        "forma de imagen",
+        "flatten tensor",
+        "aplanar tensor"
+      ],
+      "sources": [
+        "src/lib/KafeGESHA/functions_v2.py",
+        "src/lib/KafeGESHA/layers/spatial/flatten.py",
+        "docs/libraries/gesha/convolutional-networks.md"
+      ],
+      "examples": [
+        "tests/TutorLibraries/gesha-cnn.kf"
+      ],
+      "evidence": [
+        "tests/test_gesha_cnn_rnn_layers.py",
+        "tests/test_gesha_conv_rnn_backend.py"
+      ],
+      "related": []
+    },
+    {
+      "id": "gesha.add_layer",
+      "kind": "function",
+      "status": "supported",
+      "signatures": [
+        "gesha.add_layer()"
+      ],
+      "summary": "Create an element-wise sum merge layer for compatible branch values.",
+      "parameters": [],
+      "returns": "GESHA object",
+      "constraints": [
+        "Import gesha; every call shown uses positional KAFE arguments, not Python keyword arguments.",
+        "Branch values must be compatible; Add is a merge, not a replacement for Sequential.add."
+      ],
+      "aliases": [
+        "add layer",
+        "neural model workflow",
+        "entrenamiento de red",
+        "modelo neuronal",
+        "add model layer",
+        "agregar capa al modelo"
+      ],
+      "sources": [
+        "src/lib/KafeGESHA/functions_v2.py",
+        "src/lib/KafeGESHA/layers/merge/add.py",
+        "docs/libraries/gesha/models-training.md"
+      ],
+      "examples": [
+        "tests/TutorLibraries/gesha-merge-training.kf"
+      ],
+      "evidence": [
+        "tests/test_gesha_numk_backend.py",
+        "tests/test_gesha_training_utilities.py"
+      ],
+      "related": []
+    },
+    {
+      "id": "gesha.relu_layer",
+      "kind": "function",
+      "status": "limited",
+      "signatures": [
+        "gesha.relu_layer()"
+      ],
+      "summary": "Create a rectified activation layer; mixed integer-zero and float outputs can hit the DSL homogeneity restriction.",
+      "parameters": [],
+      "returns": "GESHA object",
+      "constraints": [
+        "Import gesha; every call shown uses positional KAFE arguments, not Python keyword arguments.",
+        "Direct forward([-1.0,2.0]) produces mixed INT/FLOAT output and the KAFE expression rejects it; homogeneous outputs are demonstrated."
+      ],
+      "aliases": [
+        "relu layer",
+        "activation layer",
+        "capa de activación",
+        "función de activación",
+        "ReLU activation",
+        "activación ReLU"
+      ],
+      "sources": [
+        "src/lib/KafeGESHA/functions_v2.py",
+        "src/lib/KafeGESHA/layers/core/activation_layer.py",
+        "docs/libraries/gesha/dense-networks.md"
+      ],
+      "examples": [
+        "tests/TutorLibraries/gesha-activations.kf",
+        "tests/TutorLibraries/gesha-relu-mixed-output.error.kf"
+      ],
+      "evidence": [
+        "tests/test_gesha_numk_backend.py"
+      ],
+      "related": []
+    },
+    {
+      "id": "gesha.sigmoid_layer",
+      "kind": "function",
+      "status": "supported",
+      "signatures": [
+        "gesha.sigmoid_layer()"
+      ],
+      "summary": "Create a sigmoid activation layer mapping numeric values to the interval [0,1].",
+      "parameters": [],
+      "returns": "GESHA object",
+      "constraints": [
+        "Import gesha; every call shown uses positional KAFE arguments, not Python keyword arguments."
+      ],
+      "aliases": [
+        "sigmoid layer",
+        "activation layer",
+        "capa de activación",
+        "función de activación",
+        "sigmoid activation",
+        "activación sigmoide"
+      ],
+      "sources": [
+        "src/lib/KafeGESHA/functions_v2.py",
+        "src/lib/KafeGESHA/layers/core/activation_layer.py",
+        "docs/libraries/gesha/dense-networks.md"
+      ],
+      "examples": [
+        "tests/TutorLibraries/gesha-activations.kf"
+      ],
+      "evidence": [
+        "tests/test_gesha_numk_backend.py"
+      ],
+      "related": []
+    },
+    {
+      "id": "gesha.tanh_layer",
+      "kind": "function",
+      "status": "supported",
+      "signatures": [
+        "gesha.tanh_layer()"
+      ],
+      "summary": "Create a tanh activation layer mapping numeric values to the interval [-1,1].",
+      "parameters": [],
+      "returns": "GESHA object",
+      "constraints": [
+        "Import gesha; every call shown uses positional KAFE arguments, not Python keyword arguments."
+      ],
+      "aliases": [
+        "tanh layer",
+        "activation layer",
+        "capa de activación",
+        "función de activación",
+        "hyperbolic tangent activation",
+        "activación tangente hiperbólica"
+      ],
+      "sources": [
+        "src/lib/KafeGESHA/functions_v2.py",
+        "src/lib/KafeGESHA/layers/core/activation_layer.py",
+        "docs/libraries/gesha/dense-networks.md"
+      ],
+      "examples": [
+        "tests/TutorLibraries/gesha-activations.kf"
+      ],
+      "evidence": [
+        "tests/test_gesha_numk_backend.py"
+      ],
+      "related": []
+    },
+    {
+      "id": "gesha.softmax_layer",
+      "kind": "function",
+      "status": "supported",
+      "signatures": [
+        "gesha.softmax_layer()"
+      ],
+      "summary": "Create a softmax activation layer converting a vector of logits to normalized scores.",
+      "parameters": [],
+      "returns": "GESHA object",
+      "constraints": [
+        "Import gesha; every call shown uses positional KAFE arguments, not Python keyword arguments.",
+        "Scores sum to one but are not automatically calibrated probabilities."
+      ],
+      "aliases": [
+        "softmax layer",
+        "activation layer",
+        "capa de activación",
+        "función de activación",
+        "softmax activation",
+        "activación softmax"
+      ],
+      "sources": [
+        "src/lib/KafeGESHA/functions_v2.py",
+        "src/lib/KafeGESHA/layers/core/activation_layer.py",
+        "docs/libraries/gesha/dense-networks.md"
+      ],
+      "examples": [
+        "tests/TutorLibraries/gesha-activations.kf"
+      ],
+      "evidence": [
+        "tests/test_gesha_numk_backend.py"
+      ],
+      "related": []
+    },
+    {
+      "id": "gesha.linear_layer",
+      "kind": "function",
+      "status": "supported",
+      "signatures": [
+        "gesha.linear_layer()"
+      ],
+      "summary": "Create an identity activation layer that leaves numeric values unchanged.",
+      "parameters": [],
+      "returns": "GESHA object",
+      "constraints": [
+        "Import gesha; every call shown uses positional KAFE arguments, not Python keyword arguments."
+      ],
+      "aliases": [
+        "linear layer",
+        "activation layer",
+        "capa de activación",
+        "función de activación",
+        "linear activation",
+        "activación lineal"
+      ],
+      "sources": [
+        "src/lib/KafeGESHA/functions_v2.py",
+        "src/lib/KafeGESHA/layers/core/activation_layer.py",
+        "docs/libraries/gesha/dense-networks.md"
+      ],
+      "examples": [
+        "tests/TutorLibraries/gesha-activations.kf"
+      ],
+      "evidence": [
+        "tests/test_gesha_numk_backend.py"
+      ],
+      "related": []
+    },
+    {
+      "id": "gesha.tensor_zeros",
+      "kind": "function",
+      "status": "supported",
+      "signatures": [
+        "gesha.tensor_zeros(shape)"
+      ],
+      "summary": "Create a zero-filled nested numeric list for a tensor shape.",
+      "parameters": [
+        "shape: List[INT] or List[FLOAT]; required by this wrapper."
+      ],
+      "returns": "Homogeneous nested numeric List matching the requested shape; no separate Tensor class.",
+      "constraints": [
+        "Import gesha; every call shown uses positional KAFE arguments, not Python keyword arguments."
+      ],
+      "aliases": [
+        "tensor zeros",
+        "numeric tensor list",
+        "tensor numérico",
+        "listas anidadas",
+        "zero tensor",
+        "tensor de ceros"
+      ],
+      "sources": [
+        "src/lib/KafeGESHA/functions_v2.py",
+        "src/lib/KafeNUMK/functions.py",
+        "docs/libraries/gesha/training-tools.md"
+      ],
+      "examples": [
+        "tests/TutorLibraries/gesha-initializers.kf"
+      ],
+      "evidence": [
+        "tests/test_gesha_numk_backend.py"
+      ],
+      "related": []
+    },
+    {
+      "id": "gesha.tensor_ones",
+      "kind": "function",
+      "status": "supported",
+      "signatures": [
+        "gesha.tensor_ones(shape)"
+      ],
+      "summary": "Create a one-filled nested numeric list for a tensor shape.",
+      "parameters": [
+        "shape: List[INT] or List[FLOAT]; required by this wrapper."
+      ],
+      "returns": "Homogeneous nested numeric List matching the requested shape; no separate Tensor class.",
+      "constraints": [
+        "Import gesha; every call shown uses positional KAFE arguments, not Python keyword arguments."
+      ],
+      "aliases": [
+        "tensor ones",
+        "numeric tensor list",
+        "tensor numérico",
+        "listas anidadas",
+        "one tensor",
+        "tensor de unos"
+      ],
+      "sources": [
+        "src/lib/KafeGESHA/functions_v2.py",
+        "src/lib/KafeNUMK/functions.py",
+        "docs/libraries/gesha/training-tools.md"
+      ],
+      "examples": [
+        "tests/TutorLibraries/gesha-initializers.kf"
+      ],
+      "evidence": [
+        "tests/test_gesha_numk_backend.py"
+      ],
+      "related": []
+    },
+    {
+      "id": "gesha.tensor_random",
+      "kind": "function",
+      "status": "supported",
+      "signatures": [
+        "gesha.tensor_random(shape)"
+      ],
+      "summary": "Create a random-filled nested numeric list; this wrapper exposes no seed argument.",
+      "parameters": [
+        "shape: List[INT] or List[FLOAT]; required by this wrapper."
+      ],
+      "returns": "Homogeneous nested numeric List matching the requested shape; no separate Tensor class.",
+      "constraints": [
+        "Import gesha; every call shown uses positional KAFE arguments, not Python keyword arguments.",
+        "There is no seed parameter on this wrapper; use only shape assertions for deterministic fixture expectations."
+      ],
+      "aliases": [
+        "tensor random",
+        "numeric tensor list",
+        "tensor numérico",
+        "listas anidadas",
+        "random tensor",
+        "tensor aleatorio"
+      ],
+      "sources": [
+        "src/lib/KafeGESHA/functions_v2.py",
+        "src/lib/KafeNUMK/functions.py",
+        "docs/libraries/gesha/training-tools.md"
+      ],
+      "examples": [
+        "tests/TutorLibraries/gesha-initializers.kf"
+      ],
+      "evidence": [
+        "tests/test_gesha_numk_backend.py"
+      ],
+      "related": []
+    },
+    {
+      "id": "gesha.tensor",
+      "kind": "function",
+      "status": "supported",
+      "signatures": [
+        "gesha.tensor(data)"
+      ],
+      "summary": "Copy a numeric nested list without introducing a separate Tensor type.",
+      "parameters": [
+        "data: nested List; required by this wrapper."
+      ],
+      "returns": "Homogeneous nested numeric List matching the requested shape; no separate Tensor class.",
+      "constraints": [
+        "Import gesha; every call shown uses positional KAFE arguments, not Python keyword arguments.",
+        "Use homogeneous numeric lists for numerical operations. The broad list signature is not a promise to reject every non-numeric element."
+      ],
+      "aliases": [
+        "tensor",
+        "numeric tensor list",
+        "tensor numérico",
+        "listas anidadas",
+        "nested list tensor",
+        "tensor desde listas"
+      ],
+      "sources": [
+        "src/lib/KafeGESHA/functions_v2.py",
+        "src/lib/KafeNUMK/functions.py",
+        "docs/libraries/gesha/training-tools.md"
+      ],
+      "examples": [
+        "tests/TutorLibraries/gesha-initializers.kf"
+      ],
+      "evidence": [
+        "tests/test_gesha_numk_backend.py"
+      ],
+      "related": []
+    },
+    {
+      "id": "gesha.ReLULayer",
+      "kind": "alias",
+      "status": "limited",
+      "signatures": [
+        "gesha.ReLULayer()"
+      ],
+      "summary": "Compatibility activation alias of gesha.relu_layer; prefer the canonical snake_case factory.",
+      "parameters": [],
+      "returns": "GESHA object",
+      "constraints": [
+        "Import gesha; every call shown uses positional KAFE arguments, not Python keyword arguments.",
+        "Direct forward([-1.0,2.0]) produces mixed INT/FLOAT output and the KAFE expression rejects it; homogeneous outputs are demonstrated."
+      ],
+      "aliases": [
+        "ReLULayer",
+        "legacy activation alias",
+        "alias histórico de activación"
+      ],
+      "sources": [
+        "src/lib/KafeGESHA/functions_v2.py",
+        "src/lib/KafeGESHA/layers/core/activation_layer.py",
+        "docs/libraries/gesha/dense-networks.md"
+      ],
+      "examples": [
+        "tests/TutorLibraries/gesha-activations.kf",
+        "tests/TutorLibraries/gesha-relu-mixed-output.error.kf"
+      ],
+      "evidence": [
+        "tests/test_gesha_numk_backend.py"
+      ],
+      "related": [
+        "gesha.relu_layer"
+      ]
+    },
+    {
+      "id": "gesha.SigmoidLayer",
+      "kind": "alias",
+      "status": "deprecated",
+      "signatures": [
+        "gesha.SigmoidLayer()"
+      ],
+      "summary": "Compatibility activation alias of gesha.sigmoid_layer; prefer the canonical snake_case factory.",
+      "parameters": [],
+      "returns": "GESHA object",
+      "constraints": [
+        "Import gesha; every call shown uses positional KAFE arguments, not Python keyword arguments."
+      ],
+      "aliases": [
+        "SigmoidLayer",
+        "legacy activation alias",
+        "alias histórico de activación"
+      ],
+      "sources": [
+        "src/lib/KafeGESHA/functions_v2.py",
+        "src/lib/KafeGESHA/layers/core/activation_layer.py",
+        "docs/libraries/gesha/dense-networks.md"
+      ],
+      "examples": [
+        "tests/TutorLibraries/gesha-activations.kf"
+      ],
+      "evidence": [
+        "tests/test_gesha_numk_backend.py"
+      ],
+      "related": [
+        "gesha.sigmoid_layer"
+      ]
+    },
+    {
+      "id": "gesha.TanhLayer",
+      "kind": "alias",
+      "status": "deprecated",
+      "signatures": [
+        "gesha.TanhLayer()"
+      ],
+      "summary": "Compatibility activation alias of gesha.tanh_layer; prefer the canonical snake_case factory.",
+      "parameters": [],
+      "returns": "GESHA object",
+      "constraints": [
+        "Import gesha; every call shown uses positional KAFE arguments, not Python keyword arguments."
+      ],
+      "aliases": [
+        "TanhLayer",
+        "legacy activation alias",
+        "alias histórico de activación"
+      ],
+      "sources": [
+        "src/lib/KafeGESHA/functions_v2.py",
+        "src/lib/KafeGESHA/layers/core/activation_layer.py",
+        "docs/libraries/gesha/dense-networks.md"
+      ],
+      "examples": [
+        "tests/TutorLibraries/gesha-activations.kf"
+      ],
+      "evidence": [
+        "tests/test_gesha_numk_backend.py"
+      ],
+      "related": [
+        "gesha.tanh_layer"
+      ]
+    },
+    {
+      "id": "gesha.SoftmaxLayer",
+      "kind": "alias",
+      "status": "deprecated",
+      "signatures": [
+        "gesha.SoftmaxLayer()"
+      ],
+      "summary": "Compatibility activation alias of gesha.softmax_layer; prefer the canonical snake_case factory.",
+      "parameters": [],
+      "returns": "GESHA object",
+      "constraints": [
+        "Import gesha; every call shown uses positional KAFE arguments, not Python keyword arguments.",
+        "Scores sum to one but are not automatically calibrated probabilities."
+      ],
+      "aliases": [
+        "SoftmaxLayer",
+        "legacy activation alias",
+        "alias histórico de activación"
+      ],
+      "sources": [
+        "src/lib/KafeGESHA/functions_v2.py",
+        "src/lib/KafeGESHA/layers/core/activation_layer.py",
+        "docs/libraries/gesha/dense-networks.md"
+      ],
+      "examples": [
+        "tests/TutorLibraries/gesha-activations.kf"
+      ],
+      "evidence": [
+        "tests/test_gesha_numk_backend.py"
+      ],
+      "related": [
+        "gesha.softmax_layer"
+      ]
+    },
+    {
+      "id": "gesha.LinearLayer",
+      "kind": "alias",
+      "status": "deprecated",
+      "signatures": [
+        "gesha.LinearLayer()"
+      ],
+      "summary": "Compatibility activation alias of gesha.linear_layer; prefer the canonical snake_case factory.",
+      "parameters": [],
+      "returns": "GESHA object",
+      "constraints": [
+        "Import gesha; every call shown uses positional KAFE arguments, not Python keyword arguments."
+      ],
+      "aliases": [
+        "LinearLayer",
+        "legacy activation alias",
+        "alias histórico de activación"
+      ],
+      "sources": [
+        "src/lib/KafeGESHA/functions_v2.py",
+        "src/lib/KafeGESHA/layers/core/activation_layer.py",
+        "docs/libraries/gesha/dense-networks.md"
+      ],
+      "examples": [
+        "tests/TutorLibraries/gesha-activations.kf"
+      ],
+      "evidence": [
+        "tests/test_gesha_numk_backend.py"
+      ],
+      "related": [
+        "gesha.linear_layer"
+      ]
+    },
+    {
+      "id": "gesha.Model.compile",
+      "kind": "method",
+      "status": "supported",
+      "signatures": [
+        "model.compile()",
+        "model.compile(optimizer)",
+        "model.compile(optimizer, loss)",
+        "model.compile(optimizer, loss, metrics)"
+      ],
+      "summary": "Compile a Sequential/Functional model; model methods have Python defaults while gesha.compile requires four arguments.",
+      "parameters": [
+        "optimizer: STR, default \"sgd\".",
+        "loss: STR, default \"mse\".",
+        "metrics: List[STR], default empty."
+      ],
+      "returns": "VOID.",
+      "constraints": [
+        "optimizer names: sgd, rmsprop, adam, adamw. Loss names/aliases: mse/mean_squared_error, mae/mean_absolute_error, bce/binary_crossentropy, cce/categorical_crossentropy, scce/sparse_categorical_crossentropy.",
+        "metrics is a List[STR] but not a generic metric runner. Supervised cross-entropy epochs compute built-in accuracy even when metrics=[].",
+        "No invented optimizer/loss factories, custom metric runner or model.evaluate method."
+      ],
+      "aliases": [
+        "Model compile",
+        "modelo neuronal",
+        "deep learning",
+        "gesha.Model.compile"
+      ],
+      "sources": [
+        "src/lib/KafeGESHA/models_v2.py",
+        "docs/libraries/gesha/models-training.md"
+      ],
+      "examples": [
+        "tests/TutorLibraries/gesha-merge-training.kf"
+      ],
+      "evidence": [
+        "tests/test_gesha_numk_backend.py"
+      ],
+      "related": [
+        "gesha.compile",
+        "gesha.set_lr"
+      ],
+      "sourceSymbols": [
+        "Model.compile"
+      ]
+    },
+    {
+      "id": "gesha.Model.set_lr",
+      "kind": "method",
+      "status": "supported",
+      "signatures": [
+        "model.set_lr(new_lr)"
+      ],
+      "summary": "Update the compiled optimizer learning rate.",
+      "parameters": [
+        "new_lr: choose a positive numeric rate."
+      ],
+      "returns": "VOID.",
+      "constraints": [
+        "Compile first. Choose a positive numeric learning rate; the pinned setter does not reject negative numbers."
+      ],
+      "aliases": [
+        "Model set_lr",
+        "modelo neuronal",
+        "deep learning",
+        "gesha.Model.set_lr"
+      ],
+      "sources": [
+        "src/lib/KafeGESHA/models_v2.py",
+        "docs/libraries/gesha/models-training.md"
+      ],
+      "examples": [
+        "tests/TutorLibraries/gesha-merge-training.kf"
+      ],
+      "evidence": [
+        "tests/test_gesha_numk_backend.py"
+      ],
+      "related": [
+        "gesha.set_lr"
+      ],
+      "sourceSymbols": [
+        "Model.set_lr"
+      ]
+    },
+    {
+      "id": "gesha.Model.add_callback",
+      "kind": "method",
+      "status": "supported",
+      "signatures": [
+        "model.add_callback(callback)"
+      ],
+      "summary": "Attach a callback; fit invokes its lifecycle automatically.",
+      "parameters": [
+        "callback: GESHA callback factory result."
+      ],
+      "returns": "VOID.",
+      "constraints": [],
+      "aliases": [
+        "Model add_callback",
+        "modelo neuronal",
+        "deep learning",
+        "gesha.Model.add_callback"
+      ],
+      "sources": [
+        "src/lib/KafeGESHA/models_v2.py",
+        "docs/libraries/gesha/models-training.md"
+      ],
+      "examples": [
+        "tests/TutorLibraries/gesha-merge-training.kf"
+      ],
+      "evidence": [
+        "tests/test_gesha_numk_backend.py"
+      ],
+      "related": [
+        "gesha.add_callback",
+        "gesha.early_stopping",
+        "gesha.model_checkpoint"
+      ],
+      "sourceSymbols": [
+        "Model.add_callback"
+      ]
+    },
+    {
+      "id": "gesha.Model.fit",
+      "kind": "method",
+      "status": "limited",
+      "signatures": [
+        "model.fit(X)",
+        "model.fit(X, Y)",
+        "model.fit(X, Y, epochs)",
+        "model.fit(X, Y, epochs, batch_size)",
+        "model.fit(X, Y, epochs, batch_size, x_val)",
+        "model.fit(X, Y, epochs, batch_size, x_val, y_val)",
+        "model.fit(X, Y, epochs, batch_size, x_val, y_val, regularization_lambda)",
+        "model.fit(X, Y, epochs, batch_size, x_val, y_val, regularization_lambda, callbacks)"
+      ],
+      "summary": "Train a compiled model with one optimizer update per minibatch; empty or omitted targets select experimental soft clustering.",
+      "parameters": [
+        "X: nonempty batch of numeric samples; Y: matching targets, default omitted unsupervised.",
+        "epochs: nonnegative INT, default 1; batch_size: positive INT, default 1.",
+        "x_val/y_val: optional validation batches, equal sample counts; use [] placeholders when no validation is wanted.",
+        "regularization_lambda: numeric L2 contribution, default 0.0; callbacks: List[GESHA], default omitted."
+      ],
+      "returns": "Use as a KAFE statement. Python returns a history dictionary; KAFE has no supported declared dictionary/history value.",
+      "constraints": [
+        "One output and one loss are supported by the training loop; no multi-output loss list or training dictionary API.",
+        "Cross-entropy classification logs loss and accuracy even when metrics=[]. MSE/MAE/soft clustering are loss-only.",
+        "Fit preprocessing only on training data; fit does not perform a split or automatic sample shuffle.",
+        "Callback monitors use only loss/accuracy/val_loss actually present. Preserve a final untouched test set.",
+        "Models use nested Python lists; bounded shape tests are not convergence/performance guarantees."
+      ],
+      "aliases": [
+        "fit model",
+        "train neural network",
+        "entrenar red neuronal",
+        "epochs",
+        "minibatch",
+        "épocas",
+        "soft clustering",
+        "agrupamiento suave",
+        "gesha.Model.fit"
+      ],
+      "sources": [
+        "src/lib/KafeGESHA/models_v2.py",
+        "docs/libraries/gesha/models-training.md"
+      ],
+      "examples": [
+        "tests/TutorLibraries/gesha-merge-training.kf",
+        "tests/TutorLibraries/gesha-fit-history.error.kf",
+        "tests/KafeGESHA/multiclass/multiclass_with_validation.kf"
+      ],
+      "evidence": [
+        "tests/test_gesha_numk_backend.py"
+      ],
+      "related": [
+        "gesha.Model.compile",
+        "gesha.Model.predict",
+        "gesha.Model.predict_label",
+        "gesha.early_stopping"
+      ],
+      "sourceSymbols": [
+        "Model.fit"
+      ]
+    },
+    {
+      "id": "gesha.Model.predict",
+      "kind": "method",
+      "status": "supported",
+      "signatures": [
+        "model.predict(X)"
+      ],
+      "summary": "Predict numeric model outputs in evaluation mode.",
+      "parameters": [
+        "X: nonempty flat dense vector or batch of complete samples."
+      ],
+      "returns": "Flat dense sample -> numeric output; batch -> List of per-sample outputs.",
+      "constraints": [
+        "Wrap a single CNN [C,H,W], RNN [T,F] or embedding-token sample in a one-sample batch.",
+        "Nested first elements are interpreted as batch samples; no automatic architecture-aware single-sample detection.",
+        "Probability interpretation requires a suitable sigmoid/softmax output; clustering indices are arbitrary group IDs."
+      ],
+      "aliases": [
+        "predict",
+        "prediction",
+        "predicción",
+        "etiqueta predicha",
+        "gesha.Model.predict"
+      ],
+      "sources": [
+        "src/lib/KafeGESHA/models_v2.py",
+        "docs/libraries/gesha/models-training.md"
+      ],
+      "examples": [
+        "tests/TutorLibraries/gesha-merge-training.kf",
+        "tests/TutorLibraries/gesha-cnn.kf",
+        "tests/TutorLibraries/gesha-recurrent.kf",
+        "tests/TutorLibraries/gesha-unbatched-rnn.error.kf"
+      ],
+      "evidence": [
+        "tests/test_gesha_numk_backend.py"
+      ],
+      "related": [
+        "gesha.Model.fit"
+      ],
+      "sourceSymbols": [
+        "Model.predict"
+      ]
+    },
+    {
+      "id": "gesha.Model.predict_proba",
+      "kind": "method",
+      "status": "supported",
+      "signatures": [
+        "model.predict_proba(X)"
+      ],
+      "summary": "Alias of prediction; it does not independently turn regression outputs into probabilities.",
+      "parameters": [
+        "X: nonempty flat dense vector or batch of complete samples."
+      ],
+      "returns": "Exactly the same values and shapes as predict.",
+      "constraints": [
+        "Wrap a single CNN [C,H,W], RNN [T,F] or embedding-token sample in a one-sample batch.",
+        "Nested first elements are interpreted as batch samples; no automatic architecture-aware single-sample detection.",
+        "Probability interpretation requires a suitable sigmoid/softmax output; clustering indices are arbitrary group IDs."
+      ],
+      "aliases": [
+        "predict_proba",
+        "prediction",
+        "predicción",
+        "probabilidades",
+        "gesha.Model.predict_proba"
+      ],
+      "sources": [
+        "src/lib/KafeGESHA/models_v2.py",
+        "docs/libraries/gesha/models-training.md"
+      ],
+      "examples": [
+        "tests/TutorLibraries/gesha-merge-training.kf",
+        "tests/TutorLibraries/gesha-cnn.kf",
+        "tests/TutorLibraries/gesha-recurrent.kf",
+        "tests/TutorLibraries/gesha-unbatched-rnn.error.kf"
+      ],
+      "evidence": [
+        "tests/test_gesha_numk_backend.py"
+      ],
+      "related": [
+        "gesha.Model.fit"
+      ],
+      "sourceSymbols": [
+        "Model.predict_proba"
+      ]
+    },
+    {
+      "id": "gesha.Model.predict_label",
+      "kind": "method",
+      "status": "supported",
+      "signatures": [
+        "model.predict_label(X)"
+      ],
+      "summary": "Threshold a one-unit output at 0.5 or choose the largest component for multiclass/cluster labels.",
+      "parameters": [
+        "X: nonempty flat dense vector or batch of complete samples."
+      ],
+      "returns": "INT for a flat dense sample; List[INT] for a batch.",
+      "constraints": [
+        "Wrap a single CNN [C,H,W], RNN [T,F] or embedding-token sample in a one-sample batch.",
+        "Nested first elements are interpreted as batch samples; no automatic architecture-aware single-sample detection.",
+        "Probability interpretation requires a suitable sigmoid/softmax output; clustering indices are arbitrary group IDs."
+      ],
+      "aliases": [
+        "predict_label",
+        "prediction",
+        "predicción",
+        "etiqueta predicha",
+        "gesha.Model.predict_label"
+      ],
+      "sources": [
+        "src/lib/KafeGESHA/models_v2.py",
+        "docs/libraries/gesha/models-training.md"
+      ],
+      "examples": [
+        "tests/TutorLibraries/gesha-merge-training.kf",
+        "tests/TutorLibraries/gesha-cnn.kf",
+        "tests/TutorLibraries/gesha-recurrent.kf",
+        "tests/TutorLibraries/gesha-unbatched-rnn.error.kf"
+      ],
+      "evidence": [
+        "tests/test_gesha_numk_backend.py"
+      ],
+      "related": [
+        "gesha.Model.fit"
+      ],
+      "sourceSymbols": [
+        "Model.predict_label"
+      ]
+    },
+    {
+      "id": "gesha.Model.save_weights",
+      "kind": "method",
+      "status": "limited",
+      "signatures": [
+        "model.save_weights(filepath)"
+      ],
+      "summary": "Save model parameters as JSON, requiring already-built matching parameter shapes.",
+      "parameters": [
+        "filepath: STR path chosen for explicit local program execution."
+      ],
+      "returns": "VOID.",
+      "constraints": [
+        "Isolated filesystem-writing/reading evidence only; this never runs from an ordinary Tutor query.",
+        "Build matching parameters first using input_shape or a forward/predict call.",
+        "Only parameter names/data are serialized: architecture, preprocessing, optimizer moments and normalization running statistics are omitted.",
+        "This is not a full model checkpoint or exact resumed-training contract."
+      ],
+      "aliases": [
+        "save_weights",
+        "weight serialization",
+        "serialización de pesos",
+        "guardar pesos",
+        "gesha.Model.save_weights"
+      ],
+      "sources": [
+        "src/lib/KafeGESHA/models_v2.py",
+        "docs/libraries/gesha/models-training.md"
+      ],
+      "examples": [
+        "tests/TutorLibraries/gesha-weights.kf",
+        "tests/TutorLibraries/gesha-lazy-weights.error.kf"
+      ],
+      "evidence": [
+        "tests/test_gesha_training_utilities.py"
+      ],
+      "related": [
+        "gesha.model_checkpoint"
+      ],
+      "sourceSymbols": [
+        "Model.save_weights"
+      ]
+    },
+    {
+      "id": "gesha.Model.load_weights",
+      "kind": "method",
+      "status": "limited",
+      "signatures": [
+        "model.load_weights(filepath)"
+      ],
+      "summary": "Load model parameters as JSON, requiring already-built matching parameter shapes.",
+      "parameters": [
+        "filepath: STR path chosen for explicit local program execution."
+      ],
+      "returns": "VOID.",
+      "constraints": [
+        "Isolated filesystem-writing/reading evidence only; this never runs from an ordinary Tutor query.",
+        "Build matching parameters first using input_shape or a forward/predict call.",
+        "Only parameter names/data are serialized: architecture, preprocessing, optimizer moments and normalization running statistics are omitted.",
+        "This is not a full model checkpoint or exact resumed-training contract."
+      ],
+      "aliases": [
+        "load_weights",
+        "weight serialization",
+        "serialización de pesos",
+        "cargar pesos",
+        "gesha.Model.load_weights"
+      ],
+      "sources": [
+        "src/lib/KafeGESHA/models_v2.py",
+        "docs/libraries/gesha/models-training.md"
+      ],
+      "examples": [
+        "tests/TutorLibraries/gesha-weights.kf",
+        "tests/TutorLibraries/gesha-lazy-weights.error.kf"
+      ],
+      "evidence": [
+        "tests/test_gesha_training_utilities.py"
+      ],
+      "related": [
+        "gesha.model_checkpoint"
+      ],
+      "sourceSymbols": [
+        "Model.load_weights"
+      ]
+    },
+    {
+      "id": "gesha.Sequential.add",
+      "kind": "method",
+      "status": "supported",
+      "signatures": [
+        "model.add(layer)"
+      ],
+      "summary": "Append a compatible layer to a Sequential model.",
+      "parameters": [
+        "layer: GESHA Layer; a node/callback/initializer is not a compatible layer."
+      ],
+      "returns": "VOID.",
+      "constraints": [],
+      "aliases": [
+        "Sequential add",
+        "modelo neuronal",
+        "deep learning",
+        "gesha.Sequential.add"
+      ],
+      "sources": [
+        "src/lib/KafeGESHA/models_v2.py",
+        "docs/libraries/gesha/models-training.md"
+      ],
+      "examples": [
+        "tests/TutorLibraries/gesha-merge-training.kf"
+      ],
+      "evidence": [
+        "tests/test_gesha_numk_backend.py"
+      ],
+      "related": [
+        "gesha.sequential"
+      ],
+      "sourceSymbols": [
+        "Sequential.add"
+      ]
+    },
+    {
+      "id": "gesha.Sequential.layers",
+      "kind": "property",
+      "status": "supported",
+      "signatures": [
+        "model.layers"
+      ],
+      "summary": "Read the ordered List[GESHA] layer collection.",
+      "parameters": [],
+      "returns": "List[GESHA]; assign or index it.",
+      "constraints": [
+        "Built-in len rejects List[GESHA] in this pinned runtime; the fixture uses assignment and indexing."
+      ],
+      "aliases": [
+        "Sequential layers",
+        "modelo neuronal",
+        "deep learning"
+      ],
+      "sources": [
+        "src/lib/KafeGESHA/models_v2.py",
+        "docs/libraries/gesha/models-training.md"
+      ],
+      "examples": [
+        "tests/TutorLibraries/gesha-merge-training.kf"
+      ],
+      "evidence": [
+        "tests/test_gesha_numk_backend.py"
+      ],
+      "related": [
+        "gesha.sequential"
+      ],
+      "sourceSymbols": []
+    },
+    {
+      "id": "gesha.Model.forward",
+      "kind": "method",
+      "status": "limited",
+      "signatures": [
+        "model.forward(sample)"
+      ],
+      "summary": "Low-level single-sample forward pass; use predict for evaluation-mode batched inference.",
+      "parameters": [
+        "sample: one correctly shaped numeric sample."
+      ],
+      "returns": "Numeric sample output; shape is architecture-dependent.",
+      "constraints": [
+        "Forward does not automatically select evaluation mode; it updates layer caches needed by backward.",
+        "Model/Layer abstract definitions are protocols; instantiate a concrete factory result.",
+        "Direct mixed INT/FLOAT activation results can violate KAFE homogeneous-list validation."
+      ],
+      "aliases": [
+        "Model forward",
+        "modelo neuronal",
+        "deep learning",
+        "gesha.Model.forward",
+        "gesha.Sequential.forward",
+        "gesha.Functional.forward",
+        "gesha.Layer.forward",
+        "gesha.Dense.forward",
+        "gesha.Input.forward",
+        "gesha.Conv1D.forward",
+        "gesha.Conv2D.forward",
+        "gesha.Conv2DTranspose.forward",
+        "gesha.DepthwiseConv2D.forward",
+        "gesha.ActivationLayer.forward",
+        "gesha.Add.forward",
+        "gesha.Concatenate.forward",
+        "gesha.Multiply.forward",
+        "gesha.BatchNormalization.forward",
+        "gesha.MaxPooling1D.forward",
+        "gesha.Bidirectional.forward",
+        "gesha.Embedding.forward",
+        "gesha.GRU.forward",
+        "gesha.LSTM.forward",
+        "gesha.SimpleRNN.forward",
+        "gesha.Dropout.forward",
+        "gesha.SpatialDropout2D.forward",
+        "gesha.Flatten.forward",
+        "gesha.Permute.forward",
+        "gesha.Reshape.forward",
+        "gesha.UpSampling2D.forward",
+        "gesha.ZeroPadding2D.forward"
+      ],
+      "sources": [
+        "src/lib/KafeGESHA/models_v2.py",
+        "src/lib/KafeGESHA/layers/base/layer.py",
+        "src/lib/KafeGESHA/layers/core/dense.py",
+        "src/lib/KafeGESHA/layers/base/input.py",
+        "docs/libraries/gesha/models-training.md",
+        "src/lib/KafeGESHA/layers/convolutional/conv1d.py",
+        "src/lib/KafeGESHA/layers/convolutional/conv2d.py",
+        "src/lib/KafeGESHA/layers/convolutional/conv2d_transpose.py",
+        "src/lib/KafeGESHA/layers/convolutional/depthwise_conv2d.py",
+        "src/lib/KafeGESHA/layers/core/activation_layer.py",
+        "src/lib/KafeGESHA/layers/merge/add.py",
+        "src/lib/KafeGESHA/layers/merge/concatenate.py",
+        "src/lib/KafeGESHA/layers/merge/multiply.py",
+        "src/lib/KafeGESHA/layers/normalization/batch_normalization.py",
+        "src/lib/KafeGESHA/layers/pooling/max_pooling1d.py",
+        "src/lib/KafeGESHA/layers/recurrent/bidirectional.py",
+        "src/lib/KafeGESHA/layers/recurrent/embedding.py",
+        "src/lib/KafeGESHA/layers/recurrent/gru.py",
+        "src/lib/KafeGESHA/layers/recurrent/lstm.py",
+        "src/lib/KafeGESHA/layers/recurrent/simple_rnn.py",
+        "src/lib/KafeGESHA/layers/regularization/dropout.py",
+        "src/lib/KafeGESHA/layers/regularization/spatial_dropout2d.py",
+        "src/lib/KafeGESHA/layers/spatial/flatten.py",
+        "src/lib/KafeGESHA/layers/spatial/permute.py",
+        "src/lib/KafeGESHA/layers/spatial/reshape.py",
+        "src/lib/KafeGESHA/layers/spatial/up_sampling2d.py",
+        "src/lib/KafeGESHA/layers/spatial/zero_padding2d.py"
+      ],
+      "examples": [
+        "tests/TutorLibraries/gesha-merge-training.kf",
+        "tests/TutorLibraries/gesha-cnn.kf",
+        "tests/TutorLibraries/gesha-recurrent.kf"
+      ],
+      "evidence": [
+        "tests/test_gesha_numk_backend.py"
+      ],
+      "related": [
+        "gesha.Model.predict"
+      ],
+      "sourceSymbols": [
+        "Model.forward",
+        "Sequential.forward",
+        "Functional.forward",
+        "Layer.forward",
+        "Dense.forward",
+        "Input.forward",
+        "Conv1D.forward",
+        "Conv2D.forward",
+        "Conv2DTranspose.forward",
+        "DepthwiseConv2D.forward",
+        "ActivationLayer.forward",
+        "Add.forward",
+        "Concatenate.forward",
+        "Multiply.forward",
+        "BatchNormalization.forward",
+        "MaxPooling1D.forward",
+        "Bidirectional.forward",
+        "Embedding.forward",
+        "GRU.forward",
+        "LSTM.forward",
+        "SimpleRNN.forward",
+        "Dropout.forward",
+        "SpatialDropout2D.forward",
+        "Flatten.forward",
+        "Permute.forward",
+        "Reshape.forward",
+        "UpSampling2D.forward",
+        "ZeroPadding2D.forward"
+      ]
+    },
+    {
+      "id": "gesha.Model.backward",
+      "kind": "method",
+      "status": "limited",
+      "signatures": [
+        "model.backward(output_gradient)",
+        "model.backward(output_gradient, regularization_lambda)"
+      ],
+      "summary": "Low-level reverse pass after a matching forward; normal fit calls this internally.",
+      "parameters": [
+        "output_gradient: numeric list matching the previous output; optional numeric regularization_lambda defaults 0.0."
+      ],
+      "returns": "Sequential returns an input-gradient numeric list. Functional backward returns VOID in this backend.",
+      "constraints": [
+        "Call only after the corresponding forward; caches are mutable training state.",
+        "Functional multi-output gradients are Python-backend functionality; intended gesha.functional uses one output."
+      ],
+      "aliases": [
+        "Model backward",
+        "modelo neuronal",
+        "deep learning",
+        "gesha.Model.backward",
+        "gesha.Sequential.backward",
+        "gesha.Functional.backward",
+        "gesha.Layer.backward",
+        "gesha.Dense.backward",
+        "gesha.Input.backward",
+        "gesha.Conv1D.backward",
+        "gesha.Conv2D.backward",
+        "gesha.Conv2DTranspose.backward",
+        "gesha.DepthwiseConv2D.backward",
+        "gesha.ActivationLayer.backward",
+        "gesha.Add.backward",
+        "gesha.Concatenate.backward",
+        "gesha.Multiply.backward",
+        "gesha.BatchNormalization.backward",
+        "gesha.MaxPooling1D.backward",
+        "gesha.Bidirectional.backward",
+        "gesha.Embedding.backward",
+        "gesha.GRU.backward",
+        "gesha.LSTM.backward",
+        "gesha.SimpleRNN.backward",
+        "gesha.Dropout.backward",
+        "gesha.SpatialDropout2D.backward",
+        "gesha.Flatten.backward",
+        "gesha.Permute.backward",
+        "gesha.Reshape.backward",
+        "gesha.UpSampling2D.backward",
+        "gesha.ZeroPadding2D.backward"
+      ],
+      "sources": [
+        "src/lib/KafeGESHA/models_v2.py",
+        "src/lib/KafeGESHA/layers/base/layer.py",
+        "src/lib/KafeGESHA/layers/core/dense.py",
+        "src/lib/KafeGESHA/layers/base/input.py",
+        "docs/libraries/gesha/models-training.md",
+        "src/lib/KafeGESHA/layers/convolutional/conv1d.py",
+        "src/lib/KafeGESHA/layers/convolutional/conv2d.py",
+        "src/lib/KafeGESHA/layers/convolutional/conv2d_transpose.py",
+        "src/lib/KafeGESHA/layers/convolutional/depthwise_conv2d.py",
+        "src/lib/KafeGESHA/layers/core/activation_layer.py",
+        "src/lib/KafeGESHA/layers/merge/add.py",
+        "src/lib/KafeGESHA/layers/merge/concatenate.py",
+        "src/lib/KafeGESHA/layers/merge/multiply.py",
+        "src/lib/KafeGESHA/layers/normalization/batch_normalization.py",
+        "src/lib/KafeGESHA/layers/pooling/max_pooling1d.py",
+        "src/lib/KafeGESHA/layers/recurrent/bidirectional.py",
+        "src/lib/KafeGESHA/layers/recurrent/embedding.py",
+        "src/lib/KafeGESHA/layers/recurrent/gru.py",
+        "src/lib/KafeGESHA/layers/recurrent/lstm.py",
+        "src/lib/KafeGESHA/layers/recurrent/simple_rnn.py",
+        "src/lib/KafeGESHA/layers/regularization/dropout.py",
+        "src/lib/KafeGESHA/layers/regularization/spatial_dropout2d.py",
+        "src/lib/KafeGESHA/layers/spatial/flatten.py",
+        "src/lib/KafeGESHA/layers/spatial/permute.py",
+        "src/lib/KafeGESHA/layers/spatial/reshape.py",
+        "src/lib/KafeGESHA/layers/spatial/up_sampling2d.py",
+        "src/lib/KafeGESHA/layers/spatial/zero_padding2d.py"
+      ],
+      "examples": [
+        "tests/TutorLibraries/gesha-merge-training.kf",
+        "tests/TutorLibraries/gesha-recurrent.kf"
+      ],
+      "evidence": [
+        "tests/test_gesha_numk_backend.py"
+      ],
+      "related": [
+        "gesha.Model.forward"
+      ],
+      "sourceSymbols": [
+        "Model.backward",
+        "Sequential.backward",
+        "Functional.backward",
+        "Layer.backward",
+        "Dense.backward",
+        "Input.backward",
+        "Conv1D.backward",
+        "Conv2D.backward",
+        "Conv2DTranspose.backward",
+        "DepthwiseConv2D.backward",
+        "ActivationLayer.backward",
+        "Add.backward",
+        "Concatenate.backward",
+        "Multiply.backward",
+        "BatchNormalization.backward",
+        "MaxPooling1D.backward",
+        "Bidirectional.backward",
+        "Embedding.backward",
+        "GRU.backward",
+        "LSTM.backward",
+        "SimpleRNN.backward",
+        "Dropout.backward",
+        "SpatialDropout2D.backward",
+        "Flatten.backward",
+        "Permute.backward",
+        "Reshape.backward",
+        "UpSampling2D.backward",
+        "ZeroPadding2D.backward"
+      ]
+    },
+    {
+      "id": "gesha.Layer.connect",
+      "kind": "method",
+      "status": "supported",
+      "signatures": [
+        "layer.connect(node)",
+        "layer.connect(nodes)"
+      ],
+      "summary": "Connect a layer to symbolic input/branch nodes; merge layers take List[GESHA] nodes.",
+      "parameters": [
+        "node: GESHA input/node; nodes: compatible List[GESHA] for a merge."
+      ],
+      "returns": "GESHA symbolic Node.",
+      "constraints": [
+        "Symbolic connection builds a graph, not numeric training data. Use one input/output in gesha.functional."
+      ],
+      "aliases": [
+        "Layer connect",
+        "modelo neuronal",
+        "deep learning",
+        "gesha.Layer.connect"
+      ],
+      "sources": [
+        "src/lib/KafeGESHA/layers/base/layer.py",
+        "src/lib/KafeGESHA/layers/base/input.py",
+        "src/lib/KafeGESHA/models_v2.py",
+        "docs/libraries/gesha/models-training.md"
+      ],
+      "examples": [
+        "tests/KafeGESHA/functional/functional_branch_merge.kf",
+        "tests/TutorLibraries/gesha-merge-training.kf"
+      ],
+      "evidence": [
+        "tests/test_gesha_numk_backend.py"
+      ],
+      "related": [
+        "gesha.functional",
+        "gesha.input_layer",
+        "gesha.add_layer",
+        "gesha.concatenate_layer",
+        "gesha.multiply_layer"
+      ],
+      "sourceSymbols": [
+        "Layer.connect"
+      ]
+    },
+    {
+      "id": "gesha.Layer.train",
+      "kind": "method",
+      "status": "supported",
+      "signatures": [
+        "layer.train()"
+      ],
+      "summary": "Enable training behavior such as dropout on a layer.",
+      "parameters": [],
+      "returns": "VOID.",
+      "constraints": [
+        "Model.predict selects evaluation mode across model layers. These layer methods do not train the model."
+      ],
+      "aliases": [
+        "Layer train",
+        "modelo neuronal",
+        "deep learning",
+        "gesha.Layer.train"
+      ],
+      "sources": [
+        "src/lib/KafeGESHA/layers/base/layer.py",
+        "docs/libraries/gesha/models-training.md"
+      ],
+      "examples": [
+        "tests/TutorLibraries/gesha-merge-training.kf"
+      ],
+      "evidence": [
+        "tests/test_gesha_numk_backend.py"
+      ],
+      "related": [
+        "gesha.dropout_layer"
+      ],
+      "sourceSymbols": [
+        "Layer.train"
+      ]
+    },
+    {
+      "id": "gesha.Layer.eval",
+      "kind": "method",
+      "status": "supported",
+      "signatures": [
+        "layer.eval()"
+      ],
+      "summary": "Disable training-only behavior such as dropout on a layer.",
+      "parameters": [],
+      "returns": "VOID.",
+      "constraints": [
+        "Model.predict selects evaluation mode across model layers. These layer methods do not train the model."
+      ],
+      "aliases": [
+        "Layer eval",
+        "modelo neuronal",
+        "deep learning",
+        "gesha.Layer.eval"
+      ],
+      "sources": [
+        "src/lib/KafeGESHA/layers/base/layer.py",
+        "docs/libraries/gesha/models-training.md"
+      ],
+      "examples": [
+        "tests/TutorLibraries/gesha-merge-training.kf"
+      ],
+      "evidence": [
+        "tests/test_gesha_numk_backend.py"
+      ],
+      "related": [
+        "gesha.dropout_layer"
+      ],
+      "sourceSymbols": [
+        "Layer.eval"
+      ]
+    },
+    {
+      "id": "gesha.Dense.build",
+      "kind": "method",
+      "status": "limited",
+      "signatures": [
+        "layer.build(input_dim)",
+        "layer.build_from_shape(input_shape)"
+      ],
+      "summary": "Advanced explicit construction of lazy Dense parameters before weight loading.",
+      "parameters": [
+        "input_dim: positive INT or compatible shape list; input_shape: nonempty sample/batch shape list."
+      ],
+      "returns": "VOID.",
+      "constraints": [
+        "Normal users can pass [features] to create_dense instead.",
+        "Rebuilding an existing Dense with a different feature count raises an error; no silent parameter migration."
+      ],
+      "aliases": [
+        "Dense build",
+        "modelo neuronal",
+        "deep learning",
+        "gesha.Dense.build",
+        "gesha.Dense.build_from_shape"
+      ],
+      "sources": [
+        "src/lib/KafeGESHA/layers/core/dense.py",
+        "docs/libraries/gesha/models-training.md"
+      ],
+      "examples": [
+        "tests/TutorLibraries/gesha-merge-training.kf"
+      ],
+      "evidence": [
+        "tests/test_gesha_numk_backend.py"
+      ],
+      "related": [
+        "gesha.create_dense",
+        "gesha.Model.load_weights"
+      ],
+      "sourceSymbols": [
+        "Dense.build",
+        "Dense.build_from_shape"
+      ]
+    },
+    {
+      "id": "gesha.Model.summary",
+      "kind": "method",
+      "status": "supported",
+      "signatures": [
+        "model.summary()",
+        "layer.summary()"
+      ],
+      "summary": "Print the built architecture/layer description to ordinary program output.",
+      "parameters": [],
+      "returns": "VOID.",
+      "constraints": [],
+      "aliases": [
+        "Model summary",
+        "modelo neuronal",
+        "deep learning",
+        "gesha.Sequential.summary",
+        "gesha.Functional.summary",
+        "gesha.Dense.summary",
+        "gesha.Input.summary",
+        "gesha.Conv1D.summary",
+        "gesha.Conv2D.summary",
+        "gesha.Conv2DTranspose.summary",
+        "gesha.DepthwiseConv2D.summary",
+        "gesha.ActivationLayer.summary",
+        "gesha.Add.summary",
+        "gesha.Concatenate.summary",
+        "gesha.Multiply.summary",
+        "gesha.BatchNormalization.summary",
+        "gesha.MaxPooling1D.summary",
+        "gesha.Bidirectional.summary",
+        "gesha.Embedding.summary",
+        "gesha.GRU.summary",
+        "gesha.LSTM.summary",
+        "gesha.SimpleRNN.summary",
+        "gesha.Dropout.summary",
+        "gesha.SpatialDropout2D.summary",
+        "gesha.Flatten.summary",
+        "gesha.Permute.summary",
+        "gesha.Reshape.summary",
+        "gesha.UpSampling2D.summary",
+        "gesha.ZeroPadding2D.summary"
+      ],
+      "sources": [
+        "src/lib/KafeGESHA/models_v2.py",
+        "src/lib/KafeGESHA/layers/core/dense.py",
+        "src/lib/KafeGESHA/layers/base/input.py",
+        "docs/libraries/gesha/models-training.md",
+        "src/lib/KafeGESHA/layers/convolutional/conv1d.py",
+        "src/lib/KafeGESHA/layers/convolutional/conv2d.py",
+        "src/lib/KafeGESHA/layers/convolutional/conv2d_transpose.py",
+        "src/lib/KafeGESHA/layers/convolutional/depthwise_conv2d.py",
+        "src/lib/KafeGESHA/layers/core/activation_layer.py",
+        "src/lib/KafeGESHA/layers/merge/add.py",
+        "src/lib/KafeGESHA/layers/merge/concatenate.py",
+        "src/lib/KafeGESHA/layers/merge/multiply.py",
+        "src/lib/KafeGESHA/layers/normalization/batch_normalization.py",
+        "src/lib/KafeGESHA/layers/pooling/max_pooling1d.py",
+        "src/lib/KafeGESHA/layers/recurrent/bidirectional.py",
+        "src/lib/KafeGESHA/layers/recurrent/embedding.py",
+        "src/lib/KafeGESHA/layers/recurrent/gru.py",
+        "src/lib/KafeGESHA/layers/recurrent/lstm.py",
+        "src/lib/KafeGESHA/layers/recurrent/simple_rnn.py",
+        "src/lib/KafeGESHA/layers/regularization/dropout.py",
+        "src/lib/KafeGESHA/layers/regularization/spatial_dropout2d.py",
+        "src/lib/KafeGESHA/layers/spatial/flatten.py",
+        "src/lib/KafeGESHA/layers/spatial/permute.py",
+        "src/lib/KafeGESHA/layers/spatial/reshape.py",
+        "src/lib/KafeGESHA/layers/spatial/up_sampling2d.py",
+        "src/lib/KafeGESHA/layers/spatial/zero_padding2d.py"
+      ],
+      "examples": [
+        "tests/TutorLibraries/gesha-merge-training.kf"
+      ],
+      "evidence": [
+        "tests/test_gesha_numk_backend.py"
+      ],
+      "related": [
+        "gesha.sequential",
+        "gesha.functional"
+      ],
+      "sourceSymbols": [
+        "Sequential.summary",
+        "Functional.summary",
+        "Dense.summary",
+        "Input.summary",
+        "Conv1D.summary",
+        "Conv2D.summary",
+        "Conv2DTranspose.summary",
+        "DepthwiseConv2D.summary",
+        "ActivationLayer.summary",
+        "Add.summary",
+        "Concatenate.summary",
+        "Multiply.summary",
+        "BatchNormalization.summary",
+        "MaxPooling1D.summary",
+        "Bidirectional.summary",
+        "Embedding.summary",
+        "GRU.summary",
+        "LSTM.summary",
+        "SimpleRNN.summary",
+        "Dropout.summary",
+        "SpatialDropout2D.summary",
+        "Flatten.summary",
+        "Permute.summary",
+        "Reshape.summary",
+        "UpSampling2D.summary",
+        "ZeroPadding2D.summary"
+      ]
+    },
+    {
+      "id": "gesha.Dense.weights",
+      "kind": "property",
+      "status": "limited",
+      "signatures": [
+        "layer.weights"
+      ],
+      "summary": "Read the constructed Dense weight matrix.",
+      "parameters": [],
+      "returns": "List[List[FLOAT]] after construction; VOID before lazy construction.",
+      "constraints": [
+        "Introspection of mutable backend training state; do not present it as a full model serialization or independent mastery evidence."
+      ],
+      "aliases": [
+        "Dense weights",
+        "modelo neuronal",
+        "deep learning",
+        "gesha.Dense.weights"
+      ],
+      "sources": [
+        "src/lib/KafeGESHA/layers/core/dense.py",
+        "docs/libraries/gesha/models-training.md"
+      ],
+      "examples": [
+        "tests/TutorLibraries/gesha-merge-training.kf"
+      ],
+      "evidence": [
+        "tests/test_gesha_numk_backend.py"
+      ],
+      "related": [
+        "gesha.create_dense",
+        "gesha.Model.forward",
+        "gesha.Model.backward"
+      ],
+      "sourceSymbols": [
+        "Dense.weights"
+      ]
+    },
+    {
+      "id": "gesha.Dense.biases",
+      "kind": "property",
+      "status": "limited",
+      "signatures": [
+        "layer.biases"
+      ],
+      "summary": "Read the constructed Dense bias vector.",
+      "parameters": [],
+      "returns": "List[FLOAT] after construction; VOID before lazy construction.",
+      "constraints": [
+        "Introspection of mutable backend training state; do not present it as a full model serialization or independent mastery evidence."
+      ],
+      "aliases": [
+        "Dense biases",
+        "modelo neuronal",
+        "deep learning",
+        "gesha.Dense.biases"
+      ],
+      "sources": [
+        "src/lib/KafeGESHA/layers/core/dense.py",
+        "docs/libraries/gesha/models-training.md"
+      ],
+      "examples": [
+        "tests/TutorLibraries/gesha-merge-training.kf"
+      ],
+      "evidence": [
+        "tests/test_gesha_numk_backend.py"
+      ],
+      "related": [
+        "gesha.create_dense",
+        "gesha.Model.forward",
+        "gesha.Model.backward"
+      ],
+      "sourceSymbols": [
+        "Dense.biases"
+      ]
+    },
+    {
+      "id": "gesha.Dense.d_weights",
+      "kind": "property",
+      "status": "limited",
+      "signatures": [
+        "layer.d_weights"
+      ],
+      "summary": "Read Dense weight gradients from the latest matching backward.",
+      "parameters": [],
+      "returns": "List[List[FLOAT]] after backward; VOID before gradients exist.",
+      "constraints": [
+        "Introspection of mutable backend training state; do not present it as a full model serialization or independent mastery evidence."
+      ],
+      "aliases": [
+        "Dense d_weights",
+        "modelo neuronal",
+        "deep learning",
+        "gesha.Dense.d_weights"
+      ],
+      "sources": [
+        "src/lib/KafeGESHA/layers/core/dense.py",
+        "docs/libraries/gesha/models-training.md"
+      ],
+      "examples": [
+        "tests/TutorLibraries/gesha-merge-training.kf"
+      ],
+      "evidence": [
+        "tests/test_gesha_numk_backend.py"
+      ],
+      "related": [
+        "gesha.create_dense",
+        "gesha.Model.forward",
+        "gesha.Model.backward"
+      ],
+      "sourceSymbols": [
+        "Dense.d_weights"
+      ]
+    },
+    {
+      "id": "gesha.Dense.d_biases",
+      "kind": "property",
+      "status": "limited",
+      "signatures": [
+        "layer.d_biases"
+      ],
+      "summary": "Read Dense bias gradients from the latest matching backward.",
+      "parameters": [],
+      "returns": "List[FLOAT] after backward; VOID before gradients exist.",
+      "constraints": [
+        "Introspection of mutable backend training state; do not present it as a full model serialization or independent mastery evidence."
+      ],
+      "aliases": [
+        "Dense d_biases",
+        "modelo neuronal",
+        "deep learning",
+        "gesha.Dense.d_biases"
+      ],
+      "sources": [
+        "src/lib/KafeGESHA/layers/core/dense.py",
+        "docs/libraries/gesha/models-training.md"
+      ],
+      "examples": [
+        "tests/TutorLibraries/gesha-merge-training.kf"
+      ],
+      "evidence": [
+        "tests/test_gesha_numk_backend.py"
+      ],
+      "related": [
+        "gesha.create_dense",
+        "gesha.Model.forward",
+        "gesha.Model.backward"
+      ],
+      "sourceSymbols": [
+        "Dense.d_biases"
+      ]
+    },
+    {
+      "id": "gesha.Dense.input_cache",
+      "kind": "property",
+      "status": "limited",
+      "signatures": [
+        "layer.input_cache"
+      ],
+      "summary": "Read the numeric inputs cached by the latest Dense forward.",
+      "parameters": [],
+      "returns": "Numeric List after forward; VOID before a cache exists.",
+      "constraints": [
+        "Introspection of mutable backend training state; do not present it as a full model serialization or independent mastery evidence."
+      ],
+      "aliases": [
+        "Dense input_cache",
+        "modelo neuronal",
+        "deep learning",
+        "gesha.Dense.input_cache"
+      ],
+      "sources": [
+        "src/lib/KafeGESHA/layers/core/dense.py",
+        "docs/libraries/gesha/models-training.md"
+      ],
+      "examples": [
+        "tests/TutorLibraries/gesha-merge-training.kf"
+      ],
+      "evidence": [
+        "tests/test_gesha_numk_backend.py"
+      ],
+      "related": [
+        "gesha.create_dense",
+        "gesha.Model.forward",
+        "gesha.Model.backward"
+      ],
+      "sourceSymbols": [
+        "Dense.input_cache"
+      ]
+    },
+    {
+      "id": "gesha.Model.parameters",
+      "kind": "method",
+      "status": "unsupported",
+      "signatures": [
+        "model.parameters()",
+        "layer.parameters()"
+      ],
+      "summary": "Backend parameter-handle protocol; its nonempty Parameter objects are not KAFE GESHA learner values.",
+      "parameters": [],
+      "returns": "Python List[Parameter]; unsupported as a nonempty declared KAFE list.",
+      "constraints": [
+        "Use supported weights/gradient properties or save_weights instead of raw Parameter handles."
+      ],
+      "aliases": [
+        "Model parameters",
+        "modelo neuronal",
+        "deep learning",
+        "gesha.Model.parameters",
+        "gesha.Sequential.parameters",
+        "gesha.Functional.parameters",
+        "gesha.Layer.parameters",
+        "gesha.Dense.parameters",
+        "gesha.Conv1D.parameters",
+        "gesha.Conv2D.parameters",
+        "gesha.Conv2DTranspose.parameters",
+        "gesha.DepthwiseConv2D.parameters",
+        "gesha.BatchNormalization.parameters",
+        "gesha.Bidirectional.parameters",
+        "gesha.Embedding.parameters",
+        "gesha.GRU.parameters",
+        "gesha.LSTM.parameters",
+        "gesha.SimpleRNN.parameters"
+      ],
+      "sources": [
+        "src/lib/KafeGESHA/models_v2.py",
+        "src/lib/KafeGESHA/layers/base/layer.py",
+        "src/lib/KafeGESHA/layers/core/dense.py",
+        "docs/libraries/gesha/models-training.md",
+        "src/lib/KafeGESHA/layers/convolutional/conv1d.py",
+        "src/lib/KafeGESHA/layers/convolutional/conv2d.py",
+        "src/lib/KafeGESHA/layers/convolutional/conv2d_transpose.py",
+        "src/lib/KafeGESHA/layers/convolutional/depthwise_conv2d.py",
+        "src/lib/KafeGESHA/layers/normalization/batch_normalization.py",
+        "src/lib/KafeGESHA/layers/recurrent/bidirectional.py",
+        "src/lib/KafeGESHA/layers/recurrent/embedding.py",
+        "src/lib/KafeGESHA/layers/recurrent/gru.py",
+        "src/lib/KafeGESHA/layers/recurrent/lstm.py",
+        "src/lib/KafeGESHA/layers/recurrent/simple_rnn.py"
+      ],
+      "examples": [
+        "tests/TutorLibraries/gesha-parameter-handles.error.kf"
+      ],
+      "evidence": [
+        "tests/test_gesha_numk_backend.py"
+      ],
+      "related": [
+        "gesha.Dense.weights",
+        "gesha.Model.save_weights"
+      ],
+      "sourceSymbols": [
+        "Model.parameters",
+        "Sequential.parameters",
+        "Functional.parameters",
+        "Layer.parameters",
+        "Dense.parameters",
+        "Conv1D.parameters",
+        "Conv2D.parameters",
+        "Conv2DTranspose.parameters",
+        "DepthwiseConv2D.parameters",
+        "BatchNormalization.parameters",
+        "Bidirectional.parameters",
+        "Embedding.parameters",
+        "GRU.parameters",
+        "LSTM.parameters",
+        "SimpleRNN.parameters"
+      ]
+    },
+    {
+      "id": "gesha.Regularizer.penalty",
+      "kind": "method",
+      "status": "supported",
+      "signatures": [
+        "regularizer.penalty(weights)"
+      ],
+      "summary": "Compute the scalar L1 or L2 penalty for homogeneous numeric weights.",
+      "parameters": [
+        "weights: homogeneous nested numeric list."
+      ],
+      "returns": "FLOAT scalar.",
+      "constraints": [],
+      "aliases": [
+        "Regularizer penalty",
+        "modelo neuronal",
+        "deep learning",
+        "gesha.Regularizer.penalty",
+        "gesha.L1.penalty",
+        "gesha.L2.penalty"
+      ],
+      "sources": [
+        "src/lib/KafeGESHA/regularizers/base.py",
+        "src/lib/KafeGESHA/regularizers/l1.py",
+        "src/lib/KafeGESHA/regularizers/l2.py",
+        "docs/libraries/gesha/models-training.md"
+      ],
+      "examples": [
+        "tests/TutorLibraries/gesha-initializers.kf"
+      ],
+      "evidence": [
+        "tests/test_gesha_training_utilities.py"
+      ],
+      "related": [
+        "gesha.l1_regularizer",
+        "gesha.l2_regularizer"
+      ],
+      "sourceSymbols": [
+        "Regularizer.penalty",
+        "L1.penalty",
+        "L2.penalty"
+      ]
+    },
+    {
+      "id": "gesha.Regularizer.gradient",
+      "kind": "method",
+      "status": "supported",
+      "signatures": [
+        "regularizer.gradient(weights)"
+      ],
+      "summary": "Compute the L1 or L2 penalty gradient with the same numeric shape.",
+      "parameters": [
+        "weights: homogeneous nested numeric list."
+      ],
+      "returns": "Numeric List matching weights.",
+      "constraints": [],
+      "aliases": [
+        "Regularizer gradient",
+        "modelo neuronal",
+        "deep learning",
+        "gesha.Regularizer.gradient",
+        "gesha.L1.gradient",
+        "gesha.L2.gradient"
+      ],
+      "sources": [
+        "src/lib/KafeGESHA/regularizers/base.py",
+        "src/lib/KafeGESHA/regularizers/l1.py",
+        "src/lib/KafeGESHA/regularizers/l2.py",
+        "docs/libraries/gesha/models-training.md"
+      ],
+      "examples": [
+        "tests/TutorLibraries/gesha-initializers.kf"
+      ],
+      "evidence": [
+        "tests/test_gesha_training_utilities.py"
+      ],
+      "related": [
+        "gesha.l1_regularizer",
+        "gesha.l2_regularizer"
+      ],
+      "sourceSymbols": [
+        "Regularizer.gradient",
+        "L1.gradient",
+        "L2.gradient"
+      ]
+    },
+    {
+      "id": "gesha.L1L2.backendMethods",
+      "kind": "method",
+      "status": "unsupported",
+      "signatures": [
+        "regularizer.penalty(weights)",
+        "regularizer.gradient(weights)"
+      ],
+      "summary": "Combined-regularizer Python methods exist, but its factory result is not registered as GESHA in runtime 0.3.0.",
+      "parameters": [],
+      "returns": "Python numeric penalty/gradient; direct KAFE object binding is unavailable.",
+      "constraints": [],
+      "aliases": [
+        "L1L2 backendMethods",
+        "modelo neuronal",
+        "deep learning",
+        "gesha.L1L2.penalty",
+        "gesha.L1L2.gradient"
+      ],
+      "sources": [
+        "src/lib/KafeGESHA/regularizers/l1_l2.py",
+        "src/TypeUtils.py",
+        "docs/libraries/gesha/models-training.md"
+      ],
+      "examples": [
+        "tests/TutorLibraries/gesha-l1-l2-unavailable.error.kf"
+      ],
+      "evidence": [
+        "tests/test_gesha_numk_backend.py"
+      ],
+      "related": [
+        "gesha.l1_l2_regularizer"
+      ],
+      "sourceSymbols": [
+        "L1L2.penalty",
+        "L1L2.gradient"
+      ]
+    },
+    {
+      "id": "gesha.Callback.lifecycle",
+      "kind": "method",
+      "status": "unsupported",
+      "signatures": [
+        "callback.set_model(model)",
+        "callback.on_train_begin()",
+        "callback.on_epoch_begin(epoch)",
+        "callback.on_epoch_end(epoch)",
+        "callback.on_train_end()"
+      ],
+      "summary": "Backend callback lifecycle is owned by model.fit; manual hook invocation is outside the supported learner workflow.",
+      "parameters": [],
+      "returns": "VOID; log dictionaries are Python-backend state.",
+      "constraints": [
+        "Attach callback factory results through model.add_callback, gesha.add_callback or the last positional fit argument."
+      ],
+      "aliases": [
+        "Callback lifecycle",
+        "modelo neuronal",
+        "deep learning",
+        "gesha.Callback.set_model",
+        "gesha.Callback.on_train_begin",
+        "gesha.Callback.on_epoch_begin",
+        "gesha.Callback.on_epoch_end",
+        "gesha.Callback.on_train_end",
+        "gesha.EarlyStopping.on_train_begin",
+        "gesha.EarlyStopping.on_epoch_end",
+        "gesha.ModelCheckpoint.on_epoch_end"
+      ],
+      "sources": [
+        "src/lib/KafeGESHA/callbacks/base.py",
+        "src/lib/KafeGESHA/callbacks/early_stopping.py",
+        "src/lib/KafeGESHA/callbacks/model_checkpoint.py",
+        "docs/libraries/gesha/models-training.md"
+      ],
+      "examples": [
+        "tests/TutorLibraries/gesha-merge-training.kf"
+      ],
+      "evidence": [
+        "tests/test_gesha_training_utilities.py"
+      ],
+      "related": [
+        "gesha.early_stopping",
+        "gesha.model_checkpoint",
+        "gesha.Model.add_callback"
+      ],
+      "sourceSymbols": [
+        "Callback.set_model",
+        "Callback.on_train_begin",
+        "Callback.on_epoch_begin",
+        "Callback.on_epoch_end",
+        "Callback.on_train_end",
+        "EarlyStopping.on_train_begin",
+        "EarlyStopping.on_epoch_end",
+        "ModelCheckpoint.on_epoch_end"
+      ]
+    },
+    {
+      "id": "gesha.Node.clear_cache",
+      "kind": "method",
+      "status": "unsupported",
+      "signatures": [
+        "node.clear_cache()",
+        "input.clear_cache()"
+      ],
+      "summary": "Graph cache housekeeping is backend-owned; do not clear active graph caches manually.",
+      "parameters": [],
+      "returns": "VOID; manual use is not a supported learning workflow.",
+      "constraints": [],
+      "aliases": [
+        "Node clear_cache",
+        "modelo neuronal",
+        "deep learning",
+        "gesha.Node.clear_cache",
+        "gesha.Input.clear_cache"
+      ],
+      "sources": [
+        "src/lib/KafeGESHA/core_v2.py",
+        "src/lib/KafeGESHA/layers/base/input.py",
+        "docs/libraries/gesha/models-training.md"
+      ],
+      "examples": [
+        "tests/TutorLibraries/gesha-merge-training.kf"
+      ],
+      "evidence": [
+        "tests/test_gesha_numk_backend.py"
+      ],
+      "related": [
+        "gesha.functional",
+        "gesha.input_layer"
+      ],
+      "sourceSymbols": [
+        "Node.clear_cache",
+        "Input.clear_cache"
+      ]
+    },
+    {
+      "id": "gesha.GeshaPlaceholder.operations",
+      "kind": "method",
+      "status": "unsupported",
+      "signatures": [
+        "GESHA unassigned;"
+      ],
+      "summary": "A declared but unassigned GESHA model is a placeholder, not an executable network.",
+      "parameters": [],
+      "returns": "Operations reject use before assigning a concrete model.",
+      "constraints": [],
+      "aliases": [
+        "GeshaPlaceholder operations",
+        "modelo neuronal",
+        "deep learning",
+        "gesha.GeshaPlaceholder.forward",
+        "gesha.GeshaPlaceholder.backward",
+        "gesha.GeshaPlaceholder.parameters"
+      ],
+      "sources": [
+        "src/lib/KafeGESHA/models_v2.py",
+        "src/TypeUtils.py",
+        "docs/libraries/gesha/models-training.md"
+      ],
+      "examples": [
+        "tests/KafeGESHA/errors/gesha_unassigned.error.kf"
+      ],
+      "evidence": [
+        "tests/test_gesha_numk_backend.py"
+      ],
+      "related": [
+        "gesha.sequential"
+      ],
+      "sourceSymbols": [
+        "GeshaPlaceholder.forward",
+        "GeshaPlaceholder.backward",
+        "GeshaPlaceholder.parameters"
+      ]
+    },
+    {
+      "id": "gesha.Layer.buildInternals",
+      "kind": "method",
+      "status": "unsupported",
+      "signatures": [
+        "layer.build(channels_or_features)"
+      ],
+      "summary": "Concrete layer build helpers are backend construction hooks; supported factories and the first forward own them.",
+      "parameters": [],
+      "returns": "VOID; use constructor input_shape or compatible first input instead.",
+      "constraints": [
+        "Dense explicit build helpers have a separately reviewed advanced contract. Other build hook arguments depend on their backend class.",
+        "Do not invent a universal layer.build signature or use backend hooks as model serialization."
+      ],
+      "aliases": [
+        "Layer buildInternals",
+        "modelo neuronal",
+        "deep learning",
+        "gesha.Conv1D.build",
+        "gesha.Conv2D.build",
+        "gesha.Conv2DTranspose.build",
+        "gesha.DepthwiseConv2D.build",
+        "gesha.BatchNormalization.build",
+        "gesha.GRU.build",
+        "gesha.LSTM.build",
+        "gesha.SimpleRNN.build"
+      ],
+      "sources": [
+        "src/lib/KafeGESHA/layers/convolutional/conv1d.py",
+        "src/lib/KafeGESHA/layers/convolutional/conv2d.py",
+        "src/lib/KafeGESHA/layers/convolutional/conv2d_transpose.py",
+        "src/lib/KafeGESHA/layers/convolutional/depthwise_conv2d.py",
+        "src/lib/KafeGESHA/layers/normalization/batch_normalization.py",
+        "src/lib/KafeGESHA/layers/recurrent/gru.py",
+        "src/lib/KafeGESHA/layers/recurrent/lstm.py",
+        "src/lib/KafeGESHA/layers/recurrent/simple_rnn.py",
+        "docs/libraries/gesha/models-training.md"
+      ],
+      "examples": [
+        "tests/TutorLibraries/gesha-cnn.kf",
+        "tests/TutorLibraries/gesha-recurrent.kf"
+      ],
+      "evidence": [
+        "tests/test_gesha_numk_backend.py"
+      ],
+      "related": [
+        "gesha.create_conv2d",
+        "gesha.create_rnn",
+        "gesha.Dense.build"
+      ],
+      "sourceSymbols": [
+        "Conv1D.build",
+        "Conv2D.build",
+        "Conv2DTranspose.build",
+        "DepthwiseConv2D.build",
+        "BatchNormalization.build",
+        "GRU.build",
+        "LSTM.build",
+        "SimpleRNN.build"
+      ]
+    }
+  ],
+  "isolatedFixtures": [
+    {
+      "path": "tests/TutorLibraries/gesha-weights.kf",
+      "assets": [],
+      "writes": true
+    }
+  ]
+}

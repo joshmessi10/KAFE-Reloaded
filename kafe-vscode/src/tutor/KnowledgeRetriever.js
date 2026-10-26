@@ -2,6 +2,7 @@ const { createHash } = require('node:crypto');
 const defaultFileSystem = require('node:fs/promises');
 const nativeFileSystem = require('node:fs');
 const path = require('node:path');
+const { searchTokens, extractAtomicUnits } = require('./ReferenceSearch');
 
 const MAX_FILES = 512;
 const MAX_FILE_BYTES = 256 * 1024;
@@ -25,10 +26,6 @@ const STOP_WORDS = new Set([
   'where', 'which', 'while', 'who', 'whom', 'why', 'will', 'with', 'would', 'you', 'your', 'yours', 'start', 'started',
   'begin', 'beginning', 'first', 'next', 'step', 'steps', 'help', 'please',
 ]);
-
-function searchTokens(value) {
-  return value.replace(/https?:\/\/[^\s/]+/gi, ' ').toLowerCase().match(/[a-z0-9_]+/g) || [];
-}
 
 function validateSegment(name) {
   if (typeof name !== 'string' || !name || name === '.' || name === '..' ||
@@ -71,7 +68,7 @@ function knowledgeContentDigest(files) {
  * Integrity artifacts are streamed in 64 KiB chunks up to their owner's explicit bound.
  */
 function createKnowledgeAuthority({ knowledgeRoot, expectedContentSha256, expectedFileCount,
-  expectedKnowledgeTree, sourceTrees = [], sourceFiles = [], requiredPaths = [], integrityFiles = [], configurationCurrent = () => true,
+  expectedKnowledgeTree, sourceTrees = [], sourceFiles = [], sourceCorpus, requiredPaths = [], integrityFiles = [], configurationCurrent = () => true,
   fileSystem = nativeFileSystem }) {
   // Managed readiness owns exact archive membership, including declared empty directories.
   const knowledgeTree = expectedKnowledgeTree && new Map([...expectedKnowledgeTree].map(([relative, entry]) => [relative, entry.type]));
@@ -132,6 +129,7 @@ function createKnowledgeAuthority({ knowledgeRoot, expectedContentSha256, expect
         if (info.isSymbolicLink() || (required.directory ? !info.isDirectory() : !info.isFile())) return false;
       }
       if (!matches(readTree([{ root: knowledgeRoot }], [], knowledgeTree))) return false;
+      if (sourceCorpus && !matches(knowledgeContentDigest(sourceCorpus()))) return false;
       if (sourceTrees.length && !matches(readTree(sourceTrees, sourceFiles))) return false;
       for (const input of integrityFiles) {
         const hash = createHash('sha256'), chunks = [];
@@ -234,7 +232,7 @@ class KnowledgeRetriever {
       }
     };
     await visit(this.knowledgeRoot);
-    const queryWords = [...new Set(searchTokens(query).filter(word =>
+    const queryWords = [...new Set(searchTokens(query, { expandAliases: true }).filter(word =>
       (word.length > 2 && !STOP_WORDS.has(word)) || KAFE_SYNTAX_KEYWORDS.has(word)))].slice(0, MAX_QUERY_TERMS);
     const queryIsSyntax = queryWords.includes('if') ||
       (queryWords.some(word => KAFE_SYNTAX_KEYWORDS.has(word)) &&
@@ -270,16 +268,20 @@ class KnowledgeRetriever {
     const queryRanked = [];
     const contextualRanked = [];
     for (const file of hydratedFiles) {
-      const chunks = file.text.split(/\n\s*\n/);
-      for (let index = 0; index < chunks.length; index++) {
-        const text = chunks[index].trim().slice(0, 2000);
+      const chunks = extractAtomicUnits(file.text, { path: file.relative, maxChars: 2000 });
+      const pathWords = new Set(searchTokens(file.relative));
+      for (const { text, index } of chunks) {
         const haystack = new Set(searchTokens(text));
         const queryScore = queryWords.reduce((total, word) => total + (haystack.has(word) ? 1 : 0), 0);
         const contextScore = relatedWords.reduce((total, word) => total + (haystack.has(word) ? 1 : 0), 0);
+        // Paths improve relevant results, but never make a generic directory name a match by itself.
+        const pathScore = queryScore > 0 ? queryWords.reduce((total, word) => total + (pathWords.has(word) ? 1 : 0), 0) : 0;
+        const requestedSymbols = query.toLowerCase().match(/\b(?:machine|gesha)\.[a-z_][a-z0-9_]*/g) || [];
+        const symbolScore = requestedSymbols.some(symbol => text.toLowerCase().includes(symbol)) ? 20 : 0;
         const category = file.relative.split('/')[0];
         const syntaxPriority = queryIsSyntax ? ({ language: 3, specification: 2, grammar: 2, examples: 1 }[category] || 0) : 0;
-        const passage = { queryScore, contextScore, syntaxPriority, score: queryScore + contextScore,
-          id: `${file.relative}#${index + 1}`, path: file.relative, category, text };
+        const passage = { queryScore, contextScore, syntaxPriority, score: queryScore + contextScore + pathScore + symbolScore,
+          id: `${file.relative}#${index}`, path: file.relative, category, text };
         if (queryScore > 0) queryRanked.push(passage);
         else if (contextScore >= minimumContextScore) contextualRanked.push(passage);
       }

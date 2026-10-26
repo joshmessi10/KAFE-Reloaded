@@ -1,0 +1,66 @@
+import gesha;
+
+GESHA sum = gesha.add_layer();
+GESHA concatenate = gesha.concatenate_layer(0);
+GESHA multiply = gesha.multiply_layer();
+show(sum.forward([[1.0, 2.0], [3.0, 4.0]]));
+show(concatenate.forward([[1.0, 2.0], [3.0, 4.0]]));
+show(multiply.forward([[1.0, 2.0], [3.0, 4.0]]));
+
+GESHA dropout = gesha.dropout_layer(0.5, 7);
+dropout.eval();
+show(dropout.forward([1.0, 2.0]));
+dropout.train();
+show(len(dropout.forward([1.0, 2.0])));
+
+GESHA layer = gesha.create_dense(1, "linear", [1], 0.0, 7, gesha.ones_initializer());
+GESHA model = gesha.sequential();
+model.add(layer);
+gesha.compile(model, "sgd", "mse", []);
+gesha.set_lr(model, 0.1);
+model.set_lr(0.1);
+GESHA stop = gesha.early_stopping("loss", 0, 0.0, "min", True);
+gesha.add_callback(model, stop);
+model.add_callback(gesha.early_stopping("loss", 0, 0.0, "min", False));
+model.fit([[0.0]], [[0.0]], 3, 1);
+show(model.predict([2.0]));
+show(model.predict_proba([[2.0]]));
+show(model.predict_label([[2.0]]));
+show(layer.forward([2.0]));
+show(layer.backward([1.0]));
+show(layer.weights);
+show(layer.biases);
+show(layer.d_weights);
+show(layer.d_biases);
+show(layer.input_cache);
+List[GESHA] layer_list = model.layers;
+GESHA current_layer = layer_list[0];
+show(current_layer.weights);
+model.summary();
+layer.build(1);
+layer.build_from_shape([1, 1]);
+layer.summary();
+show(layer.units);
+show(model.forward([2.0]));
+show(model.backward([1.0]));
+
+-- The backend returns Python training history; KAFE uses fit as a statement.
+model.compile("rmsprop", "mae", []);
+model.fit([[0.0]], [[0.0]], 0, 1);
+model.compile("adam", "bce", []);
+model.fit([[0.0]], [0], 0, 1);
+model.compile("adamw", "scce", []);
+model.fit([[0.0]], [0], 0, 1);
+model.compile("sgd", "cce", []);
+model.fit([[0.0]], [[1.0]], 0, 1);
+show("Four optimizer names and five loss families compiled.");
+
+GESHA input = gesha.input_layer([1]);
+GESHA output = layer.connect(input);
+GESHA graph = gesha.functional(input, output);
+graph.compile("sgd", "mse", []);
+graph.fit([[0.0]], [[0.0]], 0, 1);
+show(graph.predict([2.0]));
+graph.summary();
+show(graph.forward([2.0]));
+graph.backward([1.0]);

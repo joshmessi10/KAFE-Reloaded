@@ -2,6 +2,8 @@
 
 [Return to Index](../machine.md)
 
+[Pinned KAFE call contracts and limits](contracts.md) specify accepted positional arguments, return shapes and backend-only restrictions.
+
 ## DBSCAN (Density-Based Spatial Clustering)
 
 Implements a density-based clustering algorithm that groups densely packed points and marks outliers as noise. Unlike KMeans, DBSCAN can find arbitrarily shaped clusters and does not require the number of clusters to be specified.
@@ -25,7 +27,7 @@ DBSCAN is based on the concept of **density reachability**:
 
 | Method | Signature | Description |
 |--------|-------|-------------|
-| `db.fit(X)` | `(List[List[NUM]]) -> VOID` | Fits the DBSCAN clustering model |
+| `db.fit(X)` | `(List[List[NUM]]) -> MACHINE` | Fits the DBSCAN clustering model |
 | `db.fit_predict(X)` | `(List[List[NUM]]) -> List[INT]` | Fits the model and returns cluster labels |
 | `db.labels()` | `() -> List[INT]` | Returns cluster labels after fitting |
 | `db.n_clusters()` | `() -> INT` | Returns the number of clusters found |
@@ -121,7 +123,7 @@ The algorithm performs $n - k$ successive merges:
 
 | Method | Signature | Description |
 |--------|-------|-------------|
-| `ac.fit(X)` | `(List[List[NUM]]) -> VOID` | Fits the agglomerative clustering model |
+| `ac.fit(X)` | `(List[List[NUM]]) -> MACHINE` | Fits the agglomerative clustering model |
 | `ac.fit_predict(X)` | `(List[List[NUM]]) -> List[INT]` | Fits the model and returns cluster labels |
 
 ### Constructor parameters
@@ -134,7 +136,7 @@ MACHINE ac = machine.agglomerative_clustering(2, "ward");
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
 | `n_clusters` | INT | 2 | Desired number of clusters, from 1 to the number of samples |
-| `linkage` | STRING | "ward" | Linkage criterion: "single", "complete", "average", or "ward" |
+| `linkage` | STR | "ward" | Linkage criterion: "single", "complete", "average", or "ward" |
 
 ### Properties
 
@@ -204,7 +206,7 @@ KAFE evaluates component densities and normalizes responsibilities in log space 
 
 | Method | Signature | Description |
 |--------|-------|-------------|
-| `gm.fit(X)` | `(List[List[NUM]]) -> VOID` | Fits the model using EM |
+| `gm.fit(X)` | `(List[List[NUM]]) -> MACHINE` | Fits the model using EM |
 | `gm.predict(X)` | `(List[List[NUM]]) -> List[INT]` | Assigns each point to the most likely component |
 | `gm.predict_proba(X)` | `(List[List[NUM]]) -> List[List[FLOAT]]` | Returns responsibilities (membership probabilities) |
 | `gm.fit_predict(X)` | `(List[List[NUM]]) -> List[INT]` | Fits the model and returns labels |
@@ -312,7 +314,7 @@ $$H(x) = \text{sign}\left(\sum_{t=1}^{T} \alpha_t \cdot h_t(x)\right)$$
 
 | Method | Signature | Description |
 |--------|-----------|-------------|
-| `ab.fit(X, y)` | `(List[List[NUM]], List[INT]) -> VOID` | Trains the ensemble of weak classifiers |
+| `ab.fit(X, y)` | `(List[List[NUM]], List[INT]) -> MACHINE` | Trains the ensemble of weak classifiers |
 | `ab.predict(X)` | `(List[List[NUM]]) -> List[INT]` | Predicts by weighted voting |
 | `ab.score(X, y)` | `(List[List[NUM]], List[INT]) -> FLOAT` | Calculates accuracy |
 
@@ -332,7 +334,7 @@ MACHINE ab = machine.ada_boost_classifier(50, 1.0);
 
 | Property | Type | Description |
 |----------|------|-------------|
-| `ab.estimators_` | `List[Dict]` | List of trained weak classifiers |
+| `ab.estimators_` | Backend tree collection | List of trained weak classifiers |
 | `ab.estimator_weights_` | `List[FLOAT]` | Weight $\alpha_t$ of each weak classifier |
 | `ab.estimator_errors_` | `List[FLOAT]` | Error of each weak classifier |
 | `ab.classes_` | `List[INT]` | Unique classes |
@@ -401,7 +403,7 @@ $$H(x) = \sigma(F_T(x)) = \sigma\left(F_0(x) + \eta \sum_{t=1}^{T} h_t(x)\right)
 
 | Method | Signature | Description |
 |--------|-----------|-------------|
-| `gbc.fit(X, y)` | `(List[List[NUM]], List[INT]) -> VOID` | Trains the tree ensemble |
+| `gbc.fit(X, y)` | `(List[List[NUM]], List[INT]) -> MACHINE` | Trains the tree ensemble |
 | `gbc.predict(X)` | `(List[List[NUM]]) -> List[INT]` | Predicts classes (0 or 1) |
 | `gbc.score(X, y)` | `(List[List[NUM]], List[INT]) -> FLOAT` | Calculates accuracy |
 
@@ -422,7 +424,7 @@ MACHINE gbc = machine.gradient_boosting_classifier(100, 0.1, 3);
 
 | Property | Type | Description |
 |----------|------|-------------|
-| `gbc.estimators_` | `List[Dict]` | List of trained trees |
+| `gbc.estimators_` | Backend tree collection | List of trained trees |
 | `gbc.initial_prediction_` | `FLOAT` | Initial prediction (log-odds) |
 | `gbc.classes_` | `List[INT]` | Unique classes |
 
@@ -498,7 +500,7 @@ $$\mathcal{L}(y, F) = \frac{1}{2}(y - F)^2$$
 
 | Method | Signature | Description |
 |--------|-----------|-------------|
-| `gbr.fit(X, y)` | `(List[List[NUM]], List[NUM]) -> VOID` | Trains the tree ensemble |
+| `gbr.fit(X, y)` | `(List[List[NUM]], List[NUM]) -> MACHINE` | Trains the tree ensemble |
 | `gbr.predict(X)` | `(List[List[NUM]]) -> List[NUM]` | Predicts values |
 | `gbr.score(X, y)` | `(List[List[NUM]], List[NUM]) -> FLOAT` | Calculates R² |
 
@@ -519,7 +521,7 @@ MACHINE gbr = machine.gradient_boosting_regressor(100, 0.1, 3);
 
 | Property | Type | Description |
 |----------|------|-------------|
-| `gbr.estimators_` | `List[Dict]` | List of trained trees |
+| `gbr.estimators_` | Backend tree collection | List of trained trees |
 | `gbr.initial_prediction_` | `FLOAT` | Initial prediction (mean of y) |
 
 ### Example

@@ -1,0 +1,2 @@
+import machine;
+show(machine.mean_absolute_percentage_error([0.0, 1.0], [0.0, 1.0]));

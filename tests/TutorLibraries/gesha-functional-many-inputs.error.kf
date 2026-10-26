@@ -1,0 +1,6 @@
+import gesha;
+GESHA input = gesha.input_layer([1]);
+GESHA layer = gesha.create_dense(1, "linear", [1]);
+GESHA output = layer.connect(input);
+-- The intended factory accepts one node at each position, not lists of nodes.
+GESHA graph = gesha.functional([input], output);

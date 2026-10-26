@@ -1,0 +1,3 @@
+import machine;
+MACHINE features = machine.polynomial_features();
+show(features.inverse_transform([[1.0]]));

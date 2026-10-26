@@ -113,6 +113,47 @@ test('development knowledge pack contains only curated lessons, KAFE examples, a
   } finally { removeFixture(value); }
 });
 
+test('optional tutorials share the verified corpus while presentation assets confer no context', async () => {
+  const f = fixture();
+  try {
+    const tutorials = path.join(f.temporary, 'docs/ejemplos'); fs.mkdirSync(tutorials);
+    const tutorial = path.join(tutorials, 'random-forest.md');
+    fs.writeFileSync(tutorial, '# Random forest\n\nmachine.random_forest creates a tree ensemble.');
+    fs.writeFileSync(path.join(tutorials, 'chart.svg'), '<svg>presentation only</svg>');
+    const pack = await f.createPack().getReadyPack();
+    assert.equal(pack.authority.isCurrent(), true);
+    assert.ok(fs.existsSync(path.join(pack.knowledgeRoot, 'examples/tutorials/random-forest.md')));
+    assert.equal(fs.existsSync(path.join(pack.knowledgeRoot, 'examples/tutorials/chart.svg')), false);
+    const matches = await verifiedRetriever(pack).search('¿Cómo usar un bosque aleatorio?');
+    assert.equal(matches[0].path, 'examples/tutorials/random-forest.md');
+    fs.writeFileSync(path.join(tutorials, 'chart.svg'), '<svg>changed presentation</svg>');
+    assert.equal(pack.authority.isCurrent(), true, 'excluded presentation bytes are not source authority');
+    fs.writeFileSync(tutorial, 'changed selected text');
+    assert.equal(pack.authority.isCurrent(), false, 'selected tutorial text is revalidated synchronously');
+  } finally { removeFixture(f); }
+});
+
+test('managed retrieval preserves complete code units and prioritizes an exact qualified API', async () => {
+  const f = fixture();
+  try {
+    fs.writeFileSync(path.join(f.temporary, 'docs/libraries/lesson.md'), [
+      '# MACHINE models',
+      '## Random forest',
+      'Creates a forest with machine.random_forest(5, 2).',
+      '```kafe\nMACHINE model = machine.random_forest(5, 2);\n\nshow(1);\n```',
+      '## Oversized example',
+      '```kafe\n' + 'machine.random_forest(1, 1);\n'.repeat(120) + '```',
+    ].join('\n\n'));
+    const pack = await f.createPack().getReadyPack();
+    const matches = await verifiedRetriever(pack).search('machine.random_forest');
+    assert.ok(matches.length > 0);
+    assert.match(matches[0].text, /MACHINE model = machine.random_forest/);
+    assert.ok(matches.every(item => item.text.length <= 2000));
+    for (const item of matches.filter(item => item.text.includes('```'))) assert.equal((item.text.match(/```/g) || []).length % 2, 0);
+    assert.ok(!matches.some(item => item.text.includes('Oversized example')), 'skip the whole oversized fence');
+  } finally { removeFixture(f); }
+});
+
 test('development retrieval checks the exact bytes used after cache verification', async () => {
   const value = fixture();
   try {

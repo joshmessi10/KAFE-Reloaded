@@ -1,0 +1,5 @@
+import machine;
+MACHINE pipe = machine.pipeline("model", machine.linear_regression());
+pipe.fit([[1.0], [2.0], [3.0]], [2.0, 4.0, 6.0]);
+-- Backend step tuples are not typed KAFE lists. Use pipe.get_params() for names.
+show(len(pipe.steps_));

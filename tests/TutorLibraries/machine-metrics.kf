@@ -1,0 +1,21 @@
+import machine;
+
+List[INT] labels = [0, 0, 1, 1];
+show(machine.accuracy_score(labels, labels));
+show(machine.precision_score(labels, labels));
+show(machine.recall_score(labels, labels));
+show(machine.f1_score(labels, labels));
+show(machine.confusion_matrix(labels, labels));
+show(machine.classification_report(labels, labels));
+show(machine.roc_auc_score(labels, [[0.1], [0.2], [0.8], [0.9]]));
+List[FLOAT] y = [1.0, 2.0, 3.0];
+List[List[FLOAT]] predicted = [[1.0], [2.0], [3.0]];
+show(machine.mean_squared_error(y, predicted));
+show(machine.mean_absolute_error(y, predicted));
+show(machine.root_mean_squared_error(y, predicted));
+show(machine.r2_score(y, predicted));
+show(machine.max_error(y, predicted));
+show(machine.median_absolute_error(y, predicted));
+show(machine.mean_absolute_percentage_error(y, predicted));
+show(machine.explained_variance_score(y, predicted));
+show(machine.silhouette_score([[0.0], [1.0], [10.0], [11.0]], labels) > 0.8);

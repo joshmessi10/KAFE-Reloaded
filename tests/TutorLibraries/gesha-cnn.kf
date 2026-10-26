@@ -1,0 +1,45 @@
+import gesha;
+
+List[List[FLOAT]] signal = [[1.0, 2.0, 3.0]];
+List[List[List[FLOAT]]] image = [[[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0]]];
+GESHA conv1 = gesha.create_conv1d(2, 2, "linear", [1, 3], 1, "valid", 7);
+List[List[FLOAT]] temporal = conv1.forward(signal);
+show([len(temporal), len(temporal[0])]);
+GESHA conv2 = gesha.create_conv2d(2, [2, 2], "relu", [1, 3, 3], 1, "valid", 7, gesha.ones_initializer(), gesha.l2_regularizer(0.0));
+List[List[List[FLOAT]]] spatial = conv2.forward(image);
+show([len(spatial), len(spatial[0]), len(spatial[0][0])]);
+GESHA depthwise = gesha.create_depthwise_conv2d([2, 2], 2, "linear", [1, 3, 3], 1, "valid", 7);
+show(len(depthwise.forward(image)));
+GESHA transpose = gesha.create_conv2d_transpose(1, [2, 2], "linear", [1, 2, 2], 1, "valid", 7);
+List[List[List[FLOAT]]] enlarged = transpose.forward([[[1.0, 2.0], [3.0, 4.0]]]);
+show([len(enlarged), len(enlarged[0]), len(enlarged[0][0])]);
+
+GESHA max1 = gesha.max_pooling1d(2, 1);
+GESHA max2 = gesha.max_pooling2d([2, 2], 1);
+GESHA avg2 = gesha.average_pooling2d([2, 2], 1);
+GESHA global_avg = gesha.global_average_pooling2d();
+GESHA global_max = gesha.global_max_pooling2d();
+show(max1.forward(signal));
+show(max2.forward(image));
+show(avg2.forward(image));
+show(global_avg.forward(image));
+show(global_max.forward(image));
+
+GESHA padding = gesha.zero_padding2d([1, 1]);
+GESHA upsampling = gesha.up_sampling2d([2, 2]);
+GESHA reshape = gesha.reshape_layer([1, 9]);
+GESHA permute = gesha.permute_layer([1, 2, 0]);
+GESHA flatten = gesha.flatten_layer();
+GESHA normalization = gesha.batch_normalization(0.00001, 0.9);
+GESHA dropout = gesha.spatial_dropout2d(0.0, 7);
+show(len(padding.forward(image)[0]));
+show(len(upsampling.forward(image)[0]));
+show(len(reshape.forward(image)[0]));
+show(len(permute.forward(image)));
+show(len(flatten.forward(image)));
+show(len(normalization.forward(image)));
+show(len(dropout.forward(image)));
+
+-- Predict receives a batch of images, even when there is only one image.
+GESHA model = gesha.sequential([conv2, global_avg]);
+show(len(model.predict([image])));

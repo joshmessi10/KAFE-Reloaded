@@ -13,6 +13,7 @@ import machine;
 
 ## Reference by topic
 
+- [API contracts, returned objects and limits](machine/contracts.md)
 - [Functions and metrics](machine/metrics.md)
 - [Linear models and SVM](machine/linear.md)
 - [Model selection](machine/selection.md)

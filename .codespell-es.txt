@@ -13,6 +13,7 @@ accesible
 activacion
 admisible
 algoritmos
+analisis
 anual
 aplicable
 argumentos
@@ -37,7 +38,10 @@ ignora
 importan
 imposible
 inicial
+informacion
 limite
+medias
+mis
 momento
 momentos
 normales
@@ -50,6 +54,7 @@ procede
 regresion
 relevante
 requiere
+secuencial
 separe
 ser
 serie

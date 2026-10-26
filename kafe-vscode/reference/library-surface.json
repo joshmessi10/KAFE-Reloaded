@@ -1,0 +1,731 @@
+{
+  "schemaVersion": 1,
+  "runtimeSourceRevision": "6ee33f742909f74a3d597379e713aedc3a5703b2",
+  "reviewedSourceFingerprint": "148ebb295fd60e5e209712aad0f4cdfa12064f0f76010366e1fbc3fccf55321c",
+  "description": "Reviewed intended receiver/member policy, independent of contract records. Public methods are derived from the named pinned-source classes; properties and special indexing members are explicitly admitted. Backend-only hooks remain documented as unsupported rather than silently omitted.",
+  "receivers": {
+    "machine": [
+      {
+        "name": "AdaBoostClassifier",
+        "source": "src/lib/KafeMACHINE/ensemble/AdaBoost.py",
+        "properties": [
+          "classes_",
+          "estimator_errors_",
+          "estimator_weights_",
+          "estimators_",
+          "learning_rate",
+          "n_estimators",
+          "random_state"
+        ],
+        "extraSymbols": []
+      },
+      {
+        "name": "AgglomerativeClustering",
+        "source": "src/lib/KafeMACHINE/clustering/AgglomerativeClustering.py",
+        "properties": [
+          "children_",
+          "distances_",
+          "labels_",
+          "linkage",
+          "n_clusters",
+          "n_clusters_"
+        ],
+        "extraSymbols": []
+      },
+      {
+        "name": "BaseMachine",
+        "source": "src/lib/KafeMACHINE/BaseMachine.py",
+        "properties": [],
+        "extraSymbols": []
+      },
+      {
+        "name": "CrossValScore",
+        "source": "src/lib/KafeMACHINE/model_selection/model_selection.py",
+        "properties": [
+          "cv",
+          "mean_score_",
+          "random_state",
+          "scores_",
+          "scoring",
+          "std_score_"
+        ],
+        "extraSymbols": []
+      },
+      {
+        "name": "DBSCAN",
+        "source": "src/lib/KafeMACHINE/clustering/DBSCAN.py",
+        "properties": [
+          "core_sample_indices_",
+          "eps",
+          "labels_",
+          "min_samples",
+          "n_clusters_"
+        ],
+        "extraSymbols": []
+      },
+      {
+        "name": "DecisionTreeClassifier",
+        "source": "src/lib/KafeMACHINE/tree/DecisionTree.py",
+        "properties": [
+          "classes_",
+          "criterion",
+          "max_depth",
+          "min_samples_leaf",
+          "min_samples_split",
+          "n_features_",
+          "tree_"
+        ],
+        "extraSymbols": []
+      },
+      {
+        "name": "DecisionTreeRegressor",
+        "source": "src/lib/KafeMACHINE/tree/DecisionTree.py",
+        "properties": [
+          "criterion",
+          "max_depth",
+          "min_samples_leaf",
+          "min_samples_split",
+          "n_features_",
+          "tree_"
+        ],
+        "extraSymbols": []
+      },
+      {
+        "name": "ElasticNet",
+        "source": "src/lib/KafeMACHINE/linear/ElasticNet.py",
+        "properties": [
+          "alpha",
+          "coef_",
+          "fit_intercept",
+          "intercept_",
+          "l1_ratio",
+          "max_iter",
+          "tol"
+        ],
+        "extraSymbols": []
+      },
+      {
+        "name": "GaussianMixture",
+        "source": "src/lib/KafeMACHINE/clustering/GaussianMixture.py",
+        "properties": [
+          "converged_",
+          "covariances_",
+          "max_iter",
+          "means_",
+          "n_components",
+          "n_iter_",
+          "random_state",
+          "tol",
+          "weights_"
+        ],
+        "extraSymbols": []
+      },
+      {
+        "name": "GaussianNB",
+        "source": "src/lib/KafeMACHINE/naive_bayes/GaussianNB.py",
+        "properties": [
+          "class_prior_",
+          "classes_",
+          "n_features_in_",
+          "theta_",
+          "var_"
+        ],
+        "extraSymbols": []
+      },
+      {
+        "name": "GradientBoostingClassifier",
+        "source": "src/lib/KafeMACHINE/ensemble/GradientBoosting.py",
+        "properties": [
+          "classes_",
+          "estimators_",
+          "initial_prediction_",
+          "learning_rate",
+          "max_depth",
+          "n_estimators",
+          "random_state",
+          "subsample"
+        ],
+        "extraSymbols": []
+      },
+      {
+        "name": "GradientBoostingRegressor",
+        "source": "src/lib/KafeMACHINE/ensemble/GradientBoosting.py",
+        "properties": [
+          "estimators_",
+          "initial_prediction_",
+          "learning_rate",
+          "max_depth",
+          "n_estimators",
+          "random_state",
+          "subsample"
+        ],
+        "extraSymbols": []
+      },
+      {
+        "name": "GridSearchCV",
+        "source": "src/lib/KafeMACHINE/model_selection/model_selection.py",
+        "properties": [
+          "best_params_",
+          "best_score_",
+          "cv",
+          "cv_results_",
+          "n_splits_",
+          "param_grid",
+          "random_state",
+          "scoring"
+        ],
+        "extraSymbols": []
+      },
+      {
+        "name": "KMeans",
+        "source": "src/lib/KafeMACHINE/clustering/KMeans.py",
+        "properties": [
+          "cluster_centers_",
+          "inertia_",
+          "labels_",
+          "max_iter",
+          "n_clusters",
+          "random_state"
+        ],
+        "extraSymbols": []
+      },
+      {
+        "name": "KNN",
+        "source": "src/lib/KafeMACHINE/neighbors/KNN.py",
+        "properties": [
+          "X_train",
+          "k",
+          "y_train"
+        ],
+        "extraSymbols": []
+      },
+      {
+        "name": "KNNRegressor",
+        "source": "src/lib/KafeMACHINE/neighbors/KNN.py",
+        "properties": [
+          "X_train",
+          "k",
+          "weights",
+          "y_train"
+        ],
+        "extraSymbols": []
+      },
+      {
+        "name": "LabelEncoder",
+        "source": "src/lib/KafeMACHINE/preprocessing/LabelEncoder.py",
+        "properties": [
+          "classes_"
+        ],
+        "extraSymbols": []
+      },
+      {
+        "name": "LassoRegression",
+        "source": "src/lib/KafeMACHINE/linear/LassoRegression.py",
+        "properties": [
+          "alpha",
+          "coef_",
+          "fit_intercept",
+          "intercept_",
+          "max_iter",
+          "tol"
+        ],
+        "extraSymbols": []
+      },
+      {
+        "name": "LinearDiscriminantAnalysis",
+        "source": "src/lib/KafeMACHINE/discriminant/LinearDiscriminantAnalysis.py",
+        "properties": [
+          "classes_",
+          "covariance_",
+          "explained_variance_ratio_",
+          "means_",
+          "n_components",
+          "prior_",
+          "scalings_",
+          "solver",
+          "store_covariance"
+        ],
+        "extraSymbols": []
+      },
+      {
+        "name": "LinearRegression",
+        "source": "src/lib/KafeMACHINE/linear/LinearRegression.py",
+        "properties": [
+          "coef_",
+          "intercept_"
+        ],
+        "extraSymbols": []
+      },
+      {
+        "name": "LogisticRegression",
+        "source": "src/lib/KafeMACHINE/linear/LogisticRegression.py",
+        "properties": [
+          "coef_",
+          "intercept_",
+          "learning_rate",
+          "max_iter"
+        ],
+        "extraSymbols": []
+      },
+      {
+        "name": "MinMaxScaler",
+        "source": "src/lib/KafeMACHINE/preprocessing/MinMaxScaler.py",
+        "properties": [
+          "data_max_",
+          "data_min_",
+          "scale_"
+        ],
+        "extraSymbols": []
+      },
+      {
+        "name": "OneHotEncoder",
+        "source": "src/lib/KafeMACHINE/preprocessing/OneHotEncoder.py",
+        "properties": [
+          "categories_",
+          "columns_",
+          "handle_unknown"
+        ],
+        "extraSymbols": []
+      },
+      {
+        "name": "OrdinalEncoder",
+        "source": "src/lib/KafeMACHINE/preprocessing/OrdinalEncoder.py",
+        "properties": [
+          "categories_",
+          "columns_"
+        ],
+        "extraSymbols": []
+      },
+      {
+        "name": "PCA",
+        "source": "src/lib/KafeMACHINE/preprocessing/PCA.py",
+        "properties": [
+          "components_",
+          "explained_variance_",
+          "mean_",
+          "n_components"
+        ],
+        "extraSymbols": []
+      },
+      {
+        "name": "Pipeline",
+        "source": "src/lib/KafeMACHINE/model_selection/model_selection.py",
+        "properties": [
+          "named_steps_",
+          "steps",
+          "steps_"
+        ],
+        "extraSymbols": []
+      },
+      {
+        "name": "PolynomialFeatures",
+        "source": "src/lib/KafeMACHINE/preprocessing/PolynomialFeatures.py",
+        "properties": [
+          "degree",
+          "include_bias",
+          "n_features_in_",
+          "n_features_out_"
+        ],
+        "extraSymbols": []
+      },
+      {
+        "name": "RandomForestClassifier",
+        "source": "src/lib/KafeMACHINE/tree/RandomForest.py",
+        "properties": [
+          "classes_",
+          "max_depth",
+          "max_features",
+          "min_samples_leaf",
+          "min_samples_split",
+          "n_estimators",
+          "n_features_",
+          "random_state",
+          "trees_"
+        ],
+        "extraSymbols": []
+      },
+      {
+        "name": "RandomForestRegressor",
+        "source": "src/lib/KafeMACHINE/tree/RandomForest.py",
+        "properties": [
+          "max_depth",
+          "max_features",
+          "min_samples_leaf",
+          "min_samples_split",
+          "n_estimators",
+          "n_features_",
+          "random_state",
+          "trees_"
+        ],
+        "extraSymbols": []
+      },
+      {
+        "name": "RandomizedSearchCV",
+        "source": "src/lib/KafeMACHINE/model_selection/model_selection.py",
+        "properties": [
+          "best_params_",
+          "best_score_",
+          "cv",
+          "cv_results_",
+          "n_iter",
+          "n_iter_",
+          "n_splits_",
+          "param_distributions",
+          "random_state",
+          "scoring"
+        ],
+        "extraSymbols": []
+      },
+      {
+        "name": "RecursiveFeatureElimination",
+        "source": "src/lib/KafeMACHINE/preprocessing/RecursiveFeatureElimination.py",
+        "properties": [
+          "estimator",
+          "n_features",
+          "n_features_in_",
+          "ranking_",
+          "selected_indices_",
+          "support_"
+        ],
+        "extraSymbols": []
+      },
+      {
+        "name": "RidgeRegression",
+        "source": "src/lib/KafeMACHINE/linear/RidgeRegression.py",
+        "properties": [
+          "alpha",
+          "coef_",
+          "fit_intercept",
+          "intercept_",
+          "learning_rate",
+          "max_iter",
+          "tol"
+        ],
+        "extraSymbols": []
+      },
+      {
+        "name": "RobustScaler",
+        "source": "src/lib/KafeMACHINE/preprocessing/RobustScaler.py",
+        "properties": [
+          "center_",
+          "quantile_range",
+          "scale_",
+          "with_centering",
+          "with_scaling"
+        ],
+        "extraSymbols": []
+      },
+      {
+        "name": "SVM",
+        "source": "src/lib/KafeMACHINE/svm/SVM.py",
+        "properties": [
+          "C",
+          "classes_",
+          "coef_",
+          "degree",
+          "gamma",
+          "intercept_",
+          "kernel",
+          "max_iter",
+          "n_support_",
+          "support_vector_labels_",
+          "support_vectors_",
+          "tol"
+        ],
+        "extraSymbols": []
+      },
+      {
+        "name": "SVR",
+        "source": "src/lib/KafeMACHINE/linear/SVR.py",
+        "properties": [
+          "C",
+          "coef_",
+          "degree",
+          "epsilon",
+          "gamma",
+          "intercept_",
+          "kernel",
+          "max_iter",
+          "n_support_",
+          "support_vector_labels_",
+          "support_vectors_",
+          "tol"
+        ],
+        "extraSymbols": []
+      },
+      {
+        "name": "SimpleImputer",
+        "source": "src/lib/KafeMACHINE/preprocessing/SimpleImputer.py",
+        "properties": [
+          "fill_value",
+          "statistics_",
+          "strategy"
+        ],
+        "extraSymbols": []
+      },
+      {
+        "name": "StandardScaler",
+        "source": "src/lib/KafeMACHINE/preprocessing/StandardScaler.py",
+        "properties": [
+          "mean_",
+          "scale_"
+        ],
+        "extraSymbols": []
+      },
+      {
+        "name": "Tokenizer",
+        "source": "src/lib/KafeMACHINE/preprocessing/Tokenizer.py",
+        "properties": [
+          "index_word",
+          "num_words",
+          "oov_token",
+          "vocabulary_size",
+          "word_index"
+        ],
+        "extraSymbols": []
+      },
+      {
+        "name": "VarianceThreshold",
+        "source": "src/lib/KafeMACHINE/preprocessing/VarianceThreshold.py",
+        "properties": [
+          "n_features_in_",
+          "n_features_out_",
+          "selected_indices_",
+          "threshold",
+          "variances_"
+        ],
+        "extraSymbols": []
+      }
+    ],
+    "gesha": [
+      {
+        "name": "ActivationLayer",
+        "source": "src/lib/KafeGESHA/layers/core/activation_layer.py",
+        "properties": [],
+        "extraSymbols": []
+      },
+      {
+        "name": "Add",
+        "source": "src/lib/KafeGESHA/layers/merge/add.py",
+        "properties": [],
+        "extraSymbols": []
+      },
+      {
+        "name": "BatchNormalization",
+        "source": "src/lib/KafeGESHA/layers/normalization/batch_normalization.py",
+        "properties": [],
+        "extraSymbols": []
+      },
+      {
+        "name": "Bidirectional",
+        "source": "src/lib/KafeGESHA/layers/recurrent/bidirectional.py",
+        "properties": [],
+        "extraSymbols": []
+      },
+      {
+        "name": "Callback",
+        "source": "src/lib/KafeGESHA/callbacks/base.py",
+        "properties": [],
+        "extraSymbols": []
+      },
+      {
+        "name": "Concatenate",
+        "source": "src/lib/KafeGESHA/layers/merge/concatenate.py",
+        "properties": [],
+        "extraSymbols": []
+      },
+      {
+        "name": "Conv1D",
+        "source": "src/lib/KafeGESHA/layers/convolutional/conv1d.py",
+        "properties": [],
+        "extraSymbols": []
+      },
+      {
+        "name": "Conv2D",
+        "source": "src/lib/KafeGESHA/layers/convolutional/conv2d.py",
+        "properties": [],
+        "extraSymbols": []
+      },
+      {
+        "name": "Conv2DTranspose",
+        "source": "src/lib/KafeGESHA/layers/convolutional/conv2d_transpose.py",
+        "properties": [],
+        "extraSymbols": []
+      },
+      {
+        "name": "Dense",
+        "source": "src/lib/KafeGESHA/layers/core/dense.py",
+        "properties": [
+          "biases",
+          "d_biases",
+          "d_weights",
+          "input_cache",
+          "weights"
+        ],
+        "extraSymbols": []
+      },
+      {
+        "name": "DepthwiseConv2D",
+        "source": "src/lib/KafeGESHA/layers/convolutional/depthwise_conv2d.py",
+        "properties": [],
+        "extraSymbols": []
+      },
+      {
+        "name": "Dropout",
+        "source": "src/lib/KafeGESHA/layers/regularization/dropout.py",
+        "properties": [],
+        "extraSymbols": []
+      },
+      {
+        "name": "EarlyStopping",
+        "source": "src/lib/KafeGESHA/callbacks/early_stopping.py",
+        "properties": [],
+        "extraSymbols": []
+      },
+      {
+        "name": "Embedding",
+        "source": "src/lib/KafeGESHA/layers/recurrent/embedding.py",
+        "properties": [],
+        "extraSymbols": []
+      },
+      {
+        "name": "Flatten",
+        "source": "src/lib/KafeGESHA/layers/spatial/flatten.py",
+        "properties": [],
+        "extraSymbols": []
+      },
+      {
+        "name": "Functional",
+        "source": "src/lib/KafeGESHA/models_v2.py",
+        "properties": [],
+        "extraSymbols": []
+      },
+      {
+        "name": "GRU",
+        "source": "src/lib/KafeGESHA/layers/recurrent/gru.py",
+        "properties": [],
+        "extraSymbols": []
+      },
+      {
+        "name": "GeshaPlaceholder",
+        "source": "src/lib/KafeGESHA/models_v2.py",
+        "properties": [],
+        "extraSymbols": []
+      },
+      {
+        "name": "Input",
+        "source": "src/lib/KafeGESHA/layers/base/input.py",
+        "properties": [],
+        "extraSymbols": []
+      },
+      {
+        "name": "L1",
+        "source": "src/lib/KafeGESHA/regularizers/l1.py",
+        "properties": [],
+        "extraSymbols": []
+      },
+      {
+        "name": "L1L2",
+        "source": "src/lib/KafeGESHA/regularizers/l1_l2.py",
+        "properties": [],
+        "extraSymbols": []
+      },
+      {
+        "name": "L2",
+        "source": "src/lib/KafeGESHA/regularizers/l2.py",
+        "properties": [],
+        "extraSymbols": []
+      },
+      {
+        "name": "LSTM",
+        "source": "src/lib/KafeGESHA/layers/recurrent/lstm.py",
+        "properties": [],
+        "extraSymbols": []
+      },
+      {
+        "name": "Layer",
+        "source": "src/lib/KafeGESHA/layers/base/layer.py",
+        "properties": [],
+        "extraSymbols": []
+      },
+      {
+        "name": "MaxPooling1D",
+        "source": "src/lib/KafeGESHA/layers/pooling/max_pooling1d.py",
+        "properties": [],
+        "extraSymbols": []
+      },
+      {
+        "name": "Model",
+        "source": "src/lib/KafeGESHA/models_v2.py",
+        "properties": [],
+        "extraSymbols": []
+      },
+      {
+        "name": "ModelCheckpoint",
+        "source": "src/lib/KafeGESHA/callbacks/model_checkpoint.py",
+        "properties": [],
+        "extraSymbols": []
+      },
+      {
+        "name": "Multiply",
+        "source": "src/lib/KafeGESHA/layers/merge/multiply.py",
+        "properties": [],
+        "extraSymbols": []
+      },
+      {
+        "name": "Node",
+        "source": "src/lib/KafeGESHA/core_v2.py",
+        "properties": [],
+        "extraSymbols": []
+      },
+      {
+        "name": "Permute",
+        "source": "src/lib/KafeGESHA/layers/spatial/permute.py",
+        "properties": [],
+        "extraSymbols": []
+      },
+      {
+        "name": "Regularizer",
+        "source": "src/lib/KafeGESHA/regularizers/base.py",
+        "properties": [],
+        "extraSymbols": []
+      },
+      {
+        "name": "Reshape",
+        "source": "src/lib/KafeGESHA/layers/spatial/reshape.py",
+        "properties": [],
+        "extraSymbols": []
+      },
+      {
+        "name": "Sequential",
+        "source": "src/lib/KafeGESHA/models_v2.py",
+        "properties": [],
+        "extraSymbols": []
+      },
+      {
+        "name": "SimpleRNN",
+        "source": "src/lib/KafeGESHA/layers/recurrent/simple_rnn.py",
+        "properties": [],
+        "extraSymbols": []
+      },
+      {
+        "name": "SpatialDropout2D",
+        "source": "src/lib/KafeGESHA/layers/regularization/spatial_dropout2d.py",
+        "properties": [],
+        "extraSymbols": []
+      },
+      {
+        "name": "UpSampling2D",
+        "source": "src/lib/KafeGESHA/layers/spatial/up_sampling2d.py",
+        "properties": [],
+        "extraSymbols": []
+      },
+      {
+        "name": "ZeroPadding2D",
+        "source": "src/lib/KafeGESHA/layers/spatial/zero_padding2d.py",
+        "properties": [],
+        "extraSymbols": []
+      }
+    ]
+  }
+}

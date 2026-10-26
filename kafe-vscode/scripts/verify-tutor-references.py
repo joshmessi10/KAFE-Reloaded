@@ -2,12 +2,11 @@
 import hashlib
 import json
 import os
-from pathlib import Path
 import shutil
 import subprocess
 import sys
 import tempfile
-
+from pathlib import Path
 
 PARSE_CHECK = r'''
 import sys
@@ -51,14 +50,15 @@ def source_fingerprint(source):
 
 def validate_program(source, program):
     result = subprocess.run([sys.executable, "-c", PARSE_CHECK, str(source), str(program)],
-                            capture_output=True, text=True, encoding="utf-8", timeout=15)
+                            capture_output=True, text=True, encoding="utf-8", timeout=15,
+                            env=dict(os.environ, PYTHONWARNINGS="error", PYTHONIOENCODING="utf-8"))
     if result.returncode or result.stdout or result.stderr:
         raise ValueError("Reference must fully parse: " + result.stderr[-2000:])
 
 
 def result_matches(fixture, result):
-    expected_stdout = fixture["expectedOutput"] if fixture["expectedStream"] == "stdout" else ""
-    expected_stderr = fixture["expectedOutput"] if fixture["expectedStream"] == "stderr" else ""
+    expected_stdout = fixture.get("expectedStdout", fixture["expectedOutput"] if fixture["expectedStream"] == "stdout" else "")
+    expected_stderr = fixture.get("expectedStderr", fixture["expectedOutput"] if fixture["expectedStream"] == "stderr" else "")
     return (result.returncode, result.stdout, result.stderr) == (
         fixture["expectedExitCode"], expected_stdout, expected_stderr
     )
@@ -74,7 +74,7 @@ def verify(repository=None, runtime_root=None):
     if source_fingerprint(runtime / "src") != bundle["runtimeSourceFingerprint"]:
         raise ValueError("Reference runtime source does not match the pinned revision fingerprint")
     failures = []
-    environment = dict(os.environ, PYTHONUTF8="1", PYTHONIOENCODING="utf-8")
+    environment = dict(os.environ, PYTHONUTF8="1", PYTHONIOENCODING="utf-8", PYTHONWARNINGS="error")
     with tempfile.TemporaryDirectory(prefix="kafe-reference-verification-") as temporary:
         for index, fixture in enumerate(bundle["fixtures"]):
             program = (repository / fixture["path"]).resolve()

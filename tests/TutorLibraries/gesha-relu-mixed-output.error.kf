@@ -1,0 +1,4 @@
+import gesha;
+-- ReLU returns an INT zero beside a FLOAT; the DSL rejects this mixed result.
+GESHA relu = gesha.relu_layer();
+show(relu.forward([-1.0, 2.0]));

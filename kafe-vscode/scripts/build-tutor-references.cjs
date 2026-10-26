@@ -80,6 +80,8 @@ function buildReferences(repoRoot = repositoryRoot, extRoot = extensionRoot) {
     fixtures.push({ path: fixturePath, code: field(name),
       input: inventory.has(`${base}.in`) ? field(`${base}.in`) : '',
       expectedOutput: field(expected), expectedStream: invalid ? 'stderr' : 'stdout',
+      expectedStdout: inventory.has(`${base}.stdout.expec`) ? field(`${base}.stdout.expec`) : invalid ? '' : field(expected),
+      expectedStderr: inventory.has(`${base}.stderr.expec`) ? field(`${base}.stderr.expec`) : invalid ? field(expected) : '',
       expectedExitCode: invalid ? 1 : 0, kind: invalid ? 'expected-error' : 'valid' });
   }
   const omittedFixtures = inputs.filter(name => name.endsWith('.kf') && !selected.has(`tests/${name}`)).map(name => `tests/${name}`);
@@ -101,4 +103,4 @@ function main() {
   } else { fs.writeFileSync(target, serialized); console.log(`Generated ${path.relative(extensionRoot, target)}`); }
 }
 if (require.main === module) { try { main(); } catch (error) { console.error(error.message); process.exitCode = 1; } }
-module.exports = { buildReferences, sourceFingerprint };
+module.exports = { buildReferences, sourceFingerprint, runtimeSourceFingerprint };

@@ -1,0 +1,12 @@
+4
+True
+4
+4
+4
+1
+"cols: ['color_blue', 'color_red'], rows: [[0, 1], [1, 0], [0, 1]]"
+"cols: ['color'], rows: [[1], [0], [1]]"
+[[2.0, 3.0]]
+6
+[[3.0]]
+True

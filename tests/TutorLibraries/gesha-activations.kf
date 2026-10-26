@@ -1,0 +1,24 @@
+import gesha;
+
+GESHA relu = gesha.relu_layer();
+GESHA sigmoid = gesha.sigmoid_layer();
+GESHA tanh = gesha.tanh_layer();
+GESHA softmax = gesha.softmax_layer();
+GESHA linear = gesha.linear_layer();
+show(relu.forward([-1.0, -2.0]));
+show(sigmoid.forward([0.0]));
+show(tanh.forward([0.0]));
+show(softmax.forward([0.0, 0.0]));
+show(linear.forward([1.0, 2.0]));
+
+-- Compatibility aliases create the same activation-layer objects.
+GESHA old_relu = gesha.ReLULayer();
+GESHA old_sigmoid = gesha.SigmoidLayer();
+GESHA old_tanh = gesha.TanhLayer();
+GESHA old_softmax = gesha.SoftmaxLayer();
+GESHA old_linear = gesha.LinearLayer();
+show(old_relu.forward([-1.0, -2.0]));
+show(old_sigmoid.forward([0.0]));
+show(old_tanh.forward([0.0]));
+show(old_softmax.forward([0.0, 0.0]));
+show(old_linear.forward([1.0, 2.0]));

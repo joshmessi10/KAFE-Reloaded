@@ -4,6 +4,8 @@ Recurrent layers process a sequence one step at a time and carry a hidden state 
 
 Input samples use `[timesteps][features]`. Set `return_sequences=True` when the next layer needs every time step; otherwise the layer returns its final representation. `Embedding` maps integer token IDs to dense vectors before a recurrent text model.
 
+`return_sequences` is a positional boolean in KAFE calls. For example, `gesha.create_lstm(2, [3, 4], True, 42)` creates a two-unit layer for a `[3,4]` sample and returns a `[3,2]` sequence. Write `True` in that position rather than Python keyword syntax. Omitting optional arguments uses the factory's defaults.
+
 ## Recurrent layer factories
 
 
@@ -56,5 +58,15 @@ With `return_sequences=False`, a recurrent layer returns its final hidden repres
 5. Compare predictions on held-out sequences and report a task-appropriate metric.
 
 For forecasting, a random split can expose future information during training. For text, fitting a vocabulary on test sentences similarly leaks information. Recurrent training cost grows with sequence length; LSTM and GRU use more gates and parameters than a SimpleRNN. Use bounded sequences while learning the API.
+
+## Runtime contracts and limits
+
+- A SimpleRNN/LSTM/GRU sample is `[T,F]`; final output is `[units]`, while sequence output is `[T,units]`.
+- `bidirectional` concatenates forward and backward features: the final feature dimension becomes `2 * units`. The wrapped layer must be SimpleRNN, LSTM or GRU.
+- An Embedding sample is a list of integer token IDs. Each index must be at least zero and below `input_dim`; its output is `[T,output_dim]`.
+- The intended factories expose no `stateful`, `return_state`, `mask_zero`, dropout or framework-style keyword options. Each recurrent forward initializes its sample state.
+- Use `model.predict([sequence])` for a single recurrent sample and `model.predict([tokens])` for a single token sequence. A nested first element is interpreted as a batch; the runtime does not infer a standalone sequence automatically.
+
+The bounded `tests/TutorLibraries/gesha-recurrent.kf` fixture exercises SimpleRNN, LSTM, GRU, bidirectional and Embedding through actual KAFE calls. It checks forward dimensions and selected backward behavior without a network download or convergence-length training. Python backend tests separately cover shape/gradient behavior. These are different forms of evidence; neither guarantees accuracy on a learner's dataset.
 
 [Back to Gesha overview](../gesha.md)

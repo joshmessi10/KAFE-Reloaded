@@ -30,6 +30,8 @@ show("Assigned cluster: " + str(cluster));
 
 Passing an empty list as `y_train` selects unsupervised Soft K-Means training: the network's softmax output is interpreted as soft cluster assignments.
 
+This selection depends on empty/omitted targets, not on the fixture filename or the configured loss name. In particular, the existing `tests/KafeGESHA/multiclass/neural_network_multiclass.kf` uses `fit(data, [])` and is an unsupervised example despite its name. Supervised multiclass guidance should use actual labeled targets, such as the separate `multiclass_with_validation.kf` fixture. Do not present cluster assignments as verified class predictions.
+
 ---
 
 

@@ -1,15 +1,14 @@
 const { createHash } = require('node:crypto');
 const defaultFileSystem = require('node:fs/promises');
+const nativeFileSystem = require('node:fs');
 const path = require('node:path');
 const { isDeepStrictEqual } = require('node:util');
 const { createKnowledgeAuthority } = require('./KnowledgeRetriever');
 
-const KNOWLEDGE_SECTIONS = ['getting-started', 'language', 'libraries', 'specification', 'errors', 'examples'];
+const { REQUIRED_SECTIONS: KNOWLEDGE_SECTIONS, MAX_FILES, MAX_FILE_BYTES, MAX_TOTAL_BYTES,
+  KNOWLEDGE_CORPUS_PATH, collectKnowledgeCorpus, collectKnowledgeCorpusSync } = require('./KnowledgeCorpus');
+const CORPUS_MANIFEST_SHA256 = createHash('sha256').update(nativeFileSystem.readFileSync(KNOWLEDGE_CORPUS_PATH)).digest('hex');
 const REQUIRED_MARKERS = ['pyproject.toml', 'uv.lock', 'src/Kafe.py'];
-const GRAMMAR_FILES = ['Kafe_Grammar.g4', 'Kafe_Lexer.g4'];
-const MAX_FILES = 512;
-const MAX_FILE_BYTES = 256 * 1024;
-const MAX_TOTAL_BYTES = 8 * 1024 * 1024;
 const WINDOWS_RESERVED_NAME = /^(con|prn|aux|nul|com[1-9¹²³]|lpt[1-9¹²³])(?:\.|$)/i;
 
 function comparePaths(left, right) {
@@ -72,80 +71,6 @@ async function readBoundedFile(fileSystem, filePath, relative, totals) {
     throw new Error(`KAFE development knowledge pack exceeds the ${MAX_TOTAL_BYTES} byte total size limit.`);
   }
   return value;
-}
-
-async function collectSourceEntries({ fileSystem, pathApi, sourceRoot }) {
-  await pathInfo(fileSystem, sourceRoot, 'directory', 'KAFE checkout root');
-  await pathInfo(fileSystem, pathApi.join(sourceRoot, 'kafe-vscode'), 'directory', 'KAFE extension directory');
-  for (const marker of REQUIRED_MARKERS) {
-    await pathInfo(fileSystem, pathApi.join(sourceRoot, marker), 'file', marker);
-  }
-
-  const entries = [];
-  const pathSpellings = new Map();
-  const totals = { bytes: 0 };
-  const reservePath = relative => {
-    let prefix = '';
-    for (const segment of relative.split('/')) {
-      safeSegment(segment);
-      prefix = prefix ? `${prefix}/${segment}` : segment;
-      const folded = prefix.toLowerCase();
-      const existing = pathSpellings.get(folded);
-      if (existing && existing !== prefix) throw new Error(`Duplicate case-insensitive KAFE knowledge-pack path: ${prefix}`);
-      pathSpellings.set(folded, prefix);
-    }
-  };
-  const collectSection = async (section, directory, prefix = '') => {
-    await pathInfo(fileSystem, directory, 'directory', `docs/${section}${prefix ? `/${prefix}` : ''}`);
-    let sectionCount = 0;
-    const walk = async (current, relativeDirectory) => {
-      const items = await fileSystem.readdir(current, { withFileTypes: true });
-      for (const item of items) {
-        safeSegment(item.name);
-        const relative = relativeDirectory ? `${relativeDirectory}/${item.name}` : item.name;
-        const sourcePath = pathApi.join(current, item.name);
-        const info = await fileSystem.lstat(sourcePath);
-        if (info.isSymbolicLink?.() || item.isSymbolicLink?.()) {
-          throw new Error(`KAFE learner documentation must not contain symbolic links: docs/${section}/${relative}`);
-        }
-        if (info.isDirectory()) {
-          reservePath(`${section}/${relative}`);
-          await walk(sourcePath, relative);
-          continue;
-        }
-        if (!info.isFile()) throw new Error(`Unsupported special file in KAFE learner documentation: docs/${section}/${relative}`);
-        const extension = pathApi.extname(item.name).toLowerCase();
-        const allowed = extension === '.md' || (section === 'examples' && extension === '.kf');
-        if (!allowed) throw new Error(`Unsupported file in KAFE learner documentation: docs/${section}/${relative}`);
-        const targetRelative = `${section}/${relative}`;
-        reservePath(targetRelative);
-        const bytes = await readBoundedFile(fileSystem, sourcePath, `docs/${section}/${relative}`, totals);
-        entries.push({ relative: targetRelative, bytes });
-        sectionCount++;
-        if (entries.length > MAX_FILES - GRAMMAR_FILES.length) {
-          throw new Error(`KAFE development knowledge pack exceeds the ${MAX_FILES} file limit.`);
-        }
-      }
-    };
-    await walk(directory, prefix);
-    if (sectionCount === 0) throw new Error(`Empty required KAFE learner documentation section: docs/${section}`);
-  };
-
-  const docsRoot = pathApi.join(sourceRoot, 'docs');
-  await pathInfo(fileSystem, docsRoot, 'directory', 'docs');
-  for (const section of KNOWLEDGE_SECTIONS) {
-    await collectSection(section, pathApi.join(docsRoot, section));
-  }
-  const sourceGrammarRoot = pathApi.join(sourceRoot, 'src');
-  await pathInfo(fileSystem, sourceGrammarRoot, 'directory', 'src');
-  for (const filename of GRAMMAR_FILES) {
-    const relative = `grammar/${filename}`;
-    reservePath(relative);
-    const bytes = await readBoundedFile(fileSystem, pathApi.join(sourceGrammarRoot, filename), `src/${filename}`, totals);
-    entries.push({ relative, bytes });
-  }
-  if (entries.length > MAX_FILES) throw new Error(`KAFE development knowledge pack exceeds the ${MAX_FILES} file limit.`);
-  return entries.sort((left, right) => comparePaths(left.relative, right.relative));
 }
 
 async function collectCachedEntries({ fileSystem, pathApi, knowledgeRoot }) {
@@ -234,12 +159,12 @@ class DevelopmentKnowledgePack {
     const { sourceRoot, storageRoot } = this.validateConfiguration(), captured = structuredClone(expectedMetadata);
     const knowledgeRoot = this.pathApi.join(targetRoot, 'knowledge-pack');
     const authority = createKnowledgeAuthority({ knowledgeRoot, expectedContentSha256: captured.contentSha256, expectedFileCount: captured.fileCount,
-      sourceTrees: KNOWLEDGE_SECTIONS.map(section => ({ root: this.pathApi.join(sourceRoot, 'docs', section), prefix: section, extensions: section === 'examples' ? ['.md', '.kf'] : ['.md'] })),
-      sourceFiles: GRAMMAR_FILES.map(name => ({ path: this.pathApi.join(sourceRoot, 'src', name), relative: `grammar/${name}` })),
+      sourceCorpus: () => collectKnowledgeCorpusSync({ sourceRoot, pathApi: this.pathApi }),
       requiredPaths: [{ path: sourceRoot, directory: true }, { path: storageRoot, directory: true }, { path: targetRoot, directory: true },
         { path: this.pathApi.join(sourceRoot, 'docs'), directory: true }, { path: this.pathApi.join(sourceRoot, 'src'), directory: true },
         { path: this.extensionPath, directory: true }, ...REQUIRED_MARKERS.map(name => ({ path: this.pathApi.join(sourceRoot, name) }))],
-      integrityFiles: [{ path: metadataPath, maxBytes: 16 * 1024, validate: bytes => isDeepStrictEqual(JSON.parse(bytes.toString('utf8')), captured) }],
+      integrityFiles: [{ path: metadataPath, maxBytes: 16 * 1024, validate: bytes => isDeepStrictEqual(JSON.parse(bytes.toString('utf8')), captured) },
+        { path: KNOWLEDGE_CORPUS_PATH, maxBytes: 16 * 1024, sha256: CORPUS_MANIFEST_SHA256 }],
       configurationCurrent: () => {
         const current = this.validateConfiguration();
         return current.sourceRoot === sourceRoot && current.storageRoot === storageRoot && this.runtimeVersion === captured.runtimeVersion &&
@@ -250,7 +175,7 @@ class DevelopmentKnowledgePack {
 
   async getReadyPack() {
     const { sourceRoot, storageRoot } = this.validateConfiguration();
-    const entries = await collectSourceEntries({ fileSystem: this.fileSystem, pathApi: this.pathApi, sourceRoot });
+    const entries = await collectKnowledgeCorpus({ fileSystem: this.fileSystem, pathApi: this.pathApi, sourceRoot });
     const contentSha256 = digestEntries(entries);
     const expectedMetadata = { schemaVersion: 1, runtimeVersion: this.runtimeVersion,
       knowledgePackVersion: this.knowledgePackVersion, sourceRevision: this.sourceRevision,

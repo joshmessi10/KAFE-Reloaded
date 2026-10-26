@@ -2,6 +2,8 @@
 
 [Return to Index](../machine.md)
 
+[Pinned KAFE call contracts and limits](contracts.md) specify accepted positional arguments, return shapes and backend-only restrictions.
+
 ## LinearRegression
 
 Implements ordinary least-squares linear regression using the normal equation: $\hat{\beta} = (X^T X)^{-1} X^T y$.
@@ -10,7 +12,7 @@ Implements ordinary least-squares linear regression using the normal equation: $
 
 | Method | Signature | Description |
 |--------|-------|-------------|
-| `lr.fit(X, y)` | `(List[List[NUM]] or List[NUM], List[NUM]) -> VOID` | Fits the model |
+| `lr.fit(X, y)` | `(List[List[NUM]] or List[NUM], List[NUM]) -> MACHINE` | Fits the model |
 | `lr.predict(X)` | `(List[List[NUM]] or List[NUM]) -> List[FLOAT]` | Predicts values |
 | `lr.score(X, y)` | `(List[List[NUM]] or List[NUM], List[NUM]) -> FLOAT` | Computes R² |
 
@@ -60,7 +62,7 @@ The term $\alpha||\theta||^2$ penalizes large coefficients without removing them
 
 | Method | Signature | Description |
 |--------|-------|-------------|
-| `ridge.fit(X, y)` | `(List[List[NUM]] or List[NUM], List[NUM]) -> VOID` | Fits the model |
+| `ridge.fit(X, y)` | `(List[List[NUM]] or List[NUM], List[NUM]) -> MACHINE` | Fits the model |
 | `ridge.predict(X)` | `(List[List[NUM]] or List[NUM]) -> List[NUM]` | Predicts values |
 | `ridge.score(X, y)` | `(List[List[NUM]] or List[NUM], List[NUM]) -> FLOAT` | Computes R² |
 
@@ -123,7 +125,7 @@ The term $\alpha||\theta||_1$ can set coefficients exactly to zero, removing irr
 
 | Method | Signature | Description |
 |--------|-------|-------------|
-| `lasso.fit(X, y)` | `(List[List[NUM]] or List[NUM], List[NUM]) -> VOID` | Fits the model |
+| `lasso.fit(X, y)` | `(List[List[NUM]] or List[NUM], List[NUM]) -> MACHINE` | Fits the model |
 | `lasso.predict(X)` | `(List[List[NUM]] or List[NUM]) -> List[NUM]` | Predicts values |
 | `lasso.score(X, y)` | `(List[List[NUM]] or List[NUM], List[NUM]) -> FLOAT` | Computes R² |
 
@@ -188,7 +190,7 @@ Where:
 
 | Method | Signature | Description |
 |--------|-------|-------------|
-| `en.fit(X, y)` | `(List[List[NUM]] or List[NUM], List[NUM]) -> VOID` | Fits the model |
+| `en.fit(X, y)` | `(List[List[NUM]] or List[NUM], List[NUM]) -> MACHINE` | Fits the model |
 | `en.predict(X)` | `(List[List[NUM]] or List[NUM]) -> List[NUM]` | Predicts values |
 | `en.score(X, y)` | `(List[List[NUM]] or List[NUM], List[NUM]) -> FLOAT` | Computes R² |
 
@@ -271,7 +273,7 @@ SVR finds a hyperplane that fits the data within a tube of radius ε. Only point
 
 | Method | Signature | Description |
 |--------|-------|-------------|
-| `svr.fit(X, y)` | `(List[List[NUM]] or List[NUM], List[NUM]) -> VOID` | Fits the model |
+| `svr.fit(X, y)` | `(List[List[NUM]] or List[NUM], List[NUM]) -> MACHINE` | Fits the model |
 | `svr.predict(X)` | `(List[List[NUM]] or List[NUM]) -> List[NUM]` | Predicts values |
 | `svr.score(X, y)` | `(List[List[NUM]] or List[NUM], List[NUM]) -> FLOAT` | Computes R² |
 
@@ -286,7 +288,7 @@ MACHINE svr_model = machine.svr(1.0, 0.1, "linear");
 |-----------|------|---------|-------------|
 | `C` | FLOAT | 1.0 | Regularization (higher values mean less regularization) |
 | `epsilon` | FLOAT | 0.1 | Width of the epsilon-insensitive tube |
-| `kernel` | STRING | "linear" | Kernel type: "linear", "rbf", or "poly" |
+| `kernel` | STR | "linear" | Kernel type: "linear", "rbf", or "poly" |
 
 ### Properties
 
@@ -345,7 +347,7 @@ $$J(w) = \frac{1}{2}||w||^2 + C \sum_{i=1}^{n} \max(0, 1 - y_i \cdot f(x_i))$$
 
 | Method | Signature | Description |
 |--------|-------|-------------|
-| `svm.fit(X, y)` | `(List[List[NUM]] or List[NUM], List[INT]) -> VOID` | Fits the classifier. `y` contains binary labels |
+| `svm.fit(X, y)` | `(List[List[NUM]] or List[NUM], List[INT]) -> MACHINE` | Fits the classifier. `y` contains binary labels |
 | `svm.predict(X)` | `(List[List[NUM]] or List[NUM]) -> List[INT]` | Predicts classes (0 or 1) |
 | `svm.predict_proba(X)` | `(List[List[NUM]] or List[NUM]) -> List[List[FLOAT]]` | Sigmoid scores in `classes_` order (uncalibrated probabilities) |
 | `svm.score(X, y)` | `(List[List[NUM]] or List[NUM], List[INT]) -> FLOAT` | Computes accuracy (default) or a custom metric |
@@ -360,7 +362,7 @@ MACHINE svm_model = machine.svm(1.0, "linear", 1000);
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
 | `C` | FLOAT | 1.0 | Regularization (higher values mean less regularization) |
-| `kernel` | STRING | "linear" | Kernel type: "linear", "rbf", or "poly" |
+| `kernel` | STR | "linear" | Kernel type: "linear", "rbf", or "poly" |
 | `max_iter` | INT | 1000 | Maximum number of training iterations |
 
 ### Properties

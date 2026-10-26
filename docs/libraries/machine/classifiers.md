@@ -2,6 +2,8 @@
 
 [Return to Index](../machine.md)
 
+[Pinned KAFE call contracts and limits](contracts.md) specify accepted positional arguments, return shapes and backend-only restrictions.
+
 ## LogisticRegression
 
 Implements binary logistic regression using gradient descent.
@@ -10,7 +12,7 @@ Implements binary logistic regression using gradient descent.
 
 | Method | Signature | Description |
 |--------|-------|-------------|
-| `lr.fit(X, y)` | `(List[List[NUM]] or List[NUM], List[INT]) -> VOID` | Fits the model. `y` must contain only 0 and 1 |
+| `lr.fit(X, y)` | `(List[List[NUM]] or List[NUM], List[INT]) -> MACHINE` | Fits the model. `y` must contain only 0 and 1 |
 | `lr.predict(X)` | `(List[List[NUM]] or List[NUM]) -> List[INT]` | Predicts classes (0 or 1) |
 | `lr.predict_proba(X)` | `(List[List[NUM]] or List[NUM]) -> List[List[FLOAT]]` | Returns probabilities [P(0), P(1)] |
 | `lr.score(X, y)` | `(List[List[NUM]] or List[NUM], List[INT]) -> FLOAT` | Computes accuracy |
@@ -59,7 +61,7 @@ Classifier based on the k nearest neighbors (Euclidean distance).
 
 | Method | Signature | Description |
 |--------|-------|-------------|
-| `knn.fit(X, y)` | `(List[List[NUM]] or List[NUM], List[INT]) -> VOID` | Fits the classifier |
+| `knn.fit(X, y)` | `(List[List[NUM]] or List[NUM], List[INT]) -> MACHINE` | Fits the classifier |
 | `knn.predict(X)` | `(List[List[NUM]] or List[NUM]) -> List[INT]` | Predicts classes |
 | `knn.predict_proba(X)` | `(List[List[NUM]] or List[NUM]) -> List[List[FLOAT]]` | Returns class probabilities |
 | `knn.score(X, y)` | `(List[List[NUM]] or List[NUM], List[INT]) -> FLOAT` | Computes accuracy |
@@ -111,7 +113,7 @@ $$\hat{y} = \frac{\sum_{i=1}^{k} w_i \cdot y_i}{\sum_{i=1}^{k} w_i}, \quad w_i =
 
 | Method | Signature | Description |
 |--------|-------|-------------|
-| `knr.fit(X, y)` | `(List[List[NUM]] or List[NUM], List[NUM]) -> VOID` | Stores the training data |
+| `knr.fit(X, y)` | `(List[List[NUM]] or List[NUM], List[NUM]) -> MACHINE` | Stores the training data |
 | `knr.predict(X)` | `(List[List[NUM]] or List[NUM]) -> List[NUM]` | Predicts values |
 | `knr.score(X, y)` | `(List[List[NUM]] or List[NUM], List[NUM]) -> FLOAT` | Computes R² |
 
@@ -184,7 +186,7 @@ A **decision tree** recursively partitions the feature space by learning simple 
 
 | Method | Signature | Description |
 |--------|-------|-------------|
-| `dt.fit(X, y)` | `(List[List[NUM]], List[INT]) -> VOID` | Builds the decision tree |
+| `dt.fit(X, y)` | `(List[List[NUM]], List[INT]) -> MACHINE` | Builds the decision tree |
 | `dt.predict(X)` | `(List[List[NUM]]) -> List[INT]` | Predicts classes by traversing the tree |
 | `dt.score(X, y)` | `(List[List[NUM]], List[INT]) -> FLOAT` | Computes accuracy |
 
@@ -202,7 +204,7 @@ MACHINE model = machine.decision_tree_classifier("gini", 0, 2, 1);
 
 | Property | Type | Description |
 |-----------|------|-------------|
-| `dt.tree_` | `Dict` | Tree structure (internal nodes and leaves) |
+| `dt.tree_` | Backend mapping | Tree structure (internal nodes and leaves) |
 | `dt.classes_` | `List[INT]` | Unique classes seen during fitting |
 | `dt.n_features_` | `INT` | Number of features |
 
@@ -262,7 +264,7 @@ The split with the largest $\Delta MSE$ is selected. Each leaf predicts the mean
 
 | Method | Signature | Description |
 |--------|-------|-------------|
-| `dtr.fit(X, y)` | `(List[List[NUM]], List[NUM]) -> VOID` | Builds the regression tree |
+| `dtr.fit(X, y)` | `(List[List[NUM]], List[NUM]) -> MACHINE` | Builds the regression tree |
 | `dtr.predict(X)` | `(List[List[NUM]]) -> List[NUM]` | Predicts values by traversing the tree |
 | `dtr.score(X, y)` | `(List[List[NUM]], List[NUM]) -> FLOAT` | Computes R² |
 
@@ -278,7 +280,7 @@ MACHINE model = machine.decision_tree_regressor("mse", 0, 2, 1);
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `criterion` | STRING | "mse" | Split criterion: "mse" |
+| `criterion` | STR | "mse" | Split criterion: "mse" |
 | `max_depth` | INT | 0 | Maximum depth (0 = unlimited) |
 | `min_samples_split` | INT | 2 | Minimum samples required to split a node |
 | `min_samples_leaf` | INT | 1 | Minimum samples in a leaf |
@@ -287,7 +289,7 @@ MACHINE model = machine.decision_tree_regressor("mse", 0, 2, 1);
 
 | Property | Type | Description |
 |-----------|------|-------------|
-| `dtr.tree_` | `Dict` | Tree structure (internal nodes and leaves) |
+| `dtr.tree_` | Backend mapping | Tree structure (internal nodes and leaves) |
 | `dtr.n_features_` | `INT` | Number of features |
 
 ### Example
@@ -346,7 +348,7 @@ KAFE sums feature log densities and normalizes class scores in log space, so ver
 
 | Method | Signature | Description |
 |--------|-------|-------------|
-| `nb.fit(X, y)` | `(List[List[NUM]] or List[NUM], List[INT]) -> VOID` | Fits the classifier |
+| `nb.fit(X, y)` | `(List[List[NUM]] or List[NUM], List[INT]) -> MACHINE` | Fits the classifier |
 | `nb.predict(X)` | `(List[List[NUM]] or List[NUM]) -> List[INT]` | Predicts classes |
 | `nb.predict_proba(X)` | `(List[List[NUM]] or List[NUM]) -> List[List[FLOAT]]` | Returns class probabilities |
 | `nb.score(X, y)` | `(List[List[NUM]] or List[NUM], List[INT]) -> FLOAT` | Computes accuracy |
@@ -409,7 +411,7 @@ Random Forest trains multiple decision trees on bootstrap samples and random fea
 
 | Method | Signature | Description |
 |--------|-------|-------------|
-| `rf.fit(X, y)` | `(List[List[NUM]] or List[NUM], List[INT]) -> VOID` | Fits the ensemble |
+| `rf.fit(X, y)` | `(List[List[NUM]] or List[NUM], List[INT]) -> MACHINE` | Fits the ensemble |
 | `rf.predict(X)` | `(List[List[NUM]] or List[NUM]) -> List[INT]` | Predicts by majority vote |
 | `rf.score(X, y)` | `(List[List[NUM]] or List[NUM], List[INT]) -> FLOAT` | Computes accuracy |
 
@@ -424,7 +426,7 @@ MACHINE rf = machine.random_forest_classifier(10, 0, 2, 1);
 
 | Property | Type | Description |
 |-----------|------|-------------|
-| `rf.trees_` | `List[Dict]` | List of fitted trees |
+| `rf.trees_` | Backend tree collection | List of fitted trees |
 | `rf.classes_` | `List[INT]` | Unique classes seen during fitting |
 | `rf.n_features_` | `INT` | Number of features |
 
@@ -471,7 +473,7 @@ Random Forest Regressor trains multiple regression trees on bootstrap samples an
 
 | Method | Signature | Description |
 |--------|-------|-------------|
-| `rf.fit(X, y)` | `(List[List[NUM]] or List[NUM], List[NUM]) -> VOID` | Fits the ensemble |
+| `rf.fit(X, y)` | `(List[List[NUM]] or List[NUM], List[NUM]) -> MACHINE` | Fits the ensemble |
 | `rf.predict(X)` | `(List[List[NUM]] or List[NUM]) -> List[NUM]` | Predicts by averaging |
 | `rf.score(X, y)` | `(List[List[NUM]] or List[NUM], List[NUM]) -> FLOAT` | Computes R² |
 
@@ -486,7 +488,7 @@ MACHINE rf = machine.random_forest_regressor(10, 0, 2, 1);
 
 | Property | Type | Description |
 |-----------|------|-------------|
-| `rf.trees_` | `List[Dict]` | List of fitted trees |
+| `rf.trees_` | Backend tree collection | List of fitted trees |
 | `rf.n_features_` | `INT` | Number of features |
 
 ### Example

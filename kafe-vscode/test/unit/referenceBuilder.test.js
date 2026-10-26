@@ -58,10 +58,10 @@ test('only reviewed fixtures are admitted with complete normalized code, input a
   const result = repo.build();
   assert.deepEqual(result.fixtures, [
     { path: 'tests/a_error.error.kf', code: 'invalid();\n', input: '',
-      expectedOutput: 'Unknown function\n', expectedStream: 'stderr', expectedExitCode: 1,
+      expectedOutput: 'Unknown function\n', expectedStream: 'stderr', expectedStdout: '', expectedStderr: 'Unknown function\n', expectedExitCode: 1,
       kind: 'expected-error' },
     { path: 'tests/z_valid.kf', code: 'function main() {\n  show(37);\n}\n', input: '37\n',
-      expectedOutput: '37\n', expectedStream: 'stdout', expectedExitCode: 0, kind: 'valid' },
+      expectedOutput: '37\n', expectedStream: 'stdout', expectedStdout: '37\n', expectedStderr: '', expectedExitCode: 0, kind: 'valid' },
   ]);
   assert.deepEqual(result.omittedFixtures, ['tests/unreviewed.kf']);
 });

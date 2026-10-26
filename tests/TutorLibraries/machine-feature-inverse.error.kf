@@ -1,0 +1,4 @@
+import machine;
+MACHINE selector = machine.variance_threshold();
+selector.fit([[1.0, 0.0], [2.0, 0.0]]);
+show(selector.inverse_transform([[1.0], [2.0]]));

@@ -6,6 +6,7 @@ const { spawn } = require('node:child_process');
 const { gunzipSync } = require('node:zlib');
 const yauzl = require('yauzl');
 const { knowledgeContentDigest, createKnowledgeAuthority } = require('./tutor/KnowledgeRetriever');
+const { REQUIRED_SECTIONS: KNOWLEDGE_SECTIONS } = require('./tutor/KnowledgeCorpus');
 const { isDeepStrictEqual } = require('node:util');
 
 const PINNED_MANIFEST = require('./runtimeManifest.json');
@@ -25,7 +26,6 @@ const REQUIRED_RUNTIME_MEMBERS = [
   'knowledge-pack/grammar/Kafe_Grammar.g4',
   'knowledge-pack/grammar/Kafe_Lexer.g4',
 ];
-const KNOWLEDGE_SECTIONS = ['getting-started', 'language', 'libraries', 'specification', 'errors', 'examples'];
 const WINDOWS_RESERVED = /^(con|prn|aux|nul|com[1-9¹²³]|lpt[1-9¹²³])(?:\.|$)/i;
 const REDIRECT_HOSTS = new Set(['release-assets.githubusercontent.com']);
 const RELEASE_HOSTS = new Set(['github.com', 'releases.astral.sh']);
