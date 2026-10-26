@@ -25,11 +25,12 @@ permissions:
   contents: read
 
 jobs:
+  # Preserve real macOS 26 checks on Intel after repeated hosted ARM capacity failures.
   unit:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        os: [ubuntu-latest, windows-latest, macos-26-intel]
     runs-on: ${{ matrix.os }}
     defaults:
       run:
@@ -41,6 +42,11 @@ jobs:
       - uses: actions/setup-node@v7
         with:
           node-version: 24
+      - name: Verify macOS host architecture
+        if: matrix.os == 'macos-26-intel'
+        run: |
+          sw_vers
+          node -e "const assert = require('node:assert/strict'); console.log(process.platform, process.arch); assert.equal(process.platform, 'darwin'); assert.equal(process.arch, 'x64');"
       - uses: actions/setup-python@v7
         with:
           python-version: '3.11'

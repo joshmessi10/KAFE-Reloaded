@@ -952,6 +952,7 @@ The general Python workflow stopped at seven findings in three transitive packag
 - Use Node 24 LTS in developer CI while retaining the actual VS Code 1.96.0 host and product engine constraint. Audit the complete npm graph once in the Ubuntu unit job, with low severity as the failure threshold.
 - Explicitly deny the unused signing-helper install script. Verify ordinary unsigned VSIX packaging without that binary; do not grant additional install-script execution permissions to remove a warning.
 - Retain all Python warnings, exact stream, coverage, audit and native gates. Document the upstream Mocha/glob installer deprecation narrowly, without log filters, audit exclusions or an unrelated major override.
+- Run the macOS unit matrix entry on the standard `macos-26-intel` host after two repair runs failed to acquire ARM runners with explicit capacity annotations. Log the OS and assert actual Darwin/x64 execution. Preserve all three operating systems, every test and the full-matrix prerequisite for native Windows checks. This changes actual Mac host coverage from ARM64 to x64; Apple Silicon host acceptance remains deferred, rather than inferred from Intel success.
 
 ### Compatibility and consequences
 
@@ -964,3 +965,4 @@ These changes repair current repository locks and CI tooling. They do not change
 - [Brotli security release](https://github.com/google/brotli/releases/tag/v1.2.1), [Filelock 4.2.1](https://github.com/tox-dev/filelock/releases/tag/4.2.1).
 - [MSAL advisory](https://github.com/advisories/GHSA-xcx6-jx8p-x3h5), [serializer advisory](https://github.com/yahoo/serialize-javascript/security/advisories/GHSA-m5mm-p8h7-m29v).
 - [uv package-specific cooldowns](https://docs.astral.sh/uv/concepts/resolution/#reproducible-resolutions), [Node release support](https://nodejs.org/en/about/previous-releases), [npm install-script policy](https://docs.npmjs.com/cli/v11/commands/npm-install-scripts/).
+- [Supported standard macOS runner labels](https://docs.github.com/en/actions/reference/runners/github-hosted-runners), [macOS 26 Intel image](https://github.com/actions/runner-images/blob/main/images/macos/macos-26-Readme.md), [Node 24 platform support](https://github.com/nodejs/node/blob/v24.x/BUILDING.md).

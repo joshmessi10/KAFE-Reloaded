@@ -41,7 +41,7 @@ test('workflow configuration covers language/reference changes, read-only permis
 
   assertReadOnlyPermissions(workflow);
 
-  assert.match(workflow, /^  unit:\r?\n    strategy:\r?\n      fail-fast: false\r?\n      matrix:\r?\n        os: \[ubuntu-latest, windows-latest, macos-latest\]\r?\n    runs-on: \$\{\{ matrix\.os \}\}$/m);
+  assert.match(workflow, /^  unit:\r?\n    strategy:\r?\n      fail-fast: false\r?\n      matrix:\r?\n        os: \[ubuntu-latest, windows-latest, macos-26-intel\]\r?\n    runs-on: \$\{\{ matrix\.os \}\}$/m);
   assert.match(workflow, /^  windows-extension:\r?\n    needs: unit\r?\n    runs-on: windows-latest$/m);
 
   const unitJob = workflow.slice(workflow.indexOf('\n  unit:'), workflow.indexOf('\n  windows-extension:'));
@@ -49,6 +49,8 @@ test('workflow configuration covers language/reference changes, read-only permis
   assert.match(unitJob, /^    defaults:\r?\n      run:\r?\n        working-directory: kafe-vscode$/m);
   assert.match(unitJob, /^      - uses: actions\/checkout@v7$/m);
   assert.match(unitJob, /^      - uses: actions\/setup-node@v7\r?\n        with:\r?\n          node-version: 24$/m);
+  assert.match(unitJob, /^      - name: Verify macOS host architecture\r?\n        if: matrix\.os == 'macos-26-intel'\r?\n        run: \|\r?\n          sw_vers\r?\n          node -e /m);
+  assert.match(unitJob, /console\.log\(process\.platform, process\.arch\); assert\.equal\(process\.platform, 'darwin'\); assert\.equal\(process\.arch, 'x64'\);/);
   assert.match(unitJob, /^      - run: npm ci$/m);
   assert.match(unitJob, /^      - name: Audit extension dependencies\r?\n        if: matrix\.os == 'ubuntu-latest'\r?\n        run: npm audit --audit-level=low$/m);
   assert.match(unitJob, /^      - run: npm run test:unit$/m);

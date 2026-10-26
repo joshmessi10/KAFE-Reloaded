@@ -33,6 +33,8 @@ Reference verification requires full token consumption without parser/lexer diag
 
 The extension workflow watches extension, interpreter, test, documentation and lock/configuration inputs. It checks freshness and API evidence against the pinned interpreter, alongside unit/host/package and rendered-layout gates. Workflow configuration is not evidence of a hosted CI pass; read the result at the actual pushed commit.
 
+The unit matrix requires Ubuntu, Windows and macOS 26 on the standard Intel runner. Repeated hosted ARM capacity failures motivated the explicit Mac host selection; setup logs the OS and asserts actual Darwin/x64 execution. All tests and the native Windows prerequisite remain blocking. Passing Intel checks does not establish Apple Silicon host acceptance, which remains deferred capacity coverage.
+
 ## Model evaluation and limits
 
 Eight reviewed conceptual topics are bundled with the API contracts. They cover sensitivity, classifier error costs, imbalance, held-out evaluation, prediction thresholds, nonlinear representation, learning rate and overfitting. Concept questions receive a bounded explanation and related API material; exact API queries retain their contract precedence. Topic/source changes invalidate generated freshness. See [Evaluation alignment](evaluation-alignment.md) for practical scaffolding, Run evidence, consent and the unfinished research instruments.

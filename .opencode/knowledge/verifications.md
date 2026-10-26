@@ -157,6 +157,8 @@ Extension developer jobs use Node 24 LTS because the pinned development tools re
 
 The npm installer still reports the upstream glob 10.5.0 deprecation through test-cli's supported Mocha 11 range. This is a narrow installer-warning exception while that upstream range remains; do not filter logs, relax audits or force an unrelated Mocha/glob major merely to remove the notice. Python warnings, exact streams and coverage remain strict. See [uv's per-package age policy](https://docs.astral.sh/uv/concepts/resolution/#reproducible-resolutions), [Node LTS releases](https://nodejs.org/en/about/previous-releases), [the MSAL advisory](https://github.com/advisories/GHSA-xcx6-jx8p-x3h5) and [the serializer advisory](https://github.com/yahoo/serialize-javascript/security/advisories/GHSA-m5mm-p8h7-m29v).
 
+The extension unit matrix runs on Ubuntu, Windows and actual macOS 26 Intel hosts. The standard `macos-26-intel` label avoids the ARM pool that repeatedly failed runner acquisition during this repair; setup logs the OS and asserts Darwin/x64. Every unit/freshness check and the native Windows dependency on the complete matrix remain required. This is x64 Mac evidence; ARM64 host acceptance stays deferred until it is observed separately. Do not treat missing runner capacity as a passing test or simulate the macOS gate on Linux.
+
 ## Quality Standards
 
 The Reviewer (`/dod`) evaluates the applicable mirrored root policies and relevant project knowledge, including this document, `conventions.md`, and `architecture.md`. Knowledge provides technical criteria and evidence within those policies; it cannot exclude repository invariants or override runtime/user instructions. Review against documented requirements without inventing additional ones.
