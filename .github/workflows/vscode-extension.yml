@@ -6,12 +6,18 @@ on:
       - 'kafe-vscode/**'
       - 'src/**'
       - 'tests/**'
+      - 'docs/**'
+      - 'pyproject.toml'
+      - 'uv.lock'
       - '.github/workflows/vscode-extension.yml'
   pull_request:
     paths:
       - 'kafe-vscode/**'
       - 'src/**'
       - 'tests/**'
+      - 'docs/**'
+      - 'pyproject.toml'
+      - 'uv.lock'
       - '.github/workflows/vscode-extension.yml'
   workflow_dispatch:
 
@@ -35,6 +41,9 @@ jobs:
       - uses: actions/setup-node@v7
         with:
           node-version: 20
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.11'
       - run: npm ci
       - run: npm run references:check
       - run: npm run test:unit
@@ -87,7 +96,8 @@ jobs:
           cd src
           java -jar "$RUNNER_TEMP/antlr.jar" -no-listener -visitor -Dlanguage=Python3 Kafe_Grammar.g4
       - run: KAFE_REFERENCE_RUNTIME_ROOT="$RUNNER_TEMP/kafe-reference-runtime" uv run --locked --group dev python kafe-vscode/scripts/verify-tutor-references.py
-      - run: uv run --locked --group dev pytest tests/test_tutor_references.py tests/test_tutor_reference_verifier.py -q
+      - run: KAFE_REFERENCE_RUNTIME_ROOT="$RUNNER_TEMP/kafe-reference-runtime" uv run --locked --group dev python kafe-vscode/scripts/verify-library-references.py
+      - run: uv run --locked --group dev pytest tests/test_tutor_references.py tests/test_tutor_reference_verifier.py tests/test_tutor_library_references.py -q
 
   layout:
     runs-on: ubuntu-latest

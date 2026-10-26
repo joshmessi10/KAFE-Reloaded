@@ -31,8 +31,12 @@ function assertReadOnlyPermissions(workflow) {
 test('workflow configuration covers language/reference changes, read-only permissions, the three OS matrix, Windows needs unit, and no publication commands', () => {
   const workflow = readFileSync(workflowPath, 'utf8');
 
-  assert.match(workflow, /^  push:\r?\n    paths:\r?\n      - 'kafe-vscode\/\*\*'\r?\n      - 'src\/\*\*'\r?\n      - 'tests\/\*\*'\r?\n      - '\.github\/workflows\/vscode-extension\.yml'$/m);
-  assert.match(workflow, /^  pull_request:\r?\n    paths:\r?\n      - 'kafe-vscode\/\*\*'\r?\n      - 'src\/\*\*'\r?\n      - 'tests\/\*\*'\r?\n      - '\.github\/workflows\/vscode-extension\.yml'$/m);
+  for (const event of ['push', 'pull_request']) {
+    const block = workflow.match(new RegExp(`^  ${event}:\\r?\\n    paths:\\r?\\n((?:      - [^\\r\\n]+\\r?\\n)+)`, 'm'))?.[1];
+    assert.ok(block, `${event} has explicit path triggers`);
+    const paths = [...block.matchAll(/      - '([^']+)'/g)].map(match => match[1]);
+    assert.deepEqual(paths, ['kafe-vscode/**', 'src/**', 'tests/**', 'docs/**', 'pyproject.toml', 'uv.lock', '.github/workflows/vscode-extension.yml']);
+  }
   assert.match(workflow, /^  workflow_dispatch:$/m);
 
   assertReadOnlyPermissions(workflow);

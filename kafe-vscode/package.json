@@ -2,7 +2,7 @@
   "name": "kafe-neural-suite",
   "displayName": "KAFE - Neural Language Suite",
   "description": "Edit and run KAFE programs with a guided AI tutor.",
-  "version": "2.2.0",
+  "version": "2.3.0",
   "publisher": "KAFEGROUP",
   "icon": "icon.png",
   "license": "MIT",
@@ -215,9 +215,9 @@
     }
   },
   "scripts": {
-    "references:build": "node scripts/build-tutor-references.cjs",
-    "references:check": "node scripts/build-tutor-references.cjs --check",
-    "references:verify": "python scripts/verify-tutor-references.py",
+    "references:build": "node scripts/build-tutor-references.cjs && node scripts/build-library-references.cjs && node scripts/build-library-evals.cjs",
+    "references:check": "node scripts/build-tutor-references.cjs --check && node scripts/build-library-references.cjs --check && node scripts/build-library-evals.cjs --check",
+    "references:verify": "python scripts/verify-tutor-references.py && python scripts/verify-library-references.py",
     "test:layout": "node --test test/layout/tutorView.layout.test.cjs",
     "test:unit": "node test/run-unit-tests.js",
     "test:extension": "node test/run-extension-host-tests.js",

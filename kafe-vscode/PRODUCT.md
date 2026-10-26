@@ -24,6 +24,8 @@ One active sidebar conversation and one composer, with saved conversations scope
 - Send captures the submitted message, eligible history and visibly authorized context; the host checks sources and knowledge before transmission. Typing does not retrieve knowledge or contact the provider.
 - Restricted Mode permits message-only chat while excluding workspace files, edits and Run. Provider tools cannot execute programs or apply edits.
 - Missing executable runtime or knowledge does not block ordinary configured-provider conversation; unavailable knowledge is disclosed. Validated cached knowledge has independent availability.
+- Extension 2.3.0 includes reviewed version-matched MACHINE/GESHA contracts, documentation and examples before runtime installation, including message-only Restricted Mode. Exact API names and English/Spanish concepts select bounded complete reference units; bundled lookup does not require a ready managed knowledge pack. Unsupported/limited behavior stays explicit. Complete reference coverage does not establish model-answer correctness or learning efficacy.
+- Reference selection shares a 12 KiB budget between library material and fixture examples. Library selection uses at most three units and 8 KiB, with each admitted unit at most 6 KiB. Knowledge tool lookup uses at most five units and 12 KiB. Programs, signatures and fenced code remain whole; oversized units are omitted. Current bundled MACHINE/GESHA material takes precedence over old managed library narratives.
 - DeepSeek configuration, SecretStorage, bounded context/output and native diff guards remain. Apply requires a reviewed current proposal and never starts Run.
 - Confirmation adopts a Tutor-proposed checkpoint; it does not establish authorship, understanding or mastery. Discuss/Skip confer no grant. Native optional learning levels offer Beginner (default), Intermediate and Expert as complete teaching presets. A separate Pause/Resume Teaching command preserves the selected level; busy changes queue until settlement. Levels describe guidance preferences, not measured ability.
 - Exact target/scope permission admits one proposal preparation. Missing keys, failure or cancellation require fresh permission; Review, Apply and Run remain separate.
@@ -33,7 +35,7 @@ One active sidebar conversation and one composer, with saved conversations scope
 - The local archive is limited to 200 conversations, 4 MiB per conversation and 16 MiB total, without silent eviction. Its full transcript is separate from the eight eligible completed pairs / 32 KiB provider context window. Malformed saved data is preserved and the current chat is marked temporary; failed writes keep the current chat live and report the failure.
 - Export saves the selected conversation as versioned UTF-8 JSON through a native Save dialog, including complete visible messages, statuses and safe summaries. It omits draft, preferences, provider history/dependencies, source metadata and executable handles. Message text and code entered by the learner remain part of saved/exported content. Export has a separate 16 MiB bound and does not stop the response.
 - Credentials remain in SecretStorage; attached source snapshots, raw requests, private Run evidence and raw transport errors are excluded from the conversation archive and export. Existing legacy progress remains separate from saved conversations and model context; confirmed legacy clearing preserves live chat and credentials.
-- The managed runtime uses separately published, checksum-pinned KAFE and uv assets. Deterministic services do not prove real-provider behavior, physical IME, screen-reader speech or learning efficacy.
+- The managed runtime remains separately published, checksum-pinned KAFE 0.3.0 with uv 0.11.3 and Python 3.11 or newer. Trusted activation can prepare it automatically; preparation grants no permission to run learner code. Updated managed corpus packaging requires a future versioned release. Deterministic services do not prove real-provider behavior, physical IME, screen-reader speech or learning efficacy.
 
 ## Brand Commitments
 
@@ -42,6 +44,10 @@ Preserve KAFE identity. The pinned Kilo extension is the visual and interaction 
 ## Evidence on Hand
 
 The approved conversation simplification supersedes the historical pure-chat workflow. Unit, trusted/restricted host, native-webview and archive gates provide distinct bounded evidence. Native measurements must state actual widths and zoom clamps rather than infer acceptance. Real-provider and managed-install release acceptance remain separate.
+
+Library coverage joins the intended pinned public API inventory to reviewed positional contracts, source-bound receiver members and actual KAFE evidence. The intended top-level surface is 58 MACHINE functions, 56 GESHA wrappers and five activation aliases. The unavailable GESHA `l1_l2_regularizer` binding has negative evidence and an explicit limitation; it is not promoted to a working API. Dependency-audit advisories and availability of the native 1.96.0 host remain separate release gates, regardless of reference completeness.
+
+Eight bundled conceptual topics align practice support with the study proposal. The Tutor should explain first, use grounding quietly, interpret actual authorized results and keep practical choices with the learner. Positive-class sensitivity differs from macro recall. Pre/post answers and research scoring are not production content; source-changed results stay historical, and transcript analysis requires separate consent. The alignment guide records the unfinished human instruments and the distinction between deterministic checks and empirical learning outcomes.
 
 ## Product Principles
 

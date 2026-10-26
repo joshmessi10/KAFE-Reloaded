@@ -1,16 +1,16 @@
 # KAFE Neural Development Suite
 
-For test-backed code guidance, reference freshness checks, and the contributor workflow, see [Maintaining Tutor reliability](../docs/extension/tutor-reliability.md).
+For test-backed code guidance, reference freshness checks, and the contributor workflow, see [Maintaining Tutor reliability](../docs/extension/tutor-reliability.md). The [evaluation alignment guide](../docs/extension/evaluation-alignment.md) maps conceptual teaching, practical learner reasoning and evidence handling to the study proposal.
 
 The extension provides KAFE `.kf` highlighting, snippets, learner-started execution and a Tutor conversation in VS Code 1.96.0 or later. Open **KAFE: Open Tutor**.
 
-Local candidate **2.2.0** adds saved workspace conversations and JSON export.
+Local candidate **2.3.0** adds complete reviewed MACHINE/GESHA API reference coverage, available before runtime installation, alongside saved workspace conversations and JSON export.
 
 ## Conversation
 
 Type a message and press **Send** or Enter once. Shift+Enter inserts a newline. One answer streams in place. **Stop** replaces Send during a response while the next draft stays editable. **Retry** uses the original question and current authorized context, preserves the next draft and does not duplicate the learner message. Key configuration never sends automatically.
 
-The included whole-file indicators identify the active eligible `.kf` and selected optional files. **Add context** lists visible same-workspace `.kf` metadata without reading optional contents; explicit inclusion permits capture at Send. Indicators reveal their named file natively; optional indicators can be removed. Accessible names and tooltips retain full identities, including duplicate basenames. Optional selection survives becoming active and closing its editors. Source/trust/knowledge changes fence admission and invalidate dependent authority. Restricted Mode permits message-only learning while excluding workspace files, edits and Run.
+The included whole-file indicators identify the active eligible `.kf` and selected optional files. **Add context** lists visible same-workspace `.kf` metadata without reading optional contents; explicit inclusion provides consent to capture those files at Send. Indicators reveal their named file natively; optional indicators can be removed. Accessible names and tooltips retain full identities, including duplicate basenames. Optional selection survives becoming active and closing its editors. Source/trust/knowledge changes fence admission and invalidate dependent authority. Restricted Mode permits message-only learning while excluding workspace files, edits and Run.
 
 ## Saved conversations and export
 
@@ -66,13 +66,19 @@ The saved transcript is separate from that bounded provider context: older visib
 
 ## Runtime and knowledge
 
-The managed runtime is pinned to KAFE 0.2.0 and uv 0.11.3. **KAFE: Install Runtime** asks for explicit consent, downloads the verified runtime and uv assets into VS Code's private global storage, installs the locked runtime dependencies there, and then enables **KAFE: Run File**. Ordinary conversation with a configured provider can proceed before runtime setup. Available validated cached knowledge can be used independently of executable readiness. Invalid or changed knowledge must never be represented as valid grounding.
+MACHINE/GESHA references ship with the extension. They cover the intended public functions, returned-object methods/properties, positional calls, English/Spanish terminology and known limits for the pinned interpreter. The Tutor selects relevant complete contracts, documentation and reviewed examples for each request; it does not send the entire library corpus. This guidance and bundled knowledge lookup work in message-only Restricted Mode and before executable runtime or managed knowledge setup. Unsupported or experimental paths remain labelled; reference coverage does not guarantee every model answer or proposed program is correct.
+
+The managed runtime remains pinned to **KAFE 0.3.0**, Python 3.11 or newer, and uv 0.11.3. In a trusted workspace the extension automatically prepares a missing published runtime on activation; **KAFE: Install Runtime** also prepares or repairs it. Setup downloads verified assets into VS Code's private global storage and installs locked dependencies there. It does not run a learner program. Ordinary configured-provider conversation and bundled references are available before setup; validated cached knowledge has independent availability.
+
+The published runtime assets and their checksums are unchanged in 2.3.0. Current bundled MACHINE/GESHA contracts take precedence over the older managed pack's library narratives. Extended managed tutorial packaging is prepared for a future separately versioned release. Invalid or changed managed/development knowledge must never be represented as valid grounding.
 
 Contributor Run can use a prepared KAFE checkout and installed tools. An Extension Development Host can use an explicitly validated development knowledge pack. Production installations do not read a development checkout as a fallback. These development paths do not establish managed-release readiness. Supported managed targets are Windows x64, macOS x64/arm64 and Linux x64.
 
 ## Local verification
 
 From `kafe-vscode`, use `npm.cmd run test:unit` and `npm.cmd run test:extension`. Host tests require the cached VS Code 1.96.0 executable and use isolated trusted and restricted profiles; they do not download it. `node test/native/acceptance.cjs <evidence-directory>` runs bounded Windows native acceptance with the cached host and deterministic services. `node test/verify-vsix.js <vsix-path>` validates packaged assets and rejects development, secret and retired workflow files. The local installed `vsce` packager can build a VSIX for inspection without installation.
+
+`npm.cmd run references:build` and `npm.cmd run references:check` cover both fundamentals/fixtures and library contracts/documentation. Reference verification needs the prepared pinned Python/ANTLR runtime; see the reliability guide for review, evidence and source-identity requirements. Local checks, hosted CI, real-provider evaluation and release acceptance are separate evidence.
 
 Deterministic tests do not establish real DeepSeek behavior, published runtime readiness or learning efficacy. Synthetic IME and accessibility-tree checks do not prove physical Windows IME operation or screen-reader speech. Native evidence must report actual measured geometry, including any small-window zoom clamp.
 

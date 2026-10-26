@@ -31,6 +31,8 @@ nav:
       - Installation: getting-started/installation.md
       - First Program: getting-started/first-program.md
       - Basic Examples: getting-started/basic-examples.md
+      - Tutor reliability: extension/tutor-reliability.md
+      - Evaluation alignment: extension/evaluation-alignment.md
   - Language:
       - Lexical Structure: language/lexical-structure.md
       - Type System: language/type-system.md
@@ -49,6 +51,8 @@ nav:
       - PARDOS (DataFrames): libraries/pardos.md
       - MACHINE (ML Utilities):
           - Overview: libraries/machine.md
+          - API contracts and limits: libraries/machine/contracts.md
+          - Learning concepts: libraries/machine/learning-concepts.md
           - Functions and metrics: libraries/machine/metrics.md
           - Linear models and SVM: libraries/machine/linear.md
           - Model selection: libraries/machine/selection.md
@@ -57,6 +61,8 @@ nav:
           - Preprocessing and reduction: libraries/machine/preprocessing.md
       - Gesha (Deep Learning):
           - Overview: libraries/gesha.md
+          - API coverage and limits: libraries/gesha/api-coverage.md
+          - Learning concepts: libraries/gesha/learning-concepts.md
           - Models and training: libraries/gesha/models-training.md
           - Dense networks: libraries/gesha/dense-networks.md
           - Convolutional networks: libraries/gesha/convolutional-networks.md

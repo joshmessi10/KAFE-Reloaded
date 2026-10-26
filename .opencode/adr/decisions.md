@@ -883,3 +883,52 @@ Workspace storage gives each project independent local history using the extensi
 - Persist raw session/request objects or restore old actions: rejected because transcript restoration cannot grant file, Apply or Run authority.
 - Save/export only the bounded provider history: rejected because it would omit older visible messages.
 - Silently evict old conversations at capacity: rejected because learners must control deletion and retain a recovery option.
+
+---
+
+## ADR-0031: Bundle Complete Reviewed MACHINE/GESHA Contracts with Shared Bounded Retrieval
+
+- **Status**: accepted
+- **Date**: 2026-10-25
+
+### Context
+
+The Tutor had representative MACHINE/GESHA fixtures and a separately installed knowledge pack, but those did not establish complete public API guidance before runtime installation. The tutorial tree `docs/ejemplos` was absent from pack selection, source-doc drift was not fully covered by extension CI, and lexical paragraph retrieval could lose signatures or clip code. Existing documentation also included Python/backend assumptions that differ from accepted KAFE positional calls. Runtime 0.3.0 is already published with immutable asset checksums; local documentation work must not imply that those assets changed.
+
+### Decision
+
+Ship generated library contracts and relevant documentation/tutorial units with extension 2.3.0. Curated MACHINE/GESHA records cover the intended public functions, aliases, returned-object methods/properties, parameters, returns, constraints, status and reviewed evidence. Source-derived inventories and source-symbol mappings detect missing coverage. Distinguish supported, limited, experimental, deprecated and unsupported behavior; record the unavailable GESHA L1L2 binding with negative evidence rather than changing runtime behavior.
+
+Bind curated review attestation to the actual pinned interpreter revision/fingerprint. Require current/pinned source equality and hash corpus, contracts, evidence and generated contents. Ordinary generation cannot renew manual source review. Full parsing through EOF and exact stdout/stderr/exit checks verify reviewed DSL fixtures against disposable copies of the pinned runtime, with warnings treated as errors. Declare filesystem fixtures and local assets separately; keep long training, downloads and credentials in separately labelled integration work.
+
+Use one explicit safe corpus definition for canonical docs/grammar and Markdown/KAFE tutorials from `docs/ejemplos`, mapped to `examples/tutorials`. Exclude SVGs/presentation assets and preserve existing path, identity and file/byte bounds. The JavaScript bundle/development selectors and future Python release selector share the same policy. A builder consumes the policy committed at its requested source revision; historical revisions without it retain the six required legacy sections.
+
+Use shared case/accent/camelCase/underscore normalization, reviewed English/Spanish aliases and exact symbol lookup. Preserve complete signatures, headings, tables, fenced examples and source units; omit oversized/incomplete units rather than truncate code. At request composition, library material has at most three units / 8 KiB and shares 12 KiB with complete fixture examples; individual admissions are at most 6 KiB. Bundled tool lookup uses five units / 12 KiB. Managed/development search retains five passages, two per file and 2,000 characters per intact passage.
+
+Keep bundled guidance and tool lookup available in message-only Restricted Mode without executable runtime or managed lineage. Prefer current reviewed MACHINE/GESHA references to older managed library narratives. Retain explicit source/trust, preparation, Review, Apply and Run boundaries, workspace conversation isolation, SecretStorage and honest execution evidence. Extend freshness/coverage/CI checks to documentation and dependency-lock inputs.
+
+### Rationale
+
+Bundling removes runtime-install dependence from educational API guidance while reusing the existing dependency-free reference stack. Curated positional contracts explain actual DSL behavior and expose backend-only limits that signatures alone miss. A source-derived completeness gate prevents silent omissions, while independent manual attestation prevents regeneration from automatically blessing changed semantics. Shared corpus selection and atomic bounded retrieval keep provenance consistent without transmitting the entire library on every request.
+
+### Consequences
+
+- Reference completeness covers the intended shipped surface and its explicit limits. It does not establish arbitrary architecture correctness, real-provider answer quality, learner mastery or correctness of a proposed program.
+- Intended top-level coverage comprises 58 MACHINE functions, 56 GESHA wrappers and five activation aliases. Successful direct KAFE evidence covers all 58 MACHINE functions, 55 usable GESHA wrappers and five aliases; the remaining GESHA wrapper stays explicitly unavailable. Receiver records additionally describe callable and limited/backend-only surfaces.
+- Published runtime 0.3.0 source/assets/checksums remain unchanged. Immediate guidance ships in the extension; an expanded managed pack needs a future committed source/versioned release and its own publication/acceptance evidence.
+- Documentation changes can invalidate freshness checks. Corpus parity, bilingual retrieval, negative APIs, intact-unit budgets and packaged assets require deterministic gates.
+- Existing dependency-audit advisories, unavailable native VS Code 1.96.0 validation, real-provider review and broader release checks remain separate pending gates until actual evidence resolves them.
+
+### Alternatives Considered
+
+- Add every fixture without an API inventory: rejected because fixture counts do not prove complete signatures, receiver methods, positional constraints or truthful limitations.
+- Depend exclusively on a managed knowledge pack: rejected because the approved guidance must work before runtime installation.
+- Send every library document on each request: rejected because bounded relevant contracts/examples provide clearer context and preserve request limits.
+- Add a vector database, external indexing service or runtime dependency: rejected because reviewed aliases, exact symbols and atomic lexical retrieval fit the existing stack.
+- Repoint runtime 0.3.0 to rebuilt assets: rejected because published checksums and source identity must remain immutable.
+
+### Study alignment extension 2026-10-26
+
+The user subsequently supplied the evaluation proposal and response regressions and authorized all alignment fixes. Add eight reviewed conceptual topics to the same bundled, hashed reference model. `LearningTopics` selects current-question guidance; conceptual questions lead with an explanation, while exact/API-form requests retain contract precedence. The generator requires all eight objective identities and valid related APIs. Assessment items and answer keys are excluded from production content.
+
+Teaching policy 3 preserves the Tutor role after tools, uses grounding quietly and leaves practical comparisons/experiments with the learner. It distinguishes positive-class sensitivity from the runtime's macro recall, uses available authorized Run values and asks only for indispensable missing values. Source-change labels and conversation isolation remain authoritative. Explicit closed-book assessments and research sharing have separate conditions; no automatic scoring, collection or claim of learning efficacy is introduced. Deterministic context/instruction tests and synthetic bilingual evaluations support review, while actual model answers and research instruments require separate empirical validation.
