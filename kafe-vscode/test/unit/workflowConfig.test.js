@@ -68,6 +68,17 @@ test('workflow configuration covers language/reference changes, read-only permis
   assert.ok(windowsCommandPositions.every((position) => position >= 0), 'Windows job must install, test, package, and verify');
   assert.deepEqual(windowsCommandPositions, [...windowsCommandPositions].sort((left, right) => left - right));
 
+  const layoutJob = workflow.slice(workflow.indexOf('\n  layout:'));
+  assert.match(layoutJob, /^    timeout-minutes: 10$/m);
+  assert.match(layoutJob, /if ! browser_path="\$\(command -v google-chrome\)"; then/);
+  assert.match(layoutJob, /::error::The runner image must provide Google Chrome/);
+  assert.match(layoutJob, /^          test -x "\$browser_path"$/m);
+  assert.match(layoutJob, /^          "\$browser_path" --version$/m);
+  assert.match(layoutJob, /echo "KAFE_LAYOUT_BROWSER=\$browser_path" >> "\$GITHUB_ENV"/);
+  assert.match(layoutJob, /PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 npm install[^\r\n]*--ignore-scripts[^\r\n]*playwright@1\.62\.1$/m);
+  assert.match(layoutJob, /KAFE_PLAYWRIGHT_MODULE="\$RUNNER_TEMP\/kafe-layout\/node_modules\/playwright" npm run test:layout/);
+  assert.doesNotMatch(layoutJob, /\bapt(?:-get)?\b|--with-deps|cli\.js["']?\s+install/);
+
   assertNoPublicationActions(workflow);
   assertNoPublicationCommands(workflow);
   assert.doesNotMatch(workflow, /^\s*[^#\n]*\$\{\{\s*secrets\./m);

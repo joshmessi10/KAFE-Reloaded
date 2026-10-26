@@ -117,7 +117,15 @@ jobs:
       - run: npm ci
       - name: Prepare isolated browser tooling
         run: |
-          npm install --prefix "$RUNNER_TEMP/kafe-layout" --ignore-scripts --no-audit --no-fund playwright@1.62.1
-          node "$RUNNER_TEMP/kafe-layout/node_modules/playwright/cli.js" install --with-deps chromium
+          # Hosted Ubuntu already includes Chrome and its system libraries.
+          # Avoid external system/browser setup while preserving all rendered checks.
+          if ! browser_path="$(command -v google-chrome)"; then
+            echo "::error::The runner image must provide Google Chrome for layout checks."
+            exit 1
+          fi
+          test -x "$browser_path"
+          "$browser_path" --version
+          echo "KAFE_LAYOUT_BROWSER=$browser_path" >> "$GITHUB_ENV"
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 npm install --prefix "$RUNNER_TEMP/kafe-layout" --ignore-scripts --no-audit --no-fund playwright@1.62.1
       - name: Check rendered conversation layout
         run: KAFE_PLAYWRIGHT_MODULE="$RUNNER_TEMP/kafe-layout/node_modules/playwright" npm run test:layout
