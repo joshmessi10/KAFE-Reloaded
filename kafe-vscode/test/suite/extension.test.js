@@ -6,6 +6,7 @@ const { randomUUID } = require('node:crypto');
 const vscode = require('vscode');
 const { createTutorHost, createRunFileHandler, createClearProgressHandler } = require('../../extension');
 const { DeepSeekProvider, ProviderError } = require('../../src/tutor/providers/DeepSeekProvider');
+const { pinUnpublishedRuntime } = require('../helpers/nativeRuntimeFixture');
 
 const tick = () => new Promise(resolve => setImmediate(resolve));
 async function until(predicate, label) {
@@ -84,6 +85,12 @@ function resolveView(f) {
 }
 
 suite('KAFE extension host', () => {
+  let restoreRuntime;
+  suiteSetup(() => {
+    restoreRuntime = pinUnpublishedRuntime(require('../../src/runtimeManifest.json'));
+  });
+  suiteTeardown(() => { restoreRuntime?.(); });
+
   test('Hello and follow-up send once with unavailable runtime/knowledge and preserve hidden legacy state', async () => {
     const requests = []; const state = new Map([['kafeTutor.progress.v2', structuredClone(legacy)]]);
     const f = fixture({ async *stream({ request }) { requests.push(request); yield { type: 'complete', text: 'Hello answer', toolCalls: [], finishReason: 'stop' }; } }, { persistedState: state });
