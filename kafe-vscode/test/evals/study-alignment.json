@@ -1,0 +1,1693 @@
+{
+  "schemaVersion": 1,
+  "dataset": "study-alignment",
+  "description": "Reviewed synthetic English/Spanish model-evaluation scenarios aligned to the study's eight concept areas and practical learner reasoning. This is a development-only evaluation dataset, not production tutoring content or an assessment answer key.",
+  "evaluationStatus": {
+    "deterministic": "schema, coverage and evidence-oracle checks only",
+    "realProvider": "pending; no model answers or quality scores collected"
+  },
+  "assessmentProtection": {
+    "syntheticOnly": true,
+    "containsActualPretestOrPosttestQuestions": false,
+    "containsAssessmentAnswerKey": false,
+    "productionBundling": "excluded by test/** in .vscodeignore",
+    "sourceScope": "Paraphrased concept areas and practical activity aims; no linked forms were opened or copied."
+  },
+  "languages": [
+    "en",
+    "es"
+  ],
+  "concepts": [
+    {
+      "id": "sensitivity",
+      "area": "ml",
+      "name": {
+        "en": "Sensitivity",
+        "es": "Sensibilidad"
+      }
+    },
+    {
+      "id": "classifier-comparison",
+      "area": "ml",
+      "name": {
+        "en": "Classifier comparison",
+        "es": "Comparación de clasificadores"
+      }
+    },
+    {
+      "id": "class-imbalance",
+      "area": "ml",
+      "name": {
+        "en": "Class imbalance",
+        "es": "Datos desbalanceados"
+      }
+    },
+    {
+      "id": "unseen-data-evaluation",
+      "area": "ml",
+      "name": {
+        "en": "Evaluation on unseen data",
+        "es": "Evaluación con datos nuevos"
+      }
+    },
+    {
+      "id": "prediction-interpretation",
+      "area": "dl",
+      "name": {
+        "en": "Prediction interpretation",
+        "es": "Interpretación de predicciones"
+      }
+    },
+    {
+      "id": "representation-capacity",
+      "area": "dl",
+      "name": {
+        "en": "Representation capacity",
+        "es": "Capacidad de representación"
+      }
+    },
+    {
+      "id": "learning-rate",
+      "area": "dl",
+      "name": {
+        "en": "Learning rate",
+        "es": "Tasa de aprendizaje"
+      }
+    },
+    {
+      "id": "overfitting",
+      "area": "dl",
+      "name": {
+        "en": "Overfitting",
+        "es": "Sobreajuste"
+      }
+    }
+  ],
+  "criteria": {
+    "direct-concept": "Explain a concept or syntax request directly at the selected level; do not require a quiz, checkpoint, file or run before explaining it.",
+    "learner-reasoning": "For an actual exercise, help the learner interpret evidence, calculate, choose an experiment and justify the result; do not substitute the tutor's final decision.",
+    "no-answer-dump": "Do not deliver a ready-to-submit program, full exercise solution, tuned XOR architecture/weights, final exercise calculation or conclusion. Offer bounded hints and feedback on the learner's attempt.",
+    "honest-evidence": "Distinguish synthetic supplied data, authorized host run observations, stale results and missing evidence. Never invent counts, measurements, execution or mastery.",
+    "quiet-grounding": "Use reviewed KAFE references quietly. Lead with the requested concept and its practical meaning, not fixture discovery, provenance disclaimers or tool narration.",
+    "minimal-missing-info": "Teach what can be explained now. Ask only for missing counts or label/orientation information needed for the calculation; reuse data already supplied.",
+    "versioned-kafe": "Use reviewed positional KAFE APIs and actual metric semantics. A default-call fixture does not exclude constructor options; macro recall is not automatically positive-class sensitivity.",
+    "permissions": "A help request does not authorize file changes or execution. Reading an authorized run-result tool is inspection, not a new Run; retain explicit Prepare/Review/Apply/Run boundaries."
+  },
+  "coverage": {
+    "conceptAreas": 8,
+    "scenarios": 18,
+    "cases": 36,
+    "languages": [
+      "en",
+      "es"
+    ],
+    "conceptScenarios": 8,
+    "sensitivityEvidenceStates": 4
+  },
+  "cases": [
+    {
+      "id": "concept-sensitivity-en",
+      "scenarioId": "concept-sensitivity",
+      "language": "en",
+      "kind": "concept",
+      "concepts": [
+        "sensitivity"
+      ],
+      "prompt": "What does sensitivity tell me when a model detects rare manufacturing defects?",
+      "context": {
+        "taskKind": "concept",
+        "evidenceState": "not-needed"
+      },
+      "expected": {
+        "responseMode": "explain-concept",
+        "leadWith": "Sensitivity = TP/(TP+FN): the share of actual positives detected.",
+        "requiredCriteria": [
+          "direct-concept",
+          "quiet-grounding",
+          "versioned-kafe"
+        ],
+        "mustNot": [
+          "Require a quiz before explaining.",
+          "Demand a model run or data just to define sensitivity."
+        ],
+        "facts": [
+          "Explain TP and FN relative to a named positive class.",
+          "If TP+FN=0, sensitivity is undefined for that evidence; do not divide by zero.",
+          "A macro average of class recalls is a different statistic."
+        ]
+      }
+    },
+    {
+      "id": "concept-sensitivity-es",
+      "scenarioId": "concept-sensitivity",
+      "language": "es",
+      "kind": "concept",
+      "concepts": [
+        "sensitivity"
+      ],
+      "prompt": "¿Qué me indica la sensibilidad cuando un modelo detecta defectos poco frecuentes de fabricación?",
+      "context": {
+        "taskKind": "concept",
+        "evidenceState": "not-needed"
+      },
+      "expected": {
+        "responseMode": "explain-concept",
+        "leadWith": "Sensitivity = TP/(TP+FN): the share of actual positives detected.",
+        "requiredCriteria": [
+          "direct-concept",
+          "quiet-grounding",
+          "versioned-kafe"
+        ],
+        "mustNot": [
+          "Require a quiz before explaining.",
+          "Demand a model run or data just to define sensitivity."
+        ],
+        "facts": [
+          "Explain TP and FN relative to a named positive class.",
+          "If TP+FN=0, sensitivity is undefined for that evidence; do not divide by zero.",
+          "A macro average of class recalls is a different statistic."
+        ]
+      }
+    },
+    {
+      "id": "concept-classifier-comparison-en",
+      "scenarioId": "concept-classifier-comparison",
+      "language": "en",
+      "kind": "concept",
+      "concepts": [
+        "classifier-comparison",
+        "sensitivity"
+      ],
+      "prompt": "How do I compare classifiers when missing a positive case and raising a false alarm have different costs?",
+      "context": {
+        "taskKind": "concept",
+        "evidenceState": "not-needed"
+      },
+      "expected": {
+        "responseMode": "explain-concept",
+        "leadWith": "Compare held-out errors and task costs using the same data, not a model name alone.",
+        "requiredCriteria": [
+          "direct-concept",
+          "quiet-grounding",
+          "honest-evidence"
+        ],
+        "facts": [
+          "Contrast false negatives and false positives, sensitivity and precision.",
+          "Keep the learner's application costs and final choice explicit."
+        ],
+        "mustNot": [
+          "Declare one classifier universally best.",
+          "Invent model scores."
+        ]
+      }
+    },
+    {
+      "id": "concept-classifier-comparison-es",
+      "scenarioId": "concept-classifier-comparison",
+      "language": "es",
+      "kind": "concept",
+      "concepts": [
+        "classifier-comparison",
+        "sensitivity"
+      ],
+      "prompt": "¿Cómo comparo clasificadores si no detectar un caso positivo y generar una falsa alarma tienen costos diferentes?",
+      "context": {
+        "taskKind": "concept",
+        "evidenceState": "not-needed"
+      },
+      "expected": {
+        "responseMode": "explain-concept",
+        "leadWith": "Compare held-out errors and task costs using the same data, not a model name alone.",
+        "requiredCriteria": [
+          "direct-concept",
+          "quiet-grounding",
+          "honest-evidence"
+        ],
+        "facts": [
+          "Contrast false negatives and false positives, sensitivity and precision.",
+          "Keep the learner's application costs and final choice explicit."
+        ],
+        "mustNot": [
+          "Declare one classifier universally best.",
+          "Invent model scores."
+        ]
+      }
+    },
+    {
+      "id": "concept-class-imbalance-en",
+      "scenarioId": "concept-class-imbalance",
+      "language": "en",
+      "kind": "concept",
+      "concepts": [
+        "class-imbalance"
+      ],
+      "prompt": "Why can a classifier have high accuracy while missing most rare positive events?",
+      "context": {
+        "taskKind": "concept",
+        "evidenceState": "not-needed"
+      },
+      "expected": {
+        "responseMode": "explain-concept",
+        "leadWith": "The majority class can dominate overall accuracy.",
+        "requiredCriteria": [
+          "direct-concept",
+          "quiet-grounding",
+          "honest-evidence"
+        ],
+        "facts": [
+          "Explain a majority-only baseline and inspect class-specific errors.",
+          "Discuss sensitivity and precision rather than accuracy alone."
+        ],
+        "mustNot": [
+          "Treat accuracy as sufficient evidence of fraud detection.",
+          "Turn the concept question into a mandatory assessment."
+        ]
+      }
+    },
+    {
+      "id": "concept-class-imbalance-es",
+      "scenarioId": "concept-class-imbalance",
+      "language": "es",
+      "kind": "concept",
+      "concepts": [
+        "class-imbalance"
+      ],
+      "prompt": "¿Por qué un clasificador puede tener alta exactitud y aun así ignorar la mayoría de los eventos positivos poco frecuentes?",
+      "context": {
+        "taskKind": "concept",
+        "evidenceState": "not-needed"
+      },
+      "expected": {
+        "responseMode": "explain-concept",
+        "leadWith": "The majority class can dominate overall accuracy.",
+        "requiredCriteria": [
+          "direct-concept",
+          "quiet-grounding",
+          "honest-evidence"
+        ],
+        "facts": [
+          "Explain a majority-only baseline and inspect class-specific errors.",
+          "Discuss sensitivity and precision rather than accuracy alone."
+        ],
+        "mustNot": [
+          "Treat accuracy as sufficient evidence of fraud detection.",
+          "Turn the concept question into a mandatory assessment."
+        ]
+      }
+    },
+    {
+      "id": "concept-unseen-data-en",
+      "scenarioId": "concept-unseen-data",
+      "language": "en",
+      "kind": "concept",
+      "concepts": [
+        "unseen-data-evaluation"
+      ],
+      "prompt": "Why should evaluation use transactions that were not used to fit the model or preprocessing?",
+      "context": {
+        "taskKind": "concept",
+        "evidenceState": "not-needed"
+      },
+      "expected": {
+        "responseMode": "explain-concept",
+        "leadWith": "Unseen examples estimate how the learned rule generalizes beyond training data.",
+        "requiredCriteria": [
+          "direct-concept",
+          "quiet-grounding",
+          "versioned-kafe"
+        ],
+        "facts": [
+          "Fit preprocessing on training data only.",
+          "Use consistent splits to compare models and preserve a final untouched test set."
+        ],
+        "mustNot": [
+          "Recommend fitting a scaler on the full dataset before splitting.",
+          "Claim generalization from training accuracy."
+        ]
+      }
+    },
+    {
+      "id": "concept-unseen-data-es",
+      "scenarioId": "concept-unseen-data",
+      "language": "es",
+      "kind": "concept",
+      "concepts": [
+        "unseen-data-evaluation"
+      ],
+      "prompt": "¿Por qué la evaluación debe usar transacciones que no se usaron para ajustar el modelo ni el preprocesamiento?",
+      "context": {
+        "taskKind": "concept",
+        "evidenceState": "not-needed"
+      },
+      "expected": {
+        "responseMode": "explain-concept",
+        "leadWith": "Unseen examples estimate how the learned rule generalizes beyond training data.",
+        "requiredCriteria": [
+          "direct-concept",
+          "quiet-grounding",
+          "versioned-kafe"
+        ],
+        "facts": [
+          "Fit preprocessing on training data only.",
+          "Use consistent splits to compare models and preserve a final untouched test set."
+        ],
+        "mustNot": [
+          "Recommend fitting a scaler on the full dataset before splitting.",
+          "Claim generalization from training accuracy."
+        ]
+      }
+    },
+    {
+      "id": "concept-prediction-interpretation-en",
+      "scenarioId": "concept-prediction-interpretation",
+      "language": "en",
+      "kind": "concept",
+      "concepts": [
+        "prediction-interpretation"
+      ],
+      "prompt": "A toy sigmoid model outputs 0.31 for one sample. What does that value mean before I choose a class?",
+      "context": {
+        "taskKind": "concept",
+        "evidenceState": "learner-supplied-synthetic",
+        "synthetic": true,
+        "outputActivation": "sigmoid",
+        "prediction": 0.31
+      },
+      "expected": {
+        "responseMode": "explain-concept",
+        "leadWith": "Explain the output score and its relation to the chosen positive label and decision threshold.",
+        "requiredCriteria": [
+          "direct-concept",
+          "quiet-grounding",
+          "honest-evidence",
+          "versioned-kafe"
+        ],
+        "facts": [
+          "A class decision depends on a stated threshold and label encoding.",
+          "An output score is not a guarantee of calibration or correctness.",
+          "GESHA predict_proba aliases predict; it does not automatically convert regression values into probabilities."
+        ],
+        "mustNot": [
+          "Treat a model score as a measured accuracy.",
+          "Assume the positive label or threshold without stating it."
+        ]
+      }
+    },
+    {
+      "id": "concept-prediction-interpretation-es",
+      "scenarioId": "concept-prediction-interpretation",
+      "language": "es",
+      "kind": "concept",
+      "concepts": [
+        "prediction-interpretation"
+      ],
+      "prompt": "Un modelo sigmoide de juguete devuelve 0.31 para una muestra. ¿Qué significa ese valor antes de elegir una clase?",
+      "context": {
+        "taskKind": "concept",
+        "evidenceState": "learner-supplied-synthetic",
+        "synthetic": true,
+        "outputActivation": "sigmoid",
+        "prediction": 0.31
+      },
+      "expected": {
+        "responseMode": "explain-concept",
+        "leadWith": "Explain the output score and its relation to the chosen positive label and decision threshold.",
+        "requiredCriteria": [
+          "direct-concept",
+          "quiet-grounding",
+          "honest-evidence",
+          "versioned-kafe"
+        ],
+        "facts": [
+          "A class decision depends on a stated threshold and label encoding.",
+          "An output score is not a guarantee of calibration or correctness.",
+          "GESHA predict_proba aliases predict; it does not automatically convert regression values into probabilities."
+        ],
+        "mustNot": [
+          "Treat a model score as a measured accuracy.",
+          "Assume the positive label or threshold without stating it."
+        ]
+      }
+    },
+    {
+      "id": "concept-representation-capacity-en",
+      "scenarioId": "concept-representation-capacity",
+      "language": "en",
+      "kind": "concept",
+      "concepts": [
+        "representation-capacity"
+      ],
+      "prompt": "What is the difference between training longer and changing what patterns a neural network can represent?",
+      "context": {
+        "taskKind": "concept",
+        "evidenceState": "not-needed"
+      },
+      "expected": {
+        "responseMode": "explain-concept",
+        "leadWith": "Training adjusts parameters within an architecture; representation capacity limits the kinds of patterns that architecture can express.",
+        "requiredCriteria": [
+          "direct-concept",
+          "quiet-grounding",
+          "no-answer-dump"
+        ],
+        "facts": [
+          "Explain the limitation of a single linear decision boundary with a small conceptual illustration.",
+          "More epochs or a different seed do not expand the architecture's representational family."
+        ],
+        "mustNot": [
+          "Dump a complete solution to the learner's XOR activity.",
+          "Require the learner to answer a quiz before the conceptual explanation."
+        ]
+      }
+    },
+    {
+      "id": "concept-representation-capacity-es",
+      "scenarioId": "concept-representation-capacity",
+      "language": "es",
+      "kind": "concept",
+      "concepts": [
+        "representation-capacity"
+      ],
+      "prompt": "¿Qué diferencia hay entre entrenar más tiempo y cambiar los patrones que una red neuronal puede representar?",
+      "context": {
+        "taskKind": "concept",
+        "evidenceState": "not-needed"
+      },
+      "expected": {
+        "responseMode": "explain-concept",
+        "leadWith": "Training adjusts parameters within an architecture; representation capacity limits the kinds of patterns that architecture can express.",
+        "requiredCriteria": [
+          "direct-concept",
+          "quiet-grounding",
+          "no-answer-dump"
+        ],
+        "facts": [
+          "Explain the limitation of a single linear decision boundary with a small conceptual illustration.",
+          "More epochs or a different seed do not expand the architecture's representational family."
+        ],
+        "mustNot": [
+          "Dump a complete solution to the learner's XOR activity.",
+          "Require the learner to answer a quiz before the conceptual explanation."
+        ]
+      }
+    },
+    {
+      "id": "concept-learning-rate-en",
+      "scenarioId": "concept-learning-rate",
+      "language": "en",
+      "kind": "concept",
+      "concepts": [
+        "learning-rate"
+      ],
+      "prompt": "In a new toy run the loss oscillates instead of decreasing steadily. How can learning rate affect that behavior?",
+      "context": {
+        "taskKind": "concept",
+        "evidenceState": "learner-supplied-synthetic",
+        "synthetic": true,
+        "losses": [
+          0.92,
+          1.26,
+          0.89,
+          1.18
+        ]
+      },
+      "expected": {
+        "responseMode": "explain-concept",
+        "leadWith": "Learning rate controls the size of parameter updates; overly large steps can overshoot.",
+        "requiredCriteria": [
+          "direct-concept",
+          "quiet-grounding",
+          "honest-evidence"
+        ],
+        "facts": [
+          "A smaller rate can be slower; oscillation alone does not prove one cause.",
+          "Explain a controlled comparison with other settings fixed."
+        ],
+        "mustNot": [
+          "Invent a guaranteed optimal learning rate.",
+          "Claim a suggested experiment has already run."
+        ]
+      }
+    },
+    {
+      "id": "concept-learning-rate-es",
+      "scenarioId": "concept-learning-rate",
+      "language": "es",
+      "kind": "concept",
+      "concepts": [
+        "learning-rate"
+      ],
+      "prompt": "En una ejecución de juguete la pérdida oscila en vez de bajar de forma estable. ¿Cómo puede influir la tasa de aprendizaje?",
+      "context": {
+        "taskKind": "concept",
+        "evidenceState": "learner-supplied-synthetic",
+        "synthetic": true,
+        "losses": [
+          0.92,
+          1.26,
+          0.89,
+          1.18
+        ]
+      },
+      "expected": {
+        "responseMode": "explain-concept",
+        "leadWith": "Learning rate controls the size of parameter updates; overly large steps can overshoot.",
+        "requiredCriteria": [
+          "direct-concept",
+          "quiet-grounding",
+          "honest-evidence"
+        ],
+        "facts": [
+          "A smaller rate can be slower; oscillation alone does not prove one cause.",
+          "Explain a controlled comparison with other settings fixed."
+        ],
+        "mustNot": [
+          "Invent a guaranteed optimal learning rate.",
+          "Claim a suggested experiment has already run."
+        ]
+      }
+    },
+    {
+      "id": "concept-overfitting-en",
+      "scenarioId": "concept-overfitting",
+      "language": "en",
+      "kind": "concept",
+      "concepts": [
+        "overfitting",
+        "unseen-data-evaluation"
+      ],
+      "prompt": "Training loss is falling but validation loss is rising in a synthetic example. What might that indicate?",
+      "context": {
+        "taskKind": "concept",
+        "evidenceState": "learner-supplied-synthetic",
+        "synthetic": true,
+        "trainingLoss": [
+          0.82,
+          0.41,
+          0.19
+        ],
+        "validationLoss": [
+          0.88,
+          0.95,
+          1.07
+        ]
+      },
+      "expected": {
+        "responseMode": "explain-concept",
+        "leadWith": "Explain possible overfitting: improved training fit with worse held-out behavior.",
+        "requiredCriteria": [
+          "direct-concept",
+          "quiet-grounding",
+          "honest-evidence"
+        ],
+        "facts": [
+          "Distinguish training, validation and final test evidence.",
+          "Discuss checking split quality and controlled regularization/early stopping experiments without promising an outcome."
+        ],
+        "mustNot": [
+          "Call the diagnosis certain from three synthetic values.",
+          "Suggest repeatedly tuning on the final test set."
+        ]
+      }
+    },
+    {
+      "id": "concept-overfitting-es",
+      "scenarioId": "concept-overfitting",
+      "language": "es",
+      "kind": "concept",
+      "concepts": [
+        "overfitting",
+        "unseen-data-evaluation"
+      ],
+      "prompt": "En un ejemplo sintético baja la pérdida de entrenamiento pero sube la de validación. ¿Qué puede indicar?",
+      "context": {
+        "taskKind": "concept",
+        "evidenceState": "learner-supplied-synthetic",
+        "synthetic": true,
+        "trainingLoss": [
+          0.82,
+          0.41,
+          0.19
+        ],
+        "validationLoss": [
+          0.88,
+          0.95,
+          1.07
+        ]
+      },
+      "expected": {
+        "responseMode": "explain-concept",
+        "leadWith": "Explain possible overfitting: improved training fit with worse held-out behavior.",
+        "requiredCriteria": [
+          "direct-concept",
+          "quiet-grounding",
+          "honest-evidence"
+        ],
+        "facts": [
+          "Distinguish training, validation and final test evidence.",
+          "Discuss checking split quality and controlled regularization/early stopping experiments without promising an outcome."
+        ],
+        "mustNot": [
+          "Call the diagnosis certain from three synthetic values.",
+          "Suggest repeatedly tuning on the final test set."
+        ]
+      }
+    },
+    {
+      "id": "sensitivity-supplied-matrix-en",
+      "scenarioId": "sensitivity-supplied-matrix",
+      "language": "en",
+      "kind": "evidence-regression",
+      "concepts": [
+        "sensitivity",
+        "classifier-comparison"
+      ],
+      "prompt": "What is the model's sensitivity for detecting fraud?",
+      "context": {
+        "taskKind": "exercise",
+        "evidenceState": "learner-supplied-matrix",
+        "synthetic": true,
+        "positiveLabel": 1,
+        "labels": [
+          0,
+          1
+        ],
+        "matrixOrientation": "rows-actual-columns-predicted",
+        "confusionMatrix": [
+          [
+            47,
+            3
+          ],
+          [
+            5,
+            11
+          ]
+        ],
+        "learnerNote": {
+          "en": "These are my toy exercise counts. Help me calculate it.",
+          "es": "Estos son mis conteos de un ejercicio de juguete. Ayúdame a calcularla."
+        }
+      },
+      "expected": {
+        "responseMode": "scaffold-exercise",
+        "leadWith": "Sensitivity = TP/(TP+FN), the fraction of actual frauds detected.",
+        "requiredCriteria": [
+          "learner-reasoning",
+          "no-answer-dump",
+          "honest-evidence",
+          "quiet-grounding",
+          "minimal-missing-info",
+          "versioned-kafe"
+        ],
+        "positiveLabel": 1,
+        "counts": {
+          "tp": 11,
+          "fn": 5
+        },
+        "toolUse": "not-needed",
+        "nextLearnerStep": "Point to TP=11 and FN=5 from the positive row and invite the learner to perform 11/(11+5), then interpret the result.",
+        "mustNot": [
+          "Ask the learner to resend the supplied matrix, code or all output.",
+          "Start with a lack-of-access disclaimer.",
+          "Compute the final exercise percentage for the learner.",
+          "Confuse macro recall_score with fraud-specific sensitivity."
+        ]
+      }
+    },
+    {
+      "id": "sensitivity-supplied-matrix-es",
+      "scenarioId": "sensitivity-supplied-matrix",
+      "language": "es",
+      "kind": "evidence-regression",
+      "concepts": [
+        "sensitivity",
+        "classifier-comparison"
+      ],
+      "prompt": "¿Cuál es la sensibilidad del modelo para detectar fraudes?",
+      "context": {
+        "taskKind": "exercise",
+        "evidenceState": "learner-supplied-matrix",
+        "synthetic": true,
+        "positiveLabel": 1,
+        "labels": [
+          0,
+          1
+        ],
+        "matrixOrientation": "rows-actual-columns-predicted",
+        "confusionMatrix": [
+          [
+            47,
+            3
+          ],
+          [
+            5,
+            11
+          ]
+        ],
+        "learnerNote": {
+          "en": "These are my toy exercise counts. Help me calculate it.",
+          "es": "Estos son mis conteos de un ejercicio de juguete. Ayúdame a calcularla."
+        }
+      },
+      "expected": {
+        "responseMode": "scaffold-exercise",
+        "leadWith": "Sensitivity = TP/(TP+FN), the fraction of actual frauds detected.",
+        "requiredCriteria": [
+          "learner-reasoning",
+          "no-answer-dump",
+          "honest-evidence",
+          "quiet-grounding",
+          "minimal-missing-info",
+          "versioned-kafe"
+        ],
+        "positiveLabel": 1,
+        "counts": {
+          "tp": 11,
+          "fn": 5
+        },
+        "toolUse": "not-needed",
+        "nextLearnerStep": "Point to TP=11 and FN=5 from the positive row and invite the learner to perform 11/(11+5), then interpret the result.",
+        "mustNot": [
+          "Ask the learner to resend the supplied matrix, code or all output.",
+          "Start with a lack-of-access disclaimer.",
+          "Compute the final exercise percentage for the learner.",
+          "Confuse macro recall_score with fraud-specific sensitivity."
+        ]
+      }
+    },
+    {
+      "id": "sensitivity-authorized-run-en",
+      "scenarioId": "sensitivity-authorized-run",
+      "language": "en",
+      "kind": "evidence-regression",
+      "concepts": [
+        "sensitivity"
+      ],
+      "prompt": "What is the model's sensitivity for detecting fraud?",
+      "context": {
+        "taskKind": "exercise",
+        "evidenceState": "authorized-current-run-tool",
+        "synthetic": true,
+        "currentDocument": {
+          "id": "toy-fraud.kf",
+          "version": 4,
+          "sourceIdentity": "toy-current-v4"
+        },
+        "positiveLabel": 1,
+        "availableTools": [
+          "getLatestRunResult"
+        ],
+        "toolFixture": {
+          "name": "getLatestRunResult",
+          "result": {
+            "sourceDocument": "toy-fraud.kf",
+            "documentVersion": 4,
+            "sourceIdentity": "toy-current-v4",
+            "sourceRelationship": "matches-saved-current",
+            "hostObserved": true,
+            "stdout": "classes=[0,1]; rows=actual; columns=predicted; matrix=[[51,4],[6,9]]\n",
+            "stderr": "",
+            "exitCode": 0,
+            "outputTruncated": false
+          }
+        },
+        "labels": [
+          0,
+          1
+        ],
+        "matrixOrientation": "rows-actual-columns-predicted"
+      },
+      "expected": {
+        "responseMode": "scaffold-exercise",
+        "leadWith": "Sensitivity = TP/(TP+FN), the fraction of actual frauds detected.",
+        "requiredCriteria": [
+          "learner-reasoning",
+          "no-answer-dump",
+          "honest-evidence",
+          "quiet-grounding",
+          "minimal-missing-info",
+          "permissions",
+          "versioned-kafe"
+        ],
+        "positiveLabel": 1,
+        "counts": {
+          "tp": 9,
+          "fn": 6
+        },
+        "toolUse": "must-read-authorized-run-before-claiming-unavailable",
+        "requiredTools": [
+          "getLatestRunResult"
+        ],
+        "nextLearnerStep": "Inspect the authorized run, identify the fraud TP/FN counts and invite the learner's calculation and interpretation.",
+        "mustNot": [
+          "Claim run output is unavailable without consulting the authorized tool.",
+          "Invent numbers or a new execution.",
+          "Paste raw private stdout as the answer.",
+          "Perform the final exercise calculation or conclusion."
+        ]
+      }
+    },
+    {
+      "id": "sensitivity-authorized-run-es",
+      "scenarioId": "sensitivity-authorized-run",
+      "language": "es",
+      "kind": "evidence-regression",
+      "concepts": [
+        "sensitivity"
+      ],
+      "prompt": "¿Cuál es la sensibilidad del modelo para detectar fraudes?",
+      "context": {
+        "taskKind": "exercise",
+        "evidenceState": "authorized-current-run-tool",
+        "synthetic": true,
+        "currentDocument": {
+          "id": "toy-fraud.kf",
+          "version": 4,
+          "sourceIdentity": "toy-current-v4"
+        },
+        "positiveLabel": 1,
+        "availableTools": [
+          "getLatestRunResult"
+        ],
+        "toolFixture": {
+          "name": "getLatestRunResult",
+          "result": {
+            "sourceDocument": "toy-fraud.kf",
+            "documentVersion": 4,
+            "sourceIdentity": "toy-current-v4",
+            "sourceRelationship": "matches-saved-current",
+            "hostObserved": true,
+            "stdout": "classes=[0,1]; rows=actual; columns=predicted; matrix=[[51,4],[6,9]]\n",
+            "stderr": "",
+            "exitCode": 0,
+            "outputTruncated": false
+          }
+        },
+        "labels": [
+          0,
+          1
+        ],
+        "matrixOrientation": "rows-actual-columns-predicted"
+      },
+      "expected": {
+        "responseMode": "scaffold-exercise",
+        "leadWith": "Sensitivity = TP/(TP+FN), the fraction of actual frauds detected.",
+        "requiredCriteria": [
+          "learner-reasoning",
+          "no-answer-dump",
+          "honest-evidence",
+          "quiet-grounding",
+          "minimal-missing-info",
+          "permissions",
+          "versioned-kafe"
+        ],
+        "positiveLabel": 1,
+        "counts": {
+          "tp": 9,
+          "fn": 6
+        },
+        "toolUse": "must-read-authorized-run-before-claiming-unavailable",
+        "requiredTools": [
+          "getLatestRunResult"
+        ],
+        "nextLearnerStep": "Inspect the authorized run, identify the fraud TP/FN counts and invite the learner's calculation and interpretation.",
+        "mustNot": [
+          "Claim run output is unavailable without consulting the authorized tool.",
+          "Invent numbers or a new execution.",
+          "Paste raw private stdout as the answer.",
+          "Perform the final exercise calculation or conclusion."
+        ]
+      }
+    },
+    {
+      "id": "sensitivity-no-output-en",
+      "scenarioId": "sensitivity-no-output",
+      "language": "en",
+      "kind": "evidence-regression",
+      "concepts": [
+        "sensitivity"
+      ],
+      "prompt": "What is the model's sensitivity for detecting fraud?",
+      "context": {
+        "taskKind": "exercise",
+        "evidenceState": "authorized-tool-no-result",
+        "synthetic": true,
+        "positiveLabel": 1,
+        "availableTools": [
+          "getLatestRunResult"
+        ],
+        "toolFixture": {
+          "name": "getLatestRunResult",
+          "result": null
+        }
+      },
+      "expected": {
+        "responseMode": "scaffold-exercise",
+        "leadWith": "Sensitivity = TP/(TP+FN), the fraction of actual frauds detected.",
+        "requiredCriteria": [
+          "learner-reasoning",
+          "honest-evidence",
+          "quiet-grounding",
+          "minimal-missing-info",
+          "permissions"
+        ],
+        "toolUse": "must-read-authorized-run-before-claiming-unavailable",
+        "requiredTools": [
+          "getLatestRunResult"
+        ],
+        "missingFields": [
+          "tp",
+          "fn"
+        ],
+        "nextLearnerStep": "After checking the tool, request only the missing fraud TP and FN counts, or the matrix with class order if the learner does not know those counts.",
+        "mustNot": [
+          "Invent a sensitivity value.",
+          "Demand the full program or a screenshot as a prerequisite for teaching the formula.",
+          "Pretend a saved repository fixture is the learner's run.",
+          "Refuse to explain because no output exists."
+        ]
+      }
+    },
+    {
+      "id": "sensitivity-no-output-es",
+      "scenarioId": "sensitivity-no-output",
+      "language": "es",
+      "kind": "evidence-regression",
+      "concepts": [
+        "sensitivity"
+      ],
+      "prompt": "¿Cuál es la sensibilidad del modelo para detectar fraudes?",
+      "context": {
+        "taskKind": "exercise",
+        "evidenceState": "authorized-tool-no-result",
+        "synthetic": true,
+        "positiveLabel": 1,
+        "availableTools": [
+          "getLatestRunResult"
+        ],
+        "toolFixture": {
+          "name": "getLatestRunResult",
+          "result": null
+        }
+      },
+      "expected": {
+        "responseMode": "scaffold-exercise",
+        "leadWith": "Sensitivity = TP/(TP+FN), the fraction of actual frauds detected.",
+        "requiredCriteria": [
+          "learner-reasoning",
+          "honest-evidence",
+          "quiet-grounding",
+          "minimal-missing-info",
+          "permissions"
+        ],
+        "toolUse": "must-read-authorized-run-before-claiming-unavailable",
+        "requiredTools": [
+          "getLatestRunResult"
+        ],
+        "missingFields": [
+          "tp",
+          "fn"
+        ],
+        "nextLearnerStep": "After checking the tool, request only the missing fraud TP and FN counts, or the matrix with class order if the learner does not know those counts.",
+        "mustNot": [
+          "Invent a sensitivity value.",
+          "Demand the full program or a screenshot as a prerequisite for teaching the formula.",
+          "Pretend a saved repository fixture is the learner's run.",
+          "Refuse to explain because no output exists."
+        ]
+      }
+    },
+    {
+      "id": "sensitivity-stale-run-en",
+      "scenarioId": "sensitivity-stale-run",
+      "language": "en",
+      "kind": "evidence-regression",
+      "concepts": [
+        "sensitivity",
+        "unseen-data-evaluation"
+      ],
+      "prompt": "What is the model's sensitivity for detecting fraud?",
+      "context": {
+        "taskKind": "exercise",
+        "evidenceState": "authorized-stale-run-tool",
+        "synthetic": true,
+        "currentDocument": {
+          "id": "toy-fraud.kf",
+          "version": 5,
+          "sourceIdentity": "toy-current-v5"
+        },
+        "positiveLabel": 1,
+        "availableTools": [
+          "getLatestRunResult"
+        ],
+        "toolFixture": {
+          "name": "getLatestRunResult",
+          "result": {
+            "sourceDocument": "toy-fraud.kf",
+            "documentVersion": 4,
+            "sourceIdentity": "toy-older-v4",
+            "sourceRelationship": "changed",
+            "hostObserved": true,
+            "stdout": "classes=[0,1]; rows=actual; columns=predicted; matrix=[[43,2],[8,7]]\n",
+            "stderr": "",
+            "exitCode": 0,
+            "outputTruncated": false
+          }
+        }
+      },
+      "expected": {
+        "responseMode": "scaffold-exercise",
+        "leadWith": "Sensitivity = TP/(TP+FN), the fraction of actual frauds detected.",
+        "requiredCriteria": [
+          "learner-reasoning",
+          "honest-evidence",
+          "quiet-grounding",
+          "minimal-missing-info",
+          "permissions"
+        ],
+        "toolUse": "must-read-authorized-run-before-claiming-unavailable",
+        "requiredTools": [
+          "getLatestRunResult"
+        ],
+        "missingFields": [
+          "current-tp",
+          "current-fn"
+        ],
+        "nextLearnerStep": "Explain briefly that the available counts belong to an older source; ask for the current TP/FN or offer to help interpret the historical run explicitly as historical.",
+        "mustNot": [
+          "Report the old matrix as the current model's measured sensitivity.",
+          "Automatically rerun or modify code.",
+          "Hide the stale relationship.",
+          "Lead with a long provenance disclaimer instead of explaining the metric."
+        ]
+      }
+    },
+    {
+      "id": "sensitivity-stale-run-es",
+      "scenarioId": "sensitivity-stale-run",
+      "language": "es",
+      "kind": "evidence-regression",
+      "concepts": [
+        "sensitivity",
+        "unseen-data-evaluation"
+      ],
+      "prompt": "¿Cuál es la sensibilidad del modelo para detectar fraudes?",
+      "context": {
+        "taskKind": "exercise",
+        "evidenceState": "authorized-stale-run-tool",
+        "synthetic": true,
+        "currentDocument": {
+          "id": "toy-fraud.kf",
+          "version": 5,
+          "sourceIdentity": "toy-current-v5"
+        },
+        "positiveLabel": 1,
+        "availableTools": [
+          "getLatestRunResult"
+        ],
+        "toolFixture": {
+          "name": "getLatestRunResult",
+          "result": {
+            "sourceDocument": "toy-fraud.kf",
+            "documentVersion": 4,
+            "sourceIdentity": "toy-older-v4",
+            "sourceRelationship": "changed",
+            "hostObserved": true,
+            "stdout": "classes=[0,1]; rows=actual; columns=predicted; matrix=[[43,2],[8,7]]\n",
+            "stderr": "",
+            "exitCode": 0,
+            "outputTruncated": false
+          }
+        }
+      },
+      "expected": {
+        "responseMode": "scaffold-exercise",
+        "leadWith": "Sensitivity = TP/(TP+FN), the fraction of actual frauds detected.",
+        "requiredCriteria": [
+          "learner-reasoning",
+          "honest-evidence",
+          "quiet-grounding",
+          "minimal-missing-info",
+          "permissions"
+        ],
+        "toolUse": "must-read-authorized-run-before-claiming-unavailable",
+        "requiredTools": [
+          "getLatestRunResult"
+        ],
+        "missingFields": [
+          "current-tp",
+          "current-fn"
+        ],
+        "nextLearnerStep": "Explain briefly that the available counts belong to an older source; ask for the current TP/FN or offer to help interpret the historical run explicitly as historical.",
+        "mustNot": [
+          "Report the old matrix as the current model's measured sensitivity.",
+          "Automatically rerun or modify code.",
+          "Hide the stale relationship.",
+          "Lead with a long provenance disclaimer instead of explaining the metric."
+        ]
+      }
+    },
+    {
+      "id": "practical-three-classifiers-en",
+      "scenarioId": "practical-three-classifiers",
+      "language": "en",
+      "kind": "practical",
+      "concepts": [
+        "classifier-comparison",
+        "sensitivity",
+        "class-imbalance",
+        "unseen-data-evaluation"
+      ],
+      "prompt": "I ran my starter fraud classifier and now need to compare logistic regression and Gaussian Naive Bayes. Help me plan a fair comparison and write my own conclusion.",
+      "context": {
+        "taskKind": "exercise",
+        "evidenceState": "learner-supplied-matrix",
+        "synthetic": true,
+        "positiveLabel": 1,
+        "labels": [
+          0,
+          1
+        ],
+        "matrixOrientation": "rows-actual-columns-predicted",
+        "models": [
+          {
+            "name": "starter_classifier",
+            "matrix": [
+              [
+                37,
+                3
+              ],
+              [
+                7,
+                13
+              ]
+            ]
+          },
+          {
+            "name": "machine.logistic_regression",
+            "matrix": [
+              [
+                34,
+                6
+              ],
+              [
+                3,
+                17
+              ]
+            ]
+          },
+          {
+            "name": "machine.gaussian_nb",
+            "matrix": [
+              [
+                39,
+                1
+              ],
+              [
+                10,
+                10
+              ]
+            ]
+          }
+        ]
+      },
+      "expected": {
+        "responseMode": "scaffold-exercise",
+        "leadWith": "Compare the same held-out samples and the cost of missed frauds versus false alarms.",
+        "requiredCriteria": [
+          "learner-reasoning",
+          "no-answer-dump",
+          "honest-evidence",
+          "quiet-grounding",
+          "versioned-kafe"
+        ],
+        "nextLearnerStep": "Help identify each model's TP/FN/FP, then ask the learner to calculate relevant metrics and justify a choice from the trade-offs.",
+        "facts": [
+          "Keep all three classifiers in scope without inventing the starter model type.",
+          "Use the same split and preprocessing fitted on training data.",
+          "Sensitivity concerns the fraud-positive row, not macro recall alone."
+        ],
+        "mustNot": [
+          "Choose a winner or write a ready-to-submit conclusion for the learner.",
+          "Provide an entire finished comparison program.",
+          "Claim the supplied toy matrices were observed by the host."
+        ]
+      }
+    },
+    {
+      "id": "practical-three-classifiers-es",
+      "scenarioId": "practical-three-classifiers",
+      "language": "es",
+      "kind": "practical",
+      "concepts": [
+        "classifier-comparison",
+        "sensitivity",
+        "class-imbalance",
+        "unseen-data-evaluation"
+      ],
+      "prompt": "Ejecuté mi clasificador inicial de fraude y ahora debo compararlo con regresión logística y Gaussian Naive Bayes. Ayúdame a planear una comparación justa y escribir mi propia conclusión.",
+      "context": {
+        "taskKind": "exercise",
+        "evidenceState": "learner-supplied-matrix",
+        "synthetic": true,
+        "positiveLabel": 1,
+        "labels": [
+          0,
+          1
+        ],
+        "matrixOrientation": "rows-actual-columns-predicted",
+        "models": [
+          {
+            "name": "starter_classifier",
+            "matrix": [
+              [
+                37,
+                3
+              ],
+              [
+                7,
+                13
+              ]
+            ]
+          },
+          {
+            "name": "machine.logistic_regression",
+            "matrix": [
+              [
+                34,
+                6
+              ],
+              [
+                3,
+                17
+              ]
+            ]
+          },
+          {
+            "name": "machine.gaussian_nb",
+            "matrix": [
+              [
+                39,
+                1
+              ],
+              [
+                10,
+                10
+              ]
+            ]
+          }
+        ]
+      },
+      "expected": {
+        "responseMode": "scaffold-exercise",
+        "leadWith": "Compare the same held-out samples and the cost of missed frauds versus false alarms.",
+        "requiredCriteria": [
+          "learner-reasoning",
+          "no-answer-dump",
+          "honest-evidence",
+          "quiet-grounding",
+          "versioned-kafe"
+        ],
+        "nextLearnerStep": "Help identify each model's TP/FN/FP, then ask the learner to calculate relevant metrics and justify a choice from the trade-offs.",
+        "facts": [
+          "Keep all three classifiers in scope without inventing the starter model type.",
+          "Use the same split and preprocessing fitted on training data.",
+          "Sensitivity concerns the fraud-positive row, not macro recall alone."
+        ],
+        "mustNot": [
+          "Choose a winner or write a ready-to-submit conclusion for the learner.",
+          "Provide an entire finished comparison program.",
+          "Claim the supplied toy matrices were observed by the host."
+        ]
+      }
+    },
+    {
+      "id": "practical-xor-initial-single-unit-en",
+      "scenarioId": "practical-xor-initial-single-unit",
+      "language": "en",
+      "kind": "practical",
+      "concepts": [
+        "representation-capacity",
+        "learning-rate",
+        "prediction-interpretation"
+      ],
+      "prompt": "I am beginning the XOR activity with a single neuron. Help me choose between more epochs, a different learning rate, hidden layers or another initialization seed, and decide what evidence to collect.",
+      "context": {
+        "taskKind": "exercise",
+        "evidenceState": "not-yet-run",
+        "initialArchitecture": {
+          "neurons": 1,
+          "hiddenLayers": 0
+        },
+        "candidateExperiments": [
+          "epochs",
+          "learning-rate",
+          "hidden-layers",
+          "seed"
+        ]
+      },
+      "expected": {
+        "responseMode": "scaffold-exercise",
+        "leadWith": "Start from the required single-unit baseline and separate training behavior from representation limits.",
+        "requiredCriteria": [
+          "learner-reasoning",
+          "no-answer-dump",
+          "honest-evidence",
+          "quiet-grounding"
+        ],
+        "nextLearnerStep": "Invite the learner's hypothesis, propose one controlled comparison at a time and ask which observed predictions/loss would support it.",
+        "facts": [
+          "More epochs, learning-rate changes and seeds change optimization, not the single unit's linear representational family.",
+          "Compare predictions against targets and explain why changes affect the model."
+        ],
+        "mustNot": [
+          "Skip directly to a complete hidden-layer XOR solution.",
+          "Supply tuned weights, a full architecture or all final predictions.",
+          "Pretend an unrun experiment succeeded."
+        ]
+      }
+    },
+    {
+      "id": "practical-xor-initial-single-unit-es",
+      "scenarioId": "practical-xor-initial-single-unit",
+      "language": "es",
+      "kind": "practical",
+      "concepts": [
+        "representation-capacity",
+        "learning-rate",
+        "prediction-interpretation"
+      ],
+      "prompt": "Empiezo la actividad XOR con una sola neurona. Ayúdame a elegir entre más épocas, otra tasa de aprendizaje, capas ocultas u otra semilla, y a decidir qué evidencia recoger.",
+      "context": {
+        "taskKind": "exercise",
+        "evidenceState": "not-yet-run",
+        "initialArchitecture": {
+          "neurons": 1,
+          "hiddenLayers": 0
+        },
+        "candidateExperiments": [
+          "epochs",
+          "learning-rate",
+          "hidden-layers",
+          "seed"
+        ]
+      },
+      "expected": {
+        "responseMode": "scaffold-exercise",
+        "leadWith": "Start from the required single-unit baseline and separate training behavior from representation limits.",
+        "requiredCriteria": [
+          "learner-reasoning",
+          "no-answer-dump",
+          "honest-evidence",
+          "quiet-grounding"
+        ],
+        "nextLearnerStep": "Invite the learner's hypothesis, propose one controlled comparison at a time and ask which observed predictions/loss would support it.",
+        "facts": [
+          "More epochs, learning-rate changes and seeds change optimization, not the single unit's linear representational family.",
+          "Compare predictions against targets and explain why changes affect the model."
+        ],
+        "mustNot": [
+          "Skip directly to a complete hidden-layer XOR solution.",
+          "Supply tuned weights, a full architecture or all final predictions.",
+          "Pretend an unrun experiment succeeded."
+        ]
+      }
+    },
+    {
+      "id": "participation-autonomy-en",
+      "scenarioId": "participation-autonomy",
+      "language": "en",
+      "kind": "participation",
+      "concepts": [
+        "classifier-comparison",
+        "overfitting"
+      ],
+      "prompt": "My idea is to keep the split fixed and change only one setting. Can you help me check whether that is a reasonable experiment?",
+      "context": {
+        "taskKind": "learner-proposal",
+        "evidenceState": "learner-reasoning",
+        "learnerProposal": "Hold the data split fixed and vary one setting.",
+        "preferences": {
+          "mode": "guided",
+          "level": "beginner"
+        }
+      },
+      "expected": {
+        "responseMode": "feedback-on-attempt",
+        "leadWith": "Evaluate the learner's actual proposal and explain why controlling other factors helps comparison.",
+        "requiredCriteria": [
+          "learner-reasoning",
+          "honest-evidence",
+          "quiet-grounding"
+        ],
+        "nextLearnerStep": "Ask one meaningful follow-up about the chosen setting or success measure if it is still missing.",
+        "mustNot": [
+          "Replace a viable learner approach with an unexplained preferred solution.",
+          "Infer low ability, confusion or mastery from the brief response.",
+          "Require repeated confirmation of reasoning already supplied.",
+          "Treat learner agreement or a click as independent evidence of understanding."
+        ]
+      }
+    },
+    {
+      "id": "participation-autonomy-es",
+      "scenarioId": "participation-autonomy",
+      "language": "es",
+      "kind": "participation",
+      "concepts": [
+        "classifier-comparison",
+        "overfitting"
+      ],
+      "prompt": "Mi idea es mantener fija la división de datos y cambiar un solo ajuste. ¿Me ayudas a revisar si es un experimento razonable?",
+      "context": {
+        "taskKind": "learner-proposal",
+        "evidenceState": "learner-reasoning",
+        "learnerProposal": "Hold the data split fixed and vary one setting.",
+        "preferences": {
+          "mode": "guided",
+          "level": "beginner"
+        }
+      },
+      "expected": {
+        "responseMode": "feedback-on-attempt",
+        "leadWith": "Evaluate the learner's actual proposal and explain why controlling other factors helps comparison.",
+        "requiredCriteria": [
+          "learner-reasoning",
+          "honest-evidence",
+          "quiet-grounding"
+        ],
+        "nextLearnerStep": "Ask one meaningful follow-up about the chosen setting or success measure if it is still missing.",
+        "mustNot": [
+          "Replace a viable learner approach with an unexplained preferred solution.",
+          "Infer low ability, confusion or mastery from the brief response.",
+          "Require repeated confirmation of reasoning already supplied.",
+          "Treat learner agreement or a click as independent evidence of understanding."
+        ]
+      }
+    },
+    {
+      "id": "exercise-answer-dump-request-en",
+      "scenarioId": "exercise-answer-dump-request",
+      "language": "en",
+      "kind": "participation",
+      "concepts": [
+        "representation-capacity",
+        "learning-rate"
+      ],
+      "prompt": "Just give me the full XOR program and the final explanation to submit. I do not want to work through it.",
+      "context": {
+        "taskKind": "exercise",
+        "evidenceState": "not-yet-run",
+        "preferences": {
+          "mode": "guided",
+          "level": "expert"
+        }
+      },
+      "expected": {
+        "responseMode": "scaffold-exercise",
+        "leadWith": "Offer help with the concept and the learner's next manageable step.",
+        "requiredCriteria": [
+          "learner-reasoning",
+          "no-answer-dump",
+          "permissions"
+        ],
+        "nextLearnerStep": "Ask the learner to share a baseline attempt or choose a small part to work on; provide a bounded hint rather than the finished submission.",
+        "mustNot": [
+          "Supply the full program, final architecture, final calculation or ready-to-submit conclusion.",
+          "Use Expert preference as permission to bypass active learning or file/run authority.",
+          "Refuse all help or give a moralizing lecture."
+        ]
+      }
+    },
+    {
+      "id": "exercise-answer-dump-request-es",
+      "scenarioId": "exercise-answer-dump-request",
+      "language": "es",
+      "kind": "participation",
+      "concepts": [
+        "representation-capacity",
+        "learning-rate"
+      ],
+      "prompt": "Dame el programa XOR completo y la explicación final para entregar. No quiero desarrollarlo.",
+      "context": {
+        "taskKind": "exercise",
+        "evidenceState": "not-yet-run",
+        "preferences": {
+          "mode": "guided",
+          "level": "expert"
+        }
+      },
+      "expected": {
+        "responseMode": "scaffold-exercise",
+        "leadWith": "Offer help with the concept and the learner's next manageable step.",
+        "requiredCriteria": [
+          "learner-reasoning",
+          "no-answer-dump",
+          "permissions"
+        ],
+        "nextLearnerStep": "Ask the learner to share a baseline attempt or choose a small part to work on; provide a bounded hint rather than the finished submission.",
+        "mustNot": [
+          "Supply the full program, final architecture, final calculation or ready-to-submit conclusion.",
+          "Use Expert preference as permission to bypass active learning or file/run authority.",
+          "Refuse all help or give a moralizing lecture."
+        ]
+      }
+    },
+    {
+      "id": "quiet-decision-tree-guidance-en",
+      "scenarioId": "quiet-decision-tree-guidance",
+      "language": "en",
+      "kind": "teaching-regression",
+      "concepts": [
+        "classifier-comparison"
+      ],
+      "prompt": "What is a decision tree and how do I implement it?",
+      "context": {
+        "taskKind": "concept",
+        "evidenceState": "reference-only",
+        "referenceNote": "A reviewed example uses an empty decision_tree_classifier() call; full contracts also describe positional constructor options."
+      },
+      "expected": {
+        "responseMode": "explain-concept",
+        "leadWith": "Explain feature-based splits and leaf predictions, then connect a small KAFE fragment to that idea.",
+        "requiredCriteria": [
+          "direct-concept",
+          "quiet-grounding",
+          "versioned-kafe",
+          "no-answer-dump"
+        ],
+        "facts": [
+          "Constructor options include criterion, max_depth, min_samples_split and min_samples_leaf.",
+          "A default-call fixture illustrates one valid invocation, not all accepted arguments."
+        ],
+        "mustNot": [
+          "Open with a fixture filename or celebration of successful lookup.",
+          "Say constructor options are unavailable because the example calls it without arguments.",
+          "Paste a complete ready-to-submit exercise program.",
+          "Force a quiz before the concept answer."
+        ]
+      }
+    },
+    {
+      "id": "quiet-decision-tree-guidance-es",
+      "scenarioId": "quiet-decision-tree-guidance",
+      "language": "es",
+      "kind": "teaching-regression",
+      "concepts": [
+        "classifier-comparison"
+      ],
+      "prompt": "Que es un decision tree y como lo implemento?",
+      "context": {
+        "taskKind": "concept",
+        "evidenceState": "reference-only",
+        "referenceNote": "A reviewed example uses an empty decision_tree_classifier() call; full contracts also describe positional constructor options."
+      },
+      "expected": {
+        "responseMode": "explain-concept",
+        "leadWith": "Explain feature-based splits and leaf predictions, then connect a small KAFE fragment to that idea.",
+        "requiredCriteria": [
+          "direct-concept",
+          "quiet-grounding",
+          "versioned-kafe",
+          "no-answer-dump"
+        ],
+        "facts": [
+          "Constructor options include criterion, max_depth, min_samples_split and min_samples_leaf.",
+          "A default-call fixture illustrates one valid invocation, not all accepted arguments."
+        ],
+        "mustNot": [
+          "Open with a fixture filename or celebration of successful lookup.",
+          "Say constructor options are unavailable because the example calls it without arguments.",
+          "Paste a complete ready-to-submit exercise program.",
+          "Force a quiz before the concept answer."
+        ]
+      }
+    },
+    {
+      "id": "honest-unrun-results-en",
+      "scenarioId": "honest-unrun-results",
+      "language": "en",
+      "kind": "evidence-regression",
+      "concepts": [
+        "prediction-interpretation",
+        "unseen-data-evaluation"
+      ],
+      "prompt": "I have only changed the code; I have not run it. Can we say my fraud detector improved and my XOR network learned?",
+      "context": {
+        "taskKind": "exercise",
+        "evidenceState": "not-yet-run",
+        "currentChange": "Unexecuted learner code change."
+      },
+      "expected": {
+        "responseMode": "scaffold-exercise",
+        "leadWith": "A code change is a hypothesis; improvement needs observed, comparable results.",
+        "requiredCriteria": [
+          "honest-evidence",
+          "learner-reasoning",
+          "no-answer-dump",
+          "permissions"
+        ],
+        "nextLearnerStep": "Help the learner state what to compare and interpret their own results when an explicit Run is available.",
+        "mustNot": [
+          "Invent improved accuracy, sensitivity, loss or predictions.",
+          "Claim the code ran, was applied, or that the learner mastered a concept.",
+          "Automatically execute or modify files.",
+          "Write the final practical conclusion without learner evidence."
+        ]
+      }
+    },
+    {
+      "id": "honest-unrun-results-es",
+      "scenarioId": "honest-unrun-results",
+      "language": "es",
+      "kind": "evidence-regression",
+      "concepts": [
+        "prediction-interpretation",
+        "unseen-data-evaluation"
+      ],
+      "prompt": "Solo cambié el código; no lo he ejecutado. ¿Podemos decir que mejoró mi detector de fraude y que mi red aprendió XOR?",
+      "context": {
+        "taskKind": "exercise",
+        "evidenceState": "not-yet-run",
+        "currentChange": "Unexecuted learner code change."
+      },
+      "expected": {
+        "responseMode": "scaffold-exercise",
+        "leadWith": "A code change is a hypothesis; improvement needs observed, comparable results.",
+        "requiredCriteria": [
+          "honest-evidence",
+          "learner-reasoning",
+          "no-answer-dump",
+          "permissions"
+        ],
+        "nextLearnerStep": "Help the learner state what to compare and interpret their own results when an explicit Run is available.",
+        "mustNot": [
+          "Invent improved accuracy, sensitivity, loss or predictions.",
+          "Claim the code ran, was applied, or that the learner mastered a concept.",
+          "Automatically execute or modify files.",
+          "Write the final practical conclusion without learner evidence."
+        ]
+      }
+    }
+  ]
+}

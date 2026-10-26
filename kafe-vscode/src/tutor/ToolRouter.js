@@ -1,5 +1,6 @@
 const { createHash } = require('node:crypto');
 const { validateSnapshot } = require('./RequestSnapshot');
+const { createLibraryReferences } = require('./LibraryReferences');
 const { KnowledgeUnavailable } = require('./KnowledgeRetriever');
 const { CHECKPOINT_SCHEMA, validateCheckpoint } = require('./LearningCheckpoint');
 const { runObservation } = require('./ActionEvidence');
@@ -11,8 +12,8 @@ const TOOL_NAMES = Object.freeze([
 ]);
 const TOOL_DEFINITIONS = Object.freeze([
   { type: 'function', function: { name: 'readActiveDocument', description: 'Read the active KAFE document or a learner-selected source ID.', parameters: { type: 'object', properties: { sourceId: { type: 'string' } }, additionalProperties: false } } },
-  { type: 'function', function: { name: 'searchKafeKnowledge', description: 'Search the local version-matched KAFE knowledge pack.', parameters: { type: 'object', properties: { query: { type: 'string' } }, required: ['query'], additionalProperties: false } } },
-  { type: 'function', function: { name: 'getLatestRunResult', description: 'Read the latest learner-started KAFE run result.', parameters: { type: 'object', properties: {}, additionalProperties: false } } },
+  { type: 'function', function: { name: 'searchKafeKnowledge', description: 'Search reviewed bundled KAFE API and learning references, available before runtime setup, plus the version-matched supplementary knowledge pack when ready.', parameters: { type: 'object', properties: { query: { type: 'string' } }, required: ['query'], additionalProperties: false } } },
+  { type: 'function', function: { name: 'getLatestRunResult', description: 'Read captured stdout, stderr and source-change labels from the latest authorized learner-started Run for the active file. This reads an observation; it does not execute code.', parameters: { type: 'object', properties: {}, additionalProperties: false } } },
   { type: 'function', function: { name: 'proposeCodeChange', description: 'Prepare a code change for learner review without applying it.', parameters: { type: 'object', properties: { newText: { type: 'string' }, sourceId: { type: 'string' } }, required: ['newText'], additionalProperties: false } } },
   { type: 'function', function: { name: 'proposeLearningCheckpoint', description: 'Propose one bounded learning decision. Tutor summaries remain unconfirmed; this grants no implementation authority.', parameters: CHECKPOINT_SCHEMA } },
 ]);
@@ -141,9 +142,10 @@ function providerRunResult(result) {
 }
 
 class ToolRouter {
-  constructor({ documentReader, knowledgeRetriever }) {
+  constructor({ documentReader, knowledgeRetriever, libraryReferences = createLibraryReferences() }) {
     this.documentReader = documentReader;
     this.knowledgeRetriever = knowledgeRetriever;
+    this.libraryReferences = libraryReferences;
   }
 
   async documentFor(sourceId, context) {
@@ -176,6 +178,12 @@ class ToolRouter {
     if (call.name === 'searchKafeKnowledge') {
       const args = parseArguments(call.arguments, ['query'], ['query']);
       if (typeof args.query !== 'string' || !args.query.trim() || args.query.length > 300) throw routingError('invalid-query', 'Invalid knowledge query argument.');
+      const bundled = this.libraryReferences.search(args.query);
+      if (bundled.length) {
+        const expected = context.snapshot.dependencies?.knowledgeLineage;
+        const lineage = expected === null ? null : await readKnowledgeLineage(this.knowledgeRetriever, expected);
+        return structuredClone(bundled.map(passage => ({ ...passage, knowledgeLineage: lineage })));
+      }
       if (context.snapshot.dependencies?.knowledgeLineage === null) return { status: 'unavailable', code: 'knowledge_unavailable' };
       let passages, lineage;
       try { ({ passages, lineage } = await retrieveKnowledge(this.knowledgeRetriever, args.query, [], context.snapshot.dependencies?.knowledgeLineage)); }
@@ -184,7 +192,7 @@ class ToolRouter {
         throw error;
       }
       if (context.snapshot.dependencies && context.snapshot.dependencies.knowledgeLineage !== lineage) throw new KnowledgeLineageChanged();
-      return structuredClone(passages.map(passage => ({ ...passage, knowledgeLineage: lineage })));
+      return structuredClone(passages.filter(passage => !this.libraryReferences.coversPath(passage.path)).map(passage => ({ ...passage, knowledgeLineage: lineage })));
     }
     if (call.name === 'getLatestRunResult') {
       parseArguments(call.arguments, []);

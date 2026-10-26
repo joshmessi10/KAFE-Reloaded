@@ -1,9 +1,10 @@
 const { createHash } = require('node:crypto');
 const bundled = require('./kafeReferences.json');
 const manifest = require('../runtimeManifest.json');
+const { searchTokens } = require('./ReferenceSearch');
 
 const digest = value => createHash('sha256').update(value).digest('hex');
-const tokens = text => text.replace(/([a-z])([A-Z])/g, '$1 $2').normalize('NFKD').replace(/\p{M}/gu, '').toLowerCase().split(/[^a-z0-9]+/).filter(word => word.length > 2);
+const tokens = text => searchTokens(text, { expandAliases: true }).filter(word => word.length > 2);
 const ignored = new Set(['the', 'and', 'with', 'for', 'can', 'code', 'kafe', 'write', 'please', 'una', 'para', 'con', 'que', 'los', 'las', 'del', 'haz']);
 
 function createKafeReferences(bundle = bundled, runtime = manifest.runtime) {
@@ -21,6 +22,7 @@ function createKafeReferences(bundle = bundled, runtime = manifest.runtime) {
     if (!/^tests\/(?!.*(?:\\|\.\.\/))[^\u0000-\u001f]+\.kf$/.test(fixture.path || '') || seen.has(fixture.path) ||
       !['valid', 'expected-error'].includes(fixture.kind) ||
       !['code', 'input', 'expectedOutput'].every(key => typeof fixture[key] === 'string' && Buffer.byteLength(fixture[key], 'utf8') <= 64 * 1024) ||
+      ['expectedStdout', 'expectedStderr'].some(key => fixture[key] !== undefined && (typeof fixture[key] !== 'string' || Buffer.byteLength(fixture[key], 'utf8') > 64 * 1024)) ||
       fixture.expectedStream !== (fixture.kind === 'expected-error' ? 'stderr' : 'stdout') ||
       fixture.expectedExitCode !== (fixture.kind === 'expected-error' ? 1 : 0)) {
       throw Error('Invalid bundled KAFE fixture');
@@ -37,19 +39,20 @@ function createKafeReferences(bundle = bundled, runtime = manifest.runtime) {
     names: new Set(tokens(fixture.path)), words: new Set(tokens(`${fixture.path}\n${fixture.code}`)) }));
   return Object.freeze({
     essentials,
-    select(query) {
+    select(query, { maxBytes = 12 * 1024, maxItems = 3, preferredPaths = [] } = {}) {
+      if (!Number.isSafeInteger(maxBytes) || maxBytes < 0 || maxBytes > 12 * 1024 || !Number.isSafeInteger(maxItems) || maxItems < 0 || maxItems > 3 || !Array.isArray(preferredPaths)) throw Error('Invalid fixture selection budget');
       const terms = [...new Set(tokens(String(query).slice(0, 4000)).filter(word => !ignored.has(word)))].slice(0, 48);
-      const ranked = fixtures.map(item => ({ ...item, score: terms.reduce((score, term) => score + (item.names.has(term) ? 4 : item.words.has(term) ? 1 : 0), 0) }))
+      const ranked = fixtures.map(item => ({ ...item, score: (preferredPaths.includes(item.fixture.path) ? 1000 : 0) + terms.reduce((score, term) => score + (item.names.has(term) ? 4 : item.words.has(term) ? 1 : 0), 0) }))
         .filter(item => item.score > 0).sort((a, b) => b.score - a.score || a.fixture.path.localeCompare(b.fixture.path, 'en'));
       const selected = []; let bytes = 0;
       for (const { fixture } of ranked) {
         const text = 'Repository expectations, not results for the learner\'s current program.\n' + JSON.stringify(fixture);
         const size = Buffer.byteLength(text, 'utf8');
-        if (size > 6 * 1024 || bytes + size > 12 * 1024) continue;
+        if (size > 6 * 1024 || bytes + size > maxBytes || selected.length >= maxItems) continue;
         selected.push({ id: `fixture:${fixture.path}`, category: 'test-reference', label: `Repository ${fixture.kind} fixture: ${fixture.path}`,
           text, provenance: { ...provenance, path: fixture.path } });
         bytes += size;
-        if (selected.length === 3) break;
+        if (selected.length === maxItems) break;
       }
       return selected;
     },

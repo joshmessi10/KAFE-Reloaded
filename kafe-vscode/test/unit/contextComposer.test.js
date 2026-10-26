@@ -121,6 +121,28 @@ test('teaching request fixtures carry direct concepts, learner-owned decisions, 
   }
 });
 
+test('decision-tree lesson receives concept-first guidance and constructor options beyond the empty-call fixture', async () => {
+  const { LearningSession } = require('../../src/tutor/LearningSession');
+  const composer = new ContextComposer({ documentReader: {}, knowledgeRetriever: {} });
+  for (const level of ['beginner', 'intermediate', 'expert']) {
+    const learning = new LearningSession(); learning.setPreferences({ level });
+    const result = await composer.compose({ request: 'Que es un decision tree y como lo implemento?', learningSession: learning });
+    const policy = result.payload.messages[0].content;
+    assert.match(policy, /Teach the concept first/);
+    assert.match(policy, /Use references quietly/);
+    assert.match(policy, /Do not open with file-search announcements, fixture filenames/);
+    assert.match(policy, /never infer that parameters are unavailable.*empty constructor/);
+    assert.match(policy, /do not prove current learner code was executed/);
+    const contract = result.snapshots.find(source => source.provenance?.apiId === 'machine.decision_tree_classifier');
+    assert.ok(contract, 'the concept question selects the constructor contract');
+    assert.equal(result.snapshots.find(source => source.category === 'library-reference')?.provenance.apiId, 'machine.decision_tree_classifier');
+    assert.match(contract.text, /max_depth/);
+    assert.match(contract.text, /min_samples_split/);
+    assert.match(contract.text, /criterion/);
+    assert.equal(result.learning.preferences.level, level);
+  }
+});
+
 test('each selected level reaches the provider with its complete guidance and shared KAFE references', async () => {
   const { LearningSession } = require('../../src/tutor/LearningSession');
   const learning = new LearningSession();

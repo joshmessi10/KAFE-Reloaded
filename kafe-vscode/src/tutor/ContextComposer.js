@@ -6,6 +6,7 @@ const { LearningSession } = require('./LearningSession');
 const { teachingInstructions } = require('./TeachingPolicy');
 const { ActionEvidence, runObservation } = require('./ActionEvidence');
 const { createKafeReferences } = require('./KafeReferences');
+const { createLibraryReferences } = require('./LibraryReferences');
 
 /**
  * @typedef {{uri:object,text:string,version:number}} DocumentSnapshot
@@ -13,7 +14,7 @@ const { createKafeReferences } = require('./KafeReferences');
  * @typedef {{payload:object,sources:object[],snapshots:object[],history:object,dependencies:object}} Composition
  */
 const sourceMessage = source => {
-  const origin = source.category === 'language-reference' ? 'bundled KAFE language reference' :
+  const origin = source.category === 'library-reference' ? 'bundled KAFE library contracts and documentation' : source.category === 'language-reference' ? 'bundled KAFE language reference' :
     source.category === 'test-reference' ? 'bundled KAFE test fixture' : source.category === 'knowledge' ? 'local KAFE knowledge pack' :
     ['active-file', 'selected-file'].includes(source.category) ? 'captured included file' :
       source.category === 'run-result' ? 'learner-started Run observation' : 'host-observed action facts';
@@ -31,10 +32,11 @@ const passageLabel = passage => passage.runtimeVersion && passage.knowledgePackV
   `${passage.sourceMode === 'development' ? 'Development' : 'Managed'} KAFE runtime ${passage.runtimeVersion} · knowledge pack ${passage.knowledgePackVersion}: ${passage.category}: ${passage.path}` : `${passage.category}: ${passage.path}`;
 
 class ContextComposer {
-  constructor({ documentReader, knowledgeRetriever, references = createKafeReferences() }) {
+  constructor({ documentReader, knowledgeRetriever, references = createKafeReferences(), libraryReferences = createLibraryReferences() }) {
     this.documentReader = documentReader;
     this.knowledgeRetriever = knowledgeRetriever;
     this.references = references;
+    this.libraryReferences = libraryReferences;
   }
 
   async authorizeUri(uri) {
@@ -77,7 +79,13 @@ class ContextComposer {
       if (included) snapshots.push(snapshot({ id, category, text, uri, version, provenance: structuredClone(provenance) }));
     };
     add(this.references.essentials);
-    if (!bareGreeting(request)) for (const example of this.references.select(request)) add(example);
+    if (!bareGreeting(request)) {
+      const library = this.libraryReferences.select(request);
+      for (const reference of library) add(reference);
+      const referenceBytes = library.reduce((sum, reference) => sum + Buffer.byteLength(reference.text, 'utf8'), 0);
+      for (const example of this.references.select(request, { maxBytes: 12 * 1024 - referenceBytes,
+        preferredPaths: library.flatMap(reference => reference.provenance.examplePaths || []) })) add(example);
+    }
     if (activeDocument) {
       await this.authorizeUri(activeDocument.uri);
       validateDocument(activeDocument);
@@ -104,7 +112,7 @@ class ContextComposer {
       (bareGreeting(request) ? { passages: [], lineage: await this.knowledgeLineage([], expected) } :
         await retrieveKnowledge(this.knowledgeRetriever, request.trim().slice(0, 300), [], expected)) : { passages: [], lineage: null };
     const dependencyLineage = lineage;
-    for (const passage of passages) add({ id: `knowledge:${passage.id}`, category: 'knowledge', label: passageLabel(passage), text: passage.text,
+    for (const passage of passages.filter(passage => !this.libraryReferences.coversPath(passage.path))) add({ id: `knowledge:${passage.id}`, category: 'knowledge', label: passageLabel(passage), text: passage.text,
       provenance: { ...passageProvenance(passage), knowledgeLineage: dependencyLineage } });
     const fileUris = snapshots.filter(source => source.uri !== null).map(source => source.uri);
     const selectedHistory = selectHistory({ pairs: history, authorizedFileUris: fileUris, knowledgeLineage: lineage });
