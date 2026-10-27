@@ -1272,3 +1272,19 @@ Counts are identical at every fixture size; listener columns show one / two disp
 Retain shared immutable event projections and boundary persistence capture: all six measured elapsed distributions improved and repeated captures/normalizations decreased. Store validation and explicit detached captures remain. No percentage target or memory measurement is claimed. Full snapshot work still scales with transcript size; explicit boundaries remain synchronous work. Listener timings have ordinary noise and do not imply more listeners make execution faster.
 
 These measurements cover synchronous notifications and an in-memory adapter only: no provider/network latency, real disk, native rendering or learner outcomes. They identify `86b78ff`; later source coordination and pending integration cleanup are not included in this profile and must not be represented as final-candidate/native performance. Correctness receipts at the measured commit include 81 focused passes and 992 aggregate passes with one existing platform skip; these historical receipts are not final integration results. ADR-0033 and the architecture record describe the unchanged authority/boundary contract.
+
+
+### Final integration confirmation (2026-10-27)
+
+Separate confirmation at `524dac51292d0ea365bbf4666e59100ab396ea56` includes the pending-save deadline fix and subsequent source coordination. The profiler now records observer counts/mismatches and asserts after publication, so callback isolation cannot swallow validation failures. Fixtures, 100 draft changes, 100 chunks, three warmups, ten repetitions and the separate precise-coverage counter method remain identical. Callback timing work changed; this is not a new before/after improvement claim. Original `before.json`, `after-final.json` and provenance remain unchanged historical evidence for `86b78ff`.
+
+| Entries | Listeners | Confirmation total median / p95 ms |
+| ---: | ---: | ---: |
+| 10 | 1 | 7.1537 / 7.9305 |
+| 10 | 2 | 7.5385 / 8.2196 |
+| 100 | 1 | 34.9640 / 45.3941 |
+| 100 | 2 | 36.2360 / 48.2413 |
+| 1000 | 1 | 332.9038 / 339.3623 |
+| 1000 | 2 | 323.7862 / 419.1126 |
+
+Every scenario retains 202 session snapshots, 200 coordinator projections, two manager/conversation captures, two content normalizations, three archive-content validations, one archive normalization and one write, with complete counter coverage. No heavy concurrent root checks ran during timing. Environment remains Node 24.19.0 on Windows x64. The ignored evidence is `verification/task-11/profile-confirmation.json` with `profile-provenance.json` under `.superpowers/simplicity-plan/`. Timing remains bounded in-memory evidence; no native/provider/disk or learner-effectiveness claim is made.

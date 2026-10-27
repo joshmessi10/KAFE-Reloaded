@@ -4,9 +4,9 @@
 
 Feature: unified Tutor simplicity on `feature/vsc-extension`, extension 2.3.0 / runtime 0.3.0.
 
-Status: source tasks through `781b46f` committed and scoped-reviewed; learner guidance and durable records aligned under ADR-0033. Final integration and its bounded deferred cleanups/checks remain pending. Native VS Code 1.96.0 cache is absent; provider, physical IME/speech, publication and human study evidence remain separate.
+Status: local integration cleanup `524dac5` and packaging security patch `d074ff9` are committed. The final extension aggregate passes 1,010 tests with one existing Windows symlink skip; all 42 browser cases, reference freshness, dependency audits and candidate VSIX verification pass. Nine unchanged Python inputs retain the observed 787 passes, four documented skips and 86.89% child-inclusive coverage. Whole-branch independent review and exact-revision hosted/native acceptance remain pending. Native VS Code 1.96.0 cache is absent; provider, physical IME/speech, publication and human study evidence remain separate.
 
-Next: final integration aggregate/layout/package and applicable repository checks; record observed exact-revision results without promoting earlier receipts. No push, dispatch, installation, publication or research activity is authorized by this local task.
+Next: independent whole-branch review and user handoff of the locally verified candidate; obtain separate authorization for any hosted/native follow-up. No push, dispatch, installation, publication or research activity is authorized by this local task.
 
 ## Separate Gesha historical/pending context
 
