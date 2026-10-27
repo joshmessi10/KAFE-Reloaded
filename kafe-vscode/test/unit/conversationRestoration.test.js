@@ -10,7 +10,7 @@ const { selectHistory } = require('../../src/tutor/ConversationHistory');
 const deferred = () => { let resolve; const promise = new Promise(done => { resolve = done; }); return { promise, resolve }; };
 const pair = (dependencies = { fileUris: [], knowledgeLineage: null }) => ({ id: randomUUID(), learnerText: 'Question', assistantText: 'Answer', dependencies });
 const entry = (kind, text, patch = {}) => ({ id: randomUUID(), kind, status: 'completed', text, data: null, actions: [], ...patch });
-const content = patch => ({ draft: '', entries: [], historyPairs: [], preferences: { mode: 'guided', level: 'beginner' }, ...patch });
+const content = patch => ({ draft: '', entries: [], historyPairs: [], preferences: { mode: 'guided' }, ...patch });
 
 function fixture(options = {}) {
   const provider = { getRequestParameters: () => ({ model: 'deepseek-flash', thinking: { type: 'disabled' }, stream: true }),
@@ -28,7 +28,7 @@ function fixture(options = {}) {
 test('capture is detached and pure, with safe display, full history, draft and preferences', () => {
   const { coordinator } = fixture();
   coordinator.session.setDraft('Unsent\nCAFÉ ☕');
-  coordinator.learningSession.setPreferences({ mode: 'paused', level: 'expert' });
+  coordinator.learningSession.setPreferences({ mode: 'paused' });
   const entryId = coordinator.session.appendEntry({ kind: 'host', status: 'ready', text: 'Confirm scope',
     data: { scopeSummary: 'Explain this loop', targetUri: 'file:///private.kf', request: { secret: 'private' } } });
   coordinator.session.registerAction(entryId, { type: 'prepareChange', label: 'Prepare', enabled: true, args: { scopeId: 'private' } });
@@ -37,7 +37,7 @@ test('capture is detached and pure, with safe display, full history, draft and p
   const captured = coordinator.captureConversation();
   assert.deepEqual(coordinator.snapshot(), before);
   assert.equal(captured.draft, 'Unsent\nCAFÉ ☕');
-  assert.deepEqual(captured.preferences, { mode: 'paused', level: 'expert' });
+  assert.deepEqual(captured.preferences, { mode: 'paused' });
   assert.equal(captured.historyPairs.length, 12, 'archive history is independent of provider context bounds');
   assert.deepEqual(captured.entries[0].actions, []);
   assert.equal(captured.entries[0].data.scopeSummary, 'Explain this loop');
@@ -61,7 +61,7 @@ test('restore preserves the live session object, advances generation, and restor
   coordinator.learningSession.addObservation({ kind: 'concept', text: 'Old observation', attribution: 'tutor',
     uncertainty: 'Unknown', status: 'observed', priorDecisionIds: [] }, { files: [], knowledgeLineage: null });
   const history = pair({ fileUris: ['file:///a.kf'], knowledgeLineage: 'pack-a' });
-  const restored = content({ draft: 'New draft\n☕', preferences: { mode: 'paused', level: 'intermediate' },
+  const restored = content({ draft: 'New draft\n☕', preferences: { mode: 'paused' },
     entries: [entry('learner', 'Question'), entry('assistant', '```kf\nshow("CAFÉ");\n```'),
       entry('proposal', 'Historical proposed change', { status: 'ready', data: { proposalId: 'old-private-id' } }),
       entry('checkpoint', 'Historical checkpoint', { status: 'ready', data: { checkpoint: { kind: 'design', name: 'Loop',
@@ -148,13 +148,13 @@ test('switching stops a streaming response, preserves partial text as cancelled 
   assert.equal(coordinator.captureConversation().entries.at(-1).status, 'responding');
   assert.deepEqual(coordinator.snapshot(), beforeCapture, 'autosave capture must not cancel a response');
   assert.equal((await coordinator.handleLearnerMessage({ type: 'setLearningPreferences',
-    preferences: { mode: 'paused', level: 'expert' } })).status, 'queued');
+    preferences: { mode: 'paused' } })).status, 'queued');
   assert.deepEqual(coordinator.stopConversationResponse(), { status: 'completed' });
   const saved = coordinator.captureConversation();
   assert.equal(signal.aborted, true);
   assert.equal(saved.entries.at(-1).text, 'Partial CAFÉ ☕');
   assert.equal(saved.entries.at(-1).status, 'cancelled');
-  assert.deepEqual(saved.preferences, { mode: 'paused', level: 'expert' }, 'capture includes queued preferences after stopping');
+  assert.deepEqual(saved.preferences, { mode: 'paused' }, 'capture includes queued preferences after stopping');
   assert.equal(coordinator.restoreConversation(content({ entries: [entry('learner', 'Different chat')] })).status, 'completed');
   release.resolve();
   assert.equal((await sending).status, 'cancelled');

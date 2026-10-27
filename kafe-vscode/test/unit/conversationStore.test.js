@@ -9,7 +9,7 @@ const entry = (id, kind = 'assistant', text = 'A Tutor answer', overrides = {}) 
 const pair = (id = 'pair') => ({ id, learnerText: 'My question', assistantText: 'A Tutor answer',
   dependencies: { fileUris: ['file:///workspace/lesson.kf'], knowledgeLineage: 'knowledge-v1' } });
 const content = overrides => ({ draft: 'My next question', entries: [entry('answer')], historyPairs: [pair()],
-  preferences: { mode: 'guided', level: 'beginner' }, ...overrides });
+  preferences: { mode: 'guided' }, ...overrides });
 const record = (id = 'chat', overrides = {}) => ({ id, title: 'A lesson', createdAt: DATE, updatedAt: DATE,
   content: content(), ...overrides });
 const archive = (conversations = [record()], activeId = conversations[0]?.id ?? null) => ({ activeId, conversations });
@@ -44,12 +44,12 @@ test('empty and unavailable storage start safely and unavailable storage retains
 test('workspace archive round trips exact Unicode drafts, transcript, dependencies and preferences without aliases', async () => {
   const f = fixture(), input = archive([record('first', { title: 'Café ☕ 日本語', content: content({
     draft: '¿Qué sigue?\n🌱', entries: [entry('answer', 'assistant', '```kf\nshow("☕");\n```\r\n')],
-    preferences: { level: 'expert', mode: 'paused' },
+    preferences: { mode: 'paused' },
   }) }), record('second')], 'second');
   const expected = structuredClone(input);
   const saving = f.store.save(input); input.conversations[0].title = 'Later mutation'; await saving;
   assert.deepEqual(f.store.load(), expected);
-  assert.equal(f.values.get(CONVERSATIONS_KEY).schemaVersion, 1);
+  assert.equal(f.values.get(CONVERSATIONS_KEY).schemaVersion, 2);
   const restored = f.store.load(); restored.conversations[0].content.entries[0].text = 'Mutated';
   assert.deepEqual(f.store.load(), expected);
   assert.deepEqual(new ConversationStore({ workspaceState: f.workspaceState }).load(), expected);
@@ -85,8 +85,8 @@ test('normalization preserves partial response status without mutating its live 
 });
 
 test('malformed existing archive is reported without writing or silently replacing its data', () => {
-  const valid = { schemaVersion: 1, ...archive() };
-  const invalid = [null, [], {}, { ...valid, schemaVersion: 2 }, { ...valid, activeId: 'missing' },
+  const valid = { schemaVersion: 2, ...archive() };
+  const invalid = [null, [], {}, { ...valid, schemaVersion: 3 }, { ...valid, activeId: 'missing' },
     { ...valid, conversations: [record(), record()] }, { ...valid, conversations: [record('bad', { createdAt: 'yesterday' })] },
     { ...valid, conversations: [record('bad', { title: '' })] }, { ...valid, secret: 'unexpected data' },
     { ...valid, conversations: [record('bad', { content: content({ request: 'private' }) })] }];
@@ -206,4 +206,65 @@ test('conversation filenames preserve useful Unicode while rejecting path separa
   }
   assert.match(conversationFilename(record('safe-id', { title: 'Café ☕' })), /Café ☕/);
   assert.notEqual(conversationFilename(record('first')), conversationFilename(record('second')));
+});
+
+for (const level of ['beginner', 'intermediate', 'expert']) for (const mode of ['guided', 'paused']) {
+  test(`legacy ${level}/${mode} migrates detached with no load writes and a retryable v2 save`, async () => {
+    const legacy = { schemaVersion: 1, ...archive([
+      record('first', { title: 'Café ☕ 日本語', updatedAt: '2026-10-26T13:14:15.123Z', content: content({ draft: '¿Qué sigue?\n🌱', preferences: { mode, level }, entries: [entry('answer', 'assistant', 'Expert was a historical label.\r\n☕')] }) }),
+      record('selected', { content: content({ preferences: { mode: 'paused', level: 'expert' } }) }),
+    ], 'selected') };
+    const original = structuredClone(legacy), f = fixture(legacy), expected = structuredClone(legacy);
+    delete expected.schemaVersion; for (const record of expected.conversations) delete record.content.preferences.level;
+    const loaded = f.store.load(); assert.deepEqual(loaded, expected); assert.deepEqual(legacy, original);
+    const { teachingInstructions } = require('../../src/tutor/TeachingPolicy');
+    const { LearningSession } = require('../../src/tutor/LearningSession');
+    const fresh = new LearningSession(); fresh.setPreferences({ mode });
+    assert.equal(teachingInstructions(loaded.conversations[0].content.preferences), teachingInstructions(fresh.snapshot().preferences));
+    assert.equal(f.writes.length, 0); assert.deepEqual(f.values.get(CONVERSATIONS_KEY), original);
+    assert.equal(JSON.parse(exportConversation(loaded.conversations[0])).schemaVersion, 1);
+    loaded.conversations[0].content.draft = 'mutated'; assert.deepEqual(f.store.load(), expected);
+    const update = f.workspaceState.update;
+    f.workspaceState.update = async () => { throw new Error('disk unavailable'); };
+    await assert.rejects(f.store.save(expected), /disk unavailable/);
+    assert.deepEqual(f.values.get(CONVERSATIONS_KEY), original);
+    assert.deepEqual(new ConversationStore({ workspaceState: f.workspaceState }).load(), expected);
+    f.workspaceState.update = update; await f.store.save(expected);
+    assert.deepEqual(f.values.get(CONVERSATIONS_KEY), { schemaVersion: 2, ...expected });
+    assert.deepEqual(new ConversationStore({ workspaceState: f.workspaceState }).load(), expected);
+  });
+}
+for (const schemaVersion of [1, 2]) test(`v${schemaVersion} rejects corrupt or unknown fields before conversion`, () => {
+  const valid = { schemaVersion, ...archive() };
+  if (schemaVersion === 1) valid.conversations[0].content.preferences.level = 'beginner';
+  const corruptions = [
+    v => { v.extra = true; }, v => { v.conversations[0].extra = true; }, v => { v.conversations[0].content.extra = true; },
+    v => { v.conversations[0].content.preferences.extra = true; }, v => { v.conversations[0].content.preferences.level = 'invalid'; },
+    v => { delete v.conversations[0].content.preferences.mode; },
+    v => { if (schemaVersion === 1) delete v.conversations[0].content.preferences.level; else v.conversations[0].content.preferences.level = 'expert'; },
+    v => { v.conversations[0].content.entries[0].actions = [{ id: 'grant' }]; },
+    v => { v.conversations[0].content.historyPairs[0].dependencies.extra = true; },
+    v => { v.conversations[0].createdAt = '2026-02-30T12:00:00.000Z'; },
+    v => { v.conversations[0].content.entries[0].data = { private: true }; },
+    v => { v.conversations[0].content.draft = 'x'.repeat(LIMITS.textBytes + 1); },
+    v => { v.conversations = Array.from({ length: LIMITS.conversations + 1 }, (_, i) => record(`chat-${i}`)); },
+    v => { v.conversations[0].content.entries = Array(LIMITS.entries + 1).fill(entry('same')); },
+    v => { v.conversations[0].content.historyPairs = Array(LIMITS.historyPairs + 1).fill(pair()); },
+  ];
+  for (const corrupt of corruptions) {
+    const saved = structuredClone(valid); corrupt(saved); const original = structuredClone(saved), f = fixture(saved);
+    assert.throws(() => f.store.load(), /Invalid|limit/); assert.equal(f.writes.length, 0); assert.deepEqual(f.values.get(CONVERSATIONS_KEY), original);
+  }
+});
+
+for (const schemaVersion of [1, 2]) test(`v${schemaVersion} enforces content and archive bytes before migration`, () => {
+  const large = content({ draft: 'x'.repeat(LIMITS.textBytes), entries: [entry('large', 'assistant', 'x'.repeat(LIMITS.textBytes))], historyPairs: [] });
+  if (schemaVersion === 1) large.preferences.level = 'expert';
+  const oversizedContent = { schemaVersion, ...archive([record('large', { content: large })]) };
+  const draftOnly = { ...large, entries: [] };
+  const oversizedArchive = { schemaVersion, ...archive(Array.from({ length: 9 }, (_, i) => record(`large-${i}`, { content: draftOnly }))) };
+  for (const value of [oversizedContent, oversizedArchive]) {
+    const f = fixture(value); assert.throws(() => f.store.load(), /size limit/);
+    assert.equal(f.writes.length, 0); assert.equal(f.values.get(CONVERSATIONS_KEY), value);
+  }
 });

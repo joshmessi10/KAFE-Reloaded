@@ -430,74 +430,32 @@ test('native source reveal uses included canonical target, refuses revoked trust
   } finally { f.host.dispose(); }
 });
 
-for (const level of ['beginner', 'intermediate', 'expert']) test(`native learning level offers exactly three choices and selects ${level} in one picker`, async () => {
-  const f = conversationHostFixture(); let picks = 0;
-  f.vscode.window.showQuickPick = async (options, settings) => {
-    picks++;
-    assert.deepEqual(options.map(option => option.level), ['beginner', 'intermediate', 'expert']);
-    assert.deepEqual(options.map(option => option.label), ['Beginner', 'Intermediate', 'Expert']);
-    assert.ok(options.every(option => typeof option.description === 'string' && option.description.trim()));
-    assert.equal(settings.title, 'KAFE: Learning Level');
-    return options.find(option => option.level === level);
-  };
+test('retired learning level route rejects live messages without opening native UI or changing state', async () => {
+  const f = conversationHostFixture();
+  f.vscode.window.showQuickPick = async () => assert.fail('Retired level route cannot open a picker');
   try {
     await f.host.readiness;
-    if (level === 'beginner') await f.host.coordinator.handleLearnerMessage({ type: 'setLearningPreferences', preferences: { level: 'expert' } });
-    f.host.coordinator.session.setDraft('Independent draft');
-    assert.equal((await f.host.openLearningPreferences()).status, 'updated');
-    assert.equal(picks, 1);
-    assert.deepEqual(f.host.coordinator.learningSession.snapshot().preferences, { mode: 'guided', level });
-    assert.equal(f.host.coordinator.snapshot().draft, 'Independent draft');
-    assert.equal(f.calls.length, 0);
+    const before = f.host.coordinator.snapshot();
+    assert.equal(f.host.openLearningPreferences, undefined);
+    assert.equal((await f.host.tutorView.onMessage(commandEnvelope(f.host, 'openLearningPreferences'))).status, 'stale');
+    assert.deepEqual(f.host.coordinator.snapshot(), before);
   } finally { f.host.dispose(); }
 });
 
-for (const result of [undefined, { level: 'expert' }, { level: 'unknown' }, { level: 'expert', mode: 'paused' }]) test(`native learning level refuses cancelled or fabricated selection ${JSON.stringify(result)}`, async () => {
-  const f = conversationHostFixture(); let picks = 0;
-  f.vscode.window.showQuickPick = async () => { picks++; return result; };
-  try {
-    await f.host.readiness; f.host.coordinator.session.setDraft('Keep cancellation draft');
-    assert.equal((await f.host.openLearningPreferences()).status, 'cancelled');
-    assert.equal(picks, 1);
-    assert.deepEqual(f.host.coordinator.learningSession.snapshot().preferences, { mode: 'guided', level: 'beginner' });
-    assert.equal(f.host.coordinator.snapshot().draft, 'Keep cancellation draft');
-    assert.equal(f.calls.length, 0);
-  } finally { f.host.dispose(); }
-});
-
-test('native learning level preserves pause and forwards only the native-owned level field', async () => {
-  const f = conversationHostFixture(), messages = [];
-  f.vscode.window.showQuickPick = async options => options.find(option => option.level === 'expert');
+test('native pause preserves draft and queues until the admitted response settles', async () => {
+  const gate = deferred(), entered = deferred(), f = conversationHostFixture();
+  f.host.coordinator.controller.provider = { async *stream() { entered.resolve(); await gate.promise; yield { type: 'complete', text: 'Answer', toolCalls: [], finishReason: 'stop' }; } };
   try {
     await f.host.readiness;
-    assert.equal((await f.host.toggleTeachingPause()).status, 'updated');
-    const handle = f.host.coordinator.handleLearnerMessage.bind(f.host.coordinator);
-    f.host.coordinator.handleLearnerMessage = message => { messages.push(message); return handle(message); };
-    assert.equal((await f.host.openLearningPreferences()).status, 'updated');
-    assert.deepEqual(messages, [{ type: 'setLearningPreferences', preferences: { level: 'expert' } }]);
-    assert.deepEqual(f.host.coordinator.learningSession.snapshot().preferences, { mode: 'paused', level: 'expert' });
-    assert.equal((await f.host.toggleTeachingPause()).status, 'updated');
-    assert.deepEqual(messages.at(-1), { type: 'toggleTeachingPause' });
-    assert.deepEqual(f.host.coordinator.learningSession.snapshot().preferences, { mode: 'guided', level: 'expert' });
-  } finally { f.host.dispose(); }
-});
-
-test('native learning level preserves draft and queues the selected level under an admitted response', async () => {
-  const f = conversationHostFixture(), finish = deferred(), started = deferred(); let picks = 0;
-  f.vscode.window.showQuickPick = async options => { picks++; return options.find(option => option.level === 'expert'); };
-  f.host.coordinator.controller.provider = { async *stream() { started.resolve(); await finish.promise; yield { type: 'complete', text: 'Done', toolCalls: [], finishReason: 'stop' }; } };
-  try {
-    await f.host.readiness; f.host.coordinator.session.setDraft('Next private draft');
-    const pending = f.host.actions.submitMessage({ submissionId: randomUUID(), text: 'Current request', contextRevision: f.host.coordinator.snapshot().context.revision });
-    await started.promise;
-    const result = await f.host.tutorView.onMessage(commandEnvelope(f.host, 'openLearningPreferences'));
-    assert.equal(result.status, 'queued'); assert.equal(picks, 1);
-    assert.deepEqual(f.host.coordinator.learningSession.snapshot().preferences, { mode: 'guided', level: 'beginner' });
-    assert.equal(f.host.coordinator.snapshot().draft, 'Next private draft');
-    finish.resolve(); await pending;
-    assert.deepEqual(f.host.coordinator.learningSession.snapshot().preferences, { mode: 'guided', level: 'expert' });
-    assert.equal(f.host.coordinator.snapshot().draft, 'Next private draft');
-  } finally { finish.resolve(); f.host.dispose(); }
+    const response = submit(f, 'Explain');
+    await entered.promise;
+    f.host.coordinator.session.setDraft('Next draft');
+    assert.equal((await f.host.toggleTeachingPause()).status, 'queued');
+    assert.deepEqual(f.host.coordinator.learningSession.snapshot().preferences, { mode: 'guided' });
+    gate.resolve(); await response;
+    assert.deepEqual(f.host.coordinator.learningSession.snapshot().preferences, { mode: 'paused' });
+    assert.equal(f.host.coordinator.session.snapshot().draft, 'Next draft');
+  } finally { gate.resolve(); f.host.dispose(); }
 });
 
 test('native pause command remains separate from the level picker and is registered for invocation', async () => {
@@ -517,7 +475,8 @@ test('native pause command remains separate from the level picker and is registe
     Module._load = originalLoad;
     const manifest = require('../../package.json');
     assert.ok(manifest.activationEvents.includes('onCommand:kafe.toggleTeachingPause'));
-    assert.equal(manifest.contributes.commands.find(command => command.command === 'kafe.learningPreferences')?.title, 'KAFE: Learning Level');
+    assert.equal(manifest.contributes.commands.some(command => command.command === 'kafe.learningPreferences'), false);
+    assert.equal(registered.has('kafe.learningPreferences'), false);
     assert.equal(manifest.contributes.commands.find(command => command.command === 'kafe.toggleTeachingPause')?.title, 'KAFE: Pause/Resume Teaching');
     assert.equal(typeof registered.get('kafe.toggleTeachingPause'), 'function');
     assert.equal((await registered.get('kafe.toggleTeachingPause')()).status, 'updated');
@@ -610,19 +569,6 @@ for (const restricted of [true, false]) test(`production host supports message-o
     if (restricted) assert.match(v.byId('timeline').textContent, /Message-only proposal.*not verified/);
     assert.equal(f.host.proposalProvider.pending, null); assert.equal(calls, 1);
   } finally { f.host.dispose(); }
-});
-
-test('native learning level opened before New conversation cannot change the reset generation', async () => {
-  const f = conversationHostFixture(), picked = deferred(); let picks = 0;
-  let selected;
-  f.vscode.window.showQuickPick = async options => { picks++; selected = options.find(option => option.level === 'expert'); return picked.promise; };
-  try {
-    await f.host.readiness;
-    const pending = f.host.tutorView.onMessage(commandEnvelope(f.host, 'openLearningPreferences'));
-    await new Promise(resolve => setImmediate(resolve)); assert.equal(picks, 1); f.host.coordinator.newConversation();
-    picked.resolve(selected); assert.equal((await pending).status, 'stale');
-    assert.deepEqual(f.host.coordinator.learningSession.snapshot().preferences, { mode: 'guided', level: 'beginner' });
-  } finally { picked.resolve(); f.host.dispose(); }
 });
 
 for (const applied of [true, false]) test(`actual native host preserves action facts in subsequent dialogue after Apply ${applied}`, async () => {

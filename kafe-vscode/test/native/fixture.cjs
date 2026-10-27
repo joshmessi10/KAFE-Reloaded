@@ -89,7 +89,6 @@ exports.activate = async function activate(context) {
       pending: !!host.proposalProvider.pending, reviewed: host.proposalProvider.pending?.reviewed === true, turnStatus: host.coordinator.snapshot().turn?.status || null })),
     vscode.commands.registerCommand('kafe.runFile', () => runFile()),
     vscode.commands.registerCommand('kafe.newConversation', () => host.coordinator.newConversation()),
-    vscode.commands.registerCommand('kafe.learningPreferences', () => host.openLearningPreferences()),
     vscode.commands.registerCommand('kafe.toggleTeachingPause', () => host.toggleTeachingPause()),
     vscode.commands.registerCommand('kafe.configureProvider', () => host.keyHandlers.configure()),
     vscode.commands.registerCommand('kafe.clearTutorProgress', createClearProgressHandler({ vscode: api, progressStore: host.progressStore }))];

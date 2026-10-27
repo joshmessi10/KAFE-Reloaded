@@ -341,7 +341,7 @@ for (const [kind, type] of [['design', 'confirmCheckpoint'], ['implementation', 
   assert.equal(f.session.snapshot().entries.at(-1).data.code, 'learning_limit');
 });
 
-test('synchronous preference queue cannot consume reserved confirmation bytes after action consumption', async () => {
+test('synchronous mode queue fits the reserved confirmation without consuming extra bytes or authority', async () => {
   let providerReservationReleased = false;
   const f = fixture({ kind: 'design', events: async function* (n) {
     if (n === 1) yield done([checkpoint('design')]);
@@ -354,9 +354,10 @@ test('synchronous preference queue cannot consume reserved confirmation bytes af
   } });
   await f.start(); const learning = f.coordinator.learningSession; fillLearningState(learning, 65534);
   const original = f.envelope('confirmCheckpoint'); let changing;
-  f.session.subscribe(() => { if (!changing && !f.session.resolveAction(original)) changing = f.coordinator.handleLearnerMessage({ type: 'setLearningPreferences', preferences: { level: 'intermediate' } }); });
+  f.session.subscribe(() => { if (!changing && !f.session.resolveAction(original)) changing = f.coordinator.handleLearnerMessage({ type: 'setLearningPreferences', preferences: { mode: 'paused' } }); });
   assert.equal((await f.actions.dispatch(original)).status, 'completed');
-  assert.equal((await changing).status, 'unavailable');
+  assert.equal((await changing).status, 'queued');
+  assert.deepEqual(learning.snapshot().preferences, { mode: 'paused' });
   assert.equal(learning.snapshot().decisions[0].disposition, 'confirmed'); assert.equal(learning.snapshot().byteLength, 65536);
   assert.equal(f.session.resolveAction(original), null); assert.equal(f.calls, 2); assert.equal(f.stages, 0);
   assert.equal(providerReservationReleased, true);
@@ -375,10 +376,10 @@ test('source event during consumption denies adoption and releases its private b
 
 test('valid synchronous queued preference patch preserves admitted policy and cannot replay consumed preparation', async () => {
   const f = fixture(); await f.start(); const original = f.envelope('implementCheckpoint'); let queued;
-  f.session.subscribe(() => { if (!queued && !f.session.resolveAction(original)) queued = f.coordinator.handleLearnerMessage({ type: 'setLearningPreferences', preferences: { level: 'expert' } }); });
+  f.session.subscribe(() => { if (!queued && !f.session.resolveAction(original)) queued = f.coordinator.handleLearnerMessage({ type: 'setLearningPreferences', preferences: { mode: 'paused' } }); });
   assert.equal((await f.actions.dispatch(original)).status, 'completed'); assert.equal((await queued).status, 'queued');
-  assert.equal(f.coordinator.controller.current.snapshot.learning.preferences.level, 'beginner');
-  assert.equal(f.coordinator.learningSession.snapshot().preferences.level, 'expert');
+  assert.equal(f.coordinator.controller.current.snapshot.learning.preferences.mode, 'guided');
+  assert.equal(f.coordinator.learningSession.snapshot().preferences.mode, 'paused');
   assert.equal(f.stages, 1); assert.equal((await f.actions.dispatch(original)).status, 'stale'); assert.equal(f.stages, 1);
 });
 test('fresh preparation authorization after a failed confirmed checkpoint can stage exactly one proposal', async () => {

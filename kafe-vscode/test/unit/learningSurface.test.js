@@ -40,36 +40,34 @@ test('all checkpoint list limits remain fully reachable and literal provider HTM
   assert.equal(t.querySelector('details'), disclosure); assert.equal(disclosure.open, true);
 });
 
-test('queued level changes retain the admitted selection and announce the settled level once', () => {
+test('queued pause retains the admitted mode and announces settlement once', () => {
   const v = loadView(), turn = { id: 'turn', turnGeneration: 1, submissionId: 'submission', status: 'responding' };
-  const admitted = { revision: 1, displayRevision: 1, preferences: { mode: 'guided', level: 'beginner' }, preferenceChangeQueued: false };
+  const admitted = { revision: 1, displayRevision: 1, preferences: { mode: 'guided' }, preferenceChangeQueued: false };
   v.render(snapshot({ turn, learning: admitted, entries: [entry('answer', 'assistant', 'First text')] }));
-  const opener = v.byId('guided-learning');
-  opener.focus();
+  const composer = v.byId('composer');
+  composer.focus();
   const queued = { ...admitted, displayRevision: 2, preferenceChangeQueued: true };
   v.render(snapshot({ turn, learning: queued, entries: [entry('answer', 'assistant', 'First text')] }));
-  assert.equal(opener.textContent, 'Beginner');
   assert.match(v.byId('conversation-status').textContent, /queued.*response settles/);
   const queuedAnnouncement = v.byId('conversation-status').firstChild;
   v.render(snapshot({ revision: 2, turn, learning: queued, entries: [entry('answer', 'assistant', 'First text with a delta')] }));
   assert.equal(v.byId('conversation-status').firstChild, queuedAnnouncement);
-  const settled = { revision: 2, displayRevision: 3, preferences: { mode: 'paused', level: 'expert' }, preferenceChangeQueued: false };
+  const settled = { revision: 2, displayRevision: 3, preferences: { mode: 'paused' }, preferenceChangeQueued: false };
   v.render(snapshot({ revision: 3, turn: { ...turn, status: 'completed' }, learning: settled, entries: [entry('answer', 'assistant', 'Final answer')] }));
-  assert.equal(opener.textContent, 'Expert (paused)');
-  assert.match(v.byId('conversation-status').textContent, /Response complete.*Learning level: Expert.*Guided learning paused/);
-  assert.equal(v.document.activeElement, opener);
+  assert.match(v.byId('conversation-status').textContent, /Response complete.*Guided learning paused/);
+  assert.equal(v.document.activeElement, composer);
   const settledAnnouncement = v.byId('conversation-status').firstChild;
   v.render(snapshot({ revision: 4, turn: { ...turn, status: 'completed' }, learning: settled, entries: [entry('answer', 'assistant', 'Final answer')] }));
   assert.equal(v.byId('conversation-status').firstChild, settledAnnouncement);
   assert.deepEqual(v.sent, []); assert.deepEqual(v.persisted, []);
 });
 
-test('a changed level is announced without repeating during content updates', () => {
+test('a changed mode is announced without repeating during content updates', () => {
   const v = loadView();
-  v.render(snapshot({ learning: { revision: 1, preferences: { mode: 'guided', level: 'beginner' } } }));
-  const learning = { revision: 2, preferences: { mode: 'guided', level: 'intermediate' } };
+  v.render(snapshot({ learning: { revision: 1, preferences: { mode: 'guided' } } }));
+  const learning = { revision: 2, preferences: { mode: 'paused' } };
   v.render(snapshot({ revision: 2, learning }));
-  assert.equal(v.byId('conversation-status').textContent, 'Learning level: Intermediate. Guided learning active.');
+  assert.equal(v.byId('conversation-status').textContent, 'Guided learning paused.');
   const announcement = v.byId('conversation-status').firstChild;
   v.render(snapshot({ revision: 3, learning, entries: [entry('answer', 'assistant', 'New content')] }));
   assert.equal(v.byId('conversation-status').firstChild, announcement);
@@ -107,5 +105,5 @@ test('settled checkpoint and queued preference change announce once without resp
   assert.match(v.byId('conversation-status').textContent, /queued.*settles/);
   assert.equal(v.byId('stop').hidden, true); assert.equal(v.byId('response-dock').getAttribute('aria-busy'), 'false');
   v.render(snapshot({ revision: 3, learning: { ...learning, displayRevision: 2, preferenceChangeQueued: false }, entries: [decision()] }));
-  assert.equal(v.byId('conversation-status').textContent, 'Learning level: Beginner. Guided learning active.');
+  assert.equal(v.byId('conversation-status').textContent, 'Guided learning active.');
 });

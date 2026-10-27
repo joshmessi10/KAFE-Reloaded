@@ -12,8 +12,8 @@ test('native source reveal resolves only included host identity and exact curren
   for (const forged of [{ ...issued, uri: 'file:///private.kf' }, { ...issued, sourceId: 'optional' }, { ...issued, sourceId: 'unknown' }, { ...issued, contextRevision: 0 }]) assert.equal(isTutorMessage(forged, s), false);
   s.setContext({ restricted: true, activeSource: null, sources: [] }); assert.equal(isTutorMessage(issued, s), false);
 });
-test('native preferences route has no webview preference mutation fields', () => {
-  const s = new ConversationSession(); assert.equal(isTutorMessage(command(s, 'openLearningPreferences'), s), true);
+test('retired preferences route rejects even a live generation', () => {
+  const s = new ConversationSession(); assert.equal(isTutorMessage(command(s, 'openLearningPreferences'), s), false);
   for (const extra of [{ preferences: { mode: 'paused' } }, { command: 'kafe.runFile' }, { actionId: 'fake' }]) assert.equal(isTutorMessage(command(s, 'openLearningPreferences', extra), s), false);
 });
 test('source reveal fails closed for malformed context projections without throwing', () => {

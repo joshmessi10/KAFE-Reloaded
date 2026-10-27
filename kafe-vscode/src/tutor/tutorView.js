@@ -10,8 +10,6 @@
   let stopping = null;
   let runBinding = null;
   const activeStates = ['preparing', 'responding', 'processing-tools'];
-  const levelLabels = { beginner: 'Beginner', intermediate: 'Intermediate', expert: 'Expert' };
-  const learningLevelLabel = preferences => Object.hasOwn(levelLabels, preferences?.level) ? levelLabels[preferences.level] : 'Beginner';
   const record = value => value !== null && typeof value === 'object' && !Array.isArray(value);
   const nonblank = value => typeof value === 'string' && Boolean(value.trim());
   const counter = value => Number.isSafeInteger(value) && value >= 0;
@@ -55,12 +53,6 @@
     byId('send').hidden = active; byId('send').disabled = !state || busy() || !composer.value.trim();
     renderDock();
     byId('stop').hidden = !active; byId('stop').disabled = !active || Boolean(stopping);
-    const paused = state?.learning?.preferences?.mode === 'paused';
-    const level = learningLevelLabel(state?.learning?.preferences), opener = byId('guided-learning');
-    const label = paused ? `${level} (paused)` : level;
-    if (opener.textContent !== label) opener.textContent = label;
-    const description = `Choose learning level. Current level: ${level}.${paused ? ' Guided learning paused.' : ''}`;
-    opener.setAttribute('aria-label', description); opener.setAttribute('title', description);
     if (active && focused === byId('send')) byId('stop').focus();
     else if (!active && focused === byId('stop')) {
       if (!byId('send').disabled) byId('send').focus();
@@ -94,7 +86,6 @@
   });
   listen(byId('composer-form'), 'submit', submit);
   listen(byId('stop'), 'click', () => { if (activeStates.includes(state?.turn?.status) && !stopping) { stopping = `${state.turn.id}:${state.turn.turnGeneration}`; send('stopTurn', { turnId: state.turn.id, turnGeneration: state.turn.turnGeneration }); updateControls(); } });
-  listen(byId('guided-learning'), 'click', () => send('openLearningPreferences'));
   listen(byId('add-context'), 'click', () => { if (state && !state.context.restricted) { byId('context-selector').open = !byId('context-selector').open; byId('add-context').setAttribute('aria-expanded', String(byId('context-selector').open)); } });
   listen(byId('context-selector'), 'toggle', () => byId('add-context').setAttribute('aria-expanded', String(byId('context-selector').open)));
   listen(window, 'resize', growComposer);
@@ -198,9 +189,9 @@
       updates.push(words[next.turn.status]);
     }
     announcedTurn = key;
-    const level = learningLevelLabel(next.learning?.preferences), paused = next.learning?.preferences?.mode === 'paused';
-    const learningSignature = JSON.stringify([paused, level, next.learning?.preferenceChangeQueued === true]);
-    if (!fresh && learningSignature !== announcedLearning) updates.push(next.learning?.preferenceChangeQueued ? 'Preference change queued until this response settles.' : `Learning level: ${level}. Guided learning ${paused ? 'paused' : 'active'}.`);
+    const paused = next.learning?.preferences?.mode === 'paused';
+    const learningSignature = JSON.stringify([paused, next.learning?.preferenceChangeQueued === true]);
+    if (!fresh && learningSignature !== announcedLearning) updates.push(next.learning?.preferenceChangeQueued ? 'Preference change queued until this response settles.' : `Guided learning ${paused ? 'paused' : 'active'}.`);
     announcedLearning = learningSignature;
     for (const e of next.entries) {
       if (e.kind === 'checkpoint') {

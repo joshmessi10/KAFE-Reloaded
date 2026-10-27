@@ -26,7 +26,7 @@ test('manifest keeps the Marketplace identity and registers KAFE editing', () =>
 test('manifest exposes the runner, runtime installer, and tutor view', () => {
   const pkg = readJson('package.json');
   const commands = new Map(pkg.contributes.commands.map((item) => [item.command, item.title]));
-  assert.deepEqual([...commands.keys()].sort(), ['kafe.clearProviderKey', 'kafe.clearTutorProgress', 'kafe.configureProvider', 'kafe.deleteConversation', 'kafe.exportConversation', 'kafe.installRuntime', 'kafe.learningPreferences', 'kafe.newConversation', 'kafe.openTutor', 'kafe.renameConversation', 'kafe.runFile', 'kafe.switchConversation', 'kafe.toggleTeachingPause']);
+  assert.deepEqual([...commands.keys()].sort(), ['kafe.clearProviderKey', 'kafe.clearTutorProgress', 'kafe.configureProvider', 'kafe.deleteConversation', 'kafe.exportConversation', 'kafe.installRuntime', 'kafe.newConversation', 'kafe.openTutor', 'kafe.renameConversation', 'kafe.runFile', 'kafe.switchConversation', 'kafe.toggleTeachingPause']);
   assert.ok(pkg.activationEvents.includes('onCommand:kafe.configureProvider'));
   assert.ok(!pkg.activationEvents.includes('onCommand:kafe.configureProviderKey'));
   const extension = readFileSync(path.join(root, 'extension.js'), 'utf8');
@@ -96,4 +96,4 @@ test('README explains separate SecretStorage key and tutor progress removal', ()
   assert.doesNotMatch(readme, /Removing the API key from extension settings/);
 });
 
-test('conversation reset and native preferences are secondary Tutor view-title commands', () => { const pkg = readJson('package.json'); for (const command of ['kafe.newConversation', 'kafe.learningPreferences']) { assert.ok(pkg.activationEvents.includes(`onCommand:${command}`)); const item = pkg.contributes.menus['view/title'].find(i => i.command === command); assert.ok(item); assert.equal(item.when, 'view == kafeTutorView'); assert.ok(item.group && !item.group.startsWith('navigation')); } });
+test('conversation reset is a secondary Tutor view-title command', () => { const pkg = readJson('package.json'); for (const command of ['kafe.newConversation']) { assert.ok(pkg.activationEvents.includes(`onCommand:${command}`)); const item = pkg.contributes.menus['view/title'].find(i => i.command === command); assert.ok(item); assert.equal(item.when, 'view == kafeTutorView'); assert.ok(item.group && !item.group.startsWith('navigation')); } });

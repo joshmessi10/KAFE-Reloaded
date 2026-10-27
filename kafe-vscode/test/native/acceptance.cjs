@@ -32,7 +32,6 @@ fs.writeFileSync(path.join(fixture, 'fixture-config.json'), JSON.stringify({ roo
 fs.writeFileSync(path.join(fixture, 'package.json'), JSON.stringify({ name: 'kafe-native-acceptance', publisher: 'local-test', version: '0.0.1', engines: { vscode: '^1.96.0' },
   main: './extension.cjs', capabilities: structuredClone(productionManifest.capabilities), activationEvents: ['*'], contributes: { languages: [{ id: 'kafe', extensions: ['.kf'] }],
     commands: [{ command: 'kafe.runFile', title: 'KAFE: Run File' },
-      { command: 'kafe.learningPreferences', title: 'KAFE: Learning Level' },
       { command: 'kafe.toggleTeachingPause', title: 'KAFE: Pause/Resume Teaching' }], keybindings: [{ command: 'kafe.runFile', key: 'ctrl+f5', when: 'editorLangId == kafe && isWorkspaceTrusted' }],
     viewsContainers: { activitybar: [{ id: 'kafeNativeTutor', title: 'KAFE native acceptance', icon: 'tutor.svg' }] },
     views: { kafeNativeTutor: [{ id: 'kafeNativeTutorView', name: 'KAFE Tutor', type: 'webview' }] } } }));
@@ -428,25 +427,17 @@ async function main() {
     await control('newConversation'); assert.equal((await control('state')).learning.decisions.length,0);
     return {designAdopted:true,scopeClicked:true,nativeReviewed:true,ApplyDidNotRun:true,separateRun:true,viewRetainsLearning:true,newConversationClearsLearning:true};
   });
-  await gate('native-level-picker-queued-and-separate-pause-resume', async () => {
-    async function chooseLevel(value) {
-      await click('#guided-learning');
-      await waitFor(()=>evaluate('document.querySelector(".quick-input-widget .quick-input-title")?.textContent==="KAFE: Learning Level"',true),'native learning levels');
-      assert.equal(await evaluate('document.querySelectorAll(".quick-input-list .monaco-list-row").length',true),3);
-      await call('Input.insertText',{text:value}); await key('Enter',true);
-    }
-    await oneSend('Hold response while preferences change',{text:'Partial preference answer.',hold:true});
-    await chooseLevel('Expert');
-    await waitFor(async()=>(await control('state')).snapshot.learning.preferenceChangeQueued,'native busy preference queue');
+  await gate('native-queued-pause-and-resume', async () => {
+    assert.equal(await evaluate('document.querySelector("#guided-learning") === null'), true);
+    await oneSend('Hold response while teaching pauses',{text:'Partial answer.',hold:true});
     await control('toggleTeachingPause');
-    assert.deepEqual((await control('state')).learning.preferences,{mode:'guided',level:'beginner'}); await control('finish'); await settledTurn();
-    assert.deepEqual((await control('state')).learning.preferences,{mode:'paused',level:'expert'}); await screenshot('native-paused-expert-level');
-    await chooseLevel('Intermediate');
-    await waitFor(async()=>(await control('state')).learning.preferences.level==='intermediate','native level changed while paused');
-    assert.equal((await control('state')).learning.preferences.mode,'paused');
+    await waitFor(async()=>(await control('state')).snapshot.learning.preferenceChangeQueued,'native busy pause queue');
+    assert.deepEqual((await control('state')).learning.preferences,{mode:'guided'});
+    await control('finish'); await settledTurn();
+    assert.deepEqual((await control('state')).learning.preferences,{mode:'paused'}); await screenshot('native-teaching-paused');
     await control('toggleTeachingPause'); await waitFor(async()=>(await control('state')).learning.preferences.mode==='guided','native resumed');
     const state=await control('state'); assert.equal(state.learning.decisions.length,0); assert.equal(state.pendingProposal,null);
-    await control('newConversation'); return {threeNativeLevels:true,queuedWhileBusy:true,pausedAfterSettlement:true,levelPreservesPause:true,resumedBySeparateCommand:true,noPreparationGrant:true};
+    await control('newConversation'); return {noLevelSelector:true,queuedWhileBusy:true,pausedAfterSettlement:true,resumedByNativeCommand:true,noPreparationGrant:true};
   });
   await gate('native-diff-stale-rejection-and-reviewed-Apply', async () => {
     await control('closeProposalEditors'); const initial = await control('state'); await oneSend('Propose native diff', { proposal: true }); await settledTurn();

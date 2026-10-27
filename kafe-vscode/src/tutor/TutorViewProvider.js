@@ -25,7 +25,6 @@ function isTutorMessage(value, session) {
       typeof value.text === 'string' && Boolean(value.text.trim()) && Number.isSafeInteger(value.contextRevision) && value.contextRevision >= 0;
     case 'setSourceIncluded': return exact(['sourceId', 'included', 'contextRevision']) &&
       typeof value.sourceId === 'string' && Boolean(value.sourceId.trim()) && typeof value.included === 'boolean' && Number.isSafeInteger(value.contextRevision) && value.contextRevision >= 0;
-    case 'openLearningPreferences': return exact([]);
     case 'revealSource': return exact(['sourceId', 'contextRevision']) &&
       snapshot.context?.restricted === false && Array.isArray(snapshot.context.sources) && Number.isSafeInteger(value.contextRevision) && value.contextRevision >= 0 && value.contextRevision === snapshot.context.revision &&
       typeof value.sourceId === 'string' && [snapshot.context.activeSource, ...snapshot.context.sources].some(source => source?.included === true && source.id === value.sourceId);

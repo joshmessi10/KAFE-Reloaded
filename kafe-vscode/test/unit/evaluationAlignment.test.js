@@ -160,8 +160,8 @@ test('New and restored conversations cannot reacquire prior private Run metrics 
   assert.doesNotMatch(JSON.stringify(current.request), /OBSERVED_CLASSIFIER_METRICS/);
 });
 
-test('real getLatestRunResult tool continuation retains the private observed source and coaching policy at every preset', async t => {
-  for (const mode of ['guided', 'paused']) for (const level of ['beginner', 'intermediate', 'expert']) {
+test('real getLatestRunResult tool continuation retains the private observed source and coaching policy in both teaching modes', async t => {
+  for (const mode of ['guided', 'paused']) {
     const f = fixture(), sent = [];
     const answer = 'La sensibilidad indica qué proporción de los positivos reales detecta el clasificador. Relaciona los falsos negativos con el coste de omitir fraude.';
     const provider = { async *stream(input) {
@@ -173,12 +173,12 @@ test('real getLatestRunResult tool continuation retains the private observed sou
     const coordinator = new SessionCoordinator({ provider, contextComposer: f.composer, toolRouter: f.router,
       getContext: () => ({ activeDocument: f.document }), getSourceRevision: () => 0 });
     t.after(() => coordinator.dispose());
-    coordinator.learningSession.setPreferences({ mode, level });
+    coordinator.learningSession.setPreferences({ mode });
     assert.equal(coordinator.recordRunResult(f.run), true);
     await coordinator.refreshContext();
     assert.equal((await coordinator.handleLearnerMessage({ type: 'submitMessage', submissionId: randomUUID(),
       text: 'Ayúdame a interpretar la sensibilidad de mi último resultado.', contextRevision: coordinator.snapshot().context.revision })).status, 'completed');
-    assert.equal(sent.length, 2, `${mode}/${level}`);
+    assert.equal(sent.length, 2, `${mode}`);
     assert.equal(sent[1].messages[0].content, sent[0].messages[0].content);
     assert.match(sent[1].messages[0].content, /Keep the tutor role on every follow-up, including after tools/);
     assert.match(sent[1].messages[0].content, /Use numbers already supplied by the learner or present in authorized Run stdout\/stderr/);
@@ -196,12 +196,12 @@ test('real getLatestRunResult tool continuation retains the private observed sou
   }
 });
 
-for (const mode of ['guided', 'paused']) for (const level of ['beginner', 'intermediate', 'expert']) {
-  test(`assessment coaching distinguishes observed, learner-reported and missing values: ${mode}/${level}`, async () => {
-    const f = fixture(), learningSession = new LearningSession(); learningSession.setPreferences({ mode, level });
+for (const mode of ['guided', 'paused']) {
+  test(`assessment coaching distinguishes observed, learner-reported and missing values: ${mode}`, async () => {
+    const f = fixture(), learningSession = new LearningSession(); learningSession.setPreferences({ mode });
     const composition = await f.compose({ request: reportedMetrics, runResult: null, actionEvidence: new ActionEvidence(), learningSession });
     assert.deepEqual(composition.payload.messages.at(-1), { role: 'user', content: reportedMetrics });
-    assert.deepEqual(composition.learning.preferences, { mode, level });
+    assert.deepEqual(composition.learning.preferences, { mode });
     assert.equal(composition.snapshots.some(source => source.id === 'run-result'), false);
     assert.equal(await f.router.route({ name: 'getLatestRunResult', arguments: {} }, { snapshot: seal(composition) }), null);
     assert.doesNotMatch(JSON.stringify(composition.payload), /OBSERVED_CLASSIFIER_METRICS|SYNTHETIC_HOST_DIAGNOSTIC/);

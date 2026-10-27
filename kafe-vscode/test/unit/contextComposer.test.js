@@ -117,15 +117,15 @@ test('teaching request fixtures carry direct concepts, learner-owned decisions, 
     assert.match(policy, /Private Run evidence.*Do not reproduce raw Run output/i);
     assert.doesNotMatch(policy, /Start with a hint/i);
     assert.equal(result.payload.messages.at(-1).content, request);
-    assert.equal(result.learning.preferences.level, 'beginner');
+    assert.deepEqual(result.learning.preferences, { mode: 'guided' });
   }
 });
 
 test('decision-tree lesson receives concept-first guidance and constructor options beyond the empty-call fixture', async () => {
   const { LearningSession } = require('../../src/tutor/LearningSession');
   const composer = new ContextComposer({ documentReader: {}, knowledgeRetriever: {} });
-  for (const level of ['beginner', 'intermediate', 'expert']) {
-    const learning = new LearningSession(); learning.setPreferences({ level });
+  for (const mode of ['guided', 'paused']) {
+    const learning = new LearningSession(); learning.setPreferences({ mode });
     const result = await composer.compose({ request: 'Que es un decision tree y como lo implemento?', learningSession: learning });
     const policy = result.payload.messages[0].content;
     assert.match(policy, /Teach the concept first/);
@@ -139,32 +139,27 @@ test('decision-tree lesson receives concept-first guidance and constructor optio
     assert.match(contract.text, /max_depth/);
     assert.match(contract.text, /min_samples_split/);
     assert.match(contract.text, /criterion/);
-    assert.equal(result.learning.preferences.level, level);
+    assert.deepEqual(result.learning.preferences, { mode });
   }
 });
 
-test('each selected level reaches the provider with its complete guidance and shared KAFE references', async () => {
+test('one guided baseline reaches the provider without a level, profile or style memory', async () => {
   const { LearningSession } = require('../../src/tutor/LearningSession');
-  const learning = new LearningSession();
-  const composer = new ContextComposer({ documentReader: {}, knowledgeRetriever: {} });
-  for (const [level, guidance, frequency, coding] of [
-    ['beginner', /step-by-step.*unfamiliar terms/i, 'frequent', 'ai'],
-    ['expert', /direct technical answers.*major decisions/i, 'light', 'ai'],
-    ['intermediate', /shorter explanations.*trade-offs/i, 'normal', 'mixed'],
-    ['beginner', /step-by-step.*unfamiliar terms/i, 'frequent', 'ai'],
-  ]) {
-    learning.setPreferences({ level });
-    const result = await composer.compose({ request: 'Explain this KAFE loop', learningSession: learning });
-    const policy = result.payload.messages[0].content;
-    assert.deepEqual(result.learning.preferences, { mode: 'guided', level });
-    assert.match(policy, guidance);
-    assert.ok(policy.includes(`"frequency":"${frequency}"`));
-    assert.ok(policy.includes(`"codingPreference":"${coding}"`));
-    assert.match(policy, /scoped preparation confirmation/);
-    assert.match(policy, /Review, Apply and learner-started Run remain distinct/);
-    assert.ok(result.sources.some(source => source.category === 'language-reference'));
-  }
-  assert.throws(() => learning.setPreferences({ level: 'advanced' }), /preference/);
+  const { POLICY_VERSION } = require('../../src/tutor/TeachingPolicy');
+  const learning = new LearningSession(), composer = new ContextComposer({ documentReader: {}, knowledgeRetriever: {} });
+  const result = await composer.compose({ request: 'Explain this KAFE loop', learningSession: learning });
+  const policy = result.payload.messages[0].content;
+  assert.deepEqual(result.learning.preferences, { mode: 'guided' });
+  assert.match(policy, /one focused learner hypothesis or decision.*accept reasoning already supplied/);
+  assert.match(policy, /Requests for brevity or detail affect presentation, not accuracy/);
+  assert.match(policy, /Avoid duplicate stops.*every small edit.*tool\/message count/);
+  assert.match(policy, /scoped preparation confirmation/);
+  assert.match(policy, /Review, Apply and learner-started Run remain distinct/);
+  assert.ok(policy.includes(`Teaching policy ${POLICY_VERSION}.`));
+  assert.equal(POLICY_VERSION, 'kafe-guided-4');
+  assert.doesNotMatch(policy, /Applied teaching preset|"level"|"frequency"|codingPreference|style memory|profile/i);
+  assert.ok(result.sources.some(source => source.category === 'language-reference'));
+  for (const level of ['beginner', 'intermediate', 'expert']) assert.throws(() => learning.setPreferences({ level }), /preference/);
 });
 
 test('paused teaching removes reasoning prerequisite while retaining scoped preparation and native authorities', async () => {

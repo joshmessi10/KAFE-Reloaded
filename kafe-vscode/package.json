@@ -48,7 +48,6 @@
     "onCommand:kafe.renameConversation",
     "onCommand:kafe.deleteConversation",
     "onCommand:kafe.exportConversation",
-    "onCommand:kafe.learningPreferences",
     "onCommand:kafe.toggleTeachingPause",
     "onView:kafeTutorView"
   ],
@@ -132,11 +131,6 @@
         "title": "KAFE: Export Conversation"
       },
       {
-        "command": "kafe.learningPreferences",
-        "title": "KAFE: Learning Level",
-        "icon": "$(settings-gear)"
-      },
-      {
         "command": "kafe.toggleTeachingPause",
         "title": "KAFE: Pause/Resume Teaching"
       }
@@ -203,11 +197,6 @@
         },
         {
           "command": "kafe.deleteConversation",
-          "when": "view == kafeTutorView",
-          "group": "2_conversation"
-        },
-        {
-          "command": "kafe.learningPreferences",
           "when": "view == kafeTutorView",
           "group": "2_conversation"
         }

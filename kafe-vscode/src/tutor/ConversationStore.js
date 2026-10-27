@@ -104,14 +104,23 @@ function normalizePair(value) {
 }
 
 /** Detached, inert archive projection shared by capture, persistence and restoration. */
-function normalizeContent(value) {
+function normalizeContent(value) { return archiveContent(value, 2); }
+
+function archivePreferences(value, version) {
+  const preferences = object(value, 'learning preferences');
+  const keys = version === 1 ? ['mode', 'level'] : ['mode'];
+  if (Object.keys(preferences).length !== keys.length || keys.some(key => !Object.hasOwn(preferences, key)) ||
+    !['guided', 'paused'].includes(preferences.mode) ||
+    (version === 1 && !['beginner', 'intermediate', 'expert'].includes(preferences.level))) throw invalid('learning preferences');
+  return version === 1 ? { mode: preferences.mode, level: preferences.level } : validatePreferences(preferences);
+}
+
+function archiveContent(value, version) {
   object(value, 'content');
   const entries = projectWithinLimit(boundedArray(value.entries, 'entries', LIMITS.entries), normalizeEntry, LIMITS.contentBytes, 'content');
   const historyPairs = projectWithinLimit(boundedArray(value.historyPairs, 'history pairs', LIMITS.historyPairs), normalizePair, LIMITS.contentBytes, 'content');
   unique(entries.map(entry => entry.id), 'entry id'); unique(historyPairs.map(pair => pair.id), 'history pair id');
-  const preferences = object(value.preferences, 'learning preferences');
-  if (Object.keys(preferences).length !== 2 || !Object.hasOwn(preferences, 'mode') || !Object.hasOwn(preferences, 'level')) throw invalid('learning preferences');
-  const result = { draft: text(value.draft, 'draft'), entries, historyPairs, preferences: validatePreferences(preferences) };
+  const result = { draft: text(value.draft, 'draft'), entries, historyPairs, preferences: archivePreferences(value.preferences, version) };
   byteLimit(result, LIMITS.contentBytes, 'content');
   return result;
 }
@@ -124,18 +133,18 @@ function recordMetadata(value) {
     updatedAt: timestamp(value.updatedAt, 'update timestamp') };
 }
 
-function normalizeRecord(value) {
-  return { ...recordMetadata(value), content: normalizeContent(value.content) };
+function normalizeRecord(value, version) {
+  return { ...recordMetadata(value), content: archiveContent(value.content, version) };
 }
 
-function normalizeArchive(value) {
+function normalizeArchive(value, version = 2) {
   object(value, 'root');
-  const conversations = projectWithinLimit(boundedArray(value.conversations, 'conversations', LIMITS.conversations), normalizeRecord, LIMITS.archiveBytes, 'archive');
+  const conversations = projectWithinLimit(boundedArray(value.conversations, 'conversations', LIMITS.conversations), record => normalizeRecord(record, version), LIMITS.archiveBytes, 'archive');
   unique(conversations.map(record => record.id), 'conversation id');
   const activeId = value.activeId === null ? null : identity(value.activeId, 'active id');
   if ((conversations.length > 0 && !conversations.some(record => record.id === activeId)) ||
     (conversations.length === 0 && activeId !== null)) throw invalid('active conversation');
-  const archive = { schemaVersion: 1, activeId, conversations };
+  const archive = { schemaVersion: version, activeId, conversations };
   byteLimit(archive, LIMITS.archiveBytes, 'archive');
   return archive;
 }
@@ -150,11 +159,17 @@ class ConversationStore {
     const stored = this.workspaceState ? this.workspaceState.get(CONVERSATIONS_KEY) : this.memory;
     if (stored === undefined) return EMPTY();
     object(stored, 'root');
-    if (stored.schemaVersion !== 1) throw invalid('schema version');
+    if (![1, 2].includes(stored.schemaVersion)) throw invalid('schema version');
     byteLimit(stored, LIMITS.archiveBytes, 'archive');
-    const normalized = normalizeArchive(stored);
+    let normalized = normalizeArchive(stored, stored.schemaVersion);
     // Reject rather than overwrite malformed or unexpectedly extended existing storage.
     if (!isDeepStrictEqual(stored, normalized)) throw invalid('stored fields');
+    // Validate original v1 data before removing its level. Loading never writes;
+    // the normal serialized save upgrades the single key only on success.
+    if (stored.schemaVersion === 1) {
+      for (const record of normalized.conversations) record.content.preferences = { mode: record.content.preferences.mode };
+      normalized = normalizeArchive(normalized);
+    }
     return { activeId: normalized.activeId, conversations: normalized.conversations };
   }
 

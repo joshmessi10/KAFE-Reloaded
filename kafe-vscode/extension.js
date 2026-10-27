@@ -8,7 +8,6 @@ const { DeepSeekProvider, SECRET_KEY } = require('./src/tutor/providers/DeepSeek
 const { SessionCoordinator } = require('./src/tutor/SessionCoordinator');
 const { ContextComposer } = require('./src/tutor/ContextComposer');
 const { LearningSession } = require('./src/tutor/LearningSession');
-const { LEARNING_LEVELS } = require('./src/tutor/TeachingPolicy');
 const { KnowledgeRetriever, KnowledgeUnavailable, KnowledgeIntegrityError } = require('./src/tutor/KnowledgeRetriever');
 const { DevelopmentKnowledgePack } = require('./src/tutor/DevelopmentKnowledgePack');
 const { ToolRouter } = require('./src/tutor/ToolRouter');
@@ -231,21 +230,6 @@ function createTutorHost({ vscode, extensionUri, secrets, workspaceState, runtim
   actions = new TutorHostActions({ session: coordinator.session, controller: coordinator.controller, coordinator,
     proposalProvider, runtimeManager, configureProvider: injectedConfigure || keyHandlers.configure,
     runFile, getReadiness, authorizeRunTarget: authorize });
-  // Native choices only: the webview can open this route but supplies no preference patch.
-  const openLearningPreferences = async () => {
-    const { sessionId, generation } = coordinator.snapshot();
-    const current = () => !hostDisposed && coordinator.snapshot().sessionId === sessionId && coordinator.snapshot().generation === generation;
-    const preferences = coordinator.learningSession.snapshot().preferences;
-    const choices = Object.entries(LEARNING_LEVELS).map(([level, preset]) => ({
-      level, label: preset.label, description: preset.description,
-      ...(level === preferences.level ? { detail: 'Current level' } : {}),
-    }));
-    const picked = await vscode.window.showQuickPick(choices, { title: 'KAFE: Learning Level',
-      placeHolder: 'Choose your level of guidance. Changes take effect after the current response.' });
-    if (!current()) return { status: 'stale' };
-    if (!picked || !choices.includes(picked)) return { status: 'cancelled' };
-    return coordinator.handleLearnerMessage({ type: 'setLearningPreferences', preferences: { level: picked.level } });
-  };
   const toggleTeachingPause = () => coordinator.handleLearnerMessage({ type: 'toggleTeachingPause' });
   const onMessage = async message => {
     if (!isTutorMessage(message, coordinator.session)) return { status: 'stale' };
@@ -256,7 +240,6 @@ function createTutorHost({ vscode, extensionUri, secrets, workspaceState, runtim
       if (message.type === 'submitMessage') return await actions.submitMessage(message);
       if (message.type === 'stopTurn') return await coordinator.handleLearnerMessage({ type: 'stopTurn', turnId: message.turnId, turnGeneration: message.turnGeneration });
       if (message.type === 'setSourceIncluded') return await coordinator.handleLearnerMessage({ type: 'setSourceIncluded', sourceId: message.sourceId, included: message.included, contextRevision: message.contextRevision });
-      if (message.type === 'openLearningPreferences') return await openLearningPreferences();
       if (message.type === 'revealSource') {
         const state = coordinator.snapshot(), source = [state.context.activeSource, ...state.context.sources].find(s => s?.id === message.sourceId && s.included);
         if (!source || state.context.restricted || message.contextRevision !== state.context.revision || !authorize(parseUri(source.uri))) return { status: 'stale' };
@@ -358,7 +341,7 @@ function createTutorHost({ vscode, extensionUri, secrets, workspaceState, runtim
   conversationManagers.add(conversations);
   const conversationCommands = createConversationCommands({ vscode, manager: conversations, refreshContext: () => actions.refreshContext() });
   const readiness = actions.refreshContext();
-  return { tutorView, coordinator, proposalProvider, progressStore, actions, runFile, keyHandlers, readiness, openLearningPreferences, toggleTeachingPause,
+  return { tutorView, coordinator, proposalProvider, progressStore, actions, runFile, keyHandlers, readiness, toggleTeachingPause,
     resolveKnowledge, knowledgeRetriever, conversations, conversationCommands,
     dispose() { hostDisposed = true;
       void conversations.dispose().finally(() => conversationManagers.delete(conversations));
@@ -585,7 +568,6 @@ function activate(context) {
     vscode.commands.registerCommand('kafe.renameConversation', host.conversationCommands.renameConversation),
     vscode.commands.registerCommand('kafe.deleteConversation', host.conversationCommands.deleteConversation),
     vscode.commands.registerCommand('kafe.exportConversation', host.conversationCommands.exportConversation),
-    vscode.commands.registerCommand('kafe.learningPreferences', () => host.openLearningPreferences()),
     vscode.commands.registerCommand('kafe.toggleTeachingPause', () => host.toggleTeachingPause()),
   );
 

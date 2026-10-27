@@ -26,7 +26,7 @@ test('workspace chats preserve independent transcripts, drafts and preferences a
   const f = fixture(), first = f.manager.activeId;
   f.coordinator.session.appendEntry({ kind: 'learner', status: 'completed', text: 'Explain KAFE functions' });
   f.coordinator.session.setDraft('first draft');
-  f.coordinator.handleLearnerMessage({ type: 'setLearningPreferences', preferences: { level: 'expert', mode: 'paused' } });
+  f.coordinator.handleLearnerMessage({ type: 'setLearningPreferences', preferences: { mode: 'paused' } });
   assert.equal((await f.manager.newConversation()).status, 'completed');
   const second = f.manager.activeId;
   assert.notEqual(second, first); assert.equal(f.manager.list().length, 2);
@@ -34,7 +34,7 @@ test('workspace chats preserve independent transcripts, drafts and preferences a
   f.coordinator.session.setDraft('second draft');
   await f.manager.switchConversation(first);
   assert.equal(f.coordinator.snapshot().draft, 'first draft');
-  assert.deepEqual(f.coordinator.snapshot().learning.preferences, { level: 'expert', mode: 'paused' });
+  assert.deepEqual(f.coordinator.snapshot().learning.preferences, { mode: 'paused' });
   assert.equal(f.coordinator.snapshot().entries[0].text, 'Explain KAFE functions');
   await f.close();
   const reopened = fixture(f.values);
@@ -42,7 +42,7 @@ test('workspace chats preserve independent transcripts, drafts and preferences a
   assert.equal(reopened.coordinator.snapshot().draft, 'first draft');
   await reopened.manager.switchConversation(second);
   assert.equal(reopened.coordinator.snapshot().draft, 'second draft');
-  assert.deepEqual(reopened.coordinator.snapshot().learning.preferences, { level: 'beginner', mode: 'guided' });
+  assert.deepEqual(reopened.coordinator.snapshot().learning.preferences, { mode: 'guided' });
   await reopened.close();
 });
 
@@ -80,7 +80,7 @@ for (const failAt of [1, 2]) test(`failed archive write ${failAt} preserves depa
 });
 
 test('malformed saved archive is preserved and never overwritten by temporary chat', async () => {
-  const raw = { schemaVersion: 900, secret: 'PRIVATE' }, values = new Map([[CONVERSATIONS_KEY, raw]]);
+  const raw = { schemaVersion: 3, secret: 'PRIVATE' }, values = new Map([[CONVERSATIONS_KEY, raw]]);
   const f = fixture(values); await Promise.resolve();
   f.coordinator.session.setDraft('temporary');
   assert.equal((await f.manager.newConversation()).status, 'failed');
@@ -234,4 +234,40 @@ test('control-bearing pasted text generates a safe title while transcript and ex
   assert.doesNotMatch(f.manager.record().title, /[\x00-\x1f\x7f]/);
   assert.equal(JSON.parse(f.manager.selectedExport().json).conversation.entries[0].text, message);
   assert.equal((await f.manager.newConversation()).status, 'completed'); await f.close();
+});
+
+test('legacy selected chat remains live and inert after failed first upgrade, export, restart and explicit retry', async () => {
+  const date = '2026-10-25T12:00:00.000Z';
+  const record = (id, mode, level) => ({ id, title: `Café ☕ ${id}`, createdAt: date, updatedAt: date,
+    content: { draft: `¿Qué sigue? ${id}`, preferences: { mode, level }, historyPairs: [], entries: [
+      { id: 'old-checkpoint', kind: 'checkpoint', status: 'ready', text: 'Historical Expert choice', data: null, actions: [] },
+      { id: 'answer', kind: 'assistant', status: 'completed', text: 'Exact old response.\r\n☕', data: null, actions: [] },
+    ] } });
+  const original = { schemaVersion: 1, activeId: 'selected', conversations: [record('first', 'guided', 'beginner'), record('selected', 'paused', 'expert')] };
+  const values = new Map([[CONVERSATIONS_KEY, structuredClone(original)]]), f = fixture(values);
+  try {
+    assert.equal(f.writes.length, 0); assert.equal(f.manager.activeId, 'selected');
+    assert.deepEqual(f.coordinator.snapshot().learning.preferences, { mode: 'paused' });
+    assert.equal(f.coordinator.snapshot().draft, '¿Qué sigue? selected');
+    assert.equal(f.coordinator.snapshot().entries[0].status, 'stale');
+    assert.ok(f.coordinator.snapshot().entries.every(entry => entry.actions.length === 0));
+    assert.equal(f.coordinator.proposal, null); assert.equal(f.coordinator.controller.isBusy(), false);
+    const update = f.workspaceState.update;
+    f.workspaceState.update = async () => { throw Error('disk unavailable'); };
+    await assert.rejects(f.manager.flush(), /disk unavailable/);
+    assert.deepEqual(values.get(CONVERSATIONS_KEY), original); assert.equal(f.manager.activeId, 'selected');
+    assert.equal(f.coordinator.snapshot().entries[1].text, original.conversations[1].content.entries[1].text);
+    assert.match(f.errors[0], /current chat is still open.*try again or export/);
+    assert.equal((await f.commands.exportConversation()).status, 'completed');
+    const exported = f.writes.find(write => write.json).json;
+    assert.equal(exported.schemaVersion, 1); assert.equal(exported.conversation.id, 'selected');
+    assert.equal(exported.conversation.entries[1].text, original.conversations[1].content.entries[1].text);
+    const restarted = fixture(values);
+    assert.equal(restarted.manager.activeId, 'selected'); assert.deepEqual(restarted.coordinator.snapshot().learning.preferences, { mode: 'paused' });
+    assert.deepEqual(values.get(CONVERSATIONS_KEY), original);
+    await restarted.close();
+    f.workspaceState.update = update; await f.manager.flush();
+    assert.equal(values.get(CONVERSATIONS_KEY).schemaVersion, 2);
+    await f.manager.switchConversation('first'); assert.deepEqual(f.coordinator.snapshot().learning.preferences, { mode: 'guided' });
+  } finally { await f.close(); }
 });
