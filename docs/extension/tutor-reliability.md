@@ -14,10 +14,11 @@ Exact qualified names, reviewed API aliases and normalized case, accents, camelC
 
 ## Contributor workflow
 
-Install extension dependencies inside `kafe-vscode` before launching the Development Host:
+Use Node 24 LTS. Install extension dependencies inside `kafe-vscode` before launching the Development Host:
 
 ```powershell
 npm ci
+npm audit --audit-level=low
 ```
 
 For each language or library change:
@@ -29,6 +30,18 @@ For each language or library change:
 5. Prepare Python 3.11+ and ANTLR 4.13.2. Archive `src/` from `runtimeManifest.json`'s pinned `sourceRevision` into an ignored directory and generate its parser there. Set `KAFE_REFERENCE_RUNTIME_ROOT` to that directory. From the repository root run `uv run --locked --group dev python kafe-vscode/scripts/verify-tutor-references.py` and `uv run --locked --group dev python kafe-vscode/scripts/verify-library-references.py`. Each verifier checks the actual pinned source; reviewed fixtures run in disposable copies, with declared local assets staged for isolated cases. Use `uv run --locked --group dev pytest tests/ -q` for broader checkout regression evidence.
 6. Package locally and inspect the VSIX. It must contain generated library/reference data, their loaders, the shared corpus/search helpers, corpus definition and fixture license. Runtime assets remain separately published. Packaging, installing, publishing and observing hosted CI require their own evidence.
 
+Run native/package checks from `kafe-vscode` using existing installed tools:
+
+```powershell
+node test/run-extension-host-tests.js
+node --test test/native/host-policy.test.cjs
+node test/native/acceptance.cjs <absolute-ignored-evidence-directory>
+node node_modules/@vscode/vsce/vsce package --out <absolute-ignored-output.vsix>
+node test/verify-vsix.js <same-absolute-output.vsix>
+```
+
+Native checks require the exact cached VS Code 1.96.0 host and isolated trusted/restricted profiles. They do not download it locally. Provisioning is restricted to genuine GitHub CI; do not spoof that environment, bypass provisioning or substitute the installed regular editor. If the cache is absent, record the native gates pending and use the existing hosted workflow only after separate push/dispatch authorization. Package inspection does not authorize installation or publication. `npm ci` has the documented upstream Mocha/glob deprecation exception; audits remain complete and blocking, with the unused signing-helper install script denied.
+
 Reference verification requires full token consumption without parser/lexer diagnostics, warnings treated as errors, exact exit codes and both complete output streams. This catches the parser's ability to stop before an unexpected trailing `else`. Controlled fundamentals also exercise input, conditional chains, built-in output, user-defined `print` and explicit invocation. Library verification joins successful token-observed top-level calls to the intended inventory, with unavailable paths retaining negative evidence. Zero exit alone is never a passing check. Parsing and execution each have a 15-second timeout. Disposable copies avoid mutating the checkout; they are not a security sandbox for arbitrary code. Run only reviewed repository fixtures in this development/CI gate, never silently in a learner project.
 
 The extension workflow watches extension, interpreter, test, documentation and lock/configuration inputs. It checks freshness and API evidence against the pinned interpreter, alongside unit/host/package and rendered-layout gates. Workflow configuration is not evidence of a hosted CI pass; read the result at the actual pushed commit.
@@ -37,7 +50,7 @@ The unit matrix requires Ubuntu, Windows and macOS 26 on the standard Intel runn
 
 ## Model evaluation and limits
 
-Eight reviewed conceptual topics are bundled with the API contracts. They cover sensitivity, classifier error costs, imbalance, held-out evaluation, prediction thresholds, nonlinear representation, learning rate and overfitting. Concept questions receive a bounded explanation and related API material; exact API queries retain their contract precedence. Topic/source changes invalidate generated freshness. See [Evaluation alignment](evaluation-alignment.md) for practical scaffolding, Run evidence, consent and the unfinished research instruments.
+Eight reviewed conceptual topics are bundled with the API contracts. They cover sensitivity, classifier error costs, imbalance, held-out evaluation, prediction thresholds, nonlinear representation, learning rate and overfitting. Concept questions receive a bounded explanation and related API material; exact API queries retain their contract precedence. Topic/source changes invalidate generated freshness. See [Evaluation alignment](evaluation-alignment.md) for practical scaffolding, Run evidence, consent and current research procedures with their limits.
 
 The Tutor should explain the requested concept first and use reference grounding quietly. Finding a fixture is not a learner achievement, and a default-only example does not establish that constructor options are unavailable. Reviewed contracts supply the complete positional forms. A decision-tree regression prompt preserves the reported Spanish question and checks the actual constructor options separately from the quality of a model's explanation.
 
@@ -47,7 +60,9 @@ Reference completeness means the intended shipped API has truthful contracts and
 
 The Tutor should use `show(...)` for ordinary built-in output and explicitly invoke a driver function when a complete program defines one. Top-level snippets do not require a `main` wrapper. A user-defined `print` remains valid. Missing library documentation must remain an explicit uncertainty rather than a guessed API. Syntax parsing alone cannot prove those semantic or behavioral properties.
 
-Learning level is one of Beginner, Intermediate or Expert, with Beginner as the conversation default. Presets in `TeachingPolicy.js` define explanation depth, meaningful decision frequency, reasoning style and code preparation together; only the selected level and guided/paused mode are stored. Compare the same question across all three levels using the evaluation cases. Every level must retain verified KAFE syntax, honest execution evidence and explicit preparation/Review/Apply/Run permissions. The separate Pause/Resume Teaching command must preserve the level, including queued changes; changing a level must not resume paused teaching. Deterministic tests verify the instructions sent to the provider, not the quality of the provider's actual explanations.
+`TeachingPolicy.js` defines one guided baseline (`kafe-guided-4`) and independent guided/paused mode. Concept and syntax questions receive direct explanations; meaningful decisions invite one focused learner contribution without duplicate checkpoints. Brevity/detail requests affect presentation within eligible bounded history, not authority, accuracy or required reasoning. There is no durable style-memory field, Remember action, classifier or hidden preset. Compare actual provider responses against this common contract in English and Spanish; deterministic instruction checks do not establish provider compliance.
+
+Response text is retained through accumulated streaming, ordinary completion and structured tool/checkpoint/proposal follow-ups. Completed display, history and export agree on that retained text. Semantic phrase matching no longer substitutes a whole answer. Safe Markdown, protocol validation, bounds and source guards still apply. A provider may display an unsupported mastery claim; the host never treats that prose as a learner score, permission or correctness verdict. Real-provider review must evaluate this accepted limitation; no extra repair-model request is made.
 
 Suggested code remains a suggestion. Preparation, native Review, Apply, and learner-started Run retain separate permissions. A no-file proposal request receives an unavailable tool result and conversation can continue. A valid file target still requires current scope confirmation. Editing or removing a dependency invalidates a stale scope.
 
@@ -58,3 +73,23 @@ Reference completeness does not establish dependency security or managed-install
 The layout suite runs the shipped HTML, CSS, and browser scripts with synthetic conversation state. It checks document overflow, conversation reachability, fixed composer placement, and accessible speaker headings at narrow, short, and enlarged-text sizes.
 
 Run `npm run test:layout` with an installed Playwright. `KAFE_PLAYWRIGHT_MODULE` can name an existing installation and `KAFE_LAYOUT_BROWSER` an existing Chromium/Edge executable. The local test never downloads a browser. CI installs the pinned Playwright JavaScript tooling and uses the hosted Ubuntu image's preinstalled Chrome, logging its actual version. Missing Chrome fails setup; no layout assertion is skipped. This avoids apt/browser downloads that can exhaust the job before rendering begins. The browser version follows the runner image rather than a Playwright browser-build pin. This browser evidence is separate from native VS Code, physical IME, and screen-reader acceptance.
+
+## Diagnosing a Tutor failure
+
+After changing the development extension, restart its Extension Development Host or use **Developer: Reload Window** there. Reproduce the failed message once, then open **View: Toggle Output** and select **KAFE Tutor Diagnostics**. The channel is created when the first traced event occurs; it contains only fixed metadata categories and numbers. Messages, tool arguments, source text, paths, credentials, raw exception messages and stacks are excluded. The recent buffer is bounded to 256 records and clears with a `trace-reset` marker when full.
+
+For a tool failure, inspect `tool-start`, `tool-failed` and `turn-settled` for the same local attempt number. `reason` distinguishes rejected arguments, invalid queries, missing captured sources and other validation categories. Known exception categories/codes are recorded; `unclassified` means the cause was not identified. `turn-settled` reports controller status and whether it remains busy. `view-posted` records VS Code's postMessage acceptance at a display revision; `delivered: true` does **not** prove the browser rendered it. The diagnostics never retry, resend or weaken a tool guard. They describe a reproduced attempt, not the cause of an older screenshot.
+
+## Persistence, context and internal ownership
+
+Archive payload v2 stores only mode at the historical `kafeTutor.conversations.v1` key. Strict original v1 validation precedes transformation and full v2 validation. The original archive remains until successful serialized save; a failed write retains live retry/export recovery. After v2 save, v1-only readers are unsupported. No backup key or dual write exists; public export remains schema 1. Migration preserves content, identities, dates, selection and drafts, but cannot recover previously filtered-away model text.
+
+The provider still receives at most eight eligible whole pairs / 32 KiB, while the full saved transcript remains readable/exportable. The context notice derives from the immutable captured submission's omissions, rather than a pre-send estimate; repeated identical conditions do not append transcript messages. Restoring clears optional source selections and executable authority. Source snapshots remain 64 KiB each, private Run output 1 MiB, and the archive retains its 200-chat / 10,000-entry / 5,000-pair / 4-MiB-content / 16-MiB-total limits. Export is independently bounded to 16 MiB. See the [learner limits](vscode.md#retention-and-limits) for other existing bounds.
+
+Private mutation signatures trigger persistence bookkeeping; they are not authorization. Events share a detached, deeply frozen display projection; explicit snapshots/captures remain independently detached. Full persistence capture/normalization moves to debounced save and explicit list/export/switch/disposal boundaries, with complete store validation preserved. The controlled profile in the engineering benchmark records measures synchronous notifications and an in-memory storage adapter, not network latency, native rendering or real disk writes.
+
+`SessionCoordinator` owns domain dependency enumeration and source/authorization revocation. The adapter retains native observation, real URI/filesystem authorization and freshness revisions, including rechecks after awaits. Its pure relevance query and source-change callback use the same native-active observation. The broader dependency union is metadata only: historical files do not gain admission or broaden ordinary edit relevance. `ConversationSession.runTargetUris()` reads the existing current-generation Run registry without creating another registry or restoring historical capabilities. Callback generation/disposal checks prevent an old event from mutating a newly selected conversation.
+
+## Candidate evidence boundary
+
+The full extension aggregate at `7169368` passed 1,007 tests with one existing Windows symlink-creation skip. The subsequent reentrant Run-authorization fix `781b46f` passed 348 covering tests; the final aggregate is still integration-owned. Earlier task/layout/package passes describe their recorded revisions. The exact cached VS Code 1.96.0 executable is absent locally, so native host-policy and acceptance remain pending. The supported extension workflow can supply exact-revision hosted evidence after separately authorized push/dispatch; it does not substitute physical IME or screen-reader speech. Package publication, managed-install acceptance, real-provider behavior and research outcomes remain separate gates.

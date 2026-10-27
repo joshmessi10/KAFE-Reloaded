@@ -111,7 +111,7 @@ uv run --locked --group dev python scripts/check_quality_policy.py
 uv run --locked --group dev pytest tests/test_quality_policy.py -q
 ```
 
-Ruff targets Python 3.10, selects `E4`, `E7`, `E9`, `F`, `B`, and `I`, and force-excludes only the three generated parser modules below. basedpyright checks `src/` and `tests/` in `basic` mode for Python 3.10, treats warnings as failures, and ignores only those same generated files. Coverage measures `src/`, collects subprocess data, and omits only those files. codespell scans hidden files; it uses the case-sensitive exception list `expec,mape,MAPE,FPR,Hart,le` and the reviewed `.codespell-es.txt` vocabulary for intentional Spanish educational content (ADR-0014). The codespell skip list is limited to local/build outputs, root-local `docs/superpowers/`, and generated parser outputs (`*.interp`, `*.tokens`, and the three generated modules). It does not skip source, tests, `.opencode/`, or normal documentation.
+Ruff targets Python 3.11, selects `E4`, `E7`, `E9`, `F`, `B`, and `I`, and force-excludes only the three generated parser modules below. basedpyright checks `src/` and `tests/` in `basic` mode for Python 3.11, treats warnings as failures, and ignores only those same generated files. Coverage measures `src/`, collects subprocess data, and omits only those files. codespell scans hidden files; it uses the case-sensitive exception list `expec,mape,MAPE,FPR,Hart,le` and the reviewed `.codespell-es.txt` vocabulary for intentional Spanish educational content (ADR-0014). The codespell skip list is limited to local/build outputs, root-local `docs/superpowers/`, and generated parser outputs (`*.interp`, `*.tokens`, and the three generated modules). It does not skip source, tests, `.opencode/`, or normal documentation.
 
 The only generated ANTLR Python exclusions are:
 
@@ -127,12 +127,19 @@ For a strict local documentation build, install the locked docs group and set th
 
 ```powershell
 uv sync --locked --python 3.11 --group docs --no-dev
-$env:NO_MKDOCS_2_WARNING = "1"
-uv run --locked --python 3.11 --group docs --no-dev mkdocs build --strict
-Remove-Item Env:\NO_MKDOCS_2_WARNING
+$priorMkdocsWarning = $env:NO_MKDOCS_2_WARNING
+try {
+    # Suppress only Material's upstream MkDocs 2.0 advisory during this build.
+    $env:NO_MKDOCS_2_WARNING = "1"
+    uv run --locked --python 3.11 --group docs --no-dev mkdocs build --strict
+    if ($LASTEXITCODE -ne 0) { throw "Strict documentation build failed" }
+} finally {
+    if ($null -eq $priorMkdocsWarning) { Remove-Item Env:\NO_MKDOCS_2_WARNING -ErrorAction SilentlyContinue }
+    else { $env:NO_MKDOCS_2_WARNING = $priorMkdocsWarning }
+}
 ```
 
-`NO_MKDOCS_2_WARNING=1` suppresses Material for MkDocs' upstream MkDocs 2.0 advisory only; keep it scoped to `mkdocs build --strict`. The docs workflow validates every push, pull request, and manual dispatch. It deploys only on `main` when a push changes root `docs/**` or `mkdocs.yml`, or on a manual dispatch. The serialized deploy job explicitly checks out `main`, reruns the locked strict build, and only then runs `mkdocs gh-deploy --force`. Nix remains in `.github/workflows/main.yml` with weekly and manual triggers; it does not run Python quality checks.
+`NO_MKDOCS_2_WARNING=1` suppresses Material for MkDocs' upstream MkDocs 2.0 advisory only; keep it scoped to `mkdocs build --strict`. The docs workflow validates every push, pull request, and manual dispatch. Root policy requires main-only deployment. Actual `docs.yml` also admits `integration/Kafe_Gesha_Clustering_v2`, checks out `github.ref_name`, strictly rebuilds that selected branch in its serialized deploy job, then deploys on eligible changed-doc pushes or manual dispatch. This is pre-existing policy drift, unresolved by the extension documentation task. No workflow was changed or dispatched, and local strict-build success does not establish global policy alignment. Nix remains in `.github/workflows/main.yml` with weekly and manual triggers; it does not run Python quality checks.
 
 Inspect the checked-in configuration and workflows before claiming a gate exists. A local pass or configured workflow does not prove hosted CI; record remote results only after observing the run at the exact pushed commit. Keep Definition of Done, `.opencode/history/`, `docs/`, and `.opencode/knowledge/` current for significant changes.
 
@@ -172,3 +179,9 @@ The Reviewer (`/dod`) evaluates the applicable mirrored root policies and releva
   - ❌ Staged or committed generated parser files, debug `print()`, or context-less TODOs. Ignored parser outputs may exist locally for execution.
   - ❌ Marking missing migration gates passed, or inferring child-process coverage/warning enforcement from parent pytest configuration alone.
 - **Extreme homogeneity:** the repository must look like itself everywhere — naming, quoting, import order, error handling follow `conventions.md`; reviewers reject deviations without documented justification.
+
+## Unified Tutor verification boundaries (2026-10-27)
+
+ADR-0033 records response preservation, one guided policy, independent Pause and archive-v2 migration at the v1 key. Verify original-v1 strict rejection, all former levels, paused mode, unchanged draft/content/identity/dates/selection, failed-write recovery and unsupported older readers after successful v2 save. Export remains schema 1. No style memory, answer keys or automated study scoring are introduced.
+
+Controlled profiling is recorded at measured commit `86b78ff` in the benchmark ledger; it is not final native/provider latency evidence. The aggregate at `7169368` passed 1,007 cases with one platform skip; reentrant Run authorization fix `781b46f` passed 348 covering cases. Final aggregate/layout/package gates remain integration-owned. Native VS Code 1.96.0 is absent locally; host-policy and acceptance are pending. Real-provider review, physical IME/speech and independent research outcomes remain distinct. Documentation-only checks validate prose and links without rerunning unchanged application suites or upgrading old receipts into current passes.

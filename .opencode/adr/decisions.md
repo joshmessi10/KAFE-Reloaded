@@ -966,3 +966,53 @@ These changes repair current repository locks and CI tooling. They do not change
 - [MSAL advisory](https://github.com/advisories/GHSA-xcx6-jx8p-x3h5), [serializer advisory](https://github.com/yahoo/serialize-javascript/security/advisories/GHSA-m5mm-p8h7-m29v).
 - [uv package-specific cooldowns](https://docs.astral.sh/uv/concepts/resolution/#reproducible-resolutions), [Node release support](https://nodejs.org/en/about/previous-releases), [npm install-script policy](https://docs.npmjs.com/cli/v11/commands/npm-install-scripts/).
 - [Supported standard macOS runner labels](https://docs.github.com/en/actions/reference/runners/github-hosted-runners), [macOS 26 Intel image](https://github.com/actions/runner-images/blob/main/images/macos/macos-26-Readme.md), [Node 24 platform support](https://github.com/nodejs/node/blob/v24.x/BUILDING.md).
+
+
+---
+
+## ADR-0033: Unify Tutor Guidance, Preserve Responses and Bound Conversation Ownership
+
+- **Status**: accepted
+- **Date**: 2026-10-27
+- **Supersedes**: only ADR-0030's stored level/default-level details, and ADR-0031's study-extension teaching-policy-3 detail. All other archive, source-authority, reference and runtime decisions remain in force.
+
+### Context
+
+Learners faced three teaching presets, repeated context routes and complex checkpoint/recovery copy. Semantic response replacement could discard useful model explanations. Persisting full content on every draft/token notification duplicated work, while native source handlers repeated domain invalidation lists. The approved incremental design preserves learner decisions, saved chats and distinct native authorities while reducing those concepts and repeated work.
+
+### Decision
+
+Use one guided baseline (`kafe-guided-4`) with independent Pause/Resume Teaching. Explain concepts directly; invite one focused hypothesis at meaningful choices, accept existing reasoning and provide bounded scaffolding. Brevity/detail requests affect presentation within eligible history only. Retire level UI/commands/messages and hidden presets; add no Remember action, profile, classifier, durable style field or permanent selector.
+
+Preserve actual response text through streaming, completion and structured follow-ups into completed display/history/export. Keep Markdown/protocol/bounds/source validation. A provider's unsupported certification may remain visible; prose never registers host assessment, source permission, action authority or execution proof. Do not replace whole answers with phrase heuristics or add repair-model calls.
+
+Use archive payload v2 with mode-only preferences at the single existing `kafeTutor.conversations.v1` key. Strict original v1 validation precedes transformation of every valid former level to the common baseline, preserving paused state, all record/content/draft/date/selection/history dependencies and bounds. Validate complete v2 before saving. Original storage survives load and failed writes until a normal successful serialized v2 save. V1-only older readers are unsupported afterward. No dual-write, competing backup key or extra crash-atomicity guarantee. Public export stays schema 1; migration cannot recover text absent from old storage.
+
+Keep first chat and saved `.kf` Run guidance short; native masked key input/SecretStorage, native diffs and terminals remain. A configured key is not verified credentials. Confirm choice records adoption only; Prepare change authorizes one proposal for a visible exact target/scope, followed by separate Review, Apply and Run. Failure/cancellation consumes preparation permission. Context omissions reflect immutable submitted-history metadata, not a prediction or automatic resend. Restored content never restores file/action grants. Keep one file disclosure, reachable composer controls and deliberate Stop focus recovery.
+
+Automatic trusted preparation of a missing published runtime remains noncancellable. Report actual ready/unavailable/failure outcomes with explicit retry/details. Runtime retry neither sends the draft nor executes code. Bundled references and otherwise eligible configured chat are independent of Run readiness. Runtime 0.3.0 assets/pins, provider model/endpoints and library behavior remain unchanged.
+
+Use private mutation signatures only for persistence bookkeeping. Share detached deeply frozen event projections and retain independently detached explicit snapshots. Capture/normalize at debounce and explicit flush/list/export/switch/disposal boundaries; keep full store validation, mutation-time recency and safe titles. The measured optimization is recorded at `86b78ff`, not as final-candidate native latency.
+
+Centralize domain source/authorization revocation and dependency enumeration in `SessionCoordinator`; native observation/authorization/revisions remain in the adapter. Use the same native-active observation for pure ordinary relevance and source-change fan-out. Broad retained metadata does not admit historical sources or broaden ordinary edit invalidation. Enumerate retained current-generation Run targets from the existing session registry. Preserve focus/settled-proposal distinctions, generation/disposal guards around reentrant callbacks, and post-await rechecks.
+
+Align the study record to six independent pre/post short-answer items, 0–2 each, maximum 12, while retaining eight conceptual teaching topics. Adapted ICAP observation and SUS administration are human descriptive/exploratory procedures, not product scoring. No assessment items/answers, proctoring, automatic scoring or research upload is introduced; consent and independent administration remain facilitator responsibilities.
+
+### Rationale
+
+One teaching contract reduces unnecessary configuration without inferring expertise. Text preservation favors useful explanations over destructive semantic guesses, with host authority maintained independently. Compatible strict archive reading avoids losing legitimate saved chats. Measured boundary work reduces repeated normalization while preserving immutable ownership and fresh authorization.
+
+### Consequences
+
+- Provider compliance and educational effectiveness still require real-provider and human research evidence. No click, successful Run, deterministic test or source identity establishes mastery.
+- Preserve provider history eight whole eligible pairs / 32 KiB; snapshots 64 KiB each; Run output 1 MiB; archive 200 chats / 10,000 entries / 5,000 pairs per chat / 4 MiB content / 16 MiB total, and separate 16 MiB export.
+- Full aggregate at `7169368`: 1,007 pass, one existing Windows symlink skip. Reentrant Run fix `781b46f`: 348 covering passes. Final aggregate/layout/package remain integration-owned; native 1.96.0 cache absence, physical IME/speech, publication, provider review and study outcomes are separate pending gates.
+- Existing docs deployment permits an integration branch contrary to root main-only policy. This pre-existing drift is separately recorded, unchanged and undispatched; documentation validation does not resolve it.
+
+### Alternatives Considered
+
+- Keep hidden presets after removing the picker: rejected because the unified contract includes behavior.
+- Durable style memory or automatic intent classification: explicitly rejected by the user.
+- Heuristic whole-answer replacement or extra repair request: rejected in favor of retained text and separate authority.
+- Fork/dual-write archives or relax legacy validation: rejected because this risks ambiguity, corruption or lost conversations.
+- Generic event bus, duplicate Run registry or cached authorization: rejected because existing owners and fresh checks suffice.

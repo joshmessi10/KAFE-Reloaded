@@ -1,26 +1,42 @@
 # VS Code extension and AI Tutor
 
-The extension provides KAFE `.kf` highlighting, snippets, learner-started execution and a Tutor conversation in VS Code 1.96.0 or later. Open **KAFE: Open Tutor**.
+Extension **2.3.0** provides KAFE highlighting, snippets, saved conversations and a unified Tutor in VS Code 1.96.0 or later, over unchanged published runtime **0.3.0**. Reviewed MACHINE/GESHA guidance is bundled before runtime installation.
 
-Local candidate **2.2.0** adds saved workspace conversations and selected-conversation JSON export.
+## Start chatting
 
-Program output, errors and interactive input appear only in the local **KAFE Run** terminal. Run lifecycle events do not create Tutor messages. The latest matching result remains bounded in host memory so the Tutor can use it when the learner asks for help.
+1. Open **KAFE: Open Tutor**.
+2. Choose **Configure Tutor** if prompted, or **KAFE: Configure Provider Key**. Enter your DeepSeek API key in the masked native VS Code prompt; it stays in SecretStorage. Configuration records a stored key; it does not verify credentials. Configuration preserves your draft and never sends it.
+3. Type a concept or code question and choose **Send**. Ask for shorter or fuller explanations in the conversation when useful.
+
+## Run your first saved program
+
+1. Open a workspace folder and create or open a saved `.kf` file.
+2. In a trusted workspace, choose **KAFE: Run File** or Ctrl+F5 (Cmd+F5 on macOS).
+3. Read output, errors and interactive input in the native **KAFE Run** terminal. Run is separate from chat and applying a change.
+
+Trusted activation automatically prepares a missing published runtime. Setup is noncancellable: hiding its progress is not cancellation. A failed setup offers a native retry and optional details; retry never sends your draft or runs a program. Chat with a configured provider and bundled references can work independently of Run setup.
+
+## Your data and choices
+
+Sending shares your message, eligible recent discussion and currently authorized context with DeepSeek. Optional files require explicit inclusion. Conversations and drafts are saved locally per workspace; exporting or sharing them is your choice and is not research consent. Restricted Mode supports message-only chat without file, edit or Run access. Credentials use native key entry, changes use native diffs, and execution uses native terminals.
+
+See [reliability, budgets and contributor checks](tutor-reliability.md) and [study procedures and consent](evaluation-alignment.md) for detail. [Older package notes](package-0.0.8.md) describe a historical candidate.
 
 ## Conversation
 
 Type a message and press **Send** or Enter once. Shift+Enter inserts a newline. One answer streams in place. **Stop** replaces Send during a response while the next draft stays editable. **Retry** uses the original question and current authorized context, preserves the next draft and does not duplicate the learner message. Key configuration never sends automatically.
 
-The included whole-file indicators identify the active eligible `.kf` and selected optional files. **Add context** lists visible same-workspace `.kf` metadata without reading optional contents; explicit inclusion permits capture at Send. Indicators reveal their named file natively; optional indicators can be removed. Accessible names and tooltips retain full identities, including duplicate basenames. Optional selection survives becoming active and closing its editors. Source/trust/knowledge changes fence admission and invalidate dependent authority. Restricted Mode permits message-only learning while excluding workspace files, edits and Run.
+The included whole-file indicators identify the active eligible `.kf` and selected optional files. The file disclosure beside the composer lists visible same-workspace `.kf` metadata without reading optional contents; explicit inclusion permits capture at Send. Indicators reveal their named file natively; optional indicators can be removed. Accessible names and tooltips retain full identities, including duplicate basenames. Optional selection survives becoming active and closing its editors. Source/trust/knowledge changes fence admission and invalidate dependent authority. Restricted Mode permits message-only learning while excluding workspace files, edits and Run.
 
 ## Saved workspace conversations
 
-The Tutor keeps multiple independent conversations in the current VS Code workspace. It saves their messages, drafts, completed history and learning level/mode locally with a 250 ms debounce. Reopening the workspace restores the last selected chat. An empty untitled window uses its own VS Code workspace storage scope.
+The Tutor keeps multiple independent conversations in the current VS Code workspace. It saves their messages, drafts, completed history and guided/paused mode locally with a 250 ms debounce. Reopening the workspace restores the last selected chat. An empty untitled window uses its own VS Code workspace storage scope.
 
 The view description shows the active title. Use its title actions or the Command Palette:
 
 | Command | Behavior |
 | --- | --- |
-| **KAFE: New Conversation** | Saves the current chat and starts an empty guided Beginner conversation. |
+| **KAFE: New Conversation** | Saves the current chat and starts an empty guided conversation. |
 | **KAFE: Switch Conversation** | Opens a native picker of saved chats with updated dates; restores the selected chat's draft and preferences. |
 | **KAFE: Rename Conversation** | Renames the active chat. The initial automatic title comes from its first learner message. |
 | **KAFE: Delete Conversation** | Requests confirmation before deleting the active chat and its draft; creates an empty chat if it was the last one. |
@@ -36,11 +52,13 @@ Drafts, learning preferences, provider history/dependencies, attached-source met
 
 ## Guided learning and permissions
 
-Concept questions can receive direct explanations. For exercises, the Tutor asks diagnostic questions and provides progressively stronger hints without giving the final answer, a complete ready-to-submit solution, or a verbatim repository fixture. Reviewed MACHINE and GESHA fixtures ground its syntax and API knowledge. The level button beside the composer or **KAFE: Learning Level** opens the native Beginner, Intermediate and Expert picker. **KAFE: Pause/Resume Teaching** preserves the selected level. Each conversation saves its own level and guided/paused mode; a new chat starts with guided Beginner preferences.
+One guided Tutor answers concept and syntax questions directly. At meaningful design choices it invites one focused hypothesis or decision, accepts reasoning already supplied and offers stronger hints or bounded examples when needed. Final comparisons, conclusions and assessed solutions remain the learner's work. **KAFE: Pause/Resume Teaching** independently removes or resumes additional reasoning requirements; changes during a response queue until settlement. The former Learning Level command and Beginner/Intermediate/Expert selector are retired, including their hidden presets.
 
-A checkpoint's learner-proposal summary is explicitly an unconfirmed Tutor summary. **Confirm and continue** records adoption and continues discussion; it does not establish learner authorship, understanding or mastery. **Discuss** and **Skip** confer no preparation grant. Waiting for reasoning is settled, with no work spinner or Stop.
+Ask for brevity or detail in ordinary chat. This changes presentation within eligible conversation history; there is no Remember action, durable style memory or permanent style selector. Older messages can fall outside the provider context after omission, switching or restart.
 
-**Implement this step** (or **Prepare change** while paused) authorizes one proposal for the exact displayed target and scope. Direct requests still require a fresh displayed scope click. A missing key, stopped attempt or failed preparation does not preserve permission for automatic retry. Fresh authorization is required. Native **Review change**, **Apply**, **Dismiss**, and a separate explicit **Run** remain distinct actions.
+A checkpoint identifies the Tutor's interpretation of a learner proposal. **Confirm choice** adopts the displayed approach without certifying authorship, understanding or correctness. **Discuss** and **Skip** give no preparation permission. Supporting evidence appears in labelled details; genuinely unresolved choices stay visible.
+
+**Prepare change** authorizes one proposal for the exact displayed workspace-relative target and bounded scope. A missing key, failure or cancellation consumes that permission; a retry needs a fresh displayed scope. Native **Review change**, **Apply**, **Dismiss**, and explicit **Run** remain separate actions. Pure design confirmation never authorizes preparation.
 
 ## Credentials and native actions
 
@@ -54,13 +72,15 @@ Run evidence distinguishes host-observed launch/completion/current saved-source 
 
 ## Retention and limits
 
-The local workspace archive retains the full transcript, draft, completed history and learning preferences across restarts. It stores safe checkpoint/proposal summaries without restoring live decisions or executable authority. Source selections, request snapshots, pending proposals, transient observations/decisions and action/output evidence reset on transition or restart. Restored completed history keeps its original source/knowledge dependencies and must pass current context eligibility before use by the provider. Credentials and legacy progress remain independent. Legacy progress is neither imported into learning nor transmitted to the provider. **KAFE: Clear Tutor Progress** requests separate native confirmation and preserves saved/live chat and credentials.
+Archive payload version 2 stores mode-only learning preferences at the existing `kafeTutor.conversations.v1` storage key. Valid legacy v1 archives are strictly validated using their original rules before all former levels map to the common baseline. Loading leaves the original stored data untouched until a successful serialized v2 save. Older readers cannot read the archive after that save; downgrade is unsupported. Public JSON export remains schema version 1. Previously discarded response text cannot be recovered by migration.
+
+The local workspace archive retains the full transcript, draft, completed history and learning preferences across restarts. It stores safe checkpoint/proposal summaries without restoring live decisions or executable authority. Source selections, request snapshots, pending proposals, transient observations/decisions and action/output evidence reset on transition or restart. Restored completed history keeps its original source/knowledge dependencies and must pass current context eligibility before use by the provider. Credentials and legacy progress remain independent. Legacy progress is neither imported into learning nor transmitted to the provider. **KAFE: Clear Legacy Tutor Progress** requests separate native confirmation and preserves saved/live chat and credentials.
 
 The archive permits 200 conversations, 4 MiB per conversation and 16 MiB total, with at most 10,000 entries and 5,000 completed history pairs per conversation. Limits reject saving without silent eviction. Failed writes keep the current conversation live and display an error; retry or export before closing. Malformed existing storage is preserved instead of overwritten, and the warning identifies the current chat as temporary.
 
 Follow-ups retain at most eight eligible completed whole learner/assistant pairs within 32 KiB UTF-8. Failed/interrupted pairs are excluded; removed or changed source/knowledge grounding omits dependent context without reviving it through learning records. Source snapshots are limited to 64 KiB each and Run output to 1 MiB. The five permitted tools retain four calls per response and four rounds per turn. Checkpoints are bounded to 16 KiB each; teaching retains at most 32 decisions, 32 observations and 64 KiB total state. Exhaustion rejects the admission without silently evicting pending records; New conversation clears this state. Host action evidence retains at most 32 whole records, 8 KiB each and 64 KiB total/projection text. Old discussion and adopted decisions are not current execution proof.
 
-The saved transcript and export include older visible messages beyond the eight-pair provider window. The private archive retains history dependency references but excludes attached source snapshots, SecretStorage values, raw provider requests, private Run evidence and raw transport errors. Visible message text/code and safe checkpoint summaries are retained. Tutor diagnostics continue to exclude transcript text and private content.
+A short notice reports omissions in the actual submitted request, with optional details; it never resends or restores old file permission. The saved transcript and export include older visible messages beyond the eight-pair provider window. The private archive retains history dependency references but excludes attached source snapshots, SecretStorage values, raw provider requests, private Run evidence and raw transport errors. Visible message text/code and safe checkpoint summaries are retained. Tutor diagnostics continue to exclude transcript text and private content.
 
 ## Runtime and knowledge
 
@@ -68,35 +88,8 @@ The managed runtime is checksum-pinned and installed with uv 0.11.3. It includes
 
 Contributor Run can use a prepared KAFE checkout and installed tools. An Extension Development Host can use an explicitly validated development knowledge pack. Production installations do not read a development checkout as a fallback. These development paths do not establish managed-release readiness. Supported managed targets are Windows x64, macOS x64/arm64 and Linux x64.
 
-## Contributor validation
+## Contributor validation and diagnostics
 
-From `kafe-vscode`, run:
+Use the [reliability guide](tutor-reliability.md#contributor-workflow) for locked setup, current checks, reference review, layout, native-host and package procedures. Its [diagnostic guidance](tutor-reliability.md#diagnosing-a-tutor-failure) explains safe metadata and its limits. See [Getting Started](../getting-started/installation.md) for Python 3.11+ and ANTLR 4.13.2 setup.
 
-```powershell
-npm ci
-npm test
-.\node_modules\.bin\vsce.cmd package
-```
-
-The extension tests use injected fake provider responses and documents. They do not contact DeepSeek or run KAFE. Inspect the resulting VSIX locally; do not install it into a regular VS Code profile or publish it as part of validation.
-
-From the repository root, generate ANTLR 4.13.2 parser outputs from `src/` first when absent. Then run the locked Python gates described in [repository verification guidance](https://github.com/joshmessi10/KAFE-Reloaded/blob/main/.opencode/knowledge/verifications.md):
-
-```powershell
-$repo = (Get-Location).Path
-uv audit --locked --preview-features audit
-uv run --locked --group dev ruff check src tests
-uv run --locked --group dev basedpyright
-uv run --locked --group dev codespell
-uv run --locked --group dev python scripts/check_quality_policy.py
-uv run --locked --group dev pytest tests/test_quality_policy.py -q
-uv run --locked --python 3.10 --group dev pytest tests/ -v "--cov=$repo/src" "--cov-config=$repo/pyproject.toml" --cov-report=term-missing --cov-fail-under=80
-$env:NO_MKDOCS_2_WARNING = "1"
-uv run --locked --python 3.10 --group docs --no-dev mkdocs build --strict
-Remove-Item Env:\NO_MKDOCS_2_WARNING
-```
-
-See [Getting Started](../getting-started/installation.md) for parser generation and KAFE setup. These commands are local validation; they do not establish a hosted CI result.
-The root codespell command skips generated `node_modules`, `.vscode-test`, and VSIX output while continuing to scan extension source, tests, and this guide.
-
-The extension host gate uses the cached pinned VS Code executable, isolated trusted and genuinely restricted profiles, and no download API. Windows native acceptance uses the real composer and bridge with deterministic provider/runtime fixtures; inspect its per-capture viewport, CSS, DPR and image-size evidence. Synthetic IME and AX checks do not establish physical IME or screen-reader speech; fixture acceptance does not establish real-provider or managed-release readiness.
+Local tests, exact-revision hosted results, native acceptance, real-provider review and learner outcomes are separate evidence. Native VS Code 1.96.0 acceptance for this candidate is pending while its local cache is absent. No publication or efficacy claim follows from these instructions.

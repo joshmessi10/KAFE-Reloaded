@@ -21,7 +21,7 @@ Project-specific conventions implementing the mirrored `AGENTS.md` and `CLAUDE.m
 - Public interpreter APIs dispatch through `InterpreterVisitor` and the component/library modules (see `.opencode/knowledge/architecture.md`); do not add parallel dispatch mechanisms.
 - Write new or updated educational comments and docstrings in English or Spanish; keep each document or module internally consistent.
 - Do not add code comments unless they explain non-obvious intent.
-- Do not author `# pyright:` or `# noqa:` suppression comments. Apply the root exception process for upstream issues instead of suppressing owned-code diagnostics. The explicit CI policy check remains pending until the quality-gate migration implements it.
+- Do not author `# pyright:` or `# noqa:` suppression comments. Apply the root exception process for upstream issues instead of suppressing owned-code diagnostics. The tracked-Python policy checker and CI gate already enforce this rule; verify actual results at the relevant revision.
 
 ## Dependency Policy
 
@@ -60,7 +60,7 @@ Project-specific conventions implementing the mirrored `AGENTS.md` and `CLAUDE.m
 ## Documentation Conventions
 
 - The English MkDocs Material site lives in `docs/`. Install its locked dependencies with `uv sync --locked --group docs --no-dev`, then preview it with `uv run --locked --group docs --no-dev mkdocs serve`.
-- Docs deploy to GitHub Pages via `.github/workflows/docs.yml` on push to `main` (`uv run --locked --python 3.10 --group docs --no-dev mkdocs gh-deploy --force`).
+- Strict builds use Python 3.11 and the locked docs group. Root policy requires main-only deployment; the current workflow also permits `integration/Kafe_Gesha_Clustering_v2` and checks out the selected branch. This pre-existing policy drift is recorded in `.opencode/knowledge/verifications.md` and `.opencode/memory/known-issues.md`; do not infer alignment or dispatch deployment from documentation validation.
 - Keep `docs/specification/` (grammar EBNF, operational semantics, operator precedence) in sync with grammar changes.
 - Project knowledge lives in `.opencode/knowledge/` (see AGENTS.md — Repository Knowledge Map).
 

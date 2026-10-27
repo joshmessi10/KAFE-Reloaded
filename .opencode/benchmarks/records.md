@@ -30,6 +30,7 @@ This file consolidates all benchmark records for KAFE. Individual benchmark file
 | RobustScaler | `src/lib/KafeMACHINE/preprocessing/RobustScaler.py` | ML preprocessing | 2026-09-21 | Baseline |
 | DecisionTreeRegressor | `src/lib/KafeMACHINE/tree/DecisionTree.py` (Regressor) | ML algorithm | 2026-09-21 | Baseline |
 | KNNRegressor | `src/lib/KafeMACHINE/neighbors/KNN.py` (Regressor) | ML algorithm | 2026-09-21 | Baseline |
+| Tutor conversation persistence | `kafe-vscode/src/tutor/` | Performance optimization | 2026-10-27 | Controlled in-memory comparison at `86b78ff` |
 
 ---
 
@@ -1214,3 +1215,60 @@ Within this file, use this format for each benchmark:
 - Tests: `tests/KafeMACHINE/clustering/`
 - Knowledge: `.opencode/knowledge/concepts/gaussian-mixture.md`
 - Implementation: `src/lib/KafeMACHINE/clustering/GaussianMixture.py`
+
+
+---
+
+## Tutor conversation persistence and event projections (2026-10-27)
+
+### Environment and method
+
+Baseline `f992fed52117abb825fdb0191150e2af15972ff6`; measured final source committed unchanged as `86b78ffb9f39a76eb22b51535725e11cc43c2adc`. Node v24.19.0, Windows 10.0.26300 win32/x64, Intel Core i5-1135G7 at 2.40 GHz. The deterministic valid schema-v2 fixtures have 10/100/1,000 display entries with half as many completed pairs, fixed dates, no sources and one/two display listeners in addition to owner listeners. Each repetition makes 100 draft changes, 100 response chunks of 64 bytes and one explicit flush. Three warmups precede ten measured repetitions; timing instrumentation is absent. A separate precise-coverage pass counts operations and checks every counter is present. The in-memory workspace-state adapter clones saved data and verifies latest draft/response/history. Heavy verification stayed outside the timing window.
+
+Reproduce from `kafe-vscode` with `node scripts/profile-conversation.cjs --phase before|after --output <absolute-json-path>`, selecting the appropriate measured source state. `--phase` labels evidence; it does not switch implementation. The ignored local profile directory `.superpowers/simplicity-plan/verification/profile/` retains `before.json`, authoritative `after-final.json`, `provenance.json` and `final-production.diff`. Initial `after.json` is superseded. After JSON records the baseline HEAD because measurements preceded the commit; provenance maps its exact final working-tree source hashes to `86b78ff`.
+
+- Baseline artifact SHA256: `4a6530936e403a71ff17982443c253b89d9c7ef7b47ff88c8dd72092f1d93912`.
+- Final after artifact SHA256: `75cd549de5386b2f5b6ed26511dc3b7a438e99f0082782e8d05e726a4098153e`.
+- Final production diff SHA256: `3eb1c59cba7dbc2b9b025fc06858a9c73d473931d80ba2902285508ef8846a09`.
+
+### Measurements
+
+Times are median / p95 milliseconds. Total distributions have ten repetitions; draft/chunk distributions pool 1,000 operations each. Fixture bytes are UTF-8 JSON archive bytes.
+
+| Entries | Listeners | Fixture bytes | Before total | Final after total | Before draft | After draft | Before chunk | After chunk |
+| ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| 10 | 1 | 5593 | 42.2335 / 46.4791 | 7.8203 / 8.9123 | 0.1844 / 0.2518 | 0.0309 / 0.0417 | 0.2143 / 0.2826 | 0.0347 / 0.0559 |
+| 10 | 2 | 5593 | 50.8517 / 52.7274 | 7.7039 / 8.4174 | 0.2252 / 0.2738 | 0.0321 / 0.0440 | 0.2558 / 0.3159 | 0.0361 / 0.0414 |
+| 100 | 1 | 53548 | 303.3245 / 451.2637 | 36.0887 / 39.7412 | 1.4375 / 2.7388 | 0.1501 / 0.2573 | 1.5075 / 2.2201 | 0.1520 / 0.2102 |
+| 100 | 2 | 53548 | 367.0583 / 381.8700 | 36.7088 / 38.1537 | 1.7441 / 2.3973 | 0.1543 / 0.1951 | 1.8100 / 2.1086 | 0.1615 / 0.2436 |
+| 1000 | 1 | 534448 | 3390.2902 / 3628.1500 | 355.7740 / 372.9878 | 16.3703 / 19.1352 | 1.6007 / 1.9440 | 16.9664 / 19.6392 | 1.6521 / 1.9683 |
+| 1000 | 2 | 534448 | 3834.3770 / 4129.1266 | 334.2373 / 358.6531 | 18.6235 / 21.6465 | 1.5305 / 1.7558 | 19.3364 / 21.7339 | 1.5587 / 1.7921 |
+
+| Entries | Listeners | Before final flush | Final after flush |
+| ---: | ---: | ---: | ---: |
+| 10 | 1 | 0.5355 / 0.8990 | 0.5151 / 0.9640 |
+| 10 | 2 | 0.4736 / 0.7957 | 0.4662 / 0.4991 |
+| 100 | 1 | 2.6944 / 3.5732 | 2.4685 / 2.9511 |
+| 100 | 2 | 2.7959 / 3.0148 | 2.3755 / 2.9258 |
+| 1000 | 1 | 29.7799 / 32.3744 | 24.0729 / 26.4804 |
+| 1000 | 2 | 29.0538 / 32.8646 | 23.0234 / 24.8024 |
+
+Counts are identical at every fixture size; listener columns show one / two display listeners.
+
+| Work | Before 1 / 2 | Final after 1 / 2 |
+| --- | ---: | ---: |
+| Full detached session snapshot | 1,402 / 1,802 | 202 / 202 |
+| Coordinator view projection | 400 / 600 | 200 / 200 |
+| Manager capture | 202 / 202 | 2 / 2 |
+| Coordinator conversation capture | 202 / 202 | 2 / 2 |
+| Content normalization | 404 / 404 | 2 / 2 |
+| Archive-content validation/normalization | 405 / 405 | 3 / 3 |
+| Archive normalization | 1 / 1 | 1 / 1 |
+| Serialized writes | 1 / 1 | 1 / 1 |
+| Missing counter coverage | none / none | none / none |
+
+### Decision and limits
+
+Retain shared immutable event projections and boundary persistence capture: all six measured elapsed distributions improved and repeated captures/normalizations decreased. Store validation and explicit detached captures remain. No percentage target or memory measurement is claimed. Full snapshot work still scales with transcript size; explicit boundaries remain synchronous work. Listener timings have ordinary noise and do not imply more listeners make execution faster.
+
+These measurements cover synchronous notifications and an in-memory adapter only: no provider/network latency, real disk, native rendering or learner outcomes. They identify `86b78ff`; later source coordination and pending integration cleanup are not included in this profile and must not be represented as final-candidate/native performance. Correctness receipts at the measured commit include 81 focused passes and 992 aggregate passes with one existing platform skip; these historical receipts are not final integration results. ADR-0033 and the architecture record describe the unchanged authority/boundary contract.

@@ -2,7 +2,9 @@
 
 This document maps the supplied evaluation proposal to Tutor behavior and evidence that a human evaluator can review. It is a study preparation guide, not evidence of educational effectiveness. The proposal describes two university groups, approximately 40–60 available participants, and a minimum of 84 minutes: a 12-minute pretest, two 30-minute practical activities and a 12-minute posttest. Instructions, informed consent and the usability/perception instruments require additional time.
 
-The conceptual questionnaires are described in the proposal as implemented in Google Forms. Their individual questions, answer keys and equivalence have not been validated by this extension. The eight rows below correspond to the eight stated content objectives, rather than an invented reconstruction of the questionnaire items.
+The current intended pretest and posttest each have **six short-answer questions: three ML and three DL, scored 0–2 each, maximum 12**. The user confirmed this version against the revised proposal's six-row content table, 12-point rubric and supplied form fragments; the proposal's remaining eight-question wording is stale. Earlier repository descriptions of eight one-point items are superseded. The eight conceptual topics below remain broader teaching coverage, not questionnaire items.
+
+This alignment uses the supplied proposal's main document text, form HTML fragments, SUS/upload screenshots and architecture diagram. The originals remain unchanged. DOCX text was extracted, but rendering was unavailable; no page/layout verification is claimed. No live form or image endpoint was visited or submitted. Three questions per form reference images whose data were not supplied; their contents and equivalent difficulty remain unknown. The fragments say to select “No sé” while offering short-text controls without that selectable option. The research team must reconcile instructions, accessibility, missing image data, version pairing and scoring reliability before administration. No item text or answer key is bundled into production guidance.
 
 ## Conceptual traceability
 
@@ -29,7 +31,7 @@ For the **XOR activity**, the learner begins with one neuron, examines the resul
 
 Meaningful participation can be sought in questions, proposed alternatives, decisions, changed settings, comparisons, checks and individual explanations. A checkpoint confirmation records adoption of a displayed choice; a Tutor-written summary is an unconfirmed interpretation. Neither is independent evidence of learner reasoning or mastery. Explanations, sketches, pseudocode and concise technical answers can all be relevant evidence; the final research rubric must specify how evaluators judge them.
 
-Beginner, Intermediate and Expert change explanation depth and checkpoint frequency. They are preferences, not measured ability. Paused teaching removes additional reasoning requirements; it does not authorize writing files, executing a program or supplying a complete assessment answer. Direct concept questions deserve a useful explanation rather than an obligatory quiz. The Tutor should reuse already supplied answers and metrics instead of repeatedly asking for them.
+One guided Tutor offers direct concept explanations and focused reasoning at meaningful choices. Requests for shorter or fuller explanations affect presentation within eligible bounded conversation history; they create no durable style memory or inferred ability. Paused teaching removes additional reasoning requirements; it does not authorize writing files, executing a program or supplying a complete assessment answer. Direct concept questions deserve a useful explanation rather than an obligatory quiz. The Tutor should reuse already supplied answers and metrics instead of repeatedly asking for them.
 
 ## Honest execution evidence
 
@@ -49,17 +51,37 @@ Each workspace can retain independent local conversations. The learner explicitl
 
 Saving a local conversation or opening the export dialog is not research consent. The research team must obtain informed consent, define which artifacts may be analyzed, establish participant identifiers and handling/retention rules, and review shared copies for identifying information. The extension does not automatically upload transcripts to a research repository, generate participation scores or supply an efficacy dashboard. Provider requests made during assistance are separate from any research collection; participants must receive the applicable information before participating. See the [extension guide](vscode.md) for context and conversation controls.
 
-## Independent measurement and unfinished instruments
+## Independent measurement and human procedures
 
 The proposal requires individual pretest and posttest responses **without documentation, Internet or AI assistance**. KAFE Tutor should be unavailable for those sessions through facilitator procedure; the extension has no proctoring mode that enforces questionnaire conditions. Practical activities allow Kafe DevKit, official documentation and KAFE Tutor, while the proposal excludes external AI assistants. The facilitator owns that distinction and its communication.
 
 | Research item | Status represented by the proposal | Work still owned by the research team |
 | --- | --- | --- |
-| Eight-item conceptual pretest and posttest | Reported as implemented in Google Forms; each correct response is worth one point, with a maximum of eight. | Check items, keys, accessibility, equivalent coverage, individual pairing and independent administration. Analyze actual collected scores; do not generate substitute results from conversations. |
-| Practical performance rubric | A rubric is proposed for construction, execution, interpretation, checking and justification. | Finalize observable criteria, scoring anchors and evaluator procedure; pilot them before claiming comparable scores. |
-| Active participation rubric | Explicitly pending, including procedure and evidence/analysis. | Design and validate the rubric and its application. Conversation features provide potential evidence, not a finished instrument. |
-| Tutor accompaniment rubric | Explicitly pending, including procedure and evidence/analysis. | Define and review pedagogical criteria, evaluator guidance and analysis. Automated instruction checks do not replace human judgment of responses. |
-| System Usability Scale (SUS) | Version, appropriateness, administration and scoring procedure are pending. | Select the instrument and language/version, establish the authorized administration and scoring procedure, then analyze actual participant responses. No SUS score is currently established. |
-| Perceived experience questionnaire | Instrument, procedure and evidence/analysis are pending. | Construct and review the questionnaire, administration and analysis. Do not infer satisfaction from continued use or message counts. |
+| Six-item conceptual pretest and posttest | Six short-answer items per form, three ML and three DL; human rubric 0–2 each, maximum 12. | Resolve the remaining source/form mismatches, missing images and accessibility; review keys, coverage, equivalent difficulty, scoring consistency, individual pairing and independent administration. Analyze actual collected scores. |
+| Practical performance rubric | Construction, execution, interpretation, checking and justification are proposed. | Finalize observable anchors and evaluator procedure; pilot before claiming comparable scores. |
+| Adapted ICAP observation | Passive, Active, Constructive, Interactive and Not evaluable categories; three evidence sources and descriptive/exploratory analysis are specified. | Human evaluators apply the procedure below, document classification decisions and assess agreement. No empirical validity or reliability result is supplied. |
+| Tutor accompaniment | Pedagogical accompaniment remains an intended dimension. | A completed dedicated accompaniment rubric is not established by its mention; define/review criteria and human judgment procedure. |
+| System Usability Scale (SUS) | Ten ordered statements, five response options and the standard contribution calculation are specified; administration follows both practical activities. | Preserve instrument order and authorized language/version; apply the procedure below to actual responses. Language-version validation and participant scores are not established. |
+| Perceived experience | An intended additional dimension. | Finalize its separate instrument, procedure and analysis; do not infer satisfaction from continued use. |
+
+### Adapted ICAP observation
+
+At the end of both activities, the proposal combines three sources: the individual's brief decision record (strategies, tests and justifications), developed `.kf` solutions with execution results, and authorized Tutor interactions. Human review produces a profile per learner and activity, identifying observable behaviors:
+
+| Category | Operational interpretation |
+| --- | --- |
+| Passive | Receives information or observes results without observable manipulation or elaboration. |
+| Active | Executes, applies or manipulates supplied information without new explanation or inference. |
+| Constructive | Generates an explanation, hypothesis, inference or justified decision beyond the supplied information. |
+| Interactive | Substantive reciprocal exchange develops, questions or revises ideas; the learner contributes reasoning. |
+| Not evaluable | Evidence is insufficient to classify the process, even if a final artifact exists. |
+
+Message counts, a Run, a confirmation or Tutor-written summaries do not determine classification. Interactive participation requires evidence of reciprocal construction. Report category distributions and descriptive ML/DL comparisons; relationships with practical performance and pre/post changes are exploratory. The adapted rubric alone cannot demonstrate deep understanding or general autonomy. No automatic ICAP score/classification is implemented, and inter-rater agreement remains to be established.
+
+### SUS administration and interpretation
+
+The supplied procedure administers ten ordered statements through Google Forms after both practical activities, evaluating the complete experienced environment: VS Code, KAFE and KAFE Tutor. Preserve the ten items, their order and five options coded 1–5. Human analysis uses response minus 1 for odd-numbered items and 5 minus response for even-numbered items; sum the contributions and multiply by 2.5 for a 0–100 score. This is a scale score, not a percentage of correct answers. The extension does not administer or automatically score it.
+
+Report valid questionnaire count, mean and standard deviation, median and interquartile range, distributions and academic-group summaries where group size permits. No actual responses or SUS result are supplied. After a brief experience SUS describes perceived usability; it does not establish timing efficiency, accessibility, absence of technical errors or pedagogical effectiveness. Interpret it alongside practical and participation evidence. Voluntary participation, email registration and a later transcript upload each require the research team's distinct information/consent procedure; none follows from local storage or export.
 
 For real paired questionnaire data, the proposal defines individual change as posttest score minus pretest score and proposes descriptive summaries, ML/DL differences and item-level analysis. The suitability of a paired statistical analysis and an effect estimate remains a research decision based on the collected data and study design. No participant data, empirical learning effect, usability score or efficacy conclusion is supplied by this alignment document.
