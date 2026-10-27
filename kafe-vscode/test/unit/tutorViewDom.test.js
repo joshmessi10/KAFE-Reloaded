@@ -45,6 +45,16 @@ test('an existing conversation retains explicit Send and native provider recover
   assert.equal(v.byId('starting-aid').hidden, true); assert.equal(v.byId('send').disabled, false);
   c.dispatch('keydown', { key: 'Enter' }); assert.equal(v.sent.at(-1).type, 'submitMessage');
 });
+
+test('readable key presence keeps empty-chat explicit Send eligible despite an independent runtime failure', () => {
+  const v = loadView(), setup = { revision: 1, providerKey: 'present', runtime: 'ready', contextNotice: null };
+  v.render(snapshot({ draft: 'Keep this draft', view: setup }));
+  const c = v.byId('composer');
+  v.render(snapshot({ draft: 'Keep this draft', view: { ...setup, revision: 2, runtime: 'failed' } }));
+  assert.equal(v.byId('starting-aid').hidden, true); assert.equal(v.byId('send').disabled, false);
+  assert.equal(c.value, 'Keep this draft'); assert.deepEqual(v.sent, []);
+  c.dispatch('keydown', { key: 'Enter' }); assert.equal(v.sent.at(-1).type, 'submitMessage');
+});
 test('streaming preserves entry text identity selection focus and next draft', () => {
   const v = loadView(), entries = [entry('older', 'assistant', 'Earlier answer'), entry('stream', 'assistant', 'Stable prefix', { status: 'responding' })]; v.render(snapshot({ entries }));
   const older = row(v, 'older'), stream = row(v, 'stream'), text = stream.querySelector('.entry-text').querySelector('p').firstChild;

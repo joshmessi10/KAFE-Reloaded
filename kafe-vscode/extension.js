@@ -228,26 +228,28 @@ function createTutorHost({ vscode, extensionUri, secrets, workspaceState, runtim
     getRunOwner: ({ sourceUri }) => actions.captureRunOwner(sourceUri),
     onRunState: event => actions.recordRunState(event), onRunResult: result => actions.recordRunResult(result) });
   const nativeKeyHandlers = createProviderKeyHandlers({ vscode, secrets });
-  let availabilityRevision = 0, keyMutationRevision = 0, keyConfiguration;
+  let keyAvailabilityRevision = 0, runtimeAvailabilityRevision = 0, keyConfiguration;
   // Presentation facts are independent of request/Run authorization and never refreshed by drafts or tokens.
+  const refreshProviderKeyAvailability = async () => {
+    if (hostDisposed) return;
+    const owner = ++keyAvailabilityRevision;
+    let providerKey = 'unavailable';
+    try { if (typeof secrets.get === 'function') providerKey = await secrets.get(SECRET_KEY) ? 'present' : 'missing'; } catch {}
+    if (!hostDisposed && owner === keyAvailabilityRevision) tutorView.setHostMetadata({ providerKey });
+  };
   const refreshTutorAvailability = async () => {
     if (hostDisposed) return;
-    const owner = ++availabilityRevision;
+    const owner = ++runtimeAvailabilityRevision;
     const trusted = vscode.workspace.isTrusted === true;
-    const publish = patch => { if (!hostDisposed && owner === availabilityRevision) tutorView.setHostMetadata(patch); };
     await Promise.all([
-      (async () => {
-        let providerKey = 'unavailable';
-        try { if (typeof secrets.get === 'function') providerKey = await secrets.get(SECRET_KEY) ? 'present' : 'missing'; } catch {}
-        publish({ providerKey });
-      })(),
+      refreshProviderKeyAvailability(),
       (async () => {
         let runtime = 'unavailable';
         if (trusted) try {
           const ready = await runtimeManager.getReadyRuntime?.();
           if (['preparing', 'ready', 'failed'].includes(ready?.status)) runtime = ready.status;
         } catch {}
-        publish({ runtime: vscode.workspace.isTrusted === true && trusted ? runtime : 'unavailable' });
+        if (!hostDisposed && owner === runtimeAvailabilityRevision) tutorView.setHostMetadata({ runtime: vscode.workspace.isTrusted === true && trusted ? runtime : 'unavailable' });
       })(),
     ]);
   };
@@ -255,29 +257,22 @@ function createTutorHost({ vscode, extensionUri, secrets, workspaceState, runtim
     configure() {
       if (hostDisposed) return Promise.resolve({ status: 'cancelled' });
       if (keyConfiguration) return keyConfiguration;
-      ++availabilityRevision;
-      const mutation = ++keyMutationRevision;
+      ++keyAvailabilityRevision;
       keyConfiguration = (async () => {
         let result;
         try { result = await (injectedConfigure || nativeKeyHandlers.configure)(); }
         catch { result = { status: 'failed', code: 'credential_store_failed' }; }
-        if (!hostDisposed) {
-          await refreshTutorAvailability();
-          if (!hostDisposed && mutation === keyMutationRevision && result?.status === 'failed') tutorView.setHostMetadata({ providerKey: 'unavailable' });
-        }
+        // Mutation errors describe the operation; only fresh readback determines key presence.
+        await refreshProviderKeyAvailability();
         return result || { status: 'unavailable' };
       })().finally(() => { keyConfiguration = undefined; });
       return keyConfiguration;
     },
     async clear() {
       if (hostDisposed) return { status: 'cancelled' };
-      ++availabilityRevision;
-      const mutation = ++keyMutationRevision;
+      ++keyAvailabilityRevision;
       const result = await nativeKeyHandlers.clear();
-      if (!hostDisposed) {
-        await refreshTutorAvailability();
-        if (!hostDisposed && mutation === keyMutationRevision && result.status === 'failed') tutorView.setHostMetadata({ providerKey: 'unavailable' });
-      }
+      await refreshProviderKeyAvailability();
       return result;
     },
   };
@@ -417,7 +412,7 @@ function createTutorHost({ vscode, extensionUri, secrets, workspaceState, runtim
   const readiness = Promise.all([actions.refreshContext(), refreshTutorAvailability()]).then(() => undefined);
   return { tutorView, coordinator, proposalProvider, progressStore, actions, runFile, keyHandlers, readiness, toggleTeachingPause,
     resolveKnowledge, knowledgeRetriever, conversations, conversationCommands, refreshTutorAvailability,
-    dispose() { hostDisposed = true; ++availabilityRevision; nativeKeyHandlers.dispose();
+    dispose() { hostDisposed = true; ++keyAvailabilityRevision; ++runtimeAvailabilityRevision; nativeKeyHandlers.dispose();
       void conversations.dispose().finally(() => conversationManagers.delete(conversations));
       actions.dispose(); coordinator.dispose(); tutorView.dispose(); diagnostics.dispose(); for (const subscription of subscriptions) subscription.dispose(); } };
 }

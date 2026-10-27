@@ -90,7 +90,7 @@ test('native configuration is single-flight, keeps draft and refreshes failed/mi
     const message = { type: 'configureProvider', sessionId: s.sessionId, generation: s.generation };
     const one = f.host.tutorView.onMessage(message), two = f.host.keyHandlers.configure();
     prompt.resolve('PRIVATE'); assert.equal((await one).status, 'failed'); await two;
-    assert.equal(prompts, 1); assert.equal(stores, 1); assert.equal(f.host.tutorView.hostMetadata.providerKey, 'unavailable');
+    assert.equal(prompts, 1); assert.equal(stores, 1); assert.equal(f.host.tutorView.hostMetadata.providerKey, 'missing');
     failed = false; await f.host.keyHandlers.configure(); assert.equal(f.host.tutorView.hostMetadata.providerKey, 'present');
     assert.equal(f.host.coordinator.snapshot().draft, 'Unsent'); assert.equal(f.calls.length, 0);
     await f.host.keyHandlers.clear(); assert.equal(f.host.tutorView.hostMetadata.providerKey, 'missing');
@@ -177,6 +177,75 @@ test('native key mutations settle without waiting for dismissal of their informa
     await new Promise(resolve => setImmediate(resolve)); assert.equal(cleared?.status, 'completed'); await clearing;
   } finally { notice.resolve(); await configuring; handlers.dispose(); }
 });
+
+for (const operation of ['configure', 'clear']) {
+  test(`${operation} key readback does not strand delayed initial runtime readiness`, async () => {
+    const runtime = deferred(), oldKey = deferred(); let runtimeReads = 0, keyReads = 0, value = 'PRIVATE_OLD';
+    const f = conversationHostFixture({ secrets: { get: () => ++keyReads === 1 ? oldKey.promise : Promise.resolve(value),
+      store: async (key, text) => { value = text; }, delete: async () => { value = undefined; } },
+      runtimeManager: { getReadyRuntime: () => ++runtimeReads === 1 ? runtime.promise : Promise.resolve({ status: 'unavailable' }) } });
+    f.vscode.window.showInputBox = async () => 'PRIVATE_NEW'; f.vscode.window.showInformationMessage = async () => {};
+    try {
+      assert.equal((await f.host.keyHandlers[operation]()).status, 'completed');
+      assert.equal(f.host.tutorView.hostMetadata.providerKey, operation === 'configure' ? 'present' : 'missing');
+      assert.equal(f.host.tutorView.hostMetadata.runtime, 'unknown'); assert.equal(runtimeReads, 1);
+      runtime.resolve({ status: 'ready' }); oldKey.resolve(operation === 'configure' ? undefined : 'PRIVATE_OLD'); await f.host.readiness;
+      assert.equal(f.host.tutorView.hostMetadata.runtime, 'ready');
+      assert.equal(f.host.tutorView.hostMetadata.providerKey, operation === 'configure' ? 'present' : 'missing');
+    } finally { runtime.resolve(); oldKey.resolve(); f.host.dispose(); }
+  });
+
+  test(`failed ${operation} retains readable key presence and the unsent draft`, async () => {
+    let reads = 0;
+    const f = conversationHostFixture({ secrets: { get: async () => { reads++; return 'PRIVATE_RETAINED'; },
+      store: async () => { throw Error('PRIVATE_STORE_ERROR'); }, delete: async () => { throw Error('PRIVATE_DELETE_ERROR'); } } });
+    f.vscode.window.showInputBox = async options => { assert.equal(options.password, true); return 'PRIVATE_REPLACEMENT'; };
+    try {
+      await f.host.readiness; f.host.coordinator.session.setDraft('Keep this draft');
+      assert.deepEqual(await f.host.keyHandlers[operation](), { status: 'failed', code: 'credential_store_failed' });
+      assert.equal(f.host.tutorView.hostMetadata.providerKey, 'present'); assert.equal(reads, 2);
+      assert.equal(f.host.coordinator.snapshot().draft, 'Keep this draft'); assert.equal(f.calls.length, 0);
+      assert.doesNotMatch(JSON.stringify(f.host.tutorView.hostMetadata), /PRIVATE/);
+    } finally { f.host.dispose(); }
+  });
+
+  test(`failed ${operation} cannot overwrite a newer SecretStorage event while runtime refresh is pending`, async () => {
+    const oldRuntime = deferred(), latestRuntime = deferred(); let listener, value, runtimeReads = 0;
+    const f = conversationHostFixture({ secrets: { get: async () => value,
+      store: async () => { throw Error('PRIVATE'); }, delete: async () => { throw Error('PRIVATE'); },
+      onDidChange: callback => { listener = callback; return { dispose() {} }; } },
+      runtimeManager: { getReadyRuntime: () => ++runtimeReads === 1 ? Promise.resolve({ status: 'ready' }) : runtimeReads === 2 ? oldRuntime.promise : latestRuntime.promise } });
+    f.vscode.window.showInputBox = async () => 'PRIVATE'; let mutation, refreshing;
+    try {
+      await f.host.readiness; f.host.coordinator.session.setDraft('Keep this draft');
+      mutation = f.host.keyHandlers[operation](); await new Promise(resolve => setImmediate(resolve));
+      refreshing = f.host.refreshTutorAvailability();
+      value = 'PRIVATE_NEW_KEY'; listener({ key: 'kafe.deepseekApiKey' });
+      await new Promise(resolve => setImmediate(resolve));
+      assert.equal(f.host.tutorView.hostMetadata.providerKey, 'present');
+      oldRuntime.resolve({ status: 'unavailable' });
+      assert.deepEqual(await mutation, { status: 'failed', code: 'credential_store_failed' });
+      assert.equal(f.host.tutorView.hostMetadata.providerKey, 'present');
+      assert.equal(f.host.coordinator.snapshot().draft, 'Keep this draft'); assert.equal(f.calls.length, 0);
+    } finally { oldRuntime.resolve(); latestRuntime.resolve(); await mutation; await refreshing; f.host.dispose(); }
+  });
+
+  test(`failed ${operation} reports its error without waiting for unrelated runtime readiness`, async () => {
+    const runtime = deferred(); let runtimeReads = 0, outcome, readFails = false;
+    const f = conversationHostFixture({ secrets: { get: async () => { if (readFails) throw Error('PRIVATE_READ_ERROR'); return 'PRIVATE_RETAINED'; },
+      store: async () => { throw Error('PRIVATE'); }, delete: async () => { throw Error('PRIVATE'); } },
+      runtimeManager: { getReadyRuntime: () => ++runtimeReads === 1 ? Promise.resolve({ status: 'ready' }) : runtime.promise } });
+    f.vscode.window.showInputBox = async () => 'PRIVATE'; let mutation, refresh;
+    try {
+      await f.host.readiness; readFails = true;
+      refresh = f.host.refreshTutorAvailability();
+      mutation = f.host.keyHandlers[operation]().then(result => { outcome = result; });
+      await new Promise(resolve => setImmediate(resolve));
+      assert.equal(f.host.tutorView.hostMetadata.providerKey, 'unavailable', 'A real failed read remains unavailable');
+      assert.deepEqual(outcome, { status: 'failed', code: 'credential_store_failed' });
+    } finally { runtime.resolve(); await mutation; await refresh; f.host.dispose(); }
+  });
+}
 
 function contextRunEnvelope(host) {
   const s = host.coordinator.snapshot();
