@@ -2,9 +2,9 @@ const { randomUUID } = require('node:crypto');
 /** Host authority for ActionEnvelope capabilities. Services never receive webview action types. */
 class TutorHostActions {
   constructor({ session, controller, coordinator, proposalProvider, runtimeManager,
-    configureProvider, runFile, getReadiness, authorizeRunTarget = () => false }) {
+    configureProvider, runFile, getReadiness, authorizeRunTarget = () => false, displayTargetLabel = uri => uri }) {
     Object.assign(this, { session, controller, coordinator, proposalProvider, runtimeManager,
-      configureProvider, runFile, getReadiness, authorizeRunTarget });
+      configureProvider, runFile, getReadiness, authorizeRunTarget, displayTargetLabel });
     this.runGenerations = new Map();
     this.runRequests = new Map();
     this.disposed = false;
@@ -25,7 +25,7 @@ class TutorHostActions {
       this.session.invalidateActions(a => a.type === 'runFile' && !this.authorizeRunTarget(a.args.targetUri));
       const source = snapshot.context.activeSource;
       this.session.setContextRunAction(!snapshot.context.restricted && source && this.authorizeRunTarget(source.uri) ? source : null);
-      const implementationLabel = this.coordinator?.learningSession?.snapshot().preferences.mode === 'paused' ? 'Prepare change' : 'Implement this step';
+      const implementationLabel = 'Prepare change';
       for (const entry of snapshot.entries) for (const action of entry.actions) {
         if (action.enabled && action.type === 'implementCheckpoint') this.session.updateActionLabel(action.id, implementationLabel);
       }
@@ -34,12 +34,12 @@ class TutorHostActions {
           const entry = this.session.snapshot().entries.find(e => e.id === record.entryId && e.status === 'ready');
           if (!entry || record.generation !== snapshot.generation || entry.actions.some(a => a.type === 'discussCheckpoint')) continue;
           const args = { decisionId: record.decisionId, teachingRevision: record.teachingRevision };
-          if (record.checkpoint.kind === 'design') this.action(entry.id, 'confirmCheckpoint', 'Confirm and continue', args);
+          if (record.checkpoint.kind === 'design') this.action(entry.id, 'confirmCheckpoint', 'Confirm choice', args);
           const target = this.checkpointTarget(record);
           if (target && record.checkpoint.kind === 'implementation') this.session.updateEntry(entry.id, { data: { ...entry.data, targetUri: target } });
-          if (record.checkpoint.kind === 'implementation' && record.checkpoint.scopeSummary.trim() && !record.checkpoint.unresolvedChoices.length && target) this.action(entry.id, 'implementCheckpoint', this.coordinator.learningSession.snapshot().preferences.mode === 'paused' ? 'Prepare change' : 'Implement this step', { ...args, targetUri: target, scopeSummary: record.checkpoint.scopeSummary });
+          if (record.checkpoint.kind === 'implementation' && record.checkpoint.scopeSummary.trim() && !record.checkpoint.unresolvedChoices.length && target) this.action(entry.id, 'implementCheckpoint', 'Prepare change', { ...args, targetUri: target, scopeSummary: record.checkpoint.scopeSummary });
           this.action(entry.id, 'discussCheckpoint', 'Discuss', args);
-          this.action(entry.id, 'skipCheckpoint', 'Skip this question', args);
+          this.action(entry.id, 'skipCheckpoint', 'Skip', args);
         }
         for (const scope of this.controller.preparationScopes()) {
           const entry = this.session.snapshot().entries.find(e => e.id === scope.entryId && e.status === 'ready');
@@ -54,6 +54,14 @@ class TutorHostActions {
             ...(typeof pending.preparation?.scopeSummary === 'string' ? { scopeSummary: pending.preparation.scopeSummary } : {}) } });
           this.action(e.id, 'reviewProposal', 'Review change', { id: e.data.proposalId });
         }
+      }
+      // Presentation only: canonical URIs remain the sole target authority.
+      for (const e of this.session.snapshot().entries) {
+        if (!['checkpoint', 'host', 'proposal'].includes(e.kind) || !e.data?.targetUri) continue;
+        let label;
+        try { label = this.displayTargetLabel(e.data.targetUri); } catch { /* full identity remains available */ }
+        const targetLabel = typeof label === 'string' && label.trim() ? label : e.data.targetUri;
+        if (e.data.targetLabel !== targetLabel) this.session.updateEntry(e.id, { data: { ...e.data, targetLabel } });
       }
     } finally { this.projecting = false; }
   }

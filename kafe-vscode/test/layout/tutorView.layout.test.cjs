@@ -2,7 +2,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const test = require('node:test');
-const { snapshot, entry } = require('../helpers/tutorViewHarness');
+const { snapshot, entry, action } = require('../helpers/tutorViewHarness');
 
 // Optional rendered suite: node --test test/layout/tutorView.layout.test.cjs
 // Reuse an installed Playwright via KAFE_PLAYWRIGHT_MODULE (module name or path).
@@ -70,6 +70,94 @@ function assertContained(layout, position) {
   assert.ok(layout.composer.top >= layout.timeline.bottom - 1, `Composer must remain below the timeline; ${diagnostic}`);
   assert.ok(layout.composer.bottom <= layout.height + 1, `Composer must remain inside the webview; ${diagnostic}`);
 }
+
+test('checkpoint browser fixtures preserve decision hierarchy, exact targets and bounded disclosures', async t => {
+  const browser = await chromium.launch({ headless: true,
+    ...(process.env.KAFE_LAYOUT_BROWSER ? { executablePath: process.env.KAFE_LAYOUT_BROWSER } : {}) });
+  const output = process.env.KAFE_LAYOUT_EVIDENCE_DIR;
+  if (output) fs.mkdirSync(output, { recursive: true });
+  const evidence = { surface: 'Shipped HTML/CSS/JS browser fixture; not native VS Code acceptance', scenarios: [] };
+  try {
+    for (const scenario of [
+      { name: 'short-design', kind: 'design', width: 320, height: 650, fontSize: 13 },
+      { name: 'short-implementation', kind: 'implementation', width: 320, height: 650, fontSize: 13, light: true },
+      { name: 'maximal-design', kind: 'design', maximal: true, width: 320, height: 650, fontSize: 13, light: true },
+      { name: 'maximal-implementation', kind: 'implementation', maximal: true, width: 320, height: 650, fontSize: 13 },
+      { name: 'narrow-maximal-implementation', kind: 'implementation', maximal: true, width: 240, height: 320, fontSize: 20, pendingTask7: true },
+    ]) await t.test(scenario.name, async () => {
+      const page = await browser.newPage({ viewport: { width: scenario.width, height: scenario.height } });
+      try {
+        const errors = [], targetUri = 'file:///C:/lessons/iteration/src/main.kf';
+        const bounded = topic => Array.from({ length: 8 }, (_, i) => `${i + 1}. ${topic} ${'Keep the loop bounds explicit, compare the final counter with the last valid item, and explain how an empty input changes the result. '.repeat(5)}`.slice(0, 500));
+        const checkpoint = { kind: scenario.kind, name: 'Choose how to visit each item',
+          learnerProposalSummary: 'I would visit every item once and print its value.',
+          tutorProposedAdditions: scenario.maximal ? bounded('Tutor suggests a boundary check.') : ['Keep the existing output format.'],
+          scopeSummary: scenario.kind === 'implementation' ? 'Replace only the output statement in visitItems; keep imports, input data and other functions unchanged.' : '',
+          tradeoffs: scenario.maximal ? bounded('Index control adds counter state.') : ['An index gives explicit bounds but adds counter state.'],
+          unresolvedChoices: scenario.maximal ? bounded('Choose whether ordering matters before preparing code.') : [],
+          sourceIds: scenario.maximal ? ['active-file', ...Array.from({ length: 7 }, (_, i) => `selected:source-${i}`)] : ['active-file'],
+          priorDecisionIds: [] };
+        const { LearningSession } = require('../../src/tutor/LearningSession');
+        // Validate the actual domain bounds, rather than depicting an impossible checkpoint.
+        const activeSource = { id: 'active-file', uri: targetUri, label: 'iteration/src/main.kf', included: true, category: 'active-file' };
+        const sources = scenario.maximal ? checkpoint.sourceIds.slice(1).map((id, i) => ({ id,
+          uri: `file:///C:/lessons/iteration/src/helpers-${i}.kf`, label: `iteration/src/helpers-${i}.kf`, included: true, category: 'selected-file' })) : [];
+        const learning = new LearningSession(), dependencies = { files: [activeSource, ...sources].map(source => ({ uri: source.uri, version: 1, contentSha256: 'a'.repeat(64) })), knowledgeLineage: null };
+        if (scenario.maximal) checkpoint.priorDecisionIds = Array.from({ length: 8 }, (_, i) => learning.addDecision({ ...checkpoint,
+          name: `Earlier choice ${i + 1}`, tutorProposedAdditions: [], tradeoffs: [], unresolvedChoices: [], sourceIds: [], priorDecisionIds: [] }, dependencies).id);
+        learning.addDecision(checkpoint, dependencies);
+        const actions = [action('discuss', 'discussCheckpoint'), action('skip', 'skipCheckpoint')];
+        actions[0].label = 'Discuss'; actions[1].label = 'Skip';
+        if (scenario.kind === 'design') actions.unshift({ ...action('confirm', 'confirmCheckpoint'), label: 'Confirm choice' });
+        else if (!scenario.maximal) actions.unshift({ ...action('prepare', 'implementCheckpoint'), label: 'Prepare change' });
+        const current = entry('decision', 'checkpoint', checkpoint.name, { status: 'ready', actions, data: { checkpoint,
+          grounding: 'source-linked-proposal', ...(scenario.kind === 'implementation' ? { targetUri, targetLabel: 'iteration/src/main.kf' } : {}) } });
+        const state = snapshot({ entries: [current], context: { revision: 1, restricted: false, activeSource, sources } });
+        page.on('pageerror', error => errors.push(error.message));
+        await page.setContent(viewHtml(scenario.fontSize, { state, light: scenario.light }));
+        await page.evaluate(() => { window.fixtureMessages = []; window.acquireVsCodeApi = () => ({ postMessage: value => window.fixtureMessages.push(value) }); });
+        await page.addScriptTag({ path: path.join(tutorRoot, 'tutorTimeline.js') });
+        await page.addScriptTag({ path: path.join(tutorRoot, 'tutorView.js') });
+        const detail = page.locator('.entry-data details'), timeline = page.locator('#timeline');
+        assert.match(await page.locator('#included-context').innerText(), /iteration\/src\/main.kf/);
+        assert.doesNotMatch(await page.locator('#active-context').innerText(), /No file included/);
+        assert.equal(await detail.getAttribute('open'), null);
+        assert.equal(await page.getByText(checkpoint.tutorProposedAdditions[0], { exact: true }).isVisible(), false);
+        assert.equal(await page.getByText(checkpoint.tradeoffs[0], { exact: true }).isVisible(), true);
+        if (scenario.kind === 'design') assert.equal(await page.getByRole('heading', { name: 'Preparation scope', exact: true }).count(), 0);
+        else {
+          assert.equal(await timeline.getByText('iteration/src/main.kf', { exact: true }).isVisible(), true);
+          assert.equal(await page.getByText(targetUri, { exact: true }).isVisible(), false);
+        }
+        assert.equal(await page.getByRole('button', { name: 'Prepare change', exact: true }).count(), scenario.kind === 'implementation' && !scenario.maximal ? 1 : 0);
+        await timeline.evaluate(node => { node.scrollTop = 0; });
+        if (output) await page.screenshot({ path: path.join(output, `${scenario.name}-decision.png`) });
+        await page.getByRole('button', { name: 'Discuss', exact: true }).focus();
+        if (output) await page.screenshot({ path: path.join(output, `${scenario.name}-actions.png`) });
+        await detail.locator('summary').click();
+        assert.equal(await page.getByText(checkpoint.tutorProposedAdditions.at(-1), { exact: true }).isVisible(), true);
+        await page.evaluate(next => window.dispatchEvent(new MessageEvent('message', { data: { type: 'render', state: next } })),
+          { ...state, revision: 2, entries: [{ ...current, status: 'discussed' }] });
+        assert.notEqual(await detail.getAttribute('open'), null, 'Disclosure expansion survives status updates');
+        const metrics = await page.evaluate(() => ({ width: innerWidth, height: innerHeight,
+          scrollWidth: document.documentElement.scrollWidth, scrollHeight: document.documentElement.scrollHeight,
+          timelineWidth: document.querySelector('#timeline').clientWidth, timelineScrollWidth: document.querySelector('#timeline').scrollWidth,
+          timelineHeight: document.querySelector('#timeline').clientHeight, timelineScrollHeight: document.querySelector('#timeline').scrollHeight,
+          headingMarginTop: getComputedStyle(document.querySelector('.learning-field')).marginTop,
+          headingMarginBottom: getComputedStyle(document.querySelector('.learning-field h3')).marginBottom,
+          messages: window.fixtureMessages }));
+        assert.ok(metrics.scrollWidth <= metrics.width + 1); assert.ok(metrics.scrollHeight <= metrics.height + 1);
+        assert.ok(metrics.timelineScrollWidth <= metrics.timelineWidth + 1);
+        if (!scenario.pendingTask7) assert.ok(metrics.timelineHeight >= scenario.fontSize * 4, 'Transcript must retain readable space at ordinary dimensions');
+        assert.deepEqual(metrics.messages, []); assert.deepEqual(errors, []);
+        evidence.scenarios.push({ ...scenario, checkpointBytes: Buffer.byteLength(JSON.stringify(checkpoint)), metrics, errors });
+      } finally { await page.close(); }
+    });
+  } finally {
+    await browser.close();
+    if (output) fs.writeFileSync(path.join(output, 'checkpoint-browser-fixture.json'), JSON.stringify(evidence, null, 2));
+  }
+});
 
 test('long conversations keep a single transcript scrollbar and a stationary composer', async t => {
   const browser = await chromium.launch({ headless: true,

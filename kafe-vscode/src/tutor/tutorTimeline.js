@@ -151,6 +151,12 @@
   function structured(entry) {
     const data = entry.data || {}, out = [];
     const filename = uri => typeof uri === 'string' ? uri.split('/').at(-1) : '';
+    const target = (label, key) => {
+      const value = field(label, data.targetLabel || data.targetUri, key);
+      value.attrs.title = data.targetUri;
+      return value;
+    };
+    const identity = () => data.targetUri ? [field('Full target identity', data.targetUri, 'target-identity')] : [];
     if (entry.kind === 'checkpoint' && data.checkpoint) {
       const c = data.checkpoint;
       out.push(prose(`${c.kind === 'implementation' ? 'Implementation' : 'Design'} checkpoint`, 'kind'));
@@ -159,25 +165,35 @@
         ({ ready: 'Proposed: waiting for your reasoning or a displayed action.', preparing: 'Preparation was authorized for one change. Native Review and Apply remain separate; Run requires its own action.', discussed: 'Returned to discussion; no preparation permission granted.', skipped: 'Question skipped; no preparation permission granted.', confirmed: 'Design confirmed.' }[entry.status] || 'Checkpoint unavailable.');
       out.push(prose(`${adopted ? 'Adopted. ' : ''}${outcome}`, 'decision-outcome'));
       out.push(field('Learner proposal — Tutor summary, unconfirmed', c.learnerProposalSummary || 'No learner proposal summarized.', 'learner-summary'));
-      out.push(...listField('Tutor additions', c.tutorProposedAdditions, 'additions'));
-      out.push(field('Preparation scope', c.scopeSummary || 'No preparation scope proposed.', 'scope'));
-      if (data.targetUri) out.push(field('Preparation target', data.targetUri, 'preparation-target'));
-      else if (c.kind === 'implementation') out.push(prose('No eligible authorized preparation target. Message-only discussion remains available.', 'no-target'));
-      out.push(...listField('Tradeoffs', c.tradeoffs, 'tradeoffs'), ...listField('Unresolved choices — preparation is unavailable', c.unresolvedChoices, 'choices'));
-      out.push(prose(data.grounding === 'source-linked-proposal' ? 'Source-linked Tutor proposal; source availability does not verify the proposed design.' : 'Message-only proposal; not verified KAFE guidance.', 'grounding'));
-      out.push(prose('Confirmation records adoption of this displayed decision. It does not establish independent authorship, understanding or mastery. Preparation, native Review and Apply, and learner-started Run are separate actions.', 'authority'));
-      const references = [...listField('Admitted source IDs', c.sourceIds, 'source-ids'), ...listField('Prior decision IDs', c.priorDecisionIds, 'prior-ids')];
-      if (references.length) out.push(details('Decision references', references, 'references'));
+      if (c.kind === 'implementation') {
+        out.push(field('Preparation scope', c.scopeSummary || 'No preparation scope proposed. Discuss the scope before preparing a change.', 'scope'));
+        if (data.targetUri) out.push(target('Preparation target', 'preparation-target'));
+        else out.push(prose('No eligible authorized preparation target. Message-only discussion remains available.', 'no-target'));
+      }
+      out.push(...listField('Tradeoffs', c.tradeoffs, 'tradeoffs'), ...listField(c.kind === 'implementation' ? 'Unresolved choices — preparation is unavailable' : 'Unresolved choices', c.unresolvedChoices, 'choices'));
+      out.push(prose(c.kind === 'design' ? 'Confirm choice adopts the displayed approach; it does not authorize code preparation.' : 'Prepare change authorizes one proposal for this target and scope. Native Review and Apply remain separate; Run starts only by your action.', 'consequence'));
+      const supporting = [
+        ...listField('Tutor additions', c.tutorProposedAdditions, 'additions'),
+        prose(data.grounding === 'source-linked-proposal' ? 'Source or managed-knowledge context was available for this proposal. Bundled references provide separate guidance. Source inspection and reference availability do not verify the proposed design or establish a ready managed pack.' : 'Message-only proposal; not verified KAFE guidance. Bundled references may inform the Tutor, but do not verify this design or establish a ready managed pack.', 'grounding'),
+        prose('Confirmation records adoption of this displayed decision. It does not establish independent authorship, understanding, mastery or program correctness.', 'authority'),
+        ...identity(), ...listField('Admitted source IDs', c.sourceIds, 'source-ids'), ...listField('Prior decision IDs', c.priorDecisionIds, 'prior-ids'),
+      ];
+      out.push(details('Decision details', supporting, 'references'));
     }
-    if (data.scopeSummary) out.push(field('Preparation scope', data.scopeSummary, 'preparation-scope'));
+    if (data.scopeSummary && entry.kind !== 'checkpoint') out.push(field('Preparation scope', data.scopeSummary, 'preparation-scope'));
     if (data.targetUri && entry.kind === 'host') {
-      out.push(field('Preparation target', data.targetUri, 'preparation-target'));
+      out.push(target('Preparation target', 'preparation-target'));
       out.push(prose(entry.status === 'stale' ? 'Stale scope. Request a current scope and confirm it again.' : 'Confirm this displayed scope to prepare one change. Native Review and Apply remain separate; Run starts only by your action.', 'scope-authority'));
+      out.push(details('Target details', identity(), 'target-details'));
     }
     if (entry.kind === 'proposal') {
-      if (data.targetUri) out.push(field('Target', data.targetUri, 'target'));
+      if (data.targetUri) out.push(target('Target', 'target'));
       const outcome = { ready: 'Staged for native review; not applied. Review change must precede Apply. Run remains a separate learner action.', applied: 'Applied by the native host. Run remains a separate learner action; program correctness is not established.', stale: 'Stale proposal. Request a fresh preparation scope before reviewing another change.', rejected: 'Rejected; not applied.', cancelled: 'Cancelled; not confirmed as applied.', failed: 'The change was not confirmed as applied. Request a fresh preparation scope.', unavailable: 'The change is unavailable; not confirmed as applied.' }[entry.status];
       if (outcome) out.push(prose(outcome, 'proposal-outcome'));
+      const provenance = [...identity()];
+      if (data.proposalId) provenance.push(field('Proposal ID', data.proposalId, 'proposal-id'));
+      if (Number.isSafeInteger(data.documentVersion)) provenance.push(field('Document version at preparation', data.documentVersion, 'document-version'));
+      if (provenance.length) out.push(details('Change details', provenance, 'target-details'));
     }
     if (entry.kind === 'error' && recovery[data.code]) out.push(prose(recovery[data.code], 'recovery'));
     if (entry.kind === 'run') {

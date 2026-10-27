@@ -111,7 +111,11 @@ function createTutorHost({ vscode, extensionUri, secrets, workspaceState, runtim
       if (!folder?.uri?.fsPath) return target.toString();
       const relative = path.relative(folder.uri.fsPath, target.fsPath).split(path.sep).join('/');
       if (!relative || relative === '..' || relative.startsWith('../') || path.isAbsolute(relative)) return target.toString();
-      return (vscode.workspace.workspaceFolders?.length > 1 ? `${folder.name || path.basename(folder.uri.fsPath)}/` : '') + relative;
+      const folders = vscode.workspace.workspaceFolders || [];
+      const name = folder.name || path.basename(folder.uri.fsPath);
+      // Repeated root names cannot disambiguate relative paths. Show exact identity.
+      if (folders.filter(other => (other.name || path.basename(other.uri.fsPath)) === name).length > 1) return target.toString();
+      return (folders.length > 1 ? `${name}/` : '') + relative;
     },
     async readDocument(uri) {
       if (!authorize(uri)) throw safeError('trust_unavailable');
@@ -296,7 +300,7 @@ function createTutorHost({ vscode, extensionUri, secrets, workspaceState, runtim
   });
   actions = new TutorHostActions({ session: coordinator.session, controller: coordinator.controller, coordinator,
     proposalProvider, runtimeManager, configureProvider: keyHandlers.configure,
-    runFile, getReadiness, authorizeRunTarget: authorize });
+    runFile, getReadiness, authorizeRunTarget: authorize, displayTargetLabel: documentReader.displayLabel });
   const toggleTeachingPause = () => coordinator.handleLearnerMessage({ type: 'toggleTeachingPause' });
   const onMessage = async message => {
     if (!isTutorMessage(message, coordinator.session)) return { status: 'stale' };

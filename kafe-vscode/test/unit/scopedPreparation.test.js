@@ -22,11 +22,39 @@ function fixture(options = {}) {
   const provider = { async *stream(input) { sent.push(input.request); calls++; yield* options.events?.(calls, input) || [done(calls === 1 ? [checkpoint(options.kind)] : [proposal()])]; } };
   const proposalProvider = { pending: null, stage(p, guard = {}) { if (options.stageFailure) throw Error('failed'); assert.equal(guard.isCurrent?.() ?? true, true); stages++; this.pending = { ...p, sourceId: p.uri, id: `native-${stages}` }; return { id: this.pending.id }; }, clear(id) { if (!id || this.pending?.id === id) this.pending = null; }, async open() { this.pending.reviewed = true; return { status: 'opened' }; } };
   const coordinator = new SessionCoordinator({ session, provider, contextComposer: composer, toolRouter: new ToolRouter({ knowledgeRetriever: retriever }), proposalProvider, getContext: () => context, getSourceRevision: () => revision });
-  const actions = new TutorHostActions({ session, controller: coordinator.controller, coordinator, proposalProvider, authorizeRunTarget: () => true, configureProvider: async () => ({ status: 'completed' }) });
+  const actions = new TutorHostActions({ session, controller: coordinator.controller, coordinator, proposalProvider, displayTargetLabel: options.displayTargetLabel, authorizeRunTarget: () => true, configureProvider: async () => ({ status: 'completed' }) });
   const submit = (text = 'Help') => actions.submitMessage({ submissionId: randomUUID(), text, contextRevision: session.snapshot().context.revision });
   const envelope = type => { const state = session.snapshot(); const entry = state.entries.findLast(e => e.actions.some(a => a.type === type && a.enabled)); assert.ok(entry, `Missing ${type}`); const a = entry.actions.find(a => a.type === type && a.enabled); return { type: 'invokeAction', sessionId: state.sessionId, generation: state.generation, entryId: entry.id, actionId: a.id, args: a.args }; };
   return { session, coordinator, actions, proposalProvider, sent, submit, envelope, get calls() { return calls; }, get stages() { return stages; }, change() { document = { ...document, text: 'show(3)', version: 2 }; context.activeDocument = document; revision++; }, context(value) { context = value; revision++; }, async start() { await coordinator.refreshContext(); return submit(); } };
 }
+
+test('display labels project through checkpoint, retry scope and proposal without becoming capability authority', async () => {
+  const f = fixture({ displayTargetLabel: () => 'lesson/main.kf', events: async function* (n) {
+    if (n === 1) yield done([checkpoint()]); else if (n === 2) throw new ProviderError('timeout'); else yield done([proposal()]);
+  } });
+  await f.start();
+  const first = f.session.snapshot().entries.find(e => e.kind === 'checkpoint');
+  assert.equal(first.data.targetLabel, 'lesson/main.kf'); assert.equal(first.data.targetUri, 'file:///a.kf');
+  assert.equal(first.actions.find(a => a.type === 'implementCheckpoint').label, 'Prepare change');
+  const action = f.envelope('implementCheckpoint');
+  assert.equal(Object.hasOwn(action.args, 'targetLabel'), false); assert.equal(action.args.targetUri, 'file:///a.kf');
+  await f.actions.dispatch(action);
+  const scope = f.session.snapshot().entries.find(e => e.kind === 'host' && e.data.scopeSummary);
+  assert.equal(scope.data.targetLabel, 'lesson/main.kf');
+  await f.actions.dispatch(f.envelope('prepareChange'));
+  const staged = f.session.snapshot().entries.find(e => e.kind === 'proposal');
+  assert.equal(staged.data.targetLabel, 'lesson/main.kf'); assert.equal(staged.data.targetUri, 'file:///a.kf');
+});
+
+test('design actions use concise labels and never grant preparation', async () => {
+  for (const [type, label] of [['confirmCheckpoint', 'Confirm choice'], ['discussCheckpoint', 'Discuss'], ['skipCheckpoint', 'Skip']]) {
+    const f = fixture({ events: async function* (n) { yield done(n === 1 ? [checkpoint('design')] : [proposal()]); } });
+    await f.start();
+    const state = f.session.snapshot(), action = state.entries.find(e => e.kind === 'checkpoint').actions.find(a => a.type === type);
+    assert.equal(action.label, label); await f.actions.dispatch(f.envelope(type));
+    assert.equal(f.stages, 0); assert.equal(f.coordinator.controller.current.grant, null);
+  }
+});
 test('adoption host disposition survives preparation and later source invalidation in rendered history', async () => {
   const { loadView } = require('../helpers/tutorViewHarness');
   const f = fixture(); await f.start(); await f.actions.dispatch(f.envelope('implementCheckpoint'));
@@ -38,7 +66,7 @@ test('adoption host disposition survives preparation and later source invalidati
   assert.match(view.byId('timeline').textContent, /Adopted\. Stale/);
   assert.equal(f.coordinator.learningSession.snapshot().decisions[0].disposition, 'confirmed');
 });
-test('queued native preferences project without changing admitted teaching revision and relabel checkpoint after settlement', async () => {
+test('queued native preferences preserve admitted revision, capabilities and consistent preparation label', async () => {
   const { loadView } = require('../helpers/tutorViewHarness');
   const entered = deferred(), release = deferred();
   const f = fixture({ events: async function* (n) { if (n === 1) yield done([checkpoint()]); else { entered.resolve(); await release.promise; yield done(); } } });
@@ -58,7 +86,7 @@ test('queued native preferences project without changing admitted teaching revis
   assert.ok(f.session.resolveAction(original), 'preference presentation never reissues or consumes authority');
   assert.equal(f.stages, 0); assert.equal(f.calls, 2);
   await f.coordinator.handleLearnerMessage({ type: 'setLearningPreferences', preferences: { mode: 'guided' } });
-  assert.equal(f.coordinator.snapshot().entries.find(e => e.kind === 'checkpoint').actions.find(a => a.enabled && a.type === 'implementCheckpoint').label, 'Implement this step');
+  assert.equal(f.coordinator.snapshot().entries.find(e => e.kind === 'checkpoint').actions.find(a => a.enabled && a.type === 'implementCheckpoint').label, 'Prepare change');
   assert.ok(f.session.resolveAction(original));
 });
 

@@ -4,6 +4,60 @@ const { loadView, snapshot, entry, action } = require('../helpers/tutorViewHarne
 const checkpoint = (patch = {}) => ({ kind: 'implementation', name: 'Loop items', learnerProposalSummary: 'I would iterate once', tutorProposedAdditions: ['Use one counter'], scopeSummary: 'Replace only the output statement', tradeoffs: ['Counter state'], unresolvedChoices: [], sourceIds: ['active-file'], priorDecisionIds: ['prior'], ...patch });
 const decision = (patch = {}, data = {}) => entry('decision', 'checkpoint', 'Loop items', { status: 'ready', data: { checkpoint: checkpoint(patch), summaryAttribution: 'tutor-unconfirmed', grounding: 'source-linked-proposal', targetUri: 'file:///first/main.kf', ...data }, actions: [action('help', 'discussCheckpoint'), action('skip', 'skipCheckpoint')] });
 
+// The fake DOM exposes collapsed text too; inspect its actual disclosure ancestry.
+function visibleText(node) {
+  if (node.tagName === 'details' && !node.open) return node.children[0].textContent;
+  return node.nodeType === 3 ? node.data : node.childNodes.map(visibleText).join(' ');
+}
+
+test('short design leads with decision and essential choices while secondary detail is collapsed', () => {
+  const v = loadView(); v.render(snapshot({ entries: [decision({ kind: 'design', scopeSummary: '', unresolvedChoices: ['Choose ordering'] }, { targetUri: undefined })] }));
+  const timeline = v.byId('timeline'), visible = visibleText(timeline);
+  for (const value of ['Loop items', 'Tutor summary, unconfirmed', 'Counter state', 'Choose ordering', 'adopts the displayed approach']) assert.ok(visible.includes(value), value);
+  for (const value of ['Preparation scope', 'Preparation target', 'No preparation', 'Use one counter', 'active-file', 'prior', 'independent authorship']) assert.equal(visible.includes(value), false, value);
+  const disclosure = timeline.querySelector('details');
+  assert.equal(Boolean(disclosure.open), false);
+  assert.match(disclosure.textContent, /Use one counter.*independent authorship.*active-file.*prior/);
+});
+
+test('preparation and proposal keep unique target, scope and consequence visible with canonical identity in details', () => {
+  for (const kind of ['checkpoint', 'host', 'proposal']) {
+    const v = loadView(), targetUri = 'file:///workspace/first/main.kf';
+    const data = { targetUri, targetLabel: 'first/main.kf', scopeSummary: 'Replace only the output statement', ...(kind === 'checkpoint' ? { checkpoint: checkpoint() } : {}) };
+    v.render(snapshot({ entries: [entry('d', kind, 'Loop items', { status: 'ready', data })] }));
+    const t = v.byId('timeline'), visible = visibleText(t);
+    assert.ok(visible.includes('first/main.kf'));
+    assert.ok(visible.includes(data.scopeSummary));
+    assert.match(visible, /Review.*Apply.*Run/);
+    assert.equal(visible.includes(targetUri), false);
+    assert.ok(t.querySelector('details').textContent.includes(targetUri));
+  }
+});
+
+test('target label and proposal provenance remain literal and supporting identifiers stay collapsed', () => {
+  const v = loadView(), targetLabel = 'lessons/<img src=x onerror=claim()>/main.kf';
+  v.render(snapshot({ entries: [entry('p', 'proposal', 'Review the loop', { status: 'ready', data: {
+    targetUri: 'file:///a/main.kf', targetLabel, proposalId: '<script>claim()</script>', documentVersion: 7,
+    scopeSummary: 'Change only the loop',
+  } })] }));
+  const t = v.byId('timeline'), visible = visibleText(t), detail = t.querySelector('details');
+  assert.ok(visible.includes(targetLabel)); assert.equal(visible.includes('claim()</script>'), false);
+  assert.match(detail.textContent, /file:\/\/\/a\/main.kf.*Proposal ID.*<script>claim\(\)<\/script>.*Document version at preparation.*7/);
+  assert.equal(t.querySelectorAll('img').length, 0); assert.equal(t.querySelectorAll('script').length, 0);
+});
+
+test('maximal design retains all additions and references safely inside stable collapsed details', () => {
+  const additions = Array.from({ length: 8 }, (_, i) => `${i}: ${'<img src=x onerror=claim()>'.repeat(12)}`);
+  const v = loadView(); const e = decision({ kind: 'design', tutorProposedAdditions: additions, unresolvedChoices: ['Ordering?'] }, { targetUri: undefined });
+  v.render(snapshot({ entries: [e] }));
+  const t = v.byId('timeline'), detail = t.querySelector('details');
+  assert.equal(visibleText(t).includes(additions[7]), false);
+  assert.ok(detail.textContent.includes(additions[7])); assert.equal(t.querySelectorAll('img').length, 0);
+  detail.open = true;
+  v.render(snapshot({ revision: 2, entries: [{ ...e, status: 'discussed' }] }));
+  assert.equal(t.querySelector('details'), detail); assert.equal(detail.open, true);
+});
+
 test('inline checkpoint exposes full bounded fields, exact target, attribution and distinct authorities', () => {
   const v = loadView(); v.render(snapshot({ draft: 'Independent reasoning', entries: [decision()] }));
   const t = v.byId('timeline').textContent;
@@ -21,7 +75,8 @@ test('message-only design, unresolved choices and stale adopted decisions retain
   assert.match(v.byId('timeline').textContent, /Design checkpoint/);
   assert.match(v.byId('timeline').textContent, /Message-only proposal.*not verified KAFE guidance/);
   assert.match(v.byId('timeline').textContent, /Choose ordering/);
-  assert.match(v.byId('timeline').textContent, /Unresolved choices.*preparation is unavailable/);
+  assert.match(v.byId('timeline').textContent, /Unresolved choices/);
+  assert.doesNotMatch(v.byId('timeline').textContent, /preparation is unavailable/);
   v.render(snapshot({ revision: 2, entries: [{ ...decision({}, { disposition: 'confirmed' }), status: 'stale', actions: [] }] }));
   assert.match(v.byId('timeline').textContent, /Adopted.*Stale/);
   assert.match(v.byId('timeline').textContent, /Tutor summary, unconfirmed/);

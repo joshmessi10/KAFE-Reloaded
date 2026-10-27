@@ -49,6 +49,25 @@ function conversationHostFixture({ workspaceState, secrets = {}, runtimeManager 
     setAvailabilityHook: fn => { availabilityHook = fn; } };
 }
 
+for (const sameNames of [false, true]) test(`target labels distinguish duplicate basenames across roots${sameNames ? ' with identical folder names' : ''}`, async () => {
+  const f = conversationHostFixture();
+  try {
+    const makeUri = fsPath => ({ scheme: 'file', fsPath, toString: () => `file:///${fsPath.replaceAll('\\', '/')}` });
+    const roots = [
+      { name: 'lesson', uri: makeUri('C:/first') },
+      { name: sameNames ? 'lesson' : 'experiment', uri: makeUri('C:/second') },
+    ];
+    f.vscode.workspace.workspaceFolders = roots;
+    f.vscode.workspace.getWorkspaceFolder = target => roots.find(root => target.fsPath.startsWith(root.uri.fsPath + '/'));
+    const reader = f.host.coordinator.contextComposer.documentReader;
+    const targets = roots.map(root => makeUri(root.uri.fsPath + '/src/main.kf'));
+    const labels = targets.map(target => reader.displayLabel(target));
+    assert.notEqual(labels[0], labels[1]);
+    assert.deepEqual(labels, sameNames ? targets.map(target => target.toString()) : ['lesson/src/main.kf', 'experiment/src/main.kf']);
+    assert.deepEqual(targets.map(target => target.toString()), ['file:///C:/first/src/main.kf', 'file:///C:/second/src/main.kf']);
+  } finally { f.host.dispose(); }
+});
+
 test('host initializes bounded availability once and refreshContext/drafts/tokens never read readiness', async () => {
   let keyReads = 0, runtimeReads = 0;
   const f = conversationHostFixture({ secrets: { get: async () => { keyReads++; return 'PRIVATE'; } },

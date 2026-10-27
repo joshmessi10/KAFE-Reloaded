@@ -140,10 +140,11 @@ test('cancelled chat Run creates no Tutor status and no evidence', async () => {
 });
 
 test('proposal display exposes native target metadata without proposed bytes', () => {
-  const f = fixture({ proposalProvider: { pending: { id: 'proposal', sourceId: 'file:///workspace/a.kf', documentVersion: 7, newText: 'private proposal bytes' } } });
+  const f = fixture({ displayTargetLabel: () => 'workspace/a.kf', proposalProvider: { pending: { id: 'proposal', sourceId: 'file:///workspace/a.kf', documentVersion: 7, newText: 'private proposal bytes' } } });
   f.session.appendEntry({ kind: 'proposal', status: 'ready', text: 'Review', data: { proposalId: 'proposal', turnId: 'turn' } });
   const entry = f.session.snapshot().entries.find(e => e.kind === 'proposal');
   assert.equal(entry.data.targetUri, 'file:///workspace/a.kf');
+  assert.equal(entry.data.targetLabel, 'workspace/a.kf');
   assert.equal(entry.data.documentVersion, 7);
   assert.ok(!JSON.stringify(entry.data).includes('private proposal bytes'));
 });
