@@ -9,6 +9,22 @@
 </head>
 <body>
   <main id="tutor">
+    <section id="starting-aid" class="starting-aid" aria-labelledby="starting-title" hidden>
+        <h2 id="starting-title">What would you like to understand?</h2>
+        <p>Ask about a KAFE concept or your program.</p>
+        <p id="provider-setup-copy">Configure your DeepSeek API key to chat. VS Code stores it securely. You can draft your question now.</p>
+        <button id="configure-provider" type="button">Configure Tutor</button>
+        <details id="first-program-help">
+          <summary>Your first KAFE program</summary>
+          <ol>
+            <li>Open a workspace folder in VS Code.</li>
+            <li>Create and save a <code>.kf</code> file in that folder.</li>
+            <li>When you choose to run it, use <strong>KAFE: Run File</strong>.</li>
+            <li>Read the output and enter any input in the native <strong>KAFE Run</strong> terminal.</li>
+          </ol>
+          <p>Running a program requires a trusted workspace and the KAFE runtime. Tutor conversation has separate setup.</p>
+        </details>
+    </section>
     <div id="timeline" role="log" aria-label="Tutor conversation" aria-live="off" tabindex="0"></div>
     <div id="response-dock" class="response-dock" data-state="idle" aria-busy="false">
       <span id="response-state"></span>

@@ -4,6 +4,32 @@ const { isTutorMessage, dispatchTutorMessage, TutorViewProvider } = require('../
 const { loadView } = require('../helpers/tutorViewHarness');
 const { ConversationSession } = require('../../src/tutor/ConversationSession');
 const command = (session, type, fields = {}) => ({ type, sessionId: session.snapshot().sessionId, generation: session.snapshot().generation, ...fields });
+
+test('configure Tutor accepts only an argument-free current-generation message', () => {
+  const s = new ConversationSession(), issued = command(s, 'configureProvider');
+  assert.equal(isTutorMessage(issued, s), true);
+  for (const patch of [{ key: 'PRIVATE' }, { args: {} }, { command: 'kafe.runFile' }, { generation: 0 }, { sessionId: 'old' }]) {
+    assert.equal(isTutorMessage({ ...issued, ...patch }, s), false);
+  }
+});
+
+test('bounded host metadata is cached separately from native view and survives recreation', () => {
+  const s = new ConversationSession(), f = nativeFixture(s, { providerKey: 'unknown' });
+  const initial = { revision: 0, providerKey: 'unknown', runtime: 'unknown', contextNotice: null };
+  assert.deepEqual(f.posted[0].state.view, initial);
+  f.provider.setHostMetadata({ providerKey: 'missing' });
+  assert.equal(f.provider.view, f.view);
+  assert.deepEqual(f.posted.at(-1).state.view, { ...initial, revision: 1, providerKey: 'missing' });
+  const count = f.posted.length;
+  for (const patch of [{ providerKey: 'missing' }, { providerKey: 'verified' }, { runtime: 'ready', key: 'PRIVATE' }, { contextNotice: 'PRIVATE' }]) f.provider.setHostMetadata(patch);
+  assert.equal(f.posted.length, count);
+  f.close(); f.provider.setHostMetadata({ providerKey: 'present', runtime: 'preparing' });
+  const next = []; const view = f.makeView(next); f.provider.resolveWebviewView(view);
+  const boot = JSON.parse(view.webview.html.match(/<script id="initial-state"[^>]*>([\s\S]*?)<\/script>/)[1]);
+  assert.deepEqual(boot.view, { ...initial, revision: 2, providerKey: 'present', runtime: 'preparing' });
+  assert.deepEqual(next[0].state.view, boot.view); assert.equal(s.snapshot().view, undefined);
+  f.provider.dispose();
+});
 test('native source reveal resolves only included host identity and exact current metadata revision', () => {
   const s = new ConversationSession();
   s.setContext({ restricted: false, activeSource: { id: 'active-file', uri: 'file:///main.kf', label: 'main.kf', included: true, category: 'active-file' }, sources: [{ id: 'optional', uri: 'file:///extra.kf', label: 'extra.kf', included: false, category: 'selected-file' }] });
@@ -48,11 +74,12 @@ function capability(session) {
   const action = session.registerAction(entryId, { type: 'retryTurn', label: 'Send', enabled: true, args: { turnId: 't1' } });
   return command(session, 'invokeAction', { entryId, actionId: action.id, args: { turnId: 't1' } });
 }
-function nativeFixture(session) {
+function nativeFixture(session, metadata = { providerKey: 'present' }) {
   const received = [], opened = [], posted = []; let receive, disposed; let messageDisposals = 0;
   const vscode = { Uri: { joinPath: (...parts) => ({ path: parts.map(p => p.path || p).join('/') }), parse: text => ({ toString: () => text }) }, env: { openExternal: async uri => { opened.push(uri.toString()); return true; } } };
   const makeView = output => ({ webview: { cspSource: 'vscode-webview-resource:', asWebviewUri: uri => `vscode-resource:${uri.path}`, onDidReceiveMessage: listener => { receive = listener; return { dispose() { messageDisposals++; } }; }, postMessage: message => output.push(message) }, onDidDispose: listener => { disposed = listener; return { dispose() {} }; } });
   const provider = new TutorViewProvider({ vscode, extensionUri: { path: '/extension' }, conversationSession: session, onMessage: message => received.push(message) });
+  provider.setHostMetadata(metadata);
   const view = makeView(posted); provider.resolveWebviewView(view);
   return { provider, view, vscode, received, opened, posted, makeView, takeReceiver: () => receive, receive: message => receive(message), close: () => disposed(), messageDisposals: () => messageDisposals };
 }
@@ -121,7 +148,7 @@ test('nonce-safe boot projection includes the complete live display without exec
   v.render({ ...s.snapshot(), revision: s.snapshot().revision - 1, draft: 'Older', entries: [] });
   assert.equal(v.byId('composer').value, 'Restored draft');
   assert.match(v.byId('timeline').textContent, /<script>attack/);
-  assert.deepEqual(JSON.parse(encoded), s.snapshot());
+  assert.deepEqual(JSON.parse(encoded), { ...s.snapshot(), view: f.provider.hostMetadata });
   assert.doesNotMatch(encoded, /[<>&]/);
   assert.equal(f.view.webview.html.match(/<script>/g)?.length || 0, 0);
 });

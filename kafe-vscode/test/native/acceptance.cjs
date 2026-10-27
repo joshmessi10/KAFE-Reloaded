@@ -108,6 +108,19 @@ async function typeComposer(text) {
   await waitFor(async () => (await control('state')).snapshot.draft === text, 'host draft acknowledgement');
   stage('composer-input-ack');
 }
+async function configureFixtureKey() {
+  const before = await control('state');
+  await click('#configure-provider');
+  await waitFor(() => evaluate('Boolean(document.querySelector(".quick-input-widget input[type=password]"))', true), 'real masked first-use key input');
+  await call('Input.insertText', { text: 'fixture-only-dummy-credential' }); await key('Enter', true);
+  await waitFor(() => evaluate('document.getElementById("starting-aid").hidden'), 'configured first-use aid hidden');
+  const after = await control('state');
+  assert.equal(after.counters.secrets, before.counters.secrets + 1);
+  assert.equal(after.counters.provider, before.counters.provider);
+  assert.deepEqual(after.snapshot, before.snapshot);
+  assert.equal(after.trusted, before.trusted);
+  await control('dismissNotifications');
+}
 async function activeControl() {
   return evaluate(`(()=>{const e=document.activeElement,r=e.getBoundingClientRect();let clip={left:0,top:0,right:innerWidth,bottom:innerHeight};for(let p=e.parentElement;p;p=p.parentElement){if(/auto|scroll|hidden/.test(getComputedStyle(p).overflow)){const b=p.getBoundingClientRect();clip={left:Math.max(clip.left,b.left),top:Math.max(clip.top,b.top),right:Math.min(clip.right,b.right),bottom:Math.min(clip.bottom,b.bottom)};}}return {id:e.id,region:e.closest('#timeline,#context-row,#composer-form')?.id,tag:e.tagName,type:e.getAttribute('data-action-type')||e.type,name:e.getAttribute('aria-label')||e.textContent||e.id,action:e.getAttribute('data-action-id'),source:e.getAttribute('data-source-id'),chip:e.getAttribute('data-chip-operation'),focusVisible:e.matches(':focus-visible'),outline:getComputedStyle(e).outlineWidth,visible:Math.min(r.right,clip.right)>Math.max(r.left,clip.left)&&Math.min(r.bottom,clip.bottom)>Math.max(r.top,clip.top),rect:r.toJSON()};})()`);
 }
@@ -278,6 +291,12 @@ async function main() {
     const info = await evaluate('({csp:document.querySelector("meta[http-equiv=Content-Security-Policy]").content,scripts:[...document.scripts].filter(e=>e.src).map(e=>({src:e.src,nonce:!!e.nonce})),forms:document.forms.length})');
     assert.equal(info.forms, 1); assert.ok(info.scripts.every(x => x.nonce && x.src.includes('vscode'))); assert.match(info.csp, /default-src 'none'/); await screenshot('empty-boot'); return info;
   });
+  await gate('first-use-configures-through-native-masked-entry-without-sending-draft', async () => {
+    assert.equal(await evaluate('document.getElementById("starting-aid").hidden'), false);
+    await typeComposer('First-use draft'); await screenshot('first-use');
+    await configureFixtureKey(); assert.equal(await evaluate('document.getElementById("composer").value'), 'First-use draft');
+    return { configured: true, automaticSubmit: false, draftPreserved: true };
+  });
   await gate('one-Send-Hello-followup-unavailable-knowledge', async () => {
     await oneSend('Hello', { text: 'Hello native answer' }); await settledTurn(); await oneSend('Follow up', { text: 'Follow-up native answer' }, true); await settledTurn();
     const state = await control('state'); assert.equal(state.counters.provider, 2); assert.equal(state.counters.resolves, 0); assert.equal(state.counters.installs, 0);
@@ -387,7 +406,7 @@ async function main() {
     await click('button[data-action-type=configureProviderKey]:not(:disabled)'); await waitFor(() => evaluate('Boolean(document.querySelector(".quick-input-widget input[type=password]"))', true), 'masked input');
     await call('Input.insertText', { text: 'fixture-only-dummy-credential' }); await screenshot('masked-input'); await key('Escape', true);
     await waitFor(() => evaluate('!document.querySelector(".quick-input-widget input[type=password]") || document.querySelector(".quick-input-widget").style.display === "none"', true), 'input closed'); const after = await control('state');
-    assert.equal(after.counters.secrets, 0); assert.equal(after.counters.provider, before.counters.provider); assert.equal(after.snapshot.draft, 'Live credential draft'); assert.equal(await evaluate('document.getElementById("composer").value'),'Live credential draft'); assert.deepEqual(after.snapshot.entries.map(e => ({id:e.id,kind:e.kind,text:e.text,status:e.status})), before.snapshot.entries.map(e => ({id:e.id,kind:e.kind,text:e.text,status:e.status}))); await screenshot('masked-cancelled'); return { draftPreserved: true, successEntryAdded: false };
+    assert.equal(after.counters.secrets, before.counters.secrets); assert.equal(after.counters.provider, before.counters.provider); assert.equal(after.snapshot.draft, 'Live credential draft'); assert.equal(await evaluate('document.getElementById("composer").value'),'Live credential draft'); assert.deepEqual(after.snapshot.entries.map(e => ({id:e.id,kind:e.kind,text:e.text,status:e.status})), before.snapshot.entries.map(e => ({id:e.id,kind:e.kind,text:e.text,status:e.status}))); await screenshot('masked-cancelled'); return { draftPreserved: true, successEntryAdded: false };
   });
   await gate('hostile-Markdown', async () => {
     await oneSend('Render fixture prose', { text: '<img src=x onerror="alert(1)"><script>alert(1)</script> [unsafe](command:workbench.action.closeWindow) [safe](https://example.com)' }); const settlement = await settledTurn();
@@ -564,8 +583,9 @@ async function main() {
   await shutdown(); capturePrefix = 'restarted-'; await launch();
   await gate('real-host-restart-empty-chat-preserved-legacy', async () => { const state = await control('state'); assert.equal(state.snapshot.entries.length, 0); assert.equal(state.snapshot.draft, ''); assert.equal(state.summary.goal, 'LEGACY_PRIVATE_GOAL'); assert.equal(state.counters.provider, 0); return screenshot('empty'); });
   await gate('independent-confirmed-legacy-clear', async () => {
+    await configureFixtureKey();
     await oneSend('Preserve live chat', { text: 'Live answer' }); await settledTurn(); await typeComposer('Keep live draft');
-    const beforeKey=await control('state'); await control('configure'); await waitFor(()=>evaluate('Boolean(document.querySelector(".quick-input-widget input[type=password]"))',true),'real masked dummy-key input'); await call('Input.insertText',{text:'fixture-only-dummy-credential'}); await key('Enter',true); await waitFor(async()=>(await control('state')).counters.secrets===1,'dummy key stored'); await control('dismissNotifications');
+    const beforeKey=await control('state'); await control('configure'); await waitFor(()=>evaluate('Boolean(document.querySelector(".quick-input-widget input[type=password]"))',true),'real masked dummy-key input'); await call('Input.insertText',{text:'fixture-only-dummy-credential'}); await key('Enter',true); await waitFor(async()=>(await control('state')).counters.secrets===beforeKey.counters.secrets+1,'dummy key stored'); await control('dismissNotifications');
     const before = await control('state'); assert.equal(before.dialogStyle,'custom'); assert.equal(before.keyState.count,1); assert.equal(before.counters.provider,beforeKey.counters.provider); assert.deepEqual(before.snapshot,beforeKey.snapshot); await control('clearLegacy');
     await waitFor(() => evaluate('[...document.querySelectorAll(".monaco-dialog-box .monaco-button")].some(e=>e.textContent.includes("Clear legacy progress"))', true), 'clear confirmation');
     await evaluate('[...document.querySelectorAll(".monaco-dialog-box .monaco-button")].find(e=>e.textContent.includes("Clear legacy progress")).focus()', true); await key('Enter', true); await waitFor(async () => {const state=await control('state');return state.clearOperation?.status==='settled' && !state.summary;}, 'production clear completed and legacy removed');
@@ -576,7 +596,7 @@ async function main() {
   capturePrefix = 'restricted-'; await launch();
   await gate('genuine-native-Restricted-Mode-text-chat', async () => {
     const before = await control('state'); assert.equal(before.trusted, false); assert.equal(before.snapshot.context.restricted, true); assert.equal(before.snapshot.contextActions.actions.length, 0);
-    assert.match(await evaluate('document.getElementById("context-row").textContent'), /restricted|excluded/i); await oneSend('Restricted Hello', { text: 'Restricted answer' }); await settledTurn();
+    assert.match(await evaluate('document.getElementById("context-row").textContent'), /restricted|excluded/i); await configureFixtureKey(); await oneSend('Restricted Hello', { text: 'Restricted answer' }); await settledTurn();
     const after = await control('state'), observation = after.counters.observations.at(-1); assert.equal(observation.main, false); assert.equal(observation.optionalOne, false); assert.ok(!observation.tools.includes('proposeCodeChange')); assert.equal(after.counters.launches.length, 0); await screenshot('chat'); return { actualTrust: after.trusted, observation };
   });
 }

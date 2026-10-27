@@ -5,6 +5,46 @@ const { ConversationSession } = require('../../src/tutor/ConversationSession');
 const { dispatchTutorMessage } = require('../../src/tutor/TutorViewProvider');
 const row = (v,id) => v.byId('timeline').querySelector('[data-entry-id="'+id+'"]');
 const command = (type,fields={}) => ({type,sessionId:'session',generation:1,...fields});
+
+test('first use preserves drafting and configuration never submits automatically', () => {
+  const v = loadView(), c = v.byId('composer');
+  const setup = { revision: 0, providerKey: 'missing', runtime: 'preparing', contextNotice: null };
+  v.render(snapshot({ view: setup }));
+  assert.equal(v.byId('starting-aid').hidden, false);
+  assert.match(v.byId('first-program-help').textContent, /folder[\s\S]*\.kf[\s\S]*Run[\s\S]*terminal/i);
+  c.value = 'Unsent question'; c.dispatch('input'); v.byId('configure-provider').dispatch('click');
+  assert.equal(v.sent.at(-1).type, 'configureProvider');
+  assert.equal(v.byId('send').disabled, true);
+  v.render(snapshot({ view: { ...setup, revision: 1, providerKey: 'present' } }));
+  assert.equal(v.byId('starting-aid').hidden, true); assert.equal(c.value, 'Unsent question');
+  assert.equal(v.byId('send').disabled, false, 'Run preparation does not block configured chat');
+  assert.equal(v.sent.some(m => m.type === 'submitMessage'), false);
+  c.dispatch('keydown', { key: 'Enter' }); assert.equal(v.sent.at(-1).type, 'submitMessage');
+});
+
+test('view revisions admit equal-session-revision updates and reject older authority or malformed metadata', () => {
+  const v = loadView(), setup = { revision: 1, providerKey: 'missing', runtime: 'unknown', contextNotice: null };
+  v.render(snapshot({ revision: 5, generation: 2, view: setup }));
+  v.render(snapshot({ revision: 5, generation: 2, view: { ...setup, revision: 2, providerKey: 'present' } }));
+  assert.equal(v.byId('starting-aid').hidden, true);
+  for (const fields of [{ revision: 4, generation: 2 }, { revision: 9, generation: 1 }]) v.render(snapshot({ ...fields, view: { ...setup, revision: 9 } }));
+  assert.equal(v.byId('starting-aid').hidden, true);
+  for (const patch of [{ revision: -1 }, { revision: Number.MAX_SAFE_INTEGER + 1 }, { providerKey: 'verified' }, { runtime: 'missing' }, { key: 'PRIVATE' }]) {
+    v.render(snapshot({ revision: 6, generation: 2, view: { ...setup, ...patch } }));
+    assert.equal(v.byId('starting-aid').hidden, true);
+  }
+  v.render(snapshot({ revision: 5, generation: 2, view: setup }));
+  assert.equal(v.byId('starting-aid').hidden, true);
+});
+
+test('an existing conversation retains explicit Send and native provider recovery when cached setup is unavailable', () => {
+  const v = loadView();
+  v.render(snapshot({ entries: [entry('a', 'assistant', 'Earlier answer')],
+    view: { revision: 1, providerKey: 'unavailable', runtime: 'failed', contextNotice: null } }));
+  const c = v.byId('composer'); c.value = 'Try again'; c.dispatch('input');
+  assert.equal(v.byId('starting-aid').hidden, true); assert.equal(v.byId('send').disabled, false);
+  c.dispatch('keydown', { key: 'Enter' }); assert.equal(v.sent.at(-1).type, 'submitMessage');
+});
 test('streaming preserves entry text identity selection focus and next draft', () => {
   const v = loadView(), entries = [entry('older', 'assistant', 'Earlier answer'), entry('stream', 'assistant', 'Stable prefix', { status: 'responding' })]; v.render(snapshot({ entries }));
   const older = row(v, 'older'), stream = row(v, 'stream'), text = stream.querySelector('.entry-text').querySelector('p').firstChild;

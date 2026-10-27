@@ -105,7 +105,7 @@ function loadView({ html = fs.readFileSync(path.join(tutorRoot, 'tutorView.html'
   return { root, document, window, selection, sent, persisted, byId: id => document.getElementById(id),
     render: state => window.dispatchEvent({ type: 'message', data: { type: 'render', state } }), dispose: () => window.dispatchEvent({ type: 'pagehide' }) };
 }
-function snapshot(fields = {}) { return { sessionId: 'session', generation: 1, revision: 1, draft: '', inputRevision: 0, context: { revision: 0, restricted: false, activeSource: null, sources: [] }, contextActions: { entryId: 'context', actions: [] }, entries: [], turn: null, ...fields }; }
+function snapshot(fields = {}) { return { sessionId: 'session', generation: 1, revision: 1, draft: '', inputRevision: 0, view: { revision: 0, providerKey: 'present', runtime: 'unknown', contextNotice: null }, context: { revision: 0, restricted: false, activeSource: null, sources: [] }, contextActions: { entryId: 'context', actions: [] }, entries: [], turn: null, ...fields }; }
 function entry(id, kind, text, fields = {}) { return { id, kind, status: 'completed', text, actions: [], data: null, ...fields }; }
 function action(id, type, args = {}, enabled = true) { return { id, type, label: type, args, enabled }; }
 module.exports = { loadView, snapshot, entry, action };

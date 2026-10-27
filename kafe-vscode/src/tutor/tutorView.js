@@ -15,8 +15,12 @@
   const counter = value => Number.isSafeInteger(value) && value >= 0;
   const validAction = a => record(a) && nonblank(a.id) && nonblank(a.type) && nonblank(a.label) && typeof a.enabled === 'boolean' && record(a.args);
   const validSource = (s, category) => record(s) && nonblank(s.id) && typeof s.label === 'string' && typeof s.uri === 'string' && /^file:\/\//.test(s.uri) && s.category === category && typeof s.included === 'boolean';
+  const validView = v => record(v) && Object.keys(v).length === 4 && counter(v.revision) &&
+    ['unknown', 'missing', 'present', 'unavailable'].includes(v.providerKey) &&
+    ['unknown', 'preparing', 'ready', 'unavailable', 'failed'].includes(v.runtime) && v.contextNotice === null;
   function validSnapshot(s) {
     return record(s) && nonblank(s.sessionId) && counter(s.generation) && counter(s.revision) && counter(s.inputRevision) && typeof s.draft === 'string' &&
+      (s.view === undefined || validView(s.view)) &&
       record(s.context) && counter(s.context.revision) && typeof s.context.restricted === 'boolean' && (s.context.activeSource === null || validSource(s.context.activeSource, 'active-file')) &&
       Array.isArray(s.context.sources) && s.context.sources.every(a => validSource(a, 'selected-file')) && new Set(s.context.sources.map(a=>a.id)).size === s.context.sources.length &&
       record(s.contextActions) && nonblank(s.contextActions.entryId) && Array.isArray(s.contextActions.actions) && s.contextActions.actions.every(validAction) &&
@@ -27,6 +31,7 @@
   function send(type, fields = {}) { if (!disposed && state) vscode.postMessage({ type, sessionId: state.sessionId, generation: state.generation, ...fields }); }
   const renderer = window.KafeTutorTimeline.createRenderer({ document, root: timeline, onAction: fields => send('invokeAction', fields), onOpenLink: url => send('openLink', { url }) });
   function busy() { return activeStates.includes(state?.turn?.status) || Boolean(submission && !submission.admitted && !submission.guardReleased); }
+  function needsConfiguration() { return state?.view && !state.entries.length && state.view.providerKey !== 'present'; }
   function growComposer() {
     const scroll = composer.scrollTop;
     composer.style.height = 'auto';
@@ -42,7 +47,10 @@
     const key = state?.turn && `${state.turn.id}:${state.turn.turnGeneration}`;
     if (!activeStates.includes(status) || stopping !== key) stopping = null;
     const dockState = stopping ? 'stopping' : activeStates.includes(status) ? 'responding' : status === 'cancelled' ? 'stopped' : status === 'failed' ? 'failed' : waiting ? 'waiting-learner' : 'idle';
-    const words = { responding: status === 'processing-tools' ? 'Checking context' : status === 'preparing' ? 'Preparing response' : 'Responding', stopping: 'Stopping response', stopped: 'Response stopped', failed: 'Response unavailable', 'waiting-learner': 'Waiting for your reasoning', idle: state?.entries.length ? 'Response complete' : '' };
+    const setupWords = { unknown: 'Checking Tutor configuration', missing: 'Tutor key needed', present: 'Tutor key configured', unavailable: 'Tutor configuration unavailable' };
+    const runtimeWords = { preparing: 'Run setup preparing', failed: 'Run setup failed', unavailable: 'Run tools unavailable' };
+    const setupStatus = state?.view ? [setupWords[state.view.providerKey], state.view.providerKey === 'present' && runtimeWords[state.view.runtime]].filter(Boolean).join(' · ') : '';
+    const words = { responding: status === 'processing-tools' ? 'Checking context' : status === 'preparing' ? 'Preparing response' : 'Responding', stopping: 'Stopping response', stopped: 'Response stopped', failed: 'Response unavailable', 'waiting-learner': 'Waiting for your reasoning', idle: state?.entries.length ? 'Response complete' : setupStatus };
     byId('response-dock').setAttribute('data-state', dockState);
     byId('response-dock').setAttribute('aria-busy', String(['responding', 'stopping'].includes(dockState)));
     if (byId('response-state').textContent !== words[dockState]) byId('response-state').textContent = words[dockState];
@@ -50,7 +58,7 @@
   function updateControls() {
     const active = activeStates.includes(state?.turn?.status);
     const focused = document.activeElement;
-    byId('send').hidden = active; byId('send').disabled = !state || busy() || !composer.value.trim();
+    byId('send').hidden = active; byId('send').disabled = !state || busy() || !composer.value.trim() || Boolean(needsConfiguration());
     renderDock();
     byId('stop').hidden = !active; byId('stop').disabled = !active || Boolean(stopping);
     if (active && focused === byId('send')) byId('stop').focus();
@@ -71,7 +79,7 @@
   function input() { localRevision++; growComposer(); postDraft(); }
   function submit(event) {
     event.preventDefault();
-    if (composing || !state || busy() || !composer.value.trim()) return;
+    if (composing || !state || busy() || !composer.value.trim() || needsConfiguration()) return;
     postDraft();
     submission = { id: crypto.randomUUID(), localRevision, text: composer.value, contextRevision: state.context.revision, admitted: false,
       hostRevision: state.revision, observedTurn: state.turn && { id: state.turn.id, generation: state.turn.turnGeneration } };
@@ -86,6 +94,7 @@
   });
   listen(byId('composer-form'), 'submit', submit);
   listen(byId('stop'), 'click', () => { if (activeStates.includes(state?.turn?.status) && !stopping) { stopping = `${state.turn.id}:${state.turn.turnGeneration}`; send('stopTurn', { turnId: state.turn.id, turnGeneration: state.turn.turnGeneration }); updateControls(); } });
+  listen(byId('configure-provider'), 'click', () => { if (state && !byId('starting-aid').hidden) send('configureProvider'); });
   listen(byId('add-context'), 'click', () => { if (state && !state.context.restricted) { byId('context-selector').open = !byId('context-selector').open; byId('add-context').setAttribute('aria-expanded', String(byId('context-selector').open)); } });
   listen(byId('context-selector'), 'toggle', () => byId('add-context').setAttribute('aria-expanded', String(byId('context-selector').open)));
   listen(window, 'resize', growComposer);
@@ -209,13 +218,19 @@
   }
   function render(next) {
     if (disposed || !validSnapshot(next)) return;
-    if (state && next.sessionId === state.sessionId && (next.generation < state.generation || (next.generation === state.generation && (next.revision < state.revision || (next.revision === state.revision && !(counter(next.learning?.revision) && next.learning.revision > (state.learning?.revision ?? -1)) && !(counter(next.learning?.displayRevision) && next.learning.displayRevision > (state.learning?.displayRevision ?? -1))))))) return;
+    if (state && next.sessionId === state.sessionId && (next.generation < state.generation || (next.generation === state.generation && (next.revision < state.revision || (next.revision === state.revision && !(counter(next.view?.revision) && next.view.revision > (state.view?.revision ?? -1)) && !(counter(next.learning?.revision) && next.learning.revision > (state.learning?.revision ?? -1)) && !(counter(next.learning?.displayRevision) && next.learning.displayRevision > (state.learning?.displayRevision ?? -1))))))) return;
     const fresh = !state || state.sessionId !== next.sessionId || state.generation !== next.generation;
     const nearBottom = timeline.scrollHeight - timeline.clientHeight - timeline.scrollTop <= 48, scrollTop = timeline.scrollTop;
     hydrate(next, fresh); state = next;
     if (beforeHydration) { beforeHydration = false; postDraft(); }
     const signature = JSON.stringify(next.entries), contentChanged = fresh || signature !== contentSignature; contentSignature = signature;
-    renderer.render(next); renderContext(); updateControls(); growComposer();
+    renderer.render(next);
+    const aid = byId('starting-aid');
+    aid.hidden = Boolean(next.entries.length || !next.view || next.view.providerKey === 'present');
+    const copy = next.view?.providerKey === 'unavailable' ? 'Tutor configuration is unavailable. Try Configure Tutor again. Your draft stays here.' : 'Configure your DeepSeek API key to chat. VS Code stores it securely. You can draft your question now.';
+    if (byId('provider-setup-copy').textContent !== copy) byId('provider-setup-copy').textContent = copy;
+    if (aid.hidden && aid.contains(document.activeElement)) composer.focus();
+    renderContext(); updateControls(); growComposer();
     if (contentChanged) {
       if (fresh || nearBottom) { timeline.scrollTop = timeline.scrollHeight; byId('new-content').hidden = true; }
       else { timeline.scrollTop = scrollTop; byId('new-content').hidden = false; }

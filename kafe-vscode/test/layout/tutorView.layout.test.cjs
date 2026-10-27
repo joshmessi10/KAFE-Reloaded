@@ -25,17 +25,19 @@ const scenarios = [
   { name: 'narrow short panel with larger text', width: 240, height: 320, fontSize: 20 },
 ];
 
-function viewHtml(fontSize) {
-  const state = snapshot({ entries: Array.from({ length: 12 }, (_, index) => entry(
+function viewHtml(fontSize, { state = snapshot({ entries: Array.from({ length: 12 }, (_, index) => entry(
     `message-${index}`, index % 2 ? 'assistant' : 'learner',
     `Conversation entry ${index + 1}\n\n${'A synthetic explanation of KAFE code and control flow. '.repeat(15)}`,
-  )) });
+  )) }), light = false } = {}) {
   // Match VS Code's default body padding before loading the shipped stylesheet.
   const hostStyle = `body { margin: 0; padding: 0 20px; }
     :root { --vscode-font-size: ${fontSize}px; --vscode-font-family: Arial;
-      --vscode-foreground: #ddd; --vscode-sideBar-background: #181818;
-      --vscode-input-background: #242424; --vscode-input-foreground: #ddd;
-      --vscode-scrollbarSlider-background: #666; --vscode-panel-border: #555; }`;
+      --vscode-foreground: ${light ? '#242424' : '#ddd'}; --vscode-sideBar-background: ${light ? '#f6f6f6' : '#181818'};
+      --vscode-input-background: ${light ? '#fff' : '#242424'}; --vscode-input-foreground: ${light ? '#242424' : '#ddd'};
+      --vscode-input-placeholderForeground: ${light ? '#595959' : '#aaa'};
+      --vscode-button-background: ${light ? '#005fb8' : '#0078d4'}; --vscode-button-foreground: #fff;
+      --vscode-button-hoverBackground: ${light ? '#00519c' : '#026ec1'}; --vscode-focusBorder: ${light ? '#005fb8' : '#0078d4'};
+      --vscode-scrollbarSlider-background: ${light ? '#999' : '#666'}; --vscode-panel-border: ${light ? '#b8b8b8' : '#555'}; }`;
   return fs.readFileSync(path.join(tutorRoot, 'tutorView.html'), 'utf8')
     .replace(/<meta http-equiv="Content-Security-Policy"[^>]*>/, '')
     .replace(/<link rel="stylesheet"[^>]*>/, () => `<style>${hostStyle}\n${fs.readFileSync(path.join(tutorRoot, 'tutorView.css'), 'utf8')}</style>`)
@@ -112,4 +114,64 @@ test('long conversations keep a single transcript scrollbar and a stationary com
       });
     }
   } finally { await browser.close(); }
+});
+
+test('first-use browser fixture keeps setup optional, bounded and independent from runtime', async t => {
+  const browser = await chromium.launch({ headless: true,
+    ...(process.env.KAFE_LAYOUT_BROWSER ? { executablePath: process.env.KAFE_LAYOUT_BROWSER } : {}) });
+  const evidence = { surface: 'Browser fixture of shipped HTML/CSS/JS; not a native VS Code host', scenarios: [] };
+  const output = process.env.KAFE_LAYOUT_EVIDENCE_DIR;
+  if (output) fs.mkdirSync(output, { recursive: true });
+  try {
+    for (const scenario of [
+      { name: 'dark-first-use', width: 320, height: 650, fontSize: 13 },
+      { name: 'light-first-use', width: 320, height: 650, fontSize: 13, light: true },
+      { name: 'restricted-first-use', width: 280, height: 500, fontSize: 13, restricted: true },
+      { name: 'short-enlarged-first-use', width: 240, height: 320, fontSize: 20 },
+    ]) await t.test(scenario.name, async () => {
+      const page = await browser.newPage({ viewport: { width: scenario.width, height: scenario.height } });
+      try {
+        const errors = [], state = snapshot({ view: { revision: 1, providerKey: 'missing', runtime: 'preparing', contextNotice: null },
+          context: { revision: 0, restricted: Boolean(scenario.restricted), activeSource: null, sources: [] } });
+        page.on('pageerror', error => errors.push(error.message));
+        await page.setContent(viewHtml(scenario.fontSize, { state, light: scenario.light }));
+        await page.evaluate(() => { window.fixtureMessages = []; window.acquireVsCodeApi = () => ({ postMessage: message => window.fixtureMessages.push(message) }); });
+        await page.addScriptTag({ path: path.join(tutorRoot, 'tutorTimeline.js') });
+        await page.addScriptTag({ path: path.join(tutorRoot, 'tutorView.js') });
+        const aid = page.locator('#starting-aid'), configure = page.getByRole('button', { name: 'Configure Tutor', exact: true });
+        assert.equal(await aid.isVisible(), true);
+        const metrics = await page.evaluate(() => {
+          const form = document.getElementById('composer-form').getBoundingClientRect();
+          const aid = document.getElementById('starting-aid'), heading = document.getElementById('starting-title');
+          return { width: innerWidth, height: innerHeight, scrollWidth: document.documentElement.scrollWidth,
+            scrollHeight: document.documentElement.scrollHeight, composerTop: form.top, composerBottom: form.bottom,
+            aidClientHeight: aid.clientHeight, aidScrollHeight: aid.scrollHeight,
+            headingFontSize: getComputedStyle(heading).fontSize, headingMarginBottom: getComputedStyle(heading).marginBottom };
+        });
+        assert.ok(metrics.scrollWidth <= metrics.width + 1); assert.ok(metrics.scrollHeight <= metrics.height + 1);
+        assert.ok(metrics.composerTop >= 0 && metrics.composerBottom <= metrics.height + 1);
+        assert.ok(metrics.aidClientHeight >= scenario.fontSize * 4, 'First-use guidance must retain useful scrolling space');
+        if (output) await page.screenshot({ path: path.join(output, `${scenario.name}.png`) });
+        await page.getByRole('textbox', { name: 'Message to KAFE Tutor' }).fill('My unsent question');
+        assert.equal(await page.locator('#send').isDisabled(), true);
+        await configure.click();
+        const command = (await page.evaluate(() => window.fixtureMessages)).at(-1);
+        assert.deepEqual(command, { type: 'configureProvider', sessionId: state.sessionId, generation: state.generation });
+        await page.locator('#first-program-help > summary').click();
+        assert.match(await page.locator('#first-program-help').innerText(), /folder[\s\S]*\.kf[\s\S]*Run[\s\S]*terminal/i);
+        if (scenario.restricted) { assert.equal(await page.locator('#context-run').isVisible(), false); assert.equal(await page.locator('#add-context').isVisible(), false); }
+        await page.evaluate(next => window.dispatchEvent(new MessageEvent('message', { data: { type: 'render', state: next } })),
+          { ...state, view: { ...state.view, revision: 2, providerKey: 'present' } });
+        assert.equal(await aid.isVisible(), false); assert.equal(await page.locator('#composer').inputValue(), 'My unsent question');
+        assert.equal(await page.locator('#send').isEnabled(), true);
+        assert.match(await page.locator('#response-state').innerText(), /key configured.*Run setup preparing/);
+        assert.equal((await page.evaluate(() => window.fixtureMessages)).some(m => m.type === 'submitMessage'), false);
+        assert.deepEqual(errors, []);
+        evidence.scenarios.push({ ...scenario, metrics, exactConfigureMessage: command, runtimeDoesNotBlockConfiguredSend: true, errors });
+      } finally { await page.close(); }
+    });
+  } finally {
+    await browser.close();
+    if (output) fs.writeFileSync(path.join(output, 'first-use-browser-fixture.json'), JSON.stringify(evidence, null, 2));
+  }
 });

@@ -8,6 +8,14 @@ body { margin: 0; color: var(--vscode-foreground); background: var(--vscode-side
 #timeline { position: relative; flex: 1 1 auto; min-height: 0; overflow: auto; overflow-anchor: none; scrollbar-gutter: stable; padding: 16px calc(var(--lane-gutter) - var(--scrollbar-width)) 8px var(--lane-gutter); scrollbar-color: var(--vscode-scrollbarSlider-background) transparent; }
 #timeline::-webkit-scrollbar { width: var(--scrollbar-width); }
 .entry { width: 100%; max-width: var(--lane-width); margin: 0 auto 20px; min-width: 0; }
+.starting-aid { flex: 1 1 auto; align-self: center; width: calc(100% - 2 * var(--lane-gutter)); max-width: var(--lane-width); margin: 28px 0 12px; min-width: 0; min-height: 0; overflow: auto; scrollbar-color: var(--vscode-scrollbarSlider-background) transparent; }
+.starting-aid h2 { font-size: 1.2em; line-height: 1.45; margin-bottom: 10px; }
+#provider-setup-copy { margin-top: 16px; }
+#configure-provider { margin-block: 8px; color: var(--vscode-button-foreground); background: var(--vscode-button-background); }
+#configure-provider:hover:not(:disabled) { background: var(--vscode-button-hoverBackground); }
+#first-program-help { margin-top: 10px; }
+#first-program-help summary { text-decoration: underline; text-underline-offset: 2px; }
+#first-program-help ol { margin-top: 12px; }
 .entry[data-kind="learner"] { background: var(--vscode-editorWidget-background, var(--vscode-input-background)); border-radius: 6px; padding: 10px 12px; }
 .entry[data-kind="learner"] > h2, .entry[data-kind="assistant"] > h2 { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
 h2 { margin: 0 0 6px; font-size: 1em; line-height: 1.4; font-weight: 600; }
@@ -81,6 +89,7 @@ pre code { padding: 0; }
 ::selection { color: var(--vscode-editor-selectionForeground, var(--vscode-foreground)); background: var(--vscode-editor-selectionBackground); }
 @media (max-width: 320px) { #tutor { --lane-gutter: 8px; } .composer-form { padding: 8px; } .composer-controls { gap: 4px; } }
 @media (max-height: 500px) { .composer-form { margin-bottom: 6px; padding-block: 6px; max-height: 68%; } textarea { min-height: 2.5em; } #included-context { max-height: 14vh; } #context-run { margin-top: 2px; } }
+@media (max-height: 500px) { .starting-aid { margin-block: 12px 4px; } #tutor:has(.starting-aid:not([hidden])) .composer-form { max-height: 40%; } }
 @media (max-width: 200px) { .submit-controls { width: 100%; } .context-origin { display: none; } }
 @media (prefers-reduced-motion: reduce) { #timeline { scroll-behavior: auto; } }
 @media (forced-colors: active) { .composer-form, pre, .entry[data-kind="learner"] { border: 1px solid CanvasText; } button, textarea { border: 1px solid ButtonText; } button:disabled { opacity: 1; color: GrayText; } :focus-visible { outline-color: Highlight; } }

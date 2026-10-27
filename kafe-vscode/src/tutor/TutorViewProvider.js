@@ -19,6 +19,7 @@ function isTutorMessage(value, session) {
     return Object.keys(value).length === keys.length && keys.every(key => Object.hasOwn(value, key));
   };
   switch (value.type) {
+    case 'configureProvider': return exact([]);
     case 'setDraft': return exact(['text']) && typeof value.text === 'string';
     case 'submitMessage': return exact(['submissionId', 'text', 'contextRevision']) &&
       typeof value.submissionId === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value.submissionId) &&
@@ -62,6 +63,7 @@ class TutorViewProvider {
     this.diagnostic = diagnostic;
     this.view = undefined;
     this.releaseView = undefined;
+    this.hostMetadata = { revision: 0, providerKey: 'unknown', runtime: 'unknown', contextNotice: null };
   }
 
   resolveWebviewView(view) {
@@ -78,7 +80,7 @@ class TutorViewProvider {
     const template = readFileSync(path.join(__dirname, 'tutorView.html'), 'utf8');
     // In-memory boot projection avoids depending on delivery of the first
     // postMessage before the webview has installed its message listener.
-    const initialState = JSON.stringify(this.conversationSession?.snapshot() || null)
+    const initialState = JSON.stringify(this.project(this.conversationSession?.snapshot() || null))
       .replaceAll('<', '\\u003c').replaceAll('>', '\\u003e').replaceAll('&', '\\u0026')
       .replaceAll('\u2028', '\\u2028').replaceAll('\u2029', '\\u2029');
     webview.html = template
@@ -120,12 +122,23 @@ class TutorViewProvider {
     if (this.view) this.view.description = title;
   }
 
+  setHostMetadata(patch) {
+    if (!isRecord(patch) || Object.keys(patch).some(key => !['providerKey', 'runtime'].includes(key)) ||
+      (Object.hasOwn(patch, 'providerKey') && !['unknown', 'missing', 'present', 'unavailable'].includes(patch.providerKey)) ||
+      (Object.hasOwn(patch, 'runtime') && !['unknown', 'preparing', 'ready', 'unavailable', 'failed'].includes(patch.runtime))) return;
+    if (Object.keys(patch).every(key => this.hostMetadata[key] === patch[key]) || this.hostMetadata.revision === Number.MAX_SAFE_INTEGER) return;
+    this.hostMetadata = { ...this.hostMetadata, ...patch, revision: this.hostMetadata.revision + 1 };
+    this.render(this.conversationSession?.snapshot());
+  }
+
+  project(state) { return state ? { ...state, view: { ...this.hostMetadata } } : null; }
+
   render(state) {
     if (!this.view) return;
     const trace = delivered => {
       try { this.diagnostic(sanitize({ event: 'view-posted', revision: state?.revision, status: state?.turn?.status, delivered })); } catch {}
     };
-    const result = this.view.webview.postMessage({ type: 'render', state });
+    const result = this.view.webview.postMessage({ type: 'render', state: this.project(state) });
     // VS Code's posting result is not a browser-render acknowledgement.
     void Promise.resolve(result).then(delivered => trace(delivered === true), () => trace(false));
     return result;

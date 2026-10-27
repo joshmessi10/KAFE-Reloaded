@@ -27,20 +27,39 @@ const ANTLR_COMMAND = 'java -jar antlr-4.13.2-complete.jar -no-listener -visitor
 const REQUIRED_PARSER = ['Kafe_GrammarLexer.py', 'Kafe_GrammarParser.py', 'Kafe_GrammarVisitor.py'];
 
 function createProviderKeyHandlers({ vscode, secrets }) {
+  let generation = 0, disposed = false, pending, writes = Promise.resolve();
+  const mutate = action => {
+    const result = writes.then(action);
+    writes = result.catch(() => {});
+    return result;
+  };
   return {
-    async configure() {
-      const key = await vscode.window.showInputBox({ title: 'KAFE: Configure Provider Key',
-        prompt: 'Enter your DeepSeek API key', password: true, ignoreFocusOut: true });
-      if (!key?.trim()) return { status: 'cancelled' };
-      try { await secrets.store(SECRET_KEY, key.trim()); }
-      catch { return { status: 'failed', code: 'credential_store_failed' }; }
-      await vscode.window.showInformationMessage('DeepSeek API key saved in VS Code SecretStorage.');
-      return { status: 'completed' };
+    configure() {
+      if (disposed) return Promise.resolve({ status: 'cancelled' });
+      if (pending) return pending;
+      const owner = ++generation, current = () => !disposed && generation === owner;
+      pending = (async () => {
+        const key = await vscode.window.showInputBox({ title: 'KAFE: Configure Provider Key',
+          prompt: 'Enter your DeepSeek API key', password: true, ignoreFocusOut: true });
+        if (!current() || !key?.trim()) return { status: 'cancelled' };
+        try { await mutate(async () => { if (current()) await secrets.store(SECRET_KEY, key.trim()); }); }
+        catch { return current() ? { status: 'failed', code: 'credential_store_failed' } : { status: 'cancelled' }; }
+        if (!current()) return { status: 'cancelled' };
+        void Promise.resolve(vscode.window.showInformationMessage('DeepSeek API key saved in VS Code SecretStorage.')).catch(() => {});
+        return { status: 'completed' };
+      })().finally(() => { pending = undefined; });
+      return pending;
     },
     async clear() {
-      await secrets.delete(SECRET_KEY);
-      await vscode.window.showInformationMessage('DeepSeek API key removed from VS Code SecretStorage.');
+      if (disposed) return { status: 'cancelled' };
+      const owner = ++generation;
+      try { await mutate(async () => { if (!disposed) await secrets.delete(SECRET_KEY); }); }
+      catch { return { status: 'failed', code: 'credential_store_failed' }; }
+      if (disposed || generation !== owner) return { status: 'cancelled' };
+      void Promise.resolve(vscode.window.showInformationMessage('DeepSeek API key removed from VS Code SecretStorage.')).catch(() => {});
+      return { status: 'completed' };
     },
+    dispose() { disposed = true; generation++; },
   };
 }
 
@@ -208,7 +227,60 @@ function createTutorHost({ vscode, extensionUri, secrets, workspaceState, runtim
   const runFile = injectedRunFile || createRunFileHandler({ vscode, runtimeManager,
     getRunOwner: ({ sourceUri }) => actions.captureRunOwner(sourceUri),
     onRunState: event => actions.recordRunState(event), onRunResult: result => actions.recordRunResult(result) });
-  const keyHandlers = createProviderKeyHandlers({ vscode, secrets });
+  const nativeKeyHandlers = createProviderKeyHandlers({ vscode, secrets });
+  let availabilityRevision = 0, keyMutationRevision = 0, keyConfiguration;
+  // Presentation facts are independent of request/Run authorization and never refreshed by drafts or tokens.
+  const refreshTutorAvailability = async () => {
+    if (hostDisposed) return;
+    const owner = ++availabilityRevision;
+    const trusted = vscode.workspace.isTrusted === true;
+    const publish = patch => { if (!hostDisposed && owner === availabilityRevision) tutorView.setHostMetadata(patch); };
+    await Promise.all([
+      (async () => {
+        let providerKey = 'unavailable';
+        try { if (typeof secrets.get === 'function') providerKey = await secrets.get(SECRET_KEY) ? 'present' : 'missing'; } catch {}
+        publish({ providerKey });
+      })(),
+      (async () => {
+        let runtime = 'unavailable';
+        if (trusted) try {
+          const ready = await runtimeManager.getReadyRuntime?.();
+          if (['preparing', 'ready', 'failed'].includes(ready?.status)) runtime = ready.status;
+        } catch {}
+        publish({ runtime: vscode.workspace.isTrusted === true && trusted ? runtime : 'unavailable' });
+      })(),
+    ]);
+  };
+  const keyHandlers = {
+    configure() {
+      if (hostDisposed) return Promise.resolve({ status: 'cancelled' });
+      if (keyConfiguration) return keyConfiguration;
+      ++availabilityRevision;
+      const mutation = ++keyMutationRevision;
+      keyConfiguration = (async () => {
+        let result;
+        try { result = await (injectedConfigure || nativeKeyHandlers.configure)(); }
+        catch { result = { status: 'failed', code: 'credential_store_failed' }; }
+        if (!hostDisposed) {
+          await refreshTutorAvailability();
+          if (!hostDisposed && mutation === keyMutationRevision && result?.status === 'failed') tutorView.setHostMetadata({ providerKey: 'unavailable' });
+        }
+        return result || { status: 'unavailable' };
+      })().finally(() => { keyConfiguration = undefined; });
+      return keyConfiguration;
+    },
+    async clear() {
+      if (hostDisposed) return { status: 'cancelled' };
+      ++availabilityRevision;
+      const mutation = ++keyMutationRevision;
+      const result = await nativeKeyHandlers.clear();
+      if (!hostDisposed) {
+        await refreshTutorAvailability();
+        if (!hostDisposed && mutation === keyMutationRevision && result.status === 'failed') tutorView.setHostMetadata({ providerKey: 'unavailable' });
+      }
+      return result;
+    },
+  };
   const getReadiness = injectedReadiness || (async () => {
     const keyPresent = Boolean(await secrets.get?.(SECRET_KEY));
     let knowledgeReady = false;
@@ -228,13 +300,14 @@ function createTutorHost({ vscode, extensionUri, secrets, workspaceState, runtim
       ...(document?.languageId === 'kafe' && authorize(document.uri) ? { targetUri: document.uri.toString(), targetLabel: documentReader.displayLabel(document.uri) } : {}) };
   });
   actions = new TutorHostActions({ session: coordinator.session, controller: coordinator.controller, coordinator,
-    proposalProvider, runtimeManager, configureProvider: injectedConfigure || keyHandlers.configure,
+    proposalProvider, runtimeManager, configureProvider: keyHandlers.configure,
     runFile, getReadiness, authorizeRunTarget: authorize });
   const toggleTeachingPause = () => coordinator.handleLearnerMessage({ type: 'toggleTeachingPause' });
   const onMessage = async message => {
     if (!isTutorMessage(message, coordinator.session)) return { status: 'stale' };
     if (conversations.transitioning && message.type !== 'setDraft') return { status: 'busy' };
     try {
+      if (message.type === 'configureProvider') return await keyHandlers.configure();
       if (message.type === 'invokeAction') return await actions.dispatch(message);
       if (message.type === 'setDraft') return await coordinator.handleLearnerMessage({ type: 'setDraft', text: message.text });
       if (message.type === 'submitMessage') return await actions.submitMessage(message);
@@ -321,10 +394,11 @@ function createTutorHost({ vscode, extensionUri, secrets, workspaceState, runtim
     coordinator.controller.invalidate('context-changed'); refresh();
   };
   const listen = (owner, name, callback) => { if (owner[name]) subscriptions.push(owner[name](callback)); };
+  listen(secrets, 'onDidChange', event => { if (event.key === SECRET_KEY) void refreshTutorAvailability(); });
   listen(vscode.window, 'onDidChangeActiveTextEditor', authorizationEvent);
   listen(vscode.window, 'onDidChangeVisibleTextEditors', refresh);
   listen(vscode.workspace, 'onDidChangeWorkspaceFolders', authorizationEvent);
-  listen(vscode.workspace, 'onDidGrantWorkspaceTrust', authorizationEvent);
+  listen(vscode.workspace, 'onDidGrantWorkspaceTrust', () => { authorizationEvent(); void refreshTutorAvailability(); });
   listen(vscode.workspace, 'onDidChangeTextDocument', event => sourceEvent(event.document?.uri));
   listen(vscode.workspace, 'onDidOpenTextDocument', document => { unavailableSources.delete(document.uri.toString()); sourceEvent(document.uri); });
   listen(vscode.workspace, 'onDidCloseTextDocument', document => sourceEvent(document.uri));
@@ -340,10 +414,10 @@ function createTutorHost({ vscode, extensionUri, secrets, workspaceState, runtim
     onChanged: ({ title }) => tutorView.setConversationTitle(title) });
   conversationManagers.add(conversations);
   const conversationCommands = createConversationCommands({ vscode, manager: conversations, refreshContext: () => actions.refreshContext() });
-  const readiness = actions.refreshContext();
+  const readiness = Promise.all([actions.refreshContext(), refreshTutorAvailability()]).then(() => undefined);
   return { tutorView, coordinator, proposalProvider, progressStore, actions, runFile, keyHandlers, readiness, toggleTeachingPause,
-    resolveKnowledge, knowledgeRetriever, conversations, conversationCommands,
-    dispose() { hostDisposed = true;
+    resolveKnowledge, knowledgeRetriever, conversations, conversationCommands, refreshTutorAvailability,
+    dispose() { hostDisposed = true; ++availabilityRevision; nativeKeyHandlers.dispose();
       void conversations.dispose().finally(() => conversationManagers.delete(conversations));
       actions.dispose(); coordinator.dispose(); tutorView.dispose(); diagnostics.dispose(); for (const subscription of subscriptions) subscription.dispose(); } };
 }

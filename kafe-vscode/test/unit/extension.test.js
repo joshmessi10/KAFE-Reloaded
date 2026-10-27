@@ -26,7 +26,7 @@ for (const change of ['unchanged', 'during-run', 'read-failure']) test(`Run capt
 });
 
 const deferred = () => { let resolve; const promise = new Promise(r => { resolve = r; }); return { promise, resolve }; };
-function conversationHostFixture({ workspaceState } = {}) {
+function conversationHostFixture({ workspaceState, secrets = {}, runtimeManager = {} } = {}) {
   const listeners = {}, calls = [], reads = [], watcher = {}, disposals = [];
   const uri = name => ({ scheme: 'file', fsPath: `C:/workspace/${name}`, toString: () => `file:///C:/workspace/${name}` });
   const document = (name, text) => ({ uri: uri(name), languageId: 'kafe', version: 1, text, getText() { reads.push(name); return this.text; } });
@@ -42,12 +42,141 @@ function conversationHostFixture({ workspaceState } = {}) {
       onDidChangeWorkspaceFolders: on('workspace'), onDidGrantWorkspaceTrust: on('trust'),
       createFileSystemWatcher() { for (const name of ['Change', 'Create', 'Delete']) watcher[`onDid${name}`] = fn => { watcher[name.toLowerCase()] = fn; return { dispose() {} }; }; watcher.dispose = () => disposals.push('watcher'); return watcher; } } };
   let availabilityHook;
-  const host = createTutorHost({ vscode, extensionUri: {}, secrets: {}, workspaceState, runtimeManager: {
-    getReadyKnowledgePack: async () => { if (availabilityHook) await availabilityHook(); return { status: 'unavailable', code: 'knowledge_missing' }; } },
+  const host = createTutorHost({ vscode, extensionUri: {}, secrets, workspaceState, runtimeManager: {
+    getReadyKnowledgePack: async () => { if (availabilityHook) await availabilityHook(); return { status: 'unavailable', code: 'knowledge_missing' }; }, ...runtimeManager },
     provider: { async *stream({ request }) { calls.push(request); yield { type: 'complete', text: 'Answer', toolCalls: [], finishReason: 'stop' }; } } });
   return { host, vscode, listeners, watcher, active, optional, excluded, reads, calls, disposals,
     setAvailabilityHook: fn => { availabilityHook = fn; } };
 }
+
+test('host initializes bounded availability once and refreshContext/drafts/tokens never read readiness', async () => {
+  let keyReads = 0, runtimeReads = 0;
+  const f = conversationHostFixture({ secrets: { get: async () => { keyReads++; return 'PRIVATE'; } },
+    runtimeManager: { getReadyRuntime: async () => { runtimeReads++; return { status: 'ready', raw: 'PRIVATE' }; } } });
+  try {
+    await f.host.readiness;
+    assert.deepEqual(f.host.tutorView.hostMetadata, { revision: 2, providerKey: 'present', runtime: 'ready', contextNotice: null });
+    assert.equal(keyReads, 1); assert.equal(runtimeReads, 1);
+    for (let i = 0; i < 4; i++) { f.host.coordinator.session.setDraft(`Draft ${i}`); await f.host.actions.refreshContext(); }
+    f.host.coordinator.controller.provider = { async *stream() { for (const text of ['One', ' two', ' three']) yield { type: 'text', text }; yield { type: 'complete', text: 'One two three', toolCalls: [], finishReason: 'stop' }; } };
+    await submit(f, 'Concept');
+    assert.equal(keyReads, 1); assert.equal(runtimeReads, 1);
+    assert.doesNotMatch(JSON.stringify(f.host.tutorView.hostMetadata), /PRIVATE/);
+  } finally { f.host.dispose(); }
+});
+
+test('availability refresh fences stale key reads and ignores completion after disposal', async () => {
+  const old = deferred(), latest = deferred(); let reads = 0;
+  const f = conversationHostFixture({ secrets: { get: () => ++reads === 1 ? old.promise : latest.promise } });
+  try {
+    assert.equal(f.host.tutorView.hostMetadata.providerKey, 'unknown');
+    const refresh = f.host.refreshTutorAvailability(); latest.resolve('PRIVATE'); await refresh;
+    old.resolve(undefined); await f.host.readiness;
+    assert.equal(f.host.tutorView.hostMetadata.providerKey, 'present');
+    const later = deferred(); f.host.dispose(); const before = structuredClone(f.host.tutorView.hostMetadata);
+    await f.host.refreshTutorAvailability(); later.resolve();
+    assert.deepEqual(f.host.tutorView.hostMetadata, before); assert.equal(reads, 2);
+  } finally { old.resolve(); latest.resolve(); f.host.dispose(); }
+});
+
+test('native configuration is single-flight, keeps draft and refreshes failed/missing/present metadata safely', async () => {
+  const prompt = deferred(); let value, prompts = 0, stores = 0, failed = true;
+  const f = conversationHostFixture({ secrets: { get: async () => value, store: async (key, text) => { stores++; if (failed) throw Error('PRIVATE'); value = text; }, delete: async () => { value = undefined; } } });
+  f.vscode.window.showInputBox = async options => { prompts++; assert.equal(options.password, true); return prompt.promise; };
+  f.vscode.window.showInformationMessage = async () => {};
+  try {
+    await f.host.readiness; assert.equal(f.host.tutorView.hostMetadata.providerKey, 'missing');
+    f.host.coordinator.session.setDraft('Unsent'); const s = f.host.coordinator.snapshot();
+    const message = { type: 'configureProvider', sessionId: s.sessionId, generation: s.generation };
+    const one = f.host.tutorView.onMessage(message), two = f.host.keyHandlers.configure();
+    prompt.resolve('PRIVATE'); assert.equal((await one).status, 'failed'); await two;
+    assert.equal(prompts, 1); assert.equal(stores, 1); assert.equal(f.host.tutorView.hostMetadata.providerKey, 'unavailable');
+    failed = false; await f.host.keyHandlers.configure(); assert.equal(f.host.tutorView.hostMetadata.providerKey, 'present');
+    assert.equal(f.host.coordinator.snapshot().draft, 'Unsent'); assert.equal(f.calls.length, 0);
+    await f.host.keyHandlers.clear(); assert.equal(f.host.tutorView.hostMetadata.providerKey, 'missing');
+    assert.doesNotMatch(JSON.stringify(f.host.tutorView.hostMetadata), /PRIVATE/);
+  } finally { f.host.dispose(); }
+});
+
+test('clear/disposal supersedes an open native key prompt and cannot store its late answer', async () => {
+  for (const action of ['clear', 'dispose']) {
+    const prompt = deferred(); let stores = 0, deletes = 0;
+    const f = conversationHostFixture({ secrets: { get: async () => undefined, store: async () => { stores++; }, delete: async () => { deletes++; } } });
+    f.vscode.window.showInputBox = () => prompt.promise; f.vscode.window.showInformationMessage = async () => {};
+    await f.host.readiness;
+    const configuring = f.host.keyHandlers.configure();
+    if (action === 'clear') await f.host.keyHandlers.clear(); else f.host.dispose();
+    prompt.resolve('PRIVATE'); assert.equal((await configuring).status, 'cancelled');
+    assert.equal(stores, 0); assert.equal(deletes, action === 'clear' ? 1 : 0); f.host.dispose();
+  }
+});
+
+test('configured-key metadata is published while independent runtime readiness is still pending', async () => {
+  const runtime = deferred();
+  const f = conversationHostFixture({ secrets: { get: async () => 'PRIVATE' }, runtimeManager: { getReadyRuntime: () => runtime.promise } });
+  try {
+    await new Promise(resolve => setImmediate(resolve));
+    assert.equal(f.host.tutorView.hostMetadata.providerKey, 'present');
+    assert.equal(f.host.tutorView.hostMetadata.runtime, 'unknown');
+    runtime.resolve({ status: 'unavailable' }); await f.host.readiness;
+  } finally { runtime.resolve(); f.host.dispose(); }
+});
+
+test('SecretStorage refreshes only its relevant key and stale completions after disposal are inert', async () => {
+  let listener, reads = 0, value, removed = 0;
+  const f = conversationHostFixture({ secrets: { get: async () => { reads++; return value; },
+    onDidChange: callback => { listener = callback; return { dispose() { removed++; } }; } } });
+  try {
+    await f.host.readiness; assert.equal(reads, 1);
+    listener({ key: 'other' }); assert.equal(reads, 1);
+    value = 'PRIVATE'; listener({ key: 'kafe.deepseekApiKey' });
+    await new Promise(resolve => setImmediate(resolve)); assert.equal(reads, 2);
+    assert.equal(f.host.tutorView.hostMetadata.providerKey, 'present');
+    const pending = deferred(); value = pending.promise; listener({ key: 'kafe.deepseekApiKey' });
+    const before = structuredClone(f.host.tutorView.hostMetadata); f.host.dispose(); pending.resolve(undefined);
+    await new Promise(resolve => setImmediate(resolve)); assert.deepEqual(f.host.tutorView.hostMetadata, before); assert.equal(removed, 1);
+  } finally { if (!removed) f.host.dispose(); }
+});
+
+test('credential read failure and cancelled retry expose bounded status while retaining the draft', async () => {
+  let failed = true;
+  const f = conversationHostFixture({ secrets: { get: async () => { if (failed) throw Error('PRIVATE'); } } });
+  f.vscode.window.showInputBox = async () => undefined;
+  try {
+    await f.host.readiness; assert.equal(f.host.tutorView.hostMetadata.providerKey, 'unavailable');
+    f.host.coordinator.session.setDraft('Keep me'); failed = false;
+    assert.equal((await f.host.keyHandlers.configure()).status, 'cancelled');
+    assert.equal(f.host.tutorView.hostMetadata.providerKey, 'missing'); assert.equal(f.host.coordinator.snapshot().draft, 'Keep me');
+    assert.equal(f.calls.length, 0);
+  } finally { f.host.dispose(); }
+});
+
+test('clear waits for an already-started store and supersedes its success notification', async () => {
+  const storing = deferred(), finish = deferred(); const events = []; let value;
+  const f = conversationHostFixture({ secrets: { get: async () => value,
+    store: async (key, text) => { events.push('store'); storing.resolve(); await finish.promise; value = text; },
+    delete: async () => { events.push('delete'); value = undefined; } } });
+  f.vscode.window.showInputBox = async () => 'PRIVATE'; f.vscode.window.showInformationMessage = async text => events.push(text);
+  try {
+    await f.host.readiness; const configuring = f.host.keyHandlers.configure(); await storing.promise;
+    const clearing = f.host.keyHandlers.clear(); finish.resolve();
+    assert.equal((await configuring).status, 'cancelled'); assert.equal((await clearing).status, 'completed');
+    assert.deepEqual(events, ['store', 'delete', 'DeepSeek API key removed from VS Code SecretStorage.']);
+    assert.equal(value, undefined); assert.equal(f.host.tutorView.hostMetadata.providerKey, 'missing');
+  } finally { finish.resolve(); f.host.dispose(); }
+});
+
+test('native key mutations settle without waiting for dismissal of their informational notification', async () => {
+  const notice = deferred(); let configured, cleared;
+  const handlers = createProviderKeyHandlers({ vscode: { window: { showInputBox: async () => 'PRIVATE', showInformationMessage: () => notice.promise } },
+    secrets: { store: async () => {}, delete: async () => {} } });
+  const configuring = handlers.configure().then(result => { configured = result; });
+  try {
+    await new Promise(resolve => setImmediate(resolve)); assert.equal(configured?.status, 'completed');
+    const clearing = handlers.clear().then(result => { cleared = result; });
+    await new Promise(resolve => setImmediate(resolve)); assert.equal(cleared?.status, 'completed'); await clearing;
+  } finally { notice.resolve(); await configuring; handlers.dispose(); }
+});
 
 function contextRunEnvelope(host) {
   const s = host.coordinator.snapshot();

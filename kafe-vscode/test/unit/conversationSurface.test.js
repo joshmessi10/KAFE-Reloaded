@@ -5,6 +5,21 @@ const source = (id, path, included = true, category = 'selected-file') => ({ id,
 const turn = status => ({ id: 'turn', turnGeneration: 1, submissionId: 'submission', status });
 const envelope = (type, fields = {}) => ({ type, sessionId: 'session', generation: 1, ...fields });
 
+test('Restricted first use keeps static help and native configuration while exposing no source or Run authority', () => {
+  const v = loadView();
+  v.render(snapshot({ context: { revision: 1, restricted: true, activeSource: null, sources: [] },
+    view: { revision: 1, providerKey: 'missing', runtime: 'unavailable', contextNotice: null } }));
+  assert.equal(v.byId('starting-aid').hidden, false); assert.equal(v.byId('context-run').hidden, true);
+  assert.equal(v.byId('add-context').hidden, true); v.byId('configure-provider').dispatch('click');
+  assert.deepEqual(v.sent, [envelope('configureProvider')]);
+  const c = v.byId('composer'); c.value = 'Concept only'; c.dispatch('input'); c.dispatch('keydown', { key: 'Enter' });
+  assert.equal(v.sent.some(m => m.type === 'submitMessage'), false);
+  v.render(snapshot({ context: { revision: 1, restricted: true, activeSource: null, sources: [] },
+    view: { revision: 2, providerKey: 'present', runtime: 'unavailable', contextNotice: null } }));
+  c.dispatch('keydown', { key: 'Enter' }); assert.equal(v.sent.at(-1).type, 'submitMessage');
+  assert.equal(v.byId('context-run').hidden, true);
+});
+
 test('included whole-file indicators distinguish duplicate names and remove only canonical optional identity', () => {
   const v = loadView(), files = [source('one', 'first/main.kf'), source('two', 'second/main.kf')];
   v.render(snapshot({ context: { revision: 4, restricted: false, activeSource: null, sources: files } }));
