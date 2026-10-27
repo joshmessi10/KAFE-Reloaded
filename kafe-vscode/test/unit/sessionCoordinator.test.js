@@ -884,3 +884,160 @@ for (const interruption of ['transition', 'dispose']) test(`final Run authorizat
     assert.deepEqual(s.snapshot(), callbackState, 'no action mutation or publication follows lost ownership');
   } finally { if (!c.disposed) c.dispose(); }
 });
+
+// Reenter real owners from display publications; assertions stay outside isolated observers.
+for (const event of ['source', 'authorization']) for (const boundary of ['checkpoint', 'stop-actions', 'assistant', 'turn', 'retry']) {
+  test(`${event} revocation preserves the new owner after ${boundary} publication`, async () => {
+    let revision = 0, signal;
+    const entered = deferred();
+    const f = fixture({ context: { activeDocument: { uri: uri('/a.kf'), text: 'show(1)', version: 1 } }, getSourceRevision: () => revision,
+      events: async function* (input) {
+        signal = input.signal; entered.resolve();
+        if (boundary === 'checkpoint') yield terminal('Checkpoint', [learningCheckpoint({ sourceIds: ['active-file'] })]);
+        else await new Promise(() => {});
+      } });
+    const c = f.coordinator, s = c.session;
+    await c.refreshContext(); const sending = f.submit('Old question');
+    await entered.promise;
+    if (boundary === 'checkpoint') assert.equal((await sending).status, 'completed');
+    const old = c.controller.current;
+    const settledOwners = [], onSettled = c.controller.onSettled;
+    c.controller.onSettled = () => { settledOwners.push(c.controller.current); return onSettled(); };
+    let switched = false, next, atSwitch, nextSending;
+    const errors = [];
+    const unsubscribe = c.subscribe(state => {
+      const actions = state.entries.flatMap(entry => entry.actions);
+      const reached = boundary === 'checkpoint' ? state.entries.some(entry => entry.kind === 'checkpoint' && entry.status === 'stale') :
+        boundary === 'stop-actions' ? actions.some(action => action.type === 'stopTurn' && !action.enabled) :
+        boundary === 'assistant' ? state.entries.some(entry => entry.kind === 'assistant' && entry.status === 'cancelled') :
+        boundary === 'turn' ? state.turn?.status === 'cancelled' : actions.some(action => action.type === 'retryTurn' && action.enabled);
+      if (switched || !reached) return;
+      switched = true;
+      try {
+        c.newConversation(); c.controller.captureSubmission = () => new Promise(() => {});
+        nextSending = c.controller.submit({ submissionId: randomUUID(), text: 'New question', contextRevision: s.snapshot().context.revision });
+        next = c.controller.current; atSwitch = s.snapshot();
+      } catch (error) { errors.push(error); }
+    });
+    try {
+      revision++; c.isSourceAuthorized = () => false;
+      assert.doesNotThrow(() => event === 'source' ? c.sourceChanged('file:///a.kf') : c.authorizationChanged());
+      assert.deepEqual(errors, []); assert.equal(switched, true);
+      assert.equal(c.controller.current, next); assert.equal(next.turn.status, 'preparing');
+      assert.deepEqual(s.snapshot(), atSwitch, 'old continuation cannot change new entries, actions or visible turn');
+      if (boundary !== 'checkpoint') {
+        assert.equal((await sending).status, 'cancelled'); assert.equal(old.busy, false);
+        assert.equal(signal.aborted, true); assert.equal(old.grant, null);
+        assert.deepEqual(settledOwners, [], 'old settlement must not invoke current-chat learning callbacks');
+      }
+    } finally { unsubscribe(); c.dispose(); if (nextSending) await nextSending; }
+  });
+}
+
+for (const event of ['source', 'authorization']) for (const registry of ['scopes', 'checkpoints']) {
+  test(`${event} ${registry} action publication cannot iterate into replacement scope records`, async () => {
+    let revision = 0;
+    const f = fixture({ context: { activeDocument: { uri: uri('/a.kf'), text: 'show(1)', version: 1 } }, getSourceRevision: () => revision,
+      events: async function* () { yield terminal('Explain', registry === 'checkpoints' ? [learningCheckpoint({ sourceIds: ['active-file'] })] :
+        [{ id: 'proposal', name: 'proposeCodeChange', arguments: { newText: 'show(2)' } }]); } });
+    const c = f.coordinator, s = c.session, controller = c.controller;
+    await c.refreshContext(); await f.submit();
+    const record = registry === 'checkpoints' ? controller.publishedCheckpoints()[0] : controller.preparationScopes()[0];
+    assert.ok(record);
+    const scope = { targetUri: 'file:///a.kf', scopeSummary: 'Fresh scope', dependencies: record.dependencies };
+    const args = registry === 'checkpoints' ? { decisionId: record.decisionId } : { scopeId: record.scopeId };
+    s.registerAction(record.entryId, { type: registry === 'checkpoints' ? 'confirmCheckpoint' : 'prepareChange', label: 'Confirm', enabled: true, args });
+    let switched = false, nextSending, nextScope, atSwitch;
+    const errors = [];
+    const unsubscribe = c.subscribe(state => {
+      if (switched || !state.entries.find(entry => entry.id === record.entryId)?.actions.some(action => !action.enabled)) return;
+      switched = true;
+      try {
+        c.newConversation(); controller.captureSubmission = () => new Promise(() => {});
+        nextSending = controller.submit({ submissionId: randomUUID(), text: 'New', contextRevision: s.snapshot().context.revision });
+        // Use the real publication API to insert a new generation-owned record during iteration.
+        controller.current.preparationRequest = scope; controller.offerPreparation(controller.current);
+        nextScope = controller.preparationScopes()[0];
+        s.registerAction(nextScope.entryId, { type: 'prepareChange', label: 'Fresh', enabled: true, args: { scopeId: nextScope.scopeId } });
+        atSwitch = s.snapshot();
+      } catch (error) { errors.push(error); }
+    });
+    try {
+      revision++; c.isSourceAuthorized = () => false;
+      assert.doesNotThrow(() => event === 'source' ? c.sourceChanged('file:///a.kf') : c.authorizationChanged());
+      assert.deepEqual(errors, []); assert.equal(switched, true);
+      assert.deepEqual(s.snapshot(), atSwitch); assert.deepEqual(controller.preparationScope(nextScope.scopeId), nextScope);
+      assert.equal(controller.current.turn.status, 'preparing');
+    } finally { unsubscribe(); c.dispose(); if (nextSending) await nextSending; }
+  });
+}
+
+for (const registry of ['scopes', 'checkpoints']) test(`${registry} invalidation predicate cannot revoke a new generation's records`, async () => {
+  const f = fixture({ events: async function* () { yield terminal('Checkpoint', [learningCheckpoint()]); } });
+  const c = f.coordinator, controller = c.controller, s = c.session;
+  await f.submit(); const old = controller.current;
+  const scope = { targetUri: 'file:///a.kf', scopeSummary: 'Scope', dependencies: { files: [], knowledgeLineage: null } };
+  old.preparationRequest = scope; controller.offerPreparation(old);
+  let calls = 0, nextSending, nextScope, atSwitch;
+  try {
+    controller[registry === 'scopes' ? 'invalidateScopes' : 'invalidateCheckpoints'](() => {
+      calls++;
+      if (calls === 1) {
+        c.newConversation(); controller.captureSubmission = () => new Promise(() => {});
+        nextSending = controller.submit({ submissionId: randomUUID(), text: 'New', contextRevision: s.snapshot().context.revision });
+        controller.current.preparationRequest = scope; controller.offerPreparation(controller.current);
+        nextScope = controller.preparationScopes()[0]; atSwitch = s.snapshot();
+      }
+      return true;
+    });
+    assert.equal(calls, 1); assert.deepEqual(s.snapshot(), atSwitch);
+    assert.deepEqual(controller.preparationScope(nextScope.scopeId), nextScope);
+  } finally { c.dispose(); if (nextSending) await nextSending; }
+});
+
+for (const event of ['source', 'authorization', 'invalidate']) test(`${event} proposal clear callback preserves a replacement owner and proposal`, async () => {
+  const native = new CodeProposalProvider({ vscode: {} });
+  const entered = deferred(); let revision = 0, signal;
+  const f = fixture({ proposalProvider: native, context: { activeDocument: { uri: uri('/a.kf'), text: 'show(1)', version: 1 } }, getSourceRevision: () => revision,
+    events: async function* (input) { signal = input.signal; entered.resolve(); await new Promise(() => {}); } });
+  const c = f.coordinator, s = c.session, controller = c.controller;
+  await c.refreshContext(); const sending = f.submit(); await entered.promise;
+  const old = controller.current;
+  old.proposalId = 'original';
+  controller.pendingProposal = { id: 'original', fileUris: ['file:///a.kf'] };
+  native.pending = { id: 'original', sourceId: 'file:///a.kf', phase: 'ready' };
+  const errors = []; let nextSending, next, atSwitch, cleared = 0;
+  native.onEvidence = value => {
+    if (value.outcome !== 'cleared' || value.proposal.id !== 'original') return;
+    cleared++;
+    try {
+      c.newConversation(); controller.captureSubmission = () => new Promise(() => {});
+      nextSending = controller.submit({ submissionId: randomUUID(), text: 'New', contextRevision: s.snapshot().context.revision });
+      next = controller.current;
+      native.pending = { id: 'replacement', sourceId: 'file:///a.kf', phase: 'ready' };
+      controller.pendingProposal = { id: 'replacement', fileUris: ['file:///a.kf'] };
+      const entry = s.appendEntry({ kind: 'proposal', status: 'ready', text: 'New proposal', data: { proposalId: 'replacement' } });
+      s.registerAction(entry, { type: 'rejectProposal', label: 'Dismiss', enabled: true, args: { id: 'replacement' } });
+      atSwitch = s.snapshot();
+    } catch (error) { errors.push(error); }
+  };
+  try {
+    revision++; c.isSourceAuthorized = () => false;
+    assert.doesNotThrow(() => event === 'source' ? c.sourceChanged('file:///a.kf') : event === 'authorization' ? c.authorizationChanged() : controller.invalidate('session-reset'));
+    assert.deepEqual(errors, []); assert.equal(cleared, 1); assert.equal(controller.current, next);
+    assert.deepEqual(s.snapshot(), atSwitch); assert.equal(native.pending.id, 'replacement'); assert.equal(controller.pendingProposal.id, 'replacement');
+    assert.equal((await sending).status, 'cancelled'); assert.equal(old.busy, false); assert.equal(signal.aborted, true);
+  } finally { c.dispose(); if (nextSending) await nextSending; }
+});
+
+test('Stop preserves cancellation settlement and abort when a real publication operation fails', async () => {
+  const entered = deferred(); let signal;
+  const f = fixture({ events: async function* (input) { signal = input.signal; entered.resolve(); await new Promise(() => {}); } });
+  const c = f.coordinator, sending = f.submit(); await entered.promise;
+  const owner = c.controller.current, register = c.session.registerAction;
+  c.session.registerAction = () => { throw Error('Publication failed'); };
+  try {
+    assert.throws(() => c.controller.stop({ turnId: owner.turn.id, turnGeneration: owner.turn.turnGeneration }), /Publication failed/);
+    assert.equal((await sending).status, 'cancelled'); assert.equal(signal.aborted, true); assert.equal(owner.busy, false); assert.equal(owner.grant, null);
+  } finally { c.session.registerAction = register; c.dispose(); }
+});

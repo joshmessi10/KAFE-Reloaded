@@ -33,7 +33,12 @@ class TurnController {
     this.consumed = new Set(); this.generation = session.snapshot().generation;
     this.unsubscribe = session.subscribe(snapshot => {
       if (snapshot.generation !== this.generation) {
-        this.generation = snapshot.generation; this.#reservation = null; this.#scopes.clear(); this.consumed.clear(); this.invalidate('session-reset'); this.#checkpoints.clear(); this.current = null;
+        const owner = this.current, proposal = this.pendingProposal, generation = this.generation, ownerProposalId = owner?.proposalId;
+        // Detach old registries before cleanup callbacks can create another conversation.
+        this.generation = snapshot.generation; this.#reservation = null; this.#scopes.clear(); this.consumed.clear(); this.#checkpoints.clear();
+        this.current = null; this.pendingProposal = null;
+        if (owner) this.invalidate('session-reset', owner);
+        if (proposal?.id !== ownerProposalId) this.clearProposalId(proposal?.id, generation);
       }
     });
   }
@@ -56,9 +61,20 @@ class TurnController {
   releaseFollowup(token) { if (this.#reservation === token) this.#reservation = null; }
   preparationScopes() { return [...this.#scopes.values()].map(value => structuredClone(value)); }
   preparationScope(id) { const value = this.#scopes.get(id); return value ? structuredClone(value) : null; }
+  #ownsSession(state) {
+    const current = this.session.snapshot();
+    return !this.disposed && current.sessionId === state.sessionId && current.generation === state.generation;
+  }
+  #ownsOwner(owner) { return !this.disposed && this.current === owner && this.session.snapshot().generation === owner.generation; }
   invalidateScopes(predicate = () => true) {
-    for (const [id, value] of this.#scopes) if (predicate(value)) {
+    const state = this.session.snapshot();
+    for (const [id, value] of [...this.#scopes]) {
+      if (!this.#ownsSession(state)) return;
+      const affected = predicate(structuredClone(value));
+      if (!this.#ownsSession(state)) return;
+      if (!affected || this.#scopes.get(id) !== value) continue;
       this.#scopes.delete(id); this.session.invalidateActions(a => a.args.scopeId === id);
+      if (!this.#ownsSession(state)) return;
       this.session.updateEntry(value.entryId, { status: 'stale' });
     }
   }
@@ -97,6 +113,7 @@ class TurnController {
   }
 
   actionsOff(owner) {
+    if (!this.#ownsOwner(owner)) return;
     this.session.invalidateActions(action => !['acceptProposal', 'rejectProposal'].includes(action.type) &&
       (action.args.turnId === owner.turn.id));
   }
@@ -333,7 +350,9 @@ class TurnController {
       this.offerPreparation(owner);
       this.trace(owner, 'turn-settled', { status: owner.turn.status, busy: owner.busy, current: this.current === owner });
       // Teaching observers cannot replace the owned attempt's result or trigger a retry.
-      try { const observer = this.onSettled(); observer?.catch?.(() => {}); } catch {}
+      if (this.#ownsOwner(owner)) {
+        try { const observer = this.onSettled(); observer?.catch?.(() => {}); } catch {}
+      }
     }
   }
 
@@ -394,12 +413,16 @@ class TurnController {
       contextRevision: this.session.snapshot().context.revision, learnerEntryId: owner.turn.learnerEntryId });
   }
 
-  clearProposalId(id) {
+  clearProposalId(id, generation = this.session.snapshot().generation) {
     if (!id) return;
+    const state = { ...this.session.snapshot(), generation };
     if (this.pendingProposal?.id === id) this.pendingProposal = null;
-    try { this.proposalProvider?.clear(id); } catch { /* Safe cleanup only. */ }
+    this.proposalProvider?.clear(id);
+    if (!this.#ownsSession(state)) return;
     this.session.invalidateActions(a => ['acceptProposal', 'rejectProposal'].includes(a.type) && a.args.id === id);
+    if (!this.#ownsSession(state)) return;
     for (const entry of this.session.snapshot().entries.filter(e => e.kind === 'proposal' && e.status === 'ready' && e.data.proposalId === id)) {
+      if (!this.#ownsSession(state)) return;
       this.session.updateEntry(entry.id, { status: 'cancelled' });
     }
   }
@@ -407,53 +430,73 @@ class TurnController {
   clearProposal(owner) {
     const id = owner.proposalId;
     owner.proposalId = null;
-    this.clearProposalId(id);
+    this.clearProposalId(id, owner.generation);
   }
 
-  stop({ turnId, turnGeneration }) {
-    const owner = this.current;
+  stop({ turnId, turnGeneration }, owner = this.current) {
     if (!owner || owner.turn.id !== turnId || owner.turn.turnGeneration !== turnGeneration ||
       !['preparing', 'responding', 'processing-tools'].includes(owner.turn.status)) return false;
-    owner.turn.turnGeneration++; owner.turn.status = 'cancelled'; this.actionsOff(owner);
-    if (this.session.snapshot().generation === owner.generation) {
+    owner.turn.turnGeneration++; owner.turn.status = 'cancelled';
+    try {
+      if (!this.#ownsOwner(owner)) return true;
+      this.actionsOff(owner);
+      if (!this.#ownsOwner(owner)) return true;
       if (owner.turn.assistantEntryId) this.session.updateEntry(owner.turn.assistantEntryId, { status: 'cancelled' });
+      if (!this.#ownsOwner(owner)) return true;
       this.session.setTurn(owner.turn);
+      if (!this.#ownsOwner(owner)) return true;
       if (!owner.preparation && !owner.preparationRequest) {
         this.session.registerAction(owner.turn.assistantEntryId || owner.turn.learnerEntryId, { type: 'retryTurn', label: 'Retry', enabled: true, args: { turnId: owner.turn.id } });
       }
+    } finally {
+      // Publication can become stale or throw; the original request must still settle and abort.
+      owner.grant = null; owner.cancel(CANCELLED);
+      try { this.clearProposal(owner); } finally { owner.abort?.abort(); }
     }
-    owner.grant = null; owner.cancel(CANCELLED); this.clearProposal(owner); owner.abort?.abort();
     return true;
   }
 
-  invalidate(reason) {
-    const owner = this.current;
+  invalidate(reason, owner = this.current) {
     if (!owner) return;
+    const proposal = this.pendingProposal;
     if (this.#pendingCheckpointPublication?.owner === owner) this.#pendingCheckpointPublication.invalidated = true;
-    this.stop({ turnId: owner.turn.id, turnGeneration: owner.turn.turnGeneration });
+    this.stop({ turnId: owner.turn.id, turnGeneration: owner.turn.turnGeneration }, owner);
     this.actionsOff(owner);
     // Focus changes still stop an in-flight request. Settled proposals have their own
     // source-bound lifetime; the coordinator separately revokes unauthorized sources.
     if (reason !== 'context-changed') this.clearProposal(owner);
-    if (!['source-revoked', 'context-changed'].includes(reason)) this.clearProposalId(this.pendingProposal?.id);
+    if (!['source-revoked', 'context-changed'].includes(reason) && this.pendingProposal === proposal) this.clearProposalId(proposal?.id, owner.generation);
   }
 
   revokeSource(uri) {
+    const state = this.session.snapshot(), owner = this.current, proposal = this.pendingProposal;
     this.invalidateScopes(record => record.dependencies.files.some(file => file.uri === uri));
+    if (!this.#ownsSession(state)) return;
     this.invalidateCheckpoints(record => record.dependencies.files.some(file => file.uri === uri));
-    if (this.pendingProposal?.fileUris.includes(uri)) this.clearProposalId(this.pendingProposal.id);
-    if (this.current?.turn.status === 'preparing' || this.current?.snapshot?.dependencies.fileUris.includes(uri)) this.invalidate('source-revoked');
+    if (!this.#ownsSession(state)) return;
+    if (proposal?.fileUris.includes(uri)) this.clearProposalId(proposal.id, state.generation);
+    if (!this.#ownsSession(state) || this.current !== owner) return;
+    if (owner?.turn.status === 'preparing' || owner?.snapshot?.dependencies.fileUris.includes(uri)) this.invalidate('source-revoked', owner);
   }
   /** Host-only record; grounding must be rechecked before Task 3 issues/consumes actions. */
   checkpoint(id) { const record = this.#checkpoints.get(id); return record ? structuredClone(record) : null; }
   publishedCheckpoints() { return [...this.#checkpoints.values()].map(record => structuredClone(record)); }
   checkpointFileUris() { return [...new Set([...this.#checkpoints.values(), ...(this.#pendingCheckpointPublication ? [this.#pendingCheckpointPublication.record] : [])].flatMap(record => record.dependencies.files.map(file => file.uri)))]; }
   invalidateCheckpoints(predicate = () => true) {
-    const pending = this.#pendingCheckpointPublication;
-    if (pending && predicate(structuredClone(pending.record))) pending.invalidated = true;
-    for (const [id, record] of this.#checkpoints) if (predicate(structuredClone(record))) {
+    const state = this.session.snapshot(), pending = this.#pendingCheckpointPublication, records = [...this.#checkpoints];
+    if (pending) {
+      const affected = predicate(structuredClone(pending.record));
+      if (!this.#ownsSession(state)) return;
+      if (affected) pending.invalidated = true;
+    }
+    for (const [id, record] of records) {
+      if (!this.#ownsSession(state)) return;
+      const affected = predicate(structuredClone(record));
+      if (!this.#ownsSession(state)) return;
+      if (!affected || this.#checkpoints.get(id) !== record) continue;
       this.#checkpoints.delete(id);
       this.session.invalidateActions(action => action.args.decisionId === id);
+      if (!this.#ownsSession(state)) return;
       this.session.updateEntry(record.entryId, { status: 'stale' });
     }
   }

@@ -8,6 +8,27 @@ function createSession() {
   return new ConversationSession();
 }
 
+for (const reset of [false, true]) test(`action invalidation freezes its registry across ${reset ? 'generation reset' : 'new registration'}`, () => {
+  const session = createSession();
+  const append = text => session.appendEntry({ kind: 'host', status: 'ready', text });
+  const issue = entryId => session.registerAction(entryId, { type: 'retryTurn', label: 'Retry', enabled: true, args: { turnId: entryId } });
+  issue(append('Old'));
+  let calls = 0, newAction, newEntry, captured;
+  session.invalidateActions(() => {
+    calls++;
+    if (calls === 1) {
+      if (reset) session.reset();
+      newEntry = append('New'); newAction = issue(newEntry); captured = session.snapshot();
+    }
+    return true;
+  });
+  assert.equal(calls, 1);
+  assert.equal(session.snapshot().entries.find(entry => entry.id === newEntry).actions[0].enabled, true);
+  assert.ok(session.resolveAction({ type: 'invokeAction', sessionId: captured.sessionId, generation: captured.generation,
+    entryId: newEntry, actionId: newAction.id, args: newAction.args }));
+  if (reset) assert.deepEqual(session.snapshot(), captured, 'stale invalidation must not publish into the new session');
+});
+
 test('removed learning and review capabilities cannot be registered', () => {
   const session = createSession();
   const id = session.appendEntry({ kind: 'host', status: 'completed', text: 'Legacy' });

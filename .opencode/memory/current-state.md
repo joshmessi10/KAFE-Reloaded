@@ -27,7 +27,6 @@ Local integration cleanup `524dac5` and minimal qs packaging patch `d074ff9` are
 ## Current Blockers and Pending Gates
 
 - Exact local native VS Code 1.96.0 cache is absent. Native host-policy/acceptance, physical IME and screen-reader speech require separate evidence; installed newer VS Code is not a substitute.
-- Final integration owns bounded deferred UI/fixture/debounce/observer cleanups and resulting checks. Documentation-only checks can pass independently; no whole-candidate acceptance is claimed here.
 - Real-provider answer review, managed-install/publication and learner efficacy/ICAP/SUS outcomes remain separate release/research gates. No provider request, form submission or research upload was performed.
 - Ruff, basedpyright, spelling, audits and authored-policy checks exist; Python requires 3.11. Preserve unchanged-input evidence only after verifying relevant input hashes; final prose needs spelling/strict docs checks.
 - Actual `docs.yml` permits the historical integration branch and checks out the selected branch, contrary to root main-only policy. This pre-existing drift is unresolved, unchanged and undispatched.

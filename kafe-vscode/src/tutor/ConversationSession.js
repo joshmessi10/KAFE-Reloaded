@@ -268,11 +268,15 @@ class ConversationSession {
   /** @param {(action:Action,entry:Entry)=>boolean} predicate */
   invalidateActions(predicate) {
     if (typeof predicate !== 'function') throw new TypeError('Invalid action predicate');
+    const generation = this.#generation;
     let changed = false;
-    for (const record of this.#actions.values()) {
+    for (const record of [...this.#actions.values()]) {
+      if (generation !== this.#generation) return;
       const entry = record.contextual ? { id: record.entryId, kind: 'host', status: 'ready', text: record.action.label,
         data: { contextual: true }, actions: [record.action] } : this.#entries.find(e => e.id === record.entryId);
-      if (record.action.enabled && entry && predicate(structuredClone(record.action), structuredClone(entry))) {
+      const affected = record.action.enabled && entry && predicate(structuredClone(record.action), structuredClone(entry));
+      if (generation !== this.#generation) return;
+      if (affected && this.#actions.get(record.action.id) === record && record.action.enabled) {
         record.action.enabled = false;
         changed = true;
       }

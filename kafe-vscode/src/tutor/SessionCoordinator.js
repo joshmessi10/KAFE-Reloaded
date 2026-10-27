@@ -114,7 +114,9 @@ class SessionCoordinator {
     this.controller.clearProposalId(proposal.id);
     if (this.disposed || generation !== this.snapshot().generation) return;
     this.session.invalidateActions(action => action.args.id === proposal.id);
+    if (this.disposed || generation !== this.snapshot().generation) return;
     for (const entry of this.session.snapshot().entries.filter(e => e.kind === 'proposal' && e.data.proposalId === proposal.id)) {
+      if (this.disposed || generation !== this.snapshot().generation) return;
       this.session.updateEntry(entry.id, { status: 'stale' });
     }
     // A consumed preparation grant is never reconstructed by this cleanup.
@@ -122,7 +124,9 @@ class SessionCoordinator {
     if (dependencies && generation === this.snapshot().generation) {
       const affected = record => record.dependencies.files.some(file => dependencies.files.some(old => old.uri === file.uri)) ||
         (dependencies.knowledgeLineage !== null && record.dependencies.knowledgeLineage === dependencies.knowledgeLineage);
-      this.controller.invalidateScopes(affected); this.controller.invalidateCheckpoints(affected);
+      this.controller.invalidateScopes(affected);
+      if (this.disposed || generation !== this.snapshot().generation) return;
+      this.controller.invalidateCheckpoints(affected);
     }
   }
 
@@ -261,8 +265,9 @@ class SessionCoordinator {
   }
 
   #revokeSource(uriString) {
-    const proposal = this.proposalProvider?.pending;
+    const proposal = this.proposalProvider?.pending, generation = this.session.snapshot().generation;
     this.controller.revokeSource(uriString);
+    if (this.disposed || generation !== this.session.snapshot().generation) return;
     if (proposal?.sourceId === uriString && this.proposalProvider.pending === proposal) this.proposalProvider.clear(proposal.id);
   }
 
