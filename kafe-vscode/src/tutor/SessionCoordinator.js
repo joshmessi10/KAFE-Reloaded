@@ -15,10 +15,10 @@ class SessionCoordinator {
   constructor({ provider, contextComposer, toolRouter, proposalProvider,
     session = new ConversationSession(), learningSession = new LearningSession(), getContext = () => ({}),
     getKnowledgeAvailability = async () => ({ status: 'unavailable', code: 'knowledge_unavailable' }),
-    getSourceRevision = () => null,
+    getSourceRevision = () => null, isSourceAuthorized = () => false,
     getWorkspaceRelativeSourcePath = () => null, diagnostic } = {}) {
     Object.assign(this, { provider, contextComposer, toolRouter, proposalProvider, session, learningSession,
-      getContext, getKnowledgeAvailability, getSourceRevision, getWorkspaceRelativeSourcePath });
+      getContext, getKnowledgeAvailability, getSourceRevision, isSourceAuthorized, getWorkspaceRelativeSourcePath });
     this.sourceRevisions = new WeakMap();
     this.actionEvidence = new ActionEvidence();
     this.evidenceRevisions = new WeakMap();
@@ -231,6 +231,64 @@ class SessionCoordinator {
     this.session.reset();
     this.proposalProvider?.clear(); this.proposal = null;
     void this.refreshContext().catch(() => {});
+  }
+
+  #selectedSourceUris() {
+    const context = this.session.snapshot().context;
+    return [context.activeSource?.uri, ...context.sources.filter(source => source.included).map(source => source.uri),
+      ...[...this.includedSourceUris.values()].map(uri => uri.toString())].filter(Boolean);
+  }
+
+  /** Metadata only: enumeration never admits historical files to request context or reads their bytes. */
+  sourceDependencyUris() {
+    const proposal = this.proposalProvider?.pending;
+    const records = [...this.controller.preparationScopes(), ...this.learningSession.snapshot().decisions,
+      ...(proposal?.preparation ? [proposal.preparation] : [])];
+    return [...new Set([...this.#selectedSourceUris(),
+      ...(this.controller.current?.snapshot?.dependencies.fileUris || []),
+      ...this.session.historyPairs().flatMap(pair => pair.dependencies.fileUris),
+      ...(this.controller.pendingProposal?.fileUris || []), ...this.controller.checkpointFileUris(),
+      ...records.flatMap(record => record.dependencies.files.map(file => file.uri)),
+      proposal?.sourceId, ...this.session.runTargetUris()].filter(Boolean))];
+  }
+
+  /** Ordinary changes affect current context and live teaching artifacts, never the historical union. */
+  isSourceChangeRelevant(uriString, { activeSourceUri = null } = {}) {
+    return !this.disposed && typeof uriString === 'string' && (uriString === activeSourceUri ||
+      this.#selectedSourceUris().includes(uriString) || this.proposalProvider?.pending?.sourceId === uriString ||
+      this.controller.pendingProposal?.fileUris.includes(uriString) === true ||
+      this.controller.checkpointFileUris().includes(uriString));
+  }
+
+  #revokeSource(uriString) {
+    const proposal = this.proposalProvider?.pending;
+    this.controller.revokeSource(uriString);
+    if (proposal?.sourceId === uriString && this.proposalProvider.pending === proposal) this.proposalProvider.clear(proposal.id);
+  }
+
+  /** Adapter has already advanced its native source fence before any synchronous display observer. */
+  sourceChanged(uriString, { deleted = false, activeSourceUri = null } = {}) {
+    if (this.disposed || typeof uriString !== 'string') return;
+    const relevant = this.isSourceChangeRelevant(uriString, { activeSourceUri });
+    const generation = this.session.snapshot().generation;
+    // A retained native Run target can be unrelated to every current request/proposal source.
+    if (deleted) this.session.invalidateActions(action => action.type === 'runFile' && action.args.targetUri === uriString);
+    if (relevant && !this.disposed && this.session.snapshot().generation === generation) this.#revokeSource(uriString);
+  }
+
+  authorizationChanged() {
+    if (this.disposed) return;
+    const generation = this.session.snapshot().generation;
+    const current = () => !this.disposed && this.session.snapshot().generation === generation;
+    const authorized = uri => { try { return this.isSourceAuthorized(uri) === true; } catch { return false; } };
+    for (const uri of this.sourceDependencyUris()) {
+      const allowed = authorized(uri);
+      if (!current()) return;
+      if (!allowed) this.#revokeSource(uri);
+      if (!current()) return;
+    }
+    this.session.invalidateActions(action => action.type === 'runFile' && !authorized(action.args.targetUri));
+    if (current()) this.controller.invalidate('context-changed');
   }
 
   /** Read host metadata and keep still-authorized selected files when their editors close. */

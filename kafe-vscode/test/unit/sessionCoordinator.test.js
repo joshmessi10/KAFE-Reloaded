@@ -807,3 +807,53 @@ test('superseded unadmitted cleanup clears its own notice while new capture wait
   gate.resolve(); assert.equal((await pending).status, 'completed');
   f.coordinator.clearRequestContext(...abandoned); assert.deepEqual(f.coordinator.snapshot().contextNotice, { reasons: ['source'] });
 });
+
+
+for (const authorization of [undefined, () => { throw Error('unavailable'); }]) test(`authorization coordination fails closed with ${authorization ? 'throwing' : 'missing'} native checker`, () => {
+  const f = fixture(), coordinator = f.coordinator, session = coordinator.session;
+  if (authorization) coordinator.isSourceAuthorized = authorization;
+  const entryId = session.appendEntry({ kind: 'host', status: 'ready', text: 'Run' });
+  session.registerAction(entryId, { type: 'runFile', label: 'Run', enabled: true, args: { targetUri: 'file:///a.kf' } });
+  coordinator.authorizationChanged();
+  assert.deepEqual(session.runTargetUris(), []);
+  coordinator.dispose();
+});
+
+test('source dependency enumeration is detached, deduplicated and does not include unselected candidates or read bytes', async () => {
+  const active = uri('/a.kf'), optional = uri('/optional.kf'), old = 'file:///old.kf';
+  const f = fixture({ context: { activeDocument: { uri: active, text: 'A', version: 1 }, candidateUris: [optional] } });
+  await f.coordinator.refreshContext();
+  f.coordinator.session.recordCompletedPair({ id: randomUUID(), learnerText: 'Old', assistantText: 'Answer', dependencies: { fileUris: [old, active.toString()], knowledgeLineage: null } });
+  const entryId = f.coordinator.session.appendEntry({ kind: 'host', status: 'ready', text: 'Run' });
+  f.coordinator.session.registerAction(entryId, { type: 'runFile', label: 'Run', enabled: true, args: { targetUri: 'file:///run.kf' } });
+  const dependencies = f.coordinator.sourceDependencyUris();
+  assert.deepEqual(new Set(dependencies), new Set([active.toString(), old, 'file:///run.kf']));
+  assert.equal(dependencies.length, 3); dependencies.length = 0;
+  assert.equal(f.coordinator.sourceDependencyUris().length, 3);
+  assert.equal(f.coordinator.isSourceChangeRelevant(old, { activeSourceUri: active.toString() }), false);
+  assert.equal(f.coordinator.isSourceChangeRelevant(optional.toString(), { activeSourceUri: optional.toString() }), true);
+  assert.deepEqual(f.reads, []); f.coordinator.dispose();
+});
+
+
+for (const event of ['source', 'authorization']) test(`${event} coordination stops at a reentrant conversation transition and ignores disposed callbacks`, () => {
+  const f = fixture(), c = f.coordinator, s = c.session, a = 'file:///a.kf';
+  const source = { id: 'active-file', uri: a, label: 'a.kf', category: 'active-file', included: true };
+  s.setContext({ restricted: false, activeSource: source, sources: [] }); s.setContextRunAction(source);
+  const checks = [];
+  c.isSourceAuthorized = value => { checks.push(value); return false; };
+  let transitioned = false;
+  const unsubscribe = c.subscribe(() => {
+    if (transitioned) return;
+    transitioned = true; c.newConversation();
+    s.setContextRunAction({ ...source, uri: 'file:///new.kf' });
+  });
+  if (event === 'source') c.sourceChanged(a, { deleted: true, activeSourceUri: a });
+  else c.authorizationChanged();
+  unsubscribe();
+  assert.equal(transitioned, true); assert.deepEqual(s.runTargetUris(), ['file:///new.kf']);
+  assert.ok(!checks.includes('file:///new.kf'));
+  c.dispose(); const before = s.snapshot();
+  c.sourceChanged('file:///new.kf', { deleted: true }); c.authorizationChanged();
+  assert.deepEqual(s.snapshot(), before);
+});

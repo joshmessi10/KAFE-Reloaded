@@ -433,7 +433,7 @@ class TurnController {
     this.stop({ turnId: owner.turn.id, turnGeneration: owner.turn.turnGeneration });
     this.actionsOff(owner);
     // Focus changes still stop an in-flight request. Settled proposals have their own
-    // source-bound lifetime; authorizationEvent separately revokes unauthorized sources.
+    // source-bound lifetime; the coordinator separately revokes unauthorized sources.
     if (reason !== 'context-changed') this.clearProposal(owner);
     if (!['source-revoked', 'context-changed'].includes(reason)) this.clearProposalId(this.pendingProposal?.id);
   }

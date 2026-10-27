@@ -258,6 +258,13 @@ class ConversationSession {
     return true;
   }
 
+  /** Current native Run capabilities, including anchors no longer displayed after focus moves. */
+  runTargetUris() {
+    return [...new Set([...this.#actions.values()].filter(record => record.generation === this.#generation &&
+      record.action.enabled && record.action.type === 'runFile').map(record => record.action.args.targetUri)
+      .filter(uri => typeof uri === 'string'))];
+  }
+
   /** @param {(action:Action,entry:Entry)=>boolean} predicate */
   invalidateActions(predicate) {
     if (typeof predicate !== 'function') throw new TypeError('Invalid action predicate');

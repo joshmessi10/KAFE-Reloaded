@@ -1260,6 +1260,59 @@ test('source fence is monotonic across new conversation and stable for draft, to
   assert.ok(f.disposals.includes('watcher'));
 });
 
+for (const event of ['buffer', 'external', 'delete']) test(`historical-only ${event} leaves unrelated current response and source fence unchanged without old reads`, async () => {
+  const f = conversationHostFixture(), entered = deferred(), release = deferred();
+  try {
+    await f.host.readiness;
+    f.host.coordinator.session.recordCompletedPair({ id: randomUUID(), learnerText: 'Old question', assistantText: 'Old answer',
+      dependencies: { fileUris: [f.excluded.uri.toString()], knowledgeLineage: null } });
+    f.host.coordinator.controller.provider = { async *stream({ request }) {
+      f.calls.push(request); entered.resolve(); await release.promise;
+      yield { type: 'complete', text: 'Current answer', toolCalls: [], finishReason: 'stop' };
+    } };
+    const response = submit(f); await entered.promise;
+    const revision = f.host.coordinator.getSourceRevision(), reads = [...f.reads];
+    if (event === 'buffer') { f.excluded.version++; f.listeners.change({ document: f.excluded }); }
+    if (event === 'external') f.watcher.change(f.excluded.uri);
+    if (event === 'delete') f.watcher.delete(f.excluded.uri);
+    assert.equal(f.host.coordinator.getSourceRevision(), revision);
+    assert.deepEqual(f.reads, reads);
+    assert.equal(f.host.coordinator.snapshot().turn.status, 'responding');
+    assert.doesNotMatch(JSON.stringify(f.calls[0]), /Old question|EXCLUDED/);
+    release.resolve(); assert.equal((await response).status, 'completed');
+    assert.equal(f.reads.includes('excluded.kf'), false);
+  } finally { release.resolve(); f.host.dispose(); }
+});
+
+test('source event observes native active editor before its context projection catches up', async () => {
+  const f = conversationHostFixture();
+  try {
+    await f.host.readiness;
+    f.vscode.window.activeTextEditor = { document: f.excluded };
+    const before = f.host.coordinator.getSourceRevision();
+    assert.equal(f.host.coordinator.snapshot().context.activeSource.uri, f.active.uri.toString());
+    f.watcher.change(f.excluded.uri);
+    assert.ok(f.host.coordinator.getSourceRevision() > before);
+  } finally { f.host.dispose(); }
+});
+
+for (const event of ['change', 'focus']) test(`${event} advances native freshness before synchronous cancellation observers`, async () => {
+  const f = conversationHostFixture(), entered = deferred(), release = deferred(); let unsubscribe;
+  try {
+    await f.host.readiness;
+    f.host.coordinator.controller.provider = { async *stream() { entered.resolve(); await release.promise; yield { type: 'complete', text: 'Late', toolCalls: [], finishReason: 'stop' }; } };
+    const response = submit(f); await entered.promise;
+    const captured = f.host.coordinator.controller.current.snapshot, before = f.host.coordinator.getSourceRevision(), observations = [];
+    unsubscribe = f.host.coordinator.subscribe(() => observations.push({ revision: f.host.coordinator.getSourceRevision(), authorized: f.host.coordinator.isSubmissionAuthorized(captured) }));
+    if (event === 'change') f.watcher.change(f.active.uri);
+    else { f.vscode.window.activeTextEditor = { document: f.optional }; f.listeners.active(); }
+    assert.ok(observations.length > 0);
+    assert.ok(observations.every(value => value.revision > before && value.authorized === false));
+    release.resolve(); assert.equal((await response).status, 'cancelled');
+    assert.equal(f.host.coordinator.session.historyPairs().length, 0);
+  } finally { unsubscribe?.(); release.resolve(); f.host.dispose(); }
+});
+
 for (const confirmed of [false, true]) test(`native legacy clear affects only confirmed legacy records: confirmed=${confirmed}`, async () => {
   const { ProgressStore } = require('../../src/tutor/ProgressStore');
   const values = new Map([['kafeTutor.progress.v1', { schemaVersion: 1, goal: 'Old', milestones: [{ id: 'one', text: 'Old step' }], completedChecks: [] }], ['independent', 'retained'], ['kafeTutor.conversations.v1', 'saved chats retained']]);
@@ -1950,4 +2003,50 @@ test('runtime-unavailable learner route never creates a terminal or invokes the 
   assert.equal(fixture.calls.terminals.length, 0);
   assert.equal(fixture.calls.runner.length, 0);
   assert.match(fixture.calls.messages[0], /not published/i);
+});
+
+
+test('retained Run target is enumerated after focus and revoked on deletion without becoming edit context', async () => {
+  const f = conversationHostFixture();
+  try {
+    await f.host.readiness; const issued = contextRunEnvelope(f.host);
+    f.vscode.window.activeTextEditor = { document: f.optional }; f.listeners.active(); await f.host.actions.refreshContext();
+    assert.ok(f.host.coordinator.sourceDependencyUris().includes(f.active.uri.toString()));
+    assert.equal(f.host.coordinator.isSourceChangeRelevant(f.active.uri.toString(), { activeSourceUri: f.optional.uri.toString() }), false);
+    const before = f.host.coordinator.getSourceRevision(), reads = [...f.reads];
+    f.watcher.delete(f.active.uri);
+    assert.equal(f.host.coordinator.getSourceRevision(), before);
+    assert.equal(f.host.coordinator.session.resolveAction(issued), null);
+    assert.ok(!f.host.coordinator.sourceDependencyUris().includes(f.active.uri.toString()));
+    assert.deepEqual(f.reads, reads);
+  } finally { f.host.dispose(); }
+});
+
+test('settled proposal enumeration retains non-target dependencies after focus without reading them', async () => {
+  const f = proposalHostFixture({ optionalTarget: true });
+  try {
+    await includeOptional(f); await submit(f, 'Repair');
+    f.vscode.window.activeTextEditor = { document: f.excluded }; f.listeners.active(); await f.host.actions.refreshContext();
+    const reads = [...f.reads], uris = f.host.coordinator.sourceDependencyUris();
+    assert.deepEqual(new Set(uris), new Set([f.active, f.optional, f.excluded].map(doc => doc.uri.toString())));
+    assert.deepEqual(f.reads, reads);
+    f.watcher.change(f.active.uri);
+    assert.equal(f.host.proposalProvider.pending, null);
+  } finally { f.host.dispose(); }
+});
+
+test('source revision trust sampling independently fences an outstanding runtime setup without delivered native events', async () => {
+  const result = deferred(), f = runtimeSetupFixture({ outcome: () => result.promise, key: 'configured' });
+  try {
+    await f.host.readiness;
+    const pending = f.host.prepareRuntime({ origin: 'manual' });
+    await new Promise(resolve => setImmediate(resolve));
+    assert.equal(f.installs(), 1);
+    f.vscode.workspace.isTrusted = false; f.host.coordinator.getSourceRevision();
+    f.vscode.workspace.isTrusted = true; f.host.coordinator.getSourceRevision();
+    result.resolve({ status: 'ready' }); assert.equal((await pending).status, 'cancelled');
+    assert.equal(f.installs(), 1); assert.equal(f.notifications.length, 0);
+    assert.equal(f.host.tutorView.hostMetadata.providerKey, 'present');
+    assert.notEqual(f.host.tutorView.hostMetadata.runtime, 'ready');
+  } finally { result.resolve({ status: 'ready' }); f.host.dispose(); }
 });

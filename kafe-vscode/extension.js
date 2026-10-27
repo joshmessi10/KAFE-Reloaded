@@ -212,7 +212,7 @@ function createTutorHost({ vscode, extensionUri, secrets, workspaceState, runtim
     }
     return { restricted: false, activeDocument, candidateUris };
   };
-  const coordinator = new SessionCoordinator({ provider, proposalProvider, learningSession: new LearningSession(), getKnowledgeAvailability: resolveKnowledge, getSourceRevision: () => getSourceRevision(),
+  const coordinator = new SessionCoordinator({ provider, proposalProvider, learningSession: new LearningSession(), getKnowledgeAvailability: resolveKnowledge, getSourceRevision: () => getSourceRevision(), isSourceAuthorized: uri => authorize(uri),
     diagnostic: record => diagnostics.record(record),
     contextComposer: new ContextComposer({ documentReader, knowledgeRetriever }),
     toolRouter: new ToolRouter({ documentReader, knowledgeRetriever }), getContext,
@@ -437,37 +437,22 @@ function createTutorHost({ vscode, extensionUri, secrets, workspaceState, runtim
   };
   const subscriptions = [];
   const refresh = () => { if (!hostDisposed) void actions.refreshContext().catch(() => {}); };
-  const revoke = uri => {
-    const id = uri?.toString?.();
-    if (!id) return;
-    coordinator.controller.revokeSource(id);
-    if (proposalProvider.pending?.sourceId === id) proposalProvider.clear();
-  };
   const sourceEvent = (uri, deleted = false) => {
     if (hostDisposed) return;
-    if (deleted) {
-      unavailableSources.add(uri.toString());
-      coordinator.session.invalidateActions(a => a.type === 'runFile' && a.args.targetUri === uri.toString());
-    }
-    // A settled proposal may outlive the context that produced it. Observe all of
-    // its dependencies for revocation without admitting them to the current request.
-    if (!admitted(uri) && proposalProvider.pending?.sourceId !== uri?.toString?.() &&
-      !coordinator.controller.pendingProposal?.fileUris.includes(uri?.toString?.()) &&
-      !coordinator.controller.checkpointFileUris().includes(uri?.toString?.())) return;
-    advanceSource();
-    if (deleted) unavailableSources.add(uri.toString());
-    revoke(uri); refresh();
+    const id = uri?.toString?.();
+    if (!id) return;
+    const activeSourceUri = vscode.window.activeTextEditor?.document?.uri?.toString() || null;
+    if (deleted) unavailableSources.add(id);
+    const relevant = coordinator.isSourceChangeRelevant(id, { activeSourceUri });
+    // Publish observed freshness before domain revocation can notify reentrant display observers.
+    if (relevant) advanceSource();
+    coordinator.sourceChanged(id, { deleted, activeSourceUri });
+    if (relevant) refresh();
   };
   const authorizationEvent = () => {
     if (hostDisposed) return;
     advanceSource(); getSourceRevision();
-    const uris = new Set([coordinator.snapshot().context.activeSource?.uri,
-      ...coordinator.snapshot().context.sources.filter(s => s.included).map(s => s.uri),
-      ...coordinator.session.historyPairs().flatMap(pair => pair.dependencies.fileUris),
-      ...(coordinator.controller.pendingProposal?.fileUris || []), ...coordinator.controller.checkpointFileUris(), proposalProvider.pending?.sourceId].filter(Boolean));
-    for (const uri of uris) if (!authorize(uri)) revoke(parseUri(uri));
-    coordinator.session.invalidateActions(a => a.type === 'runFile' && !authorize(a.args.targetUri));
-    coordinator.controller.invalidate('context-changed'); refresh();
+    coordinator.authorizationChanged(); refresh();
   };
   const listen = (owner, name, callback) => { if (owner[name]) subscriptions.push(owner[name](callback)); };
   listen(secrets, 'onDidChange', event => { if (event.key === SECRET_KEY) void refreshTutorAvailability(); });

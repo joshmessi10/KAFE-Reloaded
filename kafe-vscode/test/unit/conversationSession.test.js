@@ -240,3 +240,22 @@ test('live session operations do not write files or persistent state', t => {
   session.reset();
   assert.equal(session.snapshot().draft, '');
 });
+
+
+test('Run target enumeration retains hidden anchors and excludes consumed, disabled and previous-generation actions', () => {
+  const s = createSession(), source = uri => ({ id: 'active-file', uri, label: uri, category: 'active-file', included: true });
+  const a = 'file:///a.kf', b = 'file:///b.kf';
+  s.setContextRunAction(source(a)); s.setContextRunAction(source(b));
+  const duplicate = registeredEnvelope(s, 'runFile', { targetUri: a });
+  const disabled = registeredEnvelope(s, 'runFile', { targetUri: 'file:///disabled.kf' });
+  s.consumeAction(disabled.actionId);
+  assert.deepEqual(new Set(s.runTargetUris()), new Set([a, b]));
+  assert.equal(s.runTargetUris().length, 2);
+  const detached = s.runTargetUris(); detached.push('file:///injected.kf');
+  assert.equal(s.runTargetUris().length, 2);
+  s.consumeAction(duplicate.actionId); assert.ok(s.runTargetUris().includes(a), 'another enabled anchor still owns target');
+  s.invalidateActions(action => action.args.targetUri === a); assert.deepEqual(s.runTargetUris(), [b]);
+  const archive = { draft: '', entries: s.snapshot().entries, historyPairs: [], preferences: { mode: 'guided' } };
+  s.reset(); assert.deepEqual(s.runTargetUris(), []);
+  s.restoreConversation(archive); assert.deepEqual(s.runTargetUris(), [], 'restored display never grants Run');
+});
