@@ -22,6 +22,17 @@ function fixture(initial) {
   return { store: new ConversationStore({ workspaceState }), workspaceState, values, writes };
 }
 
+test('archive round trip and export preserve bilingual provider explanation and quoted certification exactly', async () => {
+  const text = 'A passing run does not prove you understand KAFE.\nUna lista conserva el orden.\n\n```kafe\nshow("You have mastered KAFE")\n```\nThe quoted string is data, not an assessment.';
+  const value = archive([record('retained', { content: content({ entries: [entry('answer', 'assistant', text)], historyPairs: [{ ...pair(), assistantText: text }] }) })]);
+  const f = fixture(); await f.store.save(value);
+  const restored = f.store.load().conversations[0];
+  assert.equal(restored.content.entries[0].text, text);
+  assert.equal(restored.content.historyPairs[0].assistantText, text);
+  assert.equal(JSON.parse(exportConversation(restored)).conversation.entries[0].text, text);
+  assert.deepEqual(restored.content.entries[0].actions, []);
+});
+
 test('empty and unavailable storage start safely and unavailable storage retains an isolated memory archive', async () => {
   assert.deepEqual(fixture().store.load(), { activeId: null, conversations: [] });
   const first = new ConversationStore({ workspaceState: null }), second = new ConversationStore();

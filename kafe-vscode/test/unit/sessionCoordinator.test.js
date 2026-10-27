@@ -5,6 +5,7 @@ const { SessionCoordinator } = require('../../src/tutor/SessionCoordinator');
 const { CodeProposalProvider } = require('../../src/tutor/CodeProposalProvider');
 const { ContextComposer } = require('../../src/tutor/ContextComposer');
 const { ToolRouter, selectedSourceId, metadataLineage } = require('../../src/tutor/ToolRouter');
+const { exportConversation } = require('../../src/tutor/ConversationStore');
 const deferred = () => { let resolve; const promise = new Promise(r => resolve = r); return { promise, resolve }; };
 const uri = path => ({ scheme: 'file', path, toString() { return `file://${path}`; } });
 const metadata = { sourceMode: 'managed', runtimeVersion: '1', knowledgePackVersion: '1', packIdentity: 'pack-a', expectedContentSha256: 'a'.repeat(64) };
@@ -489,7 +490,7 @@ test('file transmission fails closed without a synchronous source revision fence
 });
 
 
-function nativeFixture() {
+function nativeFixture(responseText = '') {
   const source = uri('/work/native.kf'), read = deferred(), readEntered = deferred(), apply = deferred(), applyEntered = deferred();
   const opening = deferred(), openEntered = deferred();
   let phase = 'none', writes = 0, opens = 0, trusted = true;
@@ -502,8 +503,8 @@ function nativeFixture() {
       applyEdit: async () => { writes++; if (phase === 'apply') { applyEntered.resolve(); await apply.promise; } return true; } } };
   const native = new CodeProposalProvider({ vscode, authorizeUri: () => trusted });
   const f = fixture({ proposalProvider: native, context: { activeDocument: { uri: source, text: 'show(1)', version: 1 } },
-    events: async function* () { yield terminal('', [{ id: 'proposal', name: 'proposeCodeChange', arguments: { newText: 'show(2)' } }]); } });
-  const issue = async () => {
+    events: async function* () { yield terminal(responseText, [{ id: 'proposal', name: 'proposeCodeChange', arguments: { newText: 'show(2)' } }]); } });
+  const issue = async (openReview = true) => {
     await f.coordinator.refreshContext(); await f.submit('Change code');
     const { TutorHostActions } = require('../../src/tutor/TutorHostActions');
     const actions = new TutorHostActions({ session: f.coordinator.session, coordinator: f.coordinator, controller: f.coordinator.controller, proposalProvider: native });
@@ -512,6 +513,7 @@ function nativeFixture() {
     const action = entry.actions.find(a => a.type === 'prepareChange' && a.enabled);
     await actions.dispatch({ type: 'invokeAction', sessionId: state.sessionId, generation: state.generation, entryId: entry.id, actionId: action.id, args: action.args });
     const id = native.pending.id;
+    if (!openReview) return id;
     return native.open(id, { isCurrent: () => f.coordinator.proposal?.id === id });
   };
   return { ...f, native, document, issue, read, readEntered, apply, applyEntered, opening, openEntered,
@@ -585,12 +587,74 @@ for (const claim of [
   'Your successful run shows you understand this concept.', 'Your explanation shows you learned how KAFE lists work.',
   'A passing run is a clear sign that you know KAFE.', 'You mastered KAFE.', 'You have mastered KAFE.',
   'The learner mastered KAFE.', 'You are a master of KAFE.', 'You now master KAFE.',
-]) test(`coaching guard rejects unsupported attainment: ${claim}`, async () => {
+]) test(`provider attainment prose is retained without host assessment: ${claim}`, async () => {
   const f = fixture({ events: async function* () { yield { type: 'text', text: claim }; yield terminal(claim); } });
   await f.submit(); const coordinator = f.coordinator; const assistant = coordinator.snapshot().entries.find(e => e.kind === 'assistant');
-  assert.notEqual(assistant.text, claim); assert.match(assistant.text, /do not establish mastery/);
+  assert.equal(assistant.text, claim);
   assert.equal(coordinator.snapshot().entries.some(e => ['check', 'progress', 'milestones'].includes(e.kind)), false);
   assert.equal(coordinator.session.historyPairs()[0].assistantText, assistant.text);
+  assert.deepEqual(coordinator.learningSession.snapshot().decisions, []);
+  assert.deepEqual(coordinator.learningSession.snapshot().observations, []);
+  assert.equal(f.sent.length, 1);
+});
+
+function assertRetainedResponse(coordinator, text) {
+  const state = coordinator.snapshot(), assistant = state.entries.findLast(e => e.kind === 'assistant');
+  assert.equal(state.turn.status, 'completed');
+  assert.equal(assistant.status, 'completed'); assert.equal(assistant.text, text);
+  assert.equal(coordinator.session.historyPairs().at(-1).assistantText, text);
+  const content = coordinator.captureConversation();
+  assert.equal(content.historyPairs.at(-1).assistantText, text);
+  const exported = JSON.parse(exportConversation({ id: 'retained', title: 'A lesson', createdAt: '2026-10-27T12:00:00.000Z', updatedAt: '2026-10-27T12:00:00.000Z', content }));
+  assert.equal(exported.conversation.entries.findLast(e => e.kind === 'assistant').text, text);
+  assert.equal(state.entries.some(e => ['check', 'progress', 'milestones'].includes(e.kind)), false);
+  assert.deepEqual(assistant.actions, []);
+  assert.deepEqual(coordinator.learningSession.snapshot().observations, []);
+}
+
+const retainedResponses = [
+  ['negated English certification', 'A passing run does not prove you understand KAFE. A list stores ordered values; index 0 selects the first item.'],
+  ['quoted claim and code', 'The phrase "You have mastered KAFE" is only a quote.\n\n```kafe\nshow("You have mastered KAFE")\n```\nThe string is data passed to show.'],
+  ['Spanish explanation', 'Una ejecución correcta no demuestra dominio de KAFE. Una lista guarda valores ordenados; el índice 0 selecciona el primero.'],
+];
+for (const [label, text] of retainedResponses) for (const path of ['streaming', 'terminal-only', 'tool-continuation', 'checkpoint']) test(`${label} survives ${path} display history and export`, async () => {
+  const seen = [];
+  const f = fixture({ events: async function* (_, round) {
+    if (path === 'tool-continuation' && round === 1) { yield terminal('', [{ id: 'run', name: 'getLatestRunResult', arguments: {} }]); return; }
+    if (path === 'streaming') {
+      const split = Math.floor(text.length / 2);
+      yield { type: 'text', text: text.slice(0, split) }; yield { type: 'text', text: text.slice(split) };
+    }
+    yield terminal(text, path === 'checkpoint' ? [learningCheckpoint()] : []);
+  } });
+  const before = f.coordinator.learningSession.snapshot();
+  f.coordinator.session.subscribe(state => {
+    const assistant = state.entries.find(e => e.kind === 'assistant');
+    if (assistant?.status === 'responding') seen.push(assistant.text);
+  });
+  assert.equal((await f.submit('Explain list indexing')).status, 'completed');
+  assertRetainedResponse(f.coordinator, text);
+  assert.equal(f.sent.length, path === 'tool-continuation' ? 2 : 1);
+  if (path === 'streaming') {
+    assert.ok(seen.includes(text.slice(0, Math.floor(text.length / 2)))); assert.ok(seen.includes(text));
+  }
+  if (path === 'checkpoint') {
+    const decision = f.coordinator.learningSession.snapshot().decisions[0];
+    assert.equal(decision.disposition, 'proposed');
+    assert.equal(f.coordinator.snapshot().entries.find(e => e.kind === 'checkpoint').status, 'ready');
+  } else assert.deepEqual(f.coordinator.learningSession.snapshot(), before);
+});
+
+for (const text of [retainedResponses[0][1], retainedResponses[1][1], retainedResponses[2][1], '']) test(`successful native proposal retains provider prose ${JSON.stringify(text)}`, async () => {
+  const f = nativeFixture(text);
+  await f.issue(false);
+  assertRetainedResponse(f.coordinator, text);
+  assert.equal(f.sent.length, 2, 'scope offer and authorized preparation each use one provider request');
+  assert.equal(f.writes, 0); assert.equal(f.native.pending.reviewed, false);
+  const proposal = f.coordinator.snapshot().entries.find(e => e.kind === 'proposal');
+  assert.equal(proposal.status, 'ready'); assert.equal(proposal.text, 'Review the proposed KAFE change in the native diff.');
+  assert.deepEqual(proposal.actions.filter(a => a.enabled).map(a => a.type).sort(), ['rejectProposal', 'reviewProposal']);
+  assert.deepEqual(f.coordinator.learningSession.snapshot().decisions, []);
 });
 
 for (const guidance of [

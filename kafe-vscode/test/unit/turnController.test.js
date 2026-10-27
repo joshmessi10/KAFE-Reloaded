@@ -44,6 +44,36 @@ function fixture(options = {}) {
 
 const checkpoint = (patch = {}) => ({ kind: 'design', name: 'Loop', learnerProposalSummary: 'Learner approach', tutorProposedAdditions: [], scopeSummary: 'Print items', tradeoffs: [], unresolvedChoices: [], sourceIds: [], ...patch });
 const checkpointCall = (patch = {}, id = 'checkpoint') => ({ id, name: 'proposeLearningCheckpoint', arguments: checkpoint(patch) });
+test('tool continuation preserves the original provider prose in its follow-up request', async () => {
+  const initial = 'Your explanation does not prove you understand KAFE. Check the first list index.';
+  const answer = 'The phrase "You have mastered KAFE" is a quote; index 0 selects the first item.';
+  const f = fixture({ events: async function* (input, round) {
+    if (round === 1) yield terminal(initial, [call()]);
+    else {
+      assert.equal(input.request.messages.find(m => m.role === 'assistant' && m.tool_calls)?.content, initial);
+      yield { type: 'text', text: answer }; yield terminal(answer);
+    }
+  } });
+  assert.equal((await f.submit()).status, 'completed');
+  assert.equal(f.calls, 2);
+  assert.equal(f.session.snapshot().entries.find(e => e.kind === 'assistant').text, answer);
+  assert.equal(f.session.historyPairs()[0].assistantText, answer);
+  assert.deepEqual(f.learningSession.snapshot().decisions, []);
+  assert.deepEqual(f.learningSession.snapshot().observations, []);
+});
+
+test('empty provider prose settles a valid checkpoint without fabricated narration or continuation', async () => {
+  const f = fixture({ events: async function* () { yield terminal('', [checkpointCall()]); } });
+  assert.equal((await f.submit()).status, 'completed');
+  assert.equal(f.calls, 1);
+  assert.equal(f.session.snapshot().entries.find(e => e.kind === 'assistant').text, '');
+  assert.equal(f.session.historyPairs()[0].assistantText, '');
+  const entry = f.session.snapshot().entries.find(e => e.kind === 'checkpoint');
+  assert.equal(entry.status, 'ready'); assert.equal(entry.text, 'Loop');
+  assert.ok(f.controller.checkpoint(entry.data.decisionId));
+  assert.equal(f.learningSession.snapshot().decisions[0].disposition, 'proposed');
+});
+
 for (const phase of ['actions', 'assistant', 'turn', 'checkpoint']) for (const inherited of [false, true]) test(`revocation during ${phase} publication retains invalidation of ${inherited ? 'inherited' : 'direct'} checkpoint dependency`, async () => {
   const learningSession = new LearningSession();
   const { sha256 } = require('../../src/tutor/RequestSnapshot');

@@ -5,6 +5,22 @@ const row = v => v.byId('timeline').querySelector('[data-entry-id="answer"]');
 const body = v => row(v).querySelector('.entry-text');
 const render = (v, text, revision = 1) => v.render(snapshot({ revision, entries: [entry('answer', 'assistant', text, { status: 'responding' })] }));
 
+test('bilingual explanation and quoted certification stay readable while embedded HTML stays inert', () => {
+  const v = loadView();
+  const explanation = 'A passing run does not prove you understand KAFE. Una lista conserva el orden.';
+  const code = 'show("You have mastered KAFE")\nshow("<script>unsafe()</script>")';
+  const text = `${explanation}\n\n\`\`\`kafe\n${code}\n\`\`\`\n\n<img src=x onerror=unsafe()>`;
+  render(v, text);
+  assert.equal(body(v).querySelector('p').textContent, explanation);
+  assert.equal(body(v).querySelector('pre').querySelector('code').textContent, code);
+  assert.match(body(v).textContent, /<img src=x onerror=unsafe\(\)>/);
+  assert.equal(body(v).querySelector('script'), null); assert.equal(body(v).querySelector('img'), null);
+  v.render(snapshot({ revision: 2, entries: [entry('answer', 'assistant', text)] }));
+  assert.equal(body(v).querySelector('p').textContent, explanation);
+  assert.equal(body(v).querySelector('pre').querySelector('code').textContent, code);
+  assert.equal(body(v).querySelector('script'), null); assert.equal(body(v).querySelector('img'), null);
+});
+
 test('screenshot-like headings and four-column code table become readable semantic blocks', () => {
   const v = loadView();
   render(v, '## Function parameters\nA parameter belongs to the declaration.\n\n| Concept | Declaration | Call | Meaning |\n| --- | --- | --- | --- |\n| Parameter | `function greet(name)` | `greet("Ana")` | Receives a value |\n| Argument | `name` | `"Ana"` | Value supplied |\n\n### Compare the two');

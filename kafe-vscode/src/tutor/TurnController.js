@@ -21,31 +21,6 @@ const SAFE_ERRORS = Object.freeze({
   learning_limit: 'The learning-state limit was reached. This checkpoint was not added.',
 });
 
-// Conversational model content never creates entries, actions, progress, or evidence.
-function coachingText(text) {
-  const directCertification = /\b(?:you|(?:the\s+)?learner|(?:the\s+)?student)\s+(?:(?:have|has|had|are|is|were|was|now|already|fully|completely|an?)\s+)*(?:mastered|master|proficient|expert|certified)\b|\b(?:you|learner|student)\s+(?:fully|completely)\s+understand\b|\b(?:mastery|proficiency|expertise|certification)\s+(?:(?:is|was|has been)\s+)?(?:proved|confirmed|demonstrated|established)\b/i;
-  const evidence = /\b(?:passing|successful|passed)\s+(?:run|result|program|execution|output)\b|\b(?:your|the|learner'?s?)\s+(?:explanation|answer|response)\b|\b(?:a|the|your)\s+(?:run|result|program|output)\s+(?:passed|succeeded)\b/gi;
-  const understanding = /\b(?:understand|understands|understood|understanding|comprehend|comprehends|comprehension|grasp|grasps|know|knows|knowledge|learned|learnt|learns|mastery|proficiency|expertise|certification)\b/gi;
-  const proofClaim = /\b(?:proof|prove|proves|proved|proven|demonstrate|demonstrates|demonstrated|show|shows|shown|confirm|confirms|confirmed|establish|establishes|established|certify|certifies|certified|verify|verifies|verified|validate|validates|validated|guarantee|guarantees|guaranteed|mean|means|indicate|indicates|indicated|sign)\b/gi;
-  const claimsUnderstanding = text.split(/(?<=[.!?])\s+|\n+/).some(sentence => {
-    const matches = pattern => [...sentence.matchAll(pattern)];
-    return matches(evidence).some(e => matches(proofClaim).some(p => matches(understanding).some(u => {
-      const preceding = sentence.slice(Math.max(0, u.index - 30), u.index);
-      const isAttainment = /^(?:understanding|comprehension|knowledge|grasp|mastery|proficiency|expertise|certification)$/i.test(u[0]) ||
-        /\b(?:you|your|learner|student)\s+(?:(?:really|truly|clearly|fully)\s+)?$/i.test(preceding);
-      if (!isAttainment) return false;
-      if (e.index < p.index && p.index < u.index) {
-        const bridge = sentence.slice(p.index + p[0].length, u.index);
-        return !/\b(?:how|where|why|when)\s+to\b|\b(?:so|to|help(?:s|ed)?)\s+(?:you\s+)?$/i.test(bridge);
-      }
-      if (u.index < p.index && p.index < e.index) return !/\bto\s*$/i.test(preceding);
-      return false;
-    })));
-  });
-  return directCertification.test(text) || claimsUnderstanding ?
-    'The run and your explanation are useful evidence, but they do not establish mastery. Try another example and explain what changes.' : text;
-}
-
 /** One immutable submission per owned attempt. Session holds only display state. */
 class TurnController {
   constructor({ session, learningSession = new LearningSession(), provider, contextComposer, toolRouter, proposalProvider, captureSubmission, validateSubmission, isSubmissionAuthorized = snapshot => !snapshot.sources.some(s => s.uri !== null), refreshContext = async () => {},
@@ -194,7 +169,7 @@ class TurnController {
             if (terminal || !event || !['text', 'complete'].includes(event.type) || typeof event.text !== 'string') throw new ProviderError('malformed_response');
             if (event.type === 'text') {
               text += event.text;
-              this.session.updateEntry(owner.turn.assistantEntryId, { text: coachingText(text) });
+              this.session.updateEntry(owner.turn.assistantEntryId, { text });
             } else terminal = event;
           }
         } finally {
@@ -215,7 +190,7 @@ class TurnController {
         }
         const checkpointCalls = calls.filter(c => c.name === 'proposeLearningCheckpoint');
         if (calls.filter(c => c.name === 'proposeCodeChange').length > 1 || checkpointCalls.length > 1 || (checkpointCalls.length && calls.some(c => c.name === 'proposeCodeChange'))) throw new ProviderError('malformed_response');
-        if (!calls.length) { this.complete(owner, coachingText(terminal.text)); break; }
+        if (!calls.length) { this.complete(owner, terminal.text); break; }
         if (++toolRounds > 4) throw Object.assign(new Error(), { code: 'tool_limit' });
         this.status(owner, 'processing-tools');
         messages.push({ role: 'assistant', content: terminal.text || null, tool_calls: calls.map(call => ({ id: call.id,
@@ -274,7 +249,7 @@ class TurnController {
           }
           catch (error) { throw Object.assign(new Error(), { code: error instanceof RangeError ? 'learning_limit' : 'invalid_checkpoint' }); }
           // Finish fallible host history work before inserting a learning decision.
-          this.onCompletedPair({ id: owner.turn.id, learnerText: owner.submission.text, assistantText: coachingText(terminal.text), dependencies: owner.dependencies });
+          this.onCompletedPair({ id: owner.turn.id, learnerText: owner.submission.text, assistantText: terminal.text, dependencies: owner.dependencies });
           if (!this.live(owner)) throw CANCELLED;
           if (!this.isSubmissionAuthorized(owner.snapshot)) throw Object.assign(new Error(), { code: 'stale_context' });
           const decision = this.learningSession.commitDecision(prepared);
@@ -288,7 +263,7 @@ class TurnController {
           owner.turn.status = 'completed';
           this.actionsOff(owner);
           this.#checkpointPublicationFence(owner, pending);
-          this.session.updateEntry(owner.turn.assistantEntryId, { text: coachingText(terminal.text), status: 'completed' });
+          this.session.updateEntry(owner.turn.assistantEntryId, { text: terminal.text, status: 'completed' });
           this.#checkpointPublicationFence(owner, pending);
           this.session.setTurn(owner.turn);
           this.#checkpointPublicationFence(owner, pending);
@@ -325,7 +300,7 @@ class TurnController {
           const entryId = this.session.appendEntry({ kind: 'proposal', status: 'ready', text: 'Review the proposed KAFE change in the native diff.', data: { proposalId: owner.proposalId, turnId: owner.turn.id } });
           this.session.registerAction(entryId, { type: 'rejectProposal', label: 'Dismiss', enabled: true,
             args: { id: owner.proposalId, turnId: owner.turn.id } });
-          this.complete(owner, 'A proposed KAFE change is ready. Review the change before applying it.'); break;
+          this.complete(owner, terminal.text); break;
         }
       }
       return { status: 'completed' };
@@ -471,4 +446,4 @@ class TurnController {
   dispose() { this.#reservation = null; this.invalidateScopes(); this.invalidate('disposed'); this.invalidateCheckpoints(); this.disposed = true; this.unsubscribe(); }
 }
 
-module.exports = { TurnController, coachingText };
+module.exports = { TurnController };
