@@ -264,7 +264,7 @@ test('context disclosure updates at equal session revision and stays quiet acros
   v.render(snapshot({ entries, view })); const composer = v.byId('composer'); composer.focus(); composer.value = 'Next draft'; composer.dispatch('input');
   v.render(snapshot({ entries, view: { ...view, revision: 2, contextNotice: { reasons: ['window', 'source', 'knowledge'] } } }));
   const notice = v.byId('context-notice'); assert.equal(notice.hidden, false);
-  assert.match(notice.textContent, /saved[\s\S]*outside this reply/); assert.match(notice.textContent, /size limit/); assert.match(notice.textContent, /files/); assert.match(notice.textContent, /knowledge/);
+  assert.match(notice.textContent, /saved[\s\S]*outside this reply/); assert.match(notice.textContent, /size limit/); assert.match(notice.textContent, /files/); assert.match(notice.textContent, /KAFE knowledge that is no longer current or available/);
   notice.open = true; const detail = v.byId('context-notice-detail').firstChild;
   v.render(snapshot({ revision: 2, entries, view: { ...view, revision: 2, contextNotice: { reasons: ['window', 'source', 'knowledge'] } } }));
   assert.equal(notice.open, true); assert.equal(v.byId('context-notice-detail').firstChild, detail);

@@ -225,7 +225,7 @@
     const copy = {
       window: 'Some older exchanges exceeded the reply context size limit.',
       source: 'Some exchanges used files that are no longer included.',
-      knowledge: 'Some exchanges used a different KAFE knowledge version.',
+      knowledge: 'Some exchanges relied on KAFE knowledge that is no longer current or available.',
     };
     const text = reasons.map(reason => copy[reason]).join(' ');
     notice.hidden = !text;

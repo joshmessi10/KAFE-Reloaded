@@ -707,7 +707,22 @@ for (const [name, pairs, reasons] of [
   const f = fixture(); for (const pair of pairs) f.coordinator.session.recordCompletedPair(pair);
   const before = f.coordinator.captureConversation(); assert.equal((await f.submit()).status, 'completed');
   assert.deepEqual(f.coordinator.snapshot().contextNotice, { reasons });
-  assert.deepEqual(f.sent[0], f.coordinator.controller.current.snapshot.request);
+  const captured = f.coordinator.controller.current.snapshot;
+  assert.deepEqual(f.sent[0], captured.request);
+  if (name === 'knowledge') {
+    // This fixture has unavailable current knowledge, not an observed new version.
+    assert.equal(captured.dependencies.knowledgeLineage, null);
+    assert.equal(captured.history.dependencies.knowledgeLineage, null);
+    assert.deepEqual(captured.history.omissions, [{ id: 'a', reason: 'knowledge-lineage-changed' }]);
+    const { TutorViewProvider } = require('../../src/tutor/TutorViewProvider');
+    const { loadView } = require('../helpers/tutorViewHarness');
+    const view = loadView(), projection = new TutorViewProvider({ conversationSession: f.coordinator });
+    view.render(projection.project(f.coordinator.snapshot()));
+    assert.equal(view.byId('context-notice').hidden, false);
+    assert.match(view.byId('context-notice-detail').textContent, /KAFE knowledge that is no longer current or available/);
+    assert.doesNotMatch(view.byId('context-notice-detail').textContent, /different.*version/);
+    projection.dispose();
+  }
   assert.equal(f.coordinator.session.snapshot().contextNotice, undefined); assert.equal(f.coordinator.captureConversation().contextNotice, undefined);
   assert.deepEqual(f.coordinator.captureConversation().historyPairs.slice(0, pairs.length), before.historyPairs);
   assert.deepEqual(f.reads, []); assert.doesNotMatch(JSON.stringify(f.sent), /PRIVATE_OLD_SOURCE|OLD_KNOWLEDGE/);
