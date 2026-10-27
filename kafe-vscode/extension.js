@@ -113,8 +113,8 @@ function createTutorHost({ vscode, extensionUri, secrets, workspaceState, runtim
       if (!relative || relative === '..' || relative.startsWith('../') || path.isAbsolute(relative)) return target.toString();
       const folders = vscode.workspace.workspaceFolders || [];
       const name = folder.name || path.basename(folder.uri.fsPath);
-      // Repeated root names cannot disambiguate relative paths. Show exact identity.
-      if (folders.filter(other => (other.name || path.basename(other.uri.fsPath)) === name).length > 1) return target.toString();
+      // Repeated names or embedded path separators make root qualification ambiguous.
+      if (/[\\/]/.test(name) || folders.filter(other => (other.name || path.basename(other.uri.fsPath)) === name).length > 1) return target.toString();
       return (folders.length > 1 ? `${name}/` : '') + relative;
     },
     async readDocument(uri) {

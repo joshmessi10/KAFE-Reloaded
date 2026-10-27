@@ -68,6 +68,25 @@ for (const sameNames of [false, true]) test(`target labels distinguish duplicate
   } finally { f.host.dispose(); }
 });
 
+for (const separator of ['/', '\\']) test(`target labels fall back to canonical identity for custom root names containing ${JSON.stringify(separator)}`, async () => {
+  const f = conversationHostFixture();
+  try {
+    const makeUri = fsPath => ({ scheme: 'file', fsPath, toString: () => `file:///${fsPath.replaceAll('\\', '/')}` });
+    const roots = [
+      { name: 'lesson', uri: makeUri('C:/first') },
+      { name: `lesson${separator}src`, uri: makeUri('C:/second') },
+    ];
+    f.vscode.workspace.workspaceFolders = roots;
+    f.vscode.workspace.getWorkspaceFolder = target => roots.find(root => target.fsPath.startsWith(root.uri.fsPath + '/'));
+    const targets = [makeUri('C:/first/src/main.kf'), makeUri('C:/second/main.kf')];
+    const canonical = targets.map(target => target.toString());
+    const labels = targets.map(target => f.host.coordinator.contextComposer.documentReader.displayLabel(target));
+    assert.deepEqual(labels, ['lesson/src/main.kf', canonical[1]]);
+    assert.notEqual(labels[0], labels[1]);
+    assert.deepEqual(targets.map(target => target.toString()), canonical, 'Display formatting must preserve canonical identity');
+  } finally { f.host.dispose(); }
+});
+
 test('host initializes bounded availability once and refreshContext/drafts/tokens never read readiness', async () => {
   let keyReads = 0, runtimeReads = 0;
   const f = conversationHostFixture({ secrets: { get: async () => { keyReads++; return 'PRIVATE'; } },
