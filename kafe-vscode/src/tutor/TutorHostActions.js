@@ -2,9 +2,9 @@ const { randomUUID } = require('node:crypto');
 /** Host authority for ActionEnvelope capabilities. Services never receive webview action types. */
 class TutorHostActions {
   constructor({ session, controller, coordinator, proposalProvider, runtimeManager,
-    configureProvider, runFile, getReadiness, authorizeRunTarget = () => false, displayTargetLabel = uri => uri }) {
+    configureProvider, prepareRuntime, runFile, getReadiness, authorizeRunTarget = () => false, displayTargetLabel = uri => uri }) {
     Object.assign(this, { session, controller, coordinator, proposalProvider, runtimeManager,
-      configureProvider, runFile, getReadiness, authorizeRunTarget, displayTargetLabel });
+      configureProvider, prepareRuntime, runFile, getReadiness, authorizeRunTarget, displayTargetLabel });
     this.runGenerations = new Map();
     this.runRequests = new Map();
     this.disposed = false;
@@ -152,9 +152,7 @@ class TutorHostActions {
           if (!ready?.trusted) { result = { status: 'unavailable', code: 'trust_unavailable' }; break; }
           if (args.targetUri && !this.authorizeRunTarget(args.targetUri)) { result = { status: 'unavailable', code: 'target_unavailable' }; break; }
           this.session.updateEntry(envelope.entryId, { status: 'running', text: 'Checking KAFE runtime setup.' });
-          const installed = await this.runtimeManager?.installRuntime({ onProgress: event => {
-            if (current() && ['checking', 'confirming', 'downloading', 'validating', 'extracting', 'syncing', 'ready'].includes(event.stage)) this.session.updateEntry(envelope.entryId, { text: `KAFE setup: ${event.stage}.` });
-          } });
+          const installed = await this.prepareRuntime?.({ origin: 'retry' });
           result = { status: installed?.status === 'ready' ? 'completed' : installed?.status === 'cancelled' ? 'cancelled' : installed?.status === 'unavailable' ? 'unavailable' : 'failed' };
           if (current()) this.session.updateEntry(envelope.entryId, { status: result.status, text: `KAFE runtime setup ${result.status}.` });
           break;

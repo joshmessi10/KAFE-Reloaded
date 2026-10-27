@@ -26,6 +26,209 @@ for (const change of ['unchanged', 'during-run', 'read-failure']) test(`Run capt
 });
 
 const deferred = () => { let resolve; const promise = new Promise(r => { resolve = r; }); return { promise, resolve }; };
+function runtimeSetupFixture({ outcome = { status: 'ready' }, key } = {}) {
+  const notifications = [], stages = [], progress = []; let installs = 0, emitProgress;
+  const f = conversationHostFixture({ secrets: { get: async () => key }, runtimeManager: {
+    manifest: { runtime: { releasePublished: true } }, getReadyRuntime: async () => ({ status: 'missing' }),
+    installRuntime: async ({ onProgress }) => { installs++; emitProgress = onProgress; onProgress({ stage: 'downloading' }); return typeof outcome === 'function' ? outcome() : outcome; },
+  } });
+  const notify = kind => (...args) => { notifications.push({ kind, args }); return Promise.resolve(); };
+  Object.assign(f.vscode.window, { showInformationMessage: notify('info'), showWarningMessage: notify('warning'), showErrorMessage: notify('error'),
+    withProgress: async (options, task) => { progress.push(options); return task({ report: stage => stages.push(stage) }); } });
+  f.vscode.ProgressLocation = { Notification: 15 };
+  return { ...f, notifications, stages, progress, installs: () => installs, emitProgress: event => emitProgress?.(event) };
+}
+
+function activateRuntimeFixture(options) {
+  const f = runtimeSetupFixture(options), manager = f.host.actions.runtimeManager, registered = new Map();
+  f.host.dispose();
+  const disposable = () => ({ dispose() {} });
+  f.vscode.window.registerWebviewViewProvider = disposable;
+  f.vscode.workspace.registerTextDocumentContentProvider = disposable;
+  f.vscode.commands = { registerCommand: (name, callback) => { registered.set(name, callback); return disposable(); }, executeCommand: async () => {} };
+  const context = { globalStorageUri: { fsPath: 'C:/NO_NETWORK_RUNTIME_FIXTURE' }, extensionUri: {}, secrets: { get: async () => options?.key }, subscriptions: [] };
+  const Module = require('node:module'), originalLoad = Module._load, extensionPath = require.resolve('../../extension'), previous = require.cache[extensionPath];
+  try {
+    delete require.cache[extensionPath];
+    Module._load = function(name, ...args) {
+      if (name === 'vscode') return f.vscode;
+      if (name === './src/runtimeManager') return { createRuntimeManager: () => manager };
+      return originalLoad.call(this, name, ...args);
+    };
+    require('../../extension').activate(context);
+  } finally { Module._load = originalLoad; require.cache[extensionPath] = previous; }
+  return { ...f, host: context.subscriptions[0], registered, dispose: () => context.subscriptions.forEach(s => s.dispose()) };
+}
+
+for (const status of ['ready', 'unsupported', 'unavailable', 'cancelled', 'error', 'throw']) test(`actual activation and command share ${status} outcome presentation`, async () => {
+  const f = activateRuntimeFixture({ outcome: status === 'throw' ? () => { throw Error('PRIVATE'); } : { status, message: 'PRIVATE' }, key: 'configured' });
+  try {
+    await f.host.prepareRuntime({ origin: 'activation' }); // Joins the actual activation flight.
+    assert.equal(f.installs(), 1); assert.equal(f.notifications.length, 1);
+    assert.equal((await f.registered.get('kafe.installRuntime')()).status, status === 'throw' ? 'error' : status);
+    assert.equal(f.installs(), 2); assert.equal(f.notifications.length, 2);
+    assert.equal(f.notifications[0].args[0], f.notifications[1].args[0]);
+    assert.doesNotMatch(JSON.stringify(f.notifications), /PRIVATE/);
+  } finally { f.dispose(); }
+});
+
+test('immediate Retry selected from its own failure notification starts exactly one new flight', async () => {
+  const f = runtimeSetupFixture({ outcome: { status: 'error' } }); let messages = 0;
+  f.vscode.window.showErrorMessage = () => Promise.resolve(++messages === 1 ? 'Retry setup' : undefined);
+  try {
+    await f.host.readiness; await f.host.prepareRuntime({ origin: 'manual' });
+    await new Promise(r => setImmediate(r));
+    assert.equal(f.installs(), 2); assert.equal(messages, 2);
+  } finally { f.host.dispose(); }
+});
+
+test('safe Details and old outcome choices cannot install after a newer setup or disposal', async () => {
+  const f = runtimeSetupFixture({ outcome: { status: 'error', message: 'PRIVATE', stack: 'PRIVATE' } }); const choice = deferred();
+  f.vscode.window.showErrorMessage = () => choice.promise;
+  try {
+    await f.host.readiness; await f.host.prepareRuntime({ origin: 'manual' }); choice.resolve('Details'); await new Promise(r => setImmediate(r));
+    assert.equal(f.installs(), 1); assert.equal(f.notifications.length, 1);
+    assert.doesNotMatch(JSON.stringify(f.notifications), /PRIVATE/); assert.match(f.notifications[0].args[1].detail, /does not send your draft or run/);
+    const oldChoice = deferred(); f.vscode.window.showErrorMessage = () => oldChoice.promise;
+    await f.host.prepareRuntime({ origin: 'manual' });
+    f.vscode.window.showErrorMessage = async () => undefined;
+    await f.host.prepareRuntime({ origin: 'manual' }); oldChoice.resolve('Retry setup'); await new Promise(r => setImmediate(r));
+    assert.equal(f.installs(), 3);
+    f.host.dispose(); await f.host.prepareRuntime({ origin: 'retry' }); assert.equal(f.installs(), 3);
+  } finally { choice.resolve(); f.host.dispose(); }
+});
+
+test('late setup result after trust loss and regrant cannot publish ready or install again', async () => {
+  const completion = deferred(), f = runtimeSetupFixture({ outcome: () => completion.promise, key: 'configured' });
+  try {
+    await f.host.readiness; const pending = f.host.prepareRuntime({ origin: 'manual' }); await new Promise(r => setImmediate(r));
+    f.vscode.workspace.isTrusted = false; f.listeners.trust(); await new Promise(r => setImmediate(r));
+    f.vscode.workspace.isTrusted = true; f.listeners.trust(); await new Promise(r => setImmediate(r));
+    completion.resolve({ status: 'ready' }); assert.equal((await pending).status, 'cancelled');
+    assert.notEqual(f.host.tutorView.hostMetadata.runtime, 'ready'); assert.equal(f.host.tutorView.hostMetadata.providerKey, 'present');
+    assert.equal(f.installs(), 1); assert.equal(f.notifications.length, 0);
+  } finally { completion.resolve(); f.host.dispose(); }
+});
+
+for (const [origin, phase] of [['activation', 'preflight'], ['activation', 'progress'], ['manual', 'progress'], ['retry', 'progress']]) test(`${origin} runtime ${phase} failure is categorized safely before install`, async () => {
+  const f = runtimeSetupFixture();
+  try {
+    await f.host.readiness;
+    if (phase === 'preflight') f.host.actions.runtimeManager.getReadyRuntime = async () => { throw Error('PRIVATE'); };
+    else f.vscode.window.withProgress = async () => { throw Error('PRIVATE'); };
+    assert.deepEqual(await f.host.prepareRuntime({ origin }), { status: 'error', code: 'runtime_setup_failed' });
+    assert.equal(f.installs(), 0); assert.equal(f.notifications.length, 1); assert.doesNotMatch(JSON.stringify(f.notifications), /PRIVATE/);
+  } finally { f.host.dispose(); }
+});
+
+test('setup validates result and progress categories before showing native text', async () => {
+  const f = runtimeSetupFixture({ outcome: { status: 'toString', message: 'PRIVATE' } });
+  try {
+    await f.host.readiness;
+    assert.deepEqual(await f.host.prepareRuntime({ origin: 'manual' }), { status: 'error', code: 'runtime_setup_failed' });
+    const before = f.stages.length; f.emitProgress({ stage: 'toString' }); assert.equal(f.stages.length, before);
+    assert.doesNotMatch(JSON.stringify(f.notifications), /PRIVATE|function/);
+  } finally { f.host.dispose(); }
+});
+
+for (const origin of ['activation', 'manual', 'retry']) for (const refusal of ['untrusted', 'unpublished']) test(`${origin} setup respects ${refusal} without installing`, async () => {
+  const f = runtimeSetupFixture();
+  try {
+    await f.host.readiness;
+    if (refusal === 'untrusted') f.vscode.workspace.isTrusted = false;
+    else f.host.actions.runtimeManager.manifest.runtime.releasePublished = false;
+    const result = await f.host.prepareRuntime({ origin });
+    assert.equal(result.status, refusal === 'untrusted' ? 'blocked' : 'unavailable'); assert.equal(f.installs(), 0);
+    assert.equal(f.host.tutorView.hostMetadata.runtime, 'unavailable');
+  } finally { f.host.dispose(); }
+});
+
+test('automatic setup keeps a verified installed runtime and does not offer redundant installation', async () => {
+  const f = runtimeSetupFixture();
+  try {
+    await f.host.readiness; f.host.actions.runtimeManager.getReadyRuntime = async () => ({ status: 'ready' });
+    assert.equal((await f.host.prepareRuntime({ origin: 'activation' })).status, 'ready');
+    assert.equal(f.installs(), 0); assert.equal(f.notifications.length, 0); assert.equal(f.host.tutorView.hostMetadata.runtime, 'ready');
+  } finally { f.host.dispose(); }
+});
+
+for (const origin of ['activation', 'manual', 'retry']) for (const status of ['ready', 'unsupported', 'unavailable', 'cancelled', 'error', 'throw']) {
+  test(`shared runtime setup reports safe ${origin} ${status} without sending or running`, async () => {
+    const f = runtimeSetupFixture({ outcome: status === 'throw' ? () => { throw Error('PRIVATE_PATH token SECRET'); } : { status, message: 'PRIVATE_PATH token SECRET', runtimeRoot: 'PRIVATE_PATH' } });
+    try {
+      await f.host.readiness; f.host.coordinator.session.setDraft('Keep my draft');
+      const result = await f.host.prepareRuntime({ origin });
+      assert.equal(result.status, status === 'throw' ? 'error' : status);
+      assert.equal(f.installs(), 1); assert.equal(f.progress[0].cancellable, false);
+      assert.deepEqual(f.stages, [{ message: 'Checking runtime setup…' }, { message: 'Downloading runtime and uv…' }]);
+      f.emitProgress({ stage: 'syncing' }); assert.equal(f.stages.length, 2, 'completed setup owns no further progress');
+      assert.equal(f.notifications.length, 1); assert.doesNotMatch(JSON.stringify(f.notifications), /PRIVATE_PATH|SECRET|Instalando|Descargando/);
+      assert.match(f.notifications[0].args[0], status === 'ready' ? /ready for Run/ : status === 'unsupported' ? /not supported/ : status === 'cancelled' ? /cancelled/ : status === 'unavailable' ? /unavailable/ : /could not complete/);
+      assert.match(f.notifications[0].args[0], /Configure Tutor/);
+      assert.equal(f.host.tutorView.hostMetadata.runtime, status === 'ready' ? 'ready' : status === 'error' || status === 'throw' ? 'failed' : 'unavailable');
+      assert.equal(f.host.coordinator.snapshot().draft, 'Keep my draft'); assert.equal(f.calls.length, 0);
+      assert.equal(f.host.coordinator.snapshot().entries.length, 0);
+    } finally { f.host.dispose(); }
+  });
+}
+
+test('runtime setup is single-flight, fences stale runtime reads and allows independent key facts and chat', async () => {
+  const install = deferred(), oldRead = deferred(); let reads = 0;
+  const f = runtimeSetupFixture({ outcome: () => install.promise, key: 'configured' });
+  try {
+    await f.host.readiness;
+    // A read started before setup must never overwrite preparation or its outcome.
+    f.host.actions.runtimeManager.getReadyRuntime = () => ++reads === 1 ? oldRead.promise : Promise.resolve({ status: 'missing' });
+    const refresh = f.host.refreshTutorAvailability();
+    const one = f.host.prepareRuntime({ origin: 'manual' }), two = f.host.prepareRuntime({ origin: 'retry' });
+    assert.equal(one, two); await new Promise(r => setImmediate(r));
+    assert.equal(f.host.tutorView.hostMetadata.runtime, 'preparing');
+    await f.host.refreshTutorAvailability(); assert.equal(f.host.tutorView.hostMetadata.providerKey, 'present');
+    await submit(f, 'Explain a concept'); assert.equal(f.calls.length, 1);
+    install.resolve({ status: 'error' }); await one;
+    oldRead.resolve({ status: 'ready' }); await refresh;
+    assert.equal(f.host.tutorView.hostMetadata.runtime, 'failed'); assert.equal(f.installs(), 1);
+    assert.match(f.notifications[0].args[0], /key is configured/);
+  } finally { oldRead.resolve(); install.resolve({ status: 'error' }); f.host.dispose(); }
+});
+
+for (const choice of ['Retry setup', undefined]) test(`setup notification ${choice || 'dismissal'} never holds the completed flight`, async () => {
+  const dialog = deferred(); const f = runtimeSetupFixture({ outcome: { status: 'error' } }); let notifications = 0;
+  f.vscode.window.showErrorMessage = (...args) => { f.notifications.push({ kind: 'error', args }); return ++notifications === 1 ? dialog.promise : Promise.resolve(); };
+  try {
+    await f.host.readiness;
+    assert.equal((await f.host.prepareRuntime({ origin: 'manual' })).status, 'error');
+    if (choice) { dialog.resolve(choice); await new Promise(r => setImmediate(r)); }
+    else { await f.host.prepareRuntime({ origin: 'retry' }); dialog.resolve(); }
+    assert.equal(f.installs(), 2); assert.equal(notifications, 2);
+  } finally { dialog.resolve(); f.host.dispose(); }
+});
+
+for (const boundary of ['trust', 'dispose']) test(`runtime setup suppresses late results and progress after ${boundary}`, async () => {
+  const install = deferred(); const f = runtimeSetupFixture({ outcome: () => install.promise });
+  try {
+    await f.host.readiness; const pending = f.host.prepareRuntime({ origin: 'manual' }); await new Promise(r => setImmediate(r));
+    if (boundary === 'trust') { f.vscode.workspace.isTrusted = false; f.listeners.trust(); } else f.host.dispose();
+    const stageCount = f.stages.length; f.emitProgress({ stage: 'syncing' }); assert.equal(f.stages.length, stageCount);
+    const before = structuredClone(f.host.tutorView.hostMetadata);
+    install.resolve({ status: 'ready' }); assert.equal((await pending).status, 'cancelled');
+    if (boundary === 'dispose') assert.deepEqual(f.host.tutorView.hostMetadata, before);
+    else assert.equal(f.host.tutorView.hostMetadata.runtime, 'unavailable');
+    assert.equal(f.notifications.length, 0);
+  } finally { install.resolve(); f.host.dispose(); }
+});
+
+test('runtime retry bridge is exact, current-generation and never transmits the draft', async () => {
+  const f = runtimeSetupFixture();
+  try {
+    await f.host.readiness; f.host.coordinator.session.setDraft('Unsent'); const state = f.host.coordinator.snapshot();
+    const issued = { type: 'retryRuntimeSetup', sessionId: state.sessionId, generation: state.generation };
+    for (const patch of [{ args: {} }, { targetUri: 'file:///C:/workspace/main.kf' }, { command: 'kafe.runFile' }, { generation: 0 }, { sessionId: 'old' }]) assert.equal((await f.host.tutorView.onMessage({ ...issued, ...patch })).status, 'stale');
+    assert.equal(f.installs(), 0); assert.equal((await f.host.tutorView.onMessage(issued)).status, 'ready');
+    assert.equal(f.host.coordinator.snapshot().draft, 'Unsent'); assert.equal(f.calls.length, 0);
+    f.host.coordinator.newConversation(); assert.equal((await f.host.tutorView.onMessage(issued)).status, 'stale'); assert.equal(f.installs(), 1);
+  } finally { f.host.dispose(); }
+});
 function conversationHostFixture({ workspaceState, secrets = {}, runtimeManager = {} } = {}) {
   const listeners = {}, calls = [], reads = [], watcher = {}, disposals = [];
   const uri = name => ({ scheme: 'file', fsPath: `C:/workspace/${name}`, toString: () => `file:///C:/workspace/${name}` });
@@ -299,6 +502,7 @@ test('production host restores workspace chats and rejects old webview envelopes
   const workspaceState = { get: key => values.get(key), async update(key, value) { values.set(key, structuredClone(value)); } };
   const first = conversationHostFixture({ workspaceState });
   await first.host.readiness;
+  await submit(first, 'Saved question before New conversation');
   const originalId = first.host.conversations.activeId, oldState = first.host.coordinator.snapshot();
   assert.equal((await first.host.tutorView.onMessage({ type: 'setDraft', sessionId: oldState.sessionId, generation: oldState.generation, text: 'Original draft' })).status, 'completed');
   await first.host.conversationCommands.newConversation();
@@ -316,7 +520,9 @@ test('production host restores workspace chats and rejects old webview envelopes
     restarted.vscode.window.showQuickPick = async choices => choices.find(item => item.id === originalId);
     assert.equal((await restarted.host.conversationCommands.switchConversation()).status, 'completed');
     assert.equal(restarted.host.coordinator.snapshot().draft, 'Original draft');
-    assert.equal(restarted.host.tutorView.conversationTitle, 'New conversation');
+    assert.ok(restarted.host.coordinator.snapshot().entries.some(e => e.text === 'Saved question before New conversation'));
+    assert.ok(restarted.host.coordinator.snapshot().entries.some(e => e.text === 'Answer'));
+    assert.equal(restarted.host.tutorView.conversationTitle, 'Saved question before New conversation');
     assert.doesNotMatch(JSON.stringify([...values.values()]), /OPTIONAL_OLD|EXCLUDED|\"ACTIVE\"/);
   } finally { await restarted.host.conversations.dispose(); restarted.host.dispose(); }
 });
@@ -1056,13 +1262,15 @@ test('source fence is monotonic across new conversation and stable for draft, to
 
 for (const confirmed of [false, true]) test(`native legacy clear affects only confirmed legacy records: confirmed=${confirmed}`, async () => {
   const { ProgressStore } = require('../../src/tutor/ProgressStore');
-  const values = new Map([['kafeTutor.progress.v1', { schemaVersion: 1, goal: 'Old', milestones: [{ id: 'one', text: 'Old step' }], completedChecks: [] }], ['independent', 'retained']]);
+  const values = new Map([['kafeTutor.progress.v1', { schemaVersion: 1, goal: 'Old', milestones: [{ id: 'one', text: 'Old step' }], completedChecks: [] }], ['independent', 'retained'], ['kafeTutor.conversations.v1', 'saved chats retained']]);
   const writes = [], prompts = []; const f = conversationHostFixture(); await f.host.readiness;
   f.host.coordinator.session.setDraft('Unsent'); const before = f.host.coordinator.snapshot();
   const handler = createClearProgressHandler({ vscode: { window: { showWarningMessage: async (...args) => { prompts.push(args); return confirmed ? 'Clear legacy progress' : undefined; } } },
     progressStore: new ProgressStore({ workspaceState: { get: key => values.get(key), update: async (key, value) => { writes.push([key, value]); values.delete(key); } } }) });
   assert.equal((await handler()).status, confirmed ? 'completed' : 'cancelled');
   assert.equal(prompts[0][1].modal, true); assert.equal(values.has('kafeTutor.progress.v1'), !confirmed);
+  assert.match(prompts[0][1].detail, /Saved conversations.*draft.*provider keys.*kept/);
+  assert.equal(values.get('kafeTutor.conversations.v1'), 'saved chats retained');
   assert.equal(values.get('independent'), 'retained'); assert.equal(writes.length, confirmed ? 2 : 0);
   assert.deepEqual(f.host.coordinator.snapshot(), before); f.host.dispose();
 });

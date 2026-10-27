@@ -5,6 +5,13 @@ const { loadView } = require('../helpers/tutorViewHarness');
 const { ConversationSession } = require('../../src/tutor/ConversationSession');
 const command = (session, type, fields = {}) => ({ type, sessionId: session.snapshot().sessionId, generation: session.snapshot().generation, ...fields });
 
+test('runtime setup retry accepts exactly the current native bridge envelope', () => {
+  const s = new ConversationSession(), message = command(s, 'retryRuntimeSetup');
+  assert.equal(isTutorMessage(message, s), true);
+  for (const patch of [{ args: {} }, { origin: 'manual' }, { command: 'kafe.runFile' }, { key: 'PRIVATE' }, { generation: -1 }, { sessionId: 'other' }]) assert.equal(isTutorMessage({ ...message, ...patch }, s), false);
+  s.reset(); assert.equal(isTutorMessage(message, s), false);
+});
+
 test('configure Tutor accepts only an argument-free current-generation message', () => {
   const s = new ConversationSession(), issued = command(s, 'configureProvider');
   assert.equal(isTutorMessage(issued, s), true);

@@ -102,7 +102,7 @@ test('decision exhaustion retains every decision and pending action, shows recov
   assert.ok(f.session.resolveAction(pending)); assert.equal(f.calls, 2); assert.equal(f.stages, 0);
   const view = loadView(); view.render(f.coordinator.snapshot());
   assert.match(view.byId('timeline').textContent, /learning-state limit.*checkpoint was not added/);
-  assert.match(view.byId('timeline').textContent, /New conversation.*clears/);
+  assert.match(view.byId('timeline').textContent, /New conversation.*preserves this saved conversation.*fresh active learning state/);
   assert.equal(view.byId('composer').value, 'Unsent reasoning'); assert.equal(view.byId('stop').hidden, true);
 });
 
@@ -136,7 +136,7 @@ test('learning confirmation limit retains pending decision and draft with recove
   f.coordinator.learningSession.confirmDecision = () => { throw new RangeError('limit'); };
   assert.equal((await f.actions.dispatch(f.envelope('confirmCheckpoint'))).code, 'learning_limit');
   const view = loadView(); view.render(f.coordinator.snapshot());
-  assert.match(view.byId('timeline').textContent, /New conversation.*clears/);
+  assert.match(view.byId('timeline').textContent, /New conversation.*preserves this saved conversation.*fresh active learning state/);
   assert.equal(view.byId('composer').value, 'Next reasoning'); assert.equal(view.byId('stop').hidden, true);
   assert.equal(f.coordinator.learningSession.snapshot().decisions.length, 1);
   assert.equal(f.coordinator.learningSession.snapshot().decisions[0].disposition, 'proposed');

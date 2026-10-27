@@ -5,6 +5,32 @@ const source = (id, path, included = true, category = 'selected-file') => ({ id,
 const turn = status => ({ id: 'turn', turnGeneration: 1, submissionId: 'submission', status });
 const envelope = (type, fields = {}) => ({ type, sessionId: 'session', generation: 1, ...fields });
 
+for (const providerKey of ['unknown', 'missing', 'present', 'unavailable']) for (const runtime of ['preparing', 'failed', 'unavailable', 'ready']) test(`runtime recovery retains draft and key-dependent Send: ${providerKey}/${runtime}`, () => {
+  const v = loadView();
+  v.render(snapshot({ view: { revision: 1, providerKey, runtime, contextNotice: null } }));
+  const composer = v.byId('composer'); composer.value = 'My unsent question'; composer.dispatch('input');
+  assert.equal(v.byId('send').disabled, providerKey !== 'present');
+  const retry = v.byId('retry-runtime');
+  assert.equal(retry.hidden, !['failed', 'unavailable'].includes(runtime));
+  if (!retry.hidden) { v.sent.length = 0; retry.dispatch('click'); assert.deepEqual(v.sent, [envelope('retryRuntimeSetup')]); }
+  v.render(snapshot({ view: { revision: 2, providerKey, runtime: 'preparing', contextNotice: null } }));
+  assert.equal(v.byId('composer').value, 'My unsent question'); assert.equal(v.byId('retry-runtime').hidden, true);
+  v.render(snapshot({ entries: [entry('old', 'assistant', 'Existing response')], revision: 2, view: { revision: 3, providerKey, runtime: 'failed', contextNotice: null } }));
+  assert.equal(v.byId('retry-runtime').hidden, false, 'recovery remains available in a returning chat');
+  assert.equal(v.sent.some(message => message.type === 'submitMessage' || message.type === 'invokeAction'), false);
+});
+
+test('Restricted Mode cannot expose runtime installation through its recovery control', () => {
+  const v = loadView(); v.render(snapshot({ context: { revision: 1, restricted: true, activeSource: null, sources: [] }, view: { revision: 1, providerKey: 'present', runtime: 'failed', contextNotice: null } }));
+  assert.equal(v.byId('retry-runtime').hidden, true); v.byId('retry-runtime').dispatch('click'); assert.deepEqual(v.sent, []);
+});
+
+test('learning-limit recovery explains that New conversation preserves the departing saved chat', () => {
+  const v = loadView(); v.render(snapshot({ entries: [entry('limit', 'error', 'Learning limit reached', { data: { code: 'learning_limit' }, status: 'failed' })] }));
+  assert.match(v.byId('timeline').textContent, /preserves this saved conversation/);
+  assert.doesNotMatch(v.byId('timeline').textContent, /clears this conversation/);
+});
+
 test('Restricted first use keeps static help and native configuration while exposing no source or Run authority', () => {
   const v = loadView();
   v.render(snapshot({ context: { revision: 1, restricted: true, activeSource: null, sources: [] },

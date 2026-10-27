@@ -134,7 +134,7 @@ for (const [status, expected] of [['ready', /Staged.*not applied.*Run/], ['appli
   assert.ok(v.byId('timeline').textContent.includes('file:///a/main.kf'));
 });
 
-for (const [code, expected] of [['learning_limit', /New conversation.*clears.*learning state/], ['invalid_checkpoint', /new request.*current context/], ['trust_unavailable', /message-only/i], ['runtime_unavailable', /message-only/i], ['missing_key', /Configure.*send.*explicitly/], ['stale_context', /current context/]]) test(`safe ${code} recovery uses host error code without granting or resending`, () => {
+for (const [code, expected] of [['learning_limit', /New conversation.*preserves.*saved conversation.*fresh active learning state/], ['invalid_checkpoint', /new request.*current context/], ['trust_unavailable', /message-only/i], ['runtime_unavailable', /message-only/i], ['missing_key', /Configure.*send.*explicitly/], ['stale_context', /current context/]]) test(`safe ${code} recovery uses host error code without granting or resending`, () => {
   const v = loadView(); v.render(snapshot({ draft: 'Next draft', entries: [entry('e', 'error', 'Safe host failure', { status: 'failed', data: { code } })] }));
   assert.match(v.byId('timeline').textContent, expected);
   assert.equal(v.byId('composer').value, 'Next draft'); assert.deepEqual(v.sent, []);

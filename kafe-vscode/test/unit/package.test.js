@@ -91,9 +91,10 @@ test('learner setup covers consent, context, progress, and supported platforms',
 test('README explains separate SecretStorage key and tutor progress removal', () => {
   const readme = readFileSync(path.join(root, 'README.md'), 'utf8');
   assert.ok(readme.includes('KAFE: Clear Provider Key'));
-  assert.ok(readme.includes('KAFE: Clear Tutor Progress'));
+  assert.ok(readme.includes('KAFE: Clear Legacy Tutor Progress'));
   assert.match(readme, /Clear Provider Key[^\n]*SecretStorage/);
   assert.doesNotMatch(readme, /Removing the API key from extension settings/);
+  assert.equal(readJson('package.json').contributes.commands.find(c => c.command === 'kafe.clearTutorProgress').title, 'KAFE: Clear Legacy Tutor Progress');
 });
 
 test('conversation reset is a secondary Tutor view-title command', () => { const pkg = readJson('package.json'); for (const command of ['kafe.newConversation']) { assert.ok(pkg.activationEvents.includes(`onCommand:${command}`)); const item = pkg.contributes.menus['view/title'].find(i => i.command === command); assert.ok(item); assert.equal(item.when, 'view == kafeTutorView'); assert.ok(item.group && !item.group.startsWith('navigation')); } });

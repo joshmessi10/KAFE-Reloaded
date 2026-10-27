@@ -19,7 +19,7 @@ function isTutorMessage(value, session) {
     return Object.keys(value).length === keys.length && keys.every(key => Object.hasOwn(value, key));
   };
   switch (value.type) {
-    case 'configureProvider': return exact([]);
+    case 'configureProvider': case 'retryRuntimeSetup': return exact([]);
     case 'setDraft': return exact(['text']) && typeof value.text === 'string';
     case 'submitMessage': return exact(['submissionId', 'text', 'contextRevision']) &&
       typeof value.submissionId === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value.submissionId) &&

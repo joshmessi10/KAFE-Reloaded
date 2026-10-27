@@ -70,7 +70,7 @@ function createClearProgressHandler({ vscode, progressStore }) {
     pending = (async () => {
       try {
         const choice = await vscode.window.showWarningMessage('Clear legacy KAFE Tutor progress records?',
-          { modal: true }, 'Clear legacy progress');
+          { modal: true, detail: 'Saved conversations, the current draft and provider keys are kept.' }, 'Clear legacy progress');
         if (choice !== 'Clear legacy progress') return { status: 'cancelled' };
         await progressStore?.clear(); return { status: progressStore ? 'completed' : 'unavailable' };
       } catch { return { status: 'failed', code: 'legacy_clear_failed' }; }
@@ -233,6 +233,7 @@ function createTutorHost({ vscode, extensionUri, secrets, workspaceState, runtim
     onRunState: event => actions.recordRunState(event), onRunResult: result => actions.recordRunResult(result) });
   const nativeKeyHandlers = createProviderKeyHandlers({ vscode, secrets });
   let keyAvailabilityRevision = 0, runtimeAvailabilityRevision = 0, keyConfiguration;
+  let runtimeSetup, runtimeSetupEpoch = 0;
   // Presentation facts are independent of request/Run authorization and never refreshed by drafts or tokens.
   const refreshProviderKeyAvailability = async () => {
     if (hostDisposed) return;
@@ -249,6 +250,7 @@ function createTutorHost({ vscode, extensionUri, secrets, workspaceState, runtim
       refreshProviderKeyAvailability(),
       (async () => {
         let runtime = 'unavailable';
+        if (trusted && runtimeSetup) return;
         if (trusted) try {
           const ready = await runtimeManager.getReadyRuntime?.();
           if (['preparing', 'ready', 'failed'].includes(ready?.status)) runtime = ready.status;
@@ -256,6 +258,79 @@ function createTutorHost({ vscode, extensionUri, secrets, workspaceState, runtim
         if (!hostDisposed && owner === runtimeAvailabilityRevision) tutorView.setHostMetadata({ runtime: vscode.workspace.isTrusted === true && trusted ? runtime : 'unavailable' });
       })(),
     ]);
+  };
+  // Native setup is global to the host. Notifications are detached from the flight:
+  // choosing Retry in its own outcome must start fresh work, never await itself.
+  const prepareRuntime = ({ origin } = {}) => {
+    if (hostDisposed) return Promise.resolve({ status: 'cancelled' });
+    if (!['activation', 'manual', 'retry'].includes(origin)) return Promise.resolve({ status: 'error', code: 'runtime_setup_failed' });
+    if (runtimeSetup) return runtimeSetup;
+    const owner = ++runtimeSetupEpoch;
+    ++runtimeAvailabilityRevision;
+    const current = () => !hostDisposed && owner === runtimeSetupEpoch && vscode.workspace.isTrusted === true;
+    const messages = {
+      ready: 'KAFE runtime is ready for Run.',
+      unsupported: 'KAFE runtime setup is not supported on this platform.',
+      unavailable: 'KAFE runtime setup is unavailable. Check that the published runtime is available, then retry setup.',
+      cancelled: 'KAFE runtime setup was cancelled. You can retry setup when ready.',
+      error: 'KAFE runtime setup could not complete. Retry setup to install or repair it.',
+      blocked: 'Trust this workspace before installing the KAFE runtime.',
+    };
+    const stages = { checking: 'Checking runtime setup…', confirming: 'Preparing runtime setup…',
+      downloading: 'Downloading runtime and uv…', validating: 'Validating runtime components…',
+      extracting: 'Extracting runtime components…', syncing: 'Configuring runtime dependencies…', ready: 'Runtime setup ready.' };
+    let skipped = false;
+    const work = async () => {
+      if (!vscode.workspace.isTrusted) return { status: 'blocked', message: messages.blocked };
+      if (origin === 'activation') {
+        const ready = await runtimeManager.getReadyRuntime();
+        if (!current()) return { status: 'cancelled' };
+        if (ready?.status === 'ready') { skipped = true; return ready; }
+        if (!runtimeManager.manifest?.runtime?.releasePublished) { skipped = true; return { status: 'unavailable' }; }
+      }
+      if (!current()) return { status: 'cancelled' };
+      if (runtimeManager.manifest?.runtime?.releasePublished === false) return { status: 'unavailable' };
+      tutorView.setHostMetadata({ runtime: 'preparing' });
+      const install = progress => {
+        if (!current()) return { status: 'cancelled' };
+        if (runtimeManager.manifest?.runtime?.releasePublished === false) return { status: 'unavailable' };
+        progress?.report({ message: stages.checking });
+        return runtimeManager.installRuntime({ onProgress: ({ stage }) => {
+          if (current() && runtimeSetup === flight && typeof stage === 'string' && Object.hasOwn(stages, stage)) progress?.report({ message: stages[stage] });
+        } });
+      };
+      return typeof vscode.window.withProgress === 'function' ? vscode.window.withProgress({
+        location: vscode.ProgressLocation.Notification, title: 'KAFE: Preparing runtime', cancellable: false,
+      }, install) : install();
+    };
+    const flight = Promise.resolve().then(work).catch(() => ({ status: 'error', code: 'runtime_setup_failed' })).then(raw => {
+      const result = typeof raw?.status === 'string' && Object.hasOwn(messages, raw.status) ? raw : { status: 'error', code: 'runtime_setup_failed' };
+      if (runtimeSetup === flight) runtimeSetup = undefined;
+      ++runtimeAvailabilityRevision;
+      if (hostDisposed || owner !== runtimeSetupEpoch) return { status: 'cancelled' };
+      if (!vscode.workspace.isTrusted && result.status !== 'blocked') {
+        tutorView.setHostMetadata({ runtime: 'unavailable' }); return { status: 'cancelled' };
+      }
+      tutorView.setHostMetadata({ runtime: result.status === 'ready' ? 'ready' : result.status === 'error' ? 'failed' : 'unavailable' });
+      if (!skipped) {
+        const key = tutorView.hostMetadata.providerKey;
+        const chat = key === 'present' ? 'Tutor key is configured. Send a message when you are ready.' :
+          key === 'missing' ? 'Configure Tutor to chat. Your draft stays here.' : 'Tutor configuration has not been confirmed. Your draft stays here.';
+        const show = result.status === 'error' ? 'showErrorMessage' : result.status === 'unsupported' ? 'showWarningMessage' : 'showInformationMessage';
+        const choices = ['error', 'unavailable', 'cancelled'].includes(result.status) ? ['Retry setup', 'Details'] : result.status === 'unsupported' ? ['Details'] : [];
+        try {
+          void Promise.resolve(vscode.window[show]?.(`${messages[result.status]} ${chat}`, ...choices)).then(choice => {
+            if (!current()) return;
+            if (choice === 'Retry setup') void prepareRuntime({ origin: 'retry' });
+            if (choice === 'Details') void Promise.resolve(vscode.window.showInformationMessage?.(messages[result.status],
+              { modal: true, detail: 'Runtime preparation installs the pinned KAFE runtime for explicit Run. It does not send your draft or run a learner program. Use KAFE: Install Runtime to try again.' })).catch(() => {});
+          }).catch(() => {});
+        } catch { /* Native notification availability cannot change the setup outcome. */ }
+      }
+      return result;
+    });
+    runtimeSetup = flight;
+    return flight;
   };
   const keyHandlers = {
     configure() {
@@ -299,7 +374,7 @@ function createTutorHost({ vscode, extensionUri, secrets, workspaceState, runtim
       ...(document?.languageId === 'kafe' && authorize(document.uri) ? { targetUri: document.uri.toString(), targetLabel: documentReader.displayLabel(document.uri) } : {}) };
   });
   actions = new TutorHostActions({ session: coordinator.session, controller: coordinator.controller, coordinator,
-    proposalProvider, runtimeManager, configureProvider: keyHandlers.configure,
+    proposalProvider, runtimeManager, prepareRuntime, configureProvider: keyHandlers.configure,
     runFile, getReadiness, authorizeRunTarget: authorize, displayTargetLabel: documentReader.displayLabel });
   const toggleTeachingPause = () => coordinator.handleLearnerMessage({ type: 'toggleTeachingPause' });
   const onMessage = async message => {
@@ -307,6 +382,7 @@ function createTutorHost({ vscode, extensionUri, secrets, workspaceState, runtim
     if (conversations.transitioning && message.type !== 'setDraft') return { status: 'busy' };
     try {
       if (message.type === 'configureProvider') return await keyHandlers.configure();
+      if (message.type === 'retryRuntimeSetup') return await prepareRuntime({ origin: 'retry' });
       if (message.type === 'invokeAction') return await actions.dispatch(message);
       if (message.type === 'setDraft') return await coordinator.handleLearnerMessage({ type: 'setDraft', text: message.text });
       if (message.type === 'submitMessage') return await actions.submitMessage(message);
@@ -340,6 +416,7 @@ function createTutorHost({ vscode, extensionUri, secrets, workspaceState, runtim
     const active = vscode.window.activeTextEditor?.document;
     const activeId = active?.uri?.toString() || null;
     if (trusted !== observedTrust || activeId !== observedActive) {
+      if (trusted !== observedTrust) { ++runtimeSetupEpoch; ++runtimeAvailabilityRevision; }
       observedTrust = trusted; observedActive = activeId; advanceSource();
     }
     // Version sampling also covers events queued behind host work. It reads no optional bytes.
@@ -415,7 +492,7 @@ function createTutorHost({ vscode, extensionUri, secrets, workspaceState, runtim
   const conversationCommands = createConversationCommands({ vscode, manager: conversations, refreshContext: () => actions.refreshContext() });
   const readiness = Promise.all([actions.refreshContext(), refreshTutorAvailability()]).then(() => undefined);
   return { tutorView, coordinator, proposalProvider, progressStore, actions, runFile, keyHandlers, readiness, toggleTeachingPause,
-    resolveKnowledge, knowledgeRetriever, conversations, conversationCommands, refreshTutorAvailability,
+    resolveKnowledge, knowledgeRetriever, conversations, conversationCommands, refreshTutorAvailability, prepareRuntime,
     dispose() { hostDisposed = true; ++keyAvailabilityRevision; ++runtimeAvailabilityRevision; nativeKeyHandlers.dispose();
       void conversations.dispose().finally(() => conversationManagers.delete(conversations));
       actions.dispose(); coordinator.dispose(); tutorView.dispose(); diagnostics.dispose(); for (const subscription of subscriptions) subscription.dispose(); } };
@@ -598,39 +675,7 @@ function activate(context) {
     vscode.window.registerWebviewViewProvider('kafeTutorView', tutorView),
     vscode.workspace.registerTextDocumentContentProvider('kafe-proposal', proposalProvider),
     vscode.commands.registerCommand('kafe.runFile', () => runFile()),
-    vscode.commands.registerCommand('kafe.installRuntime', async () => {
-      if (!vscode.workspace.isTrusted) {
-        const message = 'Trust this workspace before installing the KAFE runtime.';
-        await vscode.window.showErrorMessage(message);
-        return { status: 'blocked', message };
-      }
-      let result;
-      if (typeof vscode.window.withProgress === 'function') {
-        result = await vscode.window.withProgress({
-          location: vscode.ProgressLocation.Notification,
-          title: 'KAFE: Instalando runtime...',
-          cancellable: false,
-        }, async progress => {
-          progress.report({ message: 'Preparando instalación...' });
-          return runtimeManager.installRuntime({
-            onProgress: ({ stage }) => {
-              if (stage === 'downloading') progress.report({ message: 'Descargando runtime y uv...' });
-              else if (stage === 'extracting') progress.report({ message: 'Extrayendo componentes...' });
-              else if (stage === 'syncing') progress.report({ message: 'Configurando entorno...' });
-            },
-          });
-        });
-      } else {
-        result = await runtimeManager.installRuntime();
-      }
-      if (result.status === 'ready') {
-        await vscode.window.showInformationMessage(`KAFE runtime ${result.runtimeVersion} is ready.`);
-      } else if (result.status !== 'cancelled') {
-        const show = result.status === 'unavailable' ? vscode.window.showInformationMessage : vscode.window.showErrorMessage;
-        await show(result.message);
-      }
-      return result;
-    }),
+    vscode.commands.registerCommand('kafe.installRuntime', () => host.prepareRuntime({ origin: 'manual' })),
     vscode.commands.registerCommand('kafe.openTutor', () =>
       vscode.commands.executeCommand('workbench.view.extension.kafeTutor')),
     vscode.commands.registerCommand('kafe.configureProvider', keyHandlers.configure),
@@ -645,24 +690,7 @@ function activate(context) {
   );
 
   if (vscode.workspace.isTrusted && typeof vscode.window.withProgress === 'function') {
-    runtimeManager.getReadyRuntime().then(async ready => {
-      if (ready.status !== 'ready' && runtimeManager.manifest?.runtime?.releasePublished) {
-        await vscode.window.withProgress({
-          location: vscode.ProgressLocation.Notification,
-          title: 'KAFE: Configurando entorno...',
-          cancellable: false,
-        }, async progress => {
-          progress.report({ message: 'Instalando runtime de KAFE...' });
-          await runtimeManager.installRuntime({
-            onProgress: ({ stage }) => {
-              if (stage === 'downloading') progress.report({ message: 'Descargando runtime y uv...' });
-              else if (stage === 'extracting') progress.report({ message: 'Extrayendo componentes...' });
-              else if (stage === 'syncing') progress.report({ message: 'Configurando dependencias...' });
-            },
-          });
-        });
-      }
-    }).catch(() => {});
+    void host.prepareRuntime({ origin: 'activation' });
   }
 }
 

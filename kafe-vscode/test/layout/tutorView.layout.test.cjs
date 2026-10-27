@@ -17,6 +17,57 @@ try {
 }
 
 const tutorRoot = path.resolve(__dirname, '../../src/tutor');
+
+test('runtime recovery browser fixtures retain explicit retry, key-dependent Send and drafts', async t => {
+  const browser = await chromium.launch({ headless: true,
+    ...(process.env.KAFE_LAYOUT_BROWSER ? { executablePath: process.env.KAFE_LAYOUT_BROWSER } : {}) });
+  const output = process.env.KAFE_LAYOUT_EVIDENCE_DIR;
+  if (output) fs.mkdirSync(output, { recursive: true });
+  const evidence = { surface: 'Shipped webview browser fixture; no native VS Code or real runtime acceptance', scenarios: [] };
+  try {
+    for (const scenario of [
+      { name: 'runtime-configured-dark', width: 460, height: 650, fontSize: 13, providerKey: 'present' },
+      { name: 'runtime-first-use-light', width: 460, height: 650, fontSize: 13, providerKey: 'missing', light: true, firstUse: true },
+      { name: 'runtime-unknown-narrow', width: 240, height: 650, fontSize: 13, providerKey: 'unknown', firstUse: true },
+      { name: 'runtime-short-light', width: 460, height: 320, fontSize: 13, providerKey: 'present', light: true },
+      { name: 'runtime-enlarged', width: 320, height: 500, fontSize: 20, providerKey: 'present' },
+      { name: 'runtime-narrow-short-enlarged', width: 240, height: 320, fontSize: 20, providerKey: 'present' },
+    ]) await t.test(scenario.name, async () => {
+      const page = await browser.newPage({ viewport: { width: scenario.width, height: scenario.height } });
+      try {
+        const errors = []; page.on('pageerror', e => errors.push(e.message));
+        const state = snapshot({ entries: scenario.firstUse ? [] : Array.from({ length: 8 }, (_, i) => entry(`message-${i}`, i % 2 ? 'assistant' : 'learner', 'A saved discussion of loop boundaries. '.repeat(12))),
+          view: { revision: 1, providerKey: scenario.providerKey, runtime: 'failed', contextNotice: null } });
+        await page.setContent(viewHtml(scenario.fontSize, { state, light: scenario.light }));
+        await page.evaluate(() => { window.sent = []; window.acquireVsCodeApi = () => ({ postMessage: message => window.sent.push(message), setState() {} }); });
+        await page.addScriptTag({ path: path.join(tutorRoot, 'tutorTimeline.js') });
+        await page.addScriptTag({ path: path.join(tutorRoot, 'tutorView.js') });
+        await page.locator('#composer').fill('Keep this draft');
+        assert.equal(await page.locator('#send').isEnabled(), scenario.providerKey === 'present');
+        assert.equal(await page.locator('#retry-runtime').isVisible(), true);
+        await page.locator('#retry-runtime').focus(); await page.keyboard.press('Enter');
+        assert.deepEqual(await page.evaluate(() => window.sent.filter(m => m.type !== 'setDraft')), [{ type: 'retryRuntimeSetup', sessionId: state.sessionId, generation: state.generation }]);
+        const before = await page.evaluate(() => {
+          const rect = document.querySelector('#retry-runtime').getBoundingClientRect();
+          return { left: rect.left, right: rect.right, top: rect.top, bottom: rect.bottom, documentHeight: document.documentElement.scrollHeight, documentWidth: document.documentElement.scrollWidth };
+        });
+        assert.ok(before.left >= 0 && before.right <= scenario.width && before.top >= 0 && before.bottom <= scenario.height);
+        assert.ok(before.documentHeight <= scenario.height + 1 && before.documentWidth <= scenario.width + 1);
+        if (output) await page.screenshot({ path: path.join(output, `${scenario.name}.png`) });
+        await page.evaluate(next => window.dispatchEvent(new MessageEvent('message', { data: { type: 'render', state: { ...next, view: { ...next.view, revision: 2, runtime: 'preparing' } } } })), state);
+        assert.equal(await page.locator('#retry-runtime').isVisible(), false);
+        assert.equal(await page.locator('#composer').inputValue(), 'Keep this draft');
+        assert.equal(await page.locator('#composer').evaluate(node => node === document.activeElement), true);
+        assert.equal(await page.locator('#send').isEnabled(), scenario.providerKey === 'present');
+        assert.deepEqual(errors, []);
+        evidence.scenarios.push({ ...scenario, recoveryControl: before, errors });
+      } finally { await page.close(); }
+    });
+  } finally {
+    if (output) fs.writeFileSync(path.join(output, 'runtime-recovery-browser-fixture.json'), JSON.stringify(evidence, null, 2));
+    await browser.close();
+  }
+});
 const scenarios = [
   { name: 'sidebar', width: 460, height: 650, fontSize: 13 },
   { name: 'narrow sidebar', width: 240, height: 650, fontSize: 13 },

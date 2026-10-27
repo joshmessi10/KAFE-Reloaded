@@ -106,7 +106,7 @@
       },
       {
         "command": "kafe.clearTutorProgress",
-        "title": "KAFE: Clear Tutor Progress"
+        "title": "KAFE: Clear Legacy Tutor Progress"
       },
       {
         "command": "kafe.newConversation",

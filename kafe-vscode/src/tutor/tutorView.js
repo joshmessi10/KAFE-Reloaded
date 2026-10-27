@@ -63,6 +63,9 @@
     const focused = document.activeElement;
     byId('send').hidden = active; byId('send').disabled = !state || busy() || !composer.value.trim() || Boolean(needsConfiguration());
     renderDock();
+    const retryRuntime = byId('retry-runtime');
+    retryRuntime.hidden = !state || state.context.restricted || !['failed', 'unavailable'].includes(state.view?.runtime);
+    if (retryRuntime.hidden && focused === retryRuntime) composer.focus();
     byId('stop').hidden = !active; byId('stop').disabled = !active || Boolean(stopping);
     if (active && focused === byId('send')) byId('stop').focus();
     else if (!active && focused === byId('stop')) {
@@ -98,6 +101,7 @@
   listen(byId('composer-form'), 'submit', submit);
   listen(byId('stop'), 'click', () => { if (activeStates.includes(state?.turn?.status) && !stopping) { stopping = `${state.turn.id}:${state.turn.turnGeneration}`; send('stopTurn', { turnId: state.turn.id, turnGeneration: state.turn.turnGeneration }); updateControls(); } });
   listen(byId('configure-provider'), 'click', () => { if (state && !byId('starting-aid').hidden) send('configureProvider'); });
+  listen(byId('retry-runtime'), 'click', () => { if (state && !byId('retry-runtime').hidden) send('retryRuntimeSetup'); });
   listen(byId('add-context'), 'click', () => { if (state && !state.context.restricted) { byId('context-selector').open = !byId('context-selector').open; byId('add-context').setAttribute('aria-expanded', String(byId('context-selector').open)); } });
   listen(byId('context-selector'), 'toggle', () => byId('add-context').setAttribute('aria-expanded', String(byId('context-selector').open)));
   listen(window, 'resize', growComposer);

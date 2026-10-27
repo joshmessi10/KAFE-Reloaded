@@ -135,7 +135,7 @@
   function field(label, value, key) { return element('div', [element('h3', [text(label)]), prose(value)], { class: 'learning-field' }, key); }
   function listField(label, values, key) { return values?.length ? [element('div', [element('h3', [text(label)]), element('ul', values.map(value => element('li', [text(value)])))], { class: 'learning-field' }, key)] : []; }
   const recovery = {
-    learning_limit: 'Learning records were retained. Continue message-only discussion, or use New conversation in the view title; it clears this conversation and its memory-only learning state. Retrying cannot free the limit.',
+    learning_limit: 'Learning records were retained. Continue message-only discussion, or use New conversation in the view title; it preserves this saved conversation and starts fresh active learning state. Retrying cannot free the limit.',
     invalid_checkpoint: 'Send a new request with current context to replace the invalid checkpoint. No decision or preparation permission was added.',
     stale_context: 'Check the included files and send a new request with current context. A new displayed scope needs fresh confirmation.',
     context_unavailable: 'Check the included files and send a new request with current context.',

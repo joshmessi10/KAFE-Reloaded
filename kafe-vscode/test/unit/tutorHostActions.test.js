@@ -81,6 +81,17 @@ test('runtime-unavailable Run remains outside Tutor actions and downloads', asyn
   assert.equal(f.session.snapshot().entries.some(entry => entry.actions.some(action => action.type === 'installRuntime')), false);
   assert.equal(downloads, 0);
 });
+
+test('native setup recovery capability delegates to the shared host helper without running a learner program', async () => {
+  let setups = 0, installs = 0, runs = 0;
+  const f = fixture({ getReadiness: async () => ({ trusted: true }), prepareRuntime: async args => { assert.deepEqual(args, { origin: 'retry' }); setups++; return { status: 'ready' }; },
+    runtimeManager: { installRuntime: () => { installs++; } }, runFile: () => { runs++; } });
+  try {
+    f.session.setDraft('Unsent'); issue(f, 'installRuntime');
+    assert.equal((await f.actions.dispatch(envelope(f.session, 'installRuntime'))).status, 'completed');
+    assert.equal(setups, 1); assert.equal(installs, 0); assert.equal(runs, 0); assert.equal(f.session.snapshot().draft, 'Unsent');
+  } finally { f.actions.dispose(); f.coordinator.dispose(); }
+});
 module.exports = { fixture, envelope };
 
 
