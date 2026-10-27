@@ -857,3 +857,30 @@ for (const event of ['source', 'authorization']) test(`${event} coordination sto
   c.sourceChanged('file:///new.kf', { deleted: true }); c.authorizationChanged();
   assert.deepEqual(s.snapshot(), before);
 });
+
+
+for (const interruption of ['transition', 'dispose']) test(`final Run authorization callback ${interruption} stops checking and mutating actions immediately`, () => {
+  const f = fixture(), c = f.coordinator, s = c.session;
+  const source = target => ({ id: 'active-file', uri: target, label: target, category: 'active-file', included: true });
+  const old = 'file:///old.kf', later = 'file:///later.kf', fresh = 'file:///new.kf';
+  s.setContextRunAction(source(old)); s.setContextRunAction(source(later));
+  const checks = []; let callbackState;
+  c.isSourceAuthorized = target => {
+    checks.push(target);
+    // Both dependency checks succeed; interrupt only inside the final Run-action predicate.
+    if (checks.length <= 2) return true;
+    if (checks.length === 3) {
+      if (interruption === 'transition') { c.newConversation(); s.setContextRunAction(source(fresh)); }
+      else c.dispose();
+      callbackState = s.snapshot();
+    }
+    return false;
+  };
+  try {
+    c.authorizationChanged();
+    assert.ok(callbackState, 'the callback reached the final Run-action pass');
+    assert.deepEqual(checks, [old, later, old], 'the old event must not authorize later or newly registered actions');
+    assert.deepEqual(s.runTargetUris(), interruption === 'transition' ? [fresh] : [old, later]);
+    assert.deepEqual(s.snapshot(), callbackState, 'no action mutation or publication follows lost ownership');
+  } finally { if (!c.disposed) c.dispose(); }
+});

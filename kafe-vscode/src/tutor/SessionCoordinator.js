@@ -287,7 +287,11 @@ class SessionCoordinator {
       if (!allowed) this.#revokeSource(uri);
       if (!current()) return;
     }
-    this.session.invalidateActions(action => action.type === 'runFile' && !authorized(action.args.targetUri));
+    this.session.invalidateActions(action => {
+      if (!current() || action.type !== 'runFile') return false;
+      const allowed = authorized(action.args.targetUri);
+      return current() && !allowed;
+    });
     if (current()) this.controller.invalidate('context-changed');
   }
 
