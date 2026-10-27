@@ -263,3 +263,81 @@ test('first-use browser fixture keeps setup optional, bounded and independent fr
     if (output) fs.writeFileSync(path.join(output, 'first-use-browser-fixture.json'), JSON.stringify(evidence, null, 2));
   }
 });
+
+
+test('captured-history browser fixtures show bounded long and restored-source disclosure', async t => {
+  const { SessionCoordinator } = require('../../src/tutor/SessionCoordinator');
+  const { ContextComposer } = require('../../src/tutor/ContextComposer');
+  const { TutorViewProvider } = require('../../src/tutor/TutorViewProvider');
+  const { randomUUID } = require('node:crypto');
+  const browser = await chromium.launch({ headless: true, ...(process.env.KAFE_LAYOUT_BROWSER ? { executablePath: process.env.KAFE_LAYOUT_BROWSER } : {}) });
+  const output = process.env.KAFE_LAYOUT_EVIDENCE_DIR;
+  if (output) fs.mkdirSync(output, { recursive: true });
+  const evidence = { surface: 'Actual captured-history projection in shipped browser view; not native VS Code acceptance', scenarios: [] };
+  try {
+    for (const scenario of [
+      { name: 'long-window', width: 460, height: 650, fontSize: 13 },
+      { name: 'restored-source', width: 320, height: 650, fontSize: 13, restored: true, source: true, light: true },
+      { name: 'changed-knowledge', width: 320, height: 650, fontSize: 13, knowledge: true },
+      { name: 'narrow-restored-source', width: 240, height: 320, fontSize: 20, restored: true, source: true, pendingTask7: true },
+    ]) await t.test(scenario.name, { todo: scenario.pendingTask7 ? 'Task 7: compact composer and transcript access remain pending' : false }, async () => {
+      const uri = { scheme: 'file', toString: () => 'file:///lessons/current.kf' };
+      const retriever = { getKnowledgeLineage: async () => null, search: async () => [] };
+      const coordinator = new SessionCoordinator({
+        provider: { async *stream() { yield { type: 'complete', text: 'We can continue with your current question and included file.', toolCalls: [], finishReason: 'stop' }; } },
+        contextComposer: new ContextComposer({ documentReader: { displayLabel: () => 'lessons/current.kf' }, knowledgeRetriever: retriever }),
+        getContext: () => ({ activeDocument: { uri, text: 'show(1);', version: 1 }, restricted: false }), getSourceRevision: () => 0,
+      });
+      const page = await browser.newPage({ viewport: { width: scenario.width, height: scenario.height } });
+      const errors = []; page.on('pageerror', error => errors.push(error.message));
+      try {
+        for (let i = 0; i < 11; i++) {
+          const learnerText = `Earlier question ${i + 1}: explain this loop.`, assistantText = 'A loop repeats its body for each item. Compare the first iteration with the next one. '.repeat(4);
+          coordinator.session.appendEntry({ kind: 'learner', status: 'completed', text: learnerText });
+          coordinator.session.appendEntry({ kind: 'assistant', status: 'completed', text: assistantText });
+          coordinator.session.recordCompletedPair({ id: randomUUID(), learnerText, assistantText, dependencies: {
+            fileUris: scenario.source && i === 0 ? ['file:///lessons/old.kf'] : [], knowledgeLineage: scenario.knowledge && i === 0 ? 'old-pack' : null } });
+        }
+        if (scenario.restored) {
+          const saved = coordinator.captureConversation();
+          assert.equal(coordinator.restoreConversation(saved).status, 'completed');
+          assert.equal(coordinator.snapshot().contextNotice, null);
+        }
+        await coordinator.refreshContext();
+        assert.equal((await coordinator.handleLearnerMessage({ type: 'submitMessage', submissionId: randomUUID(), text: 'Continue with the current file.', contextRevision: coordinator.snapshot().context.revision })).status, 'completed');
+        const provider = new TutorViewProvider({ conversationSession: coordinator });
+        provider.setHostMetadata({ providerKey: 'present', runtime: 'ready' });
+        const state = provider.project(coordinator.snapshot());
+        assert.deepEqual(state.view.contextNotice.reasons, ['window', ...(scenario.source ? ['source'] : []), ...(scenario.knowledge ? ['knowledge'] : [])]);
+        assert.deepEqual(state.context.sources, []);
+        await page.setContent(viewHtml(scenario.fontSize, { state, light: scenario.light }));
+        await page.addScriptTag({ path: path.join(tutorRoot, 'tutorTimeline.js') });
+        await page.evaluate(() => { window.acquireVsCodeApi = () => ({ postMessage() {}, setState() {} }); });
+        await page.addScriptTag({ path: path.join(tutorRoot, 'tutorView.js') });
+        assert.equal(await page.locator('#context-notice').count(), 1);
+        assert.equal(await page.locator('#context-notice').evaluate(node => node.open), false);
+        assert.match(await page.locator('#included-context').textContent(), /current.kf/);
+        assert.equal(await page.locator('#timeline #context-notice').count(), 0);
+        if (output) await page.screenshot({ path: path.join(output, `${scenario.name}-collapsed.png`) });
+        await page.locator('#context-notice summary').click();
+        assert.match(await page.locator('#context-notice-detail').textContent(), /size limit/);
+        if (scenario.source) assert.match(await page.locator('#context-notice-detail').textContent(), /files that are no longer included/);
+        const layout = await geometry(page);
+        assert.ok(layout.document.scrollWidth <= scenario.width + 1);
+        assert.ok(layout.timeline.scrollWidth <= layout.timeline.clientWidth + 1);
+        await page.locator('#composer').fill('My next question'); await page.locator('#composer').focus();
+        await page.evaluate(next => window.dispatchEvent(new MessageEvent('message', { data: { type: 'render', state: { ...next, revision: next.revision + 1 } } })), state);
+        assert.equal(await page.locator('#context-notice').evaluate(node => node.open), true);
+        assert.equal(await page.locator('#composer').inputValue(), 'My next question');
+        assert.equal(await page.locator('#composer').evaluate(node => node === document.activeElement), true);
+        if (output) await page.screenshot({ path: path.join(output, `${scenario.name}-expanded.png`) });
+        assert.deepEqual(errors, []);
+        evidence.scenarios.push({ ...scenario, reasons: state.view.contextNotice.reasons, layout, errors, pending: scenario.pendingTask7 ? 'Task 7 owns compact context-rich composer/transcript access; this capture is evidence, not native acceptance.' : null });
+        assert.ok(layout.document.scrollHeight <= scenario.height + 1, `Document height ${layout.document.scrollHeight} exceeds viewport ${scenario.height}`);
+      } finally { coordinator.dispose(); await page.close(); }
+    });
+  } finally {
+    if (output) fs.writeFileSync(path.join(output, 'captured-history-browser-fixture.json'), JSON.stringify(evidence, null, 2));
+    await browser.close();
+  }
+});

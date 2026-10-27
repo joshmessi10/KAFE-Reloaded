@@ -93,3 +93,7 @@ pre code { padding: 0; }
 @media (max-width: 200px) { .submit-controls { width: 100%; } .context-origin { display: none; } }
 @media (prefers-reduced-motion: reduce) { #timeline { scroll-behavior: auto; } }
 @media (forced-colors: active) { .composer-form, pre, .entry[data-kind="learner"] { border: 1px solid CanvasText; } button, textarea { border: 1px solid ButtonText; } button:disabled { opacity: 1; color: GrayText; } :focus-visible { outline-color: Highlight; } }
+
+.context-notice { margin-block: 6px; font-size: .92em; }
+.context-notice summary { cursor: pointer; overflow-wrap: anywhere; }
+.context-notice p { margin: 6px 0; }

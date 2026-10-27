@@ -208,3 +208,14 @@ for (const settlement of ['cancelled', 'completed']) test(`settled boot recovers
     input.dispatch('keydown',{key:'Enter'}); const newSubmit=v.sent.at(-1); assert.equal(newSubmit.type,'submitMessage'); assert.notEqual(newSubmit.submissionId,emitted.submissionId);
   } finally { finish.resolve(); refreshed.resolve(); fixture.provider.dispose(); host.dispose(); controller.dispose(); }
 });
+
+test('notice-only projection advances view revision with semantic deduplication and no authority fields', () => {
+  const s = new ConversationSession(), f = nativeFixture(s), raw = s.snapshot();
+  const a = f.provider.project({ ...raw, contextNotice: { reasons: ['source'] } });
+  assert.deepEqual(a.view.contextNotice, { reasons: ['source'] }); assert.equal(a.contextNotice, undefined); assert.equal(a.revision, raw.revision);
+  const b = f.provider.project({ ...raw, contextNotice: { reasons: ['source'] } }); assert.equal(b.view.revision, a.view.revision);
+  const c = f.provider.project({ ...raw, contextNotice: { reasons: ['knowledge'] } }); assert.ok(c.view.revision > b.view.revision);
+  const v = loadView(); v.render(a); assert.equal(v.byId('context-notice').hidden, false); v.render(c); assert.match(v.byId('context-notice-detail').textContent, /knowledge/);
+  const cleared = f.provider.project(raw); v.render(cleared); assert.equal(v.byId('context-notice').hidden, true);
+  assert.deepEqual(s.snapshot(), raw); f.provider.dispose();
+});

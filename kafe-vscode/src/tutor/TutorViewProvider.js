@@ -131,7 +131,14 @@ class TutorViewProvider {
     this.render(this.conversationSession?.snapshot());
   }
 
-  project(state) { return state ? { ...state, view: { ...this.hostMetadata } } : null; }
+  project(state) {
+    if (!state) return null;
+    const { contextNotice = null, ...session } = state;
+    if (JSON.stringify(contextNotice) !== JSON.stringify(this.hostMetadata.contextNotice)) {
+      this.hostMetadata = { ...this.hostMetadata, contextNotice: structuredClone(contextNotice), revision: this.hostMetadata.revision + 1 };
+    }
+    return { ...session, view: structuredClone(this.hostMetadata) };
+  }
 
   render(state) {
     if (!this.view) return;

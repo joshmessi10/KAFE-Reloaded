@@ -24,11 +24,12 @@ const SAFE_ERRORS = Object.freeze({
 /** One immutable submission per owned attempt. Session holds only display state. */
 class TurnController {
   constructor({ session, learningSession = new LearningSession(), provider, contextComposer, toolRouter, proposalProvider, captureSubmission, validateSubmission, isSubmissionAuthorized = snapshot => !snapshot.sources.some(s => s.uri !== null), refreshContext = async () => {},
+    onRequestCaptured = () => {}, onRequestAbandoned = () => {},
     onCompletedPair = pair => session.recordCompletedPair(pair), onSettled = () => {}, diagnostic = () => {} }) {
     Object.assign(this, { session, learningSession, provider, contextComposer, toolRouter, proposalProvider, captureSubmission, validateSubmission, isSubmissionAuthorized, refreshContext, onCompletedPair });
     this.current = null; this.pendingProposal = null; this.disposed = false;
     this.diagnostic = diagnostic; this.attemptSequence = 0;
-    this.onSettled = onSettled;
+    this.onSettled = onSettled; this.onRequestCaptured = onRequestCaptured; this.onRequestAbandoned = onRequestAbandoned;
     this.consumed = new Set(); this.generation = session.snapshot().generation;
     this.unsubscribe = session.subscribe(snapshot => {
       if (snapshot.generation !== this.generation) {
@@ -137,6 +138,12 @@ class TurnController {
         !await this.wait(owner, this.validateSubmission(owner.snapshot))) {
         this.stop({ turnId: owner.turn.id, turnGeneration: owner.turn.turnGeneration }); return { status: 'stale' };
       }
+      if (!this.live(owner)) throw CANCELLED;
+      if (!this.isSubmissionAuthorized(owner.snapshot)) throw Object.assign(new Error(), { code: 'stale_context' });
+      // Display observers may synchronously stop, reset or revoke the captured context.
+      try { this.onRequestCaptured(owner.snapshot); } catch { /* Presentation cannot grant or deny authority. */ }
+      if (!this.live(owner)) throw CANCELLED;
+      if (!this.isSubmissionAuthorized(owner.snapshot)) throw Object.assign(new Error(), { code: 'stale_context' });
       owner.dependencies = structuredClone(owner.snapshot.dependencies);
       owner.retrievedSourceIds = [];
       if (owner.preparation) {
@@ -150,6 +157,7 @@ class TurnController {
       }
       owner.abort = new AbortController();
       owner.turn.assistantEntryId = this.session.appendEntry({ kind: 'assistant', status: 'responding', text: '' });
+      if (!this.live(owner)) throw CANCELLED;
       const request = owner.snapshot.request;
       const messages = structuredClone(request.messages);
       let toolRounds = 0;
@@ -160,6 +168,9 @@ class TurnController {
         let terminal, text = '';
         owner.phase = 'provider';
         this.trace(owner, 'provider-start', { round: toolRounds });
+        if (!this.live(owner)) throw CANCELLED;
+        if (!this.isSubmissionAuthorized(owner.snapshot)) throw Object.assign(new Error(), { code: 'stale_context' });
+        owner.providerAdmitted = true;
         const iterator = this.provider.stream({ request: { ...request, messages: structuredClone(messages) }, signal: owner.abort.signal })[Symbol.asyncIterator]();
         try {
           while (true) {
@@ -315,6 +326,9 @@ class TurnController {
       return { status: 'failed' };
     } finally {
       if (this.#pendingCheckpointPublication?.owner === owner) this.#pendingCheckpointPublication = null;
+      if (!owner.providerAdmitted) {
+        try { this.onRequestAbandoned(owner.submission.submissionId, { sessionId: state.sessionId, generation: owner.generation }); } catch { /* Display cleanup is best effort. */ }
+      }
       owner.grant = null; owner.busy = false;
       this.offerPreparation(owner);
       this.trace(owner, 'turn-settled', { status: owner.turn.status, busy: owner.busy, current: this.current === owner });

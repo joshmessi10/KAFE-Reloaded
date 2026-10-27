@@ -30,7 +30,7 @@ function fixture(options = {}) {
   };
   const controller = new TurnController({ session, provider, contextComposer, learningSession,
     isSubmissionAuthorized: options.isSubmissionAuthorized || (options.prepared ? () => true : undefined),
-    diagnostic: options.diagnostic,
+    diagnostic: options.diagnostic, onRequestCaptured: options.onRequestCaptured, onRequestAbandoned: options.onRequestAbandoned,
     toolRouter: options.prepared && options.toolRouter ? { async route(call, context) {
       const result = await options.toolRouter.route(call, context);
       return call.name === 'proposeCodeChange' ? { documentVersion: 1, contentSha256: preparedTarget.contentSha256, ...result } : result;
@@ -463,4 +463,52 @@ test('a rejected native replacement stage preserves the previous ready proposal 
   f.session.setDraft('Second'); await f.submit();
   const proposal = f.session.snapshot().entries.find(e => e.kind === 'proposal');
   assert.equal(proposal.status, 'ready'); assert.equal(proposal.actions.filter(a => a.enabled).length, 1);
+});
+
+for (const interruption of ['reset', 'stop', 'revoke', 'throw']) test(`captured-context observer ${interruption} cannot bypass provider admission`, async () => {
+  let authorized = true, captured, f; const abandoned = [];
+  f = fixture({ isSubmissionAuthorized: () => authorized, onRequestCaptured: snapshot => {
+    captured = snapshot; assert.equal(Object.isFrozen(snapshot.history), true);
+    if (interruption === 'reset') f.session.reset();
+    if (interruption === 'stop') { const t = f.session.snapshot().turn; f.controller.stop({ turnId: t.id, turnGeneration: t.turnGeneration }); }
+    if (interruption === 'revoke') authorized = false;
+    if (interruption === 'throw') throw Error('Display unavailable');
+  }, onRequestAbandoned: id => abandoned.push(id) });
+  const id = randomUUID(), result = await f.submit('Explain', id);
+  assert.ok(captured); assert.equal(f.calls, interruption === 'throw' ? 1 : 0);
+  assert.equal(result.status, interruption === 'throw' ? 'completed' : interruption === 'revoke' ? 'stale' : 'cancelled');
+  assert.deepEqual(abandoned, interruption === 'throw' ? [] : [id]);
+  if (interruption === 'throw') assert.deepEqual(f.sent[0], captured.request);
+});
+test('failed capture and validation abandon only their submission without publishing', async () => {
+  for (const failure of ['capture', 'validation']) {
+    const captured = [], abandoned = [];
+    const f = fixture({ ...(failure === 'capture' ? { inputs: async () => { throw Error('capture'); } } : { valid: () => false }),
+      onRequestCaptured: s => captured.push(s), onRequestAbandoned: (id, owner) => abandoned.push([id, owner]) });
+    const original = f.session.snapshot(), id = randomUUID(); await f.submit('Explain', id);
+    assert.deepEqual(captured, []); assert.deepEqual(abandoned, [[id, { sessionId: original.sessionId, generation: original.generation }]]); assert.equal(f.calls, 0);
+  }
+});
+for (const boundary of ['assistant', 'responding', 'diagnostic']) test(`reset at ${boundary} after context publication prevents unowned provider call`, async () => {
+  let armed = false, reset = false, f;
+  f = fixture({ onRequestCaptured: () => { armed = true; }, diagnostic: event => {
+    if (boundary === 'diagnostic' && event.event === 'provider-start') f.session.reset();
+  } });
+  f.session.subscribe(state => {
+    if (!armed || reset) return;
+    if ((boundary === 'assistant' && state.entries.some(e => e.kind === 'assistant')) || (boundary === 'responding' && state.turn?.status === 'responding')) { reset = true; f.session.reset(); }
+  });
+  assert.equal((await f.submit()).status, 'cancelled'); assert.equal(f.calls, 0); assert.equal(f.session.snapshot().turn, null);
+});
+
+test('late cancelled capture cannot publish over a retry or abandon its notice', async () => {
+  const gate = deferred(), entered = deferred(), captured = [], abandoned = []; let f, first = true;
+  f = fixture({ context: async () => { if (first) { first = false; entered.resolve(); await gate.promise; } },
+    onRequestCaptured: snapshot => captured.push(snapshot.submission.submissionId), onRequestAbandoned: id => abandoned.push(id) });
+  const id = randomUUID(), pending = f.submit('Help', id); await entered.promise;
+  const turn = f.session.snapshot().turn; f.controller.stop({ turnId: turn.id, turnGeneration: turn.turnGeneration });
+  assert.equal((await pending).status, 'cancelled');
+  assert.equal((await f.controller.retry(turn.id)).status, 'completed');
+  const retry = f.controller.current.snapshot.submission.submissionId; gate.resolve(); await new Promise(resolve => setImmediate(resolve));
+  assert.deepEqual(captured, [retry]); assert.deepEqual(abandoned, [id]); assert.equal(f.calls, 1);
 });

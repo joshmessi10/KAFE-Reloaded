@@ -258,3 +258,25 @@ test('advanced settled owner releases guard without losing matching late admissi
   v.render(snapshot({revision:3,inputRevision:2,draft:'',turn:turn(id)})); assert.equal(c.value,'Same');
   assert.equal(v.sent.filter(m=>m.type==='submitMessage').length,1);
 });
+
+test('context disclosure updates at equal session revision and stays quiet across tokens', () => {
+  const v = loadView(), view = { revision: 1, providerKey: 'present', runtime: 'ready', contextNotice: null }, entries = [entry('old', 'assistant', 'Saved explanation')];
+  v.render(snapshot({ entries, view })); const composer = v.byId('composer'); composer.focus(); composer.value = 'Next draft'; composer.dispatch('input');
+  v.render(snapshot({ entries, view: { ...view, revision: 2, contextNotice: { reasons: ['window', 'source', 'knowledge'] } } }));
+  const notice = v.byId('context-notice'); assert.equal(notice.hidden, false);
+  assert.match(notice.textContent, /saved[\s\S]*outside this reply/); assert.match(notice.textContent, /size limit/); assert.match(notice.textContent, /files/); assert.match(notice.textContent, /knowledge/);
+  notice.open = true; const detail = v.byId('context-notice-detail').firstChild;
+  v.render(snapshot({ revision: 2, entries, view: { ...view, revision: 2, contextNotice: { reasons: ['window', 'source', 'knowledge'] } } }));
+  assert.equal(notice.open, true); assert.equal(v.byId('context-notice-detail').firstChild, detail);
+  assert.equal(v.document.activeElement, composer); assert.equal(composer.value, 'Next draft'); assert.equal(v.byId('timeline').textContent.includes('outside this reply'), false);
+  v.render(snapshot({ revision: 2, entries, view: { ...view, revision: 3 } })); assert.equal(notice.hidden, true);
+});
+
+test('malformed notice metadata cannot replace the current display', () => {
+  const v = loadView(), view = { revision: 1, providerKey: 'present', runtime: 'ready', contextNotice: { reasons: ['source'] } };
+  v.render(snapshot({ view }));
+  for (const contextNotice of [{ reasons: [] }, { reasons: ['source', 'source'] }, { reasons: ['knowledge', 'window'] }, { reasons: ['unknown'] }, { reasons: ['window'], uri: 'file:///private' }]) {
+    v.render(snapshot({ view: { ...view, revision: 2, contextNotice } }));
+    assert.match(v.byId('context-notice-detail').textContent, /files/);
+  }
+});

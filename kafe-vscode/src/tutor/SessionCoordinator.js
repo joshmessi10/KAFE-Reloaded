@@ -35,6 +35,7 @@ class SessionCoordinator {
       else this.actionEvidence.recordApply(event.proposal, event.outcome, event.observedFile);
       if (event.outcome !== 'staged') this.proposalEvidenceGenerations.delete(event.proposal.id);
     };
+    this.contextNotice = null; this.contextNoticeOwner = null;
     this.learningListeners = new Set();
     this.learningDisplayRevision = 0; this.preferenceChangeQueued = false;
     this.evidence = null; this.lastRunSequence = 0; this.includedSourceUris = new Map();
@@ -42,24 +43,52 @@ class SessionCoordinator {
     this.unsubscribeEvidence = session.subscribe(snapshot => {
       if (snapshot.generation === this.evidenceGeneration) return;
       this.evidenceGeneration = snapshot.generation;
+      this.contextNotice = null; this.contextNoticeOwner = null;
       this.actionEvidence.reset(); this.proposalEvidenceGenerations.clear(); this.evidence = null;
     });
     this.acceptingProposalId = null; this.disposed = false; this.contextRefresh = 0;
     this.controller = new TurnController({ session, learningSession, provider, contextComposer, toolRouter, proposalProvider,
       diagnostic,
       onSettled: () => this.settleLearningPreferences(),
+      onRequestCaptured: snapshot => this.publishRequestContext(snapshot),
+      onRequestAbandoned: (submissionId, owner) => this.clearRequestContext(submissionId, owner),
       captureSubmission: submission => this.captureSubmission(submission),
       validateSubmission: snapshot => this.validateSubmission(snapshot),
       isSubmissionAuthorized: (snapshot, settlement) => this.isSubmissionAuthorized(snapshot, settlement), refreshContext: () => this.refreshContext() });
   }
   snapshot() {
     const { policyVersion, revision, preferences } = this.learningSession.snapshot();
-    return { ...this.session.snapshot(), learning: { policyVersion, revision, preferences, displayRevision: this.learningDisplayRevision, preferenceChangeQueued: this.preferenceChangeQueued } };
+    return { ...this.session.snapshot(), contextNotice: structuredClone(this.contextNotice), learning: { policyVersion, revision, preferences, displayRevision: this.learningDisplayRevision, preferenceChangeQueued: this.preferenceChangeQueued } };
   }
   subscribe(listener) {
     this.learningListeners.add(listener);
     const unsubscribe = this.session.subscribe(() => listener(this.snapshot()));
     return () => { this.learningListeners.delete(listener); unsubscribe(); };
+  }
+  /** A transient disclosure of frozen history selection, never authority or archive content. */
+  publishRequestContext(snapshot) {
+    const owner = this.controller.current, state = this.session.snapshot();
+    if (!owner || owner.snapshot !== snapshot || !this.controller.live(owner) ||
+      snapshot.sessionId !== state.sessionId || snapshot.generation !== state.generation) return;
+    const categories = { 'pair-limit': 'window', 'byte-limit': 'window', 'oversized-pair': 'window',
+      'source-revoked': 'source', 'knowledge-lineage-changed': 'knowledge' };
+    const omitted = new Set(snapshot.history.omissions.map(item => categories[item.reason]).filter(Boolean));
+    const reasons = ['window', 'source', 'knowledge'].filter(reason => omitted.has(reason));
+    this.contextNoticeOwner = { submissionId: snapshot.submission.submissionId, sessionId: snapshot.sessionId, generation: snapshot.generation };
+    this.#setContextNotice(reasons.length ? { reasons } : null);
+  }
+  clearRequestContext(submissionId, abandoned) {
+    const owner = this.contextNoticeOwner, state = this.session.snapshot();
+    if (!owner || owner.submissionId !== submissionId || owner.sessionId !== abandoned?.sessionId || owner.generation !== abandoned?.generation ||
+      owner.sessionId !== state.sessionId || owner.generation !== state.generation) return;
+    this.contextNoticeOwner = null; this.#setContextNotice(null);
+  }
+  #setContextNotice(notice) {
+    if (isDeepStrictEqual(this.contextNotice, notice)) return;
+    this.contextNotice = notice;
+    for (const listener of [...this.learningListeners]) {
+      try { listener(this.snapshot()); } catch { /* One unavailable view must not prevent other display updates. */ }
+    }
   }
   settleLearningPreferences({ responseStopped = false } = {}) {
     if (this.controller.isBusy() && !responseStopped) return;

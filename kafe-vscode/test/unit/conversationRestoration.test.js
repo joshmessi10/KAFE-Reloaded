@@ -172,3 +172,14 @@ test('restoring a saved unfinished response marks it cancelled and issues no ret
   assert.ok(state.entries.every(value => value.actions.length === 0));
   assert.deepEqual(state.contextActions.actions, []);
 });
+
+test('restored saved text produces source notice only on capture without reviving optional selection or actions', async () => {
+  const f = fixture(), old = pair({ fileUris: ['file:///old.kf'], knowledgeLineage: null });
+  const archived = content({ entries: [entry('learner', old.learnerText), entry('assistant', old.assistantText)], historyPairs: [old] });
+  assert.equal(f.coordinator.restoreConversation(archived).status, 'completed'); await f.coordinator.refreshContext();
+  assert.equal(f.coordinator.snapshot().contextNotice, null); assert.deepEqual(f.coordinator.snapshot().context.sources, []);
+  assert.equal((await f.submit('Continue')).status, 'completed'); assert.deepEqual(f.coordinator.snapshot().contextNotice, { reasons: ['source'] });
+  assert.deepEqual(f.coordinator.snapshot().entries.slice(0, 2).map(e => e.text), [old.learnerText, old.assistantText]);
+  assert.ok(f.coordinator.snapshot().entries.slice(0, 2).every(e => !e.actions.length));
+  assert.equal(f.coordinator.restoreConversation(archived).status, 'completed'); assert.equal(f.coordinator.snapshot().contextNotice, null); f.coordinator.dispose();
+});

@@ -15,9 +15,12 @@
   const counter = value => Number.isSafeInteger(value) && value >= 0;
   const validAction = a => record(a) && nonblank(a.id) && nonblank(a.type) && nonblank(a.label) && typeof a.enabled === 'boolean' && record(a.args);
   const validSource = (s, category) => record(s) && nonblank(s.id) && typeof s.label === 'string' && typeof s.uri === 'string' && /^file:\/\//.test(s.uri) && s.category === category && typeof s.included === 'boolean';
+  const validNotice = n => n === null || (record(n) && Object.keys(n).length === 1 && Array.isArray(n.reasons) &&
+    n.reasons.length > 0 && n.reasons.length <= 3 && n.reasons.every((r, i) => ['window', 'source', 'knowledge'].includes(r) &&
+      (i === 0 || ['window', 'source', 'knowledge'].indexOf(r) > ['window', 'source', 'knowledge'].indexOf(n.reasons[i - 1]))));
   const validView = v => record(v) && Object.keys(v).length === 4 && counter(v.revision) &&
     ['unknown', 'missing', 'present', 'unavailable'].includes(v.providerKey) &&
-    ['unknown', 'preparing', 'ready', 'unavailable', 'failed'].includes(v.runtime) && v.contextNotice === null;
+    ['unknown', 'preparing', 'ready', 'unavailable', 'failed'].includes(v.runtime) && validNotice(v.contextNotice);
   function validSnapshot(s) {
     return record(s) && nonblank(s.sessionId) && counter(s.generation) && counter(s.revision) && counter(s.inputRevision) && typeof s.draft === 'string' &&
       (s.view === undefined || validView(s.view)) &&
@@ -216,6 +219,19 @@
     const value = updates.join(' ');
     if (value && value !== lastAnnouncement) { byId('conversation-status').textContent = value; lastAnnouncement = value; }
   }
+  function renderContextNotice() {
+    const notice = byId('context-notice'), detail = byId('context-notice-detail');
+    const reasons = state.view?.contextNotice?.reasons || [];
+    const copy = {
+      window: 'Some older exchanges exceeded the reply context size limit.',
+      source: 'Some exchanges used files that are no longer included.',
+      knowledge: 'Some exchanges used a different KAFE knowledge version.',
+    };
+    const text = reasons.map(reason => copy[reason]).join(' ');
+    notice.hidden = !text;
+    if (detail.textContent !== text) detail.textContent = text;
+    if (!text) notice.open = false;
+  }
   function render(next) {
     if (disposed || !validSnapshot(next)) return;
     if (state && next.sessionId === state.sessionId && (next.generation < state.generation || (next.generation === state.generation && (next.revision < state.revision || (next.revision === state.revision && !(counter(next.view?.revision) && next.view.revision > (state.view?.revision ?? -1)) && !(counter(next.learning?.revision) && next.learning.revision > (state.learning?.revision ?? -1)) && !(counter(next.learning?.displayRevision) && next.learning.displayRevision > (state.learning?.displayRevision ?? -1))))))) return;
@@ -230,7 +246,7 @@
     const copy = next.view?.providerKey === 'unavailable' ? 'Tutor configuration is unavailable. Try Configure Tutor again. Your draft stays here.' : 'Configure your DeepSeek API key to chat. VS Code stores it securely. You can draft your question now.';
     if (byId('provider-setup-copy').textContent !== copy) byId('provider-setup-copy').textContent = copy;
     if (aid.hidden && aid.contains(document.activeElement)) composer.focus();
-    renderContext(); updateControls(); growComposer();
+    renderContext(); renderContextNotice(); updateControls(); growComposer();
     if (contentChanged) {
       if (fresh || nearBottom) { timeline.scrollTop = timeline.scrollHeight; byId('new-content').hidden = true; }
       else { timeline.scrollTop = scrollTop; byId('new-content').hidden = false; }

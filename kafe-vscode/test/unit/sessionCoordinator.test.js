@@ -694,3 +694,101 @@ test('source revocation while explicit native replacement review opens suppresse
   assert.equal(f.native.pending, null); assert.equal(f.coordinator.proposal, null); assert.equal(f.writes, 0);
   assert.equal(f.coordinator.snapshot().entries.flatMap(e => e.actions).some(a => a.enabled && a.type === 'acceptProposal'), false);
 });
+
+const historyPair = (id, text = 'Earlier', dependencies = { fileUris: [], knowledgeLineage: null }) => ({ id, learnerText: text, assistantText: 'Answer', dependencies });
+for (const [name, pairs, reasons] of [
+  ['pairs', Array.from({ length: 9 }, (_, i) => historyPair(`p${i}`)), ['window']],
+  ['bytes', [historyPair('a', 'a'.repeat(20000)), historyPair('b', 'b'.repeat(20000))], ['window']],
+  ['oversized', [historyPair('a', 'a'.repeat(33000))], ['window']],
+  ['source', [historyPair('a', 'PRIVATE_OLD_SOURCE', { fileUris: ['file:///revoked.kf'], knowledgeLineage: null })], ['source']],
+  ['knowledge', [historyPair('a', 'OLD_KNOWLEDGE', { fileUris: [], knowledgeLineage: 'old-pack' })], ['knowledge']],
+  ['combined', [historyPair('a', 'a'.repeat(33000)), historyPair('b', 'private', { fileUris: ['file:///revoked.kf'], knowledgeLineage: null }), historyPair('c', 'old', { fileUris: [], knowledgeLineage: 'old-pack' })], ['window', 'source', 'knowledge']],
+]) test(`captured ${name} omissions disclose frozen facts without payload or archive changes`, async () => {
+  const f = fixture(); for (const pair of pairs) f.coordinator.session.recordCompletedPair(pair);
+  const before = f.coordinator.captureConversation(); assert.equal((await f.submit()).status, 'completed');
+  assert.deepEqual(f.coordinator.snapshot().contextNotice, { reasons });
+  assert.deepEqual(f.sent[0], f.coordinator.controller.current.snapshot.request);
+  assert.equal(f.coordinator.session.snapshot().contextNotice, undefined); assert.equal(f.coordinator.captureConversation().contextNotice, undefined);
+  assert.deepEqual(f.coordinator.captureConversation().historyPairs.slice(0, pairs.length), before.historyPairs);
+  assert.deepEqual(f.reads, []); assert.doesNotMatch(JSON.stringify(f.sent), /PRIVATE_OLD_SOURCE|OLD_KNOWLEDGE/);
+});
+test('notice conditions deduplicate and remain fenced against stale abandonment and transition', async () => {
+  const f = fixture(); f.coordinator.session.recordCompletedPair(historyPair('old', 'old', { fileUris: ['file:///revoked.kf'], knowledgeLineage: null }));
+  await f.submit(); const first = f.coordinator.controller.current.snapshot;
+  let notifications = 0; const unsubscribe = f.coordinator.subscribe(() => notifications++);
+  f.coordinator.publishRequestContext(first); assert.equal(notifications, 0);
+  await f.submit(); const second = f.coordinator.controller.current.snapshot;
+  const count = notifications; f.coordinator.clearRequestContext(first.submission.submissionId, first);
+  assert.equal(notifications, count); assert.deepEqual(f.coordinator.snapshot().contextNotice, { reasons: ['source'] });
+  f.coordinator.clearRequestContext(second.submission.submissionId, second); assert.equal(f.coordinator.snapshot().contextNotice, null);
+  f.coordinator.newConversation(); f.coordinator.publishRequestContext(first); assert.equal(f.coordinator.snapshot().contextNotice, null);
+  await f.submit(); assert.equal(f.coordinator.snapshot().contextNotice, null); unsubscribe();
+});
+for (const interruption of ['reset', 'trust', 'throw']) test(`notice subscriber ${interruption} preserves live authorization`, async () => {
+  let revision = 0, seen = false;
+  const f = fixture({ context: { activeDocument: { uri: uri('/a.kf'), text: 'A', version: 1 } }, getSourceRevision: () => revision });
+  await f.coordinator.refreshContext(); f.coordinator.session.recordCompletedPair(historyPair('old', 'PRIVATE', { fileUris: ['file:///revoked.kf'], knowledgeLineage: null }));
+  f.coordinator.subscribe(state => {
+    if (!state.contextNotice || seen) return; seen = true;
+    if (interruption === 'reset') f.coordinator.newConversation();
+    if (interruption === 'trust') { revision++; f.setContext({ restricted: true }); }
+    if (interruption === 'throw') throw Error('Display failure');
+  });
+  await f.submit(); assert.equal(seen, true); assert.equal(f.sent.length, interruption === 'throw' ? 1 : 0); assert.deepEqual(f.reads, []);
+  if (interruption !== 'throw') assert.equal(f.coordinator.snapshot().contextNotice, null);
+});
+
+test('incomplete history makes no saved-continuity claim and no provider history', async () => {
+  const f = fixture(); f.coordinator.session.historyPairs = () => [null, { id: 'partial', learnerText: 'PRIVATE_PARTIAL' }];
+  await f.submit(); assert.equal(f.coordinator.snapshot().contextNotice, null);
+  assert.deepEqual(f.coordinator.controller.current.snapshot.history.omissions.map(o => o.reason), ['incomplete-pair', 'incomplete-pair']);
+  assert.doesNotMatch(JSON.stringify(f.sent), /PRIVATE_PARTIAL/);
+});
+test('actual reason changes replace notice and no-omission capture clears it', async () => {
+  const f = fixture(); const old = historyPair('old', 'Earlier', { fileUris: [], knowledgeLineage: 'old-pack' });
+  let history = [old]; f.coordinator.session.historyPairs = () => structuredClone(history);
+  await f.submit(); assert.deepEqual(f.coordinator.snapshot().contextNotice, { reasons: ['knowledge'] });
+  history = [historyPair('large', 'a'.repeat(33000))]; await f.submit();
+  assert.deepEqual(f.coordinator.snapshot().contextNotice, { reasons: ['window'] });
+  history = [historyPair('small')]; await f.submit(); assert.equal(f.coordinator.snapshot().contextNotice, null);
+});
+test('publication is detached from later live history and cannot change captured authority', async () => {
+  const f = fixture(); f.coordinator.session.recordCompletedPair(historyPair('old', 'Earlier', { fileUris: ['file:///revoked.kf'], knowledgeLineage: null }));
+  let fingerprint, request;
+  f.coordinator.subscribe(state => { if (state.contextNotice) { const captured = f.coordinator.controller.current.snapshot; fingerprint = captured.fingerprint; request = structuredClone(captured.request); f.coordinator.session.recordCompletedPair(historyPair('later-live-pair', 'LATER_LIVE_TEXT')); } });
+  await f.submit(); const captured = f.coordinator.controller.current.snapshot;
+  assert.equal(captured.fingerprint, fingerprint); assert.deepEqual(captured.request, request); assert.deepEqual(f.sent[0], request);
+  assert.doesNotMatch(JSON.stringify(request), /LATER_LIVE_TEXT/); assert.ok(f.coordinator.session.historyPairs().some(pair => pair.id === 'later-live-pair'));
+  const projected = f.coordinator.snapshot(); projected.contextNotice.reasons.push('knowledge');
+  assert.deepEqual(f.coordinator.snapshot().contextNotice, { reasons: ['source'] });
+});
+
+test('old abandonment identity cannot clear a reused submission ID in a new generation', async () => {
+  const f = fixture(), id = randomUUID(); let abandoned, reset = false;
+  const publish = f.coordinator.controller.onRequestCaptured;
+  f.coordinator.controller.onRequestCaptured = snapshot => { publish(snapshot); if (!reset) { reset = true; f.coordinator.newConversation(); } };
+  f.coordinator.controller.onRequestAbandoned = (...args) => { abandoned = args; f.coordinator.clearRequestContext(...args); };
+  f.coordinator.session.recordCompletedPair(historyPair('old', 'Earlier', { fileUris: ['file:///old.kf'], knowledgeLineage: null }));
+  const original = f.coordinator.snapshot(); assert.equal((await f.submit('First', id)).status, 'cancelled');
+  assert.deepEqual(abandoned, [id, { sessionId: original.sessionId, generation: original.generation }]);
+  await f.coordinator.refreshContext();
+  f.coordinator.session.recordCompletedPair(historyPair('new-old', 'Earlier', { fileUris: ['file:///old.kf'], knowledgeLineage: null }));
+  assert.equal((await f.submit('Second', id)).status, 'completed');
+  f.coordinator.clearRequestContext(...abandoned);
+  assert.deepEqual(f.coordinator.snapshot().contextNotice, { reasons: ['source'] });
+});
+test('superseded unadmitted cleanup clears its own notice while new capture waits, never the new notice', async () => {
+  const f = fixture(); let abandoned, stop = true;
+  const publish = f.coordinator.controller.onRequestCaptured;
+  f.coordinator.controller.onRequestCaptured = snapshot => { publish(snapshot); if (stop) { stop = false; const turn = f.coordinator.snapshot().turn; f.coordinator.controller.stop({ turnId: turn.id, turnGeneration: turn.turnGeneration }); } };
+  // Retain the real callback receipt to exercise late delivery after supersession.
+  f.coordinator.controller.onRequestAbandoned = (...args) => { abandoned = args; };
+  f.coordinator.session.recordCompletedPair(historyPair('old', 'Earlier', { fileUris: ['file:///old.kf'], knowledgeLineage: null }));
+  assert.equal((await f.submit()).status, 'cancelled'); assert.deepEqual(f.coordinator.snapshot().contextNotice, { reasons: ['source'] });
+  const gate = deferred(), entered = deferred(), capture = f.coordinator.controller.captureSubmission;
+  f.coordinator.controller.captureSubmission = async submission => { entered.resolve(); await gate.promise; return capture(submission); };
+  const pending = f.submit(); await entered.promise;
+  f.coordinator.clearRequestContext(...abandoned); assert.equal(f.coordinator.snapshot().contextNotice, null);
+  gate.resolve(); assert.equal((await pending).status, 'completed');
+  f.coordinator.clearRequestContext(...abandoned); assert.deepEqual(f.coordinator.snapshot().contextNotice, { reasons: ['source'] });
+});
