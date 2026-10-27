@@ -227,6 +227,134 @@ test('exporting does not rewrite the conversation modification timestamp', async
   assert.equal(JSON.parse(f.manager.selectedExport().json).conversation.updatedAt, before); await f.close();
 });
 
+test('a quiescent burst defers persistence captures and saves once with the last mutation date', async () => {
+  const f = fixture(); let captures = 0;
+  const capture = f.coordinator.captureConversation.bind(f.coordinator);
+  f.coordinator.captureConversation = () => { captures++; return capture(); };
+  let date = '2030-01-01T00:00:00.000Z'; f.manager.now = () => date;
+  try {
+    for (let i = 0; i < 100; i++) f.coordinator.session.setDraft(`draft ${i}`);
+    assert.equal(captures, 0, 'notifications do not capture persistence content');
+    date = '2030-01-02T00:00:00.000Z';
+    await delay(20); if (f.manager.flushing) await f.manager.flushing;
+    assert.equal(f.writes.length, 1); assert.equal(captures, 2, 'capture before and after the awaited write');
+    assert.equal(f.writes[0].conversations[0].content.draft, 'draft 99');
+    assert.equal(f.writes[0].conversations[0].updatedAt, '2030-01-01T00:00:00.000Z');
+  } finally { await f.close(); }
+});
+
+for (const revert of [false, true]) test(`awaited save includes ${revert ? 'edit/revert recency' : 'latest mutation'} with only two writes`, async () => {
+  const f = fixture(), gate = deferred(), entered = deferred(), update = f.workspaceState.update;
+  f.manager.debounceMs = 60000;
+  let attempts = 0; f.workspaceState.update = async (...args) => {
+    if (++attempts === 1) { entered.resolve(); await gate.promise; } return update(...args);
+  };
+  f.manager.now = () => '2030-01-01T00:00:00.000Z'; f.coordinator.session.setDraft('original');
+  const saving = f.manager.flush(); const settled = saving.then(() => null, error => error);
+  try {
+    await entered.promise;
+    f.manager.now = () => '2030-01-02T00:00:00.000Z'; f.coordinator.session.setDraft('edited');
+    if (revert) f.coordinator.session.setDraft('original');
+    gate.resolve(); assert.equal(await settled, null);
+    assert.equal(f.writes.length, 2);
+    assert.equal(f.writes[0].conversations[0].content.draft, 'original');
+    assert.equal(f.writes[0].conversations[0].updatedAt, '2030-01-01T00:00:00.000Z');
+    assert.equal(f.writes[1].conversations[0].content.draft, revert ? 'original' : 'edited');
+    assert.equal(f.writes[1].conversations[0].updatedAt, '2030-01-02T00:00:00.000Z');
+  } finally { gate.resolve(); await settled; await f.close(); }
+});
+
+test('metadata-only context, actions and learning view changes preserve dates, title and selection', async () => {
+  const f = fixture(); f.manager.debounceMs = 60000;
+  const id = f.coordinator.session.appendEntry({ kind: 'host', status: 'ready', text: 'Ready', data: { ignored: 'first' } });
+  await f.manager.flush(); const before = f.manager.list(), activeId = f.manager.activeId, writes = f.writes.length;
+  f.manager.now = () => '2030-01-01T00:00:00.000Z';
+  let captures = 0; const capture = f.coordinator.captureConversation.bind(f.coordinator);
+  f.coordinator.captureConversation = () => { captures++; return capture(); };
+  try {
+    f.coordinator.session.setContext({ restricted: false, activeSource: null, sources: [
+      { id: 'optional:a', uri: 'file:///a.kf', label: 'a.kf', category: 'selected-file', included: true } ] });
+    f.coordinator.session.setSelectedSources([]);
+    f.coordinator.session.registerAction(id, { type: 'retryTurn', label: 'Retry', enabled: true, args: { turnId: 'old' } });
+    f.coordinator.session.updateEntry(id, { data: { ignored: 'second' } });
+    f.coordinator.preferenceChangeQueued = true; f.coordinator.publishLearning();
+    assert.equal(captures, 0); assert.equal(f.writes.length, writes);
+    assert.deepEqual(f.manager.list(), before); assert.equal(f.manager.activeId, activeId);
+    assert.equal(f.coordinator.snapshot().context.sources[0].included, false);
+  } finally { await f.close(); }
+});
+
+test('immediate list/export/switch/dispose preserve the freshest partial text, draft, title and full pairs', async () => {
+  const f = fixture(); f.manager.debounceMs = 60000; const first = f.manager.activeId;
+  f.manager.now = () => '2030-01-01T00:00:00.000Z';
+  f.coordinator.session.appendEntry({ kind: 'learner', status: 'completed', text: 'First question' });
+  const answer = f.coordinator.session.appendEntry({ kind: 'assistant', status: 'responding', text: 'Partial' });
+  f.coordinator.session.updateEntry(answer, { text: 'Partial latest' }); f.coordinator.session.setDraft('next draft');
+  f.coordinator.session.recordCompletedPair({ id: 'pair', learnerText: 'Earlier', assistantText: 'Answer', dependencies: { fileUris: [], knowledgeLineage: null } });
+  assert.equal(f.manager.record().title, 'First question', 'title notification remains immediate');
+  const exported = JSON.parse(f.manager.selectedExport().json).conversation;
+  assert.equal(exported.title, 'First question'); assert.equal(exported.entries.at(-1).text, 'Partial latest');
+  const list = f.manager.list(); list[0].title = 'observer mutation';
+  assert.equal(f.manager.record().title, 'First question');
+  assert.equal((await f.manager.newConversation()).status, 'completed');
+  const saved = f.values.get(CONVERSATIONS_KEY).conversations.find(record => record.id === first);
+  assert.equal(saved.content.draft, 'next draft'); assert.equal(saved.content.entries.length, 2);
+  assert.equal(saved.content.entries.at(-1).text, 'Partial latest'); assert.equal(saved.content.historyPairs.length, 1);
+  await f.manager.switchConversation(first); f.coordinator.session.setDraft('final draft'); await f.close();
+  assert.equal(f.values.get(CONVERSATIONS_KEY).conversations.find(record => record.id === first).content.draft, 'final draft');
+});
+
+for (const surface of ['session', 'coordinator']) for (const mutateDraft of [false, true]) test(`reentrant ${surface} ${mutateDraft ? 'content' : 'metadata'} observer before the manager preserves dirty state`, async () => {
+  const { ConversationSession } = require('../../src/tutor/ConversationSession');
+  const session = new ConversationSession(), writes = [], seen = []; let reentered = false, coordinator;
+  const observe = state => {
+    if (state.draft === 'first' && !reentered) {
+      reentered = true;
+      if (mutateDraft) coordinator.session.setDraft('latest');
+      else if (surface === 'session') session.setContext({ restricted: true, activeSource: null, sources: [] });
+      else coordinator.publishLearning();
+    }
+  };
+  if (surface === 'session') session.subscribe(observe);
+  coordinator = new SessionCoordinator({ session });
+  if (surface === 'coordinator') coordinator.subscribe(observe);
+  const manager = new ConversationManager({ coordinator, debounceMs: 2,
+    workspaceState: { get: () => undefined, async update(key, value) { writes.push(structuredClone(value)); } } });
+  coordinator.subscribe(state => seen.push(state));
+  try {
+    coordinator.session.setDraft('first');
+    await delay(20); if (manager.flushing) await manager.flushing;
+    assert.equal(writes.length, 1, 'nested publication cannot hide a content mutation');
+    assert.equal(writes[0].conversations[0].content.draft, mutateDraft ? 'latest' : 'first');
+    assert.ok(seen.every(state => state.draft === (mutateDraft ? 'latest' : 'first')));
+  } finally { await manager.dispose(); coordinator.dispose(); }
+});
+
+test('reentrant metadata after the manager does not duplicate a content mutation or its timestamp', async () => {
+  const f = fixture(); f.manager.debounceMs = 60000; let calls = 0, nested = false;
+  f.manager.now = () => { calls++; return '2030-01-01T00:00:00.000Z'; };
+  f.coordinator.subscribe(() => { if (!nested) { nested = true; f.coordinator.publishLearning(); } });
+  f.coordinator.session.setDraft('one mutation');
+  assert.equal(calls, 1); await f.close();
+});
+
+test('captured history does not change recency again on a later metadata notification', async () => {
+  const f = fixture(); f.manager.debounceMs = 60000;
+  f.coordinator.session.recordCompletedPair({ id: 'pair', learnerText: 'Question', assistantText: 'Answer', dependencies: { fileUris: [], knowledgeLineage: null } });
+  f.manager.now = () => '2030-01-01T00:00:00.000Z'; await f.manager.flush();
+  const before = f.manager.list(); f.manager.now = () => '2030-01-02T00:00:00.000Z';
+  f.coordinator.session.setContext({ restricted: true, activeSource: null, sources: [] });
+  assert.deepEqual(f.manager.list(), before); await f.close();
+});
+
+test('resetting identical empty archive content changes generation without changing recency', async () => {
+  const f = fixture(), before = f.manager.list(), generation = f.coordinator.snapshot().generation;
+  f.manager.now = () => '2030-01-01T00:00:00.000Z';
+  f.coordinator.newConversation();
+  assert.equal(f.coordinator.snapshot().generation, generation + 1);
+  assert.deepEqual(f.manager.list(), before); await f.close();
+});
+
 test('control-bearing pasted text generates a safe title while transcript and export preserve the original', async () => {
   const f = fixture(), message = 'Explain \u001b[31mRED\u001b[0m ANSI output';
   f.coordinator.session.appendEntry({ kind: 'learner', status: 'completed', text: message });

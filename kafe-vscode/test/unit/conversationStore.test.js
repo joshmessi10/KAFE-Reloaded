@@ -122,13 +122,31 @@ test('writes serialize snapshots and expose a failed update while allowing a lat
   const first = f.store.save(archive([record('first')]));
   const failed = assert.rejects(first, /disk unavailable/);
   const next = f.store.save(archive([record('second')]));
+  const nextSettled = next.then(() => null, error => error);
   await Promise.resolve();
   assert.deepEqual(started, ['first']);
   reject(new Error('disk unavailable')); await failed;
   await new Promise(resolve => setImmediate(resolve));
   assert.deepEqual(started, ['first', 'second']);
-  release(); await next;
+  release(); assert.equal(await nextSettled, null);
   assert.equal(f.store.load().activeId, 'second');
+});
+
+test('a queued save validates and detaches its entire payload before awaiting the previous write', async () => {
+  const f = fixture(); let release; const started = [];
+  f.workspaceState.update = async (key, value) => {
+    started.push(structuredClone(value));
+    if (started.length === 1) await new Promise(resolve => { release = resolve; });
+    f.values.set(key, value);
+  };
+  const first = f.store.save(archive()); const firstSettled = first.then(() => null, error => error);
+  await Promise.resolve(); const value = archive([record('latest')]);
+  const second = f.store.save(value), secondSettled = second.then(() => null, error => error);
+  value.conversations[0].content.entries[0].text = 'later caller mutation';
+  await assert.rejects(f.store.save({ ...value, activeId: 'missing' }), /active conversation/);
+  assert.equal(started.length, 1); release();
+  assert.equal(await firstSettled, null); assert.equal(await secondSettled, null);
+  assert.equal(started.length, 2); assert.equal(f.store.load().conversations[0].content.entries[0].text, 'A Tutor answer');
 });
 
 test('sparse arrays cannot create archives that become invalid after JSON serialization', async () => {

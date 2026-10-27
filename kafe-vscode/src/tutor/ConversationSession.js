@@ -60,6 +60,24 @@ function entryFields(entry) {
   return { kind: entry.kind, status: entry.status, text: entry.text, data: structuredClone(data) };
 }
 
+function freezeDisplay(value) {
+  if (value && typeof value === 'object' && !Object.isFrozen(value)) {
+    for (const item of Object.values(value)) freezeDisplay(item);
+    Object.freeze(value);
+  }
+  return value;
+}
+
+function archivedEntryChanged(previous, next) {
+  if (['kind', 'status', 'text'].some(key => previous[key] !== next[key])) return true;
+  if (isDeepStrictEqual(previous.data, next.data)) return false;
+  // Only a changed entry's display data needs projection, never the transcript.
+  // Reuse the archive's allowlist so private display fields cannot affect recency.
+  const project = entry => normalizeContent({ draft: '', entries: [entry], historyPairs: [], preferences: { mode: 'guided' } }).entries[0];
+  try { return !isDeepStrictEqual(project(previous), project(next)); }
+  catch { return true; } // Full boundary validation still reports unsaveable content.
+}
+
 class ConversationSession {
   #sessionId = randomUUID();
   #generation = 1;
@@ -73,6 +91,10 @@ class ConversationSession {
   #actions = new Map();
   #pairs = [];
   #listeners = new Set();
+  #contentRevision = 0;
+
+  /** Content mutation sequence only; never source or execution authority. */
+  contentRevision() { return this.#contentRevision; }
 
   /** @returns {Snapshot} Detached display projection; registry and history stay host-only. */
   snapshot() {
@@ -88,10 +110,16 @@ class ConversationSession {
     return () => this.#listeners.delete(listener);
   }
 
-  #publish() {
+  #publish(contentChanged = false) {
     this.#revision += 1;
+    if (contentChanged) this.#contentRevision++;
+    if (!this.#listeners.size) return;
+    const snapshot = freezeDisplay(this.snapshot());
     // Display observers cannot change an owned host settlement or leave partial authority.
-    for (const listener of [...this.#listeners]) { try { listener(this.snapshot()); } catch {} }
+    for (const listener of [...this.#listeners]) {
+      if (snapshot.revision !== this.#revision) break;
+      try { listener(snapshot); } catch {}
+    }
   }
 
   setDraft(text) {
@@ -99,7 +127,7 @@ class ConversationSession {
     if (text === this.#draft) return;
     this.#draft = text;
     this.#inputRevision += 1;
-    this.#publish();
+    this.#publish(true);
   }
 
   /** Publish metadata only. Context revision is owned here, independent of draft/token updates. */
@@ -167,7 +195,7 @@ class ConversationSession {
     const id = randomUUID();
     // Only registerAction can issue capabilities; even host display updates cannot inject them.
     this.#entries.push({ id, ...fields, actions: [] });
-    this.#publish();
+    this.#publish(true);
     return id;
   }
 
@@ -178,8 +206,9 @@ class ConversationSession {
     if (!isRecord(patch)) throw new TypeError('Invalid entry patch');
     const next = entryFields({ ...entry, ...patch });
     if (isDeepStrictEqual(next, entryFields(entry))) return true;
+    const contentChanged = archivedEntryChanged(entry, { id, ...next });
     Object.assign(entry, next);
-    this.#publish();
+    this.#publish(contentChanged);
     return true;
   }
 
@@ -257,6 +286,7 @@ class ConversationSession {
     if (this.#pairs.some(existing => existing.id === pair.id)) return;
     this.#pairs.push(structuredClone({ id: pair.id, learnerText: pair.learnerText, assistantText: pair.assistantText,
       dependencies: { fileUris: pair.dependencies.fileUris, knowledgeLineage: pair.dependencies.knowledgeLineage } }));
+    this.#contentRevision++;
   }
 
   /** @returns {HistoryPair[]} */
@@ -277,6 +307,9 @@ class ConversationSession {
   }
 
   #replaceConversation({ draft = '', entries = [], historyPairs = [] } = {}) {
+    const contentChanged = draft !== this.#draft || entries.length !== this.#entries.length ||
+      this.#entries.some((entry, index) => entry.id !== entries[index].id || archivedEntryChanged(entry, entries[index])) ||
+      !isDeepStrictEqual(historyPairs, this.#pairs);
     this.#generation += 1;
     this.#inputRevision += 1;
     this.#draft = draft;
@@ -286,10 +319,10 @@ class ConversationSession {
     this.#turn = null;
     this.#actions.clear();
     this.#pairs = structuredClone(historyPairs);
-    this.#publish();
+    this.#publish(contentChanged);
   }
 
   reset() { this.#replaceConversation(); }
 }
 
-module.exports = { ConversationSession };
+module.exports = { ConversationSession, freezeDisplay };

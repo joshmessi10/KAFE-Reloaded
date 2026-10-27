@@ -24,7 +24,8 @@ class ConversationManager {
       const result = coordinator.restoreConversation(this.record().content);
       if (result.status !== 'completed') throw new Error('Could not restore the selected Tutor conversation.');
     }
-    this.unsubscribe = coordinator.subscribe(() => this.changed());
+    this.observedContentRevision = coordinator.conversationRevision();
+    this.unsubscribe = coordinator.subscribe(snapshot => this.changed(snapshot));
     this.notify();
   }
 
@@ -41,20 +42,34 @@ class ConversationManager {
     try { void Promise.resolve(this.onError(message)).catch(() => {}); } catch {}
   }
   capture() {
-    const record = this.record(), content = normalizeContent(this.coordinator.captureConversation());
+    const record = this.record(), content = this.coordinator.captureConversation();
+    this.observedContentRevision = this.coordinator.conversationRevision();
+    const notified = this.contentChanged; this.contentChanged = false;
     if (isDeepStrictEqual(record.content, content)) return false;
-    record.content = content; record.updatedAt = this.now();
-    const firstMessage = content.entries.find(entry => entry.kind === 'learner' && entry.text.trim());
-    if (record.title === UNTITLED && firstMessage) {
+    record.content = content;
+    if (!notified) record.updatedAt = this.now();
+    this.updateTitle(content.entries);
+    this.revision++; return true;
+  }
+  updateTitle(entries) {
+    const record = this.record();
+    if (record.title !== UNTITLED) return;
+    const firstMessage = entries.find(entry => entry.kind === 'learner' && entry.text.trim());
+    if (firstMessage) {
       record.title = Array.from(firstMessage.text.replace(/[\x00-\x1f\x7f]/g, ' ').replace(/\s+/g, ' ').trim()).slice(0, 80).join('') || UNTITLED;
       this.notify();
     }
-    this.revision++; return true;
   }
-  changed() {
+  changed(snapshot) {
     if (this.disposed || this.restoring) return;
     try {
-      if (!this.capture() || this.transitioning || this.blocked) return;
+      const contentRevision = this.coordinator.conversationRevision();
+      if (contentRevision !== this.observedContentRevision) {
+        this.observedContentRevision = contentRevision;
+        this.contentChanged = true; this.record().updatedAt = this.now(); this.revision++;
+        this.updateTitle((snapshot || this.coordinator.snapshot()).entries);
+      }
+      if (!this.contentChanged || this.transitioning || this.blocked) return;
       clearTimeout(this.timer);
       this.timer = setTimeout(() => { void this.flush().catch(() => {}); }, this.debounceMs);
       this.timer.unref?.();
@@ -82,6 +97,7 @@ class ConversationManager {
         this.capture();
         if (this.revision === revision) break;
       } while (true);
+      clearTimeout(this.timer);
       this.errorReported = false;
     })().catch(error => { this.report(); throw error; }).finally(() => { this.flushing = null; });
     return this.flushing;
@@ -123,6 +139,7 @@ class ConversationManager {
             }
           }
           this.records = change.records; this.activeId = change.activeId;
+          this.observedContentRevision = this.coordinator.conversationRevision();
         } finally { this.restoring = false; }
         this.errorReported = false; this.notify();
         return { status: 'completed', id: this.activeId };

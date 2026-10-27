@@ -92,6 +92,33 @@ test('subscriptions receive isolated snapshots and unsubscribe stops delivery', 
   assert.equal(session.snapshot().draft, 'Two');
 });
 
+test('one immutable event projection serves observers while explicit snapshots remain detached', () => {
+  const session = createSession(), observed = []; let captures = 0;
+  const snapshot = session.snapshot.bind(session);
+  session.snapshot = () => { captures++; return snapshot(); };
+  session.subscribe(value => {
+    observed.push(value); value.entries[0].data.nested.name = 'forged';
+    assert.throws(() => value.entries.push({}), TypeError);
+  });
+  session.subscribe(value => observed.push(value));
+  session.appendEntry({ kind: 'host', status: 'ready', text: 'Ready', data: { nested: { name: 'owned' } } });
+  assert.equal(captures, 1); assert.equal(observed[0], observed[1]);
+  assert.ok(Object.isFrozen(observed[0].entries[0].data.nested));
+  assert.equal(observed[1].entries[0].data.nested.name, 'owned');
+  const detached = session.snapshot(); detached.entries[0].data.nested.name = 'caller';
+  assert.equal(session.snapshot().entries[0].data.nested.name, 'owned');
+});
+
+test('reentrant observers deliver the newest immutable state to later observers', () => {
+  const session = createSession(), seen = [];
+  session.subscribe(state => { if (state.draft === 'first') session.setDraft('latest'); });
+  session.subscribe(state => { seen.push(state); throw Error('unavailable'); });
+  session.subscribe(state => seen.push(state));
+  session.setDraft('first');
+  assert.deepEqual(seen.map(state => state.draft), ['latest', 'latest']);
+  assert.equal(seen[0], seen[1]); assert.ok(Object.isFrozen(seen[0]));
+});
+
 test('actions reject forged IDs, wrong identity, altered arguments and consumed replay', () => {
   const session = createSession();
   const envelope = registeredEnvelope(session);

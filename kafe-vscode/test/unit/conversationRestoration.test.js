@@ -12,6 +12,22 @@ const pair = (dependencies = { fileUris: [], knowledgeLineage: null }) => ({ id:
 const entry = (kind, text, patch = {}) => ({ id: randomUUID(), kind, status: 'completed', text, data: null, actions: [], ...patch });
 const content = patch => ({ draft: '', entries: [], historyPairs: [], preferences: { mode: 'guided' }, ...patch });
 
+test('coordinator broadcasts one immutable projection and isolates throwing metadata observers', () => {
+  const coordinator = new SessionCoordinator(), seen = []; let snapshots = 0;
+  const snapshot = coordinator.session.snapshot.bind(coordinator.session);
+  coordinator.session.snapshot = () => { snapshots++; return snapshot(); };
+  coordinator.subscribe(state => { state.learning.preferences.mode = 'paused'; throw Error('unavailable view'); });
+  coordinator.subscribe(state => seen.push(state)); coordinator.subscribe(state => seen.push(state));
+  coordinator.session.setDraft('fresh');
+  assert.equal(snapshots, 1); assert.equal(seen[0], seen[1]);
+  assert.equal(seen[0].learning.preferences.mode, 'guided');
+  assert.ok(Object.isFrozen(seen[0].learning.preferences));
+  assert.doesNotThrow(() => coordinator.publishLearning());
+  assert.equal(seen.length, 4); assert.equal(seen[2].learning.displayRevision, seen[0].learning.displayRevision + 1);
+  const detached = coordinator.snapshot(); detached.learning.preferences.mode = 'paused';
+  assert.equal(coordinator.snapshot().learning.preferences.mode, 'guided'); coordinator.dispose();
+});
+
 function fixture(options = {}) {
   const provider = { getRequestParameters: () => ({ model: 'deepseek-flash', thinking: { type: 'disabled' }, stream: true }),
     stream: options.stream || (async function* () { yield { type: 'complete', text: 'Hello', toolCalls: [], finishReason: 'stop' }; }) };

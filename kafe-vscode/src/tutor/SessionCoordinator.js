@@ -1,7 +1,7 @@
 const { isDeepStrictEqual } = require('node:util');
 const { validateRunResult, validateDocument, selectedSourceId, metadataLineage, TOOL_DEFINITIONS } = require('./ToolRouter');
 const { selectHistory } = require('./ConversationHistory');
-const { ConversationSession } = require('./ConversationSession');
+const { ConversationSession, freezeDisplay } = require('./ConversationSession');
 const { TurnController } = require('./TurnController');
 const { createRequestSnapshot, isSnapshotCurrent, sha256 } = require('./RequestSnapshot');
 const { checkpointDependencies } = require('./LearningCheckpoint');
@@ -37,6 +37,7 @@ class SessionCoordinator {
     };
     this.contextNotice = null; this.contextNoticeOwner = null;
     this.learningListeners = new Set();
+    this.displayPublication = 0;
     this.learningDisplayRevision = 0; this.preferenceChangeQueued = false;
     this.evidence = null; this.lastRunSequence = 0; this.includedSourceUris = new Map();
     this.evidenceGeneration = session.snapshot().generation;
@@ -55,15 +56,27 @@ class SessionCoordinator {
       captureSubmission: submission => this.captureSubmission(submission),
       validateSubmission: snapshot => this.validateSubmission(snapshot),
       isSubmissionAuthorized: (snapshot, settlement) => this.isSubmissionAuthorized(snapshot, settlement), refreshContext: () => this.refreshContext() });
+    this.unsubscribeDisplay = session.subscribe(snapshot => this.publishDisplay(snapshot));
   }
-  snapshot() {
+  snapshot(sessionSnapshot = this.session.snapshot()) {
     const { policyVersion, revision, preferences } = this.learningSession.snapshot();
-    return { ...this.session.snapshot(), contextNotice: structuredClone(this.contextNotice), learning: { policyVersion, revision, preferences, displayRevision: this.learningDisplayRevision, preferenceChangeQueued: this.preferenceChangeQueued } };
+    return { ...sessionSnapshot, contextNotice: structuredClone(this.contextNotice), learning: { policyVersion, revision, preferences, displayRevision: this.learningDisplayRevision, preferenceChangeQueued: this.preferenceChangeQueued } };
   }
   subscribe(listener) {
     this.learningListeners.add(listener);
-    const unsubscribe = this.session.subscribe(() => listener(this.snapshot()));
-    return () => { this.learningListeners.delete(listener); unsubscribe(); };
+    return () => { this.learningListeners.delete(listener); };
+  }
+  conversationRevision() {
+    return `${this.session.contentRevision()}:${this.learningSession.snapshot().preferences.mode}`;
+  }
+  publishDisplay(sessionSnapshot) {
+    const publication = ++this.displayPublication;
+    if (!this.learningListeners.size) return;
+    const snapshot = freezeDisplay(this.snapshot(sessionSnapshot));
+    for (const listener of [...this.learningListeners]) {
+      if (publication !== this.displayPublication) break;
+      try { listener(snapshot); } catch { /* One unavailable view cannot prevent other display updates. */ }
+    }
   }
   /** A transient disclosure of frozen history selection, never authority or archive content. */
   publishRequestContext(snapshot) {
@@ -86,9 +99,7 @@ class SessionCoordinator {
   #setContextNotice(notice) {
     if (isDeepStrictEqual(this.contextNotice, notice)) return;
     this.contextNotice = notice;
-    for (const listener of [...this.learningListeners]) {
-      try { listener(this.snapshot()); } catch { /* One unavailable view must not prevent other display updates. */ }
-    }
+    this.publishDisplay();
   }
   settleLearningPreferences({ responseStopped = false } = {}) {
     if (this.controller.isBusy() && !responseStopped) return;
@@ -163,8 +174,8 @@ class SessionCoordinator {
       return current;
     } catch { return null; }
   }
-  publishLearning() { this.learningDisplayRevision++; for (const listener of [...this.learningListeners]) listener(this.snapshot()); }
-  dispose() { this.controller.dispose(); this.disposed = true; this.contextRefresh++; this.learningListeners.clear(); this.unsubscribeEvidence(); }
+  publishLearning() { this.learningDisplayRevision++; this.publishDisplay(); }
+  dispose() { this.controller.dispose(); this.disposed = true; this.contextRefresh++; this.learningListeners.clear(); this.unsubscribeEvidence(); this.unsubscribeDisplay(); }
 
   /** Pure archive projection; saving or exporting must never stop a live response. */
   captureConversation() {
