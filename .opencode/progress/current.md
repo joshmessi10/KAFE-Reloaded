@@ -4,9 +4,9 @@
 
 Feature: unified Tutor simplicity on `feature/vsc-extension`, extension 2.3.0 / runtime 0.3.0.
 
-Status: local integration cleanup `524dac5` and packaging security patch `d074ff9` are committed. The final extension aggregate passes 1,010 tests with one existing Windows symlink skip; all 42 browser cases, reference freshness, dependency audits and candidate VSIX verification pass. Nine unchanged Python inputs retain the observed 787 passes, four documented skips and 86.89% child-inclusive coverage. Whole-branch independent review and exact-revision hosted/native acceptance remain pending. Native VS Code 1.96.0 cache is absent; provider, physical IME/speech, publication and human study evidence remain separate.
+Status: final review correction `c944d88` fences nested source/authorization revocation and original-owner cancellation cleanup; installed README guidance links use an explicit reviewed source ref. The final extension aggregate passes 1,032 tests with one existing Windows symlink skip; all 42 browser cases, syntax, reference freshness and revised VSIX inspection pass. Nine unchanged Python inputs retain 787 passes, four documented skips and 86.89% strict child-inclusive coverage; Task11 zero-finding audits are retained with unchanged locks/configuration. The initial whole-plan review requested these corrections; scoped final re-review and exact-revision hosted/native acceptance remain pending. Native VS Code 1.96.0 cache is absent; provider, physical IME/speech, publication and human study evidence remain separate.
 
-Next: independent whole-branch review and user handoff of the locally verified candidate; obtain separate authorization for any hosted/native follow-up. No push, dispatch, installation, publication or research activity is authorized by this local task.
+Next: one scoped final re-review of the consolidated corrections and handoff of the revised local candidate; obtain separate authorization for hosted/native follow-up. No push, dispatch, installation, publication or research activity is authorized by this local task.
 
 ## Separate Gesha historical/pending context
 
