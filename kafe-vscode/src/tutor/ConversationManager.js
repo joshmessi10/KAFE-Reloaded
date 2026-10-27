@@ -64,14 +64,16 @@ class ConversationManager {
     if (this.disposed || this.restoring) return;
     try {
       const contentRevision = this.coordinator.conversationRevision();
-      if (contentRevision !== this.observedContentRevision) {
+      const newContent = contentRevision !== this.observedContentRevision;
+      if (newContent) {
         this.observedContentRevision = contentRevision;
         this.contentChanged = true; this.record().updatedAt = this.now(); this.revision++;
         this.updateTitle((snapshot || this.coordinator.snapshot()).entries);
       }
       if (!this.contentChanged || this.transitioning || this.blocked) return;
+      if (!newContent && this.timer) return;
       clearTimeout(this.timer);
-      this.timer = setTimeout(() => { void this.flush().catch(() => {}); }, this.debounceMs);
+      this.timer = setTimeout(() => { this.timer = null; void this.flush().catch(() => {}); }, this.debounceMs);
       this.timer.unref?.();
     } catch { this.report(); }
   }
@@ -86,7 +88,7 @@ class ConversationManager {
     return this.queue.then(() => this.flushCurrent());
   }
   flushCurrent() {
-    clearTimeout(this.timer);
+    clearTimeout(this.timer); this.timer = null;
     if (this.flushing) return this.flushing;
     this.flushing = (async () => {
       if (this.blocked) throw new Error('Saved conversation storage is unavailable.');
@@ -97,7 +99,7 @@ class ConversationManager {
         this.capture();
         if (this.revision === revision) break;
       } while (true);
-      clearTimeout(this.timer);
+      clearTimeout(this.timer); this.timer = null;
       this.errorReported = false;
     })().catch(error => { this.report(); throw error; }).finally(() => { this.flushing = null; });
     return this.flushing;
@@ -110,7 +112,7 @@ class ConversationManager {
       const change = operation();
       if (!change) return { status: 'cancelled' };
       if (stopResponse && !this.coordinator.canTransitionConversation()) return { status: 'busy' };
-      this.transitioning = true; clearTimeout(this.timer);
+      this.transitioning = true; clearTimeout(this.timer); this.timer = null;
       try {
         if (stopResponse && this.coordinator.stopConversationResponse().status === 'busy') return { status: 'busy' };
         if (discardActive) {

@@ -98,6 +98,26 @@ test('debounced autosave and disposal persist the latest draft', async () => {
   assert.equal(f.values.get(CONVERSATIONS_KEY).conversations[0].content.draft, 'last keystroke');
 });
 
+test('metadata notifications preserve a pending content save deadline while new content restarts it', async () => {
+  const f = fixture(); f.manager.debounceMs = 30;
+  try {
+    f.coordinator.session.setDraft('first');
+    const first = f.manager.timer;
+    f.coordinator.session.setDraft('latest');
+    const pending = f.manager.timer;
+    assert.notEqual(pending, first, 'new content restarts the debounce');
+    for (let i = 0; i < 10; i++) f.coordinator.publishLearning();
+    assert.equal(f.manager.timer, pending, 'metadata must not postpone the content deadline');
+    await delay(60); if (f.manager.flushing) await f.manager.flushing;
+    assert.equal(f.writes.length, 1);
+    assert.equal(f.writes[0].conversations[0].content.draft, 'latest');
+    f.coordinator.session.setDraft('next');
+    await delay(60); if (f.manager.flushing) await f.manager.flushing;
+    assert.equal(f.writes.length, 2);
+    assert.equal(f.writes[1].conversations[0].content.draft, 'next');
+  } finally { await f.close(); }
+});
+
 test('draft typed while storage awaits is included before transition commits', async () => {
   const f = fixture(), original = f.manager.activeId, entered = deferred(), gate = deferred();
   const update = f.workspaceState.update; let attempts = 0;

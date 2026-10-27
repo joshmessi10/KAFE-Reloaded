@@ -262,7 +262,7 @@ for (const mutation of ['same-size-pack', 'same-size-archive', 'sidecar-deleted'
     if (mutation === 'configuration') manager.manifest = { ...f.manifest, runtime: { ...f.manifest.runtime, sourceRevision: 'b'.repeat(40) } };
     assert.equal(ready.authority.isCurrent(), false);
     assert.deepEqual(f.requests, []); assert.deepEqual(f.processCalls, []);
-    if (mutation === 'same-size-pack') console.log(JSON.stringify({ authorityValidation: 'owned managed fixture', archiveBytes: f.runtimeBytes.length, files: ready.expectedFileCount, milliseconds }));
+    if (mutation === 'same-size-pack' && process.env.KAFE_RUNTIME_FIXTURE_METRICS === '1') console.log(JSON.stringify({ authorityValidation: 'owned managed fixture', archiveBytes: f.runtimeBytes.length, files: ready.expectedFileCount, milliseconds }));
   } finally { nativeFs.rmSync(storageRoot, { recursive: true, force: true }); }
 });
 

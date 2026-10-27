@@ -40,8 +40,12 @@ async function workload(size, listeners, counter = false) {
   new ConversationStore({ workspaceState }).load();
   const coordinator = new SessionCoordinator();
   const manager = new ConversationManager({ coordinator, workspaceState, debounceMs: 60000, now: () => date });
+  const observerMismatches = []; let notifications = 0;
   const unsubscribers = Array.from({ length: listeners }, () => coordinator.subscribe(snapshot => {
-    assert.equal(snapshot.entries.length, size); assert.equal(snapshot.context.sources.length, 0);
+    notifications++;
+    if (snapshot.entries.length !== size || snapshot.context.sources.length !== 0) {
+      observerMismatches.push({ entries: snapshot.entries.length, sources: snapshot.context.sources.length });
+    }
   }));
   let inspector;
   const post = (method, params = {}) => new Promise((resolve, reject) => inspector.post(method, params, (error, result) => error ? reject(error) : resolve(result)));
@@ -74,6 +78,7 @@ async function workload(size, listeners, counter = false) {
     await post('Profiler.stopPreciseCoverage'); inspector.disconnect();
   }
   const saved = writes.at(-1).conversations[0].content;
+  assert.equal(notifications, 200 * listeners); assert.deepEqual(observerMismatches, []);
   assert.equal(saved.draft, 'Draft 099 '.padEnd(128, 'd')); assert.equal(saved.entries.at(-1).text, response);
   assert.equal(saved.entries.length, size); assert.equal(saved.historyPairs.length, size / 2);
   const measuredWrites = writes.length;

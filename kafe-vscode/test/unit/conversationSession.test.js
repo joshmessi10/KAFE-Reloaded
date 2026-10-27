@@ -93,16 +93,17 @@ test('subscriptions receive isolated snapshots and unsubscribe stops delivery', 
 });
 
 test('one immutable event projection serves observers while explicit snapshots remain detached', () => {
-  const session = createSession(), observed = []; let captures = 0;
+  const session = createSession(), observed = []; let captures = 0, mutationError;
   const snapshot = session.snapshot.bind(session);
   session.snapshot = () => { captures++; return snapshot(); };
   session.subscribe(value => {
     observed.push(value); value.entries[0].data.nested.name = 'forged';
-    assert.throws(() => value.entries.push({}), TypeError);
+    try { value.entries.push({}); } catch (error) { mutationError = error; }
   });
   session.subscribe(value => observed.push(value));
   session.appendEntry({ kind: 'host', status: 'ready', text: 'Ready', data: { nested: { name: 'owned' } } });
   assert.equal(captures, 1); assert.equal(observed[0], observed[1]);
+  assert.ok(mutationError instanceof TypeError);
   assert.ok(Object.isFrozen(observed[0].entries[0].data.nested));
   assert.equal(observed[1].entries[0].data.nested.name, 'owned');
   const detached = session.snapshot(); detached.entries[0].data.nested.name = 'caller';

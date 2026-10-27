@@ -294,6 +294,11 @@ test('first-use browser fixture keeps setup optional, bounded and independent fr
         await assertControls(page, ['#configure-provider', '#composer', '#send']);
         assert.ok(metrics.composerTop >= 0 && metrics.composerBottom <= metrics.height + 1);
         assert.ok(metrics.aidClientHeight >= scenario.fontSize * 4, 'First-use guidance must retain useful scrolling space');
+        const headingFits = await page.locator('#starting-title').evaluate(n => {
+          const heading = n.getBoundingClientRect(), port = n.parentElement.getBoundingClientRect();
+          return heading.top >= port.top && heading.bottom <= port.bottom && n.scrollWidth <= n.clientWidth;
+        });
+        assert.ok(headingFits, 'The initial introduction must be a complete visible phrase');
         if (output) await page.screenshot({ path: path.join(output, `${scenario.name}.png`) });
         await page.getByRole('textbox', { name: 'Message to KAFE Tutor' }).fill('My unsent question');
         assert.equal(await page.locator('#send').isDisabled(), true);
@@ -501,6 +506,14 @@ test('compact file context matrix keeps essential controls together and optional
         // Exercise the late-content affordance alongside runtime recovery.
         await page.evaluate(next => window.dispatchEvent(new MessageEvent('message', { data: { type: 'render', state: next } })), { ...state, revision: 2, entries: [...state.entries, entry('new', 'assistant', 'New answer')] });
         const controls = await assertControls(page, ['#composer', '#send', '#retry-runtime', '#new-content']);
+        const status = await page.locator('#response-state').evaluate(n => ({
+          width: n.getBoundingClientRect().width, text: n.textContent, clip: getComputedStyle(n).clipPath,
+        }));
+        if (scenario.width <= 320) {
+          assert.equal(status.clip, 'inset(50%)', 'Omit a squeezed visible status fragment when both actions need the row');
+          assert.equal(status.text, 'Response complete');
+          assert.match(await page.locator('#response-dock').ariaSnapshot(), /Response complete/);
+        }
         const metrics = await geometry(page); assertContained(metrics, 'context matrix');
         assert.ok(metrics.timeline.clientHeight >= scenario.fontSize * 4, `Readable transcript: ${JSON.stringify(metrics)}`);
         assert.equal(metrics.timeline.scrollTop, 0);
