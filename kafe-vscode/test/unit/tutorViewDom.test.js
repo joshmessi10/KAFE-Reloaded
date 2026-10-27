@@ -224,11 +224,23 @@ test('malformed and older renders do not alter live draft transcript or capabili
   assert.equal(v.byId('composer').value,'Current'); assert.match(v.byId('timeline').textContent,/Current answer/);
 });
 
-test('primary keyboard focus follows Send to Stop and returns on settlement', () => {
+test('primary keyboard focus follows Send to Stop without forcing a new target on natural settlement', () => {
   const v=loadView(); v.render(snapshot({draft:'Next'})); const send=v.byId('send'), stop=v.byId('stop');
   send.focus(); v.render(snapshot({revision:2,turn:turn('id')})); assert.equal(v.document.activeElement,stop);
   v.render(snapshot({revision:3,turn:turn('id','responding')})); assert.equal(v.document.activeElement,stop);
-  v.render(snapshot({revision:4,turn:turn('id','completed')})); assert.equal(v.document.activeElement,send);
+  v.render(snapshot({revision:4,turn:turn('id','completed')})); assert.equal(v.document.activeElement,v.document.body);
+});
+
+test('learner Stop immediately restores the next draft selection despite disabled-button blur and never steals later focus', () => {
+  const v = loadView(), c = v.byId('composer'), stop = v.byId('stop');
+  v.render(snapshot({ draft: 'Keep next draft', turn: turn('id', 'responding') }));
+  c.focus(); c.setSelectionRange(2, 8, 'backward'); stop.focus(); stop.dispatch('click');
+  assert.equal(stop.disabled, true); assert.equal(v.document.activeElement, c);
+  assert.equal(c.value, 'Keep next draft'); assert.equal(c.selectionStart, 2); assert.equal(c.selectionEnd, 8); assert.equal(c.selectionDirection, 'backward');
+  v.byId('timeline').focus();
+  v.render(snapshot({ revision: 2, turn: turn('id', 'responding') }));
+  v.render(snapshot({ revision: 3, turn: turn('id', 'cancelled') }));
+  assert.equal(v.document.activeElement, v.byId('timeline')); assert.equal(c.value, 'Keep next draft');
 });
 
 test('submission rejected by an unseen busy turn releases duplicate guard at authoritative settlement', () => {

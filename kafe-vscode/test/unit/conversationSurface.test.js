@@ -36,7 +36,7 @@ test('Restricted first use keeps static help and native configuration while expo
   v.render(snapshot({ context: { revision: 1, restricted: true, activeSource: null, sources: [] },
     view: { revision: 1, providerKey: 'missing', runtime: 'unavailable', contextNotice: null } }));
   assert.equal(v.byId('starting-aid').hidden, false); assert.equal(v.byId('context-run').hidden, true);
-  assert.equal(v.byId('add-context').hidden, true); v.byId('configure-provider').dispatch('click');
+  assert.equal(v.byId('context-selector').hidden, true); v.byId('configure-provider').dispatch('click');
   assert.deepEqual(v.sent, [envelope('configureProvider')]);
   const c = v.byId('composer'); c.value = 'Concept only'; c.dispatch('input'); c.dispatch('keydown', { key: 'Enter' });
   assert.equal(v.sent.some(m => m.type === 'submitMessage'), false);
@@ -64,6 +64,8 @@ test('many long whole-file indicators retain reachable reveal/remove controls an
   v.render(snapshot({ context: { revision: 5, restricted: false, activeSource: source('active-file', 'main.kf', true, 'active-file'), sources: files } }));
   const indicators = v.byId('included-context').children;
   assert.equal(indicators.length, 23);
+  assert.match(v.byId('context-summary').textContent, /main.kf.*23 files/);
+  assert.match(v.byId('context-summary').getAttribute('aria-label'), /file:\/\/\/workspace\/main.kf/);
   for (const [i, file] of files.entries()) {
     const node = indicators[i + 1], reveal = node.querySelector('[data-context-command="reveal"]'), remove = node.querySelector('[data-context-command="remove"]');
     assert.equal(reveal.hidden, false); assert.equal(remove.hidden, false);
@@ -74,9 +76,11 @@ test('many long whole-file indicators retain reachable reveal/remove controls an
   assert.deepEqual(v.sent.at(-1), envelope('revealSource', { sourceId: 'id:21', contextRevision: 5 }));
 });
 
-test('Add context opens metadata choices without posting a read or inclusion until explicit selection', () => {
+test('One file disclosure opens metadata choices without posting a read or inclusion until explicit selection', () => {
   const v = loadView(); v.render(snapshot({ context: { revision: 8, restricted: false, activeSource: null, sources: [source('optional', 'extra.kf', false)] } }));
-  v.byId('add-context').dispatch('click');
+  assert.equal(v.byId('add-context'), null);
+  v.byId('context-selector').open = true;
+  v.byId('context-selector').dispatch('toggle');
   assert.equal(v.byId('context-selector').open, true); assert.deepEqual(v.sent, []);
   const choice = v.byId('context-sources').querySelector('input'); choice.checked = true; choice.dispatch('change');
   assert.deepEqual(v.sent.at(-1), envelope('setSourceIncluded', { sourceId: 'optional', included: true, contextRevision: 8 }));
@@ -84,7 +88,7 @@ test('Add context opens metadata choices without posting a read or inclusion unt
 
 test('restricted mode exposes no file indicators or Add context and retains message submission', () => {
   const v = loadView(); v.render(snapshot({ context: { revision: 1, restricted: true, activeSource: source('active-file', 'private.kf', true, 'active-file'), sources: [source('other', 'secret.kf')] } }));
-  assert.equal(v.byId('included-context').children.length, 0); assert.equal(v.byId('add-context').hidden, true);
+  assert.equal(v.byId('included-context').children.length, 0); assert.equal(v.byId('context-selector').hidden, true);
   assert.doesNotMatch(v.root.textContent, /private|secret/);
   const c = v.byId('composer'); c.value = 'Concept'; c.dispatch('input'); c.dispatch('keydown', { key: 'Enter' });
   assert.equal(v.sent.at(-1).type, 'submitMessage');

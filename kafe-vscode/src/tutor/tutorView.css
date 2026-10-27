@@ -8,10 +8,11 @@ body { margin: 0; color: var(--vscode-foreground); background: var(--vscode-side
 #timeline { position: relative; flex: 1 1 auto; min-height: 0; overflow: auto; overflow-anchor: none; scrollbar-gutter: stable; padding: 16px calc(var(--lane-gutter) - var(--scrollbar-width)) 8px var(--lane-gutter); scrollbar-color: var(--vscode-scrollbarSlider-background) transparent; }
 #timeline::-webkit-scrollbar { width: var(--scrollbar-width); }
 .entry { width: 100%; max-width: var(--lane-width); margin: 0 auto 20px; min-width: 0; }
-.starting-aid { flex: 1 1 auto; align-self: center; width: calc(100% - 2 * var(--lane-gutter)); max-width: var(--lane-width); margin: 28px 0 12px; min-width: 0; min-height: 0; overflow: auto; scrollbar-color: var(--vscode-scrollbarSlider-background) transparent; }
+.starting-aid { flex: 1 1 auto; align-self: center; width: calc(100% - 2 * var(--lane-gutter)); max-width: var(--lane-width); margin: 28px 0 12px; min-width: 0; min-height: 0; display: flex; flex-direction: column; }
+.starting-content { min-height: 0; overflow: auto; scrollbar-color: var(--vscode-scrollbarSlider-background) transparent; }
 .starting-aid h2 { font-size: 1.2em; line-height: 1.45; margin-bottom: 10px; }
 #provider-setup-copy { margin-top: 16px; }
-#configure-provider { margin-block: 8px; color: var(--vscode-button-foreground); background: var(--vscode-button-background); }
+#configure-provider { flex: 0 0 auto; align-self: flex-start; margin-block: 8px; color: var(--vscode-button-foreground); background: var(--vscode-button-background); }
 #configure-provider:hover:not(:disabled) { background: var(--vscode-button-hoverBackground); }
 #first-program-help { margin-top: 10px; }
 #first-program-help summary { text-decoration: underline; text-underline-offset: 2px; }
@@ -51,11 +52,11 @@ button:disabled { opacity: .65; cursor: default; }
 #send:hover:not(:disabled), #stop:hover:not(:disabled) { background: var(--vscode-button-hoverBackground); }
 :focus-visible { outline: 2px solid var(--vscode-focusBorder); outline-offset: 2px; }
 #timeline:focus-visible { outline-offset: -2px; }
-.response-dock { flex: 0 0 auto; width: calc(100% - 2 * var(--lane-gutter)); max-width: var(--lane-width); align-self: center; min-height: 28px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 4px 8px; padding: 2px 0; font-size: .92em; }
+.response-dock { flex: 0 0 auto; width: calc(100% - 2 * var(--lane-gutter)); max-width: var(--lane-width); align-self: center; min-height: 28px; display: flex; flex-wrap: nowrap; align-items: center; justify-content: space-between; gap: 4px; padding: 2px 0; font-size: .92em; }
 .response-dock[data-state="failed"] #response-state { color: var(--vscode-errorForeground, var(--vscode-foreground)); }
 .response-dock[data-state="responding"] #response-state::before, .response-dock[data-state="stopping"] #response-state::before { content: ""; display: inline-block; width: 6px; height: 6px; margin-right: 6px; border-radius: 50%; background: var(--vscode-progressBar-background, var(--vscode-focusBorder)); }
 #new-content { margin-left: auto; font-size: inherit; }
-.composer-form { flex: 0 0 auto; min-height: 0; width: calc(100% - 2 * var(--lane-gutter)); max-width: var(--lane-width); align-self: center; margin: 4px 0 10px; padding: 10px; border: 1px solid var(--vscode-input-border, var(--vscode-panel-border)); border-radius: 6px; background: var(--vscode-input-background, var(--vscode-editorWidget-background)); max-height: 65%; overflow: auto; scrollbar-color: var(--vscode-scrollbarSlider-background) transparent; }
+.composer-form { flex: 0 0 auto; min-height: 0; width: calc(100% - 2 * var(--lane-gutter)); max-width: var(--lane-width); align-self: center; margin: 4px 0 10px; padding: 10px; border: 1px solid var(--vscode-input-border, var(--vscode-panel-border)); border-radius: 6px; background: var(--vscode-input-background, var(--vscode-editorWidget-background)); overflow: visible; scrollbar-color: var(--vscode-scrollbarSlider-background) transparent; }
 .composer-form:focus-within { border-color: var(--vscode-focusBorder); }
 textarea { display: block; width: 100%; min-width: 0; min-height: 3.5em; max-height: min(200px, 25vh); resize: none; overflow: auto; border: 0; border-radius: 0; color: var(--vscode-input-foreground); background: transparent; font: inherit; padding: 8px 0; caret-color: var(--vscode-input-foreground); scrollbar-color: var(--vscode-scrollbarSlider-background) transparent; }
 textarea::placeholder { color: var(--vscode-input-placeholderForeground); }
@@ -64,16 +65,16 @@ textarea:focus-visible { outline-offset: 1px; }
 .submit-controls { margin-left: auto; display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: center; gap: 4px; }
 #context-run { display: block; max-width: 100%; min-width: 0; margin-top: 6px; text-align: left; font-size: .9em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .context-row { min-width: 0; font-size: .92em; }
-#active-context { display: block; overflow-wrap: anywhere; }
-#included-context { max-height: min(112px, 18vh); overflow: auto; scrollbar-color: var(--vscode-scrollbarSlider-background) transparent; }
+#active-context { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#included-context { min-width: 0; }
 .context-indicator { display: flex; align-items: center; gap: 4px; padding: 2px 0; min-width: 0; }
 .context-file { flex: 1 1 auto; min-width: 0; text-align: left; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; background: transparent; padding-inline: 2px; }
 .context-origin { flex: 0 0 auto; font-size: .85em; }
 .context-remove { flex: 0 0 auto; padding-inline: 4px; background: transparent; font-size: .9em; }
-#context-selector { margin: 8px 0 0; }
+#context-selector { margin: 0; }
 #context-selector summary { font-size: .92em; }
 .context-note { font-size: .9em; margin-top: 6px; }
-#context-sources { max-height: 150px; overflow: auto; padding: 4px 2px; }
+#context-sources { padding: 4px 2px; }
 #context-sources label { display: flex; align-items: flex-start; gap: 6px; padding: 5px 0; overflow-wrap: anywhere; }
 input[type="checkbox"] { accent-color: var(--vscode-focusBorder); margin-top: 4px; flex: 0 0 auto; }
 details { margin: 8px 0; min-width: 0; }
@@ -88,12 +89,30 @@ pre { margin: 8px 0; padding: 10px; border: 1px solid var(--vscode-panel-border)
 pre code { padding: 0; }
 ::selection { color: var(--vscode-editor-selectionForeground, var(--vscode-foreground)); background: var(--vscode-editor-selectionBackground); }
 @media (max-width: 320px) { #tutor { --lane-gutter: 8px; } .composer-form { padding: 8px; } .composer-controls { gap: 4px; } }
-@media (max-height: 500px) { .composer-form { margin-bottom: 6px; padding-block: 6px; max-height: 68%; } textarea { min-height: 2.5em; } #included-context { max-height: 14vh; } #context-run { margin-top: 2px; } }
-@media (max-height: 500px) { .starting-aid { margin-block: 12px 4px; } #tutor:has(.starting-aid:not([hidden])) .composer-form { max-height: 40%; } }
 @media (max-width: 200px) { .submit-controls { width: 100%; } .context-origin { display: none; } }
 @media (prefers-reduced-motion: reduce) { #timeline { scroll-behavior: auto; } }
 @media (forced-colors: active) { .composer-form, pre, .entry[data-kind="learner"] { border: 1px solid CanvasText; } button, textarea { border: 1px solid ButtonText; } button:disabled { opacity: 1; color: GrayText; } :focus-visible { outline-color: Highlight; } }
 
-.context-notice { margin-block: 6px; font-size: .92em; }
+.context-notice { margin-block: 2px; font-size: .92em; }
 .context-notice summary { cursor: pointer; overflow-wrap: anywhere; }
 .context-notice p { margin: 6px 0; }
+
+/* Optional context scrolls independently; typing and submission never share its scrollport. */
+.composer-context { max-height: min(180px, 25vh); overflow: auto; scrollbar-color: var(--vscode-scrollbarSlider-background) transparent; }
+#context-summary { white-space: nowrap; }
+#context-name { display: inline-block; max-width: calc(100% - 5.5em); overflow: hidden; text-overflow: ellipsis; vertical-align: bottom; }
+#context-count { margin-left: .35em; }
+.context-options { padding: 2px; }
+#response-state { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#retry-runtime, #new-content { flex: 0 0 auto; white-space: nowrap; }
+@media (max-height: 500px) {
+  .composer-form { margin-block: 2px 4px; padding-block: 4px; }
+  .composer-controls { margin-top: 2px; }
+  textarea { max-height: 20vh; min-height: 2.5em; padding-block: 4px; }
+  .starting-aid { margin-block: 4px; }
+  #context-run { margin-top: 2px; }
+  #tutor:has(.starting-aid:not([hidden])) #timeline { display: none; }
+  #configure-provider { margin-block: 4px; }
+}
+
+@media (max-width: 320px) { .wide-label { display: none; } }

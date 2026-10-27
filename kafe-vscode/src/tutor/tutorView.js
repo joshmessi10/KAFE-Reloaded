@@ -57,6 +57,7 @@
     byId('response-dock').setAttribute('data-state', dockState);
     byId('response-dock').setAttribute('aria-busy', String(['responding', 'stopping'].includes(dockState)));
     if (byId('response-state').textContent !== words[dockState]) byId('response-state').textContent = words[dockState];
+    byId('response-state').setAttribute('title', words[dockState]);
   }
   function updateControls() {
     const active = activeStates.includes(state?.turn?.status);
@@ -68,10 +69,6 @@
     if (retryRuntime.hidden && focused === retryRuntime) composer.focus();
     byId('stop').hidden = !active; byId('stop').disabled = !active || Boolean(stopping);
     if (active && focused === byId('send')) byId('stop').focus();
-    else if (!active && focused === byId('stop')) {
-      if (!byId('send').disabled) byId('send').focus();
-      else composer.focus();
-    }
   }
   function postDraft() {
     if (!state) { beforeHydration = true; return; }
@@ -99,11 +96,19 @@
     if (event.key === 'Enter' && !event.shiftKey && !event.isComposing && event.keyCode !== 229 && !composing) submit(event);
   });
   listen(byId('composer-form'), 'submit', submit);
-  listen(byId('stop'), 'click', () => { if (activeStates.includes(state?.turn?.status) && !stopping) { stopping = `${state.turn.id}:${state.turn.turnGeneration}`; send('stopTurn', { turnId: state.turn.id, turnGeneration: state.turn.turnGeneration }); updateControls(); } });
+  listen(byId('stop'), 'click', () => {
+    if (!activeStates.includes(state?.turn?.status) || stopping) return;
+    const { selectionStart, selectionEnd, selectionDirection } = composer;
+    stopping = `${state.turn.id}:${state.turn.turnGeneration}`;
+    send('stopTurn', { turnId: state.turn.id, turnGeneration: state.turn.turnGeneration });
+    updateControls();
+    // Disabling Stop blurs it in browsers. Return focus as part of this learner
+    // action, never from a delayed settlement that could steal reading focus.
+    composer.focus({ preventScroll: true });
+    composer.setSelectionRange(selectionStart, selectionEnd, selectionDirection);
+  });
   listen(byId('configure-provider'), 'click', () => { if (state && !byId('starting-aid').hidden) send('configureProvider'); });
   listen(byId('retry-runtime'), 'click', () => { if (state && !byId('retry-runtime').hidden) send('retryRuntimeSetup'); });
-  listen(byId('add-context'), 'click', () => { if (state && !state.context.restricted) { byId('context-selector').open = !byId('context-selector').open; byId('add-context').setAttribute('aria-expanded', String(byId('context-selector').open)); } });
-  listen(byId('context-selector'), 'toggle', () => byId('add-context').setAttribute('aria-expanded', String(byId('context-selector').open)));
   listen(window, 'resize', growComposer);
   listen(byId('included-context'), 'click', event => {
     const control = event.target.closest?.('button'), row = control?.closest('[data-source-id]');
@@ -123,8 +128,16 @@
     const included = context.restricted ? [] : [context.activeSource?.included ? context.activeSource : null, ...sources.filter(s => s.included)].filter(Boolean);
     const active = context.restricted ? 'Files excluded in Restricted Mode.' : included.length ? '' : 'No file included.';
     if (byId('active-context').textContent !== active) byId('active-context').textContent = active;
-    byId('context-selector').hidden = sources.length === 0;
-    byId('add-context').hidden = context.restricted || sources.length === 0;
+    const selector = byId('context-selector'), contextFocused = selector.contains(document.activeElement);
+    selector.hidden = included.length === 0 && sources.length === 0;
+    if (selector.hidden && contextFocused) composer.focus({ preventScroll: true });
+    const current = context.activeSource?.included && !context.restricted ? context.activeSource : null;
+    const summary = byId('context-summary');
+    const name = current ? current.label : 'Files', count = `${included.length} file${included.length === 1 ? '' : 's'}`;
+    if (byId('context-name').textContent !== name) byId('context-name').textContent = name;
+    if (byId('context-count').textContent !== count) byId('context-count').textContent = count;
+    const identity = current ? `Files: ${current.label} (${current.uri}); ${included.length} included` : `Files: ${included.length} included`;
+    summary.setAttribute('title', identity); summary.setAttribute('aria-label', identity);
     const includedIds = new Set(); let includedIndex = 0;
     for (const source of included) {
       includedIds.add(source.id); let item = indicatorNodes.get(source.id);
@@ -231,7 +244,7 @@
       source: 'Some exchanges used files that are no longer included.',
       knowledge: 'Some exchanges relied on KAFE knowledge that is no longer current or available.',
     };
-    const text = reasons.map(reason => copy[reason]).join(' ');
+    const text = reasons.length ? `Older discussion remains saved; some was outside this reply's context. ${reasons.map(reason => copy[reason]).join(' ')}` : '';
     notice.hidden = !text;
     if (detail.textContent !== text) detail.textContent = text;
     if (!text) notice.open = false;
@@ -245,11 +258,11 @@
     if (beforeHydration) { beforeHydration = false; postDraft(); }
     const signature = JSON.stringify(next.entries), contentChanged = fresh || signature !== contentSignature; contentSignature = signature;
     renderer.render(next);
-    const aid = byId('starting-aid');
+    const aid = byId('starting-aid'), aidFocused = aid.contains(document.activeElement);
     aid.hidden = Boolean(next.entries.length || !next.view || next.view.providerKey === 'present');
     const copy = next.view?.providerKey === 'unavailable' ? 'Tutor configuration is unavailable. Try Configure Tutor again. Your draft stays here.' : 'Configure your DeepSeek API key to chat. VS Code stores it securely. You can draft your question now.';
     if (byId('provider-setup-copy').textContent !== copy) byId('provider-setup-copy').textContent = copy;
-    if (aid.hidden && aid.contains(document.activeElement)) composer.focus();
+    if (aid.hidden && aidFocused) composer.focus();
     renderContext(); renderContextNotice(); updateControls(); growComposer();
     if (contentChanged) {
       if (fresh || nearBottom) { timeline.scrollTop = timeline.scrollHeight; byId('new-content').hidden = true; }

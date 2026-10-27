@@ -32,6 +32,7 @@ test('runtime recovery browser fixtures retain explicit retry, key-dependent Sen
       { name: 'runtime-short-light', width: 460, height: 320, fontSize: 13, providerKey: 'present', light: true },
       { name: 'runtime-enlarged', width: 320, height: 500, fontSize: 20, providerKey: 'present' },
       { name: 'runtime-narrow-short-enlarged', width: 240, height: 320, fontSize: 20, providerKey: 'present' },
+      { name: 'runtime-missing-short-enlarged', width: 240, height: 320, fontSize: 20, providerKey: 'missing', firstUse: true },
     ]) await t.test(scenario.name, async () => {
       const page = await browser.newPage({ viewport: { width: scenario.width, height: scenario.height } });
       try {
@@ -42,6 +43,7 @@ test('runtime recovery browser fixtures retain explicit retry, key-dependent Sen
         await page.evaluate(() => { window.sent = []; window.acquireVsCodeApi = () => ({ postMessage: message => window.sent.push(message), setState() {} }); });
         await page.addScriptTag({ path: path.join(tutorRoot, 'tutorTimeline.js') });
         await page.addScriptTag({ path: path.join(tutorRoot, 'tutorView.js') });
+        await assertControls(page, ['#composer', '#send', '#retry-runtime', ...(scenario.firstUse ? ['#configure-provider'] : [])]);
         await page.locator('#composer').fill('Keep this draft');
         assert.equal(await page.locator('#send').isEnabled(), scenario.providerKey === 'present');
         assert.equal(await page.locator('#retry-runtime').isVisible(), true);
@@ -134,7 +136,7 @@ test('checkpoint browser fixtures preserve decision hierarchy, exact targets and
       { name: 'short-implementation', kind: 'implementation', width: 320, height: 650, fontSize: 13, light: true },
       { name: 'maximal-design', kind: 'design', maximal: true, width: 320, height: 650, fontSize: 13, light: true },
       { name: 'maximal-implementation', kind: 'implementation', maximal: true, width: 320, height: 650, fontSize: 13 },
-      { name: 'narrow-maximal-implementation', kind: 'implementation', maximal: true, width: 240, height: 320, fontSize: 20, pendingTask7: true },
+      { name: 'narrow-maximal-implementation', kind: 'implementation', maximal: true, width: 240, height: 320, fontSize: 20 },
     ]) await t.test(scenario.name, async () => {
       const page = await browser.newPage({ viewport: { width: scenario.width, height: scenario.height } });
       try {
@@ -170,7 +172,7 @@ test('checkpoint browser fixtures preserve decision hierarchy, exact targets and
         await page.addScriptTag({ path: path.join(tutorRoot, 'tutorTimeline.js') });
         await page.addScriptTag({ path: path.join(tutorRoot, 'tutorView.js') });
         const detail = page.locator('.entry-data details'), timeline = page.locator('#timeline');
-        assert.match(await page.locator('#included-context').innerText(), /iteration\/src\/main.kf/);
+        assert.match(await page.locator('#included-context').textContent(), /iteration\/src\/main.kf/);
         assert.doesNotMatch(await page.locator('#active-context').innerText(), /No file included/);
         assert.equal(await detail.getAttribute('open'), null);
         assert.equal(await page.getByText(checkpoint.tutorProposedAdditions[0], { exact: true }).isVisible(), false);
@@ -198,8 +200,9 @@ test('checkpoint browser fixtures preserve decision hierarchy, exact targets and
           headingMarginBottom: getComputedStyle(document.querySelector('.learning-field h3')).marginBottom,
           messages: window.fixtureMessages }));
         assert.ok(metrics.scrollWidth <= metrics.width + 1); assert.ok(metrics.scrollHeight <= metrics.height + 1);
+        await assertControls(page, ['#composer', '#send']);
         assert.ok(metrics.timelineScrollWidth <= metrics.timelineWidth + 1);
-        if (!scenario.pendingTask7) assert.ok(metrics.timelineHeight >= scenario.fontSize * 4, 'Transcript must retain readable space at ordinary dimensions');
+        assert.ok(metrics.timelineHeight >= scenario.fontSize * 4, 'Transcript must retain readable space at ordinary dimensions');
         assert.deepEqual(metrics.messages, []); assert.deepEqual(errors, []);
         evidence.scenarios.push({ ...scenario, checkpointBytes: Buffer.byteLength(JSON.stringify(checkpoint)), metrics, errors });
       } finally { await page.close(); }
@@ -288,6 +291,7 @@ test('first-use browser fixture keeps setup optional, bounded and independent fr
             headingFontSize: getComputedStyle(heading).fontSize, headingMarginBottom: getComputedStyle(heading).marginBottom };
         });
         assert.ok(metrics.scrollWidth <= metrics.width + 1); assert.ok(metrics.scrollHeight <= metrics.height + 1);
+        await assertControls(page, ['#configure-provider', '#composer', '#send']);
         assert.ok(metrics.composerTop >= 0 && metrics.composerBottom <= metrics.height + 1);
         assert.ok(metrics.aidClientHeight >= scenario.fontSize * 4, 'First-use guidance must retain useful scrolling space');
         if (output) await page.screenshot({ path: path.join(output, `${scenario.name}.png`) });
@@ -297,8 +301,9 @@ test('first-use browser fixture keeps setup optional, bounded and independent fr
         const command = (await page.evaluate(() => window.fixtureMessages)).at(-1);
         assert.deepEqual(command, { type: 'configureProvider', sessionId: state.sessionId, generation: state.generation });
         await page.locator('#first-program-help > summary').click();
+        await assertControls(page, ['#configure-provider', '#composer', '#send']);
         assert.match(await page.locator('#first-program-help').innerText(), /folder[\s\S]*\.kf[\s\S]*Run[\s\S]*terminal/i);
-        if (scenario.restricted) { assert.equal(await page.locator('#context-run').isVisible(), false); assert.equal(await page.locator('#add-context').isVisible(), false); }
+        if (scenario.restricted) { assert.equal(await page.locator('#context-run').isVisible(), false); assert.equal(await page.locator('#context-selector').isVisible(), false); }
         await page.evaluate(next => window.dispatchEvent(new MessageEvent('message', { data: { type: 'render', state: next } })),
           { ...state, view: { ...state.view, revision: 2, providerKey: 'present' } });
         assert.equal(await aid.isVisible(), false); assert.equal(await page.locator('#composer').inputValue(), 'My unsent question');
@@ -330,8 +335,8 @@ test('captured-history browser fixtures show bounded long and restored-source di
       { name: 'long-window', width: 460, height: 650, fontSize: 13 },
       { name: 'restored-source', width: 320, height: 650, fontSize: 13, restored: true, source: true, light: true },
       { name: 'changed-knowledge', width: 320, height: 650, fontSize: 13, knowledge: true },
-      { name: 'narrow-restored-source', width: 240, height: 320, fontSize: 20, restored: true, source: true, pendingTask7: true },
-    ]) await t.test(scenario.name, { todo: scenario.pendingTask7 ? 'Task 7: compact composer and transcript access remain pending' : false }, async () => {
+      { name: 'narrow-restored-source', width: 240, height: 320, fontSize: 20, restored: true, source: true },
+    ]) await t.test(scenario.name, async () => {
       const uri = { scheme: 'file', toString: () => 'file:///lessons/current.kf' };
       const retriever = { getKnowledgeLineage: async () => null, search: async () => [] };
       const coordinator = new SessionCoordinator({
@@ -373,7 +378,9 @@ test('captured-history browser fixtures show bounded long and restored-source di
         await page.locator('#context-notice summary').click();
         assert.match(await page.locator('#context-notice-detail').textContent(), /size limit/);
         if (scenario.source) assert.match(await page.locator('#context-notice-detail').textContent(), /files that are no longer included/);
+        await assertControls(page, ['#composer', '#send']);
         const layout = await geometry(page);
+        assert.ok(layout.timeline.clientHeight >= scenario.fontSize * 4);
         assert.ok(layout.document.scrollWidth <= scenario.width + 1);
         assert.ok(layout.timeline.scrollWidth <= layout.timeline.clientWidth + 1);
         await page.locator('#composer').fill('My next question'); await page.locator('#composer').focus();
@@ -383,12 +390,128 @@ test('captured-history browser fixtures show bounded long and restored-source di
         assert.equal(await page.locator('#composer').evaluate(node => node === document.activeElement), true);
         if (output) await page.screenshot({ path: path.join(output, `${scenario.name}-expanded.png`) });
         assert.deepEqual(errors, []);
-        evidence.scenarios.push({ ...scenario, reasons: state.view.contextNotice.reasons, layout, errors, pending: scenario.pendingTask7 ? 'Task 7 owns compact context-rich composer/transcript access; this capture is evidence, not native acceptance.' : null });
+        evidence.scenarios.push({ ...scenario, reasons: state.view.contextNotice.reasons, layout, errors });
         assert.ok(layout.document.scrollHeight <= scenario.height + 1, `Document height ${layout.document.scrollHeight} exceeds viewport ${scenario.height}`);
       } finally { coordinator.dispose(); await page.close(); }
     });
   } finally {
     if (output) fs.writeFileSync(path.join(output, 'captured-history-browser-fixture.json'), JSON.stringify(evidence, null, 2));
+    await browser.close();
+  }
+});
+
+// Bounds are checked before any action that could scroll a locator into view.
+async function assertControls(page, selectors) {
+  const controls = await page.evaluate(selectors => selectors.map(selector => {
+    const node = document.querySelector(selector), r = node.getBoundingClientRect();
+    const clip = { left: 0, top: 0, right: innerWidth, bottom: innerHeight };
+    for (let p = node.parentElement; p; p = p.parentElement) {
+      const style = getComputedStyle(p), b = p.getBoundingClientRect();
+      if (/(auto|scroll|hidden|clip)/.test(style.overflowX)) { clip.left = Math.max(clip.left, b.left); clip.right = Math.min(clip.right, b.right); }
+      if (/(auto|scroll|hidden|clip)/.test(style.overflowY)) { clip.top = Math.max(clip.top, b.top); clip.bottom = Math.min(clip.bottom, b.bottom); }
+    }
+    return { selector, rect: r.toJSON(), clip, visible: r.width > 0 && r.height > 0 && r.left >= clip.left - 1 && r.right <= clip.right + 1 && r.top >= clip.top - 1 && r.bottom <= clip.bottom + 1 };
+  }), selectors);
+  for (const control of controls) assert.ok(control.visible, `Essential control clipped: ${JSON.stringify(control)}`);
+  return controls;
+}
+
+test('browser Stop disable blur returns draft selection immediately and late settlement respects reading focus', async () => {
+  const browser = await chromium.launch({ headless: true, ...(process.env.KAFE_LAYOUT_BROWSER ? { executablePath: process.env.KAFE_LAYOUT_BROWSER } : {}) });
+  const page = await browser.newPage({ viewport: { width: 240, height: 320 } });
+  try {
+    const state = snapshot({ draft: 'Keep next draft', turn: { id: 'turn', turnGeneration: 1, submissionId: 'submission', status: 'responding' }, entries: Array.from({ length: 12 }, (_, i) => entry(`old-${i}`, 'assistant', 'Earlier answer. '.repeat(30))) });
+    await page.setContent(viewHtml(20, { state }));
+    await page.evaluate(() => { window.sent = []; window.acquireVsCodeApi = () => ({ postMessage: m => window.sent.push(m) }); });
+    await page.addScriptTag({ path: path.join(tutorRoot, 'tutorTimeline.js') });
+    await page.addScriptTag({ path: path.join(tutorRoot, 'tutorView.js') });
+    await assertControls(page, ['#composer', '#stop']);
+    await page.locator('#timeline').evaluate(n => { n.scrollTop = 0; });
+    await page.locator('#composer').focus();
+    await page.locator('#composer').evaluate(n => n.setSelectionRange(2, 8, 'backward'));
+    await page.keyboard.press('Tab'); assert.equal(await page.evaluate(() => document.activeElement.id), 'stop');
+    await page.keyboard.press('Enter');
+    assert.equal(await page.evaluate(() => document.activeElement.id), 'composer');
+    assert.equal(await page.locator('#composer').evaluate(n => n.matches(':focus-visible') && getComputedStyle(n).outlineWidth !== '0px'), true);
+    assert.equal(await page.locator('#stop').isDisabled(), true);
+    assert.deepEqual(await page.locator('#composer').evaluate(n => [n.value, n.selectionStart, n.selectionEnd, n.selectionDirection]), ['Keep next draft', 2, 8, 'backward']);
+    assert.deepEqual(await page.evaluate(() => window.sent), [{ type: 'stopTurn', sessionId: 'session', generation: 1, turnId: 'turn', turnGeneration: 1 }]);
+    await page.locator('#timeline').focus();
+    for (const [revision, status] of [[2, 'responding'], [3, 'cancelled']]) await page.evaluate(next => window.dispatchEvent(new MessageEvent('message', { data: { type: 'render', state: next } })), { ...state, revision, turn: { ...state.turn, status } });
+    assert.equal(await page.evaluate(() => document.activeElement.id), 'timeline');
+    assert.equal(await page.locator('#timeline').evaluate(n => n.scrollTop), 0);
+    assert.equal(await page.locator('#composer').inputValue(), 'Keep next draft');
+    // Natural completion must not choose a new focus target for the learner.
+    await page.evaluate(next => window.dispatchEvent(new MessageEvent('message', { data: { type: 'render', state: next } })), { ...state, revision: 4, turn: { ...state.turn, id: 'another', turnGeneration: 2 } });
+    await page.locator('#stop').focus();
+    await page.evaluate(next => window.dispatchEvent(new MessageEvent('message', { data: { type: 'render', state: next } })), { ...state, revision: 5, turn: { ...state.turn, id: 'another', turnGeneration: 2, status: 'completed' } });
+    assert.equal(await page.evaluate(() => document.activeElement === document.body), true);
+    if (process.env.KAFE_LAYOUT_EVIDENCE_DIR) fs.writeFileSync(path.join(process.env.KAFE_LAYOUT_EVIDENCE_DIR, 'stop-focus-browser-fixture.json'), JSON.stringify({ browser: await browser.version(), stopImmediatelyFocusedComposer: true, draft: 'Keep next draft', selection: [2, 8, 'backward'], lateSettlementFocus: 'timeline', lateSettlementScrollTop: 0, naturalSettlementFocus: 'body', exactStopEnvelope: await page.evaluate(() => window.sent[0]) }, null, 2));
+  } finally { await page.close(); await browser.close(); }
+});
+
+
+test('compact file context matrix keeps essential controls together and optional content keyboard reachable', async t => {
+  const browser = await chromium.launch({ headless: true, ...(process.env.KAFE_LAYOUT_BROWSER ? { executablePath: process.env.KAFE_LAYOUT_BROWSER } : {}) });
+  const output = process.env.KAFE_LAYOUT_EVIDENCE_DIR, evidence = { surface: 'Shipped browser view, real keyboard and clipping ancestor bounds; not native acceptance', scenarios: [] };
+  try {
+    for (const [index, scenario] of scenarios.entries()) for (const expanded of [false, true]) await t.test(`${scenario.name} ${expanded ? 'expanded' : 'collapsed'}`, async () => {
+      const page = await browser.newPage({ viewport: { width: scenario.width, height: scenario.height }, reducedMotion: 'reduce', ...(index === 4 ? { forcedColors: 'active' } : {}) });
+      try {
+        const errors = []; page.on('pageerror', error => errors.push(error.message));
+        const activeSource = { id: 'active-file', label: 'lesson/current/main.kf', uri: 'file:///workspace/lesson/current/main.kf', included: true, category: 'active-file' };
+        const sources = Array.from({ length: 10 }, (_, i) => ({ id: `file-${i}`, label: `lesson/${'long-folder/'.repeat(5)}${i}/main.kf`, uri: `file:///workspace/lesson/${i}/main.kf`, included: i < 7, category: 'selected-file' }));
+        const state = snapshot({ draft: 'Next question', context: { revision: 4, restricted: false, activeSource, sources }, view: { revision: 1, providerKey: 'present', runtime: 'failed', contextNotice: { reasons: ['window', 'source', 'knowledge'] } },
+          contextActions: { entryId: 'context', actions: [{ ...action('run', 'runFile', { targetUri: activeSource.uri }), label: 'Run main.kf' }] },
+          entries: Array.from({ length: 12 }, (_, i) => entry(`previous-${i}`, 'assistant', 'The earlier explanation remains available. '.repeat(20))) });
+        await page.setContent(viewHtml(scenario.fontSize, { state, light: index % 2 === 1 }));
+        await page.evaluate(() => { window.sent = []; window.acquireVsCodeApi = () => ({ postMessage: m => window.sent.push(m) }); });
+        await page.addScriptTag({ path: path.join(tutorRoot, 'tutorTimeline.js') }); await page.addScriptTag({ path: path.join(tutorRoot, 'tutorView.js') });
+        assert.equal(await page.locator('#add-context').count(), 0);
+        assert.equal(await page.locator('#context-count').innerText(), '8 files');
+        await assertControls(page, ['#context-count', '#composer', '#send', '#retry-runtime']);
+        if (expanded) {
+          await page.locator('#context-summary').focus(); await page.keyboard.press('Enter');
+          assert.equal(await page.locator('#context-selector').evaluate(n => n.open), true);
+          await page.keyboard.press('Tab');
+          await assertControls(page, ['#included-context [data-context-command="reveal"]']);
+          assert.ok((await page.locator('#included-context [data-context-command="reveal"]').first().getAttribute('aria-label')).includes(activeSource.uri));
+          await page.keyboard.press('Enter');
+          assert.deepEqual(await page.evaluate(() => window.sent.at(-1)), { type: 'revealSource', sessionId: 'session', generation: 1, sourceId: 'active-file', contextRevision: 4 });
+          // Sequential keyboard access must expose the final optional file without
+          // locator.click's automatic scrolling concealing a clipped control.
+          for (let i = 0; i < 26; i++) {
+            await page.keyboard.press('Tab');
+            const focused = await page.evaluate(() => ({ id: document.activeElement.id, source: document.activeElement.getAttribute('data-source-id') }));
+            if (focused.source === 'file-9') break;
+          }
+          assert.equal(await page.evaluate(() => document.activeElement.getAttribute('data-source-id')), 'file-9');
+          await assertControls(page, ['#context-sources input[data-source-id="file-9"]', '#composer', '#send']);
+          await page.keyboard.press('Space');
+          assert.deepEqual(await page.evaluate(() => window.sent.at(-1)), { type: 'setSourceIncluded', sessionId: 'session', generation: 1, sourceId: 'file-9', included: true, contextRevision: 4 });
+          await page.keyboard.press('Tab'); assert.equal(await page.evaluate(() => document.activeElement.id), 'context-run');
+          await assertControls(page, ['#context-run', '#composer', '#send']);
+          await page.keyboard.press('Tab'); await page.keyboard.press('Enter');
+          assert.equal(await page.locator('#context-notice').evaluate(n => n.open), true);
+          await page.keyboard.press('ArrowDown');
+        }
+        await page.locator('#timeline').focus(); await page.keyboard.press('Home');
+        await page.locator('#timeline').evaluate(n => { n.scrollTop = 0; });
+        const before = await geometry(page); assert.equal(before.timeline.scrollTop, 0);
+        // Exercise the late-content affordance alongside runtime recovery.
+        await page.evaluate(next => window.dispatchEvent(new MessageEvent('message', { data: { type: 'render', state: next } })), { ...state, revision: 2, entries: [...state.entries, entry('new', 'assistant', 'New answer')] });
+        const controls = await assertControls(page, ['#composer', '#send', '#retry-runtime', '#new-content']);
+        const metrics = await geometry(page); assertContained(metrics, 'context matrix');
+        assert.ok(metrics.timeline.clientHeight >= scenario.fontSize * 4, `Readable transcript: ${JSON.stringify(metrics)}`);
+        assert.equal(metrics.timeline.scrollTop, 0);
+        assert.deepEqual(errors, []);
+        const optional = await page.locator('.composer-context').evaluate(n => ({ clientHeight: n.clientHeight, scrollHeight: n.scrollHeight, scrollTop: n.scrollTop }));
+        evidence.scenarios.push({ ...scenario, expanded, metrics, controls, optional, errors });
+        if (output) await page.screenshot({ path: path.join(output, `context-${index}-${expanded ? 'expanded' : 'collapsed'}.png`) });
+      } finally { await page.close(); }
+    });
+  } finally {
+    if (output) fs.writeFileSync(path.join(output, 'compact-context-browser-fixture.json'), JSON.stringify(evidence, null, 2));
     await browser.close();
   }
 });

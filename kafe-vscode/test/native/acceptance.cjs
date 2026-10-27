@@ -140,6 +140,7 @@ async function sequentialTraversal(label, { busy = false, requiredActions = [] }
   assert.equal(reverse.at(-1).id, first.id); await screenshot(`sequential-${label}`); return { first, forward, reverse };
 }
 async function keyboardActivate(type, { byId = false } = {}) {
+  if (byId && type === 'context-run' && !await evaluate('document.getElementById("context-selector").open')) await click('#context-summary');
   await evaluate('document.getElementById("timeline").focus()');
   const forward = []; let reached;
   for (let i=0;i<100;i++) { await key('Tab'); const item=await activeControl(); forward.push(item);
@@ -331,6 +332,20 @@ async function main() {
     await evaluate('document.body.style.setProperty("--vscode-font-size","20px")');
     try {
       const m=await settledLayout(); assertReachableGeometry(m,await nativeMetrics(),{physicalWidth:1024,physicalHeight:520,width:360,ratio:1});
+      await control('traversalSources'); await control('readiness');
+      if (!await evaluate('document.getElementById("context-selector").open')) await click('#context-summary');
+      await sequentialTraversal('short-expanded-context');
+      const expanded = await evaluate(`(() => {
+        const clip = node => { let r = node.getBoundingClientRect(), top = 0, bottom = innerHeight, left = 0, right = innerWidth;
+          for (let p = node.parentElement; p; p = p.parentElement) { const s = getComputedStyle(p), b = p.getBoundingClientRect();
+            if (/(auto|hidden|scroll)/.test(s.overflowY)) { top = Math.max(top, b.top); bottom = Math.min(bottom, b.bottom); }
+            if (/(auto|hidden|scroll)/.test(s.overflowX)) { left = Math.max(left, b.left); right = Math.min(right, b.right); }
+          }
+          return { rect: r.toJSON(), visible: r.top >= top - 1 && r.bottom <= bottom + 1 && r.left >= left - 1 && r.right <= right + 1 }; };
+        return { composer: clip(document.getElementById('composer')), send: clip(document.getElementById('send')), timelineHeight: document.getElementById('timeline').clientHeight };
+      })()`);
+      assert.ok(expanded.composer.visible && expanded.send.visible); assert.ok(expanded.timelineHeight >= 80);
+      await click('#context-summary');
       const options=await evaluate('({reduced:matchMedia("(prefers-reduced-motion: reduce)").matches,font:getComputedStyle(document.getElementById("composer")).fontSize})');
       assert.equal(options.reduced,true); assert.equal(options.font,'20px'); await screenshot('short-enlarged-reduced');
       return {metrics:m,options,enlargement:'test-owned CSS variable; no installed preference claim'};
@@ -357,13 +372,24 @@ async function main() {
   resizeOwnedWindow(1024,768);
   await control('zoom', { level: 0 }); await settledLayout(m => m.ratio === 1); await resizeSidebar(360);
   await gate('Stop-retry-live-draft-and-recreation', async () => {
-    await oneSend('Original stopped question', { text: 'Partial original answer.', hold: true }); await typeComposer('Keep next draft');
+    await oneSend('Original stopped question', { text: 'Partial original answer.', hold: true, deferAbortSettlement: true }); await typeComposer('Keep next draft');
     await screenshot('responding');
     const before = await control('state'); await recreateView(); await waitFor(() => evaluate('document.getElementById("composer").value === "Keep next draft"'), 'recreated draft');
     assert.equal((await control('state')).snapshot.entries.length, before.snapshot.entries.length); await sequentialTraversal('streaming-Stop', { busy: true });
-    await typeComposer('Keep next draft'); await click('#stop'); await settledTurn(); assert.equal((await control('state')).snapshot.turn.status, 'cancelled');
+    await typeComposer('Keep next draft');
+    await evaluate(`(() => {
+      const c = document.getElementById('composer'); c.setSelectionRange(2, 8, 'backward');
+      document.getElementById('stop').addEventListener('click', () => {
+        window.stopActionFocus = { active: document.activeElement.id, draft: c.value, start: c.selectionStart, end: c.selectionEnd, direction: c.selectionDirection, disabled: document.getElementById('stop').disabled };
+      }, { once: true });
+    })()`);
+    await click('#stop');
+    assert.deepEqual(await evaluate('window.stopActionFocus'), { active: 'composer', draft: 'Keep next draft', start: 2, end: 8, direction: 'backward', disabled: true });
+    await evaluate('document.getElementById("timeline").focus();document.getElementById("timeline").scrollTop=0');
+    await settledTurn(); assert.equal((await control('state')).snapshot.turn.status, 'cancelled');
     await screenshot('stopped');
     await control('chunk', { text: 'LATE_FORBIDDEN' }); await control('finish'); assert.ok(!(await control('state')).snapshot.entries.some(e => e.text.includes('LATE_FORBIDDEN')));
+    assert.equal(await evaluate('document.activeElement.id'), 'timeline'); assert.equal(await evaluate('document.getElementById("timeline").scrollTop'), 0);
     await control('scenario', { scenario: { text: 'Recovered answer.' } }); await click('button[data-action-type=retryTurn]:not(:disabled)'); await waitFor(async()=>(await control('state')).counters.provider===before.counters.provider+1,'explicit Retry provider admission'); await settledTurn();
     const after = await control('state'); assert.equal(after.counters.provider, before.counters.provider + 1); assert.equal(after.snapshot.draft, 'Keep next draft');
     assert.equal(after.snapshot.entries.filter(e => e.kind === 'learner').length, before.snapshot.entries.filter(e => e.kind === 'learner').length); await screenshot('stop-retry'); return { providerAttempts: after.counters.provider - before.counters.provider, draftPreserved: true };

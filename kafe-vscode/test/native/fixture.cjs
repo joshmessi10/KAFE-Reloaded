@@ -30,7 +30,7 @@ exports.activate = async function activate(context) {
     if (scenario.proposal) { yield { type: 'complete', text: '', toolCalls: [{ id: 'native-proposal', name: 'proposeCodeChange', arguments: { newText: 'items <- [42]\n', ...(scenario.sourceId ? { sourceId: scenario.sourceId } : {}) } }], finishReason: 'tool_calls' }; return; }
     const queue = [scenario.text]; let wake, done = !scenario.hold;
     stream = { chunk(text) { queue.push(text); wake?.(); }, finish() { done = true; wake?.(); } };
-    signal.addEventListener('abort', () => { done = true; wake?.(); }, { once: true });
+    signal.addEventListener('abort', () => { if (!scenario.deferAbortSettlement) { done = true; wake?.(); } }, { once: true });
     let text = '';
     while (queue.length || !done) {
       if (!queue.length) { await new Promise(resolve => { wake = resolve; }); wake = undefined; continue; }

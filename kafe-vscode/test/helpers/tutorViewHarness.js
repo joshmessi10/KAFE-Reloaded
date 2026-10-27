@@ -78,8 +78,12 @@ function loadView({ html = fs.readFileSync(path.join(tutorRoot, 'tutorView.html'
     removeEventListener(t, f) { this.listeners.get(t)?.delete(f); }
     dispatchEvent(e) { if (this.disabled && e.type === 'click') return false; e.target ||= this; e.preventDefault ||= () => { e.defaultPrevented = true; }; for (const f of [...(this.listeners.get(e.type) || [])]) f(e); if (e.bubbles !== false && this.parentNode) this.parentNode.dispatchEvent(e); return !e.defaultPrevented; }
     dispatch(type, fields = {}) { return this.dispatchEvent({ type, ...fields }); }
-    focus() { document.activeElement = this; }
-    setSelectionRange(start, end) { this.selectionStart = start; this.selectionEnd = end; }
+    get hidden() { return this._hidden || false; }
+    set hidden(value) { this._hidden = value; if (value && this.contains(document.activeElement)) document.activeElement = document.body; }
+    get disabled() { return this._disabled || false; }
+    set disabled(value) { this._disabled = value; if (value && document.activeElement === this) document.activeElement = document.body; }
+    focus() { if (!this.disabled) document.activeElement = this; }
+    setSelectionRange(start, end, direction = 'none') { this.selectionStart = start; this.selectionEnd = end; this.selectionDirection = direction; }
     scrollIntoView() { this.scrolledIntoView = true; }
   }
   document.createElement = t => new Node(t); document.createTextNode = v => new Node('#text', String(v));

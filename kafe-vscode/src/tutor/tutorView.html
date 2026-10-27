@@ -10,10 +10,10 @@
 <body>
   <main id="tutor">
     <section id="starting-aid" class="starting-aid" aria-labelledby="starting-title" hidden>
+      <div class="starting-content">
         <h2 id="starting-title">What would you like to understand?</h2>
         <p>Ask about a KAFE concept or your program.</p>
         <p id="provider-setup-copy">Configure your DeepSeek API key to chat. VS Code stores it securely. You can draft your question now.</p>
-        <button id="configure-provider" type="button">Configure Tutor</button>
         <details id="first-program-help">
           <summary>Your first KAFE program</summary>
           <ol>
@@ -24,39 +24,44 @@
           </ol>
           <p>Running a program requires a trusted workspace and the KAFE runtime. Tutor conversation has separate setup.</p>
         </details>
+      </div>
+      <button id="configure-provider" type="button">Configure Tutor</button>
     </section>
     <div id="timeline" role="log" aria-label="Tutor conversation" aria-live="off" tabindex="0"></div>
     <div id="response-dock" class="response-dock" data-state="idle" aria-busy="false">
       <span id="response-state"></span>
-      <button id="retry-runtime" class="quiet-control" type="button" title="Retry KAFE runtime setup for Run" hidden>Retry Run setup</button>
-      <button id="new-content" type="button" hidden>Go to latest</button>
+      <button id="retry-runtime" class="quiet-control" type="button" title="Retry KAFE runtime setup for Run" aria-label="Retry Run setup" hidden>Retry Run<span class="wide-label"> setup</span></button>
+      <button id="new-content" type="button" aria-label="Go to latest" hidden><span class="wide-label">Go to </span>Latest</button>
     </div>
     <p id="conversation-status" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></p>
     <form id="composer-form" class="composer-form">
-      <div id="context-row" class="context-row" aria-label="Whole files included in request">
-        <span id="active-context"></span>
-        <div id="included-context"></div>
+      <div class="composer-context" tabindex="0" aria-label="Request context">
+        <div id="context-row" class="context-row" aria-label="Whole files included in request">
+          <details id="context-selector" hidden>
+            <summary id="context-summary"><span id="context-name">Files</span><span id="context-count"></span></summary>
+            <div class="context-options">
+              <div id="included-context"></div>
+              <p class="context-note">File contents enter the request only after inclusion. The active KAFE file is included by default.</p>
+              <div id="context-sources"></div>
+              <button id="context-run" class="quiet-control" type="button" hidden></button>
+            </div>
+          </details>
+          <span id="active-context"></span>
+        </div>
+        <details id="context-notice" class="context-notice" hidden>
+          <summary title="Older discussion remains saved; some was outside this reply's context." aria-label="Older discussion remains saved; some was outside this reply's context.">Context omitted</summary>
+          <p id="context-notice-detail"></p>
+        </details>
       </div>
-      <details id="context-notice" class="context-notice" hidden>
-        <summary>Older discussion remains saved; some was outside this reply's context.</summary>
-        <p id="context-notice-detail"></p>
-      </details>
       <label for="composer" class="sr-only">Message to KAFE Tutor</label>
       <textarea id="composer" rows="2" aria-describedby="composer-help" placeholder="Ask a question or describe what you want to build."></textarea>
       <p id="composer-help" class="sr-only">Enter to send. Shift+Enter for a new line.</p>
       <div class="composer-controls">
         <div class="submit-controls">
-          <button id="add-context" class="quiet-control" type="button" aria-expanded="false" aria-controls="context-selector" hidden>Add context</button>
           <button id="stop" type="button" aria-label="Stop the current response" hidden>Stop</button>
           <button id="send" type="submit" aria-label="Send message to KAFE Tutor" disabled>Send</button>
         </div>
       </div>
-      <details id="context-selector" hidden>
-        <summary>Available whole files</summary>
-        <p class="context-note">File contents enter the request only after inclusion. The active KAFE file is included by default.</p>
-        <div id="context-sources"></div>
-      </details>
-      <button id="context-run" class="quiet-control" type="button" hidden></button>
     </form>
   </main>
   <script id="initial-state" type="application/json" nonce="{{NONCE}}">{{INITIAL_STATE}}</script>

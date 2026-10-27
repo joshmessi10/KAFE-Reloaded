@@ -162,3 +162,14 @@ test('settled checkpoint and queued preference change announce once without resp
   v.render(snapshot({ revision: 3, learning: { ...learning, displayRevision: 2, preferenceChangeQueued: false }, entries: [decision()] }));
   assert.equal(v.byId('conversation-status').textContent, 'Guided learning active.');
 });
+
+
+test('file context disclosure cannot collapse the checkpoint preparation target or scope', () => {
+  const v = loadView(); v.render(snapshot({ entries: [decision({}, { targetLabel: 'first/main.kf' })] }));
+  for (const open of [false, true]) {
+    v.byId('context-selector').open = open;
+    const visible = visibleText(v.byId('timeline'));
+    assert.match(visible, /first\/main.kf/); assert.match(visible, /Replace only the output statement/);
+    assert.match(visible, /Review.*Apply.*Run/);
+  }
+});
