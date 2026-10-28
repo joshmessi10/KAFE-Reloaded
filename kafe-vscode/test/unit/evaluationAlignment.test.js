@@ -221,7 +221,7 @@ for (const mode of ['guided', 'paused']) {
       assert.match(policy, /Historical results from changed source stay historical/);
       assert.match(policy, /machine\.recall_score returns macro recall across classes, not automatically the sensitivity/);
       assert.match(policy, /Locate the positive label in the supplied label order/);
-      assert.match(policy, /never provide the final answer.*complete ready-to-submit solution/);
+      assert.match(policy, /never author a complete assessed submission or its final individual conclusion.*complete ready-to-submit solution/);
       assert.match(policy, /Keep this scope on follow-ups and after tools/);
       assert.match(policy, /closed-book pretest or posttest that forbids assistance, do not solve, hint at or select its answers/);
       assert.match(policy, /Do not infer an active assessment merely because a practice question resembles one/);

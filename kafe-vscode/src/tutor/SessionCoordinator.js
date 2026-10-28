@@ -372,7 +372,7 @@ class SessionCoordinator {
     } catch { return null; }
   }
 
-  parameters() { return this.provider?.getRequestParameters?.() || { model: 'deepseek-flash', thinking: { type: 'disabled' }, stream: true }; }
+  parameters() { return this.provider?.getRequestParameters?.() || { model: 'deepseek-v4-pro', thinking: { type: 'disabled' }, stream: true }; }
 
   /** @param {import('./ConversationSession').Submission} submission @returns {Promise<import('./RequestSnapshot').RequestSnapshot>} */
   async captureSubmission(submission) {

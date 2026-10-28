@@ -20,7 +20,7 @@ Trusted activation automatically prepares a missing published runtime. Setup is 
 
 Sending shares your message, eligible recent discussion and currently authorized context with DeepSeek. Optional files require explicit inclusion. Conversations and drafts are saved locally per workspace; exporting or sharing them is your choice and is not research consent. Restricted Mode supports message-only chat without file, edit or Run access. Credentials use native key entry, changes use native diffs, and execution uses native terminals.
 
-See [reliability, budgets and contributor checks](https://github.com/joshmessi10/KAFE-Reloaded/blob/b4d53711b43ce4f4aa510f6bb10760b6257b042e/docs/extension/tutor-reliability.md), [study procedures and consent](https://github.com/joshmessi10/KAFE-Reloaded/blob/b4d53711b43ce4f4aa510f6bb10760b6257b042e/docs/extension/evaluation-alignment.md), and the [learner guide](https://github.com/joshmessi10/KAFE-Reloaded/blob/b4d53711b43ce4f4aa510f6bb10760b6257b042e/docs/extension/vscode.md). Older package notes describe historical candidates.
+See [reliability, budgets and contributor checks](https://github.com/joshmessi10/KAFE-Reloaded/blob/45a658e4dba637924a5c966f7c6b64578b2a78d3/docs/extension/tutor-reliability.md), [study procedures and consent](https://github.com/joshmessi10/KAFE-Reloaded/blob/45a658e4dba637924a5c966f7c6b64578b2a78d3/docs/extension/evaluation-alignment.md), and the [learner guide](https://github.com/joshmessi10/KAFE-Reloaded/blob/45a658e4dba637924a5c966f7c6b64578b2a78d3/docs/extension/vscode.md). Older package notes describe historical candidates.
 
 ## Conversation
 
@@ -92,4 +92,4 @@ Contributor Run can use a prepared KAFE checkout and installed tools. An Extensi
 
 ## Contributor checks and diagnostics
 
-Use the [reliability contributor workflow](https://github.com/joshmessi10/KAFE-Reloaded/blob/b4d53711b43ce4f4aa510f6bb10760b6257b042e/docs/extension/tutor-reliability.md#contributor-workflow) for Node 24 LTS, locked dependencies, unit/native/layout gates, reference freshness, package checks and diagnostics. Local checks, hosted CI, real-provider evaluation and release acceptance require separate evidence. The exact native VS Code 1.96.0 cache is absent locally for this candidate; native acceptance remains pending.
+Use the [reliability contributor workflow](https://github.com/joshmessi10/KAFE-Reloaded/blob/45a658e4dba637924a5c966f7c6b64578b2a78d3/docs/extension/tutor-reliability.md#contributor-workflow) for Node 24 LTS, locked dependencies, unit/native/layout gates, reference freshness, package checks and diagnostics. Local checks, hosted CI, real-provider evaluation and release acceptance require separate evidence. The exact native VS Code 1.96.0 cache is absent locally for this candidate; native acceptance remains pending.

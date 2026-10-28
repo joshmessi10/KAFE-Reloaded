@@ -30,6 +30,35 @@ function fixture(options = {}) {
   return { coordinator, composer, provider, reader, sent, reads, submit, setContext: c => context = c, setAvailability: a => availability = a };
 }
 
+test('comparison fallback and constructor model parameters reach submitted coordinator requests', async () => {
+  const { DeepSeekProvider } = require('../../src/tutor/providers/DeepSeekProvider');
+  for (const mode of ['missing-method', 'empty-parameters', 'provider-default', 'custom-model']) {
+    const f = fixture({ events: async function* (_, round) {
+      yield round === 1 ? terminal('', [{ id: 'run', name: 'getLatestRunResult', arguments: {} }]) : terminal();
+    } });
+    if (mode === 'missing-method') delete f.provider.getRequestParameters;
+    else if (mode === 'empty-parameters') f.provider.getRequestParameters = () => undefined;
+    else {
+      const provider = new DeepSeekProvider({ secretStorage: {}, ...(mode === 'custom-model' ? { model: mode } : {}) });
+      f.provider.getRequestParameters = () => provider.getRequestParameters();
+    }
+    await f.coordinator.refreshContext();
+    assert.equal((await f.submit('Explain lists')).status, 'completed', mode);
+    assert.equal(f.sent.length, 2, mode);
+    for (const request of f.sent) {
+      assert.deepEqual({ model: request.model, thinking: request.thinking, stream: request.stream },
+        { model: mode === 'custom-model' ? mode : 'deepseek-v4-pro', thinking: { type: 'disabled' }, stream: true }, mode);
+      assert.deepEqual(request.tools.map(tool => tool.function.name), [
+        'readActiveDocument', 'searchKafeKnowledge', 'getLatestRunResult', 'proposeCodeChange', 'proposeLearningCheckpoint',
+      ]);
+    }
+    assert.deepEqual(f.sent[0].messages.at(-1), { role: 'user', content: 'Explain lists' });
+    assert.equal(f.sent[1].messages.at(-1).role, 'tool');
+    assert.equal(f.sent[1].messages.at(-1).tool_call_id, 'run');
+    f.coordinator.dispose();
+  }
+});
+
 test('action evidence changing during awaited capture cannot be admitted under a later revision', async () => {
   const f = fixture({ context: { activeDocument: { uri: uri('/a.kf'), text: 'A', version: 1 } } });
   await f.coordinator.refreshContext();

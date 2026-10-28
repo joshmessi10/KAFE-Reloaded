@@ -58,6 +58,19 @@ test('synthetic review data keeps both novice activities, evidence origins and i
   }
 });
 
+test('actual-answer review criteria reconcile factual help, valid drafts and observation limits without quality scoring', () => {
+  const fraud = dialogue('fraud').turns, xor = dialogue('xor').turns;
+  assert.match(data.review.criteria['reuse-evidence'], /organize.*directly.*Do not withhold compatible factual comparisons/);
+  assert.match(data.review.criteria['learner-ownership'], /Affirm justified draft claims.*at most one actual gap if present.*Bounded arithmetic/);
+  assert.match(fraud[1].expected.mustNot.join(' '), /leave the requested factual comparison blank/);
+  assert.match(fraud[2].expected.required.join(' '), /qualified request for cost evidence.*does not imply numerical costs.*qualitative priorities/);
+  assert.match(fraud[2].expected.mustNot.join(' '), /Invent a draft defect.*force a revision/);
+  assert.match(xor[0].expected.required.join(' '), /upper bound, not a guaranteed training score/);
+  assert.match(xor[1].expected.required.join(' '), /without claiming it isolates all optimization effects/);
+  assert.match(xor[2].expected.mustNot.join(' '), /present or absent training\/validation sets, convergence/);
+  assert.match(data.review.record, /No automated keyword, length or question-count quality score/);
+});
+
 test('fraud synthetic oracle derives positive-label TP/FN and compatible error trade-offs from actual-class rows', () => {
   const turns = dialogue('fraud').turns;
   const expected = [[2, 3, 1, 94, 0.4], [4, 1, 6, 89, 0.8], [3, 2, 3, 92, 0.6]];
@@ -114,7 +127,7 @@ for (const sequence of data.dialogues) {
       ]), expectedHistory);
       assert.deepEqual(snapshot.history.omissions, []);
       assert.ok(Object.isFrozen(snapshot) && Object.isFrozen(snapshot.request.messages));
-      assert.equal(snapshot.learning.policyVersion, 'kafe-guided-6');
+      assert.equal(snapshot.learning.policyVersion, 'kafe-guided-7');
       assert.ok(snapshot.sources.every(source => source.uri === null));
       assert.equal(snapshot.sources.some(source => ['run-result', 'action-evidence'].includes(source.id)), false);
       assert.deepEqual(snapshot.dependencies, { fileUris: [], knowledgeLineage: null });
