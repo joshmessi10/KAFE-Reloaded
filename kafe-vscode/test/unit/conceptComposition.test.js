@@ -43,6 +43,25 @@ test('actual topic code help retains reviewed contracts and only their complete 
   }
 });
 
+for (const [request, apiIds] of [
+  ['Write a KAFE function to calculate sensitivity.', ['machine.confusion_matrix', 'machine.recall_score']],
+  ['Escribe una función en KAFE para calcular la sensibilidad.', ['machine.confusion_matrix', 'machine.recall_score']],
+  ['¿Cómo programar una capa oculta no lineal en KAFE?', ['gesha.create_dense', 'gesha.sequential']],
+  ['Show an example of using a hidden layer in KAFE.', ['gesha.create_dense', 'gesha.sequential']],
+  ['Muéstrame un ejemplo de uso de una capa oculta en KAFE.', ['gesha.create_dense', 'gesha.sequential']],
+]) {
+  test(`explicit authoring retains related contracts and linked examples: ${request}`, async () => {
+    const result = await composer().compose({ request });
+    const contracts = result.snapshots.filter(source => source.provenance.apiId);
+    assert.deepEqual(contracts.map(source => source.provenance.apiId).sort(), [...apiIds].sort());
+    const paths = new Set(contracts.flatMap(source => source.provenance.examplePaths || []));
+    const examples = result.snapshots.filter(source => source.category === 'test-reference');
+    assert.ok(examples.length > 0);
+    for (const example of examples) assert.ok(paths.has(example.provenance.path), example.provenance.path);
+    assert.deepEqual(result.payload.messages.at(-1), { role: 'user', content: request });
+  });
+}
+
 test('explicit qualified APIs retain contract guidance even alongside a conceptual question', async () => {
   for (const [request, apiId] of [
     ['How does machine.confusion_matrix help with sensitivity?', 'machine.confusion_matrix'],

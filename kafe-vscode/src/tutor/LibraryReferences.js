@@ -98,7 +98,7 @@ function createLibraryReferences(bundle, runtime = manifest.runtime) {
       }
       const selectedTopics = !qualified.length && !exact.size ? selectLearningTopics(topics, raw, { maxItems: 1, maxBytes: Math.min(maxBytes, 3 * 1024) }) : [];
       const topicApis = new Set(selectedTopics.flatMap(topic => topic.apiIds));
-      const requestsApiForm = /\b(?:positional|signatures?|arguments?|arity|api|code|syntax|implement|implementation|posicionales?|firmas?|argumentos|parametros|codigo|sintaxis|implementar|implemento|implementacion)\b/.test(normalized);
+      const requestsApiForm = /\b(?:positional|signatures?|arguments?|arity|api|code|syntax|implement|implementation|write|writing|posicionales?|firmas?|argumentos|parametros|codigo|sintaxis|implementar|implemento|implementacion|escribe|escribir|programar)\b|\b(?:show|give|provide)\s+(?:(?:me|us)\s+)?(?:(?:an?|one|some|small|simple|worked)\s+)*examples?\b|\b(?:muestra|muestrame|dame)\s+(?:(?:un|otro|algunos|unos|pequeno|sencillo)\s+)*ejemplos?\b/.test(normalized);
       const conceptualQuestion = /\b(?:how|what|why|which|explain|interpret|compare|como|que|cual|explica|interpretar|comparar)\b/.test(normalized);
       const preferContract = library && (requestsApiForm || !conceptualQuestion);
       const conceptOnly = selectedTopics.length > 0 && !requestsApiForm && !preferContract;
