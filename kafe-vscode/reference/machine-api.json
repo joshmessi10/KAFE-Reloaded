@@ -5780,7 +5780,7 @@
       "constraints": [
         "Read as model.tree_; it is a property, not a method.",
         "A None-valued backend attribute is reported as unavailable by current KAFE property dispatch; learned state should be read after successful fit.",
-        "Backend mappings/objects/tuples are not ordinary typed KAFE list values. Prefer documented summary methods and prediction outputs."
+        "show(model.tree_) can display the available raw backend representation after fit. This does not provide ordinary typed KAFE list operations or general mapping indexing; prefer prediction outputs for model behavior."
       ],
       "aliases": [
         "tree ",
@@ -6113,7 +6113,7 @@
       "constraints": [
         "Read as model.tree_; it is a property, not a method.",
         "A None-valued backend attribute is reported as unavailable by current KAFE property dispatch; learned state should be read after successful fit.",
-        "Backend mappings/objects/tuples are not ordinary typed KAFE list values. Prefer documented summary methods and prediction outputs."
+        "show(model.tree_) can display the available raw backend representation after fit. This does not provide ordinary typed KAFE list operations or general mapping indexing; prefer prediction outputs for model behavior."
       ],
       "aliases": [
         "tree ",

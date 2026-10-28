@@ -55,6 +55,22 @@ test('unknown qualified symbols cannot masquerade as a different reviewed API', 
   }
 });
 
+test('tree guidance preserves complete accepted representations and distinguishes raw display from typed operations', () => {
+  const refs = createLibraryReferences();
+  for (const receiver of ['DecisionTreeClassifier', 'DecisionTreeRegressor']) {
+    const fit = refs.select(`machine.${receiver}.fit`)[0];
+    assert.match(fit.text, /X: PARDOS \| List\[INT\] \| List\[FLOAT\] \| List\[List\[INT\]\] \| List\[List\[FLOAT\]\]/);
+    assert.match(fit.text, /y: List\[INT\] \| List\[FLOAT\]/);
+    const predict = refs.select(`machine.${receiver}.predict`)[0];
+    assert.match(predict.text, /X: List\[INT\] \| List\[FLOAT\] \| List\[List\[INT\]\] \| List\[List\[FLOAT\]\]/);
+    const tree = refs.select(`machine.${receiver}.tree_`)[0];
+    assert.equal(tree.provenance.status, 'limited');
+    assert.match(tree.text, /show\(model\.tree_\).*display.*raw backend representation/);
+    assert.match(tree.text, /not.*typed KAFE list.*indexing/);
+    assert.match(tree.text, /None-valued.*unavailable/);
+  }
+});
+
 test('library results preserve complete contracts and enforce aggregate UTF-8 budgets', () => {
   const refs = createLibraryReferences(bundle());
   const selected = refs.select('machine.random_forest_classifier gesha.create_conv2d CNN');

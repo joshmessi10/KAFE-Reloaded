@@ -4,6 +4,8 @@
 
 This reference describes the public positional DSL implemented by runtime 0.3.0. The extension bundles version-matched contracts for all 42 MACHINE wrappers/factories, 16 metrics, implemented receiver methods and public state. The curated source is `kafe-vscode/reference/machine-api.json`. Examples and expected errors describe repository evidence, not execution of the learner's program.
 
+The reviewed inventory defines documented support. Runtime library dispatch uses backend attribute lookup; the inventory is not a runtime allowlist. An incidental backend name does not establish a supported KAFE API.
+
 ## Calling and data rules
 
 Import `machine` and create the concrete receiver before calling its methods. `MACHINE` is a shared type; it does not make every estimator a transformer, every transformer a predictor, or every object a classifier. Unsupported inherited base methods raise errors. Calls use positional arguments; Python keyword calls, dictionary declarations, tuple destructuring and sklearn parameter menus are not KAFE syntax.
@@ -44,7 +46,7 @@ Prediction returns one scalar label/target per sample. `score(X,y)` defaults to 
 | `machine.gradient_boosting_regressor(n_estimators, learning_rate, max_depth)` | Zero through three arguments; predicts numeric targets. |
 | `machine.linear_discriminant_analysis(n_components)` | Zero or one argument; supervised projection/classification. Current Jacobi implementation needs at least two input features and a suitable within-class matrix. |
 
-Public learned values such as `coef_`, `classes_`, `theta_`, `var_`, `scalings_` and `explained_variance_ratio_` are read as properties, not methods. Their availability and shape depend on the concrete class and fit state. A backend setting being readable does not make it a factory argument. Raw tree/mapping structures are implementation representations rather than a general KAFE `Dict` interface.
+Public learned values such as `coef_`, `classes_`, `theta_`, `var_`, `scalings_` and `explained_variance_ratio_` are read as properties, not methods. Their availability and shape depend on the concrete class and fit state. A backend setting being readable does not make it a factory argument. After fitting a decision tree, `show(model.tree_)` can display the available raw backend representation. This does not provide ordinary typed list operations or general mapping indexing. A None-valued property is reported as unavailable. Prefer prediction outputs when explaining model behavior.
 
 ### Clustering
 

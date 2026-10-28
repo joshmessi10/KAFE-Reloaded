@@ -4,7 +4,7 @@
   "generator": "kafe-vscode/scripts/build-library-evals.cjs",
   "runtimeSourceRevision": "6ee33f742909f74a3d597379e713aedc3a5703b2",
   "reviewedSourceFingerprint": "148ebb295fd60e5e209712aad0f4cdfa12064f0f76010366e1fbc3fccf55321c",
-  "contractFingerprint": "ab6d929d6f26bf9fe96b5f0db3479cb59ec6d05ab47b596450bb40fa5c2b1765",
+  "contractFingerprint": "f1c4506525df02bd016aef37134f58713b1cf2ed8ecb36f54935f5688b2fc3e9",
   "evaluationStatus": {
     "offlineDataset": "generated",
     "deterministicChecks": "run separately",

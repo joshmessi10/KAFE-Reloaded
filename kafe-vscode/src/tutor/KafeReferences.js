@@ -39,10 +39,15 @@ function createKafeReferences(bundle = bundled, runtime = manifest.runtime) {
     names: new Set(tokens(fixture.path)), words: new Set(tokens(`${fixture.path}\n${fixture.code}`)) }));
   return Object.freeze({
     essentials,
-    select(query, { maxBytes = 12 * 1024, maxItems = 3, preferredPaths = [] } = {}) {
+    select(query, { maxBytes = 12 * 1024, maxItems = 3, preferredPaths = [], allowedPaths } = {}) {
       if (!Number.isSafeInteger(maxBytes) || maxBytes < 0 || maxBytes > 12 * 1024 || !Number.isSafeInteger(maxItems) || maxItems < 0 || maxItems > 3 || !Array.isArray(preferredPaths)) throw Error('Invalid fixture selection budget');
+      if (allowedPaths !== undefined && (!Array.isArray(allowedPaths) || allowedPaths.length > 2000 ||
+        allowedPaths.some(path => typeof path !== 'string' || !/^tests\/(?!.*(?:\\|\.\.\/))[^\u0000-\u001f]+\.kf$/.test(path)) ||
+        new Set(allowedPaths).size !== allowedPaths.length)) throw Error('Invalid fixture path restriction');
+      const allowed = allowedPaths === undefined ? null : new Set(allowedPaths);
       const terms = [...new Set(tokens(String(query).slice(0, 4000)).filter(word => !ignored.has(word)))].slice(0, 48);
-      const ranked = fixtures.map(item => ({ ...item, score: (preferredPaths.includes(item.fixture.path) ? 1000 : 0) + terms.reduce((score, term) => score + (item.names.has(term) ? 4 : item.words.has(term) ? 1 : 0), 0) }))
+      const ranked = fixtures.filter(item => allowed === null || allowed.has(item.fixture.path))
+        .map(item => ({ ...item, score: (preferredPaths.includes(item.fixture.path) ? 1000 : 0) + terms.reduce((score, term) => score + (item.names.has(term) ? 4 : item.words.has(term) ? 1 : 0), 0) }))
         .filter(item => item.score > 0).sort((a, b) => b.score - a.score || a.fixture.path.localeCompare(b.fixture.path, 'en'));
       const selected = []; let bytes = 0;
       for (const { fixture } of ranked) {

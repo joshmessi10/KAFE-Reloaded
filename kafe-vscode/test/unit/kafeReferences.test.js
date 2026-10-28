@@ -5,6 +5,24 @@ const { createKafeReferences } = require('../../src/tutor/KafeReferences');
 const bundle = require('../../src/tutor/kafeReferences.json');
 const runtime = require('../../src/runtimeManifest.json').runtime;
 
+test('optional fixture path restriction filters before ranking without changing the unrestricted default', () => {
+  const refs = createKafeReferences(), query = 'train test split';
+  const original = refs.select(query);
+  assert.ok(original.length > 1);
+  const allowedPaths = [original[0].provenance.path];
+  const selected = refs.select(query, { allowedPaths, preferredPaths: [original[1].provenance.path] });
+  assert.deepEqual(selected, [original[0]]);
+  assert.deepEqual(refs.select(query, { allowedPaths: [] }), []);
+  assert.deepEqual(refs.select(query), original);
+  assert.deepEqual(allowedPaths, [original[0].provenance.path]);
+  assert.deepEqual(refs.select(query, { allowedPaths: ['tests/absent.kf'] }), []);
+  assert.deepEqual(refs.select(query, { allowedPaths, maxBytes: Buffer.byteLength(selected[0].text) - 1 }), []);
+  for (const allowedPaths of [null, 'tests/example.kf', [1], ['../private.kf'], ['tests/../private.kf'],
+    ['tests/example.kf', 'tests/example.kf'], Array.from({ length: 2001 }, (_, i) => `tests/${i}.kf`)]) {
+    assert.throws(() => refs.select(query, { allowedPaths }), /Invalid fixture/);
+  }
+});
+
 test('runtime mismatch and changed bundled bytes cannot be transmitted as language guidance', () => {
   assert.throws(() => createKafeReferences(bundle, { ...runtime, version: '99.0.0' }), /mismatch/);
   assert.throws(() => createKafeReferences(bundle, { ...runtime, sourceRevision: '0'.repeat(40) }), /mismatch/);

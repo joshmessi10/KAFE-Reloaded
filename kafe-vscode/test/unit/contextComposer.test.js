@@ -156,10 +156,23 @@ test('one guided baseline reaches the provider without a level, profile or style
   assert.match(policy, /scoped preparation confirmation/);
   assert.match(policy, /Review, Apply and learner-started Run remain distinct/);
   assert.ok(policy.includes(`Teaching policy ${POLICY_VERSION}.`));
-  assert.equal(POLICY_VERSION, 'kafe-guided-4');
+  assert.equal(POLICY_VERSION, 'kafe-guided-5');
   assert.doesNotMatch(policy, /Applied teaching preset|"level"|"frequency"|codingPreference|style memory|profile/i);
   assert.ok(result.sources.some(source => source.category === 'language-reference'));
   for (const level of ['beginner', 'intermediate', 'expert']) assert.throws(() => learning.setPreferences({ level }), /preference/);
+});
+
+test('concise teaching instructions reach composition as guidance, not an answer-quality score', async () => {
+  const result = await new ContextComposer({ documentReader: {}, knowledgeRetriever: {} }).compose({ request: 'Explain sensitivity' });
+  const policy = result.payload.messages[0].content;
+  assert.match(policy, /at most one independent next question/);
+  assert.match(policy, /Multiple demands.*multiple questions/);
+  assert.match(policy, /no mandatory closing question/i);
+  assert.match(policy, /available facts, not a checklist/);
+  assert.match(policy, /unsupported.*unrelated code/i);
+  assert.match(policy, /complete accepted input contract/);
+  assert.match(policy, /C-class matrix.*C cells per row/);
+  assert.match(policy, /TP and FN.*alternatively.*matrix.*label order/);
 });
 
 test('paused teaching removes reasoning prerequisite while retaining scoped preparation and native authorities', async () => {

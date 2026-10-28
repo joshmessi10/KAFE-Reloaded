@@ -180,7 +180,7 @@ test('real getLatestRunResult tool continuation retains the private observed sou
       text: 'Ayúdame a interpretar la sensibilidad de mi último resultado.', contextRevision: coordinator.snapshot().context.revision })).status, 'completed');
     assert.equal(sent.length, 2, `${mode}`);
     assert.equal(sent[1].messages[0].content, sent[0].messages[0].content);
-    assert.match(sent[1].messages[0].content, /Keep the tutor role on every follow-up, including after tools/);
+    assert.match(sent[1].messages[0].content, /Keep this scope on follow-ups and after tools/);
     assert.match(sent[1].messages[0].content, /Use numbers already supplied by the learner or present in authorized Run stdout\/stderr/);
     const original = sent[0].messages.find(message => message.content.startsWith('[Source run-result]'));
     const continued = sent[1].messages.find(message => message.content?.startsWith('[Source run-result]'));
@@ -220,9 +220,9 @@ for (const mode of ['guided', 'paused']) {
       assert.match(policy, /Never invent measurements or imply that you ran a program/);
       assert.match(policy, /Historical results from changed source stay historical/);
       assert.match(policy, /machine\.recall_score returns macro recall across classes, not automatically the sensitivity/);
-      assert.match(policy, /Confirm the positive label and matrix class order/);
+      assert.match(policy, /Locate the positive label in the supplied label order/);
       assert.match(policy, /never provide the final answer.*complete ready-to-submit solution/);
-      assert.match(policy, /Keep the tutor role on every follow-up, including after tools/);
+      assert.match(policy, /Keep this scope on follow-ups and after tools/);
       assert.match(policy, /closed-book pretest or posttest that forbids assistance, do not solve, hint at or select its answers/);
       assert.match(policy, /Do not infer an active assessment merely because a practice question resembles one/);
       assert.match(policy, /Do not claim a learner score, mastery, study participation or learning improvement/);

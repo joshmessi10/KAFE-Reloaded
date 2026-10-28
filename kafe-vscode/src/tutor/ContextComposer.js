@@ -83,8 +83,13 @@ class ContextComposer {
       const library = this.libraryReferences.select(request);
       for (const reference of library) add(reference);
       const referenceBytes = library.reduce((sum, reference) => sum + Buffer.byteLength(reference.text, 'utf8'), 0);
+      const hasUnknown = library.some(reference => reference.id.startsWith('library-unknown:'));
+      const examplePaths = [...new Set(library.filter(reference => !hasUnknown || reference.provenance.status !== 'unsupported')
+        .flatMap(reference => reference.provenance.examplePaths || []))];
+      // Unsupported qualified names must not trigger unrelated lexical fallback.
+      const allowedPaths = hasUnknown ? examplePaths : undefined;
       for (const example of this.references.select(request, { maxBytes: 12 * 1024 - referenceBytes,
-        preferredPaths: library.flatMap(reference => reference.provenance.examplePaths || []) })) add(example);
+        preferredPaths: examplePaths, allowedPaths })) add(example);
     }
     if (activeDocument) {
       await this.authorizeUri(activeDocument.uri);

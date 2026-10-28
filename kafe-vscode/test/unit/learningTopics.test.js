@@ -34,8 +34,8 @@ test('all eight conceptual objectives remain in the explicit production denomina
     assert.ok(topic.apiIds.every(id => ids.has(id)), topic.id);
     assert.match(topic.text, /Concept:/);
     assert.match(topic.text, /KAFE grounding:/);
-    assert.match(topic.text, /Optional coaching question:/);
-    assert.match(topic.text, /Small next step:/);
+    assert.match(topic.text, /Optional next step:/);
+    assert.doesNotMatch(topic.text, /Optional coaching question:|Small next step:/);
     assert.match(topic.text, /Caveat:/);
     assert.doesNotMatch(topic.text, /forms\.gle|pretest|posttest|postest|answer key|correct option|respuesta correcta/i);
   }
@@ -58,6 +58,26 @@ test('sensitivity preserves positive-label, macro recall and absent-positive dis
   assert.match(topic.text, /macro recall over classes observed in y_true/);
   assert.match(topic.text, /not automatically positive-class sensitivity/);
   assert.match(topic.text, /no actual positives.*not estimable/);
+  assert.match(topic.text, /C-class matrix.*C cells per row/);
+  assert.match(topic.text, /diagonal.*TP.*off-diagonal.*FN/);
+  assert.match(topic.text, /not necessarily label 1 or the second/);
+  assert.match(topic.text, /Reuse supplied.*TP and FN.*alternatively.*matrix.*label order/);
+});
+
+test('sensitivity references remain selected for supplied counts, arbitrary label positions, multiclass and no positives', () => {
+  for (const query of [
+    'Explain sensitivity when my reported fraud TP=3 and FN=2.',
+    'Sensibilidad: fraude es 2, etiquetas [2,7], matriz [[3,2],[1,9]].',
+    'Sensibilidad: fraude es 7, etiquetas [2,7], matriz [[9,1],[2,3]].',
+    'Sensibilidad: fraude es 7, etiquetas [2,7,9], matriz [[9,1,0],[2,3,1],[0,1,8]].',
+    'Sensitivity: fraud label 7 has no actual positives; labels [2,7], matrix [[9,1],[0,0]].',
+  ]) {
+    const selected = selectLearningTopics(data, query);
+    assert.equal(selected[0]?.id, 'classification-sensitivity', query);
+    assert.match(selected[0].text, /C cells per row/);
+    assert.match(selected[0].text, /Reuse supplied counts/);
+    assert.match(selected[0].text, /not estimable/);
+  }
 });
 
 test('training versus test performance gaps retrieve the overfitting hypothesis with its caveats', () => {
