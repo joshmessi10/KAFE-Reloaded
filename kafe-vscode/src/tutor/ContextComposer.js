@@ -68,7 +68,7 @@ class ContextComposer {
    * history is host-owned HistoryPair[]; descriptors contain no source bytes.
    * @returns {Promise<{payload:import('./RequestSnapshot').ProviderRequest,sources:import('./RequestSnapshot').SourceDescriptor[],snapshots:import('./RequestSnapshot').SourceSnapshot[],history:object,dependencies:import('./ConversationHistory').Dependencies}>}
    */
-  async compose({ request, activeDocument, runResult, actionEvidence, candidateUris = [], includedSourceIds = [], history = [], learningSession = new LearningSession(), providerParameters = { model: 'deepseek-flash', thinking: { type: 'disabled' }, stream: true }, knowledgeAvailability = { status: 'unavailable', code: 'knowledge_unavailable' } }) {
+  async compose({ request, activeDocument, runResult, actionEvidence, candidateUris = [], includedSourceIds = [], history = [], learningSession = new LearningSession(), providerParameters = { model: 'deepseek-v4-pro', thinking: { type: 'disabled' }, stream: true }, knowledgeAvailability = { status: 'unavailable', code: 'knowledge_unavailable' } }) {
     if (typeof request !== 'string' || !request.trim()) throw new Error('Tutor request is required.');
     if (!Array.isArray(candidateUris) || !Array.isArray(includedSourceIds) || !Array.isArray(history)) throw new Error('Invalid context selection.');
     const sources = [], snapshots = [], seen = new Set();

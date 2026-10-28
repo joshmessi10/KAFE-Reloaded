@@ -17,7 +17,7 @@ test('non-thinking Chat Completions request uses stored key and exact reviewed m
   assert.equal(sent.url, 'https://api.deepseek.com/chat/completions');
   assert.equal(sent.init.method, 'POST');
   assert.equal(sent.init.headers.Authorization, `Bearer ${key}`);
-  assert.deepEqual(JSON.parse(sent.init.body), { model: 'deepseek-flash', messages, tools, stream: false, thinking: { type: 'disabled' } });
+  assert.deepEqual(JSON.parse(sent.init.body), { model: 'deepseek-v4-pro', messages, tools, stream: false, thinking: { type: 'disabled' } });
   assert.ok(!JSON.stringify(JSON.parse(sent.init.body)).includes(key));
 });
 
@@ -103,7 +103,7 @@ const safeError = code => error => {
 test('stream sends the exact reviewed request with host-only credentials', async () => {
   let sent;
   const provider = setup(async (url, init) => { sent = { url, init }; return streamed(streamWire); });
-  assert.deepEqual(provider.getRequestParameters(), { model: 'deepseek-flash', thinking: { type: 'disabled' }, stream: true });
+  assert.deepEqual(provider.getRequestParameters(), { model: 'deepseek-v4-pro', thinking: { type: 'disabled' }, stream: true });
   assert.deepEqual(await collect(provider.stream({ request })), [
     { type: 'text', text: 'Answer' }, { type: 'complete', text: 'Answer', toolCalls: [], finishReason: 'stop' },
   ]);
@@ -111,6 +111,24 @@ test('stream sends the exact reviewed request with host-only credentials', async
   assert.equal(sent.init.headers.Authorization, `Bearer ${key}`);
   assert.deepEqual(JSON.parse(sent.init.body), request);
   assert.ok(!sent.init.body.includes(key));
+});
+
+test('comparison default and constructor model override reach streaming transport unchanged', async () => {
+  for (const options of [{}, { model: 'custom-model' }]) {
+    let sent, requestedKey;
+    const provider = new DeepSeekProvider({ ...options,
+      secretStorage: { get: async name => { requestedKey = name; return key; } },
+      transport: async (url, init) => { sent = { url, init }; return streamed(streamWire); },
+    });
+    assert.equal(provider.timeoutMs, 30000);
+    const parameters = provider.getRequestParameters();
+    assert.deepEqual(parameters, { model: options.model || 'deepseek-v4-pro', thinking: { type: 'disabled' }, stream: true });
+    await collect(provider.stream({ request: { ...parameters, messages, tools } }));
+    assert.equal(requestedKey, 'kafe.deepseekApiKey');
+    assert.equal(sent.url, 'https://api.deepseek.com/chat/completions');
+    assert.equal(sent.init.headers.Authorization, `Bearer ${key}`);
+    assert.deepEqual(JSON.parse(sent.init.body), { ...parameters, messages, tools });
+  }
 });
 
 test('stream missing credentials or pre-send abort makes zero transport calls', async () => {

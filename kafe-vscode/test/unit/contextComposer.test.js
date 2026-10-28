@@ -8,6 +8,21 @@ const pack = { sourceMode: 'managed', runtimeVersion: '1', knowledgePackVersion:
 const availability = { status: 'ready', metadata: pack };
 const uri = (path) => ({ scheme: 'file', path, toString() { return `file://${path}`; } });
 
+test('comparison parameters default to Pro while explicit provider parameters survive composition', async () => {
+  const composer = new ContextComposer({ documentReader: {}, knowledgeRetriever: { search: async () => [] } });
+  for (const providerParameters of [undefined, { model: 'custom-model', thinking: { type: 'disabled' }, stream: true }]) {
+    const result = await composer.compose({ request: 'Explain lists', providerParameters });
+    assert.deepEqual({ model: result.payload.model, thinking: result.payload.thinking, stream: result.payload.stream },
+      providerParameters || { model: 'deepseek-v4-pro', thinking: { type: 'disabled' }, stream: true });
+    assert.deepEqual(result.payload.messages.at(-1), { role: 'user', content: 'Explain lists' });
+    assert.ok(result.payload.tools.length > 0);
+    if (providerParameters) {
+      providerParameters.thinking.type = 'changed-after-composition';
+      assert.equal(result.payload.thinking.type, 'disabled');
+    }
+  }
+});
+
 test('bare greetings omit incidental real error catalogue retrieval while retaining current lineage and exact learner text', async t => {
   const fs = require('node:fs/promises'), os = require('node:os'), path = require('node:path');
   const { knowledgeContentDigest } = require('../../src/tutor/KnowledgeRetriever');

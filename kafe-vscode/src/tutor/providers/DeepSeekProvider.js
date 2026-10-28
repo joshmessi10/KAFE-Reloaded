@@ -5,7 +5,7 @@ const SECRET_KEY = 'kafe.deepseekApiKey';
 const ENDPOINT = 'https://api.deepseek.com/chat/completions';
 
 class DeepSeekProvider {
-  constructor({ secretStorage, transport = globalThis.fetch, model = 'deepseek-flash', timeoutMs = 30000 }) {
+  constructor({ secretStorage, transport = globalThis.fetch, model = 'deepseek-v4-pro', timeoutMs = 30000 }) {
     this.secretStorage = secretStorage;
     this.transport = transport;
     this.model = model;
