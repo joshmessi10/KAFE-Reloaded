@@ -141,12 +141,10 @@ for (const [code, expected] of [['learning_limit', /New conversation.*preserves.
   assert.equal(v.byId('timeline').querySelectorAll('button').length, 0);
 });
 
-test('unavailable Run retains distinct source and environment unknowns with actionable message-only recovery', () => {
+test('unavailable Run stays outside the conversational surface', () => {
   const v = loadView(); v.render(snapshot({ entries: [entry('run', 'run', 'Run unavailable', { status: 'unavailable', data: { sourceUri: 'file:///a.kf', code: 'runtime_unavailable' } })] }));
-  assert.match(v.byId('timeline').textContent, /Run has no completed exit result/);
-  assert.match(v.byId('timeline').textContent, /Saved source: unknown\. Current editor: unknown/);
-  assert.match(v.byId('timeline').textContent, /Runtime: unknown/);
-  assert.match(v.byId('timeline').textContent, /Message-only learning remains available/);
+  assert.equal(v.byId('timeline').textContent, '');
+  assert.equal(v.byId('timeline').children.length, 0);
 });
 
 test('settled checkpoint and queued preference change announce once without response activity', () => {

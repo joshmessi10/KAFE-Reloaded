@@ -24,6 +24,8 @@ See [reliability, budgets and contributor checks](https://github.com/joshmessi10
 
 ## Conversation
 
+**KAFE: Run File** opens and focuses the integrated **KAFE Run** terminal. Python output is unbuffered so messages appear during execution. Completed runs and launch errors remain visible until you close the terminal. Closing a terminal while its program is running cancels that run. Execution output stays outside the Tutor conversation. This behavior is included in extension 2.1.2 and requires no runtime reinstall.
+
 Type a message and press **Send** or Enter once. Shift+Enter inserts a newline. One answer streams in place. **Stop** replaces Send during a response while the next draft stays editable. **Retry** uses the original question and current authorized context, preserves the next draft and does not duplicate the learner message. Key configuration never sends automatically.
 
 The included whole-file indicators identify the active eligible `.kf` and selected optional files. The file disclosure beside the composer lists visible same-workspace `.kf` metadata without reading optional contents; explicit inclusion provides consent to capture those files at Send. Indicators reveal their named file natively; optional indicators can be removed. Accessible names and tooltips retain full identities, including duplicate basenames. Optional selection survives becoming active and closing its editors. Source/trust/knowledge changes fence admission and invalidate dependent authority. Restricted Mode permits message-only learning while excluding workspace files, edits and Run.

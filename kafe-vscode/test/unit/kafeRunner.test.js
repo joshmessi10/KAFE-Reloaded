@@ -36,7 +36,7 @@ test('runner passes tricky absolute file path as one argument, with no shell', a
     filePath, runtimeRoot: 'C:/runtime with spaces', runtimeMode: 'contributor', uvPath: 'C:/uv tool/uv.exe',
     spawnProcess: (...args) => { calls.push(args); return child; },
   });
-  assert.deepEqual(calls, [['C:/uv tool/uv.exe', ['run', '--locked', 'python', 'src/Kafe.py', filePath],
+  assert.deepEqual(calls, [['C:/uv tool/uv.exe', ['run', '--locked', 'python', '-u', 'src/Kafe.py', filePath],
     { cwd: 'C:/runtime with spaces', shell: false, stdio: ['pipe', 'pipe', 'pipe'] }]]);
   child.emit('close', 7);
   assert.equal((await run.completion).exitCode, 7);
@@ -54,6 +54,7 @@ test('managed runner adds --no-dev and streams stdout and stderr separately', as
     onStdout: text => stdout.push(text), onStderr: text => stderr.push(text),
   });
   assert.deepEqual(calls[0][1].slice(0, 5), ['run', '--locked', '--no-dev', 'python', '-B']);
+  assert.equal(calls[0][1][5], '-u');
   child.stdout.emit('data', Buffer.from('hello'));
   child.stderr.emit('data', Buffer.from('error'));
   child.emit('close', 0);
