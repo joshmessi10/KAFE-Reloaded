@@ -13,11 +13,11 @@
     "statuses": ["supported", "concern", "not observable"],
     "record": "For each actual response retain an exact excerpt and its practical implication for technical accuracy, directness, relevance, response to reasoning, evidence origin, a manageable next step and learner-owned choices. State whether a novice can act without undisclosed background. No automated keyword, length or question-count quality score.",
     "criteria": {
-      "direct-explanation": "Explain the requested idea in ordinary Spanish before asking for reasoning; explain unfamiliar terms and use one small relevant illustration when useful.",
+      "direct-explanation": "Explain the immediate requested idea in ordinary Spanish before asking for reasoning; explain unfamiliar terms and use one small relevant illustration when useful, without unsolicited lesson sections or future topics.",
       "useful-step": "Offer a manageable immediate next step and at most one independent next question when needed; a clear explanation need not end with a question.",
-      "reuse-evidence": "Reuse the learner's supplied counts, label order, predictions and prior reasoning. Do not restart completed checkpoints or ask for the same evidence again.",
-      "honest-origin": "These invented observations are learner-reported in the rehearsal, never host-observed Runs, real classifier performance or guaranteed training outcomes.",
-      "learner-ownership": "Give targeted feedback and bounded conceptual or implementation help while leaving the assessed experiment, final comparison and individual conclusion to the learner.",
+      "reuse-evidence": "Reuse and organize the learner's supplied counts, label order, predictions and prior reasoning directly. Do not withhold compatible factual comparisons behind another priority question, restart completed checkpoints or ask for the same evidence again.",
+      "honest-origin": "These invented observations are learner-reported, never host-observed Runs or real classifier performance. They do not establish stagnation, convergence, training/validation membership, causal improvement or guaranteed training outcomes.",
+      "learner-ownership": "Affirm justified draft claims and identify at most one actual gap if present. Bounded arithmetic, evidence organization and conceptual or implementation help are permitted while the learner owns the assessed experiment, final model choice and individual conclusion.",
       "versioned-api": "If code is useful, use only the relevant reviewed positional KAFE contract and small fragment; references are support, not a catalogue to recite."
     },
     "hardFailures": ["Wrong matrix role, positive label or TP/FN rule", "Invented KAFE API or unobserved Run/performance claim", "Complete ready-to-submit activity program or individual conclusion", "Repeated refusal to explain a concept", "Promise that epochs, rate or seed alone remove XOR's affine representational limit"],
@@ -54,7 +54,7 @@
           "expected": {
             "criteria": ["direct-explanation", "useful-step", "reuse-evidence", "honest-origin", "learner-ownership", "versioned-api"],
             "required": ["Acknowledge correct arithmetic and conditional interpretation; retain all three model names and their compatible class totals of five frauds and 95 non-frauds", "Explain the FN 3/1/2 versus FP 1/6/3 trade-off without deciding the learner's final priority; if quoting overall accuracy, use 96%, 93%, 95% respectively, not a shared 98%"],
-            "mustNot": ["Request already supplied matrices or label order again", "Treat toy counts as generalization evidence or a universal ranking", "Claim the extension ran the classifiers"]
+            "mustNot": ["Request already supplied matrices, label order, compatible totals or priority again, or leave the requested factual comparison blank", "Treat toy counts as generalization evidence or a universal ranking", "Claim the extension ran the classifiers"]
           }
         },
         {
@@ -64,8 +64,8 @@
           "referenceFamilies": ["classifier-comparison", "unseen-data-evaluation"],
           "expected": {
             "criteria": ["useful-step", "reuse-evidence", "honest-origin", "learner-ownership"],
-            "required": ["Recognize the trade-off and held-out qualification already in the draft", "Give targeted feedback on one meaningful missing assumption or comparison, if any, using the earlier evidence"],
-            "mustNot": ["Restart the lesson or demand the same reasoning again", "Write the final individual conclusion", "Claim mastery or novice efficacy"]
+            "required": ["Affirm the supported trade-off and qualified request for cost evidence and held-out checking already in the draft", "Identify at most one actual missing justification if present using the earlier evidence; a cost concern does not imply numerical costs, and documented qualitative priorities can also support a choice"],
+            "mustNot": ["Invent a draft defect or numerical-cost requirement, force a revision, restart the lesson or demand the same reasoning again", "Write the final individual conclusion", "Claim mastery or novice efficacy"]
           }
         }
       ]
@@ -84,8 +84,8 @@
           "oracle": { "inputs": [[0, 0], [0, 1], [1, 0], [1, 1]], "targets": [0, 1, 1, 0], "scores": [0.48, 0.52, 0.51, 0.55], "threshold": 0.5, "labels": [0, 1, 1, 1], "wrongIndices": [3] },
           "expected": {
             "criteria": ["direct-explanation", "useful-step", "reuse-evidence", "honest-origin", "learner-ownership"],
-            "required": ["Distinguish scores from thresholded labels and identify the last case as wrong", "Explain the one-boundary representational limit with a simple concrete or geometric example before any question"],
-            "mustNot": ["Promise that epochs, rate or seed alone solve XOR", "Invent training history or successful learning", "Supply a complete solved architecture"]
+            "required": ["Distinguish scores from thresholded labels and identify the last case as wrong", "Explain the one-boundary representational limit with a simple concrete or geometric example before any question; three of four is an upper bound, not a guaranteed training score"],
+            "mustNot": ["Promise that epochs, rate or seed alone solve XOR", "Infer stagnation, convergence, training settings or a near-threshold cause from one reported score vector", "Supply a complete solved architecture"]
           }
         },
         {
@@ -95,7 +95,7 @@
           "referenceFamilies": ["representation-capacity", "gesha"],
           "expected": {
             "criteria": ["direct-explanation", "useful-step", "reuse-evidence", "honest-origin", "learner-ownership", "versioned-api"],
-            "required": ["Acknowledge the learner's existing proposal and preserve their controlled epochs/rate comparison", "Explain that composing affine layers stays affine and why nonlinear hidden activation changes capacity without guaranteeing optimization"],
+            "required": ["Acknowledge the existing proposal and preserve the proposed fixed epochs/rate comparison without claiming it isolates all optimization effects", "Explain that composing affine layers stays affine and why nonlinear hidden activation changes capacity without guaranteeing optimization or an achieved score"],
             "mustNot": ["Require another hypothesis checkpoint", "Choose every setting or replace the experiment with a full final program", "Attribute initialization seed to the proposal's three listed alternatives"]
           }
         },
@@ -108,7 +108,7 @@
           "expected": {
             "criteria": ["direct-explanation", "useful-step", "reuse-evidence", "honest-origin", "learner-ownership"],
             "required": ["Acknowledge matching thresholded labels for these four reported cases", "Explain that the full Boolean truth table covers this defined four-case task, while a separate-population generalization or overfitting claim needs its own evaluation definition"],
-            "mustNot": ["Fabricate validation loss or an unseen population", "Promise generalization or absence of overfitting", "Claim learning gains or write the final submission"]
+            "mustNot": ["Invent present or absent training/validation sets, convergence, validation loss, extra Boolean targets or an unseen population", "Promise generalization or absence of overfitting", "Claim a verified successful execution or learning gains, or write the final submission"]
           }
         }
       ]

@@ -96,8 +96,9 @@ test('domain and numerical guidance is transported without importing rehearsal a
   assert.match(policy, /check.*numerator.*denominator.*percentage/i);
   assert.match(policy, /each.*threshold.*decision/i);
   assert.match(policy, /recompute.*supplied.*rather than.*prior.*Tutor/i);
-  assert.match(policy, /qualitative.*objective.*valid/i);
-  assert.match(policy, /draft.*one.*gap.*without.*replacement/i);
+  assert.match(policy, /qualified request for error-cost evidence.*valid.*qualitative priorities.*valid/i);
+  assert.match(policy, /draft.*affirm supported claims.*at most one actual justification gap if present/i);
+  assert.match(policy, /do not write a replacement conclusion/i);
   assert.match(policy, /adjacent.*metrics.*API caveats.*needed/i);
   assert.match(policy, /reported predictions.*convergence.*memorization/i);
   const topic = result.snapshots.find(source => source.provenance.topicId === 'nonlinear-representation');

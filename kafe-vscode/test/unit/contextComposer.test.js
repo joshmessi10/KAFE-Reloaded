@@ -128,7 +128,7 @@ test('teaching request fixtures carry direct concepts, learner-owned decisions, 
     assert.match(policy, /hints, options.*worked examples.*requested/i);
     assert.match(policy, /skip.*named reasoning step/i);
     assert.match(policy, /onboarding.*optional.*one question/i);
-    assert.match(policy, /never provide the final answer.*complete ready-to-submit solution.*verbatim copy.*fixture/i);
+    assert.match(policy, /never author a complete assessed submission or its final individual conclusion.*complete ready-to-submit solution.*verbatim copy.*fixture/i);
     assert.match(policy, /Private Run evidence.*Do not reproduce raw Run output/i);
     assert.doesNotMatch(policy, /Start with a hint/i);
     assert.equal(result.payload.messages.at(-1).content, request);
@@ -171,7 +171,7 @@ test('one guided baseline reaches the provider without a level, profile or style
   assert.match(policy, /scoped preparation confirmation/);
   assert.match(policy, /Review, Apply and learner-started Run remain distinct/);
   assert.ok(policy.includes(`Teaching policy ${POLICY_VERSION}.`));
-  assert.equal(POLICY_VERSION, 'kafe-guided-6');
+  assert.equal(POLICY_VERSION, 'kafe-guided-7');
   assert.doesNotMatch(policy, /Applied teaching preset|"level"|"frequency"|codingPreference|style memory|profile/i);
   assert.ok(result.sources.some(source => source.category === 'language-reference'));
   for (const level of ['beginner', 'intermediate', 'expert']) assert.throws(() => learning.setPreferences({ level }), /preference/);
@@ -189,6 +189,39 @@ test('concise teaching instructions reach composition as guidance, not an answer
   assert.match(policy, /C-class matrix.*C cells per row/);
   assert.match(policy, /TP and FN.*alternatively.*matrix.*label order/);
 });
+
+for (const mode of ['guided', 'paused']) {
+  test(`bounded evidence help and conditional draft feedback reach real composition: ${mode}`, async () => {
+    const { LearningSession } = require('../../src/tutor/LearningSession');
+    const { teachingInstructions } = require('../../src/tutor/TeachingPolicy');
+    const learning = new LearningSession(); learning.setPreferences({ mode });
+    const composer = new ContextComposer({ documentReader: {}, knowledgeRetriever: {} });
+    const data = require('../evals/activity-dialogues.json');
+    for (const turn of data.dialogues.flatMap(sequence => sequence.turns)) {
+      const result = await composer.compose({ request: turn.learnerText, learningSession: learning });
+      const policy = result.payload.messages[0].content;
+      assert.ok(policy.includes(teachingInstructions({ mode })), turn.id);
+      assert.deepEqual(result.payload.messages.at(-1), { role: 'user', content: turn.learnerText });
+      assert.match(policy, /bounded arithmetic and organizing supplied evidence are permitted scaffolding/i);
+      assert.match(policy, /compatible supplied data.*explain and organize the actual facts now.*without another priority or hypothetical exercise/i);
+      assert.match(policy, /For a draft, affirm supported claims.*at most one actual justification gap if present/);
+      assert.match(policy, /do not invent an error or requirement or force a revision/);
+      assert.match(policy, /qualified request for error-cost evidence before deciding is valid.*qualitative priorities.*valid/);
+      assert.match(policy, /do not infer numerical costs from a general cost concern/);
+      assert.match(policy, /Avoid unsolicited lesson sections, future topics and redundant confirmations/);
+      assert.match(policy, /3\/4 upper bound, not a guaranteed training score/);
+      assert.match(policy, /Reported predictions alone.*stagnation, convergence.*training\/validation membership/);
+      assert.match(policy, /fixed epochs\/rate do not isolate all optimization effects when architecture changes/);
+      assert.match(policy, /Exhaustive finite-domain observations support that defined task/);
+      assert.match(policy, /false alarms.*non-positive actual rows.*positive prediction column/);
+      assert.match(policy, /closed-book pretest or posttest that forbids assistance, do not solve, hint at or select its answers/);
+      assert.match(policy, /Help, Skip and Pause never authorize file writes or Run/);
+      assert.match(policy, /Review, Apply and learner-started Run remain distinct authorities/);
+      assert.doesNotMatch(policy, /never provide the final answer to an exercise|For a draft, identify one justification gap/);
+      assert.equal(result.learning.policyVersion, 'kafe-guided-7');
+    }
+  });
+}
 
 test('paused teaching removes reasoning prerequisite while retaining scoped preparation and native authorities', async () => {
   const { LearningSession } = require('../../src/tutor/LearningSession');
