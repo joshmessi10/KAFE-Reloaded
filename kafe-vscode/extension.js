@@ -576,6 +576,7 @@ function createRunFileHandler({ vscode, runtimeManager, fs: fileSystem = fs, pat
     const onDidClose = new vscode.EventEmitter();
     let activeRun;
     let terminalClosed = false;
+    let runFinished = false;
     let terminal;
     sourceUri = document.uri.toString();
     documentVersion = document.version;
@@ -583,13 +584,12 @@ function createRunFileHandler({ vscode, runtimeManager, fs: fileSystem = fs, pat
       onDidWrite: onDidWrite.event,
       onDidClose: onDidClose.event,
       open() {
-        if (terminalClosed || activeRun) return;
+        if (terminalClosed || runFinished || activeRun) return;
         const write = text => onDidWrite.fire(text.replace(/\r?\n/g, '\r\n'));
         if (!current() || !vscode.workspace.isTrusted || document.isDirty || document.uri.toString() !== sourceUri || document.version !== documentVersion || document.languageId !== 'kafe' || !vscode.workspace.getWorkspaceFolder(document.uri)) {
           state('cancelled');
           write('[KAFE run cancelled before launch: context is no longer current.]\n');
-          onDidClose.fire();
-          terminalClosed = true;
+          runFinished = true;
           return;
         }
         try {
@@ -613,34 +613,35 @@ function createRunFileHandler({ vscode, runtimeManager, fs: fileSystem = fs, pat
               sourceUri, runSequence: startedSequence, sourceIdentity, ...(ownerData ? { owner: ownerData } : {}) }); } catch { /* Retain the actual terminal outcome. */ }
             if (result.outputTruncated) write('\n[Output evidence truncated at 1 MiB; terminal output was streamed in full.]\n');
             write(`\n[KAFE exited with code ${result.exitCode === null ? 'unknown' : result.exitCode}.]\n`);
-            terminalClosed = true;
-            onDidClose.fire(result.exitCode === null ? undefined : result.exitCode);
+            // Keep the terminal buffer visible until the learner closes it.
+            runFinished = true;
           }).catch(error => {
             if (terminalClosed) return;
             state('failed');
             write(`\n[KAFE run failed: ${error.message}]\n`);
-            terminalClosed = true;
-            onDidClose.fire();
+            runFinished = true;
           });
         } catch (error) {
           state('failed');
           write(`\n[Unable to start KAFE: ${error.message}]\n`);
-          onDidClose.fire();
-          terminalClosed = true;
+          runFinished = true;
         }
       },
-      handleInput(data) { if (activeRun) activeRun.sendInput(data.replace(/\r/g, '\n')); },
+      handleInput(data) { if (activeRun && !runFinished && !terminalClosed) activeRun.sendInput(data.replace(/\r/g, '\n')); },
       close() {
-        if (!terminalClosed) state('cancelled');
+        if (terminalClosed) return;
+        if (!runFinished) state('cancelled');
         terminalClosed = true;
-        if (activeRun) activeRun.cancel();
+        if (activeRun && !runFinished) activeRun.cancel();
         onDidWrite.dispose();
         onDidClose.dispose();
       },
     };
     if (!current() || !vscode.workspace.isTrusted || document.isDirty) return finish('cancelled');
     terminal = vscode.window.createTerminal({ name: 'KAFE Run', pty });
-    terminal.show();
+    // Running a file is an execution action: keep its stdout/stderr in the
+    // integrated Terminal and put keyboard focus there, never in the Tutor view.
+    terminal.show(false);
     return { status: 'completed' };
   };
 }

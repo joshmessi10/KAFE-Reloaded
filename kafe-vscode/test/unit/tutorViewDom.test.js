@@ -138,14 +138,13 @@ test('active explicit selection is displayed once and returns checked after focu
   assert.equal(v.byId('context-sources').querySelector('input').checked, true);
 });
 
-test('settled null exit preserves partial output errors and truncation without sending actions', () => {
+test('settled Run output stays out of the Tutor transcript', () => {
   const v = loadView();
   v.render(snapshot({entries:[entry('run','run','Learner-started KAFE run completed.',{status:'completed',data:{exitCode:null,stdout:'PARTIAL_OUTPUT',stderr:'Launch failed',outputTruncated:true}})]}));
-  const run = row(v, 'run'); assert.match(run.textContent, /Exit code: unknown/); assert.match(run.textContent, /Output truncated/);
-  assert.equal(run.querySelector('summary').textContent, 'Output'); assert.match(run.querySelector('details').textContent, /PARTIAL_OUTPUT/); assert.match(run.querySelector('details').textContent, /Launch failed/);
+  assert.equal(row(v, 'run'), null); assert.doesNotMatch(v.byId('timeline').textContent, /PARTIAL_OUTPUT|Launch failed|Exit code/);
   assert.deepEqual(v.sent, []);
   v.render(snapshot({revision:2,entries:[entry('running','run','Running',{status:'running',data:{stdout:'not settled'}})]}));
-  assert.equal(row(v,'running').querySelector('details'), null); assert.doesNotMatch(row(v,'running').textContent, /Exit code/);
+  assert.equal(row(v,'running'), null);
 });
 test('context is visible before a request and selection sends canonical ID with current host revision', () => {
   const v=loadView(); v.render(snapshot({context:{revision:8,restricted:false,activeSource:source('active-file','main.kf','active-file',true),sources:[source('optional:1','extra.kf')]}}));
@@ -205,10 +204,12 @@ test('reissued relevant capability retains focused button and unavailable Apply 
   v.render(snapshot({revision:2,entries:[{...a,actions:[action('old','reviewProposal',{proposalId:'p'},false),action('new','reviewProposal',{proposalId:'p'}),action('disabled','acceptProposal',{proposalId:'p'},false),action('obsolete','showProgress')]}]}));
   assert.equal(row(v,'p').querySelectorAll('button').length,1); assert.equal(row(v,'p').querySelector('button'),b); assert.equal(v.document.activeElement,b); b.dispatch('click'); assert.equal(v.sent.at(-1).actionId,'new');
 });
-test('Run output disclosure retains expansion and attributes available runtime with unknown comparisons', () => {
+test('Run output remains available to native evidence without rendering in Tutor', () => {
   const v=loadView(), run=entry('run','run','Run completed',{data:{sourceUri:'file:///workspace/main.kf',exitCode:0,stdout:'ok',stderr:'diagnostic',outputTruncated:true,runtimeVersion:'SECRET_VERSION'}});
-  v.render(snapshot({entries:[run,entry('a','assistant','A')]})); const d=row(v,'run').querySelector('details'); d.open=true;
-  v.render(snapshot({revision:2,entries:[run,entry('a','assistant','AB')]})); assert.equal(row(v,'run').querySelector('details'),d); assert.equal(d.open,true); assert.match(row(v,'run').textContent,/main\.kf.*Exit code: 0/s); assert.match(row(v,'run').textContent,/Runtime: SECRET_VERSION/); assert.match(row(v,'run').textContent,/Saved source: unknown/); assert.doesNotMatch(row(v,'run').textContent,/Document version/);
+  v.render(snapshot({entries:[run,entry('a','assistant','A')]}));
+  assert.equal(row(v,'run'), null); assert.match(v.byId('timeline').textContent, /A/);
+  v.render(snapshot({revision:2,entries:[run,entry('a','assistant','AB')]}));
+  assert.equal(row(v,'run'), null); assert.match(v.byId('timeline').textContent, /AB/);
 });
 test('status announces response and settlement once without speaking streaming tokens or lifecycle suffixes', () => {
   const v=loadView(), t=turn('id','responding'), a=entry('a','assistant','First',{status:'responding'}); v.render(snapshot({turn:t,entries:[a]})); const status=v.byId('conversation-status').textContent;

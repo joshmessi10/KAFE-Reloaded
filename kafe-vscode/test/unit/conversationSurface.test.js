@@ -130,12 +130,11 @@ for (const mode of ['guided', 'paused']) test(`mode-only ${mode} view has no per
   assert.deepEqual(v.sent, []);
 });
 
-test('Run surface keeps source comparisons unknown independent of zero exit and current editor changes', () => {
+test('Run metadata never appears in the conversational surface', () => {
   const v = loadView(); v.render(snapshot({ entries: [entry('run', 'run', 'Run completed.', { data: { sourceUri: 'file:///workspace/main.kf', exitCode: 0, sourceRelationship: 'unchanged-at-observed-boundaries', currentDocumentRelationship: 'changed', exactExecutedBytes: 'unknown', correctness: 'not-established', sourceIdentity: { launch: 'a', completion: 'a', currentSaved: null }, runtimeVersion: null, knowledgePackVersion: null } })] }));
   const text = v.byId('timeline').textContent;
-  assert.match(text, /Saved source: unchanged at observed boundaries/); assert.match(text, /Current editor: changed/);
-  assert.match(text, /Exact executed bytes: unknown/); assert.match(text, /Correctness: not established/);
-  assert.match(text, /Runtime: unknown/); assert.match(text, /Knowledge: unknown/);
+  assert.equal(text, '');
+  assert.equal(v.byId('timeline').children.length, 0);
 });
 test('revoked context metadata never returns from duplicate canonical source IDs and removed focus returns to composer', () => {
   const v = loadView(), context = { revision: 2, restricted: false, activeSource: null, sources: [source('one', 'main.kf')] };

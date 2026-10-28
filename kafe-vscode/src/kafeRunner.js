@@ -12,6 +12,8 @@ function startKafeFile({ filePath, runtimeRoot, runtimeMode, uvPath, env, spawnP
   if (runtimeMode === 'managed') args.push('--no-dev');
   args.push('python');
   if (runtimeMode === 'managed') args.push('-B');
+  // stdout is piped into the VS Code terminal; flush each write while running.
+  args.push('-u');
   args.push('src/Kafe.py', filePath);
   const spawnOptions = { cwd: runtimeRoot, shell: false, stdio: ['pipe', 'pipe', 'pipe'] };
   if (env) spawnOptions.env = { ...process.env, ...env };

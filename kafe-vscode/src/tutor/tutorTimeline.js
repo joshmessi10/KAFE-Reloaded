@@ -305,7 +305,10 @@
       render(snapshot) {
         if (disposed) return; current = snapshot;
         const ids = new Set();
-        snapshot.entries.filter(entry => Object.hasOwn(labels, entry.kind) && (entry.kind !== 'host' || Boolean(entry.data?.scopeSummary))).forEach((entry, index) => {
+        // Run output is a native Terminal concern, not part of the Tutor transcript.
+        // The session still retains run entries privately for evidence and grounding;
+        // only learner/tutor conversation and actionable teaching records are rendered.
+        snapshot.entries.filter(entry => entry.kind !== 'run' && Object.hasOwn(labels, entry.kind) && (entry.kind !== 'host' || Boolean(entry.data?.scopeSummary))).forEach((entry, index) => {
           ids.add(entry.id); let record = records.get(entry.id);
           if (!record) {
             const node = document.createElement('article'); node.className = 'entry'; node.setAttribute('data-entry-id', entry.id);

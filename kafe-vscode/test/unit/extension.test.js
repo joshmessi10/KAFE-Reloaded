@@ -609,7 +609,7 @@ test('production contextual Run names its target and launches that file after fo
     assert.equal(launched[0].filePath, 'C:/workspace/main.kf'); assert.equal(knowledge, 0);
     f.host.coordinator.newConversation(); await f.host.actions.refreshContext(); assert.equal(cancels, 0);
     finish({ stdout: 'ok', stderr: '', exitCode: 0, outputTruncated: false }); await new Promise(r => setImmediate(r));
-    assert.equal(closes, 1); assert.equal(cancels, 0); assert.deepEqual(f.host.coordinator.snapshot().entries, []);
+    assert.equal(closes, 0); assert.equal(cancels, 0); assert.deepEqual(f.host.coordinator.snapshot().entries, []);
   } finally { f.host.dispose(); }
 });
 
@@ -1058,7 +1058,7 @@ test('native Run evidence callback failure preserves terminal exit outcome', asy
     onRunResult: () => { throw new Error('PRIVATE_EVIDENCE_FAILURE'); } });
   await handler(); const pty = f.calls.terminals[0].pty; pty.onDidWrite(v => written.push(v)); pty.onDidClose(v => closed.push(v)); pty.open();
   await new Promise(r => setImmediate(r));
-  assert.deepEqual(closed, [7]); assert.match(written.join(''), /exited with code 7/); assert.doesNotMatch(written.join(''), /PRIVATE_EVIDENCE_FAILURE/);
+  assert.deepEqual(closed, []); assert.match(written.join(''), /exited with code 7/); assert.doesNotMatch(written.join(''), /PRIVATE_EVIDENCE_FAILURE/);
 });
 
 test('provider submission stages a target-bound proposal without native diff or Apply; explicit Review survives its active-editor event', async () => {
@@ -1372,7 +1372,7 @@ function actionEnvelope(host, type) {
   const a = entry.actions.find(a => a.type === type && a.enabled);
   return { type: 'invokeAction', sessionId: s.sessionId, generation: s.generation, entryId: entry.id, actionId: a.id, args: a.args };
 }
-test('native Run closes once after New conversation while old chat result remains suppressed', async () => {
+test('native Run retains terminal after New conversation while old chat result remains suppressed', async () => {
   const f = setup(); let resolve, closes = 0, writes = '', cancels = 0;
   f.vscode.EventEmitter = class { constructor() { this.listeners = []; this.event = fn => { this.listeners.push(fn); }; } fire(value) { this.listeners.forEach(fn => fn(value)); } dispose() { this.listeners = []; } };
   const host = createTutorHost({ vscode: f.vscode, extensionUri: {}, secrets: {}, runtimeManager: {} }); await host.readiness;
@@ -1386,9 +1386,33 @@ test('native Run closes once after New conversation while old chat result remain
   host.coordinator.newConversation(); await host.actions.refreshContext();
   assert.equal(cancels, 0); assert.equal(closes, 0);
   resolve({ stdout: 'ok', stderr: '', exitCode: 0, outputTruncated: false }); await new Promise(r => setImmediate(r));
-  assert.equal(cancels, 0); assert.equal(closes, 1); assert.match(writes, /exited with code 0/);
+  assert.equal(cancels, 0); assert.equal(closes, 0); assert.match(writes, /exited with code 0/);
   assert.equal(host.coordinator.snapshot().entries.filter(e => e.kind === 'run').length, 0);
-  pty.close(); assert.equal(closes, 1); host.dispose();
+  pty.close(); assert.equal(closes, 0); assert.equal(cancels, 0); host.dispose();
+});
+
+for (const outcome of ['success', 'nonzero', 'rejected', 'launch-error']) test(`terminal retains output and ignores input after ${outcome}`, async () => {
+  const f = setup(), writes = [], states = [], focus = []; let closes = 0, cancels = 0, inputs = 0, launches = 0;
+  f.vscode.EventEmitter = class { constructor() { this.listeners = []; this.event = fn => this.listeners.push(fn); } fire(value) { this.listeners.forEach(fn => fn(value)); } dispose() { this.listeners = []; } };
+  f.vscode.window.createTerminal = options => { f.calls.terminals.push(options); return { show(preserveFocus) { focus.push(preserveFocus); } }; };
+  const handler = createRunFileHandler({ vscode: f.vscode, fs: { existsSync: () => true },
+    runtimeManager: { resolveWorkspace: async () => ({ status: 'ready', runtimeRoot: 'C:/runtime', runtimeMode: 'contributor' }) },
+    onRunState: event => states.push(event.status), startKafeFile: options => {
+      launches++;
+      if (outcome === 'launch-error') throw new Error('launch failed');
+      options.onStdout('streamed output\n'); options.onStderr('streamed diagnostic\n');
+      return { completion: outcome === 'rejected' ? Promise.reject(new Error('process failed')) : Promise.resolve({ stdout: 'streamed output\n', stderr: 'streamed diagnostic\n', exitCode: outcome === 'nonzero' ? 7 : 0, outputTruncated: false }),
+        sendInput() { inputs++; }, cancel() { cancels++; } };
+    } });
+  await handler(); const pty = f.calls.terminals[0].pty;
+  pty.onDidWrite(text => writes.push(text)); pty.onDidClose(() => { closes++; }); pty.open();
+  await new Promise(resolve => setImmediate(resolve));
+  assert.deepEqual(focus, [false]); assert.equal(closes, 0);
+  assert.match(writes.join(''), outcome === 'launch-error' ? /Unable to start KAFE: launch failed/ : outcome === 'rejected' ? /KAFE run failed: process failed/ : new RegExp(`exited with code ${outcome === 'nonzero' ? 7 : 0}`));
+  if (outcome !== 'launch-error') assert.match(writes.join(''), /streamed output\r\nstreamed diagnostic/);
+  pty.handleInput('ignored\r'); pty.open(); pty.close(); pty.close();
+  assert.equal(inputs, 0); assert.equal(launches, 1); assert.equal(cancels, 0);
+  assert.equal(states.includes('cancelled'), false);
 });
 
 test('secure configure returns cancellation without storing or success notification', async () => {
