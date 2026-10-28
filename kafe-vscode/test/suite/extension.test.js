@@ -257,8 +257,10 @@ suite('KAFE extension host', () => {
 
       if (expectedTrusted) {
         assert.equal(setupResult.status, 'unavailable',
-          'trusted Setup should reach the unpublished-release check without downloading anything');
-        assert.match(setupResult.message, /not published/i);
+          'trusted Setup should stop at the host unpublished-release guard without installing anything');
+        assert.ok(messages.some(item => item.level === 'info' &&
+          /^KAFE runtime setup is unavailable\./.test(item.message)),
+        'Setup should present the safe host unavailable notification');
         assert.ok(!messages.some(item => /Trust this workspace/i.test(item.message)),
           'trusted Run and Setup should not show the Restricted Mode gate');
       } else {

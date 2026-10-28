@@ -140,6 +140,14 @@ for (const origin of ['activation', 'manual', 'retry']) for (const refusal of ['
     const result = await f.host.prepareRuntime({ origin });
     assert.equal(result.status, refusal === 'untrusted' ? 'blocked' : 'unavailable'); assert.equal(f.installs(), 0);
     assert.equal(f.host.tutorView.hostMetadata.runtime, 'unavailable');
+    if (refusal === 'unpublished') {
+      assert.deepEqual(result, { status: 'unavailable' }, 'the host guard returns its public outcome before the installer');
+      assert.equal(f.progress.length, 0, 'the unpublished host guard must not start installation progress');
+      if (origin === 'activation') assert.equal(f.notifications.length, 0, 'activation silently skips an unpublished runtime');
+      else assert.ok(f.notifications.some(item => item.kind === 'info' &&
+        /^KAFE runtime setup is unavailable\./.test(item.args[0])),
+      'manual and retry Setup should present the safe host unavailable notification');
+    }
   } finally { f.host.dispose(); }
 });
 
