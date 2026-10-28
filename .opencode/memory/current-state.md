@@ -24,7 +24,15 @@ Active branch `feature/vsc-extension`: extension 2.3.0 over immutable published 
 
 Integration cleanup `524dac5`, qs patch `d074ff9` and ownership correction `c944d88` are historical completed source milestones. Their 1,032-pass/one-skip extension aggregate, 42 browser cases and inspected VSIX predate activity tuning. Fresh comparison confirms Python runtime/tests/configuration and verifier inputs unchanged, retaining the earlier 787 passes, four documented skips and 86.89% strict child-inclusive coverage; no new full Python run is claimed. Task11 zero-finding audits remain retained with unchanged locks/configuration. Profiles at `86b78ff` and `524dac5` remain historical; no new performance claim is made.
 
-## Current Blockers and Pending Gates
+## Current delivery scope (2026-10-28)
+
+The experiment is stopped. The current work is to commit the reviewed evidence summary, push feature/vsc-extension, and resolve any resulting CI failures until all required checks pass. No experimental policy or default was adopted; production retains cad0bd1 behavior, kafe-guided-7, Pro with thinking disabled, and the 30-second timeout.
+
+The five separate feasibility blocks total 67 attempts, 63 completed replies and four timeouts. The last 20 replies completed before stop verification and remain unreviewed. Reviewed comparisons did not establish a clean accepted arm. Detailed local records stay ignored; the public summary is in docs/extension/tutor-reliability.md#stopped-reasoning-feasibility-follow-up. The earlier 33 activity-tuning requests and four-request pilot are separate.
+
+Delivery and CI work do not resume provider calls, answer-quality review, tuning or adoption. The broader Tutor quality and novice-readiness goal remains incomplete. After delivery, preserve the stopped experiment until the user explicitly resumes it. Existing workflow-deployment policy drift remains a separate recorded issue.
+
+## Retained checkpoint and pending-gate notes
 
 On 2026-10-28 the user chose **Keep the current checkpoint**. The Tutor guidance checkpoint remains at `9c25d04` / `kafe-guided-7`, `deepseek-v4-pro`, thinking disabled and streaming enabled. No further model calls, reasoning-mode experiment or protocol implementation is approved by that choice. The full answer-quality goal remains **incomplete**; retaining this checkpoint is not a model-winner, novice-readiness or classroom-efficacy verdict.
 

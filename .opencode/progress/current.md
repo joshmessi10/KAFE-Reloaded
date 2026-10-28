@@ -1,6 +1,14 @@
 # Current Work
 
-## Current extension checkpoint (2026-10-28)
+## Current delivery scope (2026-10-28)
+
+The experiment is stopped. The current work is to commit the reviewed evidence summary, push feature/vsc-extension, and resolve any resulting CI failures until all required checks pass. No experimental policy or default was adopted; production retains cad0bd1 behavior, kafe-guided-7, Pro with thinking disabled, and the 30-second timeout.
+
+The five separate feasibility blocks total 67 attempts, 63 completed replies and four timeouts. The last 20 replies completed before stop verification and remain unreviewed. Reviewed comparisons did not establish a clean accepted arm. Detailed local records stay ignored; the public summary is in docs/extension/tutor-reliability.md#stopped-reasoning-feasibility-follow-up. The earlier 33 activity-tuning requests and four-request pilot are separate.
+
+Delivery and CI work do not resume provider calls, answer-quality review, tuning or adoption. The broader Tutor quality and novice-readiness goal remains incomplete. After delivery, preserve the stopped experiment until the user explicitly resumes it. Existing workflow-deployment policy drift remains a separate recorded issue.
+
+## Earlier extension checkpoint receipts (2026-10-28)
 
 Feature: unified Tutor simplicity on `feature/vsc-extension`, extension 2.3.0 / runtime 0.3.0.
 

@@ -72,7 +72,7 @@ On 2026-10-28 the user chose **Keep the current checkpoint**. The Tutor guidance
 
 The final rehearsal on `9c25d04` completed the six canonical messages and one additional constructor request H3: seven requests/completions/completed settlements, 3,114 contiguous sanitized diagnostic records, zero tools and zero transport failures. Independent actual-answer review did not accept the sample. F1/F2 fraud interpretation and comparison were supported. X3 recalled the earlier 75% XOR baseline as about 50% and invented training membership and absent validation; X1 gave an unsupported cause for near-threshold scores, X2 overstated experimental isolation and F3 manufactured a conditional draft gap. H3 supplied valid `machine.logistic_regression(0.1, 1000)` and `machine.gaussian_nb()` creation fragments, with a minor inaccurate introductory claim about two forms for each model. Earlier H1/H2 remain round4-only evidence. Across five tuning rounds, 33 requests were made (6+6+6+8+7); the earlier four-request pilot is separate. Tokens and cost were not measured. These are real model answers to synthetic learner reports, not observed classifier results or novice outcomes.
 
-Read-only reasoning feasibility identified that a production-equivalent thinking-enabled comparison would need a new private reasoning/history, snapshot and parser contract. It remains an unapproved option. The user's checkpoint decision closes the proposed next step: no reasoning-enabled call, spike or protocol change is scheduled or authorized.
+At that checkpoint, read-only feasibility identified that a production-equivalent thinking-enabled comparison would need a new private reasoning/history, snapshot and parser contract. Production integration was deferred. A later approved tools-omitted follow-up is recorded below; the production reasoning-replay contract remains unimplemented.
 
 Review actual responses for technical accuracy, direct explanation, a useful next step, reaction to learner reasoning, evidence origin and learner-owned choices. Record `supported`, `concern` or `not observable` with an exact excerpt and consequence; keep material failures visible. A first-semester support target is not an observed novice result. The proposal names later-semester groups and leaves its original fraud starter/data unnamed and absent. A separately attributed facilitator starter ZIP is prepared and independently reviewed; see [classroom materials](evaluation-alignment.md#facilitator-classroom-materials). Facilitator machine configuration and empirical novice completion/timing/learning outcomes remain separate gates; the completed source-specific native 1.96 gate is recorded below.
 
@@ -91,6 +91,26 @@ Response text is retained through accumulated streaming, ordinary completion and
 Suggested code remains a suggestion. Preparation, native Review, Apply, and learner-started Run retain separate permissions. A no-file proposal request receives an unavailable tool result and conversation can continue. A valid file target still requires current scope confirmation. Editing or removing a dependency invalidates a stale scope.
 
 Reference completeness does not establish dependency security or managed-install acceptance. The dependency repair uses patched locked packages, retains mandatory audits and keeps the global seven-day uv waiting period with narrow security exceptions. Native host verification runs in GitHub CI when the pinned local host is unavailable. Report exact-revision workflow results separately from local checks. Existing published runtime assets remain unchanged; rebuilding or publishing an updated managed runtime is a separate release step. Real-provider evaluation and learning efficacy still require their own evidence.
+
+## Stopped reasoning feasibility follow-up
+
+On 28 October 2026, a later approved text-only reasoning feasibility follow-up produced 67 provider attempts: 63 completed replies and four initial 30-second timeouts. These are separate from the earlier 33 activity-tuning requests and the older four-request pilot. Existing blinded reviews found no clean accepted arm in the reviewed comparisons. The final 20-request cost-guidance ablation completed before the user stop was verified, but its answers remain unreviewed. No experimental policy or provider setting was adopted; production remains at the cad0bd1 implementation with kafe-guided-7, deepseek-v4-pro, thinking disabled and a 30-second timeout. Token usage and cost were not measured.
+
+| Separate feasibility block | Attempts | Completed | Timeouts | Answer review |
+| --- | ---: | ---: | ---: | --- |
+| Initial 30-second fixed-prefix comparison | 11 | 7 | 4 | Incomplete comparison with concerns |
+| Separate 90-second fixed-prefix comparison | 12 | 12 | 0 | Neither arm accepted |
+| Separate 90-second own-history comparison | 12 | 12 | 0 | Neither arm accepted |
+| Current versus shorter instructions, both with reasoning | 12 | 12 | 0 | Neither variant accepted |
+| Final global cost-guidance ablation | 20 | 20 | 0 | Completed but unreviewed |
+
+The native test harness passed the existing saved key directly through VS Code SecretStorage to the original provider; the credential value was not inspected or extracted. Tools were omitted entirely, raw reasoning was discarded, and the receipts record no tool calls or native actions. Only literal synthetic learner questions and ordinary public reference context entered requests; offline oracles and review criteria stayed outside them. Both arms declared the full knowledge pack unavailable, with no included files or native evidence. These direct-provider tests do not establish compatibility with the normal tools-enabled extension.
+
+The user approved a 90-second limit for the separate experiments; the normal 30-second timeout remains unchanged. Own-history comparisons used each arm's previous replies, so their later contexts differ. Fixed-prefix comparisons replayed earlier visible replies. The shorter contract and ablation were exploratory interventions with disclosed trade-offs, without demonstrated stable improvement. The four new cost cases were authored after the failure class was seen and are not pristine holdout evidence.
+
+The user stopped the experiment and then authorized documentation, commits, pushing and CI repair until green. That delivery instruction does not resume provider calls, answer-quality review, tuning or adoption. Detailed experiment harnesses, transcripts and reviews remain local ignored artifacts. Further quality work requires explicit resumption.
+
+The retained baseline receipt for cad0bd11 records successful [Python tests](https://github.com/joshmessi10/KAFE-Reloaded/actions/runs/40638786830), [extension validation](https://github.com/joshmessi10/KAFE-Reloaded/actions/runs/40638786738) and [documentation validation](https://github.com/joshmessi10/KAFE-Reloaded/actions/runs/40638786754). CI establishes engineering gates for its exact revision; it does not validate Tutor answer quality or student readiness. Later documentation commits need their own observed checks.
 
 ## Rendered layout regression
 

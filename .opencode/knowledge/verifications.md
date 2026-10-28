@@ -213,3 +213,12 @@ Final metadata/docs-only validation and the single scoped independent whole-wave
 The final delivery also preserves the concurrently pushed Run-output work from `039fcea`: unbuffered Python output, retained native terminal results and no Run entries in the rendered Tutor conversation. The Tutor policy, provider configuration and canonical rehearsal prompts remain unchanged. A fresh combined-tree aggregate passed 1,091 tests with one existing Windows skip and zero failures (1,092 total, 40.328 s); all 42 rendered browser cases passed (24.706 s). The earlier `9c25d04` native CI remains an exact-revision historical receipt; merged-source packaging and CI require their own receipts.
 
 These fresh unit/browser results cover the combined `dcf1de2` documentation and `039fcea` terminal source. They do not establish a new native-host run or physical terminal visual acceptance. No interpreter/runtime/dependency input changed and no full Python or model rehearsal was repeated for this merge.
+
+
+## Stopped reasoning follow-up and delivery (2026-10-28)
+
+On 28 October 2026, a later approved text-only reasoning feasibility follow-up produced 67 provider attempts: 63 completed replies and four initial 30-second timeouts. These are separate from the earlier 33 activity-tuning requests and the older four-request pilot. Existing blinded reviews found no clean accepted arm in the reviewed comparisons. The final 20-request cost-guidance ablation completed before the user stop was verified, but its answers remain unreviewed. No experimental policy or provider setting was adopted; production remains at the cad0bd1 implementation with kafe-guided-7, deepseek-v4-pro, thinking disabled and a 30-second timeout. Token usage and cost were not measured.
+
+The retained exact-revision baseline at cad0bd11 has successful Python workflow 40638786830, extension workflow 40638786738 (including Windows native job 122652172858), and documentation workflow 40638786754. These historical receipts are separate from verification of a later documentation commit. No fresh application-suite result is inferred from this documentation edit.
+
+The user stopped the experiment and then authorized documentation, commits, pushing and CI repair until green. That delivery instruction does not resume provider calls, answer-quality review, tuning or adoption. Detailed experiment harnesses, transcripts and reviews remain local ignored artifacts. Further quality work requires explicit resumption.
