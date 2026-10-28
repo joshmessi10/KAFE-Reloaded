@@ -6,7 +6,7 @@
   "target": "First-semester support rehearsal; no novice efficacy, completion-time or learning-gain evidence.",
   "evaluationStatus": {
     "deterministic": "Dataset mathematics, literal request transport, eligible whole-pair history and authority boundaries only; canned replies are not teaching outcomes or quality scores.",
-    "realProvider": "The earlier four-request pilot covers only its retained sample. Four subsequent activity rounds were independently reviewed: three six-turn Flash/Pro samples were rejected; guided-7 at e0794c1 completed six canonical and two held-out replies with mixed findings. Unsupported training/settings and overfitting claims remain; answer-quality acceptance is incomplete. See docs/extension/tutor-reliability.md for provenance.",
+    "realProvider": "User chose to keep source 9c25d04 on 2026-10-28 and stop further model/reasoning experiments. Five reviewed rounds used 33 requests (6+6+6+8+7), separate from the earlier four-request pilot. Three samples were rejected, round4 was mixed and round5 was not accepted: wrong recalled XOR baseline and unsupported training/validation, near-threshold cause, isolation and draft-gap claims remain. F1/F2 and bounded H3 constructor help were supported; H1/H2 were round4-only. Full answer-quality acceptance is incomplete. See docs/extension/tutor-reliability.md for provenance.",
     "classroom": "The proposal's original starter and dataset were unnamed and absent. A separately attributed public-source facilitator kit was prepared and independently reviewed; facilitator machine setup, novice completion, timing and learning evidence remain pending."
   },
   "review": {
