@@ -6,8 +6,8 @@
   "target": "First-semester support rehearsal; no novice efficacy, completion-time or learning-gain evidence.",
   "evaluationStatus": {
     "deterministic": "Dataset mathematics, literal request transport, eligible whole-pair history and authority boundaries only; canned replies are not teaching outcomes or quality scores.",
-    "realProvider": "The earlier four-request pilot covers only its retained sample. Actual answers to these six turns and their independent review remain pending.",
-    "classroom": "The proposal's original starter and dataset were unnamed and absent. Public-source classroom material preparation is ongoing; facilitator setup and novice evidence remain pending."
+    "realProvider": "The earlier four-request pilot covers only its retained sample. Four subsequent activity rounds were independently reviewed: three six-turn Flash/Pro samples were rejected; guided-7 at e0794c1 completed six canonical and two held-out replies with mixed findings. Unsupported training/settings and overfitting claims remain; answer-quality acceptance is incomplete. See docs/extension/tutor-reliability.md for provenance.",
+    "classroom": "The proposal's original starter and dataset were unnamed and absent. A separately attributed public-source facilitator kit was prepared and independently reviewed; facilitator machine setup, novice completion, timing and learning evidence remain pending."
   },
   "review": {
     "statuses": ["supported", "concern", "not observable"],

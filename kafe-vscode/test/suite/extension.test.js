@@ -269,7 +269,7 @@ suite('KAFE extension host', () => {
         'Run should enforce its command-handler trust check in Restricted Mode');
         assert.equal(setupResult.status, 'blocked',
           'Setup must stop before checking or installing the managed runtime in Restricted Mode');
-        assert.ok(messages.some(item => item.level === 'error' &&
+        assert.ok(messages.some(item => item.level === 'info' &&
           /Trust this workspace before installing the KAFE runtime/i.test(item.message)),
         'Setup should explain that the workspace must be trusted');
       }

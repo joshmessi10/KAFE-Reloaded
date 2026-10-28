@@ -6,7 +6,7 @@
   "sourceFingerprint": "148ebb295fd60e5e209712aad0f4cdfa12064f0f76010366e1fbc3fccf55321c",
   "runtimeSourceFingerprint": "148ebb295fd60e5e209712aad0f4cdfa12064f0f76010366e1fbc3fccf55321c",
   "corpusFingerprint": "fde24278a0189fc95e0ac773c9293f1e2f20b94754764fb62d4b4f9f4c0878ed",
-  "contractFingerprint": "abb1ea16f592b4940284f2073f3764bfb806ee920b8275d13301f1c8589feef5",
+  "contractFingerprint": "525c05c3a3f542b8dc1162bd56be799ea8487be057dcd53f5bad147ca4c45a40",
   "evidenceFingerprint": "22cafafe735c7c181f3f57dd91e5360403a4dc06716f0ce6f975d0c03bd5cb8b",
   "entries": [
     {
@@ -19721,7 +19721,7 @@
         "costos de falsos positivos",
         "missed positives versus false alarms"
       ],
-      "text": "Classifier comparison and error costs / comparacion de clasificadores\nConcept: Compare models on the same cases with the same class meaning. Missed positives and false alarms have different consequences. A qualitative priority is a valid basis for describing the observed trade-off; exact cost weights are optional when a particular decision needs them. Costs can be informed by losses, review time or stakeholder evidence, not discovered from the confusion matrix or invented to force a winner.\nKAFE grounding: Reuse the supplied per-model error counts and check them against each matrix. If quantitative costs are useful, FN times its cost plus FP times its cost uses shared units and the same per-error assumptions across models. Check the relevant positional API only for implementation help.\nOptional next step: Help organize the supplied counts around the learner's existing priority. On a draft, identify one claim needing support without supplying a replacement conclusion. Do not assume an unspecified starter classifier.\nCaveat: A comparison on a small sample or a repeatedly used final test set has limits; discuss the relevant limit without making a new checklist.",
+      "text": "Classifier comparison and error costs / comparacion de clasificadores\nConcept: Compare models on the same cases with the same class meaning. Missed positives and false alarms have different consequences. A qualitative priority is a valid basis for describing the observed trade-off; exact cost weights are optional when a particular decision needs them. Costs can be informed by losses, review time or stakeholder evidence, not discovered from the confusion matrix or invented to force a winner.\nKAFE grounding: Reuse the supplied per-model error counts and check them against each matrix. If quantitative costs are useful, FN times its cost plus FP times its cost uses shared units and the same per-error assumptions across models. Check the relevant positional API only for implementation help.\nOptional next step: Help organize the supplied counts around the learner's existing priority. On a draft, affirm supported claims and identify at most one actual justification gap if present, without supplying a replacement conclusion; a sound draft needs no forced revision. Do not assume an unspecified starter classifier.\nCaveat: A comparison on a small sample or a repeatedly used final test set has limits; discuss the relevant limit without making a new checklist.",
       "apiIds": [
         "machine.confusion_matrix",
         "machine.logistic_regression",
@@ -19895,7 +19895,7 @@
         "demasiadas epocas",
         "generalization gap"
       ],
-      "text": "Overfitting and validation / sobreajuste\nConcept: Improving training fit alongside worsening validation behavior is a warning sign of adapting to sample details rather than improving behavior on the intended population. Compare compatible trends; one score or successful execution does not establish either overfitting or its absence.\nKAFE grounding: Actual validation data and the metric computed by the run matter when interpreting validation loss or early stopping. Regularization and stopping controls are options to reason about when relevant, not automatic guarantees.\nOptional next step: Use the supplied domain and known data roles before asking for further observations. For an exhaustive finite task, acknowledge what all defined cases establish instead of inventing new targets or calling it memorization.\nCaveat: Distribution shift, split mistakes or noise can also widen a gap. Training and validation losses can include different regularization terms in this runtime; explain that only if those losses are being compared.",
+      "text": "Overfitting and validation / sobreajuste\nConcept: Improving training fit alongside worsening validation behavior is a warning sign of adapting to sample details rather than improving behavior on the intended population. Compare compatible training and evaluation evidence on a defined population; temporal trends are one possible form of evidence, not a prerequisite. One score or successful execution does not establish either overfitting or its absence.\nKAFE grounding: Actual validation data and the metric computed by the run matter when interpreting validation loss or early stopping. Regularization and stopping controls are options to reason about when relevant, not automatic guarantees.\nOptional next step: Use the supplied domain and known data roles before asking for further observations; keep unknown training membership and settings unknown. For an exhaustive finite task, acknowledge what all defined cases establish instead of inventing new targets or calling it memorization.\nCaveat: Distribution shift, split mistakes or noise can also widen a gap. Training and validation losses can include different regularization terms in this runtime; explain that only if those losses are being compared.",
       "apiIds": [
         "gesha.early_stopping",
         "gesha.dropout_layer",
@@ -22563,5 +22563,5 @@
       }
     }
   },
-  "contentSha256": "a96394c12331351d77c7b034f65762a13a05e956cc5194de99d41e24c8ee3099"
+  "contentSha256": "000baca6419900a0cfef042e5f238aa9b7997aa3bbb72efde4239e4ce19a83e3"
 }

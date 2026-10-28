@@ -140,6 +140,15 @@ for (const origin of ['activation', 'manual', 'retry']) for (const refusal of ['
     const result = await f.host.prepareRuntime({ origin });
     assert.equal(result.status, refusal === 'untrusted' ? 'blocked' : 'unavailable'); assert.equal(f.installs(), 0);
     assert.equal(f.host.tutorView.hostMetadata.runtime, 'unavailable');
+    if (refusal === 'untrusted') {
+      assert.deepEqual(result, { status: 'blocked', message: 'Trust this workspace before installing the KAFE runtime.' });
+      assert.equal(f.progress.length, 0, 'the trust guard must not start installation progress');
+      assert.equal(f.notifications.length, 1, 'an explicit setup attempt reports its trust refusal once');
+      assert.equal(f.notifications[0].kind, 'info', 'blocked setup is an information notification, including an explicit activation-origin attempt');
+      assert.match(f.notifications[0].args[0], /^Trust this workspace before installing the KAFE runtime\./);
+      assert.equal(f.notifications[0].args.length, 1, 'blocked setup offers no Retry or Details action');
+      assert.ok(!f.notifications.some(item => ['error', 'warning'].includes(item.kind)));
+    }
     if (refusal === 'unpublished') {
       assert.deepEqual(result, { status: 'unavailable' }, 'the host guard returns its public outcome before the installer');
       assert.equal(f.progress.length, 0, 'the unpublished host guard must not start installation progress');

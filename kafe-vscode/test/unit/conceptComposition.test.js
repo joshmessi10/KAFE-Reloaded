@@ -44,6 +44,12 @@ test('actual topic code help retains reviewed contracts and only their complete 
 });
 
 for (const [request, apiIds] of [
+  ['Create a KAFE function to calculate sensitivity.', ['machine.confusion_matrix', 'machine.recall_score']],
+  ['Crea una función en KAFE para calcular la sensibilidad.', ['machine.confusion_matrix', 'machine.recall_score']],
+  ['Help me build a KAFE program with a hidden layer.', ['gesha.create_dense', 'gesha.sequential']],
+  ['Construye un programa en KAFE con una capa oculta.', ['gesha.create_dense', 'gesha.sequential']],
+  ['Quiero crear una función para calcular sensibilidad en KAFE.', ['machine.confusion_matrix', 'machine.recall_score']],
+  ['Ayúdame a construir un programa en KAFE con una capa oculta.', ['gesha.create_dense', 'gesha.sequential']],
   ['Write a KAFE function to calculate sensitivity.', ['machine.confusion_matrix', 'machine.recall_score']],
   ['Escribe una función en KAFE para calcular la sensibilidad.', ['machine.confusion_matrix', 'machine.recall_score']],
   ['¿Cómo programar una capa oculta no lineal en KAFE?', ['gesha.create_dense', 'gesha.sequential']],
@@ -59,12 +65,28 @@ for (const [request, apiIds] of [
     const paths = new Set(contracts.flatMap(source => source.provenance.examplePaths || []));
     const examples = result.snapshots.filter(source => source.category === 'test-reference');
     assert.ok(examples.length > 0);
-    for (const example of examples) assert.ok(paths.has(example.provenance.path), example.provenance.path);
+    for (const example of examples) {
+      assert.ok(paths.has(example.provenance.path), example.provenance.path);
+      const fixture = JSON.parse(example.text.slice(example.text.indexOf('\n') + 1));
+      assert.equal(fixture.path, example.provenance.path);
+      assert.deepEqual(fixture, require('../../src/tutor/kafeReferences.json').fixtures
+        .find(candidate => candidate.path === example.provenance.path));
+    }
+    assert.ok(result.snapshots.filter(source => source.category !== 'language-reference')
+      .reduce((sum, source) => sum + Buffer.byteLength(source.text), 0) <= 12 * 1024);
+    assert.ok(result.snapshots.filter(source => source.category === 'library-reference')
+      .every(source => Buffer.byteLength(source.text) <= 6 * 1024));
     assert.deepEqual(result.payload.messages.at(-1), { role: 'user', content: request });
   });
 }
 
 for (const [request, topicId] of [
+  ['Create a brief explanation of sensitivity in KAFE.', 'classification-sensitivity'],
+  ['Help me build an explanation of why one neuron cannot learn XOR.', 'nonlinear-representation'],
+  ['Create my conclusion about classifier comparison and false alarms.', 'classifier-cost-tradeoffs'],
+  ['Build a conclusion about classifier comparison and false alarms.', 'classifier-cost-tradeoffs'],
+  ['Crea una explicación de sensibilidad en KAFE.', 'classification-sensitivity'],
+  ['Construye una conclusión sobre la comparación de clasificadores y las falsas alarmas.', 'classifier-cost-tradeoffs'],
   ['Help me write a short explanation of why one neuron cannot learn XOR.', 'nonlinear-representation'],
   ['Ayúdame a escribir mi conclusión sobre la comparación de clasificadores y las falsas alarmas.', 'classifier-cost-tradeoffs'],
   ['Write a brief explanation of sensitivity in KAFE.', 'classification-sensitivity'],
@@ -110,4 +132,29 @@ test('domain and numerical guidance is transported without importing rehearsal a
   const directRelu = createLibraryReferences().select('gesha.create_dense')[0];
   assert.match(directRelu.text, /returned.*output.*not.*internal hidden/i);
   assert.match(directRelu.text, /FLOAT inputs.*not.*fix/i);
+});
+
+test('canonical F3 selects conditional draft guidance consistent with the policy', async () => {
+  const request = activities.dialogues[0].turns[2].learnerText;
+  const result = await composer().compose({ request });
+  assert.deepEqual(result.snapshots.map(source => source.id), ['kafe-essentials', 'learning:classifier-cost-tradeoffs']);
+  const topic = result.snapshots[1].text;
+  assert.match(topic, /draft, affirm supported claims.*at most one actual justification gap if present/i);
+  assert.match(topic, /sound draft needs no forced revision/i);
+  assert.match(topic, /without supplying a replacement conclusion/i);
+  assert.match(result.payload.messages[0].content, /draft.*affirm supported claims.*at most one actual justification gap if present/i);
+  assert.equal(result.payload.messages.at(-1).content, request);
+});
+
+test('canonical X3 topic permits defined-population comparison without mandatory temporal traces', async () => {
+  const request = activities.dialogues[1].turns[2].learnerText;
+  const result = await composer().compose({ request });
+  assert.deepEqual(result.snapshots.map(source => source.id), ['kafe-essentials', 'learning:overfitting']);
+  const topic = result.snapshots[1].text;
+  assert.match(topic, /compatible training and evaluation evidence.*defined population/i);
+  assert.match(topic, /temporal trends.*one possible form.*not a prerequisite/i);
+  assert.match(topic, /unknown training membership and settings unknown/i);
+  assert.match(topic, /exhaustive finite task.*all defined cases/i);
+  assert.doesNotMatch(topic, /0\.03|0\.96|0\.94|0\.04/);
+  assert.equal(result.payload.messages.at(-1).content, request);
 });
