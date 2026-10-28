@@ -156,7 +156,7 @@ test('one guided baseline reaches the provider without a level, profile or style
   assert.match(policy, /scoped preparation confirmation/);
   assert.match(policy, /Review, Apply and learner-started Run remain distinct/);
   assert.ok(policy.includes(`Teaching policy ${POLICY_VERSION}.`));
-  assert.equal(POLICY_VERSION, 'kafe-guided-5');
+  assert.equal(POLICY_VERSION, 'kafe-guided-6');
   assert.doesNotMatch(policy, /Applied teaching preset|"level"|"frequency"|codingPreference|style memory|profile/i);
   assert.ok(result.sources.some(source => source.category === 'language-reference'));
   for (const level of ['beginner', 'intermediate', 'expert']) assert.throws(() => learning.setPreferences({ level }), /preference/);

@@ -128,7 +128,7 @@ test('ordinary English and Spanish concepts resolve the specific shipped API', (
   }
 });
 
-test('study concept questions receive complete teaching guidance and related verified APIs without prior-topic carryover', () => {
+test('study concept questions receive complete teaching guidance without incidental API catalogues or prior-topic carryover', () => {
   const refs = createLibraryReferences();
   for (const [id, queries] of [
     ['classification-sensitivity', ['How do I interpret sensitivity?', '¿Cuál es la sensibilidad del modelo para detectar fraudes?']],
@@ -142,7 +142,7 @@ test('study concept questions receive complete teaching guidance and related ver
   ]) for (const query of queries) {
     const selected = refs.select(query);
     assert.equal(selected[0]?.provenance.topicId, id, query);
-    assert.ok(selected.some(source => source.provenance.apiId), 'related implementation evidence remains available');
+    assert.equal(selected.some(source => source.provenance.apiId), false, 'concept-only help does not require call contracts');
     assert.ok(selected.length <= 3);
     assert.ok(selected.reduce((sum, source) => sum + Buffer.byteLength(source.text), 0) <= 8 * 1024);
   }

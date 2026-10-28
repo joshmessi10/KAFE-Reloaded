@@ -4,7 +4,7 @@
   "generator": "kafe-vscode/scripts/build-library-evals.cjs",
   "runtimeSourceRevision": "6ee33f742909f74a3d597379e713aedc3a5703b2",
   "reviewedSourceFingerprint": "148ebb295fd60e5e209712aad0f4cdfa12064f0f76010366e1fbc3fccf55321c",
-  "contractFingerprint": "f1c4506525df02bd016aef37134f58713b1cf2ed8ecb36f54935f5688b2fc3e9",
+  "contractFingerprint": "662bfe4f246dc26c6b7d5f7f7fdcf64a4230da88f3da35055ae0541656ceb565",
   "evaluationStatus": {
     "offlineDataset": "generated",
     "deterministicChecks": "run separately",
@@ -5394,7 +5394,7 @@
           "units must be positive; input_shape is [features] or [] for lazy construction.",
           "The wrapper requires units, activation and input_shape even though the Python constructor has additional defaults.",
           "name and bias_initializer are Python constructor options, not parameters of this intended wrapper.",
-          "A direct ReLU output mixing INT zero and FLOAT values is rejected by DSL homogeneous-list validation."
+          "A returned direct ReLU output mixing INT zero and FLOAT values is rejected by DSL homogeneous-list validation. This concerns returned output, not internal hidden-layer computation; FLOAT inputs do not generally fix a mixed returned list."
         ],
         "related": [],
         "evidence": [
@@ -5438,7 +5438,7 @@
           "units must be positive; input_shape is [features] or [] for lazy construction.",
           "The wrapper requires units, activation and input_shape even though the Python constructor has additional defaults.",
           "name and bias_initializer are Python constructor options, not parameters of this intended wrapper.",
-          "A direct ReLU output mixing INT zero and FLOAT values is rejected by DSL homogeneous-list validation."
+          "A returned direct ReLU output mixing INT zero and FLOAT values is rejected by DSL homogeneous-list validation. This concerns returned output, not internal hidden-layer computation; FLOAT inputs do not generally fix a mixed returned list."
         ],
         "related": [],
         "evidence": [

@@ -98,9 +98,10 @@ function createLibraryReferences(bundle, runtime = manifest.runtime) {
       }
       const selectedTopics = !qualified.length && !exact.size ? selectLearningTopics(topics, raw, { maxItems: 1, maxBytes: Math.min(maxBytes, 3 * 1024) }) : [];
       const topicApis = new Set(selectedTopics.flatMap(topic => topic.apiIds));
-      const requestsApiForm = /\b(?:positional|signatures?|arguments?|arity|api|posicionales?|firmas?|argumentos|parametros)\b/.test(normalized);
+      const requestsApiForm = /\b(?:positional|signatures?|arguments?|arity|api|code|syntax|implement|implementation|posicionales?|firmas?|argumentos|parametros|codigo|sintaxis|implementar|implemento|implementacion)\b/.test(normalized);
       const conceptualQuestion = /\b(?:how|what|why|which|explain|interpret|compare|como|que|cual|explica|interpretar|comparar)\b/.test(normalized);
       const preferContract = library && (requestsApiForm || !conceptualQuestion);
+      const conceptOnly = selectedTopics.length > 0 && !requestsApiForm && !preferContract;
       const ranked = prepared.filter(item => !library || item.entry.id.startsWith(`${library}.`) || topicApis.has(item.entry.id)).map(item => {
         const nameScore = direct.reduce((sum, term) => sum + (item.names.has(term) ? 12 : 0), 0) +
           [...expanded].reduce((sum, term) => sum + (item.names.has(term) ? 5 : 0), 0);
@@ -136,9 +137,10 @@ function createLibraryReferences(bundle, runtime = manifest.runtime) {
         formatEntry(entry), { path: `reference/${entry.id.split('.')[0]}-api.json`, apiId: entry.id, status: entry.status, examplePaths: entry.examples });
       // A library-prefixed API phrase requests its call contract; conceptual
       // questions receive the teaching explanation before implementation details.
-      if (preferContract && ranked.length) admit(contractSource(ranked[0].entry));
+      if (preferContract && !conceptOnly && ranked.length) admit(contractSource(ranked[0].entry));
       for (const topic of selectedTopics) admit(source(`learning:${topic.id}`, 'Reviewed learning concept', topic.text,
         { path: 'reference/learning-topics.json', topicId: topic.id, apiIds: topic.apiIds }));
+      if (conceptOnly) return selected;
       for (const { entry } of ranked) admit(contractSource(entry));
       if (selected.length < maxItems && direct.length && (library || exact.size || ranked.length)) {
         const rankedDocs = preparedDocs.map(item => ({ ...item,

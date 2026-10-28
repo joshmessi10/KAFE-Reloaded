@@ -114,7 +114,7 @@ for (const sequence of data.dialogues) {
       ]), expectedHistory);
       assert.deepEqual(snapshot.history.omissions, []);
       assert.ok(Object.isFrozen(snapshot) && Object.isFrozen(snapshot.request.messages));
-      assert.equal(snapshot.learning.policyVersion, 'kafe-guided-5');
+      assert.equal(snapshot.learning.policyVersion, 'kafe-guided-6');
       assert.ok(snapshot.sources.every(source => source.uri === null));
       assert.equal(snapshot.sources.some(source => ['run-result', 'action-evidence'].includes(source.id)), false);
       assert.deepEqual(snapshot.dependencies, { fileUris: [], knowledgeLineage: null });
