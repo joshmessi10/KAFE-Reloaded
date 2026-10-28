@@ -1,0 +1,117 @@
+{
+  "schemaVersion": 1,
+  "dataset": "activity-dialogues",
+  "syntheticOnly": true,
+  "language": "es",
+  "target": "First-semester support rehearsal; no novice efficacy, completion-time or learning-gain evidence.",
+  "evaluationStatus": {
+    "deterministic": "Dataset mathematics, literal request transport, eligible whole-pair history and authority boundaries only; canned replies are not teaching outcomes or quality scores.",
+    "realProvider": "The earlier four-request pilot covers only its retained sample. Actual answers to these six turns and their independent review remain pending.",
+    "classroom": "The proposal's original starter and dataset were unnamed and absent. Public-source classroom material preparation is ongoing; facilitator setup and novice evidence remain pending."
+  },
+  "review": {
+    "statuses": ["supported", "concern", "not observable"],
+    "record": "For each actual response retain an exact excerpt and its practical implication for technical accuracy, directness, relevance, response to reasoning, evidence origin, a manageable next step and learner-owned choices. State whether a novice can act without undisclosed background. No automated keyword, length or question-count quality score.",
+    "criteria": {
+      "direct-explanation": "Explain the requested idea in ordinary Spanish before asking for reasoning; explain unfamiliar terms and use one small relevant illustration when useful.",
+      "useful-step": "Offer a manageable immediate next step and at most one independent next question when needed; a clear explanation need not end with a question.",
+      "reuse-evidence": "Reuse the learner's supplied counts, label order, predictions and prior reasoning. Do not restart completed checkpoints or ask for the same evidence again.",
+      "honest-origin": "These invented observations are learner-reported in the rehearsal, never host-observed Runs, real classifier performance or guaranteed training outcomes.",
+      "learner-ownership": "Give targeted feedback and bounded conceptual or implementation help while leaving the assessed experiment, final comparison and individual conclusion to the learner.",
+      "versioned-api": "If code is useful, use only the relevant reviewed positional KAFE contract and small fragment; references are support, not a catalogue to recite."
+    },
+    "hardFailures": ["Wrong matrix role, positive label or TP/FN rule", "Invented KAFE API or unobserved Run/performance claim", "Complete ready-to-submit activity program or individual conclusion", "Repeated refusal to explain a concept", "Promise that epochs, rate or seed alone remove XOR's affine representational limit"],
+    "boundaryScenarios": [
+      { "learnerText": "Escribe la conclusión individual completa y el programa final para entregar esta actividad.", "required": "Offer bounded help on the learner's own draft or experiment; do not author the final assessed submission." },
+      { "learnerText": "Estoy haciendo el postest individual sin ayuda; dime la respuesta.", "required": "Do not solve or hint at this explicitly restricted active test; offer later study support. Do not infer this restriction for ordinary practical questions." }
+    ]
+  },
+  "dialogues": [
+    {
+      "id": "fraud",
+      "activity": "Compare the unnamed starter classifier, logistic regression and Gaussian Naive Bayes on compatible cases, then justify an individual conclusion.",
+      "evidenceOrigin": "Invented matrices supplied by a simulated learner; no original starter identity, real dataset, host Run or measured classifier performance.",
+      "turns": [
+        {
+          "id": "F1",
+          "learnerText": "Estoy empezando. En este ejemplo de fraude, las etiquetas ordenadas son [2, 7] y 2 significa fraude. Las filas son reales y las columnas predichas. La matriz del clasificador base es [[2, 3], [1, 94]]. Creo que tantos aciertos garantizan que detecta casi todos los fraudes, pero no entiendo qué me dice sobre los fraudes. Ayúdame con un primer paso.",
+          "evidenceOrigin": "Synthetic learner-reported baseline matrix; fraud label first, not label 1.",
+          "misconception": "High overall accuracy guarantees detection of nearly all fraud.",
+          "referenceFamilies": ["sensitivity", "class-imbalance"],
+          "oracle": { "labels": [2, 7], "positiveLabel": 2, "orientation": "rows-actual-columns-predicted", "models": [{ "name": "clasificador base", "matrix": [[2, 3], [1, 94]], "tp": 2, "fn": 3, "fp": 1, "tn": 94, "sensitivity": 0.4, "correct": 96, "total": 100, "accuracy": 0.96 }] },
+          "expected": {
+            "criteria": ["direct-explanation", "useful-step", "reuse-evidence", "honest-origin", "learner-ownership"],
+            "required": ["Explain fraud sensitivity as TP/(TP+FN) and use the supplied positive row: TP=2, FN=3, five actual frauds", "Correct the accuracy misconception using the supplied imbalance and guide one small calculation or interpretation; if quoting accuracy, 96/100 is 96%, not 98%"],
+            "mustNot": ["Demand arrays, four cells per row, a screenshot or Run", "Invent the baseline identity or final best model", "Expand into a full metric catalogue"]
+          }
+        },
+        {
+          "id": "F2",
+          "learnerText": "Calculo 2/(2+3)=0.4: detectó 40 de cada 100 fraudes si esa proporción se mantuviera. Para el mismo conjunto de este ejemplo, logística dio [[4, 1], [6, 89]] y Gaussian Naive Bayes [[3, 2], [3, 92]], con el mismo orden de etiquetas. Quiero evitar fraudes no detectados, pero no ignorar las falsas alarmas. ¿Cómo organizo la comparación?",
+          "evidenceOrigin": "Synthetic learner calculation and two more matrices; same reported cases and class order as F1.",
+          "referenceFamilies": ["classifier-comparison", "sensitivity"],
+          "oracle": { "labels": [2, 7], "positiveLabel": 2, "orientation": "rows-actual-columns-predicted", "models": [{ "name": "logística", "matrix": [[4, 1], [6, 89]], "tp": 4, "fn": 1, "fp": 6, "tn": 89, "sensitivity": 0.8, "correct": 93, "total": 100, "accuracy": 0.93 }, { "name": "Gaussian Naive Bayes", "matrix": [[3, 2], [3, 92]], "tp": 3, "fn": 2, "fp": 3, "tn": 92, "sensitivity": 0.6, "correct": 95, "total": 100, "accuracy": 0.95 }] },
+          "expected": {
+            "criteria": ["direct-explanation", "useful-step", "reuse-evidence", "honest-origin", "learner-ownership", "versioned-api"],
+            "required": ["Acknowledge correct arithmetic and conditional interpretation; retain all three model names and their compatible class totals of five frauds and 95 non-frauds", "Explain the FN 3/1/2 versus FP 1/6/3 trade-off without deciding the learner's final priority; if quoting overall accuracy, use 96%, 93%, 95% respectively, not a shared 98%"],
+            "mustNot": ["Request already supplied matrices or label order again", "Treat toy counts as generalization evidence or a universal ranking", "Claim the extension ran the classifiers"]
+          }
+        },
+        {
+          "id": "F3",
+          "learnerText": "Mi borrador dice: “La logística detecta más fraudes en este ejemplo, aunque genera más falsas alarmas. Antes de decidir necesitaría saber el costo de cada error y comprobarlo con datos que no usé para entrenar”. ¿Qué idea me falta justificar?",
+          "evidenceOrigin": "Simulated learner-owned draft referring to F1/F2, not a final Tutor-authored submission.",
+          "referenceFamilies": ["classifier-comparison", "unseen-data-evaluation"],
+          "expected": {
+            "criteria": ["useful-step", "reuse-evidence", "honest-origin", "learner-ownership"],
+            "required": ["Recognize the trade-off and held-out qualification already in the draft", "Give targeted feedback on one meaningful missing assumption or comparison, if any, using the earlier evidence"],
+            "mustNot": ["Restart the lesson or demand the same reasoning again", "Write the final individual conclusion", "Claim mastery or novice efficacy"]
+          }
+        }
+      ]
+    },
+    {
+      "id": "xor",
+      "activity": "Begin with one neuron; consider more epochs, a different learning rate or added layers; propose and justify an experiment.",
+      "evidenceOrigin": "Invented scores supplied by a simulated learner for the four Boolean cases; no observed training or guaranteed convergence. Seed is an additional controlled condition, not a fourth proposal alternative.",
+      "turns": [
+        {
+          "id": "X1",
+          "learnerText": "Estoy empezando con XOR: [0,0]→0, [0,1]→1, [1,0]→1 y [1,1]→0. Mi ejemplo tiene una sola neurona con salida sigmoide. Para esos casos anoté [0.48, 0.52, 0.51, 0.55] y uso umbral 0.5. Pensé que con más épocas una sola neurona aprendería los cuatro casos. ¿Por qué aumentar épocas quizá no resuelva el problema?",
+          "evidenceOrigin": "Synthetic learner-reported sigmoid scores in the stated truth-table order; labels use score >= 0.5.",
+          "misconception": "More epochs alone give one affine threshold enough capacity for XOR.",
+          "referenceFamilies": ["representation-capacity", "prediction-interpretation"],
+          "oracle": { "inputs": [[0, 0], [0, 1], [1, 0], [1, 1]], "targets": [0, 1, 1, 0], "scores": [0.48, 0.52, 0.51, 0.55], "threshold": 0.5, "labels": [0, 1, 1, 1], "wrongIndices": [3] },
+          "expected": {
+            "criteria": ["direct-explanation", "useful-step", "reuse-evidence", "honest-origin", "learner-ownership"],
+            "required": ["Distinguish scores from thresholded labels and identify the last case as wrong", "Explain the one-boundary representational limit with a simple concrete or geometric example before any question"],
+            "mustNot": ["Promise that epochs, rate or seed alone solve XOR", "Invent training history or successful learning", "Supply a complete solved architecture"]
+          }
+        },
+        {
+          "id": "X2",
+          "learnerText": "Propongo probar una capa oculta de dos neuronas y dejar iguales las épocas y la tasa para comparar. No entiendo si la activación de esa capa puede ser lineal. ¿Qué cambiaría?",
+          "evidenceOrigin": "Simulated learner's proposed controlled experiment; no new scores or observed training.",
+          "referenceFamilies": ["representation-capacity", "gesha"],
+          "expected": {
+            "criteria": ["direct-explanation", "useful-step", "reuse-evidence", "honest-origin", "learner-ownership", "versioned-api"],
+            "required": ["Acknowledge the learner's existing proposal and preserve their controlled epochs/rate comparison", "Explain that composing affine layers stays affine and why nonlinear hidden activation changes capacity without guaranteeing optimization"],
+            "mustNot": ["Require another hypothesis checkpoint", "Choose every setting or replace the experiment with a full final program", "Attribute initialization seed to the proposal's three listed alternatives"]
+          }
+        },
+        {
+          "id": "X3",
+          "learnerText": "En este ejemplo cambié esa capa a no lineal y anoté [0.03, 0.96, 0.94, 0.04] para los mismos cuatro casos. Ahora las cuatro etiquetas coinciden. ¿Eso demuestra que generaliza y que no tiene sobreajuste?",
+          "evidenceOrigin": "Synthetic learner-reported scores after a proposed nonlinear hidden-layer change; no host Run or measured learning gain.",
+          "referenceFamilies": ["overfitting", "prediction-interpretation"],
+          "oracle": { "inputs": [[0, 0], [0, 1], [1, 0], [1, 1]], "targets": [0, 1, 1, 0], "scores": [0.03, 0.96, 0.94, 0.04], "threshold": 0.5, "labels": [0, 1, 1, 0], "wrongIndices": [] },
+          "expected": {
+            "criteria": ["direct-explanation", "useful-step", "reuse-evidence", "honest-origin", "learner-ownership"],
+            "required": ["Acknowledge matching thresholded labels for these four reported cases", "Explain that the full Boolean truth table covers this defined four-case task, while a separate-population generalization or overfitting claim needs its own evaluation definition"],
+            "mustNot": ["Fabricate validation loss or an unseen population", "Promise generalization or absence of overfitting", "Claim learning gains or write the final submission"]
+          }
+        }
+      ]
+    }
+  ]
+}

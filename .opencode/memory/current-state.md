@@ -26,8 +26,12 @@ Integration cleanup `524dac5` and qs patch `d074ff9` remain complete. Final revi
 
 ## Current Blockers and Pending Gates
 
+Activity-tuning development milestone: production baseline `156957e` retains policy `kafe-guided-5` and current-question retrieval. Two development-only Spanish three-turn rehearsals now exercise exact messages, eligible whole-pair evidence reuse, mathematical oracles and existing authority/reset/revocation boundaries. Focused affected extension checks pass 230; the aggregate passes 1,049 with one existing Windows symlink skip. Relevant Python reference/verifier/policy checks pass 47; source freshness, spelling and authored-policy checks pass. These are transport/reference checks, not model-quality or novice learning scores. Strict docs and fresh independent review remain integration-owned.
+
+The user authorized further real-provider testing through the Tutor UI and public fraud-dataset preparation. The earlier four-message pilot is completed only for its retained sample. Review of the new six-turn activity sample is still pending at this development milestone. A separate portable classroom kit is being prepared; the proposal did not supply its original starter/data. Neither native VS Code 1.96 acceptance nor first-semester completion, timing or learning efficacy is established.
+
 - Exact local native VS Code 1.96.0 cache is absent. Native host-policy/acceptance, physical IME and screen-reader speech require separate evidence; installed newer VS Code is not a substitute.
-- Real-provider answer review, managed-install/publication and learner efficacy/ICAP/SUS outcomes remain separate release/research gates. No provider request, form submission or research upload was performed.
+- Actual-answer acceptance for the new activity dialogues, managed-install/publication and learner efficacy/ICAP/SUS outcomes remain separate release/research gates. Synthetic tests make no provider requests; no form submission or research upload is part of this milestone.
 - Ruff, basedpyright, spelling, audits and authored-policy checks exist; Python requires 3.11. Preserve unchanged-input evidence only after verifying relevant input hashes; final prose needs spelling/strict docs checks.
 - Actual `docs.yml` permits the historical integration branch and checks out the selected branch, contrary to root main-only policy. This pre-existing drift is unresolved, unchanged and undispatched.
 - Nix and POSIX Make are unavailable on this Windows host; use documented locked uv paths. Unrelated Gesha follow-ups retain their own historical/pending records, not current extension status.
