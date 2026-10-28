@@ -49,6 +49,8 @@ for (const [request, apiIds] of [
   ['¿Cómo programar una capa oculta no lineal en KAFE?', ['gesha.create_dense', 'gesha.sequential']],
   ['Show an example of using a hidden layer in KAFE.', ['gesha.create_dense', 'gesha.sequential']],
   ['Muéstrame un ejemplo de uso de una capa oculta en KAFE.', ['gesha.create_dense', 'gesha.sequential']],
+  ['Could you write a small KAFE program with a hidden layer?', ['gesha.create_dense', 'gesha.sequential']],
+  ['Quiero escribir una función para calcular sensibilidad en KAFE.', ['machine.confusion_matrix', 'machine.recall_score']],
 ]) {
   test(`explicit authoring retains related contracts and linked examples: ${request}`, async () => {
     const result = await composer().compose({ request });
@@ -58,6 +60,19 @@ for (const [request, apiIds] of [
     const examples = result.snapshots.filter(source => source.category === 'test-reference');
     assert.ok(examples.length > 0);
     for (const example of examples) assert.ok(paths.has(example.provenance.path), example.provenance.path);
+    assert.deepEqual(result.payload.messages.at(-1), { role: 'user', content: request });
+  });
+}
+
+for (const [request, topicId] of [
+  ['Help me write a short explanation of why one neuron cannot learn XOR.', 'nonlinear-representation'],
+  ['Ayúdame a escribir mi conclusión sobre la comparación de clasificadores y las falsas alarmas.', 'classifier-cost-tradeoffs'],
+  ['Write a brief explanation of sensitivity in KAFE.', 'classification-sensitivity'],
+  ['Escribe una breve explicación de por qué una capa oculta lineal no cambia la capacidad para XOR.', 'nonlinear-representation'],
+]) {
+  test(`prose authoring remains concept-only: ${request}`, async () => {
+    const result = await composer().compose({ request });
+    assert.deepEqual(result.snapshots.map(source => source.id), ['kafe-essentials', `learning:${topicId}`]);
     assert.deepEqual(result.payload.messages.at(-1), { role: 'user', content: request });
   });
 }
