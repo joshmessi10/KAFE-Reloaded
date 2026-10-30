@@ -2,7 +2,7 @@
   "name": "kafe-neural-suite",
   "displayName": "KAFE - Neural Language Suite",
   "description": "Edit and run KAFE programs with a guided AI tutor.",
-  "version": "2.3.1",
+  "version": "2.4.0",
   "publisher": "KAFEGROUP",
   "icon": "icon.png",
   "license": "MIT",
@@ -39,6 +39,8 @@
     "onLanguage:kafe",
     "onCommand:kafe.runFile",
     "onCommand:kafe.installRuntime",
+    "onCommand:kafe.installHuggingFacePack",
+    "onCommand:kafe.installKagglePack",
     "onCommand:kafe.openTutor",
     "onCommand:kafe.configureProvider",
     "onCommand:kafe.clearProviderKey",
@@ -88,6 +90,18 @@
       {
         "command": "kafe.installRuntime",
         "title": "KAFE: Install Runtime",
+        "icon": "$(cloud-download)",
+        "enablement": "isWorkspaceTrusted"
+      },
+      {
+        "command": "kafe.installHuggingFacePack",
+        "title": "KAFE: Install Hugging Face Pack",
+        "icon": "$(cloud-download)",
+        "enablement": "isWorkspaceTrusted"
+      },
+      {
+        "command": "kafe.installKagglePack",
+        "title": "KAFE: Install Kaggle Pack",
         "icon": "$(cloud-download)",
         "enablement": "isWorkspaceTrusted"
       },

@@ -46,7 +46,9 @@ self.libraries = {
 
 KafeHF's wrapper is imported and registered by the visitor in the default environment. Its external `datasets` dependency is optional and absent from the default uv environment: `import huggingface;` works without that package, while a dataset-loading call reports the missing dependency. Preserve the baseline without `datasets`, including `tests/KafeHF/hf_load_dataset_no_dep.error.kf`, and keep any environment for exercising the installed integration distinct from that baseline. Enable the integration with `uv sync --locked --extra huggingface`; the missing-dependency diagnostic points to this command and its paired expected-output fixture records the exact message.
 
-The VS Code managed runtime uses `uv sync --locked --no-dev --extra extension`. That extra installs `datasets`, `kagglehub`, Pillow, and `py7zr` for learner workspaces while the repository's baseline developer environment remains unchanged.
+KafeKaggle follows the same rule: `kagglehub`, Pillow and `py7zr` form the optional `kaggle` extra, are imported only when a Kaggle function runs, and are never installed by the interpreter. `kagglehub` stays out of the dev group so `tests/KafeKaggle/kaggle_load_dataset_no_dep.error.kf` remains deterministic. Both missing-pack messages name the VS Code command and the uv command.
+
+The VS Code managed runtime installs only the core (`uv sync --locked --no-dev --inexact`). Learners add data packs on request with **KAFE: Install Hugging Face Pack** (`--extra huggingface`) or **KAFE: Install Kaggle Pack** (`--extra kaggle`). Every managed sync uses `--inexact` so one pack never removes another; `uv run` already keeps installed extras. A full runtime reinstall recreates the environment, so packs must be installed again (quickly, from the uv cache).
 
 ## Adding a New Library
 

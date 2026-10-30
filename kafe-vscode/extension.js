@@ -2,7 +2,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { isDeepStrictEqual } = require('node:util');
 const { startKafeFile } = require('./src/kafeRunner');
-const { createRuntimeManager } = require('./src/runtimeManager');
+const { createRuntimeManager, DATA_PACKS } = require('./src/runtimeManager');
 const { TutorViewProvider } = require('./src/tutor/TutorViewProvider');
 const { DeepSeekProvider, SECRET_KEY } = require('./src/tutor/providers/DeepSeekProvider');
 const { SessionCoordinator } = require('./src/tutor/SessionCoordinator');
@@ -483,6 +483,7 @@ function createTutorHost({ vscode, extensionUri, secrets, workspaceState, runtim
   const readiness = Promise.all([actions.refreshContext(), refreshTutorAvailability()]).then(() => undefined);
   return { tutorView, coordinator, proposalProvider, progressStore, actions, runFile, keyHandlers, readiness, toggleTeachingPause,
     resolveKnowledge, knowledgeRetriever, conversations, conversationCommands, refreshTutorAvailability, prepareRuntime,
+    isPreparingRuntime: () => Boolean(runtimeSetup),
     dispose() { hostDisposed = true; ++keyAvailabilityRevision; ++runtimeAvailabilityRevision; nativeKeyHandlers.dispose();
       void conversations.dispose().finally(() => conversationManagers.delete(conversations));
       actions.dispose(); coordinator.dispose(); tutorView.dispose(); diagnostics.dispose(); for (const subscription of subscriptions) subscription.dispose(); } };
@@ -662,12 +663,15 @@ function activate(context) {
     secrets: context.secrets, workspaceState: context.workspaceState, runtimeManager,
     extensionMode: context.extensionMode, extensionPath: context.extensionPath });
   const { tutorView, proposalProvider, progressStore, runFile, keyHandlers, coordinator } = host;
+  const installPack = createPackInstaller({ vscode, runtimeManager, isPreparingRuntime: host.isPreparingRuntime });
   context.subscriptions.push(
     host,
     vscode.window.registerWebviewViewProvider('kafeTutorView', tutorView),
     vscode.workspace.registerTextDocumentContentProvider('kafe-proposal', proposalProvider),
     vscode.commands.registerCommand('kafe.runFile', () => runFile()),
     vscode.commands.registerCommand('kafe.installRuntime', () => host.prepareRuntime({ origin: 'manual' })),
+    vscode.commands.registerCommand('kafe.installHuggingFacePack', () => installPack('huggingface')),
+    vscode.commands.registerCommand('kafe.installKagglePack', () => installPack('kaggle')),
     vscode.commands.registerCommand('kafe.openTutor', () =>
       vscode.commands.executeCommand('workbench.view.extension.kafeTutor')),
     vscode.commands.registerCommand('kafe.configureProvider', keyHandlers.configure),
@@ -686,9 +690,47 @@ function activate(context) {
   }
 }
 
+// Optional data packs (Hugging Face, Kaggle) are installed only when the learner asks for them,
+// so the first runtime setup stays small. One install per pack runs at a time.
+function createPackInstaller({ vscode, runtimeManager, isPreparingRuntime = () => false }) {
+  const inFlight = new Map();
+  return pack => {
+    if (inFlight.has(pack)) return inFlight.get(pack);
+    const label = DATA_PACKS[pack]?.label ?? String(pack);
+    const notify = (kind, message) => {
+      try { void Promise.resolve(vscode.window[kind]?.(message)).catch(() => {}); } catch { /* notification cannot change the result */ }
+    };
+    const work = async () => {
+      if (vscode.workspace.isTrusted !== true) {
+        notify('showInformationMessage', `Trust this workspace before installing the KAFE ${label} pack.`);
+        return { status: 'blocked' };
+      }
+      if (isPreparingRuntime()) {
+        notify('showInformationMessage', `KAFE runtime setup is in progress. Install the ${label} pack after it finishes.`);
+        return { status: 'busy' };
+      }
+      const install = () => runtimeManager.installPack(pack);
+      const result = typeof vscode.window.withProgress === 'function'
+        ? await vscode.window.withProgress({ location: vscode.ProgressLocation?.Notification ?? 15,
+          title: `KAFE: Installing ${label} pack`, cancellable: false }, install)
+        : await install();
+      if (result?.status === 'ready') notify('showInformationMessage', `KAFE ${label} pack is ready. Programs that import it can now run.`);
+      else if (result?.status === 'unavailable') notify('showInformationMessage', `Install the KAFE runtime first (KAFE: Install Runtime), then install the ${label} pack.`);
+      else if (result?.status !== 'cancelled') {
+        notify('showErrorMessage', `KAFE ${label} pack could not be installed. ${result?.userMessage ?? ''} Retry with KAFE: Install ${label} Pack.`.replace(/\s+/g, ' '));
+      }
+      return result ?? { status: 'error' };
+    };
+    const flight = Promise.resolve().then(work).catch(() => ({ status: 'error' }))
+      .finally(() => inFlight.delete(pack));
+    inFlight.set(pack, flight);
+    return flight;
+  };
+}
+
 async function deactivate() {
   await Promise.allSettled([...conversationManagers].map(manager => manager.flush()));
 }
 
 module.exports = { activate, deactivate, createRunFileHandler, createProviderKeyHandlers,
-  createClearProgressHandler, createTutorHost, ANTLR_COMMAND };
+  createClearProgressHandler, createTutorHost, createPackInstaller, ANTLR_COMMAND };

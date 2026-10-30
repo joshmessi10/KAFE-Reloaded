@@ -423,8 +423,9 @@ test('valid runtime and uv checksums stage, sync with isolated paths, and atomic
   assert.equal(fixture.requests.length, 3);
   const sync = fixture.processCalls.find(call => call.args[0] === 'sync');
   assert.ok(sync);
-  assert.deepEqual(sync.args, ['sync', '--locked', '--no-dev', '--extra', 'extension',
-    '--python', '3.11.15', '--managed-python', '--project', fixture.manager.paths.stagingRoot]);
+  assert.deepEqual(sync.args, ['sync', '--locked', '--no-dev', '--inexact',
+    '--python', '3.11.15', '--managed-python', '--project', fixture.manager.paths.stagingRoot],
+  'first setup installs only the KAFE core; data packs are opt-in');
   assert.equal(sync.options.cwd, fixture.manager.paths.stagingRoot);
   assert.equal(sync.options.shell, false);
   assert.equal(sync.options.env.UV_PROJECT_ENVIRONMENT, result.pythonEnvironment);
@@ -914,4 +915,70 @@ test('managed python link is accepted only when it resolves to a file inside run
   } finally {
     await fs.rm(base, { recursive: true, force: true });
   }
+});
+
+test('data pack installs its extra inexactly into the ready runtime without touching the core', async () => {
+  const fixture = makeFixture();
+  assert.equal((await fixture.manager.installRuntime()).status, 'ready');
+  fixture.processCalls.length = 0;
+  const result = await fixture.manager.installPack('kaggle');
+  assert.deepEqual(result, { status: 'ready', pack: 'kaggle', label: 'Kaggle' });
+  assert.equal(fixture.processCalls.length, 1);
+  const [sync] = fixture.processCalls;
+  const ready = await fixture.manager.getReadyRuntime();
+  assert.equal(ready.status, 'ready');
+  assert.equal(sync.executable, ready.uvPath);
+  assert.deepEqual(sync.args, ['sync', '--locked', '--no-dev', '--inexact', '--extra', 'kaggle',
+    '--python', '3.11.15', '--managed-python', '--project', ready.runtimeRoot]);
+  assert.equal(sync.options.cwd, ready.runtimeRoot);
+  assert.equal(sync.options.shell, false);
+  assert.equal(sync.options.env.UV_PROJECT_ENVIRONMENT, ready.pythonEnvironment);
+  assert.equal(sync.options.env.HF_HOME, ready.huggingFaceCacheDir);
+});
+
+test('data pack refuses unknown names and a missing runtime without launching uv', async () => {
+  const fixture = makeFixture();
+  for (const pack of ['extension', 'toString', '__proto__', undefined]) {
+    const result = await fixture.manager.installPack(pack);
+    assert.equal(result.status, 'error');
+  }
+  const missing = await fixture.manager.installPack('huggingface');
+  assert.equal(missing.status, 'unavailable');
+  assert.match(missing.message, /Install the KAFE runtime before the Hugging Face pack/);
+  assert.deepEqual(fixture.processCalls, []);
+});
+
+test('failed data pack keeps the ready core runtime and reports a dependency message', async () => {
+  let failPack = false;
+  const fixture = makeFixture({ processRunner: async (executable, args, options) => {
+    fixture.processCalls.push({ executable, args, options });
+    if (['python', 'python.exe'].includes(path.basename(executable).toLowerCase())) {
+      return { exitCode: 0, stdout: 'Python 3.11.15\n', stderr: '' };
+    }
+    if (args[0] === '--version') return { exitCode: 0, stdout: 'uv 0.11.3\n', stderr: '' };
+    if (args.includes('--extra')) return failPack
+      ? { exitCode: 1, stdout: '', stderr: 'pack resolution failed' } : { exitCode: 0, stdout: '', stderr: '' };
+    const python = path.join(options.env.UV_PROJECT_ENVIRONMENT, 'Scripts', 'python.exe');
+    await fixture.fs.mkdir(path.dirname(python), { recursive: true });
+    await fixture.fs.writeFile(python, 'managed python');
+    return { exitCode: 0, stdout: '', stderr: '' };
+  } });
+  const installed = await fixture.manager.installRuntime();
+  assert.equal(installed.status, 'ready', installed.message);
+  failPack = true;
+  const result = await fixture.manager.installPack('kaggle');
+  assert.equal(result.status, 'error');
+  assert.match(result.message, /pack resolution failed/);
+  assert.equal(result.userMessage, 'KAFE downloaded its runtime, but dependency installation failed.');
+  assert.equal((await fixture.manager.getReadyRuntime()).status, 'ready');
+});
+
+test('cancelled data pack reports cancellation', async () => {
+  const fixture = makeFixture();
+  assert.equal((await fixture.manager.installRuntime()).status, 'ready');
+  const controller = new AbortController();
+  controller.abort();
+  const result = await fixture.manager.installPack('huggingface', { signal: controller.signal });
+  assert.equal(result.status, 'cancelled');
+  assert.equal((await fixture.manager.getReadyRuntime()).status, 'ready');
 });

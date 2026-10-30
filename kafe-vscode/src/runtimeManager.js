@@ -10,6 +10,11 @@ const { REQUIRED_SECTIONS: KNOWLEDGE_SECTIONS } = require('./tutor/KnowledgeCorp
 const { isDeepStrictEqual } = require('node:util');
 
 const PINNED_MANIFEST = require('./runtimeManifest.json');
+// Optional data packs map to pyproject extras that the managed runtime installs on request.
+const DATA_PACKS = Object.freeze({
+  huggingface: Object.freeze({ extra: 'huggingface', label: 'Hugging Face' }),
+  kaggle: Object.freeze({ extra: 'kaggle', label: 'Kaggle' }),
+});
 const MAX_DOWNLOAD_BYTES = 64 * 1024 * 1024;
 const MAX_METADATA_BYTES = 64 * 1024;
 const MAX_EXPANDED_BYTES = 256 * 1024 * 1024;
@@ -1037,8 +1042,8 @@ function createRuntimeManager({
       await fileSystem.rename(paths.uvStageRoot, paths.uvRoot);
 
       progress('syncing');
-      const sync = await processRunner(paths.uvPath, ['sync', '--locked', '--no-dev', '--extra', 'extension',
-        '--python', manifest.runtime.pythonVersion, '--managed-python', '--project', paths.stagingRoot], {
+      // The first install is only the KAFE core; data packs are installed on request (installPack).
+      const sync = await processRunner(paths.uvPath, [...uvSyncArgs(paths.stagingRoot)], {
         cwd: paths.stagingRoot,
         env: makeUvEnvironment(paths),
         shell: false,
@@ -1047,7 +1052,7 @@ function createRuntimeManager({
       if (signal?.aborted) throw abortError();
       if (sync.exitCode !== 0) {
         const detail = [sync.stderr, sync.stdout].filter(Boolean).join('\n').trim();
-        throw new Error(`uv sync --locked --no-dev --extra extension failed${detail ? `: ${detail}` : '.'}`);
+        throw new Error(`uv sync --locked --no-dev failed${detail ? `: ${detail}` : '.'}`);
       }
       progress('verifying');
       await checkManagedPython(paths, signal);
@@ -1075,6 +1080,41 @@ function createRuntimeManager({
     }
   }
 
+  // --inexact keeps packages that another pack installed; a plain uv sync would remove them.
+  function uvSyncArgs(projectRoot, extra) {
+    return ['sync', '--locked', '--no-dev', '--inexact', ...(extra ? ['--extra', extra] : []),
+      '--python', manifest.runtime.pythonVersion, '--managed-python', '--project', projectRoot];
+  }
+
+  /** Adds an optional data pack (a pyproject extra) to the ready managed runtime. */
+  async function installPack(pack, { signal } = {}) {
+    const definition = Object.hasOwn(DATA_PACKS, pack) ? DATA_PACKS[pack] : undefined;
+    if (!definition) return { status: 'error', message: `Unknown KAFE data pack: ${String(pack)}.`, userMessage: 'KAFE does not offer that data pack.' };
+    const ready = await readReadyRuntime();
+    if (ready.status !== 'ready') {
+      return { status: 'unavailable', message: `Install the KAFE runtime before the ${definition.label} pack.` };
+    }
+    const paths = getPaths();
+    try {
+      const sync = await processRunner(ready.uvPath, uvSyncArgs(paths.runtimeRoot, definition.extra), {
+        cwd: paths.runtimeRoot,
+        env: makeUvEnvironment(paths),
+        shell: false,
+        signal,
+      });
+      if (signal?.aborted) throw abortError();
+      if (sync.exitCode !== 0) {
+        const detail = [sync.stderr, sync.stdout].filter(Boolean).join('\n').trim();
+        throw new Error(`uv sync --extra ${definition.extra} failed${detail ? `: ${detail}` : '.'}`);
+      }
+      return { status: 'ready', pack, label: definition.label };
+    } catch (error) {
+      // A failed pack never touches the core runtime: the sync is inexact and the core is already satisfied.
+      const status = signal?.aborted || error.name === 'AbortError' ? 'cancelled' : 'error';
+      return { status, message: error.message, ...(status === 'error' ? { userMessage: runtimeSetupUserMessage(error) } : {}) };
+    }
+  }
+
   // Setup can run from the archive shipped inside the VSIX even before the GitHub release exists.
   function isInstallAvailable() {
     return Boolean(manager.bundledRuntimeRoot) || manifest.runtime.releasePublished === true;
@@ -1085,6 +1125,7 @@ function createRuntimeManager({
   manager.getReadyKnowledgePack = readReadyKnowledgePack;
   manager.resolveWorkspace = resolveWorkspace;
   manager.installRuntime = installRuntime;
+  manager.installPack = installPack;
   return manager;
 }
 
@@ -1135,6 +1176,7 @@ function runtimeSetupUserMessage(error) {
 }
 
 module.exports = {
+  DATA_PACKS,
   isContainedFileLink,
   createRuntimeManager,
   downloadPinnedAsset,

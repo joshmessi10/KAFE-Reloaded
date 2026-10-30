@@ -26,8 +26,14 @@ test('manifest keeps the Marketplace identity and registers KAFE editing', () =>
 test('manifest exposes the runner, runtime installer, and tutor view', () => {
   const pkg = readJson('package.json');
   const commands = new Map(pkg.contributes.commands.map((item) => [item.command, item.title]));
-  assert.deepEqual([...commands.keys()].sort(), ['kafe.clearProviderKey', 'kafe.clearTutorProgress', 'kafe.configureProvider', 'kafe.deleteConversation', 'kafe.exportConversation', 'kafe.installRuntime', 'kafe.newConversation', 'kafe.openTutor', 'kafe.renameConversation', 'kafe.runFile', 'kafe.switchConversation', 'kafe.toggleTeachingPause']);
+  assert.deepEqual([...commands.keys()].sort(), ['kafe.clearProviderKey', 'kafe.clearTutorProgress', 'kafe.configureProvider', 'kafe.deleteConversation', 'kafe.exportConversation', 'kafe.installHuggingFacePack', 'kafe.installKagglePack', 'kafe.installRuntime', 'kafe.newConversation', 'kafe.openTutor', 'kafe.renameConversation', 'kafe.runFile', 'kafe.switchConversation', 'kafe.toggleTeachingPause']);
   assert.ok(pkg.activationEvents.includes('onCommand:kafe.configureProvider'));
+  assert.equal(commands.get('kafe.installHuggingFacePack'), 'KAFE: Install Hugging Face Pack');
+  assert.equal(commands.get('kafe.installKagglePack'), 'KAFE: Install Kaggle Pack');
+  for (const pack of ['kafe.installHuggingFacePack', 'kafe.installKagglePack']) {
+    assert.ok(pkg.activationEvents.includes(`onCommand:${pack}`));
+    assert.equal(pkg.contributes.commands.find(item => item.command === pack).enablement, 'isWorkspaceTrusted');
+  }
   assert.ok(!pkg.activationEvents.includes('onCommand:kafe.configureProviderKey'));
   const extension = readFileSync(path.join(root, 'extension.js'), 'utf8');
   assert.match(extension, /registerCommand\('kafe\.configureProvider', keyHandlers\.configure\)/);

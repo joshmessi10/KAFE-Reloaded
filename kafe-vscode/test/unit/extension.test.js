@@ -4,7 +4,7 @@ const os = require('node:os');
 const path = require('node:path');
 const test = require('node:test');
 
-const { createRunFileHandler, createProviderKeyHandlers, createClearProgressHandler, createTutorHost, ANTLR_COMMAND } = require('../../extension');
+const { createRunFileHandler, createProviderKeyHandlers, createClearProgressHandler, createTutorHost, createPackInstaller, ANTLR_COMMAND } = require('../../extension');
 const PINNED_RUNTIME = require('../../src/runtimeManifest').runtime;
 const { MAX_FILE_BYTES } = require('../../src/tutor/DevelopmentKnowledgePack');
 const { knowledgeContentDigest } = require('../../src/tutor/KnowledgeRetriever');
@@ -2117,4 +2117,65 @@ for (const origin of ['activation', 'manual', 'retry']) test(`${origin} setup in
     assert.equal(f.installs(), 1);
     assert.equal(f.host.tutorView.hostMetadata.runtime, 'ready');
   } finally { f.host.dispose(); }
+});
+
+function packInstallerFixture({ result = { status: 'ready', pack: 'kaggle', label: 'Kaggle' }, trusted = true, preparing = false } = {}) {
+  const notifications = [], installs = [], progress = [];
+  let release;
+  const gate = new Promise(resolve => { release = resolve; });
+  const vscode = { workspace: { isTrusted: trusted }, ProgressLocation: { Notification: 15 }, window: {
+    showInformationMessage: message => { notifications.push({ kind: 'info', message }); },
+    showErrorMessage: message => { notifications.push({ kind: 'error', message }); },
+    withProgress: async (options, task) => { progress.push(options); return task(); },
+  } };
+  const runtimeManager = { installPack: async pack => { installs.push(pack); await gate; return result; } };
+  const install = createPackInstaller({ vscode, runtimeManager, isPreparingRuntime: () => preparing });
+  return { install, notifications, installs, progress, release };
+}
+
+test('pack command installs the named pack with progress and reports readiness', async () => {
+  const f = packInstallerFixture();
+  const pending = f.install('kaggle');
+  f.release();
+  assert.deepEqual(await pending, { status: 'ready', pack: 'kaggle', label: 'Kaggle' });
+  assert.deepEqual(f.installs, ['kaggle']);
+  assert.equal(f.progress[0].title, 'KAFE: Installing Kaggle pack');
+  assert.equal(f.progress[0].cancellable, false);
+  assert.deepEqual(f.notifications, [{ kind: 'info', message: 'KAFE Kaggle pack is ready. Programs that import it can now run.' }]);
+});
+
+test('concurrent pack commands share one install per pack', async () => {
+  const f = packInstallerFixture();
+  const first = f.install('kaggle'), second = f.install('kaggle');
+  assert.equal(first, second);
+  f.release();
+  await first;
+  assert.deepEqual(f.installs, ['kaggle']);
+  const third = f.install('kaggle');
+  await third;
+  assert.deepEqual(f.installs, ['kaggle', 'kaggle'], 'a finished install does not block a later repair');
+});
+
+test('pack command refuses untrusted workspaces and an in-progress runtime setup without installing', async () => {
+  const untrusted = packInstallerFixture({ trusted: false });
+  assert.deepEqual(await untrusted.install('huggingface'), { status: 'blocked' });
+  assert.match(untrusted.notifications[0].message, /^Trust this workspace before installing the KAFE Hugging Face pack\./);
+  const busy = packInstallerFixture({ preparing: true });
+  assert.deepEqual(await busy.install('kaggle'), { status: 'busy' });
+  assert.match(busy.notifications[0].message, /runtime setup is in progress/);
+  assert.deepEqual([...untrusted.installs, ...busy.installs], []);
+});
+
+test('pack command explains a missing runtime and reports failures with retry guidance', async () => {
+  const missing = packInstallerFixture({ result: { status: 'unavailable', message: 'x' } });
+  missing.release();
+  await missing.install('kaggle');
+  assert.deepEqual(missing.notifications, [{ kind: 'info',
+    message: 'Install the KAFE runtime first (KAFE: Install Runtime), then install the Kaggle pack.' }]);
+  const failed = packInstallerFixture({ result: { status: 'error', message: 'PRIVATE_DETAIL', userMessage: 'KAFE downloaded its runtime, but dependency installation failed.' } });
+  failed.release();
+  await failed.install('huggingface');
+  assert.equal(failed.notifications[0].kind, 'error');
+  assert.equal(failed.notifications[0].message, 'KAFE Hugging Face pack could not be installed. KAFE downloaded its runtime, but dependency installation failed. Retry with KAFE: Install Hugging Face Pack.');
+  assert.doesNotMatch(JSON.stringify(failed.notifications), /PRIVATE_DETAIL/);
 });

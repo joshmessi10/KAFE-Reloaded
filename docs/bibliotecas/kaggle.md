@@ -1,6 +1,6 @@
 # KafeKAGGLE: Kaggle datasets
 
-KafeKAGGLE downloads public datasets through `kagglehub` and exposes them to KAFE. Public downloads do not require credentials. Private datasets use the credentials supported by `kagglehub`. The library is optional and is installed on first use if it is missing.
+KafeKAGGLE downloads public datasets through `kagglehub` and exposes them to KAFE. Public downloads do not require credentials. Private datasets use the credentials supported by `kagglehub`. The library is part of the optional Kaggle pack and is loaded only when a program calls a Kaggle function. Install the pack with **KAFE: Install Kaggle Pack** in VS Code, or `uv sync --locked --extra kaggle` in a checkout.
 
 Use [MACHINE examples by algorithm](../ejemplos/machine-kaggle.md) to see five real datasets used for clustering, classification, and regression.
 
@@ -36,7 +36,7 @@ show(df.head(5));
 
 ### Authentication, cache, and memory
 
-`kagglehub` downloads public datasets anonymously. Private datasets can use `~/.kaggle/kaggle.json`, `KAGGLE_CONFIG_DIR/kaggle.json`, or `KAGGLE_USERNAME` and `KAGGLE_KEY`. KAFE tries to install `kagglehub` with the current Python interpreter if necessary; without network access, it reports the manual installation command.
+`kagglehub` downloads public datasets anonymously. Private datasets can use `~/.kaggle/kaggle.json`, `KAGGLE_CONFIG_DIR/kaggle.json`, or `KAGGLE_USERNAME` and `KAGGLE_KEY`. If the Kaggle pack is missing, the call fails with a message that names both installation routes; KAFE never installs packages by itself.
 
 Downloaded files are cached under `~/.cache/kagglehub`. Loaded rows still occupy memory. Use `limit`, sampling, or `load_dataset_matrix` when a DataFrame is unnecessary. This tabular API reads CSV files only.
 
@@ -80,7 +80,7 @@ KafeKAGGLE discovers `.png`, `.jpg`, `.jpeg`, and `.bmp` files recursively, excl
 - `load_image_dataset` matches image stems with a label CSV and maps class names to integers in alphabetical order.
 - `load_image_folder_dataset` infers labels from parent folders. `split` selects an ancestor folder such as `train` or `test`; `split=""` includes all folders. Paths are sorted, then shuffled with a fixed seed before applying `limit`, so a small sample can include several classes.
 
-Image loading uses optional Pillow for decoding and resizing, and optional `py7zr` for nested `.7z` archives. ZIP archives use Python's standard library. Archive paths are checked to prevent extraction outside the destination.
+Image loading uses Pillow for decoding and resizing, and `py7zr` for nested `.7z` archives; both belong to the Kaggle pack. ZIP archives use Python's standard library. Archive paths are checked to prevent extraction outside the destination.
 
 All image pixels are held in memory, with space complexity `O(N × C × H × W)`. A large image dataset can therefore use several gigabytes. Load a bounded sample before experimenting with a full dataset.
 

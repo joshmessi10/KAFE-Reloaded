@@ -1016,3 +1016,38 @@ One teaching contract reduces unnecessary configuration without inferring expert
 - Heuristic whole-answer replacement or extra repair request: rejected in favor of retained text and separate authority.
 - Fork/dual-write archives or relax legacy validation: rejected because this risks ambiguity, corruption or lost conversations.
 - Generic event bus, duplicate Run registry or cached authorization: rejected because existing owners and fresh checks suffice.
+
+## ADR-0034: Install a Light Managed Runtime with Optional Data Packs
+
+- **Status**: accepted
+- **Date**: 2026-10-30
+- **Supersedes**: the `extension` extra and "auto-install on first use" details of the managed runtime and KafeKaggle. ADR-0031 contracts and all other runtime decisions remain in force.
+
+### Context
+
+The managed runtime installed the `extension` extra (`datasets`, `kagglehub`, Pillow, `py7zr`, `multiprocess`) during first setup: about 250 MB across 50 packages on darwin-arm64, with `pyarrow` alone at 129 MB. The KAFE core needs only `antlr4-python3-runtime`, and only programs importing `huggingface` or `kaggle` use those packages. KafeKaggle also imported `kagglehub` at module level, adding about 0.44 s to every program (0.65 s total for Fibonacci), and it fell back to `pip install`, which uv environments lack and project policy forbids. Separately, 2.3.2 refused setup whenever the GitHub release was unpublished, despite bundling the runtime, and rejected uv's `bin/python` symlink on macOS/Linux.
+
+### Decision
+
+First setup installs only the core with `uv sync --locked --no-dev --inexact`. Split the extras into `huggingface` (`datasets`, `multiprocess<0.70.18`) and `kaggle` (`kagglehub`, Pillow, `py7zr`). Learners install packs only through explicit commands, **KAFE: Install Hugging Face Pack** and **KAFE: Install Kaggle Pack**: no prompt before Run and no automatic install (user decision). The commands run `uv sync --locked --no-dev --inexact --extra <pack>` against the ready runtime. They require a trusted workspace and a ready runtime, refuse while setup is running, and share one in-flight install per pack.
+
+`--inexact` is mandatory: plain `uv sync` removes other extras, while `uv run --locked` keeps them. A failed pack leaves the ready core intact. A full runtime reinstall recreates the environment, so packs are reinstalled from the uv cache.
+
+KafeKaggle and KafeHF import their packages lazily and never install anything. A missing pack raises a deterministic message naming both the VS Code command and the uv command. Runtime 0.5.0 (`8de7388b`) carries these extras; extension 2.4.0 pins it. Host setup is available when either the bundled archive or the published release exists. The managed `bin/python` symlink is accepted only when it resolves to a regular file inside the runtime storage root.
+
+### Rationale
+
+Most learner programs never use Hugging Face or Kaggle, so their dependencies should not delay first setup or every Run. Explicit commands keep large downloads visible and consented without adding a pre-Run prompt. Lazy imports are the smallest change that removes the startup cost. Removing pip restores the uv-only dependency policy.
+
+### Consequences
+
+- First setup downloads only Python, uv and the core; Hugging Face and Kaggle programs need one extra command.
+- Run startup drops from about 0.65 s to about 0.15 s on darwin-arm64.
+- Baseline fixtures cover both missing packs; `kagglehub` and `datasets` stay out of the dev group.
+- Windows/Linux real installs, extension-host tests, a published GitHub runtime release and Marketplace publication remain pending gates.
+
+### Alternatives Considered
+
+- Prompt or install automatically before Run: rejected by the user in favor of manual commands.
+- Fully offline platform-specific VSIX with bundled Python and wheels: deferred; compatible with this design.
+- Replace `datasets` with direct Hub HTTP calls: rejected; it loses formats and adds a client to maintain.

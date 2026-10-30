@@ -12,7 +12,7 @@ MACHINE model = machine.kmeans(3);
 model.fit(data);
 ```
 
-`columns` selects features and `limit` caps rows; `0` reads the full split. Numeric values become `FLOAT`. When `datasets` is missing, KAFE attempts installation with the active Python interpreter and reports a manual command if network access or permissions prevent it.
+`columns` selects features and `limit` caps rows; `0` reads the full split. Numeric values become `FLOAT`. `datasets` belongs to the optional Hugging Face pack. When it is missing, the call fails with a message naming **KAFE: Install Hugging Face Pack** in VS Code and `uv sync --locked --extra huggingface` in a checkout; KAFE never installs packages by itself.
 
 K-Means and DBSCAN keep their observations in memory. Reading a matrix directly avoids an intermediate PARDOS DataFrame, but it does not make these algorithms streaming implementations. Apply a row limit or sample a large dataset before fitting.
 
