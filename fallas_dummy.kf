@@ -1,0 +1,36 @@
+import pardos;
+import machine;
+
+-- El CSV debe estar junto a este archivo o en el directorio de ejecución.
+PARDOS datos = pardos.read_csv("kafe_machine_fallas_dataset.csv");
+List[FLOAT] temperatura = datos.col("temperatura_C");
+List[FLOAT] vibracion = datos.col("vibracion_mm_s");
+List[FLOAT] presion = datos.col("presion_bar");
+List[INT] y = datos.col("clase");
+List[List[FLOAT]] X = [];
+
+for (i in range(0, len(y))):
+    append(X, [temperatura[i], vibracion[i], presion[i]]);
+;
+
+show("Filas cargadas:");
+show(len(y));
+show("Columnas seleccionadas:");
+show(["temperatura_C", "vibracion_mm_s", "presion_bar"]);
+
+MACHINE division = machine.stratified_train_test_split(X, y, 0.2, 10);
+List[List[FLOAT]] X_train = division[0];
+List[List[FLOAT]] X_test = division[1];
+List[INT] y_train = division[2];
+List[INT] y_test = division[3];
+
+-- Referencia dummy: siempre predice la clase 0, sin aprender de X.
+List[INT] pred_dummy = [];
+for (i in range(0, len(y_test))):
+    append(pred_dummy, 0);
+;
+show("Filas de entrenamiento y prueba:");
+show([len(y_train), len(y_test)]);
+show("Dummy: accuracy y matriz de confusion [[TN, FP], [FN, TP]]:");
+show(machine.accuracy_score(y_test, pred_dummy));
+show(machine.confusion_matrix(y_test, pred_dummy));

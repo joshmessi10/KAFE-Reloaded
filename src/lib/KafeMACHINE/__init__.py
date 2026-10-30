@@ -4,6 +4,7 @@ from .clustering.DBSCAN import DBSCAN
 from .clustering.GaussianMixture import GaussianMixture
 from .clustering.KMeans import KMeans
 from .discriminant.LinearDiscriminantAnalysis import LinearDiscriminantAnalysis
+from .dummy.DummyClassifier import DummyClassifier
 from .ensemble.AdaBoost import AdaBoostClassifier
 from .ensemble.GradientBoosting import (
     GradientBoostingClassifier,
@@ -45,6 +46,7 @@ from .tree.DecisionTree import DecisionTreeClassifier, DecisionTreeRegressor
 from .tree.RandomForest import RandomForestClassifier, RandomForestRegressor
 
 __all__ = [
+    "DummyClassifier",
     "BaseMachine",
     "LinearRegression",
     "LogisticRegression",
