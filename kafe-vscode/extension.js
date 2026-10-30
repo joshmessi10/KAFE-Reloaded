@@ -259,6 +259,9 @@ function createTutorHost({ vscode, extensionUri, secrets, workspaceState, runtim
       })(),
     ]);
   };
+  // A bundled runtime archive makes setup available without a published GitHub release.
+  const installAvailable = () => typeof runtimeManager.isInstallAvailable === 'function'
+    ? runtimeManager.isInstallAvailable() : runtimeManager.manifest?.runtime?.releasePublished === true;
   // Native setup is global to the host. Notifications are detached from the flight:
   // choosing Retry in its own outcome must start fresh work, never await itself.
   const prepareRuntime = ({ origin } = {}) => {
@@ -287,14 +290,14 @@ function createTutorHost({ vscode, extensionUri, secrets, workspaceState, runtim
         const ready = await runtimeManager.getReadyRuntime();
         if (!current()) return { status: 'cancelled' };
         if (ready?.status === 'ready') { skipped = true; return ready; }
-        if (!runtimeManager.manifest?.runtime?.releasePublished) { skipped = true; return { status: 'unavailable' }; }
+        if (!installAvailable()) { skipped = true; return { status: 'unavailable' }; }
       }
       if (!current()) return { status: 'cancelled' };
-      if (runtimeManager.manifest?.runtime?.releasePublished === false) return { status: 'unavailable' };
+      if (!installAvailable()) return { status: 'unavailable' };
       tutorView.setHostMetadata({ runtime: 'preparing' });
       const install = progress => {
         if (!current()) return { status: 'cancelled' };
-        if (runtimeManager.manifest?.runtime?.releasePublished === false) return { status: 'unavailable' };
+        if (!installAvailable()) return { status: 'unavailable' };
         progress?.report({ message: stages.checking });
         return runtimeManager.installRuntime({ onProgress: ({ stage }) => {
           if (current() && runtimeSetup === flight && typeof stage === 'string' && Object.hasOwn(stages, stage)) progress?.report({ message: stages[stage] });
@@ -361,7 +364,7 @@ function createTutorHost({ vscode, extensionUri, secrets, workspaceState, runtim
     const keyPresent = Boolean(await secrets.get?.(SECRET_KEY));
     let knowledgeReady = false;
     if (vscode.workspace.isTrusted) knowledgeReady = (await resolveKnowledge()).status === 'ready';
-    let runtimeStatus = runtimeManager.manifest?.runtime?.releasePublished === false ? 'unavailable' : 'missing';
+    let runtimeStatus = !installAvailable() ? 'unavailable' : 'missing';
     if (vscode.workspace.isTrusted) {
       try {
         const runtime = await runtimeManager.getReadyRuntime?.();

@@ -5,7 +5,7 @@ const path = require('node:path');
 const test = require('node:test');
 
 const manifestTemplate = require('../../src/runtimeManifest.json');
-const { createRuntimeManager, getRuntimeTarget, runtimeSetupUserMessage, validateAssetUrl } = require('../../src/runtimeManager');
+const { createRuntimeManager, getRuntimeTarget, isContainedFileLink, runtimeSetupUserMessage, validateAssetUrl } = require('../../src/runtimeManager');
 
 const STORAGE = 'C:/extension-storage';
 const runtimeEntries = {
@@ -874,4 +874,44 @@ test('extracts pinned tar.gz targets after checksum verification and rejects mal
   const rejected = await malformed.manager.installRuntime();
   assert.equal(rejected.status, 'error');
   assert.equal(malformed.fs.files.size, 0);
+});
+
+test('bundled runtime archive makes setup available before the GitHub release is published', () => {
+  const unpublished = structuredClone(manifestTemplate);
+  unpublished.runtime.releasePublished = false;
+  const bundled = createRuntimeManager({ storageRoot: STORAGE, bundledRuntimeRoot: 'C:/extension/runtime', manifest: unpublished });
+  assert.equal(bundled.isInstallAvailable(), true);
+  const remoteOnly = createRuntimeManager({ storageRoot: STORAGE, manifest: unpublished });
+  assert.equal(remoteOnly.isInstallAvailable(), false);
+  const published = structuredClone(manifestTemplate);
+  published.runtime.releasePublished = true;
+  assert.equal(createRuntimeManager({ storageRoot: STORAGE, manifest: published }).isInstallAvailable(), true);
+});
+
+test('managed python link is accepted only when it resolves to a file inside runtime storage', async () => {
+  const fs = require('node:fs/promises');
+  const os = require('node:os');
+  const base = await fs.mkdtemp(path.join(os.tmpdir(), 'kafe-link-'));
+  try {
+    const root = path.join(base, 'storage'), outside = path.join(base, 'outside');
+    await fs.mkdir(path.join(root, 'python', 'bin'), { recursive: true });
+    await fs.mkdir(path.join(root, 'env', 'bin'), { recursive: true });
+    await fs.mkdir(outside);
+    await fs.writeFile(path.join(root, 'python', 'bin', 'python3.11'), 'interpreter');
+    await fs.writeFile(path.join(outside, 'python'), 'foreign');
+    const link = async (name, target) => { const at = path.join(root, 'env', 'bin', name); await fs.symlink(target, at); return at; };
+    const inside = await link('python', path.join(root, 'python', 'bin', 'python3.11'));
+    const escaping = await link('escape', path.join(outside, 'python'));
+    const directory = await link('dir', path.join(root, 'python', 'bin'));
+    const dangling = await link('dangling', path.join(root, 'missing'));
+    const regular = path.join(root, 'python', 'bin', 'python3.11');
+    assert.equal(await isContainedFileLink(fs, path, inside, root), true);
+    assert.equal(await isContainedFileLink(fs, path, regular, root), false, 'regular files are handled by the strict file check');
+    assert.equal(await isContainedFileLink(fs, path, escaping, root), false);
+    assert.equal(await isContainedFileLink(fs, path, directory, root), false);
+    assert.equal(await isContainedFileLink(fs, path, dangling, root), false);
+    assert.equal(await isContainedFileLink({ lstat: fs.lstat, stat: fs.stat }, path, inside, root), false);
+  } finally {
+    await fs.rm(base, { recursive: true, force: true });
+  }
 });

@@ -660,6 +660,21 @@ function defaultProcessRunner(executable, args, options = {}) {
   });
 }
 
+// uv links bin/python to the managed interpreter on macOS and Linux. Accept that link only when
+// it resolves to a regular file inside the extension's runtime storage.
+async function isContainedFileLink(fileSystem, pathApi, filePath, root) {
+  if (typeof fileSystem.realpath !== 'function' || typeof fileSystem.lstat !== 'function') return false;
+  try {
+    if (!(await fileSystem.lstat(filePath)).isSymbolicLink?.()) return false;
+    const [target, realRoot] = await Promise.all([fileSystem.realpath(filePath), fileSystem.realpath(root)]);
+    const relative = pathApi.relative(realRoot, target);
+    if (!relative || relative.startsWith('..') || pathApi.isAbsolute(relative)) return false;
+    return (await fileSystem.stat(target)).isFile();
+  } catch {
+    return false;
+  }
+}
+
 function createRuntimeManager({
   storageRoot,
   bundledRuntimeRoot,
@@ -725,6 +740,11 @@ function createRuntimeManager({
     }
   }
 
+  async function pythonExecutableExists(paths) {
+    return await exists(paths.pythonExecutable, 'file') ||
+      await isContainedFileLink(fileSystem, pathApi, paths.pythonExecutable, paths.root);
+  }
+
   async function readReadyRuntime() {
     let paths;
     try {
@@ -742,7 +762,7 @@ function createRuntimeManager({
         marker.uvSha256 !== uvTarget.sha256 || marker.pythonVersion !== runtime.pythonVersion ||
         marker.target !== uvTarget.key ||
         !await exists(paths.runtimeRoot, 'directory') || !await exists(paths.uvPath, 'file') ||
-        !await exists(paths.pythonExecutable, 'file') ||
+        !await pythonExecutableExists(paths) ||
         !await exists(pathApi.join(paths.runtimeRoot, 'pyproject.toml'), 'file') ||
         !await exists(pathApi.join(paths.runtimeRoot, 'uv.lock'), 'file') ||
         !await exists(pathApi.join(paths.runtimeRoot, 'src', 'Kafe.py'), 'file')) {
@@ -901,7 +921,7 @@ function createRuntimeManager({
   }
 
   async function checkManagedPython(paths, signal) {
-    if (!await exists(paths.pythonExecutable, 'file')) {
+    if (!await pythonExecutableExists(paths)) {
       throw new Error(`Managed Python ${manifest.runtime.pythonVersion} was not created.`);
     }
     const result = await processRunner(paths.pythonExecutable, ['--version'], {
@@ -950,7 +970,7 @@ function createRuntimeManager({
     }
     const cached = await readReadyRuntime();
     if (cached.status === 'ready') return cached;
-    if (!manager.bundledRuntimeRoot && !manifest.runtime.releasePublished) {
+    if (!isInstallAvailable()) {
       return {
         status: 'unavailable',
         message: `KAFE runtime ${manifest.runtime.version} is not published yet. Setup will be available after the pinned GitHub release is published.`,
@@ -1055,6 +1075,12 @@ function createRuntimeManager({
     }
   }
 
+  // Setup can run from the archive shipped inside the VSIX even before the GitHub release exists.
+  function isInstallAvailable() {
+    return Boolean(manager.bundledRuntimeRoot) || manifest.runtime.releasePublished === true;
+  }
+
+  manager.isInstallAvailable = isInstallAvailable;
   manager.getReadyRuntime = readReadyRuntime;
   manager.getReadyKnowledgePack = readReadyKnowledgePack;
   manager.resolveWorkspace = resolveWorkspace;
@@ -1109,6 +1135,7 @@ function runtimeSetupUserMessage(error) {
 }
 
 module.exports = {
+  isContainedFileLink,
   createRuntimeManager,
   downloadPinnedAsset,
   extractPinnedArchive,

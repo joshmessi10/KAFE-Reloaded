@@ -2105,3 +2105,16 @@ test('source revision trust sampling independently fences an outstanding runtime
     assert.notEqual(f.host.tutorView.hostMetadata.runtime, 'ready');
   } finally { result.resolve({ status: 'ready' }); f.host.dispose(); }
 });
+
+for (const origin of ['activation', 'manual', 'retry']) test(`${origin} setup installs a bundled runtime even when the release is unpublished`, async () => {
+  const f = runtimeSetupFixture();
+  try {
+    await f.host.readiness;
+    f.host.actions.runtimeManager.manifest.runtime.releasePublished = false;
+    f.host.actions.runtimeManager.isInstallAvailable = () => true;
+    const result = await f.host.prepareRuntime({ origin });
+    assert.equal(result.status, 'ready');
+    assert.equal(f.installs(), 1);
+    assert.equal(f.host.tutorView.hostMetadata.runtime, 'ready');
+  } finally { f.host.dispose(); }
+});
