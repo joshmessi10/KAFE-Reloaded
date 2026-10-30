@@ -1,6 +1,6 @@
 # KAFE Neural Development Suite
 
-Extension **2.4.0** provides KAFE highlighting, snippets, saved conversations and a unified Tutor in VS Code 1.96.0 or later. Runtime **0.5.0** installs a light private CPython 3.11.15 core; Hugging Face and Kaggle are optional packs installed on request, with persistent package/dataset caches. Reviewed MACHINE/GESHA guidance is bundled before runtime installation.
+Extension **2.4.1** provides KAFE highlighting, snippets, saved conversations and a unified Tutor in VS Code 1.96.0 or later. Runtime **0.5.0** installs a light private CPython 3.11.15 core; Hugging Face and Kaggle are optional packs installed on request, with persistent package/dataset caches. Reviewed MACHINE/GESHA guidance is bundled before runtime installation.
 
 ## Start chatting
 
@@ -24,7 +24,7 @@ See [reliability, budgets and contributor checks](https://github.com/joshmessi10
 
 ## Conversation
 
-**KAFE: Run File** opens and focuses the integrated **KAFE Run** terminal. Python output is unbuffered so messages appear during execution. Completed runs and launch errors remain visible until you close the terminal. Closing a terminal while its program is running cancels that run. Execution output stays outside the Tutor conversation. This behavior remains available in extension 2.4.0.
+**KAFE: Run File** opens and focuses the integrated **KAFE Run** terminal. Python output is unbuffered so messages appear during execution. Completed runs and launch errors remain visible until you close the terminal. Closing a terminal while its program is running cancels that run. Execution output stays outside the Tutor conversation. This behavior remains available in extension 2.4.1.
 
 Type a message and press **Send** or Enter once. Shift+Enter inserts a newline. One answer streams in place. **Stop** replaces Send during a response while the next draft stays editable. **Retry** uses the original question and current authorized context, preserves the next draft and does not duplicate the learner message. Key configuration never sends automatically.
 

@@ -1,6 +1,6 @@
 # VS Code extension and AI Tutor
 
-Extension **2.4.0** provides KAFE highlighting, snippets, saved conversations and a unified Tutor in VS Code 1.96.0 or later. Runtime **0.5.0** uses a private, pinned CPython 3.11.15 environment that installs only the KAFE core; Hugging Face and Kaggle are optional packs installed on request. Package and dataset caches are reused across repairs. Reviewed MACHINE/GESHA guidance is bundled before runtime installation.
+Extension **2.4.1** provides KAFE highlighting, snippets, saved conversations and a unified Tutor in VS Code 1.96.0 or later. Runtime **0.5.0** uses a private, pinned CPython 3.11.15 environment that installs only the KAFE core; Hugging Face and Kaggle are optional packs installed on request. Package and dataset caches are reused across repairs. Reviewed MACHINE/GESHA guidance is bundled before runtime installation.
 
 ## Start chatting
 

@@ -18,7 +18,7 @@
       "win32-x64": {
         "asset": "uv-x86_64-pc-windows-msvc.zip",
         "format": "zip",
-        "executable": "uv-x86_64-pc-windows-msvc/uv.exe",
+        "executable": "uv.exe",
         "url": "https://releases.astral.sh/github/uv/releases/download/0.11.3/uv-x86_64-pc-windows-msvc.zip",
         "checksumUrl": "https://releases.astral.sh/github/uv/releases/download/0.11.3/uv-x86_64-pc-windows-msvc.zip.sha256",
         "sha256": "ae681c0aaec7cc96af184648cb88d73f8393ed60fa5880abdd6bdb910f9b227c"

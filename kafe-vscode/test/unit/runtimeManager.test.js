@@ -206,7 +206,8 @@ class MemoryFileSystem {
 function digest(buffer) { return createHash('sha256').update(buffer).digest('hex'); }
 
 function makeFixture({ runtimeBytes = makeZip(runtimeEntries), uvBytes = makeZip({
-  'uv-x86_64-pc-windows-msvc/uv.exe': 'uv 0.11.3 test binary',
+  // Real uv Windows zips are flat: uv.exe, uvw.exe and uvx.exe at the archive root.
+  'uv.exe': 'uv 0.11.3 test binary',
 }), published = true, runtimeOverrides = {}, transport = undefined, processRunner = undefined, confirmDownload = undefined } = {}) {
   const manifest = structuredClone(manifestTemplate);
   manifest.runtime.releasePublished = published;
@@ -981,4 +982,14 @@ test('cancelled data pack reports cancellation', async () => {
   const result = await fixture.manager.installPack('huggingface', { signal: controller.signal });
   assert.equal(result.status, 'cancelled');
   assert.equal((await fixture.manager.getReadyRuntime()).status, 'ready');
+});
+
+test('pinned uv executables match the published archive layouts', () => {
+  // uv 0.11.3 ships Windows as a flat zip and Unix targets inside a named directory.
+  assert.deepEqual(Object.fromEntries(Object.entries(manifestTemplate.uv.targets).map(([key, value]) => [key, value.executable])), {
+    'win32-x64': 'uv.exe',
+    'darwin-x64': 'uv-x86_64-apple-darwin/uv',
+    'darwin-arm64': 'uv-aarch64-apple-darwin/uv',
+    'linux-x64': 'uv-x86_64-unknown-linux-gnu/uv',
+  });
 });
