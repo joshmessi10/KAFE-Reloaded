@@ -278,7 +278,8 @@ function createTutorHost({ vscode, extensionUri, secrets, workspaceState, runtim
     };
     const stages = { checking: 'Checking runtime setup…', confirming: 'Preparing runtime setup…',
       downloading: 'Downloading runtime and uv…', validating: 'Validating runtime components…',
-      extracting: 'Extracting runtime components…', syncing: 'Configuring runtime dependencies…', ready: 'Runtime setup ready.' };
+      extracting: 'Extracting runtime components…', syncing: 'Configuring runtime dependencies…',
+      verifying: 'Verifying KAFE and private Python…', ready: 'Runtime setup ready.' };
     let skipped = false;
     const work = async () => {
       if (!vscode.workspace.isTrusted) return { status: 'blocked', message: messages.blocked };
@@ -318,12 +319,13 @@ function createTutorHost({ vscode, extensionUri, secrets, workspaceState, runtim
           key === 'missing' ? 'Configure Tutor to chat. Your draft stays here.' : 'Tutor configuration has not been confirmed. Your draft stays here.';
         const show = result.status === 'error' ? 'showErrorMessage' : result.status === 'unsupported' ? 'showWarningMessage' : 'showInformationMessage';
         const choices = ['error', 'unavailable', 'cancelled'].includes(result.status) ? ['Retry setup', 'Details'] : result.status === 'unsupported' ? ['Details'] : [];
+        const reason = result.status === 'error' && typeof result.userMessage === 'string' ? ` ${result.userMessage}` : '';
         try {
-          void Promise.resolve(vscode.window[show]?.(`${messages[result.status]} ${chat}`, ...choices)).then(choice => {
+          void Promise.resolve(vscode.window[show]?.(`${messages[result.status]}${reason} ${chat}`, ...choices)).then(choice => {
             if (!current()) return;
             if (choice === 'Retry setup') void prepareRuntime({ origin: 'retry' });
             if (choice === 'Details') void Promise.resolve(vscode.window.showInformationMessage?.(messages[result.status],
-              { modal: true, detail: 'Runtime preparation installs the pinned KAFE runtime for explicit Run. It does not send your draft or run a learner program. Use KAFE: Install Runtime to try again.' })).catch(() => {});
+              { modal: true, detail: `${reason.trim() || 'No additional setup category was available.'}\n\nRuntime preparation installs the pinned KAFE runtime for explicit Run. It does not send your draft or run a learner program. Use KAFE: Install Runtime to try again.` })).catch(() => {});
           }).catch(() => {});
         } catch { /* Native notification availability cannot change the setup outcome. */ }
       }

@@ -1,6 +1,6 @@
 # KAFE Neural Development Suite
 
-Extension **2.3.0** provides KAFE highlighting, snippets, saved conversations and a unified Tutor in VS Code 1.96.0 or later, over unchanged published runtime **0.3.0**. Reviewed MACHINE/GESHA guidance is bundled before runtime installation.
+Extension **2.3.1** provides KAFE highlighting, snippets, saved conversations and a unified Tutor in VS Code 1.96.0 or later. Runtime **0.4.0** uses a private CPython 3.11.15 environment, lazy Hugging Face loading and persistent package/dataset caches. Reviewed MACHINE/GESHA guidance is bundled before runtime installation.
 
 ## Start chatting
 
@@ -24,7 +24,7 @@ See [reliability, budgets and contributor checks](https://github.com/joshmessi10
 
 ## Conversation
 
-**KAFE: Run File** opens and focuses the integrated **KAFE Run** terminal. Python output is unbuffered so messages appear during execution. Completed runs and launch errors remain visible until you close the terminal. Closing a terminal while its program is running cancels that run. Execution output stays outside the Tutor conversation. This behavior is included in extension 2.3.0 and requires no runtime reinstall.
+**KAFE: Run File** opens and focuses the integrated **KAFE Run** terminal. Python output is unbuffered so messages appear during execution. Completed runs and launch errors remain visible until you close the terminal. Closing a terminal while its program is running cancels that run. Execution output stays outside the Tutor conversation. This behavior remains available in extension 2.3.1.
 
 Type a message and press **Send** or Enter once. Shift+Enter inserts a newline. One answer streams in place. **Stop** replaces Send during a response while the next draft stays editable. **Retry** uses the original question and current authorized context, preserves the next draft and does not duplicate the learner message. Key configuration never sends automatically.
 
@@ -84,9 +84,9 @@ A short context notice reports when the actual submitted request omits earlier d
 
 MACHINE/GESHA references ship with the extension. They cover the intended public functions, returned-object methods/properties, positional calls, English/Spanish terminology and known limits for the pinned interpreter. The Tutor selects relevant complete contracts, documentation and reviewed examples for each request; it does not send the entire library corpus. This guidance and bundled knowledge lookup work in message-only Restricted Mode and before executable runtime or managed knowledge setup. Unsupported or experimental paths remain labelled; reference coverage does not guarantee every model answer or proposed program is correct.
 
-The managed runtime remains pinned to **KAFE 0.3.0**, Python 3.11 or newer, and uv 0.11.3. In a trusted workspace the extension automatically prepares a missing published runtime on activation; **KAFE: Install Runtime** also prepares or repairs it. Setup downloads verified assets into VS Code's private global storage and installs locked dependencies there. It does not run a learner program. Ordinary configured-provider conversation and bundled references are available before setup; validated cached knowledge has independent availability.
+The managed runtime is pinned to **KAFE 0.4.0**, private CPython 3.11.15 and uv 0.11.3. In a trusted workspace the extension automatically prepares a missing published runtime on activation; **KAFE: Install Runtime** also prepares or repairs it. Setup downloads verified assets into VS Code's private global storage and installs locked dependencies there. Repairs retain the managed Python and package cache, while `HF_HOME` retains downloaded Hugging Face datasets. It does not run a learner program. Ordinary configured-provider conversation and bundled references are available before setup; validated cached knowledge has independent availability.
 
-The published runtime assets and their checksums are unchanged in 2.3.0. Current bundled MACHINE/GESHA contracts take precedence over the older managed pack's library narratives. Extended managed tutorial packaging is prepared for a future separately versioned release. Invalid or changed managed/development knowledge must never be represented as valid grounding.
+Runtime 0.4.0 loads Hugging Face only when a KAFE program requests it and pins `multiprocess` below 0.70.18 for compatibility with affected Windows Python builds. Current bundled MACHINE/GESHA contracts take precedence over older managed library narratives. Invalid or changed managed/development knowledge must never be represented as valid grounding.
 
 Contributor Run can use a prepared KAFE checkout and installed tools. An Extension Development Host can use an explicitly validated development knowledge pack. Production installations do not read a development checkout as a fallback. These development paths do not establish managed-release readiness. Supported managed targets are Windows x64, macOS x64/arm64 and Linux x64.
 

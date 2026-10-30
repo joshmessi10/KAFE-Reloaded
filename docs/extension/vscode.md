@@ -1,6 +1,6 @@
 # VS Code extension and AI Tutor
 
-Extension **2.3.0** provides KAFE highlighting, snippets, saved conversations and a unified Tutor in VS Code 1.96.0 or later, over unchanged published runtime **0.3.0**. Reviewed MACHINE/GESHA guidance is bundled before runtime installation.
+Extension **2.3.1** provides KAFE highlighting, snippets, saved conversations and a unified Tutor in VS Code 1.96.0 or later. Runtime **0.4.0** uses a private, pinned CPython 3.11.15 environment, loads Hugging Face only when requested and reuses its package and dataset caches across repairs. Reviewed MACHINE/GESHA guidance is bundled before runtime installation.
 
 ## Start chatting
 
@@ -84,7 +84,9 @@ A short notice reports omissions in the actual submitted request, with optional 
 
 ## Runtime and knowledge
 
-The managed runtime is checksum-pinned and installed with uv 0.11.3. It includes the locked `extension` dependency extra for Hugging Face datasets, Kaggle downloads, images and 7z archives. Ordinary conversation with a configured provider can proceed without an executable runtime or knowledge pack; requests disclose unavailable knowledge. Invalid or changed knowledge is never represented as valid grounding.
+The managed runtime is checksum-pinned and installed with uv 0.11.3. Setup downloads and verifies a private CPython 3.11.15, creates an isolated environment, and verifies that exact interpreter before marking the runtime ready. Repairs rebuild the environment while retaining the verified Python/package cache, and `HF_HOME` keeps downloaded Hugging Face data in KAFE's persistent data cache instead of downloading it again for each environment repair.
+
+The locked `extension` dependency extra includes Hugging Face datasets, Kaggle downloads, images and 7z archives. KafeHF imports `datasets` only when a program calls a Hugging Face function; ordinary KAFE programs do not initialize its multiprocessing machinery. `multiprocess` remains below 0.70.18 because newer releases call an unavailable private `RLock` method on affected Windows Python builds and print a shutdown traceback. Ordinary conversation with a configured provider can proceed without an executable runtime or knowledge pack; requests disclose unavailable knowledge. Invalid or changed knowledge is never represented as valid grounding.
 
 Contributor Run can use a prepared KAFE checkout and installed tools. An Extension Development Host can use an explicitly validated development knowledge pack. Production installations do not read a development checkout as a fallback. These development paths do not establish managed-release readiness. Supported managed targets are Windows x64, macOS x64/arm64 and Linux x64.
 

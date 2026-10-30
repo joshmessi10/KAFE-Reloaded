@@ -2,9 +2,9 @@
   "schemaVersion": 1,
   "description": "Generated offline retrieval checks and bilingual prompts/rubrics for later authorized real-provider evaluation. No model answers or provider scores are included. Never execute generated model output.",
   "generator": "kafe-vscode/scripts/build-library-evals.cjs",
-  "runtimeSourceRevision": "6ee33f742909f74a3d597379e713aedc3a5703b2",
-  "reviewedSourceFingerprint": "148ebb295fd60e5e209712aad0f4cdfa12064f0f76010366e1fbc3fccf55321c",
-  "contractFingerprint": "662bfe4f246dc26c6b7d5f7f7fdcf64a4230da88f3da35055ae0541656ceb565",
+  "runtimeSourceRevision": "d2f9d5f13cb0e12359f0863b8ecea4df5b3bfdc0",
+  "reviewedSourceFingerprint": "2ba454e1a597881c04b65c76b84509befc6e3fb0021e739669f3646e8336a304",
+  "contractFingerprint": "3b6fea0f338fabb670f46f574c439590197808afe761d1064669de7bc0dcb9e8",
   "evaluationStatus": {
     "offlineDataset": "generated",
     "deterministicChecks": "run separately",
@@ -6376,10 +6376,10 @@
           "gesha.l1_l2_regularizer(l1)",
           "gesha.l1_l2_regularizer(l1, l2)"
         ],
-        "returns": "Backend L1L2 object; not bindable as KAFE GESHA in runtime 0.3.0.",
+        "returns": "Backend L1L2 object; not bindable as KAFE GESHA in runtime 0.4.0.",
         "constraints": [
           "Import gesha; every call shown uses positional KAFE arguments, not Python keyword arguments.",
-          "Binding the result to GESHA raises KeyError for L1L2 in runtime 0.3.0.",
+          "Binding the result to GESHA raises KeyError for L1L2 in runtime 0.4.0.",
           "Use the string \"l1_l2\" as create_dense/create_conv2d kernel_regularizer for the implemented combined default penalty; do not promise a usable factory object."
         ],
         "related": [],
@@ -6417,10 +6417,10 @@
           "gesha.l1_l2_regularizer(l1)",
           "gesha.l1_l2_regularizer(l1, l2)"
         ],
-        "returns": "Backend L1L2 object; not bindable as KAFE GESHA in runtime 0.3.0.",
+        "returns": "Backend L1L2 object; not bindable as KAFE GESHA in runtime 0.4.0.",
         "constraints": [
           "Import gesha; every call shown uses positional KAFE arguments, not Python keyword arguments.",
-          "Binding the result to GESHA raises KeyError for L1L2 in runtime 0.3.0.",
+          "Binding the result to GESHA raises KeyError for L1L2 in runtime 0.4.0.",
           "Use the string \"l1_l2\" as create_dense/create_conv2d kernel_regularizer for the implemented combined default penalty; do not promise a usable factory object."
         ],
         "related": [],

@@ -1,10 +1,10 @@
 {
   "schemaVersion": 1,
   "referenceVersion": 1,
-  "runtimeVersion": "0.3.0",
-  "runtimeSourceRevision": "6ee33f742909f74a3d597379e713aedc3a5703b2",
-  "sourceFingerprint": "148ebb295fd60e5e209712aad0f4cdfa12064f0f76010366e1fbc3fccf55321c",
-  "runtimeSourceFingerprint": "148ebb295fd60e5e209712aad0f4cdfa12064f0f76010366e1fbc3fccf55321c",
+  "runtimeVersion": "0.4.0",
+  "runtimeSourceRevision": "d2f9d5f13cb0e12359f0863b8ecea4df5b3bfdc0",
+  "sourceFingerprint": "2ba454e1a597881c04b65c76b84509befc6e3fb0021e739669f3646e8336a304",
+  "runtimeSourceFingerprint": "2ba454e1a597881c04b65c76b84509befc6e3fb0021e739669f3646e8336a304",
   "fixtureFingerprint": "4c138ffdfebeab5431d525bdf997b538338d7b466f3b940b992aaa82d858324c",
   "essentials": "# KAFE essentials\n\nThis bundled reference describes KAFE's core syntax. Repository fixture expectations are examples, not observations of the learner's current code. Full library documentation and executable runtime availability are separate.\n\nKAFE source files use .kf. Display one expression with show(expression);. print is not a built-in output function. A learner may define a function named print, so do not blindly replace that name inside valid functions, comments, or strings. pour(prompt) writes a prompt, reads console input, and returns text; use show for ordinary output.\n\nDeclare variables with case-sensitive types: INT, FLOAT, STR, BOOL, VOID, List[INT], List[FLOAT], or nested List types. Function parameters use name: TYPE. Define a function with drip name(parameters) => RETURN_TYPE: followed by its body and a closing semicolon. Each statement ends with a semicolon. Each complete conditional chain, loop, and function needs a closing semicolon. Join elif and else branches before the conditional chain's final semicolon; do not put a standalone closing semicolon before elif or else.\n\nTop-level statements execute in source order. Declaring a function does not execute its body. There is no special automatic main entry point. If a complete example defines main and intends to run it, add the top-level call main();. A small example can instead use show(...) directly at top level; do not invent a main wrapper for every snippet. Label partial snippets and their required context honestly.\n\nComplete example:\n```kafe\ndrip add(a: INT, b: INT) => INT:\n    return a + b;\n;\nshow(add(2, 3));\n```\nExpected stdout: 5 followed by a newline.\n\nUse -- for a line comment, and -> ... <- for a block comment. Use plain ASCII source punctuation and spaces in copied code, not Markdown emphasis or escaped multiplication. Multiplication is *, division is /, exponentiation is ^. Boolean literals are True and False; equality is ==; logical operators are &&, || and !.\n\nImports use import libraryName; and library calls use libraryName.function(arguments). Library names and public APIs are case-sensitive. Use the current validated knowledge pack or an exact bundled fixture for library-specific names and arguments. Do not borrow Python, JavaScript, NumPy, pandas or scikit-learn APIs merely because KAFE is implemented in Python or uses similar concepts. If an API or capability is not supported by available references, explain the uncertainty and request the matching documentation instead of inventing runnable code.\n\nBefore offering KAFE code, check the output function, declared names, types, block/statement terminators, and intended invocation against the supplied references. Distinguish syntax evidence, expected fixture behavior, and actual execution results. A syntactically valid program can still be incorrect or do nothing. A matching test does not prove a newly generated program correct. Never claim a proposed program ran, passed tests, was applied, or is correct without matching host evidence. Some KAFE runtime errors currently use exit code zero, so expected output and diagnostics matter too.\n",
   "fixtures": [
@@ -2132,5 +2132,5 @@
     "tests/loops/while_nested_loops.kf",
     "tests/loops/while_with_break_continue.kf"
   ],
-  "contentSha256": "30ce12f07297b8c652a9620c01958a9bfcd5df0d9c7c10fff2d306378649f5d0"
+  "contentSha256": "a28ee6f1e82c98955690679050be50c8c20f4a7e70adb7ca73c37047f95f4c6e"
 }

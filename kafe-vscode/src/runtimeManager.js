@@ -73,9 +73,10 @@ function expectedUrl(value, host, pathname) {
 function validatePinnedManifest(manifest) {
   const runtime = manifest.runtime;
   const uv = manifest.uv;
-  if (!runtime || !uv || runtime.version !== '0.3.0' || runtime.knowledgePackVersion !== '0.3.0' ||
-    runtime.pythonRequirement !== '>=3.11' || runtime.antlrRuntimeVersion !== '4.13.2' ||
-    runtime.sourceRevision !== '6ee33f742909f74a3d597379e713aedc3a5703b2' ||
+  if (!runtime || !uv || runtime.version !== '0.4.0' || runtime.knowledgePackVersion !== '0.4.0' ||
+    runtime.pythonRequirement !== '>=3.11' || runtime.pythonVersion !== '3.11.15' ||
+    runtime.antlrRuntimeVersion !== '4.13.2' ||
+    runtime.sourceRevision !== 'd2f9d5f13cb0e12359f0863b8ecea4df5b3bfdc0' ||
     !/^[a-f0-9]{64}$/.test(runtime.archiveSha256) || uv.version !== '0.11.3') {
     throw new Error('KAFE runtime manifest does not match the pinned runtime versions.');
   }
@@ -682,8 +683,11 @@ function createRuntimeManager({
     const runtimeRoot = pathApi.join(root, `runtime-${manager.manifest.runtime.version}`);
     const stagingRoot = pathApi.join(root, `runtime-${manager.manifest.runtime.version}.staging`);
     const artifactRoot = pathApi.join(root, 'artifacts', manager.manifest.runtime.version);
-    const pythonInstallDir = pathApi.join(root, 'python', manager.manifest.uv.version, target.key);
+    const pythonInstallDir = pathApi.join(root, 'python', manager.manifest.runtime.pythonVersion, target.key);
+    const pythonEnvironment = pathApi.join(root, 'environments', manager.manifest.runtime.version,
+      manager.manifest.runtime.pythonVersion, target.key);
     const uvCacheDir = pathApi.join(root, 'uv-cache', manager.manifest.uv.version, target.key);
+    const huggingFaceCacheDir = pathApi.join(root, 'data-cache', 'huggingface');
     return {
       root,
       target,
@@ -699,8 +703,11 @@ function createRuntimeManager({
       readyFile: pathApi.join(runtimeRoot, '.kafe-ready.json'),
       stagingReadyFile: pathApi.join(stagingRoot, '.kafe-ready.json'),
       pythonInstallDir,
-      pythonEnvironment: pathApi.join(pythonInstallDir, 'environment'),
+      pythonEnvironment,
+      pythonExecutable: pathApi.join(pythonEnvironment, ...(manager.platform === 'win32'
+        ? ['Scripts', 'python.exe'] : ['bin', 'python'])),
       uvCacheDir,
+      huggingFaceCacheDir,
     };
   }
   Object.defineProperty(manager, 'paths', { get: getPaths });
@@ -731,8 +738,10 @@ function createRuntimeManager({
       const uvTarget = paths.target;
       if (marker.runtimeVersion !== runtime.version || marker.knowledgePackVersion !== runtime.knowledgePackVersion ||
         marker.runtimeArchiveSha256 !== runtime.archiveSha256 || marker.uvVersion !== manifest.uv.version ||
-        marker.uvSha256 !== uvTarget.sha256 || marker.target !== uvTarget.key ||
+        marker.uvSha256 !== uvTarget.sha256 || marker.pythonVersion !== runtime.pythonVersion ||
+        marker.target !== uvTarget.key ||
         !await exists(paths.runtimeRoot, 'directory') || !await exists(paths.uvPath, 'file') ||
+        !await exists(paths.pythonExecutable, 'file') ||
         !await exists(pathApi.join(paths.runtimeRoot, 'pyproject.toml'), 'file') ||
         !await exists(pathApi.join(paths.runtimeRoot, 'uv.lock'), 'file') ||
         !await exists(pathApi.join(paths.runtimeRoot, 'src', 'Kafe.py'), 'file')) {
@@ -823,10 +832,15 @@ function createRuntimeManager({
         UV_PROJECT_ENVIRONMENT: paths.pythonEnvironment,
         UV_PYTHON_INSTALL_DIR: paths.pythonInstallDir,
         UV_CACHE_DIR: paths.uvCacheDir,
+        UV_PYTHON: manifest.runtime.pythonVersion,
+        UV_MANAGED_PYTHON: '1',
+        HF_HOME: paths.huggingFaceCacheDir,
       },
       pythonEnvironment: paths.pythonEnvironment,
       pythonInstallDir: paths.pythonInstallDir,
+      pythonVersion: manifest.runtime.pythonVersion,
       uvCacheDir: paths.uvCacheDir,
+      huggingFaceCacheDir: paths.huggingFaceCacheDir,
       runtimeVersion: manifest.runtime.version,
       knowledgePackVersion: manifest.runtime.knowledgePackVersion,
       target: paths.target.key,
@@ -885,18 +899,39 @@ function createRuntimeManager({
     }
   }
 
+  async function checkManagedPython(paths, signal) {
+    if (!await exists(paths.pythonExecutable, 'file')) {
+      throw new Error(`Managed Python ${manifest.runtime.pythonVersion} was not created.`);
+    }
+    const result = await processRunner(paths.pythonExecutable, ['--version'], {
+      cwd: paths.stagingRoot,
+      env: makeUvEnvironment(paths),
+      shell: false,
+      signal,
+    });
+    const versionOutput = [result.stdout, result.stderr].filter(Boolean).join('\n').trim();
+    if (result.exitCode !== 0 || versionOutput !== `Python ${manifest.runtime.pythonVersion}`) {
+      throw new Error(`Managed Python verification failed; expected Python ${manifest.runtime.pythonVersion}.`);
+    }
+  }
+
   function makeUvEnvironment(paths) {
-    return {
+    const environment = {
       ...process.env,
       UV_PROJECT_ENVIRONMENT: paths.pythonEnvironment,
       UV_PYTHON_INSTALL_DIR: paths.pythonInstallDir,
       UV_CACHE_DIR: paths.uvCacheDir,
+      UV_PYTHON: manifest.runtime.pythonVersion,
+      UV_MANAGED_PYTHON: '1',
+      HF_HOME: paths.huggingFaceCacheDir,
     };
+    delete environment.UV_NO_MANAGED_PYTHON;
+    return environment;
   }
 
   async function cleanup(paths, { preserveReady = false } = {}) {
     const candidates = [paths.stagingRoot, paths.uvStageRoot, paths.runtimeArchive, paths.runtimeManifest,
-      paths.uvArchive, paths.uvRoot, paths.pythonInstallDir, paths.uvCacheDir];
+      paths.uvArchive, paths.uvRoot, paths.pythonEnvironment];
     if (!preserveReady) candidates.push(paths.runtimeRoot);
     for (const candidate of candidates) {
       try { await fileSystem.rm(candidate, { recursive: true, force: true }); } catch { /* best-effort cleanup */ }
@@ -939,6 +974,7 @@ function createRuntimeManager({
       await fileSystem.mkdir(pathApi.dirname(paths.uvArchive), { recursive: true });
       await fileSystem.mkdir(paths.pythonInstallDir, { recursive: true });
       await fileSystem.mkdir(paths.uvCacheDir, { recursive: true });
+      await fileSystem.mkdir(paths.huggingFaceCacheDir, { recursive: true });
 
       progress('downloading');
       const manifestDownload = await downloadPinnedAsset(manifest.runtime.manifestUrl, { transport: manager.transport, signal, maxBytes: 64 * 1024 });
@@ -971,7 +1007,8 @@ function createRuntimeManager({
       await fileSystem.rename(paths.uvStageRoot, paths.uvRoot);
 
       progress('syncing');
-      const sync = await processRunner(paths.uvPath, ['sync', '--locked', '--no-dev', '--extra', 'extension', '--project', paths.stagingRoot], {
+      const sync = await processRunner(paths.uvPath, ['sync', '--locked', '--no-dev', '--extra', 'extension',
+        '--python', manifest.runtime.pythonVersion, '--managed-python', '--project', paths.stagingRoot], {
         cwd: paths.stagingRoot,
         env: makeUvEnvironment(paths),
         shell: false,
@@ -982,12 +1019,15 @@ function createRuntimeManager({
         const detail = [sync.stderr, sync.stdout].filter(Boolean).join('\n').trim();
         throw new Error(`uv sync --locked --no-dev --extra extension failed${detail ? `: ${detail}` : '.'}`);
       }
+      progress('verifying');
+      await checkManagedPython(paths, signal);
       const marker = {
         runtimeVersion: manifest.runtime.version,
         knowledgePackVersion: manifest.runtime.knowledgePackVersion,
         runtimeArchiveSha256: manifest.runtime.archiveSha256,
         uvVersion: manifest.uv.version,
         uvSha256: uvTarget.sha256,
+        pythonVersion: manifest.runtime.pythonVersion,
         target: uvTarget.key,
       };
       await fileSystem.writeFile(paths.stagingReadyFile, JSON.stringify(marker));
@@ -1000,7 +1040,8 @@ function createRuntimeManager({
     } catch (error) {
       await cleanup(paths);
       const status = signal?.aborted || error.name === 'AbortError' ? 'cancelled' : 'error';
-      return { status, message: error.message };
+      return { status, message: error.message,
+        ...(status === 'error' ? { userMessage: runtimeSetupUserMessage(error) } : {}) };
     }
   }
 
@@ -1031,6 +1072,32 @@ function escapeRegExp(value) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
+function runtimeSetupUserMessage(error) {
+  const message = String(error?.message ?? error).toLowerCase();
+  if (/enospc|disk full|no space left/.test(message)) {
+    return 'KAFE could not finish because the computer has insufficient free disk space.';
+  }
+  if (/eacces|eperm|access is denied|permission denied|operation not permitted/.test(message)) {
+    return 'KAFE could not write its private runtime files. Check folder permissions or security software, then retry.';
+  }
+  if (/certificate|self signed|tls|ssl/.test(message)) {
+    return 'KAFE could not establish a trusted HTTPS connection. The computer or institutional network may require its certificate configuration.';
+  }
+  if (/dns|enotfound|getaddrinfo|timed out|timeout|connection|failed to fetch|network/.test(message)) {
+    return 'KAFE could not download a required file. Check the network connection or institutional firewall, then retry.';
+  }
+  if (/managed python|python.*verification|no interpreter/.test(message)) {
+    return 'KAFE could not prepare or verify its private Python 3.11.15 installation.';
+  }
+  if (/uv sync|dependency|resolution|failed to build/.test(message)) {
+    return 'KAFE downloaded its runtime, but dependency installation failed.';
+  }
+  if (/sha-256|integrity|archive/.test(message)) {
+    return 'A downloaded KAFE runtime file failed its integrity check. Retry to download a clean copy.';
+  }
+  return 'KAFE runtime preparation failed before the installation could be verified.';
+}
+
 module.exports = {
   createRuntimeManager,
   downloadPinnedAsset,
@@ -1040,4 +1107,5 @@ module.exports = {
   validateAssetUrl,
   validateMemberSet,
   validateRuntimeSidecar,
+  runtimeSetupUserMessage,
 };

@@ -47,7 +47,7 @@ test('immediate shipped library context has honest provenance without runtime, m
   assert.ok(contract);
   assert.equal(contract.category, 'library-reference');
   assert.equal(contract.provenance.origin, 'bundled-library-reference');
-  assert.equal(contract.provenance.runtimeVersion, '0.3.0');
+  assert.equal(contract.provenance.runtimeVersion, '0.4.0');
   assert.equal(contract.uri, null);
   assert.deepEqual(result.dependencies, { fileUris: [], knowledgeLineage: null });
   assert.deepEqual(boundary.calls, { files: 0, knowledge: 0, lineage: 0 });

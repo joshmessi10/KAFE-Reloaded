@@ -2,7 +2,7 @@
 
 [Return to Index](../machine.md)
 
-This reference describes the public positional DSL implemented by runtime 0.3.0. The extension bundles version-matched contracts for all 42 MACHINE wrappers/factories, 16 metrics, implemented receiver methods and public state. The curated source is `kafe-vscode/reference/machine-api.json`. Examples and expected errors describe repository evidence, not execution of the learner's program.
+This reference describes the public positional DSL implemented by runtime 0.4.0. The extension bundles version-matched contracts for all 42 MACHINE wrappers/factories, 16 metrics, implemented receiver methods and public state. The curated source is `kafe-vscode/reference/machine-api.json`. Examples and expected errors describe repository evidence, not execution of the learner's program.
 
 The reviewed inventory defines documented support. Runtime library dispatch uses backend attribute lookup; the inventory is not a runtime allowlist. An incidental backend name does not establish a supported KAFE API.
 

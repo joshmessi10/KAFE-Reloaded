@@ -17,7 +17,7 @@ The Tutor's reviewed GESHA contracts distinguish intended KAFE calls from Python
 
 A supported contract describes an available intended KAFE operation with reviewed usage evidence. Limited contracts identify restrictions such as prediction rank, Python-only training-history values or incomplete weight serialization. Functional graph construction remains experimental beyond its reviewed single-input branch-and-merge example. Compatibility aliases remain usable while canonical names are preferred. Unsupported contracts explain real backend boundaries rather than encourage invented KAFE APIs.
 
-The L1L2 factory is a known unavailable GESHA binding in runtime 0.3.0, even though its Python penalty implementation exists. Direct mixed INT/FLOAT ReLU outputs, raw parameter handles and `len(List[GESHA])` have additional DSL restrictions. The individual topic pages give supported alternatives and negative-case evidence.
+The L1L2 factory is a known unavailable GESHA binding in runtime 0.4.0, even though its Python penalty implementation exists. Direct mixed INT/FLOAT ReLU outputs, raw parameter handles and `len(List[GESHA])` have additional DSL restrictions. The individual topic pages give supported alternatives and negative-case evidence.
 
 ## Bounded runnable evidence
 

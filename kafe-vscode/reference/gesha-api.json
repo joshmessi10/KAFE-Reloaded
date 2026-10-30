@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
   "library": "gesha",
-  "reviewedSourceFingerprint": "148ebb295fd60e5e209712aad0f4cdfa12064f0f76010366e1fbc3fccf55321c",
-  "runtimeSourceRevision": "6ee33f742909f74a3d597379e713aedc3a5703b2",
+  "reviewedSourceFingerprint": "2ba454e1a597881c04b65c76b84509befc6e3fb0021e739669f3646e8336a304",
+  "runtimeSourceRevision": "d2f9d5f13cb0e12359f0863b8ecea4df5b3bfdc0",
   "entries": [
     {
       "id": "gesha.create_dense",
@@ -522,10 +522,10 @@
         "l1: FLOAT or INT; omitted default 0.01.",
         "l2: FLOAT or INT; omitted default 0.01."
       ],
-      "returns": "Backend L1L2 object; not bindable as KAFE GESHA in runtime 0.3.0.",
+      "returns": "Backend L1L2 object; not bindable as KAFE GESHA in runtime 0.4.0.",
       "constraints": [
         "Import gesha; every call shown uses positional KAFE arguments, not Python keyword arguments.",
-        "Binding the result to GESHA raises KeyError for L1L2 in runtime 0.3.0.",
+        "Binding the result to GESHA raises KeyError for L1L2 in runtime 0.4.0.",
         "Use the string \"l1_l2\" as create_dense/create_conv2d kernel_regularizer for the implemented combined default penalty; do not promise a usable factory object."
       ],
       "aliases": [
@@ -3804,7 +3804,7 @@
         "regularizer.penalty(weights)",
         "regularizer.gradient(weights)"
       ],
-      "summary": "Combined-regularizer Python methods exist, but its factory result is not registered as GESHA in runtime 0.3.0.",
+      "summary": "Combined-regularizer Python methods exist, but its factory result is not registered as GESHA in runtime 0.4.0.",
       "parameters": [],
       "returns": "Python numeric penalty/gradient; direct KAFE object binding is unavailable.",
       "constraints": [],

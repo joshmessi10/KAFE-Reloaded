@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "runtimeSourceRevision": "6ee33f742909f74a3d597379e713aedc3a5703b2",
-  "reviewedSourceFingerprint": "148ebb295fd60e5e209712aad0f4cdfa12064f0f76010366e1fbc3fccf55321c",
+  "runtimeSourceRevision": "d2f9d5f13cb0e12359f0863b8ecea4df5b3bfdc0",
+  "reviewedSourceFingerprint": "2ba454e1a597881c04b65c76b84509befc6e3fb0021e739669f3646e8336a304",
   "description": "Reviewed intended receiver/member policy, independent of contract records. Public methods are derived from the named pinned-source classes; properties and special indexing members are explicitly admitted. Backend-only hooks remain documented as unsupported rather than silently omitted.",
   "receivers": {
     "machine": [

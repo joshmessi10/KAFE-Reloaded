@@ -28,7 +28,7 @@ Initializers are passed to layer factories through the `kernel_initializer` argu
 |---------|-------|-------------|
 | `gesha.l1_regularizer` | `(value) -> regularizer` | L1 penalty |
 | `gesha.l2_regularizer` | `(value) -> regularizer` | L2 penalty |
-| `gesha.l1_l2_regularizer` | `(l1, l2) -> backend object` | **Unavailable as a GESHA value in runtime 0.3.0**; see the limitation below |
+| `gesha.l1_l2_regularizer` | `(l1, l2) -> backend object` | **Unavailable as a GESHA value in runtime 0.4.0**; see the limitation below |
 
 Regularizers are passed to layer factories through the final positional `kernel_regularizer` argument. `create_dense` also exposes a scalar per-layer `regularization_lambda` in its fourth position. `create_conv2d` does **not** expose that scalar: its fourth position is `input_shape`. Use its final regularizer object/string position, or the separate seventh `model.fit` argument for the training loop's scalar L2 contribution.
 

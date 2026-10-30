@@ -98,6 +98,20 @@ test('safe Details and old outcome choices cannot install after a newer setup or
   } finally { choice.resolve(); f.host.dispose(); }
 });
 
+test('runtime setup presents a classified safe failure reason in the notification and Details', async () => {
+  const f = runtimeSetupFixture({ outcome: { status: 'error', message: 'PRIVATE_PATH token SECRET',
+    userMessage: 'KAFE could not download a required file. Check the network connection or institutional firewall, then retry.' } });
+  f.vscode.window.showErrorMessage = async (...args) => { f.notifications.push({ method: 'showErrorMessage', args }); return 'Details'; };
+  try {
+    await f.host.readiness;
+    await f.host.prepareRuntime({ origin: 'manual' });
+    await new Promise(resolve => setImmediate(resolve));
+    const rendered = JSON.stringify(f.notifications);
+    assert.match(rendered, /institutional firewall/);
+    assert.doesNotMatch(rendered, /PRIVATE_PATH|SECRET/);
+  } finally { f.host.dispose(); }
+});
+
 test('late setup result after trust loss and regrant cannot publish ready or install again', async () => {
   const completion = deferred(), f = runtimeSetupFixture({ outcome: () => completion.promise, key: 'configured' });
   try {

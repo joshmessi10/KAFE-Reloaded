@@ -5,7 +5,7 @@ const path = require('node:path');
 const test = require('node:test');
 
 const manifestTemplate = require('../../src/runtimeManifest.json');
-const { createRuntimeManager, getRuntimeTarget, validateAssetUrl } = require('../../src/runtimeManager');
+const { createRuntimeManager, getRuntimeTarget, runtimeSetupUserMessage, validateAssetUrl } = require('../../src/runtimeManager');
 
 const STORAGE = 'C:/extension-storage';
 const runtimeEntries = {
@@ -233,7 +233,19 @@ function makeFixture({ runtimeBytes = makeZip(runtimeEntries), uvBytes = makeZip
   });
   const run = processRunner ?? (async (executable, args, options) => {
     processCalls.push({ executable, args, options });
+    if (['python', 'python.exe'].includes(path.basename(executable).toLowerCase()) && args[0] === '--version') {
+      return { exitCode: 0, stdout: `Python ${manifest.runtime.pythonVersion}\n`, stderr: '' };
+    }
     if (args[0] === '--version') return { exitCode: 0, stdout: 'uv 0.11.3\n', stderr: '' };
+    if (args[0] === 'sync') {
+      for (const executablePath of [
+        path.join(options.env.UV_PROJECT_ENVIRONMENT, 'Scripts', 'python.exe'),
+        path.join(options.env.UV_PROJECT_ENVIRONMENT, 'bin', 'python'),
+      ]) {
+        await fs.mkdir(path.dirname(executablePath), { recursive: true });
+        await fs.writeFile(executablePath, 'managed python');
+      }
+    }
     return { exitCode: 0, stdout: '', stderr: '' };
   });
   const manager = createRuntimeManager({
@@ -310,9 +322,10 @@ test('maps only the four pinned uv platforms and rejects unsupported targets', (
 });
 
 test('runtime manifest pins the published KAFE assets and official uv 0.11.3 checksums', () => {
-  assert.equal(manifestTemplate.runtime.releasePublished, true);
-  assert.equal(manifestTemplate.runtime.archiveUrl, 'https://github.com/joshmessi10/KAFE-Reloaded/releases/download/kafe-runtime-v0.3.0/kafe-runtime-0.3.0.zip');
-  assert.equal(manifestTemplate.runtime.manifestUrl, 'https://github.com/joshmessi10/KAFE-Reloaded/releases/download/kafe-runtime-v0.3.0/kafe-runtime-0.3.0.manifest.json');
+  assert.equal(manifestTemplate.runtime.releasePublished, false);
+  assert.equal(manifestTemplate.runtime.pythonVersion, '3.11.15');
+  assert.equal(manifestTemplate.runtime.archiveUrl, 'https://github.com/joshmessi10/KAFE-Reloaded/releases/download/kafe-runtime-v0.4.0/kafe-runtime-0.4.0.zip');
+  assert.equal(manifestTemplate.runtime.manifestUrl, 'https://github.com/joshmessi10/KAFE-Reloaded/releases/download/kafe-runtime-v0.4.0/kafe-runtime-0.4.0.manifest.json');
   assert.deepEqual(Object.fromEntries(Object.entries(manifestTemplate.uv.targets).map(([key, value]) => [key, value.sha256])), {
     'win32-x64': 'ae681c0aaec7cc96af184648cb88d73f8393ed60fa5880abdd6bdb910f9b227c',
     'darwin-x64': 'b0e05e0b43a000fdc2132ee3f3400ba5dee427bc2337d3ec4eb8cf4f3d5722af',
@@ -333,6 +346,15 @@ test('accepts only HTTPS pinned release URLs and documented GitHub asset redirec
   assert.throws(() => validateAssetUrl('https://github.com.evil.example/runtime.zip', { redirect: true }), /not allowed/i);
 });
 
+test('setup failures expose actionable categories without returning raw diagnostics to the UI', () => {
+  assert.match(runtimeSetupUserMessage(new Error('getaddrinfo ENOTFOUND pypi.org')), /network|firewall/i);
+  assert.match(runtimeSetupUserMessage(new Error('certificate verify failed')), /certificate/i);
+  assert.match(runtimeSetupUserMessage(new Error('EPERM operation not permitted')), /permissions|security/i);
+  assert.match(runtimeSetupUserMessage(new Error('No space left on device')), /disk space/i);
+  assert.match(runtimeSetupUserMessage(new Error('Managed Python verification failed')), /Python 3\.11\.15/i);
+  assert.doesNotMatch(runtimeSetupUserMessage(new Error('token PRIVATE_PATH')), /PRIVATE_PATH|token/i);
+});
+
 test('unpublished pinned release reports unavailable without prompting or downloading uv', async () => {
   let prompts = 0;
   const fixture = makeFixture({ published: false, confirmDownload: async () => { prompts++; return true; } });
@@ -348,7 +370,7 @@ test('runtime install emits coarse progress stages only and unpublished setup em
   const f = makeFixture();
   const stages = [];
   assert.equal((await f.manager.installRuntime({ onProgress: e => stages.push(e) })).status, 'ready');
-  assert.deepEqual(stages.map(e => e.stage), ['checking', 'confirming', 'downloading', 'validating', 'extracting', 'syncing', 'ready']);
+  assert.deepEqual(stages.map(e => e.stage), ['checking', 'confirming', 'downloading', 'validating', 'extracting', 'syncing', 'verifying', 'ready']);
   assert.ok(stages.every(e => Object.keys(e).length === 1));
   const unpublished = makeFixture({ published: false });
   const unavailableStages = [];
@@ -381,16 +403,23 @@ test('valid runtime and uv checksums stage, sync with isolated paths, and atomic
   const fixture = makeFixture();
   const result = await fixture.manager.installRuntime();
   assert.equal(result.status, 'ready', result.message);
-  assert.equal(result.runtimeVersion, '0.3.0');
+  assert.equal(result.runtimeVersion, '0.4.0');
   assert.equal(fixture.requests.length, 3);
   const sync = fixture.processCalls.find(call => call.args[0] === 'sync');
   assert.ok(sync);
-  assert.deepEqual(sync.args, ['sync', '--locked', '--no-dev', '--extra', 'extension', '--project', fixture.manager.paths.stagingRoot]);
+  assert.deepEqual(sync.args, ['sync', '--locked', '--no-dev', '--extra', 'extension',
+    '--python', '3.11.15', '--managed-python', '--project', fixture.manager.paths.stagingRoot]);
   assert.equal(sync.options.cwd, fixture.manager.paths.stagingRoot);
   assert.equal(sync.options.shell, false);
   assert.equal(sync.options.env.UV_PROJECT_ENVIRONMENT, result.pythonEnvironment);
   assert.equal(sync.options.env.UV_PYTHON_INSTALL_DIR, result.pythonInstallDir);
   assert.equal(sync.options.env.UV_CACHE_DIR, result.uvCacheDir);
+  assert.equal(sync.options.env.UV_PYTHON, '3.11.15');
+  assert.equal(sync.options.env.UV_MANAGED_PYTHON, '1');
+  assert.equal(sync.options.env.HF_HOME, result.huggingFaceCacheDir);
+  assert.equal(result.pythonVersion, '3.11.15');
+  const pythonCheck = fixture.processCalls.find(call => path.basename(call.executable).toLowerCase() === 'python.exe');
+  assert.deepEqual(pythonCheck.args, ['--version']);
   assert.ok(fixture.fs.has(result.runtimeRoot));
   assert.ok(!fixture.fs.has(fixture.manager.paths.stagingRoot));
   assert.equal((await fixture.manager.getReadyRuntime()).status, 'ready');
@@ -406,6 +435,13 @@ test('cache reuse validates metadata and avoids downloads and sync', async () =>
   assert.equal(cached.runtimeRoot, first.runtimeRoot);
   assert.deepEqual(fixture.requests, []);
   assert.deepEqual(fixture.processCalls, []);
+});
+
+test('cache reuse rejects a missing managed Python environment', async () => {
+  const fixture = makeFixture();
+  await fixture.manager.installRuntime();
+  await fixture.fs.rm(fixture.manager.paths.pythonExecutable, { force: true });
+  assert.equal((await fixture.manager.getReadyRuntime()).status, 'missing');
 });
 
 test('cache reuse permits only interpreter-generated Python caches and stderr diagnostics', async () => {
@@ -474,7 +510,7 @@ test('knowledge paths do not depend on uv target', async () => {
   fixture.processCalls.length = 0;
   const knowledge = await fixture.manager.getReadyKnowledgePack();
   assert.equal(knowledge.status, 'ready');
-  assert.equal(knowledge.knowledgeRoot, path.join(fixture.manager.storageRoot, 'kafe-runtime', 'runtime-0.3.0', 'knowledge-pack'));
+  assert.equal(knowledge.knowledgeRoot, path.join(fixture.manager.storageRoot, 'kafe-runtime', 'runtime-0.4.0', 'knowledge-pack'));
   assert.equal((await fixture.manager.getReadyRuntime()).status, 'unsupported');
   assert.deepEqual(fixture.requests, []);
   assert.deepEqual(fixture.processCalls, []);
@@ -541,9 +577,11 @@ test('aborting during runtime sync removes setup artifacts and never marks the r
   assert.equal(result.status, 'cancelled');
   for (const temporary of [paths.runtimeArchive, paths.runtimeManifest, paths.uvArchive,
     paths.stagingRoot, paths.uvStageRoot, paths.runtimeRoot, paths.uvRoot,
-    paths.pythonInstallDir, paths.uvCacheDir]) {
+    paths.pythonEnvironment]) {
     assert.equal(fixture.fs.has(temporary), false, `${temporary} should be removed`);
   }
+  assert.equal(fixture.fs.has(paths.pythonInstallDir), true, 'managed Python downloads are reusable');
+  assert.equal(fixture.fs.has(paths.uvCacheDir), true, 'verified package downloads are reusable');
   assert.equal((await fixture.manager.getReadyRuntime()).status, 'missing');
 });
 
