@@ -1,0 +1,8 @@
+{
+  "runtime_version": "0.5.0",
+  "knowledge_pack_version": "0.5.0",
+  "python_requirement": ">=3.11",
+  "antlr_runtime_version": "4.13.2",
+  "source_revision": "8de7388b7a72b204c2e46c5648853af531746116",
+  "archive_sha256": "01df086979d8456a53d3baee7b2cdcc9685b088f33197277f3d48f5629e4638d"
+}

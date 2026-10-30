@@ -2,9 +2,9 @@
   "schemaVersion": 1,
   "description": "Generated offline retrieval checks and bilingual prompts/rubrics for later authorized real-provider evaluation. No model answers or provider scores are included. Never execute generated model output.",
   "generator": "kafe-vscode/scripts/build-library-evals.cjs",
-  "runtimeSourceRevision": "d2f9d5f13cb0e12359f0863b8ecea4df5b3bfdc0",
-  "reviewedSourceFingerprint": "2ba454e1a597881c04b65c76b84509befc6e3fb0021e739669f3646e8336a304",
-  "contractFingerprint": "3b6fea0f338fabb670f46f574c439590197808afe761d1064669de7bc0dcb9e8",
+  "runtimeSourceRevision": "8de7388b7a72b204c2e46c5648853af531746116",
+  "reviewedSourceFingerprint": "0ddf4f14a3aa41ff6706f0637b7c2b2e425efaf2540b0ebf569a5ea5a5a88355",
+  "contractFingerprint": "76b746cd98abe2348b3d4e9d161d1f50a61d8ed5c9eb569aefbccef28474b389",
   "evaluationStatus": {
     "offlineDataset": "generated",
     "deterministicChecks": "run separately",

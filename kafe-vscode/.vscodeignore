@@ -29,8 +29,8 @@ venv/**
 *credentials*
 **/*credentials*
 runtime/**
-!runtime/kafe-runtime-0.4.0.zip
-!runtime/kafe-runtime-0.4.0.manifest.json
+!runtime/kafe-runtime-0.5.0.zip
+!runtime/kafe-runtime-0.5.0.manifest.json
 **/runtime/**
 
 # Local learner programs are not extension assets.

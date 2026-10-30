@@ -1,15 +1,15 @@
 {
   "runtime": {
-    "version": "0.4.0",
-    "knowledgePackVersion": "0.4.0",
+    "version": "0.5.0",
+    "knowledgePackVersion": "0.5.0",
     "pythonRequirement": ">=3.11",
     "pythonVersion": "3.11.15",
     "antlrRuntimeVersion": "4.13.2",
-    "sourceRevision": "d2f9d5f13cb0e12359f0863b8ecea4df5b3bfdc0",
-    "archiveSha256": "fc70123cf592ec81b684b4d041bb64f4e92ebac1094c149218bb098b7a3bccd6",
+    "sourceRevision": "8de7388b7a72b204c2e46c5648853af531746116",
+    "archiveSha256": "01df086979d8456a53d3baee7b2cdcc9685b088f33197277f3d48f5629e4638d",
     "releasePublished": false,
-    "archiveUrl": "https://github.com/joshmessi10/KAFE-Reloaded/releases/download/kafe-runtime-v0.4.0/kafe-runtime-0.4.0.zip",
-    "manifestUrl": "https://github.com/joshmessi10/KAFE-Reloaded/releases/download/kafe-runtime-v0.4.0/kafe-runtime-0.4.0.manifest.json"
+    "archiveUrl": "https://github.com/joshmessi10/KAFE-Reloaded/releases/download/kafe-runtime-v0.5.0/kafe-runtime-0.5.0.zip",
+    "manifestUrl": "https://github.com/joshmessi10/KAFE-Reloaded/releases/download/kafe-runtime-v0.5.0/kafe-runtime-0.5.0.manifest.json"
   },
   "uv": {
     "version": "0.11.3",
