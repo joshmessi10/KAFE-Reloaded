@@ -84,7 +84,7 @@ A short notice reports omissions in the actual submitted request, with optional 
 
 ## Runtime and knowledge
 
-The managed runtime is checksum-pinned and installed with uv 0.11.3. Setup downloads and verifies a private CPython 3.11.15, creates an isolated environment, and verifies that exact interpreter before marking the runtime ready. Repairs rebuild the environment while retaining the verified Python/package cache, and `HF_HOME` keeps downloaded Hugging Face data in KAFE's persistent data cache instead of downloading it again for each environment repair.
+The checksum-pinned KAFE 0.4.0 runtime archive ships inside the VSIX and is installed with uv 0.11.3. Setup verifies the bundled archive, downloads and verifies a private CPython 3.11.15, creates an isolated environment, and verifies that exact interpreter before marking the runtime ready. Repairs rebuild the environment while retaining the verified Python/package cache, and `HF_HOME` keeps downloaded Hugging Face data in KAFE's persistent data cache instead of downloading it again for each environment repair.
 
 The locked `extension` dependency extra includes Hugging Face datasets, Kaggle downloads, images and 7z archives. KafeHF imports `datasets` only when a program calls a Hugging Face function; ordinary KAFE programs do not initialize its multiprocessing machinery. `multiprocess` remains below 0.70.18 because newer releases call an unavailable private `RLock` method on affected Windows Python builds and print a shutdown traceback. Ordinary conversation with a configured provider can proceed without an executable runtime or knowledge pack; requests disclose unavailable knowledge. Invalid or changed knowledge is never represented as valid grounding.
 

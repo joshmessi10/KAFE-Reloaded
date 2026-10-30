@@ -366,6 +366,22 @@ test('unpublished pinned release reports unavailable without prompting or downlo
   assert.deepEqual(fixture.processCalls, []);
 });
 
+test('bundled runtime installs before its external release and downloads only uv', async () => {
+  const fixture = makeFixture({ published: false });
+  const bundledRoot = 'C:/extension/runtime';
+  await fixture.fs.mkdir(bundledRoot, { recursive: true });
+  await fixture.fs.writeFile(path.join(bundledRoot, 'kafe-runtime-0.4.0.manifest.json'),
+    JSON.stringify(fixture.remoteManifest));
+  await fixture.fs.writeFile(path.join(bundledRoot, 'kafe-runtime-0.4.0.zip'), fixture.runtimeBytes);
+  fixture.manager.bundledRuntimeRoot = bundledRoot;
+
+  const result = await fixture.manager.installRuntime();
+
+  assert.equal(result.status, 'ready', result.message);
+  assert.equal(fixture.requests.length, 1);
+  assert.match(fixture.requests[0], /uv\/releases\/download/);
+});
+
 test('runtime install emits coarse progress stages only and unpublished setup emits no download stage', async () => {
   const f = makeFixture();
   const stages = [];

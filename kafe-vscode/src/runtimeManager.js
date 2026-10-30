@@ -662,6 +662,7 @@ function defaultProcessRunner(executable, args, options = {}) {
 
 function createRuntimeManager({
   storageRoot,
+  bundledRuntimeRoot,
   fileSystem = defaultFileSystem,
   pathApi = path,
   platform = process.platform,
@@ -673,7 +674,7 @@ function createRuntimeManager({
 } = {}) {
   if (!storageRoot) throw new Error('Extension global storage root is required for the KAFE runtime.');
   validatePinnedManifest(manifest);
-  const manager = { storageRoot, fileSystem, pathApi, platform, arch, manifest, transport, processRunner, confirmDownload };
+  const manager = { storageRoot, bundledRuntimeRoot, fileSystem, pathApi, platform, arch, manifest, transport, processRunner, confirmDownload };
 
   function getPaths() {
     const target = getRuntimeTarget(manager.platform, manager.arch, manager.manifest);
@@ -949,7 +950,7 @@ function createRuntimeManager({
     }
     const cached = await readReadyRuntime();
     if (cached.status === 'ready') return cached;
-    if (!manifest.runtime.releasePublished) {
+    if (!manager.bundledRuntimeRoot && !manifest.runtime.releasePublished) {
       return {
         status: 'unavailable',
         message: `KAFE runtime ${manifest.runtime.version} is not published yet. Setup will be available after the pinned GitHub release is published.`,
@@ -977,16 +978,25 @@ function createRuntimeManager({
       await fileSystem.mkdir(paths.huggingFaceCacheDir, { recursive: true });
 
       progress('downloading');
-      const manifestDownload = await downloadPinnedAsset(manifest.runtime.manifestUrl, { transport: manager.transport, signal, maxBytes: 64 * 1024 });
-      const remoteManifest = parseJson(manifestDownload.bytes, 'KAFE runtime release manifest');
+      const bundledManifest = manager.bundledRuntimeRoot && pathApi.join(manager.bundledRuntimeRoot,
+        `kafe-runtime-${manifest.runtime.version}.manifest.json`);
+      const bundledArchive = manager.bundledRuntimeRoot && pathApi.join(manager.bundledRuntimeRoot,
+        `kafe-runtime-${manifest.runtime.version}.zip`);
+      const manifestBytes = bundledManifest
+        ? await readBoundedRegularFile(fileSystem, bundledManifest, MAX_METADATA_BYTES)
+        : (await downloadPinnedAsset(manifest.runtime.manifestUrl,
+          { transport: manager.transport, signal, maxBytes: MAX_METADATA_BYTES })).bytes;
+      const remoteManifest = parseJson(manifestBytes, 'KAFE runtime release manifest');
       validateRuntimeSidecar(remoteManifest, manifest.runtime);
 
-      const runtimeDownload = await downloadPinnedAsset(manifest.runtime.archiveUrl, { transport: manager.transport, signal });
-      if (sha256(runtimeDownload.bytes) !== manifest.runtime.archiveSha256 || sha256(runtimeDownload.bytes) !== remoteManifest.archive_sha256) {
+      const runtimeBytes = bundledArchive
+        ? await readBoundedRegularFile(fileSystem, bundledArchive, MAX_DOWNLOAD_BYTES)
+        : (await downloadPinnedAsset(manifest.runtime.archiveUrl, { transport: manager.transport, signal })).bytes;
+      if (sha256(runtimeBytes) !== manifest.runtime.archiveSha256 || sha256(runtimeBytes) !== remoteManifest.archive_sha256) {
         throw new Error('KAFE runtime archive SHA-256 mismatch.');
       }
       await fileSystem.writeFile(paths.runtimeManifest, JSON.stringify(remoteManifest));
-      await fileSystem.writeFile(paths.runtimeArchive, runtimeDownload.bytes);
+      await fileSystem.writeFile(paths.runtimeArchive, runtimeBytes);
 
       const uvTarget = paths.target;
       const uvDownload = await downloadPinnedAsset(uvTarget.url, { transport: manager.transport, signal });
@@ -996,7 +1006,7 @@ function createRuntimeManager({
       progress('validating');
       progress('extracting');
       await fileSystem.mkdir(paths.stagingRoot, { recursive: true });
-      await extractZip(runtimeDownload.bytes, paths.stagingRoot, fileSystem, pathApi, {
+      await extractZip(runtimeBytes, paths.stagingRoot, fileSystem, pathApi, {
         required: REQUIRED_RUNTIME_MEMBERS,
         requireKnowledgePack: true,
       });

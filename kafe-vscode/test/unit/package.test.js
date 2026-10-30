@@ -61,6 +61,8 @@ test('package ignores local execution artifacts and secrets', () => {
     assert.ok(ignore.includes(pattern), `missing ${pattern}`);
   }
   assert.ok(ignore.includes('!node_modules/yauzl/**'), 'runtime package yauzl must be included in the VSIX');
+  assert.ok(ignore.includes('!runtime/kafe-runtime-0.4.0.zip'), 'the pinned KAFE runtime archive must be included in the VSIX');
+  assert.ok(ignore.includes('!runtime/kafe-runtime-0.4.0.manifest.json'), 'the pinned KAFE runtime manifest must be included in the VSIX');
   for (const pattern of [
     '!node_modules/pend/LICENSE',
     '!node_modules/pend/README.md',

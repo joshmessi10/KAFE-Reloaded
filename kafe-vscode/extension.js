@@ -652,6 +652,7 @@ function activate(context) {
   const vscode = require('vscode');
   const runtimeManager = createRuntimeManager({
     storageRoot: context.globalStorageUri.fsPath,
+    bundledRuntimeRoot: path.join(context.extensionPath || __dirname, 'runtime'),
     confirmDownload: async () => true,
   });
   const host = createTutorHost({ vscode, extensionUri: context.extensionUri,
