@@ -17,7 +17,7 @@ resolution-markers = [
 ]
 
 [options]
-exclude-newer = "2026-10-23T16:50:34.994866Z"
+exclude-newer = "2026-10-23T18:20:26.900164Z"
 exclude-newer-span = "P7D"
 
 [options.exclude-newer-package]
@@ -1214,16 +1214,14 @@ dependencies = [
 ]
 
 [package.optional-dependencies]
-extension = [
-    { name = "datasets" },
-    { name = "kagglehub" },
-    { name = "multiprocess" },
-    { name = "pillow" },
-    { name = "py7zr" },
-]
 huggingface = [
     { name = "datasets" },
     { name = "multiprocess" },
+]
+kaggle = [
+    { name = "kagglehub" },
+    { name = "pillow" },
+    { name = "py7zr" },
 ]
 
 [package.dev-dependencies]
@@ -1245,15 +1243,13 @@ docs = [
 [package.metadata]
 requires-dist = [
     { name = "antlr4-python3-runtime", specifier = "==4.13.2" },
-    { name = "datasets", marker = "extra == 'extension'" },
     { name = "datasets", marker = "extra == 'huggingface'" },
-    { name = "kagglehub", marker = "extra == 'extension'" },
-    { name = "multiprocess", marker = "extra == 'extension'", specifier = "<0.70.18" },
+    { name = "kagglehub", marker = "extra == 'kaggle'" },
     { name = "multiprocess", marker = "extra == 'huggingface'", specifier = "<0.70.18" },
-    { name = "pillow", marker = "extra == 'extension'" },
-    { name = "py7zr", marker = "extra == 'extension'" },
+    { name = "pillow", marker = "extra == 'kaggle'" },
+    { name = "py7zr", marker = "extra == 'kaggle'" },
 ]
-provides-extras = ["huggingface", "extension"]
+provides-extras = ["huggingface", "kaggle"]
 
 [package.metadata.requires-dev]
 dev = [

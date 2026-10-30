@@ -1,0 +1,1 @@
+Exception: kaggle: kaggle: Para usar kaggle, instala el pack Kaggle: en VS Code ejecuta "KAFE: Install Kaggle Pack"; desde el repositorio ejecuta "uv sync --locked --extra kaggle".

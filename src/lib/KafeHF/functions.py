@@ -15,8 +15,9 @@ public datasets directly from their programs, as in:
         import huggingface;
         PARDOS df = huggingface.load_dataset("squad");
 
-Optional external dependency: datasets (Hugging Face).
+Optional external dependency: datasets (Hugging Face pack).
     uv sync --locked --extra huggingface
+    In VS Code: "KAFE: Install Hugging Face Pack".
 """
 
 from importlib import import_module
@@ -37,8 +38,9 @@ def _require_hf() -> Callable[..., Any]:
         loaded: Callable[..., Any] = import_module("datasets").load_dataset
     except ImportError:
         raise Exception(
-            "To use huggingface, install the optional extra: "
-            "uv sync --locked --extra huggingface"
+            "To use huggingface, install the Hugging Face pack: in VS Code run "
+            '"KAFE: Install Hugging Face Pack"; from a checkout run '
+            '"uv sync --locked --extra huggingface".'
         ) from None
     hf_load_dataset = loaded
     return loaded

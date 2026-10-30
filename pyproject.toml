@@ -13,10 +13,9 @@ huggingface = [
     # Python builds and prints a ResourceTracker traceback at shutdown.
     "multiprocess<0.70.18",
 ]
-extension = [
-    "datasets",
+# KafeKaggle pack: dataset client, image decoding and nested .7z extraction.
+kaggle = [
     "kagglehub",
-    "multiprocess<0.70.18",
     "pillow",
     "py7zr",
 ]

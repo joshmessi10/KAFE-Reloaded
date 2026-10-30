@@ -1,1 +1,1 @@
-Exception: huggingface: To use huggingface, install the optional extra: uv sync --locked --extra huggingface
+Exception: huggingface: To use huggingface, install the Hugging Face pack: in VS Code run "KAFE: Install Hugging Face Pack"; from a checkout run "uv sync --locked --extra huggingface".
