@@ -7,10 +7,16 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-huggingface = ["datasets"]
+huggingface = [
+    "datasets",
+    # 0.70.18+ calls a private RLock method that is absent on some Windows
+    # Python builds and prints a ResourceTracker traceback at shutdown.
+    "multiprocess<0.70.18",
+]
 extension = [
     "datasets",
     "kagglehub",
+    "multiprocess<0.70.18",
     "pillow",
     "py7zr",
 ]

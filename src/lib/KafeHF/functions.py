@@ -20,26 +20,28 @@ Optional external dependency: datasets (Hugging Face).
 """
 
 from importlib import import_module
-from typing import Any
+from typing import Any, Callable
 
 from global_utils import check_sig
 from TypeUtils import integer_type, string_list_type, string_type
 
-try:
-    hf_load_dataset: Any = import_module("datasets").load_dataset
-    _HF_AVAILABLE = True
-except ImportError:
-    hf_load_dataset = None
-    _HF_AVAILABLE = False
+hf_load_dataset: Callable[..., Any] | None = None
 
 
-def _require_hf():
-    """Verify that the Hugging Face datasets library is installed."""
-    if not _HF_AVAILABLE:
+def _require_hf() -> Callable[..., Any]:
+    """Load Hugging Face only when a KAFE program uses the integration."""
+    global hf_load_dataset
+    if hf_load_dataset is not None:
+        return hf_load_dataset
+    try:
+        loaded: Callable[..., Any] = import_module("datasets").load_dataset
+    except ImportError:
         raise Exception(
             "To use huggingface, install the optional extra: "
             "uv sync --locked --extra huggingface"
-        )
+        ) from None
+    hf_load_dataset = loaded
+    return loaded
 
 
 @check_sig([1], [string_type])
@@ -70,10 +72,10 @@ def load_dataset(dataset_name):
 
     Note: Requires internet connection and the `datasets` library installed.
     """
-    _require_hf()
+    load_from_hub = _require_hf()
 
     try:
-        dataset_dict = hf_load_dataset(dataset_name)
+        dataset_dict = load_from_hub(dataset_name)
     except Exception as e:
         raise Exception(
             f"huggingface: Error loading dataset '{dataset_name}': {e}"
@@ -112,10 +114,10 @@ def load_dataset_split(dataset_name, split):
         PARDOS test_df = huggingface.load_dataset_split("squad", "test");
         show(test_df.head(5));
     """
-    _require_hf()
+    load_from_hub = _require_hf()
 
     try:
-        dataset_dict = hf_load_dataset(dataset_name, split=split)
+        dataset_dict = load_from_hub(dataset_name, split=split)
     except Exception as e:
         raise Exception(
             f"huggingface: Error loading split '{split}' from dataset '{dataset_name}': {e}"
@@ -129,9 +131,9 @@ def load_dataset_split(dataset_name, split):
 )
 def load_dataset_matrix(dataset_name, columns=None, split="train", limit=0):
     """Load numeric columns as a matrix for NUMK and GESHA."""
-    _require_hf()
+    load_from_hub = _require_hf()
     try:
-        dataset = hf_load_dataset(dataset_name, split=split)
+        dataset = load_from_hub(dataset_name, split=split)
     except Exception as exc:
         raise Exception(
             f"huggingface: Error loading split '{split}' from dataset '{dataset_name}': {exc}"
