@@ -1,95 +1,106 @@
-site_name: KAFE — Language Documentation
-site_description: Technical documentation for the KAFE Deep Learning Language
+site_name: KAFE
+site_description: Aprende a programar, Machine Learning y redes neuronales con KAFE, paso a paso.
 site_url: https://joshmessi10.github.io/KAFE-Reloaded/
 repo_url: https://github.com/joshmessi10/KAFE-Reloaded
 repo_name: KAFE-Reloaded
 
 theme:
   name: material
-  language: en
-  # logo: assets/logo.png
-  # favicon: assets/favicon.ico
+  language: es
+  logo: assets/images/kafe-bean.png
+  favicon: assets/images/favicon.png
   palette:
-    scheme: slate
-    primary: black
-    accent: yellow
+    # Colors come from the KAFE Reloaded logo and are defined in custom.css.
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/weather-night
+        name: Modo oscuro
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/weather-sunny
+        name: Modo claro
   features:
+    - navigation.tabs
+    - navigation.tabs.sticky
     - navigation.sections
     - navigation.path
     - navigation.top
     - navigation.indexes
+    - navigation.footer
     - search.highlight
     - search.suggest
+    - search.share
     - content.code.copy
     - content.code.annotate
     - content.tabs.link
     - toc.follow
 
 nav:
-  - Home: index.md
-  - Getting Started:
-      - Installation: getting-started/installation.md
-      - First Program: getting-started/first-program.md
-      - Basic Examples: getting-started/basic-examples.md
-      - Tutor reliability: extension/tutor-reliability.md
-      - Evaluation alignment: extension/evaluation-alignment.md
-  - Language:
-      - Lexical Structure: language/lexical-structure.md
-      - Type System: language/type-system.md
-      - Operators and Expressions: language/operators.md
-      - Control Structures: language/control-structures.md
-      - Functions: language/functions.md
-      - Lists: language/lists.md
-      - Imports: language/imports.md
-  - Libraries:
-      - NUMK (Linear Algebra): libraries/numk.md
-      - MATH (Mathematics): libraries/math.md
-      - PLOT (Visualization): libraries/plot.md
-      - FILES (File Operations): libraries/files.md
-      - Kaggle Dataset Ingestion: bibliotecas/kaggle.md
-      - Hugging Face Numeric Ingestion: bibliotecas/huggingface.md
-      - PARDOS (DataFrames): libraries/pardos.md
-      - MACHINE (ML Utilities):
-          - Overview: libraries/machine.md
-          - API contracts and limits: libraries/machine/contracts.md
-          - Learning concepts: libraries/machine/learning-concepts.md
-          - Functions and metrics: libraries/machine/metrics.md
-          - Linear models and SVM: libraries/machine/linear.md
-          - Model selection: libraries/machine/selection.md
-          - Classification and trees: libraries/machine/classifiers.md
-          - Clustering and ensembles: libraries/machine/clustering.md
-          - Preprocessing and reduction: libraries/machine/preprocessing.md
-      - Gesha (Deep Learning):
-          - Overview: libraries/gesha.md
-          - API coverage and limits: libraries/gesha/api-coverage.md
-          - Learning concepts: libraries/gesha/learning-concepts.md
-          - Models and training: libraries/gesha/models-training.md
-          - Dense networks: libraries/gesha/dense-networks.md
-          - Convolutional networks: libraries/gesha/convolutional-networks.md
-          - Recurrent networks: libraries/gesha/recurrent-networks.md
-          - Training tools: libraries/gesha/training-tools.md
-          - Soft clustering: libraries/gesha/soft-clustering.md
-  - Specification:
-      - Formal Grammar (EBNF): specification/ebnf-grammar.md
-      - Operational Semantics: specification/operational-semantics.md
-      - Lexical, Syntactic, and Semantic Analysis: specification/lexical-syntactic-semantic-analysis.md
-      - Operator Precedence: specification/operator-precedence.md
-  - Error Handling:
-      - Error Types: errors/error-types.md
-      - Lexical Errors: errors/lexical-errors.md
-      - Syntax Errors: errors/syntax-errors.md
-      - Semantic Errors: errors/semantic-errors.md
-      - Error Reference: errors/error-reference.md
-  - Examples:
-      - Feature Examples: ejemplos/README.md
-      - Hello World: examples/hello-world.kf
-      - Fibonacci with Currying: examples/fibonacci-currying.kf
-      - Merge Sort: examples/merge-sort.kf
-      - Linear Regression: examples/linear-regression.kf
-      - Neural Network: examples/neural-network.kf
-      - Decision Tree: examples/decision-tree.kf
-      - MACHINE examples:
-          - Overview: ejemplos/machine-kaggle.md
+  - Inicio: index.md
+  - Aprende:
+      - aprende/index.md
+      - ¿Qué es programar?: aprende/programar.md
+      - Variables y tipos: aprende/variables.md
+      - Funciones: aprende/funciones.md
+      - ¿Qué es aprender de datos?: aprende/aprender-de-datos.md
+      - ¿Qué es una neurona?: aprende/neuronas.md
+  - Tutorial:
+      - Instalación: getting-started/installation.md
+      - Tu primer programa: getting-started/first-program.md
+      - Ejemplos básicos: getting-started/basic-examples.md
+      - El lenguaje paso a paso:
+          - Estructura léxica: language/lexical-structure.md
+          - Sistema de tipos: language/type-system.md
+          - Operadores y expresiones: language/operators.md
+          - Estructuras de control: language/control-structures.md
+          - Funciones: language/functions.md
+          - Listas: language/lists.md
+          - Imports: language/imports.md
+  - Librerías:
+      - NUMK (álgebra lineal): libraries/numk.md
+      - MATH (matemáticas): libraries/math.md
+      - PLOT (gráficas): libraries/plot.md
+      - FILES (archivos): libraries/files.md
+      - PARDOS (tablas de datos): libraries/pardos.md
+      - Datasets de Kaggle: bibliotecas/kaggle.md
+      - Datasets de Hugging Face: bibliotecas/huggingface.md
+      - MACHINE (Machine Learning):
+          - Resumen: libraries/machine.md
+          - Contratos y límites de la API: libraries/machine/contracts.md
+          - Conceptos de aprendizaje: libraries/machine/learning-concepts.md
+          - Funciones y métricas: libraries/machine/metrics.md
+          - Modelos lineales y SVM: libraries/machine/linear.md
+          - Selección de modelos: libraries/machine/selection.md
+          - Clasificación y árboles: libraries/machine/classifiers.md
+          - Clustering y ensambles: libraries/machine/clustering.md
+          - Preprocesamiento y reducción: libraries/machine/preprocessing.md
+      - GESHA (Deep Learning):
+          - Resumen: libraries/gesha.md
+          - Cobertura y límites de la API: libraries/gesha/api-coverage.md
+          - Conceptos de aprendizaje: libraries/gesha/learning-concepts.md
+          - Modelos y entrenamiento: libraries/gesha/models-training.md
+          - Redes densas: libraries/gesha/dense-networks.md
+          - Redes convolucionales: libraries/gesha/convolutional-networks.md
+          - Redes recurrentes: libraries/gesha/recurrent-networks.md
+          - Herramientas de entrenamiento: libraries/gesha/training-tools.md
+          - Clustering suave: libraries/gesha/soft-clustering.md
+  - Ejemplos:
+      - Ejemplos por característica: ejemplos/README.md
+      - Programas completos:
+          - Hello World: examples/hello-world.kf
+          - Fibonacci con currying: examples/fibonacci-currying.kf
+          - Merge Sort: examples/merge-sort.kf
+          - Regresión lineal: examples/linear-regression.kf
+          - Red neuronal: examples/neural-network.kf
+          - Árbol de decisión: examples/decision-tree.kf
+      - Ejemplos de MACHINE:
+          - Resumen: ejemplos/machine-kaggle.md
           - "K-Means": ejemplos/machine/kmeans.md
           - "Agglomerative Clustering": ejemplos/machine/agglomerative-clustering.md
           - "DBSCAN": ejemplos/machine/dbscan.md
@@ -108,9 +119,9 @@ nav:
           - "Elastic Net": ejemplos/machine/elastic-net.md
           - "Linear Regression": ejemplos/machine/linear-regression.md
           - "Support Vector Regression": ejemplos/machine/svr.md
-          - Interpret Results: ejemplos/machine/interpret-results.md
-      - Gesha examples:
-          - Overview: ejemplos/gesha-examples.md
+          - Interpretar resultados: ejemplos/machine/interpret-results.md
+      - Ejemplos de GESHA:
+          - Resumen: ejemplos/gesha-examples.md
           - "Single perceptron: AND": ejemplos/gesha/perceptron-and.md
           - "Single perceptron: OR": ejemplos/gesha/perceptron-or.md
           - "Multilayer perceptron: XOR": ejemplos/gesha/mlp-xor.md
@@ -128,9 +139,25 @@ nav:
           - "Bidirectional LSTM: token vectors": ejemplos/gesha/lstm-embedding.md
           - "NUMK and dense classifier": ejemplos/gesha/numk-dense.md
           - "Autoencoder and K-Means: Iris": ejemplos/gesha/autoencoder-clustering.md
-  - About:
-      - Credits: about/credits.md
-      - License: about/license.md
+  - Avanzado:
+      - Especificación:
+          - Gramática formal (EBNF): specification/ebnf-grammar.md
+          - Semántica operacional: specification/operational-semantics.md
+          - Análisis léxico, sintáctico y semántico: specification/lexical-syntactic-semantic-analysis.md
+          - Precedencia de operadores: specification/operator-precedence.md
+      - Errores:
+          - Tipos de error: errors/error-types.md
+          - Errores léxicos: errors/lexical-errors.md
+          - Errores de sintaxis: errors/syntax-errors.md
+          - Errores semánticos: errors/semantic-errors.md
+          - Referencia de errores: errors/error-reference.md
+      - Extensión de VS Code:
+          - Confiabilidad del tutor: extension/tutor-reliability.md
+          - Alineación de evaluación: extension/evaluation-alignment.md
+      - Guía de estilo: contribuir/guia-de-estilo.md
+  - Acerca de:
+      - Créditos: about/credits.md
+      - Licencia: about/license.md
 
 markdown_extensions:
   - admonition
@@ -147,6 +174,9 @@ markdown_extensions:
       alternate_style: true
   - pymdownx.arithmatex:
       generic: true
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
   - tables
   - attr_list
   - md_in_html
@@ -170,6 +200,106 @@ extra:
 
 plugins:
   - search
+  - i18n:
+      docs_structure: suffix
+      fallback_to_default: true
+      reconfigure_material: true
+      reconfigure_search: true
+      languages:
+        - locale: es
+          name: Español
+          default: true
+          build: true
+        - locale: en
+          name: English
+          build: true
+          site_description: Learn programming, Machine Learning and neural networks with KAFE, step by step.
+          theme:
+            palette:
+              - media: "(prefers-color-scheme: light)"
+                scheme: default
+                primary: custom
+                accent: custom
+                toggle:
+                  icon: material/weather-night
+                  name: Dark mode
+              - media: "(prefers-color-scheme: dark)"
+                scheme: slate
+                primary: custom
+                accent: custom
+                toggle:
+                  icon: material/weather-sunny
+                  name: Light mode
+          nav_translations:
+            Inicio: Home
+            Aprende: Learn
+            ¿Qué es programar?: What is programming?
+            Variables y tipos: Variables and types
+            Funciones: Functions
+            ¿Qué es aprender de datos?: What is learning from data?
+            ¿Qué es una neurona?: What is a neuron?
+            Instalación: Installation
+            Tu primer programa: Your first program
+            Ejemplos básicos: Basic examples
+            El lenguaje paso a paso: The language step by step
+            Estructura léxica: Lexical structure
+            Sistema de tipos: Type system
+            Operadores y expresiones: Operators and expressions
+            Estructuras de control: Control structures
+            Listas: Lists
+            Librerías: Libraries
+            NUMK (álgebra lineal): NUMK (linear algebra)
+            MATH (matemáticas): MATH (mathematics)
+            PLOT (gráficas): PLOT (charts)
+            FILES (archivos): FILES (files)
+            PARDOS (tablas de datos): PARDOS (data tables)
+            Datasets de Kaggle: Kaggle datasets
+            Datasets de Hugging Face: Hugging Face datasets
+            Resumen: Overview
+            Contratos y límites de la API: API contracts and limits
+            Conceptos de aprendizaje: Learning concepts
+            Funciones y métricas: Functions and metrics
+            Modelos lineales y SVM: Linear models and SVM
+            Selección de modelos: Model selection
+            Clasificación y árboles: Classification and trees
+            Clustering y ensambles: Clustering and ensembles
+            Preprocesamiento y reducción: Preprocessing and reduction
+            Cobertura y límites de la API: API coverage and limits
+            Modelos y entrenamiento: Models and training
+            Redes densas: Dense networks
+            Redes convolucionales: Convolutional networks
+            Redes recurrentes: Recurrent networks
+            Herramientas de entrenamiento: Training tools
+            Clustering suave: Soft clustering
+            Ejemplos: Examples
+            Ejemplos por característica: Feature examples
+            Programas completos: Complete programs
+            Fibonacci con currying: Fibonacci with currying
+            Regresión lineal: Linear regression
+            Red neuronal: Neural network
+            Árbol de decisión: Decision tree
+            Ejemplos de MACHINE: MACHINE examples
+            Interpretar resultados: Interpret results
+            Ejemplos de GESHA: GESHA examples
+            Avanzado: Advanced
+            Especificación: Specification
+            Gramática formal (EBNF): Formal grammar (EBNF)
+            Semántica operacional: Operational semantics
+            Análisis léxico, sintáctico y semántico: Lexical, syntactic and semantic analysis
+            Precedencia de operadores: Operator precedence
+            Errores: Errors
+            Tipos de error: Error types
+            Errores léxicos: Lexical errors
+            Errores de sintaxis: Syntax errors
+            Errores semánticos: Semantic errors
+            Referencia de errores: Error reference
+            Extensión de VS Code: VS Code extension
+            Confiabilidad del tutor: Tutor reliability
+            Alineación de evaluación: Evaluation alignment
+            Guía de estilo: Style guide
+            Acerca de: About
+            Créditos: Credits
+            Licencia: License
 
 exclude_docs: |
   /superpowers/

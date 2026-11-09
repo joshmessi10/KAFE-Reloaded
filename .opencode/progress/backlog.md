@@ -33,4 +33,6 @@ The policy baseline is integrated locally. The locked uv dependency/setup migrat
 
 ## Documentation
 
+- Docs site phase 2: "Aprende" lessons following `docs/contribuir/guia-de-estilo.md` (ADR-0035)
+- Docs site phase 4: per-function reference, small libraries first, then MACHINE and GESHA
 - Review tasks for legacy implementations (BaseMachine, LinearRegression, LogisticRegression, KNN, Metrics)

@@ -1051,3 +1051,33 @@ Most learner programs never use Hugging Face or Kaggle, so their dependencies sh
 - Prompt or install automatically before Run: rejected by the user in favor of manual commands.
 - Fully offline platform-specific VSIX with bundled Python and wheels: deferred; compatible with this design.
 - Replace `datasets` with direct Hub HTTP calls: rejected; it loses formats and adds a client to maintain.
+
+
+## ADR-0035: Bilingual Learning-First Documentation Site
+
+- **Status**: accepted
+- **Date**: 2026-11-09
+
+### Context
+
+The MkDocs site was written for programmers: a single dark black/yellow theme, no logo, no language switch, and English and Spanish pages mixed without a way to choose a language. The user wants a site in the style of the FastAPI "Learn" documentation, using the KAFE Reloaded logo, in Spanish and English, that explains concepts to people with no programming background and eventually documents every library function.
+
+### Decision
+
+Keep MkDocs Material and add `mkdocs-static-i18n` to the `docs` dependency group only. Use the suffix structure: `page.md` is Spanish (default, served at `/`) and `page.en.md` is English (served at `/en/`), with `fallback_to_default: true` so untranslated pages still render. Navigation labels are Spanish and translated through `nav_translations`. The theme uses the logo colors (black header, lime `#c6f21a` accent, darker lime `#5a7a00` for links in light mode) with a light/dark toggle. Top-level tabs are Inicio, Aprende, Tutorial, Librerías, Ejemplos, Avanzado and Acerca de. Phase 1 changes only the navigation: no existing URL moves. A bilingual style guide (`docs/contribuir/guia-de-estilo.md`) defines the beginner tone and the per-function reference template for later phases.
+
+### Rationale
+
+Material already provides the FastAPI-like layout, so no theme change is needed. Material has no per-page language switch; the plugin adds it from one `docs/` tree and one configuration. Keeping URLs stable avoids broken external links and strict-build failures while content is rewritten.
+
+### Consequences
+
+- One new docs-only dependency; the interpreter, tests and runtime are unaffected.
+- During the transition some pages show existing content in the other language through fallback.
+- Later phases (Learn lessons, tutorial rewrite, full per-library reference, complete translation and URL moves) follow the style guide, each with its own design spec.
+
+### Alternatives Considered
+
+- Two MkDocs configurations with separate `docs_dir`: rejected because it duplicates configuration and deployment.
+- Exact FastAPI teal/amber palette: rejected by the user in favor of the logo colors.
+- Moving files into new folders now: deferred to avoid breaking URLs before content is rewritten.

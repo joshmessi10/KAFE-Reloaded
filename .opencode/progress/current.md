@@ -1,5 +1,9 @@
 # Current Work
 
+## Documentation site redesign, phase 1 (2026-11-09)
+
+Branch `feature/docs-redesign`, created from `feature/vsc-extension` because `main` lacks the current documentation. Phase 1 is implemented locally: logo theme, ES/EN switch, new navigation, bilingual home page, "Aprende" placeholders and style guide (ADR-0035). Strict docs build and codespell pass locally; nothing is committed or pushed and hosted CI is pending. Next: user review and commit, then a design spec for phase 2 ("Aprende" lessons).
+
 ## Current delivery scope (2026-10-28)
 
 The experiment is stopped. The current work is to commit the reviewed evidence summary, push feature/vsc-extension, and resolve any resulting CI failures until all required checks pass. No experimental policy or default was adopted; production retains cad0bd1 behavior, kafe-guided-7, Pro with thinking disabled, and the 30-second timeout.

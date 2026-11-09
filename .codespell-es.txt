@@ -64,3 +64,8 @@ variante
 varios
 vectores
 visibles
+avance
+diagrama
+vas
+fase
+utiliza
