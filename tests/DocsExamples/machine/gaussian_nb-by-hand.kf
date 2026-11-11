@@ -1,0 +1,28 @@
+import math;
+
+List[FLOAT] cats = [3.0, 4.0, 5.0];
+List[FLOAT] dogs = [6.0, 8.0, 10.0, 12.0, 14.0];
+FLOAT x = 6.0;
+
+FLOAT mean_c = 4.0;
+FLOAT mean_d = 10.0;
+FLOAT var_c = 0.0;
+FLOAT var_d = 0.0;
+for (i in range(0, len(cats))):
+    var_c = var_c + (cats[i] - mean_c) * (cats[i] - mean_c) / len(cats);
+;
+for (i in range(0, len(dogs))):
+    var_d = var_d + (dogs[i] - mean_d) * (dogs[i] - mean_d) / len(dogs);
+;
+show(math.round(var_c, 3));
+show(var_d);
+
+FLOAT bell_c = math.exp(0.0 - (x - mean_c) * (x - mean_c) / (2.0 * var_c)) / math.sqrt(2.0 * 3.141592653589793 * var_c);
+FLOAT bell_d = math.exp(0.0 - (x - mean_d) * (x - mean_d) / (2.0 * var_d)) / math.sqrt(2.0 * 3.141592653589793 * var_d);
+show(math.round(bell_c, 4));
+show(math.round(bell_d, 4));
+
+FLOAT score_c = 3.0 / 8.0 * bell_c;
+FLOAT score_d = 5.0 / 8.0 * bell_d;
+show(math.round(score_c / (score_c + score_d), 3));
+show(math.round(score_d / (score_c + score_d), 3));

@@ -1,0 +1,16 @@
+import machine;
+import math;
+
+List[FLOAT] temp = [15.0, 18.0, 25.0, 28.0, 32.0];
+List[FLOAT] sales = [20.0, 22.0, 40.0, 44.0, 60.0];
+
+MACHINE small = machine.decision_tree_regressor("mse", 1);
+small.fit(temp, sales);
+show(small.tree_);
+show(small.predict([16.0, 30.0]));
+show(math.round(small.score(temp, sales), 2));
+
+MACHINE deep = machine.decision_tree_regressor();
+deep.fit(temp, sales);
+show(deep.predict([16.0, 30.0]));
+show(deep.score(temp, sales));

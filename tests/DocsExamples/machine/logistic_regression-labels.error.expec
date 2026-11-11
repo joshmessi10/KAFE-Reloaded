@@ -1,0 +1,1 @@
+Exception: model: LogisticRegression: y must contain only 0 and 1

@@ -1,0 +1,24 @@
+<svg viewBox="0 0 600 270" role="img" aria-labelledby="ill-rfc-t ill-rfc-d" xmlns="http://www.w3.org/2000/svg">
+<title id="ill-rfc-t">Cada árbol vota y gana la mayoría / Every tree votes and the majority wins</title>
+<desc id="ill-rfc-d">Five small trees. One by one each casts a vote: square, circle, square, square, circle. The tally shows 2 circles and 3 squares, so the forest answers square.</desc>
+<style>
+.ill-rfc-v0 { opacity: 1; animation: ill-rfc-v0 12s linear infinite; }
+@keyframes ill-rfc-v0 { 0%,10% { opacity: 0 } 14%,100% { opacity: 1 } }
+.ill-rfc-v1 { opacity: 1; animation: ill-rfc-v1 12s linear infinite; }
+@keyframes ill-rfc-v1 { 0%,18% { opacity: 0 } 22%,100% { opacity: 1 } }
+.ill-rfc-v2 { opacity: 1; animation: ill-rfc-v2 12s linear infinite; }
+@keyframes ill-rfc-v2 { 0%,26% { opacity: 0 } 30%,100% { opacity: 1 } }
+.ill-rfc-v3 { opacity: 1; animation: ill-rfc-v3 12s linear infinite; }
+@keyframes ill-rfc-v3 { 0%,34% { opacity: 0 } 38%,100% { opacity: 1 } }
+.ill-rfc-v4 { opacity: 1; animation: ill-rfc-v4 12s linear infinite; }
+@keyframes ill-rfc-v4 { 0%,42% { opacity: 0 } 46%,100% { opacity: 1 } }
+@keyframes ill-rfc-total { 0%,60% { opacity: 0 } 70%,100% { opacity: 1 } }
+.ill-rfc-total { animation: ill-rfc-total 12s linear infinite; }
+@keyframes ill-rfc-all { 0% { opacity: 0 } 4%,94% { opacity: 1 } 100% { opacity: 0 } }
+.ill-rfc-all { animation: ill-rfc-all 12s linear infinite; }
+</style>
+<g class="ill-rfc-all">
+<path class="k-line" d="M90 40 L56 110 H124 Z M90 110 V130"/><circle class="k-soft" cx="90" cy="85" r="14"/><g class="ill-rfc-v0"><rect class="k-accent" x="79" y="154" width="22" height="22"/></g><path class="k-line" d="M195 40 L161 110 H229 Z M195 110 V130"/><circle class="k-soft" cx="195" cy="85" r="14"/><g class="ill-rfc-v1"><circle class="k-fill" cx="195" cy="165" r="11"/></g><path class="k-line" d="M300 40 L266 110 H334 Z M300 110 V130"/><circle class="k-soft" cx="300" cy="85" r="14"/><g class="ill-rfc-v2"><rect class="k-accent" x="289" y="154" width="22" height="22"/></g><path class="k-line" d="M405 40 L371 110 H439 Z M405 110 V130"/><circle class="k-soft" cx="405" cy="85" r="14"/><g class="ill-rfc-v3"><rect class="k-accent" x="394" y="154" width="22" height="22"/></g><path class="k-line" d="M510 40 L476 110 H544 Z M510 110 V130"/><circle class="k-soft" cx="510" cy="85" r="14"/><g class="ill-rfc-v4"><circle class="k-fill" cx="510" cy="165" r="11"/></g>
+<g class="ill-rfc-total"><path class="k-thin" d="M60 195 H540"/><circle class="k-fill" cx="210" cy="232" r="11"/><text class="k-label" x="228" y="238">2</text><rect class="k-accent" x="318" y="221" width="22" height="22"/><text class="k-label" x="348" y="238">3</text><text class="k-label" x="400" y="238">→</text><rect class="k-accent" x="430" y="221" width="22" height="22"/></g>
+</g>
+</svg>

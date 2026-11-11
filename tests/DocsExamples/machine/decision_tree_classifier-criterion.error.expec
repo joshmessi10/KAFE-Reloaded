@@ -1,0 +1,1 @@
+Exception: machine: DecisionTreeClassifier: criterion must be 'gini' or 'entropy'

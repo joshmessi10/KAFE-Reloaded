@@ -1,0 +1,4 @@
+import machine;
+
+MACHINE model = machine.logistic_regression();
+model.fit([1.0, 2.0, 3.0], [1, 2, 3]);

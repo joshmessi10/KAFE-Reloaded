@@ -1,0 +1,13 @@
+import machine;
+
+List[FLOAT] weight = [3.0, 4.0, 5.0, 4.5, 20.0, 25.0, 30.0, 22.0];
+List[INT] kind = [0, 0, 0, 0, 1, 1, 1, 1];
+
+MACHINE forest = machine.random_forest_classifier(25);
+forest.fit(weight, kind);
+
+show(forest.predict([4.0, 24.0]));
+show(forest.score(weight, kind));
+show(forest.classes_);
+show(forest.n_estimators);
+show(forest.n_features_);

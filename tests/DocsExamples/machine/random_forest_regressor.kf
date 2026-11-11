@@ -1,0 +1,15 @@
+import machine;
+import math;
+
+List[FLOAT] temp = [15.0, 18.0, 25.0, 28.0, 32.0];
+List[FLOAT] sales = [20.0, 22.0, 40.0, 44.0, 60.0];
+
+MACHINE forest = machine.random_forest_regressor(20);
+forest.fit(temp, sales);
+
+List[FLOAT] p = forest.predict([16.0, 30.0]);
+show(math.round(p[0], 2));
+show(math.round(p[1], 2));
+show(math.round(forest.score(temp, sales), 2));
+show(forest.n_estimators);
+show(forest.max_depth);

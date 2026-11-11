@@ -1,0 +1,28 @@
+import math;
+
+List[FLOAT] x = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0];
+List[INT] y = [0, 0, 1, 0, 1, 1];
+List[FLOAT] cuts = [2.5, 3.5, 4.5];
+
+for (c in range(0, len(cuts))):
+    FLOAT left = 0.0;
+    FLOAT left_ones = 0.0;
+    FLOAT right = 0.0;
+    FLOAT right_ones = 0.0;
+    for (i in range(0, len(x))):
+        if (x[i] <= cuts[c]):
+            left = left + 1.0;
+            left_ones = left_ones + y[i];
+        ;
+        if (x[i] > cuts[c]):
+            right = right + 1.0;
+            right_ones = right_ones + y[i];
+        ;
+    ;
+    FLOAT pl = left_ones / left;
+    FLOAT pr = right_ones / right;
+    FLOAT gini_left = 1.0 - pl * pl - (1.0 - pl) * (1.0 - pl);
+    FLOAT gini_right = 1.0 - pr * pr - (1.0 - pr) * (1.0 - pr);
+    FLOAT mixed = left / 6.0 * gini_left + right / 6.0 * gini_right;
+    show(math.round(0.5 - mixed, 3));
+;

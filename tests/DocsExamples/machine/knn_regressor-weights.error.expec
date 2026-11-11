@@ -1,0 +1,1 @@
+Exception: machine: KNNRegressor: weights must be 'uniform' or 'distance'

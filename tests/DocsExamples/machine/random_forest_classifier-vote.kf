@@ -1,0 +1,19 @@
+List[INT] votes = [1, 0, 1, 1, 0];
+INT zeros = 0;
+INT ones = 0;
+for (i in range(0, len(votes))):
+    if (votes[i] == 0):
+        zeros = zeros + 1;
+    ;
+    if (votes[i] == 1):
+        ones = ones + 1;
+    ;
+;
+show(zeros);
+show(ones);
+if (ones > zeros):
+    show(1);
+;
+if (zeros >= ones):
+    show(0);
+;

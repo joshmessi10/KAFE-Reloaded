@@ -1,0 +1,4 @@
+{'feature': 0, 'threshold': 2.5, 'left': {'class': 0}, 'right': {'class': 1}}
+[0, 1, 1]
+1.0
+0.83

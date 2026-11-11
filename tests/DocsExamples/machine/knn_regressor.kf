@@ -1,0 +1,11 @@
+import machine;
+import math;
+
+List[FLOAT] size = [30.0, 40.0, 50.0, 60.0, 80.0];
+List[FLOAT] price = [10.0, 14.0, 17.0, 21.0, 28.0];
+
+MACHINE model = machine.knn_regressor(2);
+model.fit(size, price);
+
+show(model.predict([45.0, 70.0]));
+show(math.round(model.score(size, price), 2));
