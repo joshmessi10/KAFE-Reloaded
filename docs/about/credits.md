@@ -1,31 +1,30 @@
-# Credits
+# Créditos
 
-## Authors
+## Autores { #authors }
 
-KAFE was improved and expanded by computer science and artificial intelligence students at **Universidad Sergio Arboleda** (Colombia):
+KAFE fue mejorado y ampliado por estudiantes de Ciencias de la Computación e Inteligencia Artificial de la **Universidad Sergio Arboleda** (Colombia):
 
 - **Josh Sebastián López Murcia**
 - **Franklin Julián González Pérez**
 - **Karen Yireth Castañeda Castro**
 
-The original version of KAFE was created by computer science and artificial intelligence students at **Universidad Sergio Arboleda** (Colombia):
+La versión original de KAFE fue creada por estudiantes de Ciencias de la Computación e Inteligencia Artificial de la **Universidad Sergio Arboleda** (Colombia):
 
 - **Andrés Felipe Sindicue Alvarado**
 - **Luis Felipe Valencia Ramírez**
 - **Emanuel Felipe Molina Triana**
 - **Karen Yireth Castañeda Castro**
 
-
-## Advisor
+## Tutor académico { #advisor }
 
 - **Joaquín Sánchez** — Universidad Sergio Arboleda
 
-## Acknowledgments
+## Agradecimientos { #acknowledgments }
 
-We thank the Universidad Sergio Arboleda academic community for supporting the development of this educational project.
+Agradecemos a toda la comunidad académica de la Universidad Sergio Arboleda por su constante apoyo durante el desarrollo de este proyecto educativo.
 
 ---
 
-- **Version**: v2.0.0
-- **Year**: 2025
-- **License**: GPL-3.0
+- **Versión**: v2.0.0
+- **Año**: 2025
+- **Licencia**: GPL-3.0
