@@ -1,0 +1,3 @@
+import math;
+
+show(math.factorial(3.5));

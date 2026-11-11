@@ -773,3 +773,340 @@ Evaluate Gaussian feature and diagonal component densities directly in log space
 
 - Clamp densities to a tiny positive constant: rejected because distinct extremely unlikely observations would receive identical scores.
 - Ignore samples with zero density: rejected because this makes impossible observations appear artificially favorable.
+
+---
+
+## ADR-0028: Require Python 3.11 for the Stable VS Code Runtime
+
+- **Status**: accepted
+- **Date**: 2026-10-20
+
+### Context
+
+The stable VS Code extension installs a checksum-pinned KAFE runtime from the
+repository lock. The dependency audit reports nine memory-safety and denial-of-
+service advisories for Pillow 12.3.0. Pillow 13.0.0 fixes them but no longer
+supports Python 3.10. Keeping Python 3.10 would prevent the required clean
+release audit.
+
+### Decision
+
+Raise KAFE's minimum supported Python version, Ruff target, basedpyright target,
+CI runtime and managed-extension runtime declaration from 3.10 to 3.11. Resolve
+the lock with Pillow 13.0.0 and retain the package-age quarantine, with narrowly
+documented security-update exceptions for Pillow and certifi.
+
+### Consequences
+
+- Python 3.10 users must upgrade Python before installing the managed KAFE 0.2.0
+  runtime.
+- The extension can install the fixed Pillow release and pass the dependency
+  audit.
+- KAFE language syntax and program behavior do not change.
+
+### Alternatives Considered
+
+- Keep Python 3.10 and publish with known vulnerabilities: rejected because it
+  violates the release quality gate.
+- Remove image ingestion dependencies from verification: rejected because it
+  would hide a supported KafeKaggle capability from the stable release.
+
+---
+
+## ADR-0029: Separate Terminal Execution from Guided Tutor Evidence
+
+- **Status**: accepted
+- **Date**: 2026-10-21
+
+### Context
+
+Learner-started executions were streamed to a VS Code terminal and also projected as Run entries in the Tutor timeline. This duplicated output, filled the conversation with lifecycle records, and blurred the boundary between program execution and pedagogical assistance. The managed runtime also omitted the external dependencies needed by the registered Kaggle and Hugging Face libraries.
+
+### Decision
+
+Keep all visible execution output in the local KAFE terminal. Store the latest matching Run result only as bounded, in-memory evidence that the Tutor may use after a learner asks for help; do not create Tutor transcript entries for Run preparation, completion, failure, or cancellation. Ground the Tutor in reviewed MACHINE and GESHA fixtures while prohibiting final exercise answers, complete ready-to-submit solutions, and verbatim fixture copies.
+
+Add a locked `extension` optional dependency extra containing `datasets`, `kagglehub`, Pillow, and `py7zr`. Managed runtime setup installs that extra; the default developer environment continues to omit `datasets` so the missing-dependency fixture remains deterministic.
+
+### Consequences
+
+- Run output and interactive input have one visible owner: the local terminal.
+- The Tutor can diagnose the learner's actual result without automatically exposing raw output in chat.
+- Managed-extension users receive Kaggle and Hugging Face support during runtime setup.
+- Runtime 0.3.0 and a new checksum-pinned GitHub release are required because runtime 0.2.0 is immutable.
+
+### Alternatives Considered
+
+- Remove Run evidence from the Tutor entirely: rejected because it prevents grounded diagnostic guidance.
+- Continue showing collapsible Run cards: rejected because execution output belongs to the terminal and overwhelms the learning conversation.
+- Install integrations dynamically with pip: rejected because it bypasses the committed uv lock and makes learner environments non-reproducible.
+
+---
+
+## ADR-0030: Save Workspace Tutor Conversations and Export Inert Transcripts
+
+- **Status**: accepted
+- **Date**: 2026-10-25
+
+### Context
+
+The Tutor previously owned one memory-only conversation. New Conversation reset that transcript and learning state, and restarting the extension host discarded it. Learners need independent conversations they can revisit within a project and export for use outside VS Code. Retaining live action registries with archived conversations would also retain stale preparation, file and execution authority. The provider's eight-pair / 32 KiB context window cannot serve as a full transcript archive.
+
+### Decision
+
+Save multiple conversations locally in VS Code `workspaceState` under the versioned `kafeTutor.conversations.v1` key. Keep one active `SessionCoordinator` and the same live `ConversationSession` object. Archive stable identity/title/timestamps, full safe display entries, draft, completed history with source/knowledge dependency references, and learning level plus guided/paused mode. Debounce autosave for 250 ms, serialize writes and flush before transitions. New, Switch, Rename and confirmed Delete use native title/Command Palette actions; the view description identifies the active conversation.
+
+Stop an active provider turn before changing conversations and preserve partial text as cancelled. Advance generation when restoring declarative state, clear optional-source grants and transient learning/evidence/request/proposal state, and never restore executable action handles or live decisions. Block transitions while native Apply/reset is in progress. Continue independent native processes under their original ownership fences. Restored history must pass current source and knowledge eligibility before entering a request.
+
+Bound the local archive to 200 conversations, 4 MiB per conversation and 16 MiB total, with no silent eviction. A malformed existing archive is preserved and reported while the current chat is temporary; failed writes keep the live chat available for retry or export. The archive allows up to 10,000 entries and 5,000 completed pairs per conversation. These archive limits remain distinct from the provider context window.
+
+Export only the selected conversation as one versioned UTF-8 JSON document through a native Save dialog. Capture the selection and transcript before opening that dialog. Include record metadata, complete visible entries/statuses and safe display summaries; omit draft, learning preferences, provider history/dependencies, source metadata and all executable handles. Use a separate 16 MiB export bound so archive-save limits do not prevent a bounded recovery export. Preserve message text, code and Unicode, including learner-entered content. Exclude SecretStorage values, attached-file snapshots, raw requests, private Run evidence and raw transport errors from archive/export and keep existing diagnostic exclusions.
+
+### Rationale
+
+Workspace storage gives each project independent local history using the extension's existing VS Code infrastructure. One active coordinator reuses generation, source and native-action ownership checks without retaining multiple live providers or action registries. Separate archive/provider/export projections preserve a complete readable record while exposing only the data needed by each operation. Native pickers, confirmation and Save controls fit the existing sidebar and explicit action model.
+
+### Consequences
+
+- Messages, drafts and learning preferences now persist across restarts in their workspace; saved checkpoint/proposal summaries remain historical display data. This replaces the previous memory-only transcript contract.
+- A new chat starts at guided Beginner defaults; switching back restores that chat's level/mode and draft. Current source grants, live learning decisions and execution evidence must be obtained again.
+- Local history retains dependency references for current eligibility checks. Public JSON omits those references and internal continuation state, while preserving text/code already entered in the conversation.
+- Save failures and capacity limits are visible instead of silently removing data. Existing malformed storage is not overwritten, and a live transcript can be exported within the separate export limit.
+- JSON export is a transcript format for this release. Import, Markdown, all-chat export, cloud sync and simultaneous background responses remain outside the approved scope.
+- Extension 2.2.0 is a local candidate. Publication and broader integration/release verification require their own evidence.
+
+### Alternatives Considered
+
+- Keep transcripts only in memory: rejected because conversations must survive workspace restarts.
+- Retain a live coordinator/provider for every archived conversation: rejected because this multiplies lifecycle owners and risks preserving stale execution authority.
+- Use a global cross-workspace archive: rejected because the approved scope isolates conversations by workspace.
+- Persist raw session/request objects or restore old actions: rejected because transcript restoration cannot grant file, Apply or Run authority.
+- Save/export only the bounded provider history: rejected because it would omit older visible messages.
+- Silently evict old conversations at capacity: rejected because learners must control deletion and retain a recovery option.
+
+---
+
+## ADR-0031: Bundle Complete Reviewed MACHINE/GESHA Contracts with Shared Bounded Retrieval
+
+- **Status**: accepted
+- **Date**: 2026-10-25
+
+### Context
+
+The Tutor had representative MACHINE/GESHA fixtures and a separately installed knowledge pack, but those did not establish complete public API guidance before runtime installation. The tutorial tree `docs/ejemplos` was absent from pack selection, source-doc drift was not fully covered by extension CI, and lexical paragraph retrieval could lose signatures or clip code. Existing documentation also included Python/backend assumptions that differ from accepted KAFE positional calls. Runtime 0.3.0 is already published with immutable asset checksums; local documentation work must not imply that those assets changed.
+
+### Decision
+
+Ship generated library contracts and relevant documentation/tutorial units with extension 2.3.0. Curated MACHINE/GESHA records cover the intended public functions, aliases, returned-object methods/properties, parameters, returns, constraints, status and reviewed evidence. Source-derived inventories and source-symbol mappings detect missing coverage. Distinguish supported, limited, experimental, deprecated and unsupported behavior; record the unavailable GESHA L1L2 binding with negative evidence rather than changing runtime behavior.
+
+Bind curated review attestation to the actual pinned interpreter revision/fingerprint. Require current/pinned source equality and hash corpus, contracts, evidence and generated contents. Ordinary generation cannot renew manual source review. Full parsing through EOF and exact stdout/stderr/exit checks verify reviewed DSL fixtures against disposable copies of the pinned runtime, with warnings treated as errors. Declare filesystem fixtures and local assets separately; keep long training, downloads and credentials in separately labelled integration work.
+
+Use one explicit safe corpus definition for canonical docs/grammar and Markdown/KAFE tutorials from `docs/ejemplos`, mapped to `examples/tutorials`. Exclude SVGs/presentation assets and preserve existing path, identity and file/byte bounds. The JavaScript bundle/development selectors and future Python release selector share the same policy. A builder consumes the policy committed at its requested source revision; historical revisions without it retain the six required legacy sections.
+
+Use shared case/accent/camelCase/underscore normalization, reviewed English/Spanish aliases and exact symbol lookup. Preserve complete signatures, headings, tables, fenced examples and source units; omit oversized/incomplete units rather than truncate code. At request composition, library material has at most three units / 8 KiB and shares 12 KiB with complete fixture examples; individual admissions are at most 6 KiB. Bundled tool lookup uses five units / 12 KiB. Managed/development search retains five passages, two per file and 2,000 characters per intact passage.
+
+Keep bundled guidance and tool lookup available in message-only Restricted Mode without executable runtime or managed lineage. Prefer current reviewed MACHINE/GESHA references to older managed library narratives. Retain explicit source/trust, preparation, Review, Apply and Run boundaries, workspace conversation isolation, SecretStorage and honest execution evidence. Extend freshness/coverage/CI checks to documentation and dependency-lock inputs.
+
+### Rationale
+
+Bundling removes runtime-install dependence from educational API guidance while reusing the existing dependency-free reference stack. Curated positional contracts explain actual DSL behavior and expose backend-only limits that signatures alone miss. A source-derived completeness gate prevents silent omissions, while independent manual attestation prevents regeneration from automatically blessing changed semantics. Shared corpus selection and atomic bounded retrieval keep provenance consistent without transmitting the entire library on every request.
+
+### Consequences
+
+- Reference completeness covers the intended shipped surface and its explicit limits. It does not establish arbitrary architecture correctness, real-provider answer quality, learner mastery or correctness of a proposed program.
+- Intended top-level coverage comprises 58 MACHINE functions, 56 GESHA wrappers and five activation aliases. Successful direct KAFE evidence covers all 58 MACHINE functions, 55 usable GESHA wrappers and five aliases; the remaining GESHA wrapper stays explicitly unavailable. Receiver records additionally describe callable and limited/backend-only surfaces.
+- Published runtime 0.3.0 source/assets/checksums remain unchanged. Immediate guidance ships in the extension; an expanded managed pack needs a future committed source/versioned release and its own publication/acceptance evidence.
+- Documentation changes can invalidate freshness checks. Corpus parity, bilingual retrieval, negative APIs, intact-unit budgets and packaged assets require deterministic gates.
+- Existing dependency-audit advisories, unavailable native VS Code 1.96.0 validation, real-provider review and broader release checks remain separate pending gates until actual evidence resolves them.
+
+### Alternatives Considered
+
+- Add every fixture without an API inventory: rejected because fixture counts do not prove complete signatures, receiver methods, positional constraints or truthful limitations.
+- Depend exclusively on a managed knowledge pack: rejected because the approved guidance must work before runtime installation.
+- Send every library document on each request: rejected because bounded relevant contracts/examples provide clearer context and preserve request limits.
+- Add a vector database, external indexing service or runtime dependency: rejected because reviewed aliases, exact symbols and atomic lexical retrieval fit the existing stack.
+- Repoint runtime 0.3.0 to rebuilt assets: rejected because published checksums and source identity must remain immutable.
+
+### Study alignment extension 2026-10-26
+
+The user subsequently supplied the evaluation proposal and response regressions and authorized all alignment fixes. Add eight reviewed conceptual topics to the same bundled, hashed reference model. `LearningTopics` selects current-question guidance; conceptual questions lead with an explanation, while exact/API-form requests retain contract precedence. The generator requires all eight objective identities and valid related APIs. Assessment items and answer keys are excluded from production content.
+
+Teaching policy 3 preserves the Tutor role after tools, uses grounding quietly and leaves practical comparisons/experiments with the learner. It distinguishes positive-class sensitivity from the runtime's macro recall, uses available authorized Run values and asks only for indispensable missing values. Source-change labels and conversation isolation remain authoritative. Explicit closed-book assessments and research sharing have separate conditions; no automatic scoring, collection or claim of learning efficacy is introduced. Deterministic context/instruction tests and synthetic bilingual evaluations support review, while actual model answers and research instruments require separate empirical validation.
+
+---
+
+## ADR-0032: Repair Dependency Audits with Targeted Patches and Supported Developer Tooling
+
+### Status
+
+Accepted 2026-10-26. The user explicitly requested correcting failed GitHub CI and authorized autonomous completion while away; earlier commit/push authorization remains applicable.
+
+### Context
+
+The general Python workflow stopped at seven findings in three transitive packages, before its tests. The extension development graph separately reported five findings. The existing pinned developer tools require Node 22 or newer, while CI selected Node 20. Disabling audits or broadly updating unrelated dependencies would weaken or obscure the verification goal.
+
+### Decision
+
+- Lock Brotli 1.2.1, brotlicffi 1.2.1.0 and filelock 4.2.1. Preserve the global seven-day uv cooldown; extend the existing security fast lane only to the two recent Brotli fixes. No new direct Python dependency is added.
+- Keep direct extension/runtime tool versions unchanged. Scope MSAL 7.1.0 to Azure Identity and update the existing serializer override to 7.1.3. Review retained parent APIs and exercise actual offline credential/serialization flows because the MSAL override crosses a major boundary.
+- Use Node 24 LTS in developer CI while retaining the actual VS Code 1.96.0 host and product engine constraint. Audit the complete npm graph once in the Ubuntu unit job, with low severity as the failure threshold.
+- Explicitly deny the unused signing-helper install script. Verify ordinary unsigned VSIX packaging without that binary; do not grant additional install-script execution permissions to remove a warning.
+- Retain all Python warnings, exact stream, coverage, audit and native gates. Document the upstream Mocha/glob installer deprecation narrowly, without log filters, audit exclusions or an unrelated major override.
+- Run the macOS unit matrix entry on the standard `macos-26-intel` host after two repair runs failed to acquire ARM runners with explicit capacity annotations. Log the OS and assert actual Darwin/x64 execution. Preserve all three operating systems, every test and the full-matrix prerequisite for native Windows checks. This changes actual Mac host coverage from ARM64 to x64; Apple Silicon host acceptance remains deferred, rather than inferred from Intel success.
+
+### Compatibility and consequences
+
+Filelock's changed read/write-lock protocol is distinct from the classic FileLock/SoftFileLock APIs used by the locked datasets and Hugging Face hub consumers. A private optional environment exercises those consumers and actual KAFE local-file wrappers; the baseline still excludes datasets. Brotli and a Brotli-compressed 7z archive receive explicit round-trip checks. The optional CSV builder's resource warning is reproduced with old and new filelock and remains a separately recorded upstream limitation, not a clean-pass claim.
+
+These changes repair current repository locks and CI tooling. They do not change interpreter source, language behavior or published runtime 0.3.0 assets/source/checksums. A patched managed-runtime archive requires a separately versioned release. Local checks do not establish hosted CI success; observe every workflow at the final pushed revision.
+
+### References
+
+- [Brotli security release](https://github.com/google/brotli/releases/tag/v1.2.1), [Filelock 4.2.1](https://github.com/tox-dev/filelock/releases/tag/4.2.1).
+- [MSAL advisory](https://github.com/advisories/GHSA-xcx6-jx8p-x3h5), [serializer advisory](https://github.com/yahoo/serialize-javascript/security/advisories/GHSA-m5mm-p8h7-m29v).
+- [uv package-specific cooldowns](https://docs.astral.sh/uv/concepts/resolution/#reproducible-resolutions), [Node release support](https://nodejs.org/en/about/previous-releases), [npm install-script policy](https://docs.npmjs.com/cli/v11/commands/npm-install-scripts/).
+- [Supported standard macOS runner labels](https://docs.github.com/en/actions/reference/runners/github-hosted-runners), [macOS 26 Intel image](https://github.com/actions/runner-images/blob/main/images/macos/macos-26-Readme.md), [Node 24 platform support](https://github.com/nodejs/node/blob/v24.x/BUILDING.md).
+
+
+---
+
+## ADR-0033: Unify Tutor Guidance, Preserve Responses and Bound Conversation Ownership
+
+- **Status**: accepted
+- **Date**: 2026-10-27
+- **Supersedes**: only ADR-0030's stored level/default-level details, and ADR-0031's study-extension teaching-policy-3 detail. All other archive, source-authority, reference and runtime decisions remain in force.
+
+### Context
+
+Learners faced three teaching presets, repeated context routes and complex checkpoint/recovery copy. Semantic response replacement could discard useful model explanations. Persisting full content on every draft/token notification duplicated work, while native source handlers repeated domain invalidation lists. The approved incremental design preserves learner decisions, saved chats and distinct native authorities while reducing those concepts and repeated work.
+
+### Decision
+
+Use one guided baseline (`kafe-guided-4`) with independent Pause/Resume Teaching. Explain concepts directly; invite one focused hypothesis at meaningful choices, accept existing reasoning and provide bounded scaffolding. Brevity/detail requests affect presentation within eligible history only. Retire level UI/commands/messages and hidden presets; add no Remember action, profile, classifier, durable style field or permanent selector.
+
+Preserve actual response text through streaming, completion and structured follow-ups into completed display/history/export. Keep Markdown/protocol/bounds/source validation. A provider's unsupported certification may remain visible; prose never registers host assessment, source permission, action authority or execution proof. Do not replace whole answers with phrase heuristics or add repair-model calls.
+
+Use archive payload v2 with mode-only preferences at the single existing `kafeTutor.conversations.v1` key. Strict original v1 validation precedes transformation of every valid former level to the common baseline, preserving paused state, all record/content/draft/date/selection/history dependencies and bounds. Validate complete v2 before saving. Original storage survives load and failed writes until a normal successful serialized v2 save. V1-only older readers are unsupported afterward. No dual-write, competing backup key or extra crash-atomicity guarantee. Public export stays schema 1; migration cannot recover text absent from old storage.
+
+Keep first chat and saved `.kf` Run guidance short; native masked key input/SecretStorage, native diffs and terminals remain. A configured key is not verified credentials. Confirm choice records adoption only; Prepare change authorizes one proposal for a visible exact target/scope, followed by separate Review, Apply and Run. Failure/cancellation consumes preparation permission. Context omissions reflect immutable submitted-history metadata, not a prediction or automatic resend. Restored content never restores file/action grants. Keep one file disclosure, reachable composer controls and deliberate Stop focus recovery.
+
+Automatic trusted preparation of a missing published runtime remains noncancellable. Report actual ready/unavailable/failure outcomes with explicit retry/details. Runtime retry neither sends the draft nor executes code. Bundled references and otherwise eligible configured chat are independent of Run readiness. Runtime 0.3.0 assets/pins, provider model/endpoints and library behavior remain unchanged.
+
+Use private mutation signatures only for persistence bookkeeping. Share detached deeply frozen event projections and retain independently detached explicit snapshots. Capture/normalize at debounce and explicit flush/list/export/switch/disposal boundaries; keep full store validation, mutation-time recency and safe titles. The measured optimization is recorded at `86b78ff`, not as final-candidate native latency.
+
+Centralize domain source/authorization revocation and dependency enumeration in `SessionCoordinator`; native observation/authorization/revisions remain in the adapter. Use the same native-active observation for pure ordinary relevance and source-change fan-out. Broad retained metadata does not admit historical sources or broaden ordinary edit invalidation. Enumerate retained current-generation Run targets from the existing session registry. Preserve focus/settled-proposal distinctions, generation/disposal guards around reentrant callbacks, and post-await rechecks.
+
+Align the study record to six independent pre/post short-answer items, 0–2 each, maximum 12, while retaining eight conceptual teaching topics. Adapted ICAP observation and SUS administration are human descriptive/exploratory procedures, not product scoring. No assessment items/answers, proctoring, automatic scoring or research upload is introduced; consent and independent administration remain facilitator responsibilities.
+
+### Rationale
+
+One teaching contract reduces unnecessary configuration without inferring expertise. Text preservation favors useful explanations over destructive semantic guesses, with host authority maintained independently. Compatible strict archive reading avoids losing legitimate saved chats. Measured boundary work reduces repeated normalization while preserving immutable ownership and fresh authorization.
+
+### Consequences
+
+- Provider compliance and educational effectiveness still require real-provider and human research evidence. No click, successful Run, deterministic test or source identity establishes mastery.
+- Preserve provider history eight whole eligible pairs / 32 KiB; snapshots 64 KiB each; Run output 1 MiB; archive 200 chats / 10,000 entries / 5,000 pairs per chat / 4 MiB content / 16 MiB total, and separate 16 MiB export.
+- Full aggregate at `7169368`: 1,007 pass, one existing Windows symlink skip. Reentrant Run fix `781b46f`: 348 covering passes. Final aggregate/layout/package remain integration-owned; native 1.96.0 cache absence, physical IME/speech, publication, provider review and study outcomes are separate pending gates.
+- Existing docs deployment permits an integration branch contrary to root main-only policy. This pre-existing drift is separately recorded, unchanged and undispatched; documentation validation does not resolve it.
+
+### Alternatives Considered
+
+- Keep hidden presets after removing the picker: rejected because the unified contract includes behavior.
+- Durable style memory or automatic intent classification: explicitly rejected by the user.
+- Heuristic whole-answer replacement or extra repair request: rejected in favor of retained text and separate authority.
+- Fork/dual-write archives or relax legacy validation: rejected because this risks ambiguity, corruption or lost conversations.
+- Generic event bus, duplicate Run registry or cached authorization: rejected because existing owners and fresh checks suffice.
+
+## ADR-0034: Install a Light Managed Runtime with Optional Data Packs
+
+- **Status**: accepted
+- **Date**: 2026-10-30
+- **Supersedes**: the `extension` extra and "auto-install on first use" details of the managed runtime and KafeKaggle. ADR-0031 contracts and all other runtime decisions remain in force.
+
+### Context
+
+The managed runtime installed the `extension` extra (`datasets`, `kagglehub`, Pillow, `py7zr`, `multiprocess`) during first setup: about 250 MB across 50 packages on darwin-arm64, with `pyarrow` alone at 129 MB. The KAFE core needs only `antlr4-python3-runtime`, and only programs importing `huggingface` or `kaggle` use those packages. KafeKaggle also imported `kagglehub` at module level, adding about 0.44 s to every program (0.65 s total for Fibonacci), and it fell back to `pip install`, which uv environments lack and project policy forbids. Separately, 2.3.2 refused setup whenever the GitHub release was unpublished, despite bundling the runtime, and rejected uv's `bin/python` symlink on macOS/Linux.
+
+### Decision
+
+First setup installs only the core with `uv sync --locked --no-dev --inexact`. Split the extras into `huggingface` (`datasets`, `multiprocess<0.70.18`) and `kaggle` (`kagglehub`, Pillow, `py7zr`). Learners install packs only through explicit commands, **KAFE: Install Hugging Face Pack** and **KAFE: Install Kaggle Pack**: no prompt before Run and no automatic install (user decision). The commands run `uv sync --locked --no-dev --inexact --extra <pack>` against the ready runtime. They require a trusted workspace and a ready runtime, refuse while setup is running, and share one in-flight install per pack.
+
+`--inexact` is mandatory: plain `uv sync` removes other extras, while `uv run --locked` keeps them. A failed pack leaves the ready core intact. A full runtime reinstall recreates the environment, so packs are reinstalled from the uv cache.
+
+KafeKaggle and KafeHF import their packages lazily and never install anything. A missing pack raises a deterministic message naming both the VS Code command and the uv command. Runtime 0.5.0 (`8de7388b`) carries these extras; extension 2.4.0 pins it. Host setup is available when either the bundled archive or the published release exists. The managed `bin/python` symlink is accepted only when it resolves to a regular file inside the runtime storage root.
+
+### Rationale
+
+Most learner programs never use Hugging Face or Kaggle, so their dependencies should not delay first setup or every Run. Explicit commands keep large downloads visible and consented without adding a pre-Run prompt. Lazy imports are the smallest change that removes the startup cost. Removing pip restores the uv-only dependency policy.
+
+### Consequences
+
+- First setup downloads only Python, uv and the core; Hugging Face and Kaggle programs need one extra command.
+- Run startup drops from about 0.65 s to about 0.15 s on darwin-arm64.
+- Baseline fixtures cover both missing packs; `kagglehub` and `datasets` stay out of the dev group.
+- Windows/Linux real installs, extension-host tests, a published GitHub runtime release and Marketplace publication remain pending gates.
+
+### Alternatives Considered
+
+- Prompt or install automatically before Run: rejected by the user in favor of manual commands.
+- Fully offline platform-specific VSIX with bundled Python and wheels: deferred; compatible with this design.
+- Replace `datasets` with direct Hub HTTP calls: rejected; it loses formats and adds a client to maintain.
+
+
+## ADR-0035: Bilingual Learning-First Documentation Site
+
+- **Status**: accepted
+- **Date**: 2026-11-09
+
+### Context
+
+The MkDocs site was written for programmers: a single dark black/yellow theme, no logo, no language switch, and English and Spanish pages mixed without a way to choose a language. The user wants a site in the style of the FastAPI "Learn" documentation, using the KAFE Reloaded logo, in Spanish and English, that explains concepts to people with no programming background and eventually documents every library function.
+
+### Decision
+
+Keep MkDocs Material and add `mkdocs-static-i18n` to the `docs` dependency group only. Use the suffix structure: `page.md` is Spanish (default, served at `/`) and `page.en.md` is English (served at `/en/`), with `fallback_to_default: true` so untranslated pages still render. Navigation labels are Spanish and translated through `nav_translations`. The theme uses the logo colors (black header, lime `#c6f21a` accent, darker lime `#5a7a00` for links in light mode) with a light/dark toggle. Top-level tabs are Inicio, Aprende, Tutorial, Librerías, Ejemplos, Avanzado and Acerca de. Phase 1 changes only the navigation: no existing URL moves. A bilingual style guide (`docs/contribuir/guia-de-estilo.md`) defines the beginner tone and the per-function reference template for later phases.
+
+### Rationale
+
+Material already provides the FastAPI-like layout, so no theme change is needed. Material has no per-page language switch; the plugin adds it from one `docs/` tree and one configuration. Keeping URLs stable avoids broken external links and strict-build failures while content is rewritten.
+
+### Consequences
+
+- One new docs-only dependency; the interpreter, tests and runtime are unaffected.
+- During the transition some pages show existing content in the other language through fallback.
+- Later phases (Learn lessons, tutorial rewrite, full per-library reference, complete translation and URL moves) follow the style guide, each with its own design spec.
+
+### Alternatives Considered
+
+- Two MkDocs configurations with separate `docs_dir`: rejected because it duplicates configuration and deployment.
+- Exact FastAPI teal/amber palette: rejected by the user in favor of the logo colors.
+- Moving files into new folders now: deferred to avoid breaking URLs before content is rewritten.
+
+## ADR-0036: Documentation Examples Are Tested Fixtures
+
+- **Status**: accepted
+- **Date**: 2026-11-09
+
+### Context
+
+The beginner documentation (ADR-0035) will contain hundreds of KAFE examples: one or more per library function plus every lesson and tutorial page. Examples pasted into Markdown silently drift from the interpreter when a library changes, and readers who copy a broken example have no way to tell.
+
+### Decision
+
+Every runnable KAFE example shown in the documentation lives as a fixture under `tests/DocsExamples/<area>/`: `<name>.kf` with `<name>.expec`, or `<name>.error.kf` with `.error.expec` and `.error.stderr.expec` for common mistakes. `tests/test_DocsExamples.py` collects them with the existing `tests/utils.py` helpers, so they run in the normal pytest gate with `PYTHONWARNINGS=error` and child-process coverage. Pages include the same files with `pymdownx.snippets` (`--8<--`). Examples whose code and output are language-neutral are shared by both languages; examples with Spanish text or identifiers have an `<name>.en.kf` counterpart. Examples that need network access or optional packages are not run; only their missing-dependency path is tested. The docs deployment trigger also watches `tests/DocsExamples/`. Illustrations are inline animated SVG files in `docs/assets/illustrations/` that use theme classes from `custom.css` and respect `prefers-reduced-motion`.
+
+### Rationale
+
+Including the tested file is the smallest mechanism that guarantees the displayed code and output match the interpreter, and it reuses the existing fixture harness instead of adding a documentation test tool.
+
+### Consequences
+
+- A library change that breaks a documented example fails CI.
+- The test suite grows by several hundred short child-process runs.
+- Writers cannot use illustrative output that the interpreter does not produce.
+
+### Alternatives Considered
+
+- Examples pasted directly into Markdown and checked by hand: rejected because they drift.
+- A doctest-style extractor that parses Markdown code blocks: rejected as extra custom infrastructure.
+- GIF or video animations: rejected by the user in favor of lightweight theme-aware SVG.

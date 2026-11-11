@@ -1,0 +1,6 @@
+import pardos;
+
+PARDOS class_a = pardos.read_csv("data/class-a.csv");
+PARDOS class_b = pardos.read_csv("data/class-b.csv");
+PARDOS everyone = class_a.concat(class_b);
+show(everyone.shape());

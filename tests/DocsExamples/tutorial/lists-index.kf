@@ -1,0 +1,7 @@
+List[INT] nums = [10, 20, 30];
+show(nums[0]);
+show(nums[1]);
+show(nums[-1]);
+show(nums[-2]);
+nums[0] = 99;
+show(nums);

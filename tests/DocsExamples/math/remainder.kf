@@ -1,0 +1,4 @@
+import math;
+
+show(math.remainder(10, 3));
+show(math.remainder(11, 3));

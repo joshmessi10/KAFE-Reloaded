@@ -1,0 +1,23 @@
+<svg viewBox="0 0 580 230" role="img" aria-labelledby="ill-sin-t ill-sin-d" xmlns="http://www.w3.org/2000/svg">
+<title id="ill-sin-t">El seno es la altura de un punto que gira / Sine is the height of a turning point</title>
+<desc id="ill-sin-d">A point turns around a circle of radius 1. Its height goes up and down between 1 and -1, and that height, drawn over time, makes the sine wave on the right.</desc>
+<style>
+@keyframes ill-sin-turn { from { transform: rotate(0deg) } to { transform: rotate(-360deg) } }
+@keyframes ill-sin-wave { from { transform: translateX(0) } to { transform: translateX(-200px) } }
+@keyframes ill-sin-dot { 0% { transform: translateY(0); animation-timing-function: ease-out } 25% { transform: translateY(-80px); animation-timing-function: ease-in } 50% { transform: translateY(0); animation-timing-function: ease-out } 75% { transform: translateY(80px); animation-timing-function: ease-in } 100% { transform: translateY(0) } }
+.ill-sin-arm { transform-origin: 110px 115px; animation: ill-sin-turn 6s linear infinite; }
+.ill-sin-wave { animation: ill-sin-wave 6s linear infinite; }
+.ill-sin-dot { animation: ill-sin-dot 6s infinite; }
+</style>
+<defs><clipPath id="ill-sin-clip"><rect x="270" y="20" width="290" height="200"/></clipPath></defs>
+<circle class="k-line" cx="110" cy="115" r="80"/>
+<path class="k-thin" d="M20 115 H200 M110 25 V205"/>
+<text x="196" y="108">1</text><text x="114" y="30">1</text>
+<g class="ill-sin-arm"><path class="k-accent-line" d="M110 115 H190"/><circle class="k-accent" cx="190" cy="115" r="8"/></g>
+<path class="k-thin" d="M270 115 H560"/>
+<path class="k-thin" d="M290 35 H560 M290 195 H560" stroke-dasharray="4 6"/>
+<text x="270" y="40">1</text><text x="262" y="200">-1</text>
+<g clip-path="url(#ill-sin-clip)"><path class="k-line ill-sin-wave" d="M290 115.0 L295 102.5 L300 90.3 L305 78.7 L310 68.0 L315 58.4 L320 50.3 L325 43.7 L330 38.9 L335 36.0 L340 35.0 L345 36.0 L350 38.9 L355 43.7 L360 50.3 L365 58.4 L370 68.0 L375 78.7 L380 90.3 L385 102.5 L390 115.0 L395 127.5 L400 139.7 L405 151.3 L410 162.0 L415 171.6 L420 179.7 L425 186.3 L430 191.1 L435 194.0 L440 195.0 L445 194.0 L450 191.1 L455 186.3 L460 179.7 L465 171.6 L470 162.0 L475 151.3 L480 139.7 L485 127.5 L490 115.0 L495 102.5 L500 90.3 L505 78.7 L510 68.0 L515 58.4 L520 50.3 L525 43.7 L530 38.9 L535 36.0 L540 35.0 L545 36.0 L550 38.9 L555 43.7 L560 50.3 L565 58.4 L570 68.0 L575 78.7 L580 90.3 L585 102.5 L590 115.0 L595 127.5 L600 139.7 L605 151.3 L610 162.0 L615 171.6 L620 179.7 L625 186.3 L630 191.1 L635 194.0 L640 195.0 L645 194.0 L650 191.1 L655 186.3 L660 179.7 L665 171.6 L670 162.0 L675 151.3 L680 139.7 L685 127.5 L690 115.0 L695 102.5 L700 90.3 L705 78.7 L710 68.0 L715 58.4 L720 50.3 L725 43.7 L730 38.9 L735 36.0 L740 35.0 L745 36.0 L750 38.9 L755 43.7 L760 50.3 L765 58.4 L770 68.0 L775 78.7 L780 90.3 L785 102.5 L790 115.0"/></g>
+<path class="k-accent-line" d="M290 25 V205" stroke-dasharray="3 5"/>
+<circle class="k-accent ill-sin-dot" cx="290" cy="115" r="8"/>
+</svg>

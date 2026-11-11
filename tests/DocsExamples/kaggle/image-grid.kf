@@ -1,0 +1,5 @@
+-- A tiny 3x3 gray picture of a plus sign: 1.0 is white, 0.0 is black.
+List[List[List[FLOAT]]] img = [[[0.0, 1.0, 0.0], [1.0, 1.0, 1.0], [0.0, 1.0, 0.0]]];
+show([len(img), len(img[0]), len(img[0][0])]);
+show(img[0][1]);
+show(img[0][0][1]);

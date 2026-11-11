@@ -1,0 +1,1072 @@
+const assert = require('node:assert/strict');
+const test = require('node:test');
+const { randomUUID } = require('node:crypto');
+const { SessionCoordinator } = require('../../src/tutor/SessionCoordinator');
+const { CodeProposalProvider } = require('../../src/tutor/CodeProposalProvider');
+const { ContextComposer } = require('../../src/tutor/ContextComposer');
+const { ToolRouter, selectedSourceId, metadataLineage } = require('../../src/tutor/ToolRouter');
+const { exportConversation } = require('../../src/tutor/ConversationStore');
+const deferred = () => { let resolve; const promise = new Promise(r => resolve = r); return { promise, resolve }; };
+const uri = path => ({ scheme: 'file', path, toString() { return `file://${path}`; } });
+const metadata = { sourceMode: 'managed', runtimeVersion: '1', knowledgePackVersion: '1', packIdentity: 'pack-a', expectedContentSha256: 'a'.repeat(64) };
+const ready = { status: 'ready', metadata };
+const unavailable = { status: 'unavailable', code: 'knowledge_missing' };
+const terminal = (text = 'Hello.', toolCalls = []) => ({ type: 'complete', text, toolCalls, finishReason: toolCalls.length ? 'tool_calls' : 'stop' });
+function fixture(options = {}) {
+  let context = options.context || {}, availability = options.availability || unavailable;
+  const sent = [], reads = [];
+  const reader = { validateUri: async () => true, readDocument: async u => { reads.push(u.toString()); return options.read ? options.read(u) : { uri: u, text: 'optional', version: 1 }; } };
+  const retriever = { getKnowledgeLineage: async () => availability.status === 'ready' ? metadataLineage(availability.metadata) : null,
+    search: options.search || (async () => []) };
+  const composer = new ContextComposer({ documentReader: reader, knowledgeRetriever: retriever });
+  const provider = { getRequestParameters: () => ({ model: 'deepseek-flash', thinking: { type: 'disabled' }, stream: true }),
+    async *stream(input) { sent.push(input.request); yield* options.events?.(input, sent.length) || [terminal()]; } };
+  const coordinator = new SessionCoordinator({ provider, contextComposer: composer,
+    proposalProvider: options.proposalProvider,
+    toolRouter: new ToolRouter({ knowledgeRetriever: retriever }), getContext: options.getContext || (() => context), getSourceRevision: options.getSourceRevision || (() => 0),
+    getKnowledgeAvailability: options.getKnowledgeAvailability || (async () => availability),
+    progressStore: { load() { throw Error('Progress must not be loaded'); }, save() { throw Error('Progress must not be changed'); } } });
+  const submit = (text = 'Hello', submissionId = randomUUID()) => coordinator.handleLearnerMessage({ type: 'submitMessage', text, submissionId, contextRevision: coordinator.snapshot().context?.revision ?? 0 });
+  return { coordinator, composer, provider, reader, sent, reads, submit, setContext: c => context = c, setAvailability: a => availability = a };
+}
+
+test('comparison fallback and constructor model parameters reach submitted coordinator requests', async () => {
+  const { DeepSeekProvider } = require('../../src/tutor/providers/DeepSeekProvider');
+  for (const mode of ['missing-method', 'empty-parameters', 'provider-default', 'custom-model']) {
+    const f = fixture({ events: async function* (_, round) {
+      yield round === 1 ? terminal('', [{ id: 'run', name: 'getLatestRunResult', arguments: {} }]) : terminal();
+    } });
+    if (mode === 'missing-method') delete f.provider.getRequestParameters;
+    else if (mode === 'empty-parameters') f.provider.getRequestParameters = () => undefined;
+    else {
+      const provider = new DeepSeekProvider({ secretStorage: {}, ...(mode === 'custom-model' ? { model: mode } : {}) });
+      f.provider.getRequestParameters = () => provider.getRequestParameters();
+    }
+    await f.coordinator.refreshContext();
+    assert.equal((await f.submit('Explain lists')).status, 'completed', mode);
+    assert.equal(f.sent.length, 2, mode);
+    for (const request of f.sent) {
+      assert.deepEqual({ model: request.model, thinking: request.thinking, stream: request.stream },
+        { model: mode === 'custom-model' ? mode : 'deepseek-v4-pro', thinking: { type: 'disabled' }, stream: true }, mode);
+      assert.deepEqual(request.tools.map(tool => tool.function.name), [
+        'readActiveDocument', 'searchKafeKnowledge', 'getLatestRunResult', 'proposeCodeChange', 'proposeLearningCheckpoint',
+      ]);
+    }
+    assert.deepEqual(f.sent[0].messages.at(-1), { role: 'user', content: 'Explain lists' });
+    assert.equal(f.sent[1].messages.at(-1).role, 'tool');
+    assert.equal(f.sent[1].messages.at(-1).tool_call_id, 'run');
+    f.coordinator.dispose();
+  }
+});
+
+test('action evidence changing during awaited capture cannot be admitted under a later revision', async () => {
+  const f = fixture({ context: { activeDocument: { uri: uri('/a.kf'), text: 'A', version: 1 } } });
+  await f.coordinator.refreshContext();
+  const original = f.composer.compose.bind(f.composer);
+  f.composer.compose = async options => {
+    const result = await original(options);
+    f.coordinator.actionEvidence.recordRunState({ sourceUri: 'file:///a.kf', status: 'failed' }); return result;
+  };
+  const state = f.coordinator.session.snapshot();
+  const submission = { submissionId: randomUUID(), text: 'Explain', inputRevision: state.inputRevision, context: state.context };
+  const captured = await f.coordinator.captureSubmission(submission);
+  assert.equal(f.coordinator.isSubmissionAuthorized(captured), false);
+});
+
+test('conversation generation reset clears host evidence even through the shared session reset path', () => {
+  const f = fixture();
+  f.coordinator.recordRunResult({ stdout: 'OLD_OUTPUT', stderr: '', exitCode: null, outputTruncated: false,
+    runtimeVersion: '1', knowledgePackVersion: '1', sourceUri: 'file:///a.kf', runSequence: 1 });
+  assert.equal(f.coordinator.actionEvidence.selectContext({ authorizedFiles: [{ uri: 'file:///a.kf' }] }).records.length, 1);
+  f.coordinator.session.reset();
+  assert.equal(f.coordinator.actionEvidence.selectContext({ authorizedFiles: [{ uri: 'file:///a.kf' }] }).records.length, 0);
+  assert.equal(f.coordinator.evidence, null);
+});
+
+const learningCheckpoint = patch => ({ id: 'checkpoint', name: 'proposeLearningCheckpoint', arguments: { kind: 'design', name: 'Loop', learnerProposalSummary: 'Learner idea', tutorProposedAdditions: [], scopeSummary: 'Print items', tradeoffs: [], unresolvedChoices: [], sourceIds: [], ...patch } });
+test('Restricted search then design checkpoint publishes retrieved file-free knowledge without continuation', async () => {
+  let searches = 0;
+  const f = fixture({ context: { restricted: true }, availability: ready,
+    search: async () => { searches++; return searches === 1 ? [] : [{ id: 'loops', path: 'language/loops.md', text: 'Loop details', category: 'language', ...metadata }]; },
+    events: async function* () { yield terminal('', [{ id: 'lookup', name: 'searchKafeKnowledge', arguments: { query: 'loop' } }, learningCheckpoint({ sourceIds: ['knowledge:loops'] })]); } });
+  await f.coordinator.refreshContext(); assert.equal((await f.submit('Explain lists')).status, 'completed');
+  assert.equal(f.sent.length, 1); assert.equal(searches, 2);
+  assert.deepEqual(f.sent[0].tools.map(tool => tool.function.name), ['searchKafeKnowledge', 'proposeLearningCheckpoint']);
+  const decision = f.coordinator.learningSession.snapshot().decisions[0];
+  assert.deepEqual(decision.dependencies, { files: [], knowledgeLineage: metadataLineage(metadata) });
+  assert.deepEqual(decision.checkpoint.sourceIds, ['knowledge:loops']);
+  const entry = f.coordinator.snapshot().entries.find(e => e.kind === 'checkpoint');
+  assert.equal(entry.status, 'ready'); assert.equal(entry.data.preparationEligible, false); assert.deepEqual(entry.actions, []);
+});
+test('checkpoint settlement advances only the learning revision while preserving the original source fence', async () => {
+  let sourceRevision = 0;
+  const f = fixture({ context: { activeDocument: { uri: uri('/a.kf'), text: 'show(1)', version: 1 } }, getSourceRevision: () => sourceRevision,
+    events: async function* () { yield terminal('', [learningCheckpoint({ sourceIds: ['active-file'] })]); } });
+  await f.coordinator.refreshContext(); assert.equal((await f.submit()).status, 'completed');
+  const captured = f.coordinator.controller.current.snapshot, decision = f.coordinator.learningSession.snapshot().decisions[0];
+  assert.equal(f.coordinator.isSubmissionAuthorized(captured), false);
+  assert.equal(f.coordinator.isSubmissionAuthorized(captured, { learningRevision: decision.revision }), true);
+  assert.equal(await f.coordinator.validateSubmission(captured), false);
+  sourceRevision++;
+  assert.equal(f.coordinator.isSubmissionAuthorized(captured, { learningRevision: decision.revision }), false);
+});
+test('source revision changed during checkpoint publication cancels without explicit revocation', async () => {
+  let sourceRevision = 0, changed = false;
+  const f = fixture({ context: { activeDocument: { uri: uri('/a.kf'), text: 'show(1)', version: 1 } }, getSourceRevision: () => sourceRevision,
+    events: async function* () { yield terminal('', [learningCheckpoint({ sourceIds: ['active-file'] })]); } });
+  await f.coordinator.refreshContext();
+  f.coordinator.subscribe(state => {
+    if (!changed && state.entries.some(entry => entry.kind === 'checkpoint')) { changed = true; sourceRevision++; }
+  });
+  assert.equal((await f.submit()).status, 'cancelled'); assert.equal(changed, true);
+  assert.equal(f.coordinator.controller.publishedCheckpoints().length, 0);
+  assert.equal(f.coordinator.snapshot().entries.find(entry => entry.kind === 'checkpoint').status, 'stale');
+});
+test('New conversation during checkpoint cancellation cleanup cannot restore the old turn', async () => {
+  const f = fixture({ events: async function* () { yield terminal('', [learningCheckpoint({})]); } });
+  const initialGeneration = f.coordinator.snapshot().generation;
+  let invalidated = false, reset = false;
+  f.coordinator.subscribe(state => {
+    if (!invalidated && state.entries.some(entry => entry.kind === 'checkpoint' && entry.status === 'ready')) {
+      invalidated = true; f.coordinator.controller.invalidateCheckpoints();
+    }
+    if (invalidated && !reset && state.entries.some(entry => entry.kind === 'assistant' && entry.status === 'cancelled')) {
+      reset = true; f.coordinator.newConversation();
+    }
+  });
+  assert.equal((await f.submit()).status, 'cancelled');
+  assert.equal(invalidated, true); assert.equal(reset, true);
+  const state = f.coordinator.snapshot();
+  assert.equal(state.generation, initialGeneration + 1);
+  assert.deepEqual(state.entries, []); assert.equal(state.turn, null);
+  assert.deepEqual(f.coordinator.learningSession.snapshot().decisions, []);
+  assert.equal(f.coordinator.controller.current, null);
+  assert.deepEqual(f.coordinator.controller.publishedCheckpoints(), []);
+});
+test('checkpoint inherits prior decision and tool-retrieved knowledge with no continuation', async () => {
+  let searches = 0;
+  const f = fixture({ context: { activeDocument: { uri: uri('/a.kf'), text: 'show(1)', version: 2 } }, availability: ready,
+    search: async () => { searches++; return searches === 1 ? [] : [{ id: 'loops', path: 'language/loops.md', text: 'Loop details', category: 'language', ...metadata }]; },
+    events: async function* () { yield terminal('', [{ id: 'lookup', name: 'searchKafeKnowledge', arguments: { query: 'loop' } }, learningCheckpoint({ sourceIds: ['knowledge:loops'] })]); } });
+  await f.coordinator.refreshContext();
+  const file = { uri: 'file:///a.kf', version: 2, contentSha256: require('../../src/tutor/RequestSnapshot').sha256('show(1)') };
+  const prior = f.coordinator.learningSession.addDecision({ ...learningCheckpoint({}).arguments, priorDecisionIds: [] }, { files: [file], knowledgeLineage: metadataLineage(metadata) });
+  f.coordinator.session.recordCompletedPair({ id: 'old-history', learnerText: 'Old discussion', assistantText: 'Old source discussion', dependencies: { fileUris: ['file:///a.kf'], knowledgeLineage: metadataLineage(metadata) } });
+  assert.equal((await f.submit('Explain lists')).status, 'completed'); assert.equal(f.sent.length, 1);
+  const decision = f.coordinator.learningSession.snapshot().decisions.at(-1);
+  assert.deepEqual(decision.dependencies.files, [file]); assert.equal(decision.dependencies.knowledgeLineage, metadataLineage(metadata));
+  assert.equal(prior.id !== decision.id, true);
+  assert.equal(f.coordinator.controller.checkpoint(decision.id).decisionId, decision.id);
+  f.coordinator.controller.revokeSource(file.uri);
+  assert.equal(f.coordinator.controller.checkpoint(decision.id), null);
+  assert.equal(f.coordinator.snapshot().entries.find(e => e.kind === 'checkpoint').status, 'stale');
+  assert.equal(f.coordinator.learningSession.snapshot().decisions.at(-1).disposition, 'proposed');
+});
+for (const change of ['removed', 'trust', 'knowledge']) test(`settled checkpoint becomes stale after ${change} grounding change`, async () => {
+  const active = { uri: uri('/a.kf'), text: 'show(1)', version: 2 };
+  const f = fixture({ context: { activeDocument: active }, availability: ready,
+    events: async function* () { yield terminal('', [learningCheckpoint({ sourceIds: ['active-file'] })]); } });
+  await f.coordinator.refreshContext(); assert.equal((await f.submit()).status, 'completed');
+  const id = f.coordinator.learningSession.snapshot().decisions[0].id;
+  if (change === 'removed') f.setContext({});
+  if (change === 'trust') f.setContext({ restricted: true });
+  if (change === 'knowledge') f.setAvailability({ status: 'ready', metadata: { ...metadata, packIdentity: 'pack-b' } });
+  await f.coordinator.refreshContext();
+  assert.equal(f.coordinator.controller.checkpoint(id), null);
+  assert.equal(f.coordinator.snapshot().entries.find(e => e.kind === 'checkpoint').status, 'stale');
+});
+test('unrelated source edits and draft changes retain checkpoint ownership', async () => {
+  const f = fixture({ context: { activeDocument: { uri: uri('/a.kf'), text: 'show(1)', version: 2 } },
+    events: async function* () { yield terminal('', [learningCheckpoint({ sourceIds: ['active-file'] })]); } });
+  await f.coordinator.refreshContext(); assert.equal((await f.submit()).status, 'completed');
+  const id = f.coordinator.learningSession.snapshot().decisions[0].id;
+  f.coordinator.controller.revokeSource('file:///unrelated.kf'); f.coordinator.session.setDraft('Next draft');
+  await f.coordinator.refreshContext(); assert.ok(f.coordinator.controller.checkpoint(id));
+});
+test('new conversation during checkpoint publication cannot retain an old actionable record', async () => {
+  const f = fixture({ events: async function* () { yield terminal('', [learningCheckpoint({})]); } });
+  let reset = false;
+  f.coordinator.subscribe(state => {
+    if (!reset && state.entries.some(entry => entry.kind === 'checkpoint')) { reset = true; f.coordinator.newConversation(); }
+  });
+  assert.equal((await f.submit()).status, 'cancelled');
+  assert.equal(f.coordinator.controller.publishedCheckpoints().length, 0);
+  assert.equal(f.coordinator.learningSession.snapshot().decisions.length, 0);
+  assert.equal(f.coordinator.snapshot().entries.some(e => e.kind === 'checkpoint'), false);
+});
+
+test('preferences changed during provider response queue until settlement without mutating the request', async () => {
+  const gate = deferred(), entered = deferred();
+  const f = fixture({ events: async function* () { entered.resolve(); await gate.promise; yield terminal(); } });
+  const sending = f.submit('Design a list'); await entered.promise;
+  const captured = f.coordinator.controller.current.snapshot;
+  assert.equal((await f.coordinator.handleLearnerMessage({ type: 'setLearningPreferences', preferences: { mode: 'paused' } })).status, 'queued');
+  assert.equal(captured.learning?.preferences.mode, 'guided');
+  assert.equal(f.coordinator.learningSession.snapshot().preferences.mode, 'guided');
+  gate.resolve(); assert.equal((await sending).status, 'completed');
+  assert.equal(f.coordinator.learningSession.snapshot().preferences.mode, 'paused');
+  assert.equal(captured.learning.preferences.mode, 'guided');
+  await f.submit('What is a loop?');
+  assert.match(f.sent.at(-1).messages[0].content, /paused.*do not require.*reasoning/i);
+});
+
+test('new conversation and recreated host clear learning independently of legacy state and credentials', async () => {
+  const f = fixture();
+  await f.coordinator.handleLearnerMessage({ type: 'setLearningPreferences', preferences: { mode: 'paused' } });
+  f.coordinator.learningSession.addObservation({ kind: 'concept', text: 'Iteration explained', attribution: 'tutor', uncertainty: 'Unknown', status: 'observed', priorDecisionIds: [] }, { files: [], knowledgeLineage: null });
+  f.coordinator.newConversation(); await f.coordinator.refreshContext();
+  assert.deepEqual(f.coordinator.learningSession.snapshot().preferences, { mode: 'guided' });
+  assert.deepEqual(f.coordinator.learningSession.snapshot().observations, []);
+  const another = fixture();
+  assert.equal(another.coordinator.learningSession.snapshot().preferences.mode, 'guided');
+});
+
+test('settlement observers cannot replace completion or retry, and run once after busy clears', async () => {
+  const f = fixture(); let calls = 0;
+  f.coordinator.controller.onSettled = () => {
+    calls++; assert.equal(f.coordinator.controller.current.busy, false); throw new Error('Observer failure');
+  };
+  assert.equal((await f.submit()).status, 'completed');
+  assert.equal(calls, 1);
+  assert.equal(f.sent.length, 1);
+});
+
+test('native host submission and retry settle queued preferences through the shared controller', async () => {
+  const { TutorHostActions } = require('../../src/tutor/TutorHostActions');
+  const { ProviderError } = require('../../src/tutor/providers/ProviderError');
+  const gates = [deferred(), deferred()], entered = [deferred(), deferred()];
+  const f = fixture({ events: async function* (input, count) {
+    entered[count - 1].resolve(); await gates[count - 1].promise;
+    if (count === 1) throw new ProviderError('provider_unavailable');
+    yield terminal();
+  } });
+  const actions = new TutorHostActions({ session: f.coordinator.session, controller: f.coordinator.controller, coordinator: f.coordinator });
+  const first = actions.submitMessage({ submissionId: randomUUID(), text: 'Help', contextRevision: f.coordinator.snapshot().context.revision });
+  await entered[0].promise;
+  await f.coordinator.handleLearnerMessage({ type: 'setLearningPreferences', preferences: { mode: 'paused' } });
+  gates[0].resolve(); assert.equal((await first).status, 'failed');
+  assert.equal(f.coordinator.learningSession.snapshot().preferences.mode, 'paused');
+  const state = f.coordinator.snapshot(), entry = state.entries.find(e => e.actions.some(a => a.type === 'retryTurn' && a.enabled));
+  const action = entry.actions.find(a => a.type === 'retryTurn');
+  const retry = actions.dispatch({ type: 'invokeAction', sessionId: state.sessionId, generation: state.generation, entryId: entry.id, actionId: action.id, args: action.args });
+  await entered[1].promise;
+  await f.coordinator.handleLearnerMessage({ type: 'setLearningPreferences', preferences: { mode: 'guided' } });
+  assert.equal(f.coordinator.controller.current.snapshot.learning.preferences.mode, 'paused');
+  gates[1].resolve(); assert.equal((await retry).status, 'completed');
+  assert.equal(f.coordinator.learningSession.snapshot().preferences.mode, 'guided');
+  actions.dispose();
+});
+
+for (const closed of [false, true]) test(`explicit optional inclusion survives active focus and return with closed=${closed}`, async () => {
+  const a = uri('/work/a.kf'), b = uri('/work/b.kf');
+  const f = fixture({ context: { activeDocument: { uri: a, text: 'A', version: 1 }, candidateUris: [b] } });
+  await f.coordinator.refreshContext();
+  const include = included => f.coordinator.handleLearnerMessage({ type: 'setSourceIncluded', sourceId: selectedSourceId(b), included, contextRevision: f.coordinator.snapshot().context.revision });
+  await include(true); await f.submit('KEEP_HISTORY');
+  f.setContext({ activeDocument: { uri: b, text: 'B', version: 1 }, candidateUris: [a, b] });
+  await f.coordinator.refreshContext(); const beforeReads = f.reads.length;
+  await f.submit('B active');
+  assert.equal(f.reads.length, beforeReads, 'Active B is not reread as an optional file');
+  const fileMessages = f.sent.at(-1).messages.filter(m => /"category":"(?:active-file|selected-file)"/.test(m.content));
+  assert.equal(fileMessages.length, 1);
+  assert.match(fileMessages[0].content, /^\[Source active-file\][\s\S]*\nB$/);
+  f.setContext({ activeDocument: { uri: a, text: 'A', version: 1 }, candidateUris: closed ? [] : [b] });
+  await f.coordinator.refreshContext();
+  assert.equal(f.coordinator.snapshot().context.sources.find(s => s.uri === b.toString())?.included, true);
+  await f.submit('Return to A');
+  assert.ok(f.sent.at(-1).messages.some(m => m.content === 'KEEP_HISTORY'));
+  assert.ok(f.sent.at(-1).messages.some(m => m.content.startsWith(`[Source ${selectedSourceId(b)}]`)));
+  await include(false); await f.coordinator.refreshContext(); const readsAfterRemoval = f.reads.length; await f.submit('Removed');
+  assert.equal(f.sent.at(-1).messages.at(-1).content, 'Removed');
+  assert.equal(f.reads.length, readsAfterRemoval);
+  assert.equal(f.sent.at(-1).messages.some(m => m.content === 'KEEP_HISTORY'), false);
+  if (!closed) { await include(true); f.coordinator.newConversation(); await f.coordinator.refreshContext();
+    assert.equal(f.coordinator.snapshot().context.sources.some(s => s.included), false); }
+});
+
+test('authorization loss while an explicitly included file is active revokes future inclusion', async () => {
+  const a = uri('/work/a.kf'), b = uri('/work/b.kf');
+  const f = fixture({ context: { activeDocument: { uri: a, text: 'A', version: 1 }, candidateUris: [b] } });
+  await f.coordinator.refreshContext(); await f.coordinator.handleLearnerMessage({ type: 'setSourceIncluded', sourceId: selectedSourceId(b), included: true, contextRevision: f.coordinator.snapshot().context.revision });
+  f.setContext({ activeDocument: { uri: b, text: 'B', version: 1 } }); await f.coordinator.refreshContext();
+  f.reader.validateUri = async () => false; f.setContext({}); await f.coordinator.refreshContext();
+  f.reader.validateUri = async () => true;
+  f.setContext({ activeDocument: { uri: a, text: 'A', version: 1 }, candidateUris: [b] }); await f.coordinator.refreshContext();
+  assert.equal(f.coordinator.snapshot().context.sources.find(s => s.uri === b.toString()).included, false);
+});
+
+test('Hello submits once without runtime or knowledge', async () => {
+  const f = fixture(); f.coordinator.session.setDraft('Hello');
+  await f.submit();
+  assert.equal(f.sent.length, 1);
+  assert.deepEqual(f.coordinator.snapshot().entries.map(e => e.kind), ['learner', 'assistant']);
+  assert.equal(f.coordinator.snapshot().entries[1].text, 'Hello.');
+  assert.match(f.sent[0].messages[0].content, /knowledge.*unavailable/i);
+  assert.equal(f.sent[0].tools.length, 5);
+});
+
+test('duplicate submission ID cannot resend during or after settlement', { timeout: 1000 }, async () => {
+  const gate = deferred(), entered = deferred();
+  const f = fixture({ events: async function* () { entered.resolve(); await gate.promise; yield terminal(); } });
+  const id = randomUUID(), sending = f.submit('Hello', id); await entered.promise;
+  assert.equal((await f.submit('Other', id)).status, 'stale'); gate.resolve(); await sending;
+  assert.equal((await f.submit('Hello', id)).status, 'stale');
+  assert.equal(f.sent.length, 1); assert.equal(f.coordinator.snapshot().entries.filter(e => e.kind === 'learner').length, 1);
+});
+
+test('captured submission is independent of next draft', { timeout: 1000 }, async () => {
+  const gate = deferred(), entered = deferred(); const f = fixture({ availability: ready, search: async () => { entered.resolve(); await gate.promise; return []; } });
+  f.coordinator.session.setDraft('Original'); const sending = f.submit('Original'); await entered.promise;
+  f.coordinator.session.setDraft('Next question'); gate.resolve(); await sending;
+  assert.equal(f.sent[0].messages.at(-1).content, 'Original'); assert.equal(f.coordinator.snapshot().draft, 'Next question');
+});
+
+
+
+test('same text typed again is not cleared at completion', async () => {
+  const gate = deferred(), entered = deferred(); const f = fixture({ events: async function* () { entered.resolve(); await gate.promise; yield terminal(); } });
+  f.coordinator.session.setDraft('Hello'); const sending = f.submit(); await entered.promise;
+  assert.equal(f.coordinator.snapshot().draft, ''); f.coordinator.session.setDraft('Hello'); gate.resolve(); await sending;
+  assert.equal(f.coordinator.snapshot().draft, 'Hello');
+});
+
+test('active A cannot become B after Send', async () => {
+  const a = uri('/work/a.kf'), b = uri('/work/b.kf'), gate = deferred(), entered = deferred();
+  const f = fixture({ context: { activeDocument: { uri: a, text: 'A', version: 1 } }, availability: ready,
+    search: async () => { entered.resolve(); await gate.promise; return []; } });
+  await f.coordinator.refreshContext(); const sending = f.submit('Explain lists'); await entered.promise;
+  f.setContext({ activeDocument: { uri: b, text: 'B', version: 1 } }); gate.resolve();
+  assert.equal((await sending).status, 'stale'); assert.equal(f.sent.length, 0);
+});
+
+test('optional read is followed by fresh active validation', async () => {
+  const a = uri('/work/a.kf'), b = uri('/work/b.kf'), gate = deferred(), entered = deferred(); let reads = 0;
+  const f = fixture({ context: { activeDocument: { uri: a, text: 'A', version: 1 }, candidateUris: [b] },
+    read: async u => { if (++reads === 2) { entered.resolve(); await gate.promise; } return { uri: u, text: 'B', version: 1 }; } });
+  await f.coordinator.refreshContext(); await f.coordinator.handleLearnerMessage({ type: 'setSourceIncluded', sourceId: selectedSourceId(b), included: true, contextRevision: f.coordinator.snapshot().context.revision });
+  const sending = f.submit(); await entered.promise;
+  f.setContext({ activeDocument: { uri: a, text: 'CHANGED', version: 2 }, candidateUris: [b] }); gate.resolve();
+  assert.equal((await sending).status, 'stale'); assert.equal(f.sent.length, 0);
+});
+
+test('pack disappears before send and cannot transmit captured knowledge', async () => {
+  const gate = deferred(), entered = deferred(); const f = fixture({ availability: ready, search: async () => { entered.resolve(); await gate.promise; return []; } });
+  const sending = f.submit('Explain lists'); await entered.promise; f.setAvailability(unavailable); gate.resolve(); await sending;
+  assert.equal(f.sent.length, 0);
+});
+
+test('restricted workspace submits message only and denies file tools and Run evidence', async () => {
+  const a = uri('/work/a.kf'); const f = fixture({ context: { restricted: true, activeDocument: { uri: a, text: 'PRIVATE', version: 1 }, candidateUris: [a] } });
+  await f.coordinator.refreshContext(); f.coordinator.recordRunResult({ stdout: 'PRIVATE_RUN', stderr: '', exitCode: 0, outputTruncated: false, runtimeVersion: '1', knowledgePackVersion: '1', sourceUri: a.toString(), runSequence: 1 });
+  await f.submit(); assert.equal(f.sent.length, 1); assert.equal(f.reads.length, 0);
+  assert.equal(JSON.stringify(f.sent[0]).includes('PRIVATE'), false);
+  assert.deepEqual(f.sent[0].tools.map(t => t.function.name), ['searchKafeKnowledge', 'proposeLearningCheckpoint']);
+  assert.equal(f.coordinator.snapshot().context.activeSource, null);
+});
+
+test('removed file cannot reenter through inherited history', async () => {
+  const a = uri('/work/a.kf'), b = uri('/work/b.kf');
+  const f = fixture({ context: { activeDocument: { uri: a, text: 'SECRET_A', version: 1 }, candidateUris: [b] } });
+  await f.coordinator.refreshContext(); await f.submit('Question A');
+  f.setContext({ activeDocument: { uri: b, text: 'B', version: 1 }, candidateUris: [] }); await f.coordinator.refreshContext(); await f.submit('Question B');
+  assert.equal(JSON.stringify(f.sent[1]).includes('SECRET_A'), false); assert.equal(JSON.stringify(f.sent[1]).includes('Question A'), false);
+});
+
+test('stale displayed context is rejected before entry admission', async () => {
+  const f = fixture(); await f.coordinator.refreshContext();
+  const result = await f.coordinator.handleLearnerMessage({ type: 'submitMessage', text: 'Hello', submissionId: randomUUID(), contextRevision: 999 });
+  assert.equal(result.status, 'stale'); assert.equal(f.coordinator.snapshot().entries.length, 0); assert.equal(f.sent.length, 0);
+});
+
+test('retry preserves next draft and restarts only the original question', async () => {
+  const { ProviderError } = require('../../src/tutor/providers/ProviderError');
+  const f = fixture({ events: async function* (_, n) { if (n === 1) throw new ProviderError('timeout'); yield terminal(); } });
+  await f.submit('Original'); f.coordinator.session.setDraft('Next');
+  await f.coordinator.controller.retry(f.coordinator.snapshot().turn.id);
+  assert.equal(f.sent.length, 2); assert.equal(f.sent[1].messages.at(-1).content, 'Original');
+  assert.equal(f.coordinator.snapshot().draft, 'Next'); assert.equal(f.coordinator.snapshot().entries.filter(e => e.kind === 'learner').length, 1);
+});
+
+test('reset releases deduplication only in a fresh generation', async () => {
+  const f = fixture(), id = randomUUID(); await f.submit('Hello', id); f.coordinator.session.reset(); await f.submit('Hello', id);
+  assert.equal(f.sent.length, 2); assert.equal(f.coordinator.snapshot().entries.filter(e => e.kind === 'learner').length, 1);
+});
+
+test('formal learning and review commands have no effect', async () => {
+  const f = fixture();
+  for (const type of ['useLearningGoal','startSession','confirmMilestones','recordReviewedCheck','prepareReview','sendReviewed']) {
+    const before = f.coordinator.snapshot(); assert.equal((await f.coordinator.handleLearnerMessage({ type, goal: 'Lists' })).status, 'unavailable'); assert.deepEqual(f.coordinator.snapshot(), before);
+  }
+});
+
+
+test('Retry captures current host editor without overwriting the next draft', async () => {
+  const { ProviderError } = require('../../src/tutor/providers/ProviderError'); const a = uri('/work/a.kf'), b = uri('/work/b.kf');
+  const f = fixture({ context: { activeDocument: { uri: a, text: 'A', version: 1 } }, events: async function* (_, n) { if (n === 1) throw new ProviderError('timeout'); yield terminal(); } });
+  await f.coordinator.refreshContext(); await f.submit('Original');
+  f.setContext({ activeDocument: { uri: b, text: 'B', version: 1 } }); f.coordinator.session.setDraft('Next');
+  assert.equal((await f.coordinator.controller.retry(f.coordinator.snapshot().turn.id)).status, 'completed');
+  assert.equal(f.sent.length, 2);
+  const source = f.sent[1].messages.find(m => m.content.startsWith('[Source active-file]\n'));
+  assert.match(source.content, /Host-provided reference context; not learner-pasted text/);
+  assert.equal(source.content.slice(source.content.lastIndexOf('\n') + 1), 'B');
+  assert.equal(f.coordinator.snapshot().draft, 'Next');
+});
+
+test('new knowledge continues from the authorized pack and preserves dependency lineage', async () => {
+  let searches = 0;
+  const f = fixture({ availability: ready, search: async () => ++searches === 1 ? [] : [{ id: 'lists', text: 'PACK_BYTES', path: 'language/lists.md', category: 'language', ...metadata }],
+    events: async function* (_, n) { yield n === 1 ? terminal('', [{ id: 'k', name: 'searchKafeKnowledge', arguments: { query: 'lists' } }]) : terminal('Answer'); } });
+  assert.equal((await f.submit('Explain lists')).status, 'completed'); assert.equal(f.sent.length, 2);
+  assert.ok(f.sent[1].messages.some(m => m.role === 'tool' && m.content.includes('PACK_BYTES')));
+  assert.equal(JSON.stringify(f.coordinator.snapshot()).includes('PACK_BYTES'), false);
+  assert.equal(f.coordinator.session.historyPairs()[0].dependencies.knowledgeLineage, metadataLineage(metadata));
+  f.setAvailability(unavailable); await f.submit('New'); assert.equal(f.sent[2].messages.some(m => m.content === 'Answer'), false);
+});
+
+test('Stop during capture registers retry and fences late composed data', async () => {
+  const gate = deferred(), entered = deferred(); const f = fixture({ availability: ready, search: async () => { entered.resolve(); await gate.promise; return []; } });
+  const sending = f.submit('Explain lists'); await entered.promise; const turn = f.coordinator.snapshot().turn;
+  f.coordinator.controller.stop({ turnId: turn.id, turnGeneration: turn.turnGeneration });
+  assert.ok(f.coordinator.snapshot().entries.flatMap(e => e.actions).some(a => a.enabled && a.type === 'retryTurn'));
+  gate.resolve(); assert.equal((await sending).status, 'cancelled'); assert.equal(f.sent.length, 0);
+});
+
+
+test('reset during a pending stream immediately admits a new generation and rejects late work', async () => {
+  const gate = deferred(), entered = deferred(); const f = fixture({ events: async function* (_, n) { if (n === 1) { entered.resolve(); await gate.promise; } yield terminal(n === 1 ? 'OLD' : 'NEW'); } });
+  const id = randomUUID(), old = f.submit('Hello', id); await entered.promise;
+  f.coordinator.session.reset(); const next = f.submit('Hello', id); gate.resolve();
+  await old; assert.equal((await next).status, 'completed'); assert.equal(f.sent.length, 2);
+  assert.deepEqual(f.coordinator.snapshot().entries.map(e => e.text), ['Hello', 'NEW']);
+});
+
+
+for (const mutation of ['trust', 'selection', 'provider', 'run']) test(`post-read validation rejects changed ${mutation} before provider transmission`, async () => {
+  const a = uri('/work/a.kf'), b = uri('/work/b.kf'), gate = deferred(), entered = deferred(); let reads = 0;
+  const f = fixture({ context: { activeDocument: { uri: a, text: 'A', version: 1 }, candidateUris: [b] },
+    read: async u => { if (++reads === 2) { entered.resolve(); await gate.promise; } return { uri: u, text: 'B', version: 1 }; } });
+  await f.coordinator.refreshContext(); await f.coordinator.handleLearnerMessage({ type: 'setSourceIncluded', sourceId: selectedSourceId(b), included: true, contextRevision: f.coordinator.snapshot().context.revision });
+  const sending = f.submit(); await entered.promise;
+  if (mutation === 'trust') f.setContext({ restricted: true });
+  if (mutation === 'selection') f.coordinator.session.setSelectedSources([]);
+  if (mutation === 'provider') f.provider.getRequestParameters = () => ({ model: 'changed', thinking: { type: 'enabled' }, stream: true });
+  if (mutation === 'run') f.coordinator.recordRunResult({ stdout: 'NEW', stderr: '', exitCode: 0, outputTruncated: false, runtimeVersion: '1', knowledgePackVersion: '1', sourceUri: a.toString(), runSequence: 1 });
+  gate.resolve(); assert.equal((await sending).status, 'stale'); assert.equal(f.sent.length, 0);
+});
+
+test('selected files stay authorized after their editors close without reading excluded candidates', async () => {
+  const a = uri('/work/a.kf'), b = uri('/work/b.kf'), c = uri('/work/excluded.kf');
+  const f = fixture({ context: { activeDocument: { uri: a, text: 'A', version: 1 }, candidateUris: [b, c] } });
+  await f.coordinator.refreshContext(); await f.coordinator.handleLearnerMessage({ type: 'setSourceIncluded', sourceId: selectedSourceId(b), included: true, contextRevision: f.coordinator.snapshot().context.revision });
+  f.setContext({ activeDocument: { uri: a, text: 'A', version: 1 }, candidateUris: [c] }); await f.coordinator.refreshContext();
+  assert.equal((await f.submit()).status, 'completed'); assert.ok(f.reads.length > 0); assert.ok(f.reads.every(read => read === b.toString()));
+  assert.ok(f.coordinator.snapshot().context.sources.some(s => s.id === selectedSourceId(b) && s.included));
+});
+
+
+test('closed selected-file authorization cannot publish stale active context or overwrite a changed selection', async () => {
+  for (const changed of ['active', 'selection']) {
+    const a = uri('/work/a.kf'), b = uri('/work/b.kf'), c = uri('/work/c.kf'), gate = deferred(), entered = deferred();
+    const f = fixture({ context: { activeDocument: { uri: a, text: 'A', version: 1 }, candidateUris: [b] } });
+    await f.coordinator.refreshContext(); await f.coordinator.handleLearnerMessage({ type: 'setSourceIncluded', sourceId: selectedSourceId(b), included: true, contextRevision: f.coordinator.snapshot().context.revision });
+    f.setContext({ activeDocument: { uri: a, text: 'A', version: 1 }, candidateUris: [] });
+    f.reader.validateUri = async () => { entered.resolve(); await gate.promise; return true; };
+    const refresh = f.coordinator.refreshContext(); await entered.promise;
+    if (changed === 'active') f.setContext({ activeDocument: { uri: c, text: 'C', version: 1 }, candidateUris: [] });
+    else f.coordinator.session.setSelectedSources([]);
+    gate.resolve(); await refresh;
+    if (changed === 'active') assert.equal(f.coordinator.snapshot().context.activeSource.uri, c.toString());
+    else assert.equal(f.coordinator.snapshot().context.sources.some(s => s.included), false);
+  }
+});
+
+
+test('selected bytes changed after asynchronous revalidation are checked again before send', async () => {
+  const a = uri('/work/a.kf'), b = uri('/work/b.kf'), gate = deferred(), entered = deferred(); let text = 'B';
+  const f = fixture({ context: { activeDocument: { uri: a, text: 'A', version: 1 }, candidateUris: [b] }, read: async u => ({ uri: u, text, version: text === 'B' ? 1 : 2 }) });
+  await f.coordinator.refreshContext(); await f.coordinator.handleLearnerMessage({ type: 'setSourceIncluded', sourceId: selectedSourceId(b), included: true, contextRevision: f.coordinator.snapshot().context.revision });
+  const validate = f.composer.revalidateSnapshot.bind(f.composer);
+  f.composer.revalidateSnapshot = async input => { const valid = await validate(input); entered.resolve(); await gate.promise; return valid; };
+  const sending = f.submit(); await entered.promise; text = 'CHANGED'; gate.resolve();
+  assert.equal((await sending).status, 'stale'); assert.equal(f.sent.length, 0);
+});
+
+
+for (const phase of ['availability', 'context', 'controller-resume']) test(`final ${phase} await cannot authorize stale selected bytes`, async () => {
+  const a = uri('/work/a.kf'), b = uri('/work/b.kf'), held = deferred(), entered = deferred();
+  let text = 'B_OLD', version = 1, checks = 0, contexts = 0;
+  const f = fixture({ getSourceRevision: () => version,
+    read: async u => ({ uri: u, text, version }),
+    getContext: async () => {
+      if (++contexts === 5 && phase === 'context') { entered.resolve(); await held.promise; }
+      return { activeDocument: { uri: a, text: 'A', version: 1 }, candidateUris: [b] };
+    },
+    getKnowledgeAvailability: async () => { if (++checks === 3 && phase === 'availability') { entered.resolve(); await held.promise; } return unavailable; } });
+  await f.coordinator.refreshContext(); await f.coordinator.handleLearnerMessage({ type: 'setSourceIncluded', sourceId: selectedSourceId(b), included: true, contextRevision: f.coordinator.snapshot().context.revision });
+  if (phase === 'controller-resume') {
+    const validate = f.coordinator.controller.validateSubmission;
+    f.coordinator.controller.validateSubmission = async snapshot => { const valid = await validate(snapshot); entered.resolve(); await held.promise; return valid; };
+  }
+  const sending = f.submit(); await entered.promise; text = 'B_CHANGED'; version = 2; held.resolve();
+  assert.equal((await sending).status, 'stale'); assert.equal(f.sent.length, 0);
+});
+
+test('file transmission fails closed without a synchronous source revision fence', async () => {
+  const f = fixture({ context: { activeDocument: { uri: uri('/work/a.kf'), text: 'A', version: 1 } }, getSourceRevision: () => null });
+  await f.coordinator.refreshContext(); assert.equal((await f.submit()).status, 'stale'); assert.equal(f.sent.length, 0);
+});
+
+
+function nativeFixture(responseText = '') {
+  const source = uri('/work/native.kf'), read = deferred(), readEntered = deferred(), apply = deferred(), applyEntered = deferred();
+  const opening = deferred(), openEntered = deferred();
+  let phase = 'none', writes = 0, opens = 0, trusted = true;
+  const document = { uri: source, languageId: 'kafe', version: 1, getText: () => 'show(1)', positionAt: offset => ({ offset }) };
+  class WorkspaceEdit { replace() {} }
+  class Range { constructor(start, end) { this.start = start; this.end = end; } }
+  const vscode = { Uri: { parse: value => ({ scheme: value.startsWith('file:') ? 'file' : 'kafe-proposal', toString: () => value }) },
+    Range, WorkspaceEdit, commands: { executeCommand: async () => { if (++opens === 2 && phase === 'open') { openEntered.resolve(); await opening.promise; } } },
+    workspace: { openTextDocument: async () => { if (phase === 'read') { readEntered.resolve(); await read.promise; } return document; },
+      applyEdit: async () => { writes++; if (phase === 'apply') { applyEntered.resolve(); await apply.promise; } return true; } } };
+  const native = new CodeProposalProvider({ vscode, authorizeUri: () => trusted });
+  const f = fixture({ proposalProvider: native, context: { activeDocument: { uri: source, text: 'show(1)', version: 1 } },
+    events: async function* () { yield terminal(responseText, [{ id: 'proposal', name: 'proposeCodeChange', arguments: { newText: 'show(2)' } }]); } });
+  const issue = async (openReview = true) => {
+    await f.coordinator.refreshContext(); await f.submit('Change code');
+    const { TutorHostActions } = require('../../src/tutor/TutorHostActions');
+    const actions = new TutorHostActions({ session: f.coordinator.session, coordinator: f.coordinator, controller: f.coordinator.controller, proposalProvider: native });
+    actions.projectDisplay();
+    const state = f.coordinator.snapshot(), entry = state.entries.findLast(e => e.actions.some(a => a.type === 'prepareChange' && a.enabled));
+    const action = entry.actions.find(a => a.type === 'prepareChange' && a.enabled);
+    await actions.dispatch({ type: 'invokeAction', sessionId: state.sessionId, generation: state.generation, entryId: entry.id, actionId: action.id, args: action.args });
+    const id = native.pending.id;
+    if (!openReview) return id;
+    return native.open(id, { isCurrent: () => f.coordinator.proposal?.id === id });
+  };
+  return { ...f, native, document, issue, read, readEntered, apply, applyEntered, opening, openEntered,
+    phase: value => phase = value, revoke: () => trusted = false, get writes() { return writes; } };
+}
+
+test('coordinator duplicate Accept is single-flight and retains the first native result', async () => {
+  const f = nativeFixture(); await f.issue(); f.phase('apply'); const id = f.coordinator.proposal.id;
+  const first = f.coordinator.handleLearnerMessage({ type: 'acceptProposal', id }); await f.applyEntered.promise;
+  const duplicate = await f.coordinator.handleLearnerMessage({ type: 'acceptProposal', id });
+  assert.equal(duplicate.code, 'proposal_busy'); assert.equal(f.coordinator.proposal.id, id); assert.equal(f.writes, 1);
+  f.apply.resolve(); assert.equal((await first).status, 'completed'); assert.equal(f.coordinator.proposal, null); assert.equal(f.native.pending, null);
+});
+
+test('coordinator Reject and native Clear remain busy after applyEdit starts', async () => {
+  const f = nativeFixture(); await f.issue(); f.phase('apply'); const id = f.coordinator.proposal.id;
+  const accepting = f.coordinator.handleLearnerMessage({ type: 'acceptProposal', id }); await f.applyEntered.promise;
+  assert.equal((await f.coordinator.handleLearnerMessage({ type: 'rejectProposal', id })).code, 'proposal_busy');
+  assert.equal(f.native.clear(id).status, 'busy'); assert.equal(f.native.prepareClear().status, 'busy');
+  assert.equal(f.coordinator.proposal.id, id); assert.equal(f.native.pending.id, id); assert.equal(f.writes, 1);
+  f.apply.resolve(); assert.equal((await accepting).status, 'completed'); assert.equal(f.coordinator.proposal, null);
+});
+
+for (const change of ['reject', 'reset', 'revoke', 'buffer']) test(`native acceptance during source read is fenced by ${change}`, async () => {
+  const f = nativeFixture(); await f.issue(); f.phase('read'); const id = f.coordinator.proposal.id;
+  const accepting = f.coordinator.handleLearnerMessage({ type: 'acceptProposal', id }); await f.readEntered.promise;
+  if (change === 'reject') assert.equal((await f.coordinator.handleLearnerMessage({ type: 'rejectProposal', id })).status, 'completed');
+  if (change === 'reset') f.coordinator.session.reset();
+  if (change === 'revoke') f.revoke();
+  if (change === 'buffer') f.document.version++;
+  const afterChange = f.coordinator.snapshot(); f.read.resolve(); const result = await accepting;
+  assert.equal(f.writes, 0); assert.equal(f.native.pending, null); assert.equal(f.coordinator.proposal, null);
+  assert.equal(result.status, change === 'revoke' || change === 'buffer' ? 'failed' : 'cancelled');
+  if (change === 'reset') assert.deepEqual(f.coordinator.snapshot(), afterChange);
+});
+
+test('late native apply completion after reset cannot append into the new conversation', async () => {
+  const f = nativeFixture(); await f.issue(); f.phase('apply'); const id = f.coordinator.proposal.id;
+  const accepting = f.coordinator.handleLearnerMessage({ type: 'acceptProposal', id }); await f.applyEntered.promise;
+  f.coordinator.session.reset(); const fresh = f.coordinator.snapshot(); f.apply.resolve();
+  assert.equal((await accepting).status, 'cancelled'); assert.deepEqual(f.coordinator.snapshot(), fresh); assert.equal(f.writes, 1);
+});
+
+test('rejecting old native proposal A while B opens cannot clear pending B', async () => {
+  const f = nativeFixture(); await f.issue(); const idA = f.coordinator.proposal.id; f.phase('open');
+  const next = f.issue(); await f.openEntered.promise; const idB = f.native.pending.id;
+  assert.notEqual(idA, idB); assert.equal((await f.coordinator.handleLearnerMessage({ type: 'rejectProposal', id: idA })).status, 'failed');
+  assert.equal(f.native.pending.id, idB); assert.equal(f.native.pending.reviewed, false); assert.equal(f.coordinator.proposal.id, idB);
+  f.opening.resolve(); await next; assert.equal(f.native.pending.reviewed, true); assert.equal(f.coordinator.proposal.id, idB);
+});
+
+test('Run evidence is monotonic and included only for its current authorized target', async () => {
+  const a = uri('/work/a.kf'), b = uri('/work/b.kf'); const f = fixture({ context: { activeDocument: { uri: a, text: 'A', version: 1 } } });
+  const run = n => ({ stdout: `RUN_A_${n}`, stderr: '', exitCode: 0, outputTruncated: false, runtimeVersion: '1', knowledgePackVersion: '1', sourceUri: a.toString(), runSequence: n });
+  assert.equal(f.coordinator.recordRunResult(run(2)), true);
+  const entries = f.coordinator.snapshot().entries.length;
+  assert.equal(f.coordinator.recordRunResult(run(2)), false); assert.equal(f.coordinator.recordRunResult(run(1)), false);
+  assert.equal(f.coordinator.snapshot().entries.length, entries); assert.equal(f.coordinator.evidence.runSequence, 2);
+  await f.coordinator.refreshContext(); await f.submit('Result A'); assert.ok(JSON.stringify(f.sent[0]).includes('RUN_A_2'));
+  f.setContext({ activeDocument: { uri: b, text: 'B', version: 1 } }); await f.coordinator.refreshContext(); await f.submit('Result B');
+  assert.equal(JSON.stringify(f.sent[1]).includes('RUN_A_2'), false); assert.equal(f.coordinator.evidence.sourceUri, a.toString());
+  assert.equal(f.coordinator.recordRunResult(run(3)), true); assert.equal(f.coordinator.evidence.runSequence, 3);
+});
+
+for (const claim of [
+  'You have mastered KAFE because your program passed and your explanation is correct.',
+  'Your explanation proves mastery of KAFE lists.', 'A passing run proves mastery of KAFE.',
+  'A passing run demonstrates mastery of KAFE.', 'Mastery was demonstrated by a passing run.',
+  'Your explanation is proof of KAFE mastery.', 'A passing run proves you understand KAFE.',
+  'Your explanation is proof that you understand KAFE lists.', 'Understanding was confirmed by your explanation.',
+  'Your successful run shows you understand this concept.', 'Your explanation shows you learned how KAFE lists work.',
+  'A passing run is a clear sign that you know KAFE.', 'You mastered KAFE.', 'You have mastered KAFE.',
+  'The learner mastered KAFE.', 'You are a master of KAFE.', 'You now master KAFE.',
+]) test(`provider attainment prose is retained without host assessment: ${claim}`, async () => {
+  const f = fixture({ events: async function* () { yield { type: 'text', text: claim }; yield terminal(claim); } });
+  await f.submit(); const coordinator = f.coordinator; const assistant = coordinator.snapshot().entries.find(e => e.kind === 'assistant');
+  assert.equal(assistant.text, claim);
+  assert.equal(coordinator.snapshot().entries.some(e => ['check', 'progress', 'milestones'].includes(e.kind)), false);
+  assert.equal(coordinator.session.historyPairs()[0].assistantText, assistant.text);
+  assert.deepEqual(coordinator.learningSession.snapshot().decisions, []);
+  assert.deepEqual(coordinator.learningSession.snapshot().observations, []);
+  assert.equal(f.sent.length, 1);
+});
+
+function assertRetainedResponse(coordinator, text) {
+  const state = coordinator.snapshot(), assistant = state.entries.findLast(e => e.kind === 'assistant');
+  assert.equal(state.turn.status, 'completed');
+  assert.equal(assistant.status, 'completed'); assert.equal(assistant.text, text);
+  assert.equal(coordinator.session.historyPairs().at(-1).assistantText, text);
+  const content = coordinator.captureConversation();
+  assert.equal(content.historyPairs.at(-1).assistantText, text);
+  const exported = JSON.parse(exportConversation({ id: 'retained', title: 'A lesson', createdAt: '2026-10-27T12:00:00.000Z', updatedAt: '2026-10-27T12:00:00.000Z', content }));
+  assert.equal(exported.conversation.entries.findLast(e => e.kind === 'assistant').text, text);
+  assert.equal(state.entries.some(e => ['check', 'progress', 'milestones'].includes(e.kind)), false);
+  assert.deepEqual(assistant.actions, []);
+  assert.deepEqual(coordinator.learningSession.snapshot().observations, []);
+}
+
+const retainedResponses = [
+  ['negated English certification', 'A passing run does not prove you understand KAFE. A list stores ordered values; index 0 selects the first item.'],
+  ['quoted claim and code', 'The phrase "You have mastered KAFE" is only a quote.\n\n```kafe\nshow("You have mastered KAFE")\n```\nThe string is data passed to show.'],
+  ['Spanish explanation', 'Una ejecución correcta no demuestra dominio de KAFE. Una lista guarda valores ordenados; el índice 0 selecciona el primero.'],
+];
+for (const [label, text] of retainedResponses) for (const path of ['streaming', 'terminal-only', 'tool-continuation', 'checkpoint']) test(`${label} survives ${path} display history and export`, async () => {
+  const seen = [];
+  const f = fixture({ events: async function* (_, round) {
+    if (path === 'tool-continuation' && round === 1) { yield terminal('', [{ id: 'run', name: 'getLatestRunResult', arguments: {} }]); return; }
+    if (path === 'streaming') {
+      const split = Math.floor(text.length / 2);
+      yield { type: 'text', text: text.slice(0, split) }; yield { type: 'text', text: text.slice(split) };
+    }
+    yield terminal(text, path === 'checkpoint' ? [learningCheckpoint()] : []);
+  } });
+  const before = f.coordinator.learningSession.snapshot();
+  f.coordinator.session.subscribe(state => {
+    const assistant = state.entries.find(e => e.kind === 'assistant');
+    if (assistant?.status === 'responding') seen.push(assistant.text);
+  });
+  assert.equal((await f.submit('Explain list indexing')).status, 'completed');
+  assertRetainedResponse(f.coordinator, text);
+  assert.equal(f.sent.length, path === 'tool-continuation' ? 2 : 1);
+  if (path === 'streaming') {
+    assert.ok(seen.includes(text.slice(0, Math.floor(text.length / 2)))); assert.ok(seen.includes(text));
+  }
+  if (path === 'checkpoint') {
+    const decision = f.coordinator.learningSession.snapshot().decisions[0];
+    assert.equal(decision.disposition, 'proposed');
+    assert.equal(f.coordinator.snapshot().entries.find(e => e.kind === 'checkpoint').status, 'ready');
+  } else assert.deepEqual(f.coordinator.learningSession.snapshot(), before);
+});
+
+for (const text of [retainedResponses[0][1], retainedResponses[1][1], retainedResponses[2][1], '']) test(`successful native proposal retains provider prose ${JSON.stringify(text)}`, async () => {
+  const f = nativeFixture(text);
+  await f.issue(false);
+  assertRetainedResponse(f.coordinator, text);
+  assert.equal(f.sent.length, 2, 'scope offer and authorized preparation each use one provider request');
+  assert.equal(f.writes, 0); assert.equal(f.native.pending.reviewed, false);
+  const proposal = f.coordinator.snapshot().entries.find(e => e.kind === 'proposal');
+  assert.equal(proposal.status, 'ready'); assert.equal(proposal.text, 'Review the proposed KAFE change in the native diff.');
+  assert.deepEqual(proposal.actions.filter(a => a.enabled).map(a => a.type).sort(), ['rejectProposal', 'reviewProposal']);
+  assert.deepEqual(f.coordinator.learningSession.snapshot().decisions, []);
+});
+
+for (const guidance of [
+  'Try indexing the first list item, then explain its output.',
+  'To understand list indexing, try the first and last positions, then compare their outputs.',
+  'To understand list indexing, show the first and last outputs.',
+  'To understand your explanation, show the intermediate output and inspect each step.',
+  'Your explanation shows how to understand KAFE lists.',
+  'A passing run shows where to inspect the output so you understand the result.',
+  'To understand, show your explanation and inspect each step.',
+  'To build mastery of KAFE lists, practice indexing one item at a time.',
+  'To become proficient, explain one more run result in your own words.',
+  'Here is how to master KAFE lists through practice.', 'You can master KAFE lists with more examples.',
+]) test(`ordinary guidance is preserved: ${guidance}`, async () => {
+  const f = fixture({ events: async function* () { yield terminal(guidance); } }); await f.submit();
+  assert.equal(f.coordinator.snapshot().entries.find(e => e.kind === 'assistant').text, guidance);
+});
+
+
+for (const revision of [undefined, -1, NaN, Infinity, '0']) test(`invalid source fence ${String(revision)} cannot authorize files`, async () => {
+  const f = fixture({ context: { activeDocument: { uri: uri('/work/a.kf'), text: 'A', version: 1 } }, getSourceRevision: () => revision });
+  await f.coordinator.refreshContext(); assert.equal((await f.submit()).status, 'stale'); assert.equal(f.sent.length, 0);
+});
+
+test('source mutation during knowledge tool retrieval blocks continuation', async () => {
+  const a = uri('/work/a.kf'), gate = deferred(), entered = deferred(); let revision = 0, searches = 0;
+  const f = fixture({ context: { activeDocument: { uri: a, text: 'A', version: 1 } }, availability: ready, getSourceRevision: () => revision,
+    search: async () => { if (++searches === 2) { entered.resolve(); await gate.promise; } return []; },
+    events: async function* () { yield terminal('', [{ id: 'k', name: 'searchKafeKnowledge', arguments: { query: 'lists' } }]); } });
+  await f.coordinator.refreshContext(); const sending = f.submit('Explain lists'); await entered.promise; revision++; gate.resolve();
+  assert.equal((await sending).status, 'stale'); assert.equal(f.sent.length, 1); assert.equal(f.coordinator.session.historyPairs().length, 0);
+});
+
+test('source revocation while explicit native replacement review opens suppresses late proposal capabilities', async () => {
+  const f = nativeFixture();
+  await f.issue(); f.phase('open'); const sending = f.issue(); await f.openEntered.promise;
+  f.coordinator.controller.revokeSource(f.document.uri.toString()); f.opening.resolve(); assert.equal((await sending).status, 'cancelled');
+  assert.equal(f.native.pending, null); assert.equal(f.coordinator.proposal, null); assert.equal(f.writes, 0);
+  assert.equal(f.coordinator.snapshot().entries.flatMap(e => e.actions).some(a => a.enabled && a.type === 'acceptProposal'), false);
+});
+
+const historyPair = (id, text = 'Earlier', dependencies = { fileUris: [], knowledgeLineage: null }) => ({ id, learnerText: text, assistantText: 'Answer', dependencies });
+for (const [name, pairs, reasons] of [
+  ['pairs', Array.from({ length: 9 }, (_, i) => historyPair(`p${i}`)), ['window']],
+  ['bytes', [historyPair('a', 'a'.repeat(20000)), historyPair('b', 'b'.repeat(20000))], ['window']],
+  ['oversized', [historyPair('a', 'a'.repeat(33000))], ['window']],
+  ['source', [historyPair('a', 'PRIVATE_OLD_SOURCE', { fileUris: ['file:///revoked.kf'], knowledgeLineage: null })], ['source']],
+  ['knowledge', [historyPair('a', 'OLD_KNOWLEDGE', { fileUris: [], knowledgeLineage: 'old-pack' })], ['knowledge']],
+  ['combined', [historyPair('a', 'a'.repeat(33000)), historyPair('b', 'private', { fileUris: ['file:///revoked.kf'], knowledgeLineage: null }), historyPair('c', 'old', { fileUris: [], knowledgeLineage: 'old-pack' })], ['window', 'source', 'knowledge']],
+]) test(`captured ${name} omissions disclose frozen facts without payload or archive changes`, async () => {
+  const f = fixture(); for (const pair of pairs) f.coordinator.session.recordCompletedPair(pair);
+  const before = f.coordinator.captureConversation(); assert.equal((await f.submit()).status, 'completed');
+  assert.deepEqual(f.coordinator.snapshot().contextNotice, { reasons });
+  const captured = f.coordinator.controller.current.snapshot;
+  assert.deepEqual(f.sent[0], captured.request);
+  if (name === 'knowledge') {
+    // This fixture has unavailable current knowledge, not an observed new version.
+    assert.equal(captured.dependencies.knowledgeLineage, null);
+    assert.equal(captured.history.dependencies.knowledgeLineage, null);
+    assert.deepEqual(captured.history.omissions, [{ id: 'a', reason: 'knowledge-lineage-changed' }]);
+    const { TutorViewProvider } = require('../../src/tutor/TutorViewProvider');
+    const { loadView } = require('../helpers/tutorViewHarness');
+    const view = loadView(), projection = new TutorViewProvider({ conversationSession: f.coordinator });
+    view.render(projection.project(f.coordinator.snapshot()));
+    assert.equal(view.byId('context-notice').hidden, false);
+    assert.match(view.byId('context-notice-detail').textContent, /KAFE knowledge that is no longer current or available/);
+    assert.doesNotMatch(view.byId('context-notice-detail').textContent, /different.*version/);
+    projection.dispose();
+  }
+  assert.equal(f.coordinator.session.snapshot().contextNotice, undefined); assert.equal(f.coordinator.captureConversation().contextNotice, undefined);
+  assert.deepEqual(f.coordinator.captureConversation().historyPairs.slice(0, pairs.length), before.historyPairs);
+  assert.deepEqual(f.reads, []); assert.doesNotMatch(JSON.stringify(f.sent), /PRIVATE_OLD_SOURCE|OLD_KNOWLEDGE/);
+});
+test('notice conditions deduplicate and remain fenced against stale abandonment and transition', async () => {
+  const f = fixture(); f.coordinator.session.recordCompletedPair(historyPair('old', 'old', { fileUris: ['file:///revoked.kf'], knowledgeLineage: null }));
+  await f.submit(); const first = f.coordinator.controller.current.snapshot;
+  let notifications = 0; const unsubscribe = f.coordinator.subscribe(() => notifications++);
+  f.coordinator.publishRequestContext(first); assert.equal(notifications, 0);
+  await f.submit(); const second = f.coordinator.controller.current.snapshot;
+  const count = notifications; f.coordinator.clearRequestContext(first.submission.submissionId, first);
+  assert.equal(notifications, count); assert.deepEqual(f.coordinator.snapshot().contextNotice, { reasons: ['source'] });
+  f.coordinator.clearRequestContext(second.submission.submissionId, second); assert.equal(f.coordinator.snapshot().contextNotice, null);
+  f.coordinator.newConversation(); f.coordinator.publishRequestContext(first); assert.equal(f.coordinator.snapshot().contextNotice, null);
+  await f.submit(); assert.equal(f.coordinator.snapshot().contextNotice, null); unsubscribe();
+});
+for (const interruption of ['reset', 'trust', 'throw']) test(`notice subscriber ${interruption} preserves live authorization`, async () => {
+  let revision = 0, seen = false;
+  const f = fixture({ context: { activeDocument: { uri: uri('/a.kf'), text: 'A', version: 1 } }, getSourceRevision: () => revision });
+  await f.coordinator.refreshContext(); f.coordinator.session.recordCompletedPair(historyPair('old', 'PRIVATE', { fileUris: ['file:///revoked.kf'], knowledgeLineage: null }));
+  f.coordinator.subscribe(state => {
+    if (!state.contextNotice || seen) return; seen = true;
+    if (interruption === 'reset') f.coordinator.newConversation();
+    if (interruption === 'trust') { revision++; f.setContext({ restricted: true }); }
+    if (interruption === 'throw') throw Error('Display failure');
+  });
+  await f.submit(); assert.equal(seen, true); assert.equal(f.sent.length, interruption === 'throw' ? 1 : 0); assert.deepEqual(f.reads, []);
+  if (interruption !== 'throw') assert.equal(f.coordinator.snapshot().contextNotice, null);
+});
+
+test('incomplete history makes no saved-continuity claim and no provider history', async () => {
+  const f = fixture(); f.coordinator.session.historyPairs = () => [null, { id: 'partial', learnerText: 'PRIVATE_PARTIAL' }];
+  await f.submit(); assert.equal(f.coordinator.snapshot().contextNotice, null);
+  assert.deepEqual(f.coordinator.controller.current.snapshot.history.omissions.map(o => o.reason), ['incomplete-pair', 'incomplete-pair']);
+  assert.doesNotMatch(JSON.stringify(f.sent), /PRIVATE_PARTIAL/);
+});
+test('actual reason changes replace notice and no-omission capture clears it', async () => {
+  const f = fixture(); const old = historyPair('old', 'Earlier', { fileUris: [], knowledgeLineage: 'old-pack' });
+  let history = [old]; f.coordinator.session.historyPairs = () => structuredClone(history);
+  await f.submit(); assert.deepEqual(f.coordinator.snapshot().contextNotice, { reasons: ['knowledge'] });
+  history = [historyPair('large', 'a'.repeat(33000))]; await f.submit();
+  assert.deepEqual(f.coordinator.snapshot().contextNotice, { reasons: ['window'] });
+  history = [historyPair('small')]; await f.submit(); assert.equal(f.coordinator.snapshot().contextNotice, null);
+});
+test('publication is detached from later live history and cannot change captured authority', async () => {
+  const f = fixture(); f.coordinator.session.recordCompletedPair(historyPair('old', 'Earlier', { fileUris: ['file:///revoked.kf'], knowledgeLineage: null }));
+  let fingerprint, request;
+  f.coordinator.subscribe(state => { if (state.contextNotice) { const captured = f.coordinator.controller.current.snapshot; fingerprint = captured.fingerprint; request = structuredClone(captured.request); f.coordinator.session.recordCompletedPair(historyPair('later-live-pair', 'LATER_LIVE_TEXT')); } });
+  await f.submit(); const captured = f.coordinator.controller.current.snapshot;
+  assert.equal(captured.fingerprint, fingerprint); assert.deepEqual(captured.request, request); assert.deepEqual(f.sent[0], request);
+  assert.doesNotMatch(JSON.stringify(request), /LATER_LIVE_TEXT/); assert.ok(f.coordinator.session.historyPairs().some(pair => pair.id === 'later-live-pair'));
+  const projected = f.coordinator.snapshot(); projected.contextNotice.reasons.push('knowledge');
+  assert.deepEqual(f.coordinator.snapshot().contextNotice, { reasons: ['source'] });
+});
+
+test('old abandonment identity cannot clear a reused submission ID in a new generation', async () => {
+  const f = fixture(), id = randomUUID(); let abandoned, reset = false;
+  const publish = f.coordinator.controller.onRequestCaptured;
+  f.coordinator.controller.onRequestCaptured = snapshot => { publish(snapshot); if (!reset) { reset = true; f.coordinator.newConversation(); } };
+  f.coordinator.controller.onRequestAbandoned = (...args) => { abandoned = args; f.coordinator.clearRequestContext(...args); };
+  f.coordinator.session.recordCompletedPair(historyPair('old', 'Earlier', { fileUris: ['file:///old.kf'], knowledgeLineage: null }));
+  const original = f.coordinator.snapshot(); assert.equal((await f.submit('First', id)).status, 'cancelled');
+  assert.deepEqual(abandoned, [id, { sessionId: original.sessionId, generation: original.generation }]);
+  await f.coordinator.refreshContext();
+  f.coordinator.session.recordCompletedPair(historyPair('new-old', 'Earlier', { fileUris: ['file:///old.kf'], knowledgeLineage: null }));
+  assert.equal((await f.submit('Second', id)).status, 'completed');
+  f.coordinator.clearRequestContext(...abandoned);
+  assert.deepEqual(f.coordinator.snapshot().contextNotice, { reasons: ['source'] });
+});
+test('superseded unadmitted cleanup clears its own notice while new capture waits, never the new notice', async () => {
+  const f = fixture(); let abandoned, stop = true;
+  const publish = f.coordinator.controller.onRequestCaptured;
+  f.coordinator.controller.onRequestCaptured = snapshot => { publish(snapshot); if (stop) { stop = false; const turn = f.coordinator.snapshot().turn; f.coordinator.controller.stop({ turnId: turn.id, turnGeneration: turn.turnGeneration }); } };
+  // Retain the real callback receipt to exercise late delivery after supersession.
+  f.coordinator.controller.onRequestAbandoned = (...args) => { abandoned = args; };
+  f.coordinator.session.recordCompletedPair(historyPair('old', 'Earlier', { fileUris: ['file:///old.kf'], knowledgeLineage: null }));
+  assert.equal((await f.submit()).status, 'cancelled'); assert.deepEqual(f.coordinator.snapshot().contextNotice, { reasons: ['source'] });
+  const gate = deferred(), entered = deferred(), capture = f.coordinator.controller.captureSubmission;
+  f.coordinator.controller.captureSubmission = async submission => { entered.resolve(); await gate.promise; return capture(submission); };
+  const pending = f.submit(); await entered.promise;
+  f.coordinator.clearRequestContext(...abandoned); assert.equal(f.coordinator.snapshot().contextNotice, null);
+  gate.resolve(); assert.equal((await pending).status, 'completed');
+  f.coordinator.clearRequestContext(...abandoned); assert.deepEqual(f.coordinator.snapshot().contextNotice, { reasons: ['source'] });
+});
+
+
+for (const authorization of [undefined, () => { throw Error('unavailable'); }]) test(`authorization coordination fails closed with ${authorization ? 'throwing' : 'missing'} native checker`, () => {
+  const f = fixture(), coordinator = f.coordinator, session = coordinator.session;
+  if (authorization) coordinator.isSourceAuthorized = authorization;
+  const entryId = session.appendEntry({ kind: 'host', status: 'ready', text: 'Run' });
+  session.registerAction(entryId, { type: 'runFile', label: 'Run', enabled: true, args: { targetUri: 'file:///a.kf' } });
+  coordinator.authorizationChanged();
+  assert.deepEqual(session.runTargetUris(), []);
+  coordinator.dispose();
+});
+
+test('source dependency enumeration is detached, deduplicated and does not include unselected candidates or read bytes', async () => {
+  const active = uri('/a.kf'), optional = uri('/optional.kf'), old = 'file:///old.kf';
+  const f = fixture({ context: { activeDocument: { uri: active, text: 'A', version: 1 }, candidateUris: [optional] } });
+  await f.coordinator.refreshContext();
+  f.coordinator.session.recordCompletedPair({ id: randomUUID(), learnerText: 'Old', assistantText: 'Answer', dependencies: { fileUris: [old, active.toString()], knowledgeLineage: null } });
+  const entryId = f.coordinator.session.appendEntry({ kind: 'host', status: 'ready', text: 'Run' });
+  f.coordinator.session.registerAction(entryId, { type: 'runFile', label: 'Run', enabled: true, args: { targetUri: 'file:///run.kf' } });
+  const dependencies = f.coordinator.sourceDependencyUris();
+  assert.deepEqual(new Set(dependencies), new Set([active.toString(), old, 'file:///run.kf']));
+  assert.equal(dependencies.length, 3); dependencies.length = 0;
+  assert.equal(f.coordinator.sourceDependencyUris().length, 3);
+  assert.equal(f.coordinator.isSourceChangeRelevant(old, { activeSourceUri: active.toString() }), false);
+  assert.equal(f.coordinator.isSourceChangeRelevant(optional.toString(), { activeSourceUri: optional.toString() }), true);
+  assert.deepEqual(f.reads, []); f.coordinator.dispose();
+});
+
+
+for (const event of ['source', 'authorization']) test(`${event} coordination stops at a reentrant conversation transition and ignores disposed callbacks`, () => {
+  const f = fixture(), c = f.coordinator, s = c.session, a = 'file:///a.kf';
+  const source = { id: 'active-file', uri: a, label: 'a.kf', category: 'active-file', included: true };
+  s.setContext({ restricted: false, activeSource: source, sources: [] }); s.setContextRunAction(source);
+  const checks = [];
+  c.isSourceAuthorized = value => { checks.push(value); return false; };
+  let transitioned = false;
+  const unsubscribe = c.subscribe(() => {
+    if (transitioned) return;
+    transitioned = true; c.newConversation();
+    s.setContextRunAction({ ...source, uri: 'file:///new.kf' });
+  });
+  if (event === 'source') c.sourceChanged(a, { deleted: true, activeSourceUri: a });
+  else c.authorizationChanged();
+  unsubscribe();
+  assert.equal(transitioned, true); assert.deepEqual(s.runTargetUris(), ['file:///new.kf']);
+  assert.ok(!checks.includes('file:///new.kf'));
+  c.dispose(); const before = s.snapshot();
+  c.sourceChanged('file:///new.kf', { deleted: true }); c.authorizationChanged();
+  assert.deepEqual(s.snapshot(), before);
+});
+
+
+for (const interruption of ['transition', 'dispose']) test(`final Run authorization callback ${interruption} stops checking and mutating actions immediately`, () => {
+  const f = fixture(), c = f.coordinator, s = c.session;
+  const source = target => ({ id: 'active-file', uri: target, label: target, category: 'active-file', included: true });
+  const old = 'file:///old.kf', later = 'file:///later.kf', fresh = 'file:///new.kf';
+  s.setContextRunAction(source(old)); s.setContextRunAction(source(later));
+  const checks = []; let callbackState;
+  c.isSourceAuthorized = target => {
+    checks.push(target);
+    // Both dependency checks succeed; interrupt only inside the final Run-action predicate.
+    if (checks.length <= 2) return true;
+    if (checks.length === 3) {
+      if (interruption === 'transition') { c.newConversation(); s.setContextRunAction(source(fresh)); }
+      else c.dispose();
+      callbackState = s.snapshot();
+    }
+    return false;
+  };
+  try {
+    c.authorizationChanged();
+    assert.ok(callbackState, 'the callback reached the final Run-action pass');
+    assert.deepEqual(checks, [old, later, old], 'the old event must not authorize later or newly registered actions');
+    assert.deepEqual(s.runTargetUris(), interruption === 'transition' ? [fresh] : [old, later]);
+    assert.deepEqual(s.snapshot(), callbackState, 'no action mutation or publication follows lost ownership');
+  } finally { if (!c.disposed) c.dispose(); }
+});
+
+// Reenter real owners from display publications; assertions stay outside isolated observers.
+for (const event of ['source', 'authorization']) for (const boundary of ['checkpoint', 'stop-actions', 'assistant', 'turn', 'retry']) {
+  test(`${event} revocation preserves the new owner after ${boundary} publication`, async () => {
+    let revision = 0, signal;
+    const entered = deferred();
+    const f = fixture({ context: { activeDocument: { uri: uri('/a.kf'), text: 'show(1)', version: 1 } }, getSourceRevision: () => revision,
+      events: async function* (input) {
+        signal = input.signal; entered.resolve();
+        if (boundary === 'checkpoint') yield terminal('Checkpoint', [learningCheckpoint({ sourceIds: ['active-file'] })]);
+        else await new Promise(() => {});
+      } });
+    const c = f.coordinator, s = c.session;
+    await c.refreshContext(); const sending = f.submit('Old question');
+    await entered.promise;
+    if (boundary === 'checkpoint') assert.equal((await sending).status, 'completed');
+    const old = c.controller.current;
+    const settledOwners = [], onSettled = c.controller.onSettled;
+    c.controller.onSettled = () => { settledOwners.push(c.controller.current); return onSettled(); };
+    let switched = false, next, atSwitch, nextSending;
+    const errors = [];
+    const unsubscribe = c.subscribe(state => {
+      const actions = state.entries.flatMap(entry => entry.actions);
+      const reached = boundary === 'checkpoint' ? state.entries.some(entry => entry.kind === 'checkpoint' && entry.status === 'stale') :
+        boundary === 'stop-actions' ? actions.some(action => action.type === 'stopTurn' && !action.enabled) :
+        boundary === 'assistant' ? state.entries.some(entry => entry.kind === 'assistant' && entry.status === 'cancelled') :
+        boundary === 'turn' ? state.turn?.status === 'cancelled' : actions.some(action => action.type === 'retryTurn' && action.enabled);
+      if (switched || !reached) return;
+      switched = true;
+      try {
+        c.newConversation(); c.controller.captureSubmission = () => new Promise(() => {});
+        nextSending = c.controller.submit({ submissionId: randomUUID(), text: 'New question', contextRevision: s.snapshot().context.revision });
+        next = c.controller.current; atSwitch = s.snapshot();
+      } catch (error) { errors.push(error); }
+    });
+    try {
+      revision++; c.isSourceAuthorized = () => false;
+      assert.doesNotThrow(() => event === 'source' ? c.sourceChanged('file:///a.kf') : c.authorizationChanged());
+      assert.deepEqual(errors, []); assert.equal(switched, true);
+      assert.equal(c.controller.current, next); assert.equal(next.turn.status, 'preparing');
+      assert.deepEqual(s.snapshot(), atSwitch, 'old continuation cannot change new entries, actions or visible turn');
+      if (boundary !== 'checkpoint') {
+        assert.equal((await sending).status, 'cancelled'); assert.equal(old.busy, false);
+        assert.equal(signal.aborted, true); assert.equal(old.grant, null);
+        assert.deepEqual(settledOwners, [], 'old settlement must not invoke current-chat learning callbacks');
+      }
+    } finally { unsubscribe(); c.dispose(); if (nextSending) await nextSending; }
+  });
+}
+
+for (const event of ['source', 'authorization']) for (const registry of ['scopes', 'checkpoints']) {
+  test(`${event} ${registry} action publication cannot iterate into replacement scope records`, async () => {
+    let revision = 0;
+    const f = fixture({ context: { activeDocument: { uri: uri('/a.kf'), text: 'show(1)', version: 1 } }, getSourceRevision: () => revision,
+      events: async function* () { yield terminal('Explain', registry === 'checkpoints' ? [learningCheckpoint({ sourceIds: ['active-file'] })] :
+        [{ id: 'proposal', name: 'proposeCodeChange', arguments: { newText: 'show(2)' } }]); } });
+    const c = f.coordinator, s = c.session, controller = c.controller;
+    await c.refreshContext(); await f.submit();
+    const record = registry === 'checkpoints' ? controller.publishedCheckpoints()[0] : controller.preparationScopes()[0];
+    assert.ok(record);
+    const scope = { targetUri: 'file:///a.kf', scopeSummary: 'Fresh scope', dependencies: record.dependencies };
+    const args = registry === 'checkpoints' ? { decisionId: record.decisionId } : { scopeId: record.scopeId };
+    s.registerAction(record.entryId, { type: registry === 'checkpoints' ? 'confirmCheckpoint' : 'prepareChange', label: 'Confirm', enabled: true, args });
+    let switched = false, nextSending, nextScope, atSwitch;
+    const errors = [];
+    const unsubscribe = c.subscribe(state => {
+      if (switched || !state.entries.find(entry => entry.id === record.entryId)?.actions.some(action => !action.enabled)) return;
+      switched = true;
+      try {
+        c.newConversation(); controller.captureSubmission = () => new Promise(() => {});
+        nextSending = controller.submit({ submissionId: randomUUID(), text: 'New', contextRevision: s.snapshot().context.revision });
+        // Use the real publication API to insert a new generation-owned record during iteration.
+        controller.current.preparationRequest = scope; controller.offerPreparation(controller.current);
+        nextScope = controller.preparationScopes()[0];
+        s.registerAction(nextScope.entryId, { type: 'prepareChange', label: 'Fresh', enabled: true, args: { scopeId: nextScope.scopeId } });
+        atSwitch = s.snapshot();
+      } catch (error) { errors.push(error); }
+    });
+    try {
+      revision++; c.isSourceAuthorized = () => false;
+      assert.doesNotThrow(() => event === 'source' ? c.sourceChanged('file:///a.kf') : c.authorizationChanged());
+      assert.deepEqual(errors, []); assert.equal(switched, true);
+      assert.deepEqual(s.snapshot(), atSwitch); assert.deepEqual(controller.preparationScope(nextScope.scopeId), nextScope);
+      assert.equal(controller.current.turn.status, 'preparing');
+    } finally { unsubscribe(); c.dispose(); if (nextSending) await nextSending; }
+  });
+}
+
+for (const registry of ['scopes', 'checkpoints']) test(`${registry} invalidation predicate cannot revoke a new generation's records`, async () => {
+  const f = fixture({ events: async function* () { yield terminal('Checkpoint', [learningCheckpoint()]); } });
+  const c = f.coordinator, controller = c.controller, s = c.session;
+  await f.submit(); const old = controller.current;
+  const scope = { targetUri: 'file:///a.kf', scopeSummary: 'Scope', dependencies: { files: [], knowledgeLineage: null } };
+  old.preparationRequest = scope; controller.offerPreparation(old);
+  let calls = 0, nextSending, nextScope, atSwitch;
+  try {
+    controller[registry === 'scopes' ? 'invalidateScopes' : 'invalidateCheckpoints'](() => {
+      calls++;
+      if (calls === 1) {
+        c.newConversation(); controller.captureSubmission = () => new Promise(() => {});
+        nextSending = controller.submit({ submissionId: randomUUID(), text: 'New', contextRevision: s.snapshot().context.revision });
+        controller.current.preparationRequest = scope; controller.offerPreparation(controller.current);
+        nextScope = controller.preparationScopes()[0]; atSwitch = s.snapshot();
+      }
+      return true;
+    });
+    assert.equal(calls, 1); assert.deepEqual(s.snapshot(), atSwitch);
+    assert.deepEqual(controller.preparationScope(nextScope.scopeId), nextScope);
+  } finally { c.dispose(); if (nextSending) await nextSending; }
+});
+
+for (const event of ['source', 'authorization', 'invalidate']) test(`${event} proposal clear callback preserves a replacement owner and proposal`, async () => {
+  const native = new CodeProposalProvider({ vscode: {} });
+  const entered = deferred(); let revision = 0, signal;
+  const f = fixture({ proposalProvider: native, context: { activeDocument: { uri: uri('/a.kf'), text: 'show(1)', version: 1 } }, getSourceRevision: () => revision,
+    events: async function* (input) { signal = input.signal; entered.resolve(); await new Promise(() => {}); } });
+  const c = f.coordinator, s = c.session, controller = c.controller;
+  await c.refreshContext(); const sending = f.submit(); await entered.promise;
+  const old = controller.current;
+  old.proposalId = 'original';
+  controller.pendingProposal = { id: 'original', fileUris: ['file:///a.kf'] };
+  native.pending = { id: 'original', sourceId: 'file:///a.kf', phase: 'ready' };
+  const errors = []; let nextSending, next, atSwitch, cleared = 0;
+  native.onEvidence = value => {
+    if (value.outcome !== 'cleared' || value.proposal.id !== 'original') return;
+    cleared++;
+    try {
+      c.newConversation(); controller.captureSubmission = () => new Promise(() => {});
+      nextSending = controller.submit({ submissionId: randomUUID(), text: 'New', contextRevision: s.snapshot().context.revision });
+      next = controller.current;
+      native.pending = { id: 'replacement', sourceId: 'file:///a.kf', phase: 'ready' };
+      controller.pendingProposal = { id: 'replacement', fileUris: ['file:///a.kf'] };
+      const entry = s.appendEntry({ kind: 'proposal', status: 'ready', text: 'New proposal', data: { proposalId: 'replacement' } });
+      s.registerAction(entry, { type: 'rejectProposal', label: 'Dismiss', enabled: true, args: { id: 'replacement' } });
+      atSwitch = s.snapshot();
+    } catch (error) { errors.push(error); }
+  };
+  try {
+    revision++; c.isSourceAuthorized = () => false;
+    assert.doesNotThrow(() => event === 'source' ? c.sourceChanged('file:///a.kf') : event === 'authorization' ? c.authorizationChanged() : controller.invalidate('session-reset'));
+    assert.deepEqual(errors, []); assert.equal(cleared, 1); assert.equal(controller.current, next);
+    assert.deepEqual(s.snapshot(), atSwitch); assert.equal(native.pending.id, 'replacement'); assert.equal(controller.pendingProposal.id, 'replacement');
+    assert.equal((await sending).status, 'cancelled'); assert.equal(old.busy, false); assert.equal(signal.aborted, true);
+  } finally { c.dispose(); if (nextSending) await nextSending; }
+});
+
+test('Stop preserves cancellation settlement and abort when a real publication operation fails', async () => {
+  const entered = deferred(); let signal;
+  const f = fixture({ events: async function* (input) { signal = input.signal; entered.resolve(); await new Promise(() => {}); } });
+  const c = f.coordinator, sending = f.submit(); await entered.promise;
+  const owner = c.controller.current, register = c.session.registerAction;
+  c.session.registerAction = () => { throw Error('Publication failed'); };
+  try {
+    assert.throws(() => c.controller.stop({ turnId: owner.turn.id, turnGeneration: owner.turn.turnGeneration }), /Publication failed/);
+    assert.equal((await sending).status, 'cancelled'); assert.equal(signal.aborted, true); assert.equal(owner.busy, false); assert.equal(owner.grant, null);
+  } finally { c.session.registerAction = register; c.dispose(); }
+});

@@ -1,0 +1,8 @@
+-- Comentario de una línea
+INT x = 10;  -- comentario al final de una línea
+->
+Este es un comentario
+de varias líneas
+<-
+INT y = 20;
+show(x + y);

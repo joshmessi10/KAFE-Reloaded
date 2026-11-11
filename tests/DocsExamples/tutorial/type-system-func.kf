@@ -1,0 +1,15 @@
+drip add(a: INT, b: INT) => INT:
+    return a + b;
+;
+
+drip apply(f: FUNC(INT) => INT, n: INT) => INT:
+    return f(n);
+;
+
+drip double(x: INT) => INT:
+    return x * 2;
+;
+
+FUNC(INT)=>INT addFifteen = add(15);
+show(addFifteen(5));
+show(apply(double, 5));

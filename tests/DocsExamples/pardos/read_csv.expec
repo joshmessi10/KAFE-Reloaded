@@ -1,0 +1,2 @@
+"cols: ['name', 'age', 'score', 'city'], rows: [['Ana', 10, 8.5, 'Lima'], ['Luis', 11, 7.0, 'Quito'], ['Sofia', 10, 9.5, 'Lima'], ['Mateo', 12, 6.5, 'Cusco'], ['Elena', 11, 9.0, 'Quito']]"
+"cols: ['fruit', 'price'], rows: [['apple', 1.2], ['banana', 0.5], ['grape', 2.75]]"

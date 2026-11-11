@@ -1,0 +1,4 @@
+import math;
+
+show(math.exp2(3));
+show(math.exp2(10));

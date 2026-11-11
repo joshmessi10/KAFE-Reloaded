@@ -1,0 +1,11 @@
+import files;
+
+files.create("read-demo.txt");
+files.write("read-demo.txt", "x = 10\ny = 20");
+
+STR content = files.read("read-demo.txt");
+show(content);
+show(content == "x = 10\ny = 20\n");
+
+-- clean up
+files.delete("read-demo.txt");

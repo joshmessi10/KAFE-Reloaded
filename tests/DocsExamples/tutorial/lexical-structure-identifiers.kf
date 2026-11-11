@@ -1,0 +1,8 @@
+INT my_variable = 5;
+INT _private = 10;
+INT var2 = 20;
+INT Score = 1;
+INT score = 2;
+show(my_variable + _private + var2);
+show(Score);
+show(score);

@@ -1,0 +1,2 @@
+List[INT] nums = [1, 2];
+show(nums[1.0]);

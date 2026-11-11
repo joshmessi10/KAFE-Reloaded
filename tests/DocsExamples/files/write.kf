@@ -1,0 +1,10 @@
+import files;
+
+files.write("write-demo.txt", "1 2 3");
+show(files.read("write-demo.txt"));
+
+files.write("write-demo.txt", "4 5 6");
+show(files.read("write-demo.txt"));
+
+-- clean up
+files.delete("write-demo.txt");

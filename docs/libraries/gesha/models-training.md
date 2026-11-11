@@ -11,7 +11,7 @@ A model is an ordered collection of layers. The architectures supported for trai
 | `gesha.functional` | `(inputs, outputs) -> GESHA` | Directed graph model for explicit branches and merges; see the tested Functional fixture |
 | `gesha.input_layer` | `(shape) -> GESHA` | Symbolic input node for the graph |
 
-Layers can also be added after assembly with `model.add(layer)` (`Sequential` only). A Functional graph may expose several outputs and accepts one gradient per output in `backward`; the current `fit` training loop supports a single output and a single loss.
+Layers can also be added after assembly with `model.add(layer)` (`Sequential` only). The intended KAFE `gesha.functional` wrapper accepts one GESHA input node and one GESHA output node; it rejects lists of multiple input/output nodes. The Python backend supports broader graph forms and one gradient per output in `backward`, but that does not enlarge this wrapper's contract. The current `fit` training loop supports a single output and a single loss. A tested single-input branch/Add-merge/single-output example exists; broader graph configurations remain experimental.
 
 ---
 
@@ -19,6 +19,8 @@ Layers can also be added after assembly with `model.add(layer)` (`Sequential` on
 ## Training workflow
 
 ```kafe
+import gesha;
+
 GESHA output_layer = gesha.create_dense(1, "sigmoid", [2], 0.0, 42);
 GESHA model = gesha.sequential([output_layer]);
 model.compile("sgd", "binary_crossentropy", ["accuracy"]);
@@ -58,7 +60,7 @@ For binary ROC AUC, pass sigmoid scores from `model.predict(X)` to `machine.roc_
 | Method | Signature | Description |
 |--------|-------|-------------|
 | `model.compile` | `(optimizer, loss, metrics) -> VOID` | Configures the optimizer, loss, and metrics (required before `fit`) |
-| `model.fit` | `(x_train, y_train, epochs, batch_size, x_val, y_val, regularization_lambda, callbacks) -> VOID` | Trains the model; pass `y_train = []` for unsupervised (clustering) training |
+| `model.fit` | `(x_train, y_train, epochs, batch_size, x_val, y_val, regularization_lambda, callbacks)` | Use as a KAFE statement; Python history dictionaries have no supported declared KAFE type. Empty targets select experimental soft clustering. |
 | `model.predict` | `(input) -> List[FLOAT]` or `List[List[FLOAT]]` | Output for one sample or a batch |
 | `model.predict_proba` | `(input) -> List[FLOAT]` or `List[List[FLOAT]]` | Class probabilities (same as `predict`) |
 | `model.predict_label` | `(input) -> INT` or `List[INT]` | Thresholded label (binary) or argmax class/cluster index |
@@ -93,6 +95,8 @@ For binary ROC AUC, pass sigmoid scores from `model.predict(X)` to `machine.roc_
 
 The input shape of the first layer must match each sample. `fit` needs a compiled model, positive batch size, and compatible training inputs and labels. `predict_label` returns a binary label at a 0.5 threshold for a one-unit output and an argmax class for multi-unit outputs. Use raw `predict` outputs when confidence or regression values matter.
 
+`model.compile` has defaults for omitted positional arguments, but the separate `gesha.compile(model, optimizer, loss, metrics)` wrapper requires all four. `model.set_lr` must follow compilation. Choose a positive numeric rate; the pinned setter does not reject negative rates. The intended configuration uses the documented optimizer/loss strings, not invented `gesha.adam(...)` factories, Python optimizer objects or keyword arguments.
+
 ## Fit arguments and validation
 
 | Argument | Purpose | Practical check |
@@ -106,16 +110,30 @@ The input shape of the first layer must match each sample. `fit` needs a compile
 
 The model does not automatically split data. For tabular classification, use a stratified split if class frequencies matter. Fit any scaler on `X_train` and transform `X_test` with that fitted scaler. Evaluate a trained model by printing several held-out predictions alongside targets and computing a task-appropriate metric.
 
+Use positional expressions only. For example, passing callbacks without validation requires `model.fit(X, Y, epochs, batch_size, [], [], 0.0, [callback])`. Epochs must be a non-negative integer; zero epochs is a bounded configuration check, not evidence that learning occurred. The loop does not automatically shuffle samples. `metrics` is accepted but does not implement arbitrary requested metrics; built-in cross-entropy accuracy and available validation loss are the actual logs.
+
 ### Prediction forms
 
 `predict` returns numeric outputs, such as a sigmoid value, a softmax vector, or a continuous regression estimate. `predict_label` converts a one-unit output with a 0.5 threshold or chooses the largest component in a multi-unit output. The returned label is convenient for accuracy, but it discards confidence information.
+
+A flat dense vector can be passed as one sample. For one CNN image, recurrent sequence or token sequence, pass an outer batch: `model.predict([image])`, `model.predict([sequence])` or `model.predict([tokens])`. The implementation treats a nested first element as a batch; it does not infer the architecture's single-sample rank. `predict_proba` returns exactly the same values as `predict`; a regression output does not become a probability merely by calling that alias. There is no `model.evaluate` method; use the shared `machine.*` metrics on held-out predictions.
 
 ### Saving weights
 
 `save_weights` writes model parameters to JSON and `load_weights` reads them back. Construct the same architecture before loading. Save after training, and load before predicting with the restored model. The file contains parameters, not the input preprocessing pipeline, so keep the feature order and scaler settings alongside it.
 
+The parameters must already exist: declare a concrete first-layer shape or perform a compatible forward/predict pass before loading a lazily built model. The file does not contain the architecture, optimizer state or BatchNormalization running mean/variance. It therefore is not a complete model checkpoint or an exact resumed-training snapshot. The isolated weight fixture verifies only an explicitly built matching dense model.
+
+### Advanced inspection
+
+`model.forward(sample)` performs a single-sample numerical pass without automatically selecting evaluation mode. `backward` requires matching cached forward data; Sequential returns the input gradient, while Functional's backward returns no KAFE value. Ordinary training uses these internally. `layer.train()` and `layer.eval()` toggle layer behavior, not model training itself. `model.summary()` prints architecture information.
+
+`model.layers` on Sequential can be assigned to `List[GESHA]` and indexed. Built-in `len` rejects `List[GESHA]` in this pinned runtime, so do not recommend `len(model.layers)`. Raw `model.parameters()` values are Python parameter handles outside the KAFE type registry. A declaration such as `GESHA model;` creates an unassigned placeholder; assign a real model before invoking it.
+
 ### Computational cost
 
-For each sample, a dense layer with `n` inputs and `m` outputs uses `O(nm)` multiply-add work. Backpropagation has the same order and stores activations and gradients in addition to weights. A minibatch delays the optimizer update until its samples have contributed gradients; very large batches increase memory use.
+For each sample, a dense layer with `n` inputs and `m` outputs uses `O(nm)` multiply-add work. Backpropagation has the same order and stores activations and gradients in addition to weights. A minibatch delays the optimizer update until its samples have contributed gradients. This implementation processes its samples individually and accumulates parameter gradients, rather than retaining a separate activation graph for every minibatch sample.
+
+[Reviewed teaching contracts and evidence](api-coverage.md) describe the supported surface and its limits.
 
 [Back to Gesha overview](../gesha.md)

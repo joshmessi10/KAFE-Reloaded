@@ -1,0 +1,2 @@
+Syntax Error [Line 2, Column 3]: extraneous input '=' expecting {'int', 'float', 'str', 'bool', 'pour', 'len', 'range', '-', '!', '(', '[', INT, BOOL, FLOAT, STRING, ID}
+Exception: SyntaxError at line 2:3 -> extraneous input '=' expecting {'int', 'float', 'str', 'bool', 'pour', 'len', 'range', '-', '!', '(', '[', INT, BOOL, FLOAT, STRING, ID}

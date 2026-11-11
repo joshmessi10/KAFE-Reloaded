@@ -1,0 +1,10 @@
+import pardos;
+
+PARDOS students = pardos.read_csv("data/students.csv");
+PARDOS clubs = pardos.read_csv("data/clubs.csv");
+
+PARDOS inner = pardos.merge(students, clubs, "name");
+show(inner);
+
+PARDOS left = pardos.merge(students, clubs, "name", "left");
+show(left);

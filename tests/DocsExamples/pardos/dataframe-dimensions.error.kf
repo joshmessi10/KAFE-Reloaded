@@ -1,0 +1,3 @@
+import pardos;
+
+PARDOS study = pardos.DataFrame(["hours", "score"], [[2, 60], [4]]);

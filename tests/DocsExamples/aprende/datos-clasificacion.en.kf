@@ -1,0 +1,11 @@
+import machine;
+
+-- Weight of each fruit in grams: 0 = grape, 1 = watermelon
+List[FLOAT] weight = [5.0, 6.0, 7.0, 3000.0, 3500.0, 4000.0];
+List[INT] fruit = [0, 0, 0, 1, 1, 1];
+
+MACHINE model = machine.knn(3);
+model.fit(weight, fruit);
+
+-- Which fruit weighs 6.5 g? And 3200 g?
+show(model.predict([6.5, 3200.0]));

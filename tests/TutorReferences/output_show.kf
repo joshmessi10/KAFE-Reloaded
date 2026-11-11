@@ -1,0 +1,2 @@
+-- Output / salida: use show to print a value.
+show("Hello, KAFE!");

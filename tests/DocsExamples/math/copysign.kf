@@ -1,0 +1,4 @@
+import math;
+
+show(math.copysign(5, -1));
+show(math.copysign(-3.0, 2.0));

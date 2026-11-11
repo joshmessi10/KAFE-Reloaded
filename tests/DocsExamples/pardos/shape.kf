@@ -1,0 +1,6 @@
+import pardos;
+
+PARDOS students = pardos.read_csv("data/students.csv");
+List[INT] size = students.shape();
+show(size);
+show("rows: " + str(size[0]));

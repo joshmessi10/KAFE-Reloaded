@@ -1,0 +1,5 @@
+-- print is a legal user-defined function name, not a built-in.
+drip print(value: INT) => INT:
+    return value + 1;
+;
+show(print(2));

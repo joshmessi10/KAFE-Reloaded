@@ -1,0 +1,4 @@
+for (i in range(3)):
+    INT square = i * i;
+;
+show(square);

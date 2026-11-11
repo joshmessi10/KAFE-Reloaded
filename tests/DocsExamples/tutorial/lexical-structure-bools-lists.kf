@@ -1,0 +1,10 @@
+BOOL truth_value = True;
+BOOL false_value = False;
+List[INT] empty = [];
+List[INT] numbers = [1, 2, 3];
+List[List[INT]] matrix = [[1, 2], [3, 4]];
+show(truth_value);
+show(false_value);
+show(empty);
+show(numbers);
+show(matrix);

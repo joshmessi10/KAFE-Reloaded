@@ -1,0 +1,5 @@
+List[INT] a = [1, 2];
+List[INT] b = [3, 4];
+List[INT] c = a + b;
+show(c);
+show(a);

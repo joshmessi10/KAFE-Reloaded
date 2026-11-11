@@ -36,7 +36,10 @@ Además de las tablas CSV, KafeKAGGLE ofrece:
       formato `[C][H][W]` con píxeles normalizados a `[0,1]`, compatible
       con las capas Conv2D de GESHA.
 
-Dependencias externas opcionales (auto-instaladas bajo demanda):
+Dependencias externas opcionales (pack Kaggle, extra ``kaggle``):
+    uv sync --locked --extra kaggle
+    En VS Code: "KAFE: Install Kaggle Pack".
+
     - kagglehub — cliente oficial de descarga.
     - Pillow — decodificación PNG/JPEG/BMP y redimensionado.
     - py7zr — extracción de archivos ``.7z`` anidados (``.zip`` usa la
@@ -49,8 +52,6 @@ import io
 import logging
 import os
 import random
-import subprocess
-import sys
 import zipfile
 from contextlib import contextmanager, redirect_stdout
 
@@ -65,37 +66,26 @@ def _directory_has_entries(path):
         return next(entries, None) is not None
 
 
-try:
-    kagglehub = importlib.import_module("kagglehub")
+_PACK_FALTANTE = (
+    "kaggle: Para usar kaggle, instala el pack Kaggle: en VS Code ejecuta "
+    '"KAFE: Install Kaggle Pack"; desde el repositorio ejecuta '
+    '"uv sync --locked --extra kaggle".'
+)
 
-    _KAGGLEHUB_AVAILABLE = True
-except ImportError:
-    kagglehub = None
-    _KAGGLEHUB_AVAILABLE = False
+# kagglehub tarda ~0.4 s en importarse; se carga solo cuando un programa usa
+# kaggle para que el resto de programas KAFE arranque rápido.
+kagglehub = None
 
 
 def _require_kagglehub():
-    """Instala ``kagglehub`` bajo demanda cuando no está disponible."""
-    global kagglehub, _KAGGLEHUB_AVAILABLE
-    if _KAGGLEHUB_AVAILABLE:
+    """Carga ``kagglehub`` la primera vez que un programa lo necesita."""
+    global kagglehub
+    if kagglehub is not None:
         return
     try:
-        subprocess.run(
-            [sys.executable, "-m", "pip", "install", "kagglehub"],
-            check=True,
-            timeout=120,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True,
-        )
         kagglehub = importlib.import_module("kagglehub")
-        _KAGGLEHUB_AVAILABLE = True
-    except Exception as error:
-        raise Exception(
-            "kaggle: no se pudo instalar automáticamente 'kagglehub'. "
-            "Comprueba la conexión o ejecuta 'pip install kagglehub'. "
-            f"Detalle: {error}"
-        ) from error
+    except ImportError:
+        raise Exception(_PACK_FALTANTE) from None
 
 
 def _tiene_credenciales():
@@ -496,31 +486,17 @@ def _require_image_dependencies():
 
     KafeKAGGLE mantiene ``kagglehub`` como dependencia diferida. La ingesta
     de imágenes necesita además Pillow para decodificar PNG/JPEG/BMP y
-    redimensionar, y py7zr para extraer archivos ``.7z`` anidados. Ambos se
-    instalan solo al solicitar esta API y permanecen opcionales.
+    redimensionar, y py7zr para extraer archivos ``.7z`` anidados. Los tres
+    forman el pack opcional Kaggle y se importan solo al usar esta API.
     Devuelve ``(PIL.Image, py7zr)``.
     """
-    modules = []
-    for package, module_name in (("Pillow", "PIL.Image"), ("py7zr", "py7zr")):
-        try:
-            modules.append(importlib.import_module(module_name))
-        except ImportError:
-            try:
-                subprocess.run(
-                    [sys.executable, "-m", "pip", "install", package],
-                    check=True,
-                    timeout=180,
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE,
-                    text=True,
-                )
-                modules.append(importlib.import_module(module_name))
-            except Exception as error:
-                raise Exception(
-                    f"kaggle: no se pudo instalar '{package}', necesario para "
-                    f"la ingesta de imágenes. Detalle: {error}"
-                ) from error
-    return modules[0], modules[1]
+    try:
+        return (
+            importlib.import_module("PIL.Image"),
+            importlib.import_module("py7zr"),
+        )
+    except ImportError:
+        raise Exception(_PACK_FALTANTE) from None
 
 
 def _normalize_color_mode(color_mode):
@@ -846,7 +822,7 @@ def load_image(dataset_name, image_path, height=32, width=32, color_mode="rgb"):
         List[List[List[FLOAT]]] img = kaggle.load_image("dueno/conjunto", "train/12.png", 32, 32, "rgb");
 
     Nota: Requiere conexión a internet, `kagglehub` y las dependencias
-    opcionales `Pillow`/`py7zr` (se instalan automáticamente bajo demanda).
+    opcionales `Pillow`/`py7zr` (pack Kaggle).
     """
     _validate_dataset_name(dataset_name)
     if not image_path or not str(image_path).strip():
@@ -1204,8 +1180,8 @@ def load_dataset(dataset_name, file_name=""):
         PARDOS df = kaggle.load_dataset("uciml/iris", "Iris.csv");
         show(df.head(5));
 
-    Nota: Requiere conexión a internet y la librería `kagglehub` instalada
-    (se instala automáticamente bajo demanda). Los datasets públicos no
+    Nota: Requiere conexión a internet y el pack Kaggle (`kagglehub`)
+    instalado. Los datasets públicos no
     requieren ninguna credencial; para datasets privados, las credenciales
     son opcionales (~/.kaggle/kaggle.json, KAGGLE_USERNAME y KAGGLE_KEY, o
     los secretos de Colab). Las descargas quedan cacheadas por kagglehub y
@@ -1314,8 +1290,8 @@ def load_text_dataset(
         List[STR] textos = df.col("text");
         List[INT] etiquetas = df.col("label");
 
-    Nota: Requiere conexión a internet y la librería `kagglehub` (se instala
-    automáticamente bajo demanda). Los datasets públicos no necesitan
+    Nota: Requiere conexión a internet y el pack Kaggle (`kagglehub`).
+    Los datasets públicos no necesitan
     credenciales y las descargas quedan cacheadas. El archivo completo se
     carga en memoria; usa `limit` en conjuntos grandes.
     """

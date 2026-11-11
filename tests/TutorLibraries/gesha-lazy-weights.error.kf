@@ -1,0 +1,5 @@
+import gesha;
+GESHA layer = gesha.create_dense(1, "linear", []);
+GESHA model = gesha.sequential([layer]);
+-- Loading checks for built parameters before it opens any file.
+model.load_weights("not-opened.json");

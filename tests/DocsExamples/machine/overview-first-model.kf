@@ -1,0 +1,10 @@
+import machine;
+
+List[List[FLOAT]] fruits = [[150.0, 7.0], [170.0, 8.0], [160.0, 7.5], [20.0, 2.0], [25.0, 2.5], [18.0, 1.8]];
+List[INT] kind = [0, 0, 0, 1, 1, 1];
+
+MACHINE model = machine.knn(3);
+model.fit(fruits, kind);
+
+show(model.predict([[155.0, 7.2], [22.0, 2.1]]));
+show(model.score(fruits, kind));

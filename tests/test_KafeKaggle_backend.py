@@ -15,9 +15,9 @@ from lib.KafePARDOS.DataFrame import DataFrame
 
 
 @pytest.fixture(autouse=True)
-def _kagglehub_disponible(monkeypatch):
-    """Los tests unitarios nunca deben intentar pip install (sin red)."""
-    monkeypatch.setattr(kaggle, "_KAGGLEHUB_AVAILABLE", True)
+def _kagglehub_cargado(monkeypatch):
+    """Simula kagglehub ya cargado; ningún test toca la red ni importa el pack."""
+    monkeypatch.setattr(kaggle, "kagglehub", object())
 
 
 def _crear_dataset(tmp_path, archivos, nombre="dataset"):
@@ -71,21 +71,6 @@ class KaggleHubRoto:
         raise RuntimeError("404: Not Found")
 
 
-class SubprocessFalso:
-    """Reemplaza subprocess dentro del módulo para no instalar nada."""
-
-    PIPE = -1
-
-    def __init__(self, error=None):
-        self.error = error
-        self.llamadas = []
-
-    def run(self, args, **kwargs):
-        self.llamadas.append({"args": args, **kwargs})
-        if self.error is not None:
-            raise self.error
-
-
 class ImportlibFalso:
     """Reemplaza importlib dentro del módulo para simular el import."""
 
@@ -95,6 +80,8 @@ class ImportlibFalso:
 
     def import_module(self, nombre):
         self.nombres.append(nombre)
+        if self.modulo is None:
+            raise ImportError(nombre)
         return self.modulo
 
 
@@ -389,50 +376,35 @@ def test_tiene_credenciales_false_with_only_one_env_var(monkeypatch, tmp_path):
     assert kaggle._tiene_credenciales() is False
 
 
-def test_require_kagglehub_already_available(monkeypatch):
-    falso = SubprocessFalso(error=AssertionError("no debe instalar"))
-    monkeypatch.setattr(kaggle, "subprocess", falso)
+def test_require_kagglehub_already_loaded_skips_import(monkeypatch):
+    falso_import = ImportlibFalso(None)
+    monkeypatch.setattr(kaggle, "importlib", falso_import)
     kaggle._require_kagglehub()
-    assert falso.llamadas == []
+    assert falso_import.nombres == []
 
 
-def test_require_kagglehub_install_success(monkeypatch):
-    falso_subprocess = SubprocessFalso()
+def test_require_kagglehub_imports_lazily_once(monkeypatch):
     cliente = object()
     falso_import = ImportlibFalso(cliente)
-    monkeypatch.setattr(kaggle, "subprocess", falso_subprocess)
     monkeypatch.setattr(kaggle, "importlib", falso_import)
-    monkeypatch.setattr(kaggle, "_KAGGLEHUB_AVAILABLE", False)
+    monkeypatch.setattr(kaggle, "kagglehub", None)
     kaggle._require_kagglehub()
-    assert kaggle._KAGGLEHUB_AVAILABLE is True
+    kaggle._require_kagglehub()
     assert kaggle.kagglehub is cliente
     assert falso_import.nombres == ["kagglehub"]
-    assert falso_subprocess.llamadas[0]["args"] == [
-        sys.executable,
-        "-m",
-        "pip",
-        "install",
-        "kagglehub",
-    ]
-    assert falso_subprocess.llamadas[0]["timeout"] == 120
 
 
-def test_require_kagglehub_install_failure(monkeypatch):
-    falso = SubprocessFalso(error=RuntimeError("sin conexión"))
-    monkeypatch.setattr(kaggle, "subprocess", falso)
-    monkeypatch.setattr(kaggle, "_KAGGLEHUB_AVAILABLE", False)
+@pytest.mark.parametrize("requerir", ["_require_kagglehub", "_require_image_dependencies"])
+def test_missing_kaggle_pack_names_install_routes(monkeypatch, requerir):
+    monkeypatch.setattr(kaggle, "importlib", ImportlibFalso(None))
+    monkeypatch.setattr(kaggle, "kagglehub", None)
     with pytest.raises(Exception) as exc:
-        kaggle._require_kagglehub()
-    assert str(exc.value).startswith("kaggle:")
-    assert "no se pudo instalar" in str(exc.value)
-    assert "pip install kagglehub" in str(exc.value)
-    assert falso.llamadas[0]["args"] == [
-        sys.executable,
-        "-m",
-        "pip",
-        "install",
-        "kagglehub",
-    ]
+        getattr(kaggle, requerir)()
+    mensaje = str(exc.value)
+    assert mensaje.startswith("kaggle:")
+    assert '"KAFE: Install Kaggle Pack"' in mensaje
+    assert '"uv sync --locked --extra kaggle"' in mensaje
+    assert "pip" not in mensaje
 
 
 # ---------------------------------------------------------------------------

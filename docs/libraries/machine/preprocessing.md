@@ -2,6 +2,8 @@
 
 [Return to Index](../machine.md)
 
+[Pinned KAFE call contracts and limits](contracts.md) distinguish the supported DSL from Python backend options. Every `fit` below returns the same `MACHINE`; transformed PARDOS inputs retain PARDOS output, while matrix inputs retain matrix output.
+
 ## StandardScaler
 
 Standardizes features by removing the mean and scaling to unit variance (z-score): $z = (x - \mu) / \sigma$.
@@ -10,7 +12,7 @@ Standardizes features by removing the mean and scaling to unit variance (z-score
 
 | Method | Signature | Description |
 |--------|-----------|-------------|
-| `ss.fit(X)` | `(List[List[NUM]]) -> VOID` | Calculates the mean and standard deviation |
+| `ss.fit(X)` | `(List[List[NUM]]) -> MACHINE` | Calculates the mean and standard deviation |
 | `ss.transform(X)` | `(List[List[NUM]]) -> List[List[FLOAT]]` | Standardizes the data |
 | `ss.fit_transform(X)` | `(List[List[NUM]]) -> List[List[FLOAT]]` | Fit + transform |
 | `ss.inverse_transform(X)` | `(List[List[NUM]]) -> List[List[FLOAT]]` | Reverses the standardization |
@@ -47,7 +49,7 @@ Scales features to a fixed range (by default, [0, 1]): $X_{norm} = (X - X_{min})
 
 | Method | Signature | Description |
 |--------|-----------|-------------|
-| `mms.fit(X)` | `(List[List[NUM]]) -> VOID` | Calculates the minimum and maximum |
+| `mms.fit(X)` | `(List[List[NUM]]) -> MACHINE` | Calculates the minimum and maximum |
 | `mms.transform(X)` | `(List[List[NUM]]) -> List[List[FLOAT]]` | Scales the data |
 | `mms.fit_transform(X)` | `(List[List[NUM]]) -> List[List[FLOAT]]` | Fit + transform |
 | `mms.inverse_transform(X)` | `(List[List[NUM]]) -> List[List[FLOAT]]` | Reverses the scaling |
@@ -90,7 +92,7 @@ Here, $\text{median} = Q2$ (the 50th percentile) and $IQR = Q3 - Q1$ (the 75th p
 
 | Method | Signature | Description |
 |--------|-----------|-------------|
-| `rs.fit(X)` | `(List[List[NUM]]) -> VOID` | Calculates the median and IQR for each feature |
+| `rs.fit(X)` | `(List[List[NUM]]) -> MACHINE` | Calculates the median and IQR for each feature |
 | `rs.transform(X)` | `(List[List[NUM]]) -> List[List[FLOAT]]` | Scales the data |
 | `rs.fit_transform(X)` | `(List[List[NUM]]) -> List[List[FLOAT]]` | Fit + transform |
 | `rs.inverse_transform(X)` | `(List[List[NUM]]) -> List[List[FLOAT]]` | Reverses the scaling |
@@ -106,7 +108,7 @@ Here, $\text{median} = Q2$ (the 50th percentile) and $IQR = Q3 - Q1$ (the 75th p
 
 ```kafe
 -- with_centering=1 (centers using the median), with_scaling=1 (scales using the IQR)
--- quantile_low=25.0, quantile_high=75.0
+-- The backend defaults are quantile_low=25.0 and quantile_high=75.0.
 MACHINE rs = machine.robust_scaler();
 ```
 
@@ -114,8 +116,9 @@ MACHINE rs = machine.robust_scaler();
 |-----------|------|---------|-------------|
 | `with_centering` | INT | 1 | If 1, centers using the median (0 = no centering) |
 | `with_scaling` | INT | 1 | If 1, scales using the IQR (0 = no scaling) |
-| `quantile_low` | FLOAT | 25.0 | Lower percentile for the IQR |
-| `quantile_high` | FLOAT | 75.0 | Upper percentile for the IQR |
+| `quantile_low` | INT when supplied | 25.0 internally | Optional third positional argument |
+
+The current KAFE gate accepts zero, one, two or three **INT** arguments. For example, `machine.robust_scaler(1, 1, 20)` changes the lower percentile. It rejects a FLOAT third argument and rejects a fourth argument; the upper percentile stays at the backend default 75.0. Do not pass Python keyword arguments or advertise a configurable fourth percentile. At least one of centering/scaling must be enabled, and the quantile range must be valid.
 
 ### Example
 
@@ -127,7 +130,7 @@ List[List[FLOAT]] data = [[1.0, 4.0], [3.0, 6.0], [5.0, 100.0]];
 MACHINE rs = machine.robust_scaler();
 List[List[FLOAT]] scaled = rs.fit_transform(data);
 show(rs.center_);   -- [3.0, 6.0] (medians)
-show(rs.scale_);    -- [4.0, 94.0] (IQRs)
+show(rs.scale_);    -- [2.0, 48.0] (interpolated IQRs)
 
 List[List[FLOAT]] restored = rs.inverse_transform(scaled);
 show(restored);  -- [[1.0, 4.0], [3.0, 6.0], [5.0, 100.0]]
@@ -151,7 +154,7 @@ show(restored);  -- [[1.0, 4.0], [3.0, 6.0], [5.0, 100.0]]
 
 ## SimpleImputer
 
-Imputes missing values (represented as NaN in DataFrames) using a configurable strategy.
+Imputes missing values in PARDOS or nested matrix input using a configurable strategy. Use `math.nan` for a missing numeric value in a pure KAFE example; backend None is also treated as missing.
 
 ### Strategies
 
@@ -166,15 +169,15 @@ Imputes missing values (represented as NaN in DataFrames) using a configurable s
 
 | Method | Signature | Description |
 |--------|-----------|-------------|
-| `imp.fit(X)` | `(PARDOS) -> VOID` | Calculates per-column statistics. Raises an error if an entire column is NaN (except with the `"constant"` strategy) |
-| `imp.transform(X)` | `(PARDOS) -> PARDOS` | Imputes missing values |
-| `imp.fit_transform(X)` | `(PARDOS) -> PARDOS` | Fit + transform |
+| `imp.fit(X)` | `(PARDOS or matrix) -> MACHINE` | Calculates per-column statistics. All-missing columns fail outside the constant strategy |
+| `imp.transform(X)` | `(PARDOS or matrix) -> same container form` | Imputes missing values |
+| `imp.fit_transform(X)` | `(PARDOS or matrix) -> same container form` | Fit + transform |
 
 ### Properties
 
 | Property | Type | Description |
 |----------|------|-------------|
-| `imp.statistics_` | `List[FLOAT]` | Statistics calculated for each column |
+| `imp.statistics_` | List of fill values | Numeric statistics or the selected constant/category value per column |
 
 ### Example
 
@@ -247,6 +250,7 @@ Encodes categorical DataFrame columns as a binary (one-hot) representation.
 | `ohe.fit(df, columns)` | `(PARDOS, List[STR]) -> MACHINE` | Learns categories from selected columns |
 | `ohe.transform(df)` | `(PARDOS) -> PARDOS` | Transforms the DataFrame using one-hot encoding |
 | `ohe.fit_transform(df, columns)` | `(PARDOS, List[STR]) -> PARDOS` | Fit + transform |
+| `ohe.inverse_transform(df)` | `(PARDOS) -> PARDOS` | Restores categories; each encoded group must have exactly one active category |
 
 ### Example
 
@@ -295,7 +299,7 @@ Encodes categorical DataFrame columns as ordinal integer values, ordered alphabe
 
 | Property | Type | Description |
 |----------|------|-------------|
-| `oe.categories_` | `Dict` | Mapping of columns to lists of sorted categories |
+| `oe.categories_` | Backend mapping | Mapping of columns to lists of sorted categories |
 | `oe.columns_` | `List[STR]` | Names of the encoded columns |
 
 ### Example
@@ -340,9 +344,13 @@ Reduces data dimensionality by finding the directions of greatest variance using
 
 | Method | Signature | Description |
 |--------|-----------|-------------|
-| `pca.fit(X)` | `(PARDOS or List[List[NUM]]) -> VOID` | Fits the model to the data |
-| `pca.transform(X)` | `(PARDOS or List[List[NUM]]) -> PARDOS` | Transforms data into principal components |
-| `pca.round(n)` | `(INT) -> VOID` | Rounds internal values to n decimal places |
+| `pca.fit(X)` | `(PARDOS or List[List[NUM]]) -> MACHINE` | Fits the model to the data |
+| `pca.transform(X)` | `(PARDOS or List[List[NUM]]) -> same container form` | Transforms data into principal components |
+| `pca.fit_transform(X)` | `(PARDOS or matrix) -> same container form` | Fit and project |
+| `pca.inverse_transform(X)` | `(PARDOS or matrix) -> same container form` | Reconstructs an approximation from the retained components |
+| `pca.round(n)` | `(INT) -> MACHINE` | Rounds internal values to n decimal places |
+
+`pca.round()` uses four decimals by default. It changes fitted state and returns the same receiver.
 
 ### Properties
 
@@ -415,7 +423,7 @@ Where:
 
 | Method | Signature | Description |
 |--------|-----------|-------------|
-| `lda.fit(X, y)` | `(List[List[NUM]], List[INT]) -> VOID` | Fits LDA by calculating scatter matrices and eigenvectors |
+| `lda.fit(X, y)` | `(List[List[NUM]], List[INT]) -> MACHINE` | Fits LDA by calculating scatter matrices and eigenvectors |
 | `lda.transform(X)` | `(List[List[NUM]]) -> List[List[FLOAT]]` | Projects data into a lower-dimensional space |
 | `lda.fit_transform(X, y)` | `(List[List[NUM]], List[INT]) -> List[List[FLOAT]]` | Fit + transform in one step |
 | `lda.predict(X)` | `(List[List[NUM]]) -> List[INT]` | Predicts classes by distance in the projected space |
@@ -431,6 +439,8 @@ MACHINE lda = machine.linear_discriminant_analysis(2);
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
 | `n_components` | INT | None | Number of components (max: n_classes - 1) |
+
+Only the component count is a KAFE factory argument. Backend solver/covariance options are not exposed. The current Jacobi implementation assumes at least two input features; a one-feature fit fails with an index error despite the broad numeric input gate.
 
 ### Properties
 
@@ -513,7 +523,7 @@ Generates polynomial features up to a specified degree, allowing linear models t
 
 For $d$ features and degree $n$, it generates all combinations of powers $p_1 + p_2 + \cdots + p_d \leq n$:
 
-$$[x_1, x_2] \xrightarrow{\text{degree}=2} [1, x_1, x_2, x_1^2, x_1 x_2, x_2^2]$$
+$$[x_1, x_2] \xrightarrow{\text{degree}=2} [1, x_2, x_2^2, x_1, x_1 x_2, x_1^2]$$
 
 Number of output features (with bias): $\binom{d+n}{n} = \frac{(d+n)!}{d! \cdot n!}$
 
@@ -522,11 +532,11 @@ Number of output features (with bias): $\binom{d+n}{n} = \frac{(d+n)!}{d! \cdot 
 | Feature | Powers | Value |
 |---------|--------|-------|
 | 1 (bias) | $(0,0)$ | $1$ |
-| x0 | $(1,0)$ | $x_1$ |
 | x1 | $(0,1)$ | $x_2$ |
-| x0² | $(2,0)$ | $x_1^2$ |
-| x0*x1 | $(1,1)$ | $x_1 \cdot x_2$ |
 | x1² | $(0,2)$ | $x_2^2$ |
+| x0 | $(1,0)$ | $x_1$ |
+| x0*x1 | $(1,1)$ | $x_1 \cdot x_2$ |
+| x0² | $(2,0)$ | $x_1^2$ |
 
 ### Methods
 
@@ -568,10 +578,9 @@ List[List[FLOAT]] X_poly = pf.fit_transform(X);
 show(pf.n_features_in_);   -- 2
 show(pf.n_features_out_);  -- 6 (1 bias + 2 original + 3 polynomial)
 
--- Combine with linear regression to capture nonlinear relationships
-MACHINE lr = machine.linear_regression();
-lr.fit(X_poly, y);
 ```
+
+This is a feature-expansion example. Training a regression model additionally needs declared targets and enough independent training samples; a tiny expanded or collinear matrix can make ordinary least squares singular. Output column ordering is the KAFE implementation ordering above, not an assumed sklearn ordering.
 
 ### Comparison with a Simple Linear Model
 
@@ -611,7 +620,7 @@ $$\text{Var}(j) = \frac{1}{n} \sum_{i=1}^{n} (x_{ij} - \bar{x}_j)^2$$
 
 | Method | Signature | Description |
 |--------|-----------|-------------|
-| `vt.fit(X)` | `(List[List[NUM]]) -> VOID` | Calculates variances and selects features |
+| `vt.fit(X)` | `(List[List[NUM]]) -> MACHINE` | Calculates variances and selects features |
 | `vt.transform(X)` | `(List[List[NUM]]) -> List[List[FLOAT]]` | Removes low-variance features |
 | `vt.fit_transform(X)` | `(List[List[NUM]]) -> List[List[FLOAT]]` | Fit + transform |
 
@@ -669,7 +678,7 @@ show(vt.n_features_out_);   -- 2
 
 ## RecursiveFeatureElimination (RFE)
 
-Selects features by recursive elimination using a supervised model. It repeatedly trains a model and removes the least important feature at each iteration until the desired number of features remains.
+Selects features by recursive elimination using the factory's fixed linear-regression estimator. It repeatedly trains that model and removes the least important feature until the desired number remains. The Python class can receive another estimator, but that constructor capability is not exposed by the KAFE factory.
 
 ### Theory
 
@@ -689,21 +698,23 @@ RFE is a **wrapper method** that uses an estimator to evaluate feature importanc
 
 | Method | Signature | Description |
 |--------|-----------|-------------|
-| `rfe.fit(X, y)` | `(List[List[NUM]], List[NUM]) -> VOID` | Recursively trains and selects features |
+| `rfe.fit(X, y)` | `(List[List[NUM]], List[NUM]) -> MACHINE` | Recursively trains and selects features |
 | `rfe.transform(X)` | `(List[List[NUM]]) -> List[List[FLOAT]]` | Selects only the chosen features |
 | `rfe.fit_transform(X, y)` | `(List[List[NUM]], List[NUM]) -> List[List[FLOAT]]` | Fit + transform |
 
 ### Constructor Parameters
 
 ```kafe
--- estimator: LinearRegression (default), n_features: 1 (default)
-MACHINE rfe = machine.recursive_feature_elimination(machine.linear_regression(), 2);
+-- Default linear estimator; select two features.
+MACHINE rfe = machine.recursive_feature_elimination(2);
 ```
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `estimator` | MACHINE | LinearRegression | Model with `coef_` or `feature_importances_` |
 | `n_features` | INT | 1 | Number of features to select |
+| `max_iter` | INT | 100 | Accepted second positional argument; currently ignored |
+
+The valid positional forms are `machine.recursive_feature_elimination()`, `(n_features)` and `(n_features, max_iter)`. Passing a `MACHINE` estimator is rejected. Use nonsingular training features; an intermediate linear fit can fail on a singular matrix. `inverse_transform` is explicitly unimplemented.
 
 ### Properties
 
@@ -719,23 +730,19 @@ MACHINE rfe = machine.recursive_feature_elimination(machine.linear_regression(),
 ```kafe
 import machine;
 
-List[List[FLOAT]] X = [[1.0, 0.5, 3.0, 0.1],
-                        [2.0, 0.6, 6.0, 0.2],
-                        [3.0, 0.4, 9.0, 0.15],
-                        [4.0, 0.7, 12.0, 0.25],
-                        [5.0, 0.55, 15.0, 0.18]];
-List[FLOAT] y = [2.0, 4.0, 6.0, 8.0, 10.0];
+List[List[FLOAT]] X = [[5.0, 0.1, 3.0], [4.0, 9.2, 6.0],
+                     [7.0, 0.3, 1.0], [10.0, 4.4, 8.0]];
+List[FLOAT] y = [1.0, 2.0, 3.0, 4.0];
 
 -- Select the 2 best features
-MACHINE rfe = machine.recursive_feature_elimination(machine.linear_regression(), 2);
+MACHINE rfe = machine.recursive_feature_elimination(2);
 rfe.fit(X, y);
 
-show(rfe.ranking_);          -- [1, 3, 1, 2]
 show(rfe.selected_indices_); -- [0, 2]
-show(rfe.support_);          -- [True, False, True, False]
+show(rfe.support_);          -- [True, False, True]
 
 List[List[FLOAT]] X_new = rfe.transform(X);
-show(X_new);  -- [[1.0, 3.0], [2.0, 6.0], [3.0, 9.0], [4.0, 12.0], [5.0, 15.0]]
+show(len(X_new[0]));  -- 2
 ```
 
 ### Comparison with Other Methods
@@ -747,4 +754,31 @@ show(X_new);  -- [[1.0, 3.0], [2.0, 6.0], [3.0, 9.0], [4.0, 12.0], [5.0, 15.0]]
 | Speed | Slow | Very fast | Fast |
 | Detects interactions | Yes | No | Partially |
 | Instability | High | None | Medium |
-| Base model | Any estimator | None | Linear |
+| KAFE factory base model | Fixed linear regression | None | Linear |
+
+---
+
+## Tokenizer
+
+`machine.tokenizer()` accepts optional positional `num_words: INT` and then `oov_token: STR`. A nonnegative word limit of 0 keeps all words. `fit(texts)` returns the same MACHINE and replaces its previous vocabulary. `transform(texts)` and `fit_transform(texts)` return one integer sequence per string.
+
+```kafe
+import machine;
+
+MACHINE tokens = machine.tokenizer(10, "<oov>");
+show(tokens.fit_transform(["red red blue", "blue green"]));
+show(tokens.transform(["new red"]));
+show(tokens.vocabulary_size);
+```
+
+Expected output:
+
+```text
+[[2, 2, 3], [3, 4]]
+[[1, 2]]
+5
+```
+
+The word order is descending training frequency with first occurrence breaking ties. Index 0 is reserved for padding; a nonempty OOV token uses index 1, and known words start at 2. Without an OOV token unknown words are skipped. `vocabulary_size` includes the reserved indices and can supply an embedding input size. `word_index` and `index_word` are backend mappings, not a KAFE `Dict` declaration type.
+
+Tokenization lowercases and splits with ASCII `[a-z0-9]`. Accents and other characters can split a word; the implementation does not preserve arbitrary Unicode words or provide stemming/stop-word configuration. Fit requires a nonempty list of strings; transform requires fit first. See the [call contracts](contracts.md) for shape and method boundaries.

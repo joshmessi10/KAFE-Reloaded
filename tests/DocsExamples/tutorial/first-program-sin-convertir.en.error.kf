@@ -1,0 +1,2 @@
+INT age = pour("How old are you? ");
+show(age + 1);

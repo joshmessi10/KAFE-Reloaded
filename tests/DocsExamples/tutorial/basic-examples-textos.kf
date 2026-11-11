@@ -1,0 +1,4 @@
+STR saludo = "Hola\n\tMundo";
+show(saludo);
+show("Ella dijo: \"¡KAFE!\"");
+show('Comillas simples');

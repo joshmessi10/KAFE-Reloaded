@@ -1,0 +1,15 @@
+import plot;
+import files;
+
+plot.figure();
+plot.title("2 series");
+plot.color("blue");
+plot.pointColor("blue");
+plot.graph([0, 1, 2, 3], [0, 1, 2, 3]);
+plot.color("red");
+plot.pointColor("red");
+plot.graph([0, 1, 2, 3], [3, 2, 1, 0]);
+plot.render();
+
+-- clean up
+files.delete("render.svg");

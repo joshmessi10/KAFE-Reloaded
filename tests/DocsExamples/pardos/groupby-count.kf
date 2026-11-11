@@ -1,0 +1,5 @@
+import pardos;
+
+PARDOS students = pardos.read_csv("data/students.csv");
+PARDOS by_city = students.groupby("city");
+show(by_city.count());

@@ -1,0 +1,4 @@
+import pardos;
+
+PARDOS clubs = pardos.read_csv("data/clubs.csv");
+show(pardos.to_matrix(clubs));

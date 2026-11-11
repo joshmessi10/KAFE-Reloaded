@@ -1,0 +1,25 @@
+<svg viewBox="0 0 560 240" role="img" aria-labelledby="ill-tl1pre-t ill-tl1pre-d" xmlns="http://www.w3.org/2000/svg">
+<title id="ill-tl1pre-t">Precedencia como un árbol / Precedence as a tree</title>
+<desc id="ill-tl1pre-d">The expression 5 + 4 * 2 drawn as a tree. The + node is at the top with children 5 and *. The * node has children 4 and 2. First the * branch lights up and becomes 8, then the + node lights up and the result 13 appears.</desc>
+<style>
+@keyframes ill-tl1pre-g1 { 0%,12% { opacity: 0 } 18%,34% { opacity: 0.45 } 42%,100% { opacity: 0 } }
+@keyframes ill-tl1pre-r1 { 0%,30% { opacity: 0; transform: translateY(8px) } 38%,92% { opacity: 1; transform: translateY(0) } 100% { opacity: 0; transform: translateY(0) } }
+@keyframes ill-tl1pre-g2 { 0%,46% { opacity: 0 } 52%,68% { opacity: 0.45 } 76%,100% { opacity: 0 } }
+@keyframes ill-tl1pre-r2 { 0%,64% { opacity: 0; transform: translateY(8px) } 72%,92% { opacity: 1; transform: translateY(0) } 100% { opacity: 0; transform: translateY(0) } }
+.ill-tl1pre-g1 { opacity: 0; animation: ill-tl1pre-g1 7s ease-in-out infinite; }
+.ill-tl1pre-r1 { animation: ill-tl1pre-r1 7s ease-out infinite; }
+.ill-tl1pre-g2 { opacity: 0; animation: ill-tl1pre-g2 7s ease-in-out infinite; }
+.ill-tl1pre-r2 { animation: ill-tl1pre-r2 7s ease-out infinite; }
+</style>
+<text x="22" y="40" style="font-size:20px">5 + 4 * 2</text>
+<rect class="k-accent ill-tl1pre-g1" x="300" y="100" width="170" height="122" rx="16"/>
+<rect class="k-accent ill-tl1pre-g2" x="176" y="24" width="208" height="66" rx="16"/>
+<path class="k-line" d="M262 64 L206 118 M298 64 L360 118 M346 150 L326 180 M382 150 L404 180"/>
+<circle class="k-paper" cx="280" cy="52" r="20"/><circle class="k-line" cx="280" cy="52" r="20"/><text x="275" y="58" style="font-size:18px">+</text>
+<circle class="k-paper" cx="200" cy="134" r="20"/><circle class="k-line" cx="200" cy="134" r="20"/><text x="195" y="140" style="font-size:18px">5</text>
+<circle class="k-paper" cx="364" cy="134" r="20"/><circle class="k-line" cx="364" cy="134" r="20"/><text x="359" y="140" style="font-size:18px">*</text>
+<circle class="k-paper" cx="320" cy="196" r="20"/><circle class="k-line" cx="320" cy="196" r="20"/><text x="315" y="202" style="font-size:18px">4</text>
+<circle class="k-paper" cx="410" cy="196" r="20"/><circle class="k-line" cx="410" cy="196" r="20"/><text x="405" y="202" style="font-size:18px">2</text>
+<g class="ill-tl1pre-r1"><rect class="k-paper" x="420" y="118" width="64" height="32" rx="8"/><rect class="k-accent-line" x="420" y="118" width="64" height="32" rx="8"/><text x="430" y="140" style="font-size:18px">= 8</text></g>
+<g class="ill-tl1pre-r2"><rect class="k-paper" x="400" y="36" width="76" height="32" rx="8"/><rect class="k-accent-line" x="400" y="36" width="76" height="32" rx="8"/><text x="410" y="58" style="font-size:18px">= 13</text></g>
+</svg>

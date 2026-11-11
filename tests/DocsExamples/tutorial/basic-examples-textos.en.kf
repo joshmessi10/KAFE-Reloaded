@@ -1,0 +1,4 @@
+STR greeting = "Hello\n\tWorld";
+show(greeting);
+show("She said: \"KAFE!\"");
+show('Single quotes');

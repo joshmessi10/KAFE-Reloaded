@@ -1,0 +1,29 @@
+import gesha;
+
+-- Objects are GESHA values; arguments are positional KAFE expressions.
+GESHA z = gesha.zeros_initializer();
+GESHA o = gesha.ones_initializer();
+GESHA c = gesha.constant_initializer(0.5);
+GESHA ru = gesha.random_uniform(-0.1, 0.1, 7);
+GESHA rn = gesha.random_normal(0.0, 0.1, 7);
+GESHA gu = gesha.glorot_uniform(7);
+GESHA gn = gesha.glorot_normal(7);
+GESHA hu = gesha.he_uniform(7);
+GESHA hn = gesha.he_normal(7);
+GESHA ortho = gesha.orthogonal(1.0, 7);
+GESHA l1 = gesha.l1_regularizer(0.01);
+GESHA l2 = gesha.l2_regularizer(0.01);
+-- The combined factory is not GESHA-typed in this runtime; use its string name.
+GESHA dense = gesha.create_dense(2, "relu", [2], 0.0, 7, hn, "l1_l2");
+show("Created 10 initializers and 2 usable regularizer objects.");
+show(len(dense.forward([1.0, 2.0])));
+show(l1.penalty([-2.0, 3.0]));
+show(l1.gradient([-2.0, 3.0]));
+show(l2.penalty([-2.0, 3.0]));
+show(l2.gradient([-2.0, 3.0]));
+
+-- Tensor helpers return numeric lists, not a separate Tensor class.
+show(gesha.tensor([[1.0, 2.0]]));
+show(gesha.tensor_zeros([1, 2]));
+show(gesha.tensor_ones([2]));
+show(len(gesha.tensor_random([2, 2])));

@@ -12,6 +12,7 @@ The architectures supported for training today are multilayer perceptrons (MLP),
 
 | Topic | Read this when you need... |
 |---|---|
+| [API coverage and limits](gesha/api-coverage.md) | Intended wrappers, receiver contracts, unsupported bindings and weight serialization limits. |
 | [Models and training](gesha/models-training.md) | Model assembly, compile, fit, epoch output, shared MACHINE metrics, and errors. |
 | [Dense networks](gesha/dense-networks.md) | Perceptrons, multilayer networks, activations, and losses. |
 | [Convolutional networks](gesha/convolutional-networks.md) | Image shapes, convolution, pooling, and spatial layers. |

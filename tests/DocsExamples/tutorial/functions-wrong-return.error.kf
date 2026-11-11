@@ -1,0 +1,4 @@
+drip half(n: INT) => INT:
+    return n / 2;
+;
+show(half(5));

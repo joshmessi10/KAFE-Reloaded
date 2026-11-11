@@ -1,0 +1,5 @@
+import pardos;
+
+PARDOS weather = pardos.read_csv("data/weather.csv");
+show(weather);
+show(weather.fillna(0));

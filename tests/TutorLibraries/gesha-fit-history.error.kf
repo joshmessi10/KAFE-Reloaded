@@ -1,0 +1,6 @@
+import gesha;
+GESHA layer = gesha.create_dense(1, "linear", [1]);
+GESHA model = gesha.sequential([layer]);
+model.compile("sgd", "mse", []);
+-- The Python history dictionary has no supported KAFE declared type.
+GESHA history = model.fit([[0.0]], [[0.0]], 0, 1);

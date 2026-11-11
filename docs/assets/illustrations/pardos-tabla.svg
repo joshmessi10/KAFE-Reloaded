@@ -1,0 +1,22 @@
+<svg viewBox="0 0 560 240" role="img" aria-labelledby="ill-pdt-t ill-pdt-d" xmlns="http://www.w3.org/2000/svg">
+<title id="ill-pdt-t">Una tabla: filas y columnas / A table: rows and columns</title>
+<desc id="ill-pdt-d">A table with the header name, age, score and city and four rows of students. First one whole row lights up (one student), then one whole column lights up (the score of every student).</desc>
+<style>
+@keyframes ill-pdt-row { 0%,8% { opacity: 0 } 15%,45% { opacity: 1 } 52%,100% { opacity: 1 } }
+@keyframes ill-pdt-col { 0%,52% { opacity: 0 } 60%,92% { opacity: 1 } 100% { opacity: 1 } }
+.ill-pdt-row { animation: ill-pdt-row 8s ease-in-out infinite; }
+.ill-pdt-col { animation: ill-pdt-col 8s ease-in-out infinite; }
+</style>
+<rect class="k-soft" x="40" y="20" width="480" height="40"/>
+<rect class="k-accent ill-pdt-row" x="40" y="100" width="480" height="40" fill-opacity="0.3"/>
+<rect class="k-accent ill-pdt-col" x="280" y="20" width="120" height="200" fill-opacity="0.3"/>
+<path class="k-line" d="M40 20 H520 V220 H40 Z"/>
+<path class="k-thin" d="M40 60 H520 M40 100 H520 M40 140 H520 M40 180 H520 M160 20 V220 M280 20 V220 M400 20 V220"/>
+<text class="k-label" x="56" y="45">name</text><text class="k-label" x="176" y="45">age</text><text class="k-label" x="296" y="45">score</text><text class="k-label" x="416" y="45">city</text>
+<text x="56" y="85">Ana</text><text x="176" y="85">10</text><text x="296" y="85">8.5</text><text x="416" y="85">Lima</text>
+<text x="56" y="125">Luis</text><text x="176" y="125">11</text><text x="296" y="125">7.0</text><text x="416" y="125">Quito</text>
+<text x="56" y="165">Sofia</text><text x="176" y="165">10</text><text x="296" y="165">9.5</text><text x="416" y="165">Lima</text>
+<text x="56" y="205">Mateo</text><text x="176" y="205">12</text><text x="296" y="205">6.5</text><text x="416" y="205">Cusco</text>
+<path class="k-accent-line ill-pdt-row" d="M528 120 H548"/>
+<path class="k-accent-line ill-pdt-col" d="M340 228 V236"/>
+</svg>

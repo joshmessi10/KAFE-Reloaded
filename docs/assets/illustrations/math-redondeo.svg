@@ -1,0 +1,31 @@
+<svg viewBox="0 0 560 200" role="img" aria-labelledby="ill-rnd-t ill-rnd-d" xmlns="http://www.w3.org/2000/svg">
+<title id="ill-rnd-t">floor, round y ceil sobre la recta numérica / floor, round and ceil on the number line</title>
+<desc id="ill-rnd-d">The number 2.6 sits on a number line between 2 and 3. floor jumps down to 2, ceil jumps up to 3, and round jumps to the closest whole number, 3.</desc>
+<style>
+@keyframes ill-rnd-pt { 0%,5% { opacity: 0; transform: translateY(-20px) } 12%,92% { opacity: 1; transform: translateY(0) } 100% { opacity: 0 } }
+@keyframes ill-rnd-a { 0%,20% { stroke-dashoffset: 200; opacity: 1 } 38%,92% { stroke-dashoffset: 0; opacity: 1 } 100% { opacity: 0 } }
+@keyframes ill-rnd-b { 0%,42% { stroke-dashoffset: 200; opacity: 1 } 60%,92% { stroke-dashoffset: 0; opacity: 1 } 100% { opacity: 0 } }
+@keyframes ill-rnd-c { 0%,64% { stroke-dashoffset: 200; opacity: 1 } 82%,92% { stroke-dashoffset: 0; opacity: 1 } 100% { opacity: 0 } }
+@keyframes ill-rnd-la { 0%,34% { opacity: 0 } 40%,92% { opacity: 1 } 100% { opacity: 0 } }
+@keyframes ill-rnd-lb { 0%,56% { opacity: 0 } 62%,92% { opacity: 1 } 100% { opacity: 0 } }
+@keyframes ill-rnd-lc { 0%,78% { opacity: 0 } 84%,92% { opacity: 1 } 100% { opacity: 0 } }
+.ill-rnd-pt { animation: ill-rnd-pt 8s ease-out infinite; }
+.ill-rnd-a { stroke-dasharray: 200; animation: ill-rnd-a 8s ease-in-out infinite; }
+.ill-rnd-b { stroke-dasharray: 200; animation: ill-rnd-b 8s ease-in-out infinite; }
+.ill-rnd-c { stroke-dasharray: 200; animation: ill-rnd-c 8s ease-in-out infinite; }
+.ill-rnd-la { animation: ill-rnd-la 8s linear infinite; }
+.ill-rnd-lb { animation: ill-rnd-lb 8s linear infinite; }
+.ill-rnd-lc { animation: ill-rnd-lc 8s linear infinite; }
+</style>
+<path class="k-line" d="M30 120 H530"/>
+<path class="k-line" d="M80 112 V128 M230 112 V128 M380 112 V128 M530 112 V128"/>
+<text x="76" y="150">1</text><text x="226" y="150">2</text><text x="376" y="150">3</text><text x="526" y="150">4</text>
+<path class="k-thin" d="M245 120 V128 M260 120 V128 M275 120 V128 M290 120 V128 M305 120 V128 M320 120 V128 M335 120 V128 M350 120 V128 M365 120 V128"/>
+<g class="ill-rnd-pt"><circle class="k-accent" cx="320" cy="120" r="9"/><text class="k-label" x="303" y="100">2.6</text></g>
+<path class="k-accent-line ill-rnd-a" d="M318 132 Q275 185 232 132"/>
+<text class="ill-rnd-la" x="236" y="188">floor → 2</text>
+<path class="k-accent-line ill-rnd-b" d="M322 108 Q350 70 378 108"/>
+<text class="ill-rnd-lb" x="352" y="62">ceil → 3</text>
+<path class="k-accent-line ill-rnd-c" d="M322 132 Q350 175 378 132"/>
+<text class="ill-rnd-lc" x="390" y="182">round → 3</text>
+</svg>

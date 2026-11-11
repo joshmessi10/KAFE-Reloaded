@@ -54,8 +54,8 @@ Dataset ingestion is a parsing and type-inference problem rather than a model:
 
 1. Validate `dataset_name` (non-empty, `dueno/conjunto` format) before any
    network call.
-2. Check the optional dependency `kagglehub`; auto-install with
-   `pip install kagglehub` through the current interpreter if missing.
+2. Load the optional dependency `kagglehub` on first use (Kaggle pack, extra
+   `kaggle`); if it is missing, fail with the pack installation routes.
 3. Download and extract the dataset with `kagglehub.dataset_download(handle)`
    (anonymous for public datasets; credentials are optional and only used for
    private ones). Client chatter is redirected away from program stdout and
@@ -131,7 +131,7 @@ encounter constantly in production code.
 
 ## Dependencies
 
-- Optional Python dependency: `kagglehub` (auto-installed on first use).
+- Optional Python dependency: `kagglehub`, Pillow and `py7zr` (Kaggle pack, installed on request; loaded lazily).
 - KAFE: `KafePARDOS.DataFrame` (lazy import), `TypeUtils` (`cadena_t`,
   `lista_cadenas_t`, `entero_t`), `global_utils.check_sig`.
 - Standard library: `csv`, `subprocess`, `importlib`, `io`, `os`.

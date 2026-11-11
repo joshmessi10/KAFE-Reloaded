@@ -1,0 +1,4 @@
+import math;
+
+show(math.hypot(3, 4));
+show(math.hypot(1, 2, 2));

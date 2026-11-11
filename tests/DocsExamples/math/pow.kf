@@ -1,0 +1,6 @@
+import math;
+
+show(math.pow(2, 3));
+show(2 ^ 3);
+show(math.pow(9, 0.5));
+show(math.pow(2, -1));

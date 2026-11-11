@@ -1,0 +1,3 @@
+import numk;
+
+show(numk.broadcast_div([[2, 4], [6, 9]], [[2], [3]]));

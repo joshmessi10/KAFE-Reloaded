@@ -1,0 +1,13 @@
+import plot;
+import files;
+
+plot.figure();
+plot.color("blue");
+plot.graph([1, 2, 3, 4], [1, 2, 3, 4], "line");
+plot.color("red");
+plot.graph([1, 2, 3, 4], [1, 4, 9, 16], "line");
+plot.legend("blue: y = x; red: y = x^2");
+plot.render();
+
+-- clean up
+files.delete("legend.svg");

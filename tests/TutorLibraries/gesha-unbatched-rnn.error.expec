@@ -1,0 +1,1 @@
+Exception: model: SimpleRNN requiere entrada [timesteps, features]

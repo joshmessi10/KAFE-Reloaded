@@ -1,0 +1,25 @@
+import machine;
+
+List[List[FLOAT]] X = [[1.0], [2.0], [3.0], [4.0], [5.0], [6.0]];
+List[FLOAT] y = [2.0, 4.0, 6.0, 8.0, 10.0, 12.0];
+MACHINE model = machine.linear_regression();
+MACHINE cv = machine.cross_val_score(3, "mse", 42);
+cv.fit(model, X, y);
+show(len(cv.scores_));
+show(cv.mean_score_ < 0.000001);
+MACHINE grid = machine.grid_search_cv(3, "mse", 42);
+grid.fit(model, X, y);
+show(grid.best_params_);
+show(len(grid.cv_results_));
+MACHINE search = machine.randomized_search_cv(2, 3, "mse", 42);
+search.fit(model, X, y);
+show(search.best_params_);
+show(len(search.cv_results_));
+MACHINE pipe = machine.pipeline("scale", machine.standard_scaler(), "regression", model);
+pipe.fit(X, y);
+show(pipe.get_params());
+show(len(pipe.transform(X)));
+show(len(pipe.predict([[7.0], [8.0]])));
+show(pipe.score(X, y) > 0.99999);
+MACHINE other = machine.pipeline("scale", machine.standard_scaler(), "regression", machine.linear_regression());
+show(len(other.fit_transform(X, y)));

@@ -1,0 +1,5 @@
+import pardos;
+
+PARDOS class_a = pardos.read_csv("data/class-a.csv");
+PARDOS clubs = pardos.read_csv("data/clubs.csv");
+PARDOS mixed = pardos.concat(class_a, clubs);

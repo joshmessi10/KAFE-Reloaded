@@ -1,0 +1,45 @@
+<svg viewBox="0 0 560 220" role="img" aria-labelledby="ill-nkc-t ill-nkc-d" xmlns="http://www.w3.org/2000/svg">
+<title id="ill-nkc-t">Convolución: una ventana que se desliza / Convolution: a sliding window</title>
+<desc id="ill-nkc-d">A 3 by 3 image with the numbers 1 to 9 and a 2 by 2 kernel [[1, 0], [0, 1]]. A 2 by 2 window slides over the image to four positions. At each position the numbers under the window are multiplied by the kernel and added, filling one cell of the 2 by 2 output: 1 + 5 = 6, 2 + 6 = 8, 4 + 8 = 12 and 5 + 9 = 14.</desc>
+<style>
+@keyframes ill-nkc-win { 0%,20% { transform: translate(0, 0) } 25%,45% { transform: translate(40px, 0) } 50%,70% { transform: translate(0, 40px) } 75%,95% { transform: translate(40px, 40px) } 100% { transform: translate(0, 0) } }
+@keyframes ill-nkc-cell { 0%,20% { transform: translate(0, 0) } 25%,45% { transform: translate(40px, 0) } 50%,70% { transform: translate(0, 40px) } 75%,95% { transform: translate(40px, 40px) } 100% { transform: translate(0, 0) } }
+@keyframes ill-nkc-s1 { 0%,4% { opacity: 0 } 10%,95% { opacity: 1 } 100% { opacity: 0 } }
+@keyframes ill-nkc-s2 { 0%,29% { opacity: 0 } 35%,95% { opacity: 1 } 100% { opacity: 0 } }
+@keyframes ill-nkc-s3 { 0%,54% { opacity: 0 } 60%,95% { opacity: 1 } 100% { opacity: 0 } }
+@keyframes ill-nkc-s4 { 0%,79% { opacity: 0 } 85%,95% { opacity: 1 } 100% { opacity: 0 } }
+.ill-nkc-win { animation: ill-nkc-win 12s ease-in-out infinite; }
+.ill-nkc-cell { animation: ill-nkc-cell 12s ease-in-out infinite; }
+.ill-nkc-s1 { animation: ill-nkc-s1 12s linear infinite; }
+.ill-nkc-s2 { animation: ill-nkc-s2 12s linear infinite; }
+.ill-nkc-s3 { animation: ill-nkc-s3 12s linear infinite; }
+.ill-nkc-s4 { animation: ill-nkc-s4 12s linear infinite; }
+</style>
+<rect class="k-line" x="20" y="40" width="120" height="120" rx="4"/>
+<path class="k-thin" d="M60 40 V160 M100 40 V160 M20 80 H140 M20 120 H140"/>
+<text x="35" y="65">1</text><text x="75" y="65">2</text><text x="115" y="65">3</text>
+<text x="35" y="105">4</text><text x="75" y="105">5</text><text x="115" y="105">6</text>
+<text x="35" y="145">7</text><text x="75" y="145">8</text><text x="115" y="145">9</text>
+<g class="ill-nkc-win">
+<rect class="k-accent" x="20" y="40" width="80" height="80" rx="4" opacity="0.3"/>
+<rect class="k-accent-line" x="20" y="40" width="80" height="80" rx="4"/>
+</g>
+<text class="k-label" x="160" y="106">*</text>
+<rect class="k-soft" x="185" y="70" width="60" height="60" rx="4"/>
+<rect class="k-accent-line" x="185" y="70" width="60" height="60" rx="4"/>
+<path class="k-thin" d="M215 70 V130 M185 100 H245"/>
+<text x="196" y="90">1</text><text x="226" y="90">0</text><text x="196" y="120">0</text><text x="226" y="120">1</text>
+<text class="k-label" x="262" y="106">=</text>
+<rect class="k-accent ill-nkc-cell" x="290" y="60" width="40" height="40" rx="4" opacity="0.35"/>
+<rect class="k-line" x="290" y="60" width="80" height="80" rx="4"/>
+<path class="k-thin" d="M330 60 V140 M290 100 H370"/>
+<text class="ill-nkc-s1" x="303" y="85">6</text>
+<text class="ill-nkc-s2" x="343" y="85">8</text>
+<text class="ill-nkc-s3" x="300" y="125">12</text>
+<text class="ill-nkc-s4" x="340" y="125">14</text>
+<text class="ill-nkc-s1" x="400" y="70">1 + 5 = 6</text>
+<text class="ill-nkc-s2" x="400" y="100">2 + 6 = 8</text>
+<text class="ill-nkc-s3" x="400" y="130">4 + 8 = 12</text>
+<text class="ill-nkc-s4" x="400" y="160">5 + 9 = 14</text>
+<text x="20" y="200">(1, 3, 3) * (1, 1, 2, 2) → (1, 2, 2)</text>
+</svg>

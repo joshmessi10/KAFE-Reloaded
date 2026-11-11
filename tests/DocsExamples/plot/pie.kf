@@ -1,0 +1,12 @@
+import plot;
+import files;
+
+List[STR] labels = ["A", "B", "C"];
+List[INT] values = [50, 30, 20];
+
+plot.figure();
+plot.legend("on");
+plot.pie(labels, values);
+
+-- clean up
+files.delete("pie.svg");

@@ -1,0 +1,26 @@
+import math;
+
+List[FLOAT] x = [20.0, 30.0, 40.0, 50.0, 60.0];
+List[FLOAT] y = [9.0, 12.0, 14.0, 19.0, 21.0];
+
+FLOAT mean_x = 0.0;
+FLOAT mean_y = 0.0;
+for (i in range(0, len(x))):
+    mean_x = mean_x + x[i] / len(x);
+    mean_y = mean_y + y[i] / len(x);
+;
+show(mean_x);
+show(mean_y);
+
+FLOAT top = 0.0;
+FLOAT bottom = 0.0;
+for (i in range(0, len(x))):
+    top = top + (x[i] - mean_x) * (y[i] - mean_y);
+    bottom = bottom + (x[i] - mean_x) * (x[i] - mean_x);
+;
+show(top);
+show(bottom);
+
+FLOAT slope = top / bottom;
+show(math.round(slope, 2));
+show(math.round(mean_y - slope * mean_x, 2));

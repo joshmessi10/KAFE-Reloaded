@@ -1,0 +1,2 @@
+import huggingface;
+PARDOS df = huggingface.load_dataset_split("imdb");

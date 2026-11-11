@@ -1,0 +1,4 @@
+import math;
+
+show(math.acos(1));
+show(math.degrees(math.acos(0)));

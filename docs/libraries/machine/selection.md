@@ -2,6 +2,8 @@
 
 [Return to Index](../machine.md)
 
+[Pinned KAFE call contracts and limits](contracts.md) define the actual positional API. A split result is an indexable `MACHINE`, and CV/search `fit` receives an unfitted model before `X, y`.
+
 ## Model Selection
 
 Tools for splitting datasets and evaluating models robustly.
@@ -10,7 +12,7 @@ Tools for splitting datasets and evaluating models robustly.
 
 | Function | Signature | Description |
 |---------|-------|-------------|
-| `machine.train_test_split(X, y, test_size, random_state, shuffle)` | `(List[List[NUM]], List[NUM], FLOAT, INT, BOOL) -> Tuple` | Splits data into training and test sets; shuffling is enabled by default |
+| `machine.train_test_split(X, y, test_size, random_state, shuffle)` | `(List[List[NUM]], List[NUM], FLOAT, INT, BOOL) -> MACHINE` | Indexable train/test container; shuffling is enabled by default |
 | `machine.k_fold(n_samples, n_splits, shuffle, random_state)` | `(INT, INT, BOOL, INT) -> List` | Returns training and test index pairs for each fold; shuffling is disabled by default |
 
 ### train_test_split
@@ -29,7 +31,7 @@ Set `shuffle=False` to retain input order. A nonzero `random_state` makes shuffl
 
 | Method | Signature | Description |
 |--------|-------|-------------|
-| `train_test_split(X, y, test_size, random_state, shuffle)` | `(List[List[NUM]], List[NUM], FLOAT, INT, BOOL) -> Tuple` | Returns `(X_train, X_test, y_train, y_test)` |
+| `train_test_split(X, y, test_size, random_state, shuffle)` | `(List[List[NUM]], List[NUM], FLOAT, INT, BOOL) -> MACHINE` | `[0]` X_train, `[1]` X_test, `[2]` y_train, `[3]` y_test |
 
 #### Example
 
@@ -42,8 +44,11 @@ List[FLOAT] y = [2.0, 4.0, 6.0, 8.0, 10.0,
                  12.0, 14.0, 16.0, 18.0, 20.0];
 
 -- 80/20 split with a fixed seed
-(List[List[FLOAT]] X_train, List[List[FLOAT]] X_test,
- List[FLOAT] y_train, List[FLOAT] y_test) = machine.train_test_split(X, y, 0.2, 42);
+MACHINE split = machine.train_test_split(X, y, 0.2, 42);
+List[List[FLOAT]] X_train = split[0];
+List[List[FLOAT]] X_test = split[1];
+List[FLOAT] y_train = split[2];
+List[FLOAT] y_test = split[3];
 
 show(len(X_train));  -- 8
 show(len(X_test));   -- 2
@@ -54,6 +59,8 @@ lr.fit(X_train, y_train);
 FLOAT r2 = lr.score(X_test, y_test);
 show(r2);  -- ~1.0
 ```
+
+KAFE does not support tuple destructuring assignments. `machine.stratified_train_test_split(X, y, test_size, random_state)` returns the same four-part container and preserves class proportions where sample counts permit. Its `X` samples may be nested lists such as image tensors; the plain split wrapper accepts numeric feature matrices.
 
 ### k_fold
 
@@ -101,7 +108,7 @@ Object-oriented wrapper for evaluating models with K-fold cross-validation. It c
 
 | Method | Signature | Description |
 |--------|-------|-------------|
-| `cvs.fit(model, X, y)` | `(MACHINE, List[List[NUM]], List[NUM]) -> VOID` | Evaluates the model with K-fold CV |
+| `cvs.fit(model, X, y)` | `(MACHINE, List[List[NUM]], List[NUM]) -> MACHINE` | Evaluates the model with K-fold CV |
 
 ### Properties
 
@@ -161,19 +168,19 @@ GridSearchCV evaluates **all** possible parameter combinations defined in the gr
 
 | Method | Signature | Description |
 |--------|-------|-------------|
-| `gs.fit(X, y)` | `(List[List[NUM]], List[NUM]) -> VOID` | Runs the exhaustive CV search |
+| `gs.fit(model, X, y)` | `(MACHINE, List[List[NUM]], List[NUM]) -> MACHINE` | Evaluates the current parameter combinations with an unfitted model |
 
 ### Properties
 
 | Property | Type | Description |
 |-----------|------|-------------|
-| `gs.best_params_` | `Dict` | Best parameters found |
+| `gs.best_params_` | Backend mapping | Best parameters found |
 | `gs.best_score_` | `FLOAT` | Best cross-validation score |
 | `gs.cv_results_` | `List[FLOAT]` | Mean score for each evaluated combination |
 
 Pass an unfitted estimator. Each fold trains a separate copy of it. For `"mse"`, lower scores are better; accuracy and R² are maximized. The original estimator is left untrained by cross-validation, while a parameter search sets its selected parameter values without fitting it.
 
-The KAFE factory currently initializes an empty grid and does not expose a parameter-grid argument. The underlying Python `GridSearchCV` constructor accepts `param_grid`, but a configured grid search is not currently available through this KAFE factory.
+The KAFE factory currently initializes an empty grid and does not expose a parameter-grid argument. It evaluates one empty parameter combination, so `best_params_` is `{}`. The underlying Python `GridSearchCV` constructor accepts `param_grid`, but a configured grid search is not currently available through this KAFE factory. There is no `best_estimator_`/`predict` interface on this wrapper; fit a selected model separately before prediction.
 
 ### Comparison: GridSearchCV vs. RandomizedSearchCV
 
@@ -181,7 +188,7 @@ The KAFE factory currently initializes an empty grid and does not expose a param
 |---------|--------------|---------------------|
 | Search | Exhaustive (all combinations) | Random sampling (`n_iter` combinations) |
 | Complexity | $O(\prod \|G_i\| \cdot k \cdot T)$ | $O(n \cdot k \cdot T)$ |
-| Continuous space | Discretized | Native (distributions) |
+| KAFE parameter space | Fixed empty grid | Fixed empty distribution |
 | Guarantee | Optimal within the grid | Not guaranteed |
 | Speed | Slow with many parameters | Faster and controllable |
 
@@ -197,7 +204,7 @@ RandomizedSearchCV performs **random search** over parameter distributions:
 
 - Complexity: $O(n \cdot k \cdot T_{\text{model}})$, where $n$ is `n_iter`, $k$ is the number of folds, and $T_{\text{model}}$ is the training time per fit.
 - With a fixed budget $B$, it can explore more combinations than GridSearch because it does not depend on grid size.
-- It can use continuous distributions (for example, a log-uniform distribution for learning rates).
+- General randomized-search designs can use continuous distributions. The current KAFE factory does not expose a configurable distribution, and its Python backend samples lists or constants.
 
 ### Function
 
@@ -209,17 +216,17 @@ RandomizedSearchCV performs **random search** over parameter distributions:
 
 | Method | Signature | Description |
 |--------|-------|-------------|
-| `rs.fit(X, y)` | `(List[List[NUM]], List[NUM]) -> VOID` | Runs the randomized CV search |
+| `rs.fit(model, X, y)` | `(MACHINE, List[List[NUM]], List[NUM]) -> MACHINE` | Evaluates trials with an unfitted model |
 
 ### Properties
 
 | Property | Type | Description |
 |-----------|------|-------------|
-| `rs.best_params_` | `Dict` | Best parameters found |
+| `rs.best_params_` | Backend mapping | Best parameters found |
 | `rs.best_score_` | `FLOAT` | Best cross-validation score |
 | `rs.cv_results_` | `List[FLOAT]` | Mean score for each sampled combination |
 
-The KAFE factory currently initializes an empty distribution and does not expose a parameter-distribution argument. The underlying Python `RandomizedSearchCV` constructor accepts `param_distributions`, but a configured randomized search is not currently available through this KAFE factory.
+The KAFE factory currently initializes an empty distribution and does not expose a parameter-distribution argument. Its `n_iter` trials use the same empty parameter setting. The Python backend can sample provided lists or constants; this does not expose continuous distributions or a configured search space through the KAFE factory. `fit(model, X, y)` returns the wrapper and leaves the original estimator unfitted.
 
 ---
 
@@ -245,7 +252,7 @@ Given a pipeline $P = [T_1, T_2, \ldots, T_n, M]$:
 
 | Method | Signature | Description |
 |--------|-------|-------------|
-| `pipe.fit(X, y)` | `(List[List[NUM]], List[NUM]) -> VOID` | Fits all pipeline steps |
+| `pipe.fit(X, y)` | `(List[List[NUM]], List[NUM]) -> MACHINE` | Fits all pipeline steps |
 | `pipe.predict(X)` | `(List[List[NUM]]) -> List[NUM]` | Applies transformations and predicts |
 | `pipe.score(X, y, metric)` | `(List[List[NUM]], List[NUM], FUNC) -> FLOAT` | Evaluates using the final model |
 | `pipe.transform(X)` | `(List[List[NUM]]) -> List[List[FLOAT]]` | Applies only the transformations |
@@ -256,8 +263,10 @@ Given a pipeline $P = [T_1, T_2, \ldots, T_n, M]$:
 
 | Property | Type | Description |
 |-----------|------|-------------|
-| `pipe.named_steps_` | `Dict` | Steps indexed by name (after fitting) |
-| `pipe.steps_` | `List[Tuple]` | List of fitted (name, step) tuples |
+| `pipe.named_steps_` | Backend mapping | Fitted steps indexed by name; KAFE has no `Dict` declaration type |
+| `pipe.steps_` | Backend list of tuples | Internal fitted pairs; not a typed KAFE list |
+
+Use `pipe.get_params()` for a normal `List[STR]` of step names. `len(pipe.steps_)` currently fails because KAFE cannot type the nested Python tuples; it is not a supported way to count steps. `pipe.transform(X)` excludes the final model, and `pipe.fit_transform(X, y)` returns those transformed features rather than predictions.
 
 ### Example
 

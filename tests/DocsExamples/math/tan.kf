@@ -1,0 +1,4 @@
+import math;
+
+show(math.tan(0));
+show(math.tan(math.pi / 4));

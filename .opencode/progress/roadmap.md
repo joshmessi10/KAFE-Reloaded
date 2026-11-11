@@ -66,6 +66,11 @@ The policy baseline and earlier uv, interpreter-evidence, and English-repository
 - ✔ KafeGESHA clustering test — platform-independence fix (2026-09-21)
 - ✔ English repository migration — Tasks 1–7 completed (2026-09-24)
 - ✔ Python quality-gates implementation — hosted tests and strict docs validation passed at exact SHA `c23163de6fee34b8da7d9a25b4f2896b331c22e1` (2026-09-24); Task 9 final branch acceptance is tied to CI on the resulting evidence-update SHA
+- ✔ Documentation site redesign, phase 1 — bilingual ES/EN site, logo theme, Learn-first navigation (ADR-0035, 2026-11-09)
+- ✔ Documentation site phase 2 — five illustrated "Aprende" beginner lessons (ES/EN) with tested examples (ADR-0036, 2026-11-11)
+- ✔ Documentation site phase 3 — bilingual step-by-step tutorial: getting started and language pages (ADR-0036, 2026-11-11)
+- ◐ Documentation site phase 4 — per-function reference: small libraries done (MATH, FILES, PLOT, NUMK, PARDOS, Kaggle, Hugging Face, 2026-11-11); MACHINE and GESHA pending
+- ☐ Documentation site phase 5 — translate all existing pages and move URLs with redirects
 - ☐ Harness Engineering — Update rules for five benchmarks, enriched concepts, and context verification
 - ☐ Engineering Lead permissions — review complete edit/write access for documentation and records
 

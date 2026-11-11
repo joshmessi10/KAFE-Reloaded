@@ -1,0 +1,22 @@
+{
+  "Drip Function": {
+    "prefix": "drip",
+    "body": ["drip ${1:functionName}(${2:value: INT}) => ${3:INT}:", "\t$0", ";"],
+    "description": "Declare a KAFE function"
+  },
+  "If Statement": {
+    "prefix": "if",
+    "body": ["if (${1:condition}):", "\t$0", ";"],
+    "description": "Branch on a condition"
+  },
+  "Show": {
+    "prefix": "show",
+    "body": ["show($1);"],
+    "description": "Print a value"
+  },
+  "For Loop": {
+    "prefix": "for",
+    "body": ["for (${1:item} in ${2:items}):", "\t$0", ";"],
+    "description": "Iterate over a KAFE collection"
+  }
+}

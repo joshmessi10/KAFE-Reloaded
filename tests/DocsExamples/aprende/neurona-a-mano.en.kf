@@ -1,0 +1,12 @@
+-- Do I go out to play? 1 = yes, 0 = no
+drip neuron(sunny: FLOAT, homework: FLOAT, friends: FLOAT) => INT:
+    FLOAT total = sunny * 0.4 + homework * 0.9 + friends * 0.5;
+    if (total > 1.0):
+        return 1;
+    ;
+    return 0;
+;
+
+show(neuron(1.0, 1.0, 0.0));
+show(neuron(1.0, 0.0, 1.0));
+show(neuron(0.0, 1.0, 1.0));

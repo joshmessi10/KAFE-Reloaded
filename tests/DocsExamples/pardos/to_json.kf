@@ -1,0 +1,7 @@
+import pardos;
+import files;
+
+PARDOS study = pardos.DataFrame(["hours", "score"], [[2, 60], [4, 75]]);
+study.to_json("data/saved.json");
+show(files.read("data/saved.json"));
+files.delete("data/saved.json");

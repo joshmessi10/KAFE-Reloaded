@@ -1,0 +1,4 @@
+import math;
+
+show(math.degrees(math.pi));
+show(math.degrees(math.pi / 2));

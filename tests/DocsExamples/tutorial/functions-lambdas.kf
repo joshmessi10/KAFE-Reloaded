@@ -1,0 +1,7 @@
+FUNC(INT)=>INT square = (y: INT) => y * y;
+FUNC(INT, INT)=>INT multiply = (x: INT, y: INT) => x * y;
+show(square(7));
+show(multiply(3, 4));
+show(multiply(3)(4));
+FUNC(INT)=>FUNC(INT)=>INT addTo = (a: INT) => ((b: INT) => a + b);
+show(addTo(2)(3));

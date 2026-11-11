@@ -1,0 +1,8 @@
+List[INT] empty = [];
+List[BOOL] flags = [True, False, True];
+List[List[INT]] matrix = [[1, 2], [3, 4]];
+List[List[List[BOOL]]] cube = [[[True, False]]];
+show(empty);
+show(flags);
+show(matrix);
+show(cube);

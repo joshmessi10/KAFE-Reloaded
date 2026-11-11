@@ -1,0 +1,13 @@
+INT a = int("5");
+FLOAT b = float("3.14");
+STR c = str(42);
+BOOL d = bool(1);
+BOOL e = bool(0);
+show(a);
+show(b);
+show(c);
+show(d);
+show(e);
+show(int(3.9));
+show(float(2));
+show(bool(""));

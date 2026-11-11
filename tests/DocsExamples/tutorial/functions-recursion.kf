@@ -1,0 +1,15 @@
+drip factorial(n: INT) => INT:
+    if (n <= 1):
+        return 1;
+    ;
+    return n * factorial(n - 1);
+;
+drip fibonacci(n: INT) => INT:
+    if (n <= 1):
+        return n;
+    ;
+    return fibonacci(n - 1) + fibonacci(n - 2);
+;
+show(factorial(5));
+show(fibonacci(7));
+show(fibonacci(10));

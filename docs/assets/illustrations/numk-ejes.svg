@@ -1,0 +1,38 @@
+<svg viewBox="0 0 560 230" role="img" aria-labelledby="ill-nke-t ill-nke-d" xmlns="http://www.w3.org/2000/svg">
+<title id="ill-nke-t">Reducir a lo largo de un eje / Reducing along an axis</title>
+<desc id="ill-nke-d">Two copies of the matrix [[1, 2], [3, 4]]. On the left, with axis = 0, arrows run down each column and the sums 4 and 6 appear below. On the right, with axis = 1, arrows run across each row and the sums 3 and 7 appear at the side.</desc>
+<style>
+@keyframes ill-nke-a { 0%,8% { stroke-dashoffset: 100 } 25%,92% { stroke-dashoffset: 0 } 100% { stroke-dashoffset: 100 } }
+@keyframes ill-nke-ra { 0%,25% { opacity: 0 } 32%,92% { opacity: 1 } 100% { opacity: 0 } }
+@keyframes ill-nke-b { 0%,45% { stroke-dashoffset: 100 } 62%,92% { stroke-dashoffset: 0 } 100% { stroke-dashoffset: 100 } }
+@keyframes ill-nke-rb { 0%,62% { opacity: 0 } 69%,92% { opacity: 1 } 100% { opacity: 0 } }
+.ill-nke-a { stroke-dasharray: 100; animation: ill-nke-a 9s ease-in-out infinite; }
+.ill-nke-ra { animation: ill-nke-ra 9s linear infinite; }
+.ill-nke-b { stroke-dasharray: 100; animation: ill-nke-b 9s ease-in-out infinite; }
+.ill-nke-rb { animation: ill-nke-rb 9s linear infinite; }
+</style>
+<text class="k-label" x="40" y="25">axis = 0</text>
+<rect class="k-line" x="40" y="40" width="80" height="80" rx="4"/>
+<path class="k-thin" d="M80 40 V120 M40 80 H120"/>
+<text x="55" y="65">1</text><text x="95" y="65">2</text><text x="55" y="105">3</text><text x="95" y="105">4</text>
+<path class="k-accent-line ill-nke-a" d="M68 45 V145 M108 45 V145"/>
+<path class="k-accent ill-nke-ra" d="M62 140 L68 150 L74 140 Z M102 140 L108 150 L114 140 Z"/>
+<g class="ill-nke-ra">
+<rect class="k-soft" x="40" y="155" width="80" height="40" rx="4"/>
+<rect class="k-accent-line" x="40" y="155" width="80" height="40" rx="4"/>
+<path class="k-thin" d="M80 155 V195"/>
+<text x="55" y="180">4</text><text x="95" y="180">6</text>
+</g>
+<text class="k-label" x="300" y="25">axis = 1</text>
+<rect class="k-line" x="300" y="40" width="80" height="80" rx="4"/>
+<path class="k-thin" d="M340 40 V120 M300 80 H380"/>
+<text x="315" y="65">1</text><text x="355" y="65">2</text><text x="315" y="105">3</text><text x="355" y="105">4</text>
+<path class="k-accent-line ill-nke-b" d="M305 52 H405 M305 92 H405"/>
+<path class="k-accent ill-nke-rb" d="M400 46 L410 52 L400 58 Z M400 86 L410 92 L400 98 Z"/>
+<g class="ill-nke-rb">
+<rect class="k-soft" x="415" y="40" width="40" height="80" rx="4"/>
+<rect class="k-accent-line" x="415" y="40" width="40" height="80" rx="4"/>
+<path class="k-thin" d="M415 80 H455"/>
+<text x="430" y="65">3</text><text x="430" y="105">7</text>
+</g>
+</svg>

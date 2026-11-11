@@ -1,0 +1,5 @@
+import numk;
+
+show(numk.broadcast_add([[1, 2], [3, 4]], [10, 20]));
+show(numk.broadcast_add([[1, 2], [3, 4]], [[100], [200]]));
+show(numk.broadcast_add([1, 2, 3], 5));

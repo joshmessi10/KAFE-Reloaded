@@ -1,0 +1,5 @@
+import pardos;
+
+PARDOS students = pardos.read_csv("data/students.csv");
+PARDOS smaller = students.drop("city");
+show(smaller);

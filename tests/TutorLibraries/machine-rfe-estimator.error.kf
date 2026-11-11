@@ -1,0 +1,2 @@
+import machine;
+MACHINE rfe = machine.recursive_feature_elimination(machine.linear_regression(), 2);

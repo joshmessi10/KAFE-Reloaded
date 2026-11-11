@@ -33,4 +33,7 @@ The policy baseline is integrated locally. The locked uv dependency/setup migrat
 
 ## Documentation
 
+- Docs site phase 4, batch C: MACHINE per-function reference with tested examples (ADR-0036)
+- Docs site phase 4, batch D: GESHA per-function reference with tested examples (ADR-0036)
+- Bugs found while writing docs examples are listed in `.opencode/memory/known-issues.md` (grammar without `EOF`, misleading lexer error, mutating list `+`, KafeMATH `pow`/`atan`/`sum`); each fix needs its own Impact Analysis
 - Review tasks for legacy implementations (BaseMachine, LinearRegression, LogisticRegression, KNN, Metrics)

@@ -1,0 +1,8 @@
+INT edad = 15;
+if (edad >= 18):
+    show("Adulto");
+elif (edad >= 12):
+    show("Adolescente");
+else:
+    show("Niño");
+;

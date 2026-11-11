@@ -1,0 +1,5 @@
+-- A function named main runs only when called explicitly.
+drip main() => VOID:
+    show("Called main");
+;
+main();

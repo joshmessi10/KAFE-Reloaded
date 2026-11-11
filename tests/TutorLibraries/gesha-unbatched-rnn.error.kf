@@ -1,0 +1,5 @@
+import gesha;
+GESHA rnn = gesha.create_rnn(2, "tanh", [2, 2], False, 7);
+GESHA model = gesha.sequential([rnn]);
+-- Missing outer batch: predict mistakes time steps for individual samples.
+show(model.predict([[1.0, 0.0], [0.0, 1.0]]));

@@ -1,0 +1,5 @@
+List[INT] puntos = [3, 5, 8];
+show(puntos[0]);
+show(len(puntos));
+append(puntos, 10);
+show(puntos);

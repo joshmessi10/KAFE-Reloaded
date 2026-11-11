@@ -1,0 +1,4 @@
+import numk;
+
+show(numk.zeros_nd([3]));
+show(numk.zeros_nd([2, 2, 2]));

@@ -1,0 +1,5 @@
+import numk;
+
+List[List[INT]] scores = [[7, 9], [8, 4]];
+show(numk.max_axis(scores, 0));
+show(numk.max_axis(scores, 1));

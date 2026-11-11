@@ -1,0 +1,6 @@
+show(True && False);
+show(True || False);
+show(!False);
+show(!True);
+show(5 > 0 && 3 > 0);
+show(5 < 0 || 3 > 0);

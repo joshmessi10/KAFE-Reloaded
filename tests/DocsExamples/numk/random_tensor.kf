@@ -1,0 +1,5 @@
+import numk;
+
+show(numk.random_tensor([3], 0, 10, 7));
+show(numk.random_tensor([3], 0, 10, 7));
+show(numk.shape(numk.random_tensor([2, 4])));

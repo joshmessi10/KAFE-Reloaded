@@ -1,174 +1,192 @@
-# Lists
+# Listas
 
-Lists are KAFE's primary data structure. They store collections of elements of the same type.
+Una **lista** guarda muchos valores del mismo tipo, uno detrás de otro. En la lección [Variables](../aprende/variables.md#listas-una-caja-con-compartimentos) viste que es como una caja con compartimentos numerados y aprendiste `[0]`, `len` y `append`. Aquí verás todo lo demás.
 
----
+## Crear listas
 
-## Declaration
-
-```kafe
--- Empty list
-List[INT] numbers = [];
-
--- Initialized list
-List[BOOL] flags = [True, False, True];
-
--- List of lists (matrix)
-List[List[INT]] matrix = [[1, 2], [3, 4]];
-
--- 3D matrix
-List[List[List[BOOL]]] cube = [[[True, False]]];
-```
-
----
-
-## Built-in functions
-
-| Function | Signature | Description |
-|---------|-------|-------------|
-| `append` | `append(list, elem)` | Adds `elem` to the end of the list |
-| `remove` | `remove(list, elem)` | Removes the first occurrence of `elem` |
-| `len` | `len(list) => INT` | Returns the number of elements |
-| `range` | `range(n)` / `range(a,b)` / `range(a,b,p)` | Generates a list of integers |
+El tipo de una lista se escribe `List[TIPO]`, y sus valores van entre corchetes `[ ]`, separados por comas. Una lista puede estar vacía, y también puede guardar **otras listas** (una lista de listas es como una tabla o una **matriz**):
 
 ```kafe
-List[INT] nums = [1, 2, 3];
-
-append(nums, 4);    -- nums = [1, 2, 3, 4]
-remove(nums, 2);    -- nums = [1, 3, 4]
-show(len(nums));    -- 3
-show(range(5));     -- [0, 1, 2, 3, 4]
+--8<-- "tests/DocsExamples/tutorial/lists-declare.kf"
 ```
 
----
+```text
+--8<-- "tests/DocsExamples/tutorial/lists-declare.expec"
+```
 
-## Index access
+| Tipo | Qué guarda |
+|---|---|
+| `List[INT]` | Enteros, como `[1, 2, 3]` |
+| `List[List[INT]]` | Listas de enteros: una tabla con filas y columnas |
+| `List[List[List[BOOL]]]` | Listas de listas de `BOOL`: un "cubo" de tres niveles |
 
-Elements are accessed using **zero-based** indices:
+!!! note "Todas del mismo tipo"
+    Una lista es **homogénea**: todos sus elementos tienen el mismo tipo. `List` se escribe con mayúscula inicial y el resto en minúscula.
+
+## Agregar, quitar y contar
+
+### Una comparación de la vida diaria
+
+Piensa en tu **lista de compras**. Agregas cosas al final, tachas lo que ya compraste y cuentas cuántas cosas faltan.
+
+| Función | Qué hace |
+|---|---|
+| `append(lista, elemento)` | Agrega `elemento` **al final** de la lista |
+| `remove(lista, elemento)` | Quita la **primera** vez que aparece `elemento` |
+| `len(lista)` | Devuelve cuántos elementos hay (un `INT`) |
 
 ```kafe
-List[INT] nums = [10, 20, 30];
-
-show(nums[0]);   -- 10 (first element)
-show(nums[1]);   -- 20 (second element)
-show(nums[-1]);  -- 30 (last element, negative index)
-show(nums[-2]);  -- 20 (second-to-last element)
+--8<-- "tests/DocsExamples/tutorial/lists-compras.kf"
 ```
 
-### Index assignment
+```text
+--8<-- "tests/DocsExamples/tutorial/lists-compras.expec"
+```
+
+`append` y `remove` cambian la lista que les das; no hace falta guardarla otra vez. Cuando `show` muestra una lista de textos, cada texto aparece entre comillas simples.
+
+Si el elemento aparece varias veces, `remove` solo quita el primero:
 
 ```kafe
-List[INT] nums = [10, 20, 30];
-nums[0] = 99;
-show(nums[0]);  -- 99
+--8<-- "tests/DocsExamples/tutorial/lists-remove-first.kf"
 ```
 
-### Nested indexing (matrices)
+```text
+--8<-- "tests/DocsExamples/tutorial/lists-remove-first.expec"
+```
+
+!!! note "`len` solo cuenta listas"
+    En KAFE, `len` acepta listas, pero no textos. `len("hola")` da un error.
+
+Para crear listas de números seguidos usa `range(...)`, que viste en [Estructuras de control](control-structures.md).
+
+## Índices: la posición de cada elemento
+
+### La idea en una frase
+
+El **índice** es el número de compartimento de un elemento, y se cuenta **desde 0**.
+
+<figure class="kafe-fig">
+--8<-- "docs/assets/illustrations/tutorial-lang2-indices.svg"
+<figcaption>Arriba, los índices desde el inicio (0, 1, 2). Abajo, los índices negativos, que cuentan desde el final (-1 es el último).</figcaption>
+</figure>
 
 ```kafe
-List[List[INT]] matrix = [
-    [1, 2, 3],
-    [4, 5, 6],
-    [7, 8, 9]
-];
-
-show(matrix[0][0]);  -- 1
-show(matrix[1][2]);  -- 6
-show(matrix[-1][-1]); -- 9
+--8<-- "tests/DocsExamples/tutorial/lists-index.kf"
 ```
 
----
+```text
+--8<-- "tests/DocsExamples/tutorial/lists-index.expec"
+```
 
-## Indexing rules
+| Regla | Qué significa |
+|---|---|
+| Empieza en 0 | `nums[0]` es el primer elemento |
+| Índices negativos | `nums[-1]` es el último; `nums[-2]`, el penúltimo |
+| Cambiar un elemento | `nums[0] = 99;` reemplaza el valor de ese compartimento |
+| Fuera de rango | Pedir una posición que no existe da un `IndexError` |
+| Tipo del índice | El índice debe ser un `INT` |
 
-| Rule | Description |
-|-------|-------------|
-| **Zero-based** | The first element always has index 0 |
-| **Negative indices** | `list[-1]` is the last element; `list[-2]` is the second-to-last |
-| **Out-of-range error** | Accessing a missing index raises `IndexError` |
-| **Index type** | An index must be an `INT` |
+## Listas dentro de listas: matrices
 
----
-
-## List concatenation
-
-The `+` operator concatenates lists of the same type:
+Una **matriz** es una tabla de números. En KAFE es una lista de filas, y cada fila es una lista. Para llegar a un número usas **dos** índices: primero la fila, luego la columna. Es como buscar un asiento en el cine: fila 1, asiento 2.
 
 ```kafe
-List[INT] a = [1, 2];
-List[INT] b = [3, 4];
-List[INT] c = a + b;  -- [1, 2, 3, 4]
-
--- Add an element by concatenating a list
-List[INT] d = a + [5];  -- [1, 2, 5]
+--8<-- "tests/DocsExamples/tutorial/lists-matrix.kf"
 ```
 
----
+```text
+--8<-- "tests/DocsExamples/tutorial/lists-matrix.expec"
+```
 
-## Homogeneity
+!!! tip "¿Qué pasó aquí?"
+    1. `matrix[0]` es la primera fila completa: `[1, 2, 3]`.
+    2. `matrix[1][2]` es la fila 1, columna 2: el `6`. `matrix[-1][-1]` es la última fila, última columna: el `9`.
+    3. `matrix[1][1] = 0;` cambió el `5` del centro por `0`.
+    4. `len(matrix)` cuenta las filas (3) y `len(matrix[0])` cuenta las columnas de la primera fila (3).
 
-All lists must be **homogeneous** (all elements have the same type):
+Para hacer cuentas de álgebra lineal con matrices (sumar, multiplicar, transponer), usa la librería [NUMK](../libraries/numk.md).
+
+## Unir listas con `+`
+
+El operador `+` une dos listas del mismo tipo, una detrás de la otra (esto se llama **concatenar**):
 
 ```kafe
--- Valid
-List[INT] nums = [1, 2, 3];
-List[List[INT]] mat = [[1, 2], [3, 4]];
-
--- Invalid (raises an error)
-List[BOOL] invalid = [True] + [[False]];  -- Error: mixed types
+--8<-- "tests/DocsExamples/tutorial/lists-concat.kf"
 ```
 
----
+```text
+--8<-- "tests/DocsExamples/tutorial/lists-concat.expec"
+```
 
-## Lists as matrices
+!!! warning "Por ahora `+` también cambia la primera lista"
+    `c` es `[1, 2, 3, 4]`, como esperabas. Pero fíjate en la segunda línea: `a` **también** cambió, aunque solo escribimos `a + b`. Así funciona KAFE hoy. Si necesitas conservar `a` intacta, no la uses a la izquierda de `+`.
 
-Nested lists can be used as matrices for linear algebra operations:
+??? info "Para curiosos 🤓: dos nombres, una sola lista"
+    Cuando escribes `List[INT] other = original;`, no se crea una lista nueva: `other` y `original` son **dos etiquetas pegadas a la misma caja**. Si cambias una, ves el cambio en la otra:
+
+    ```kafe
+    --8<-- "tests/DocsExamples/tutorial/lists-shared.kf"
+    ```
+
+    ```text
+    --8<-- "tests/DocsExamples/tutorial/lists-shared.expec"
+    ```
+
+## Errores comunes
+
+### Pedir una posición que no existe
 
 ```kafe
--- 2x3 matrix
-List[List[INT]] matrix = [
-    [1, 2, 3],
-    [4, 5, 6]
-];
-
--- Access a row
-show(matrix[0]);  -- [1, 2, 3]
-
--- Access an element
-show(matrix[1][2]);  -- 6
-
--- Get dimensions
-show(len(matrix));      -- 2 rows
-show(len(matrix[0]));   -- 3 columns
+--8<-- "tests/DocsExamples/tutorial/lists-out-of-range.error.kf"
 ```
 
----
+```text
+--8<-- "tests/DocsExamples/tutorial/lists-out-of-range.error.stderr.expec"
+```
 
-## Complete example
+La lista tiene 3 elementos, así que sus índices son 0, 1 y 2. El último es `nums[2]` (o `nums[-1]`).
+
+### Mezclar tipos en una lista
 
 ```kafe
--- List operations
-List[INT] numbers = [1, 2, 3];
-List[STR] letters = ["a", "b"];
-List[BOOL] flags = [True];
-List[List[List[STR]]] strings = [];
-
-show(numbers);   -- [1, 2, 3]
-show(strings);   -- []
-
-append(numbers, 99);
-append(letters, "z");
-append(flags, False);
-append(strings, [[["asdf"]]]);
-
-show(numbers);   -- [1, 2, 3, 99]
-show(letters);   -- [a, b, z]
-
-remove(numbers, 2);
-remove(letters, "a");
-
-show(numbers);   -- [1, 99]
-show(letters);   -- [b, z]
-
-show(len(numbers));  -- 2
+--8<-- "tests/DocsExamples/tutorial/lists-mixed-types.error.kf"
 ```
+
+```text
+--8<-- "tests/DocsExamples/tutorial/lists-mixed-types.error.stderr.expec"
+```
+
+Una `List[INT]` solo guarda enteros. Ojo: hoy KAFE no avisa en el `append`, sino la siguiente vez que usas la lista (aquí, en `show`). Si ves este error, busca hacia atrás dónde agregaste el valor equivocado.
+
+### Quitar algo que no está
+
+```kafe
+--8<-- "tests/DocsExamples/tutorial/lists-remove-missing.error.kf"
+```
+
+```text
+--8<-- "tests/DocsExamples/tutorial/lists-remove-missing.error.stderr.expec"
+```
+
+El `5` no está en la lista, así que no se puede quitar.
+
+### Usar un índice que no es `INT`
+
+```kafe
+--8<-- "tests/DocsExamples/tutorial/lists-float-index.error.kf"
+```
+
+```text
+--8<-- "tests/DocsExamples/tutorial/lists-float-index.error.stderr.expec"
+```
+
+`1.0` es un `FLOAT`. No existe el compartimento "uno coma cero": escribe `nums[1]`.
+
+## ¿Qué aprendiste?
+
+- `append` agrega al final, `remove` quita la primera coincidencia y `len` cuenta.
+- Los índices empiezan en 0; los negativos cuentan desde el final.
+- Una lista de listas es una matriz: `matriz[fila][columna]`.
+
+[Siguiente: Imports :material-arrow-right:](imports.md){ .md-button .md-button--primary }

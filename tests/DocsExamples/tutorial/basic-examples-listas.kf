@@ -1,0 +1,15 @@
+List[INT] nums = [10, 20, 30];
+show(nums[0]);
+show(nums[-1]);
+nums[0] = 99;
+show(nums);
+append(nums, 40);
+show(nums);
+remove(nums, 20);
+show(nums);
+show(len(nums));
+show(range(4));
+show(range(1, 5));
+show(range(0, 10, 2));
+List[List[INT]] matrix = [[1, 2], [3, 4]];
+show(matrix[1][0]);

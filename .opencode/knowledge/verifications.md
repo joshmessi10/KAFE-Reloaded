@@ -4,7 +4,7 @@ Project-specific testing, validation, benchmarks, and Definition of Done. Apply 
 
 ## Setup
 
-The Python project uses `pyproject.toml` and the committed `uv.lock`. It requires Python >= 3.10, pins `antlr4-python3-runtime==4.13.2`, and provides pytest in the `dev` group. MkDocs dependencies are in `docs`; Hugging Face `datasets` remains opt-in through the `huggingface` extra.
+The Python project uses `pyproject.toml` and the committed `uv.lock`. It requires Python >= 3.11, pins `antlr4-python3-runtime==4.13.2`, and provides pytest in the `dev` group. MkDocs dependencies are in `docs`; Hugging Face `datasets` remains opt-in through the `huggingface` extra.
 
 1. Install uv using the [official instructions](https://docs.astral.sh/uv/getting-started/installation/), then run `uv sync --locked --group dev` from the repository root.
 2. On a fresh clone, generate the ignored parser outputs as described below before running any interpreter program or fixture suite.
@@ -82,22 +82,22 @@ Repository-wide migrations and missing gates must remain visibly PENDING. Their 
 For code tasks and other changes whose approved validation requires the application suite:
 
 1. Generate the parser if outputs are missing or the grammar changed (see Parser Regeneration above).
-2. Run the focused category: `uv run --locked --python 3.10 --group dev pytest tests/test_KafeMACHINE.py` (single case via `uv run --locked --python 3.10 --group dev pytest tests/test_base.py::test_valid_programs -k <name>`).
+2. Run the focused category: `uv run --locked --python 3.11 --group dev pytest tests/test_KafeMACHINE.py` (single case via `uv run --locked --python 3.11 --group dev pytest tests/test_base.py::test_valid_programs -k <name>`).
 3. Run the complete local quality gate from the repository root in PowerShell:
 
    ```powershell
    $repo = (Get-Location).Path
-   uv run --locked --python 3.10 --group dev pytest tests/ -v "--cov=$repo/src" "--cov-config=$repo/pyproject.toml" --cov-report=term-missing --cov-fail-under=80
+   uv run --locked --python 3.11 --group dev pytest tests/ -v "--cov=$repo/src" "--cov-config=$repo/pyproject.toml" --cov-report=term-missing --cov-fail-under=80
    ```
 
 Coverage measures `src`, collects data from interpreter subprocesses, and includes namespace-package directories so unimported owned source is visible in the report. Only the three generated ANTLR files listed in `pyproject.toml` are omitted.
 
 ## Quality Gates
 
-Install the locked development tools from the repository root with Python 3.10:
+Install the locked development tools from the repository root with Python 3.11:
 
 ```powershell
-uv sync --locked --python 3.10 --group dev
+uv sync --locked --python 3.11 --group dev
 ```
 
 Run the configured local quality gates from the same root:
@@ -111,7 +111,7 @@ uv run --locked --group dev python scripts/check_quality_policy.py
 uv run --locked --group dev pytest tests/test_quality_policy.py -q
 ```
 
-Ruff targets Python 3.10, selects `E4`, `E7`, `E9`, `F`, `B`, and `I`, and force-excludes only the three generated parser modules below. basedpyright checks `src/` and `tests/` in `basic` mode for Python 3.10, treats warnings as failures, and ignores only those same generated files. Coverage measures `src/`, collects subprocess data, and omits only those files. codespell scans hidden files; it uses the case-sensitive exception list `expec,mape,MAPE,FPR,Hart,le` and the reviewed `.codespell-es.txt` vocabulary for intentional Spanish educational content (ADR-0014). The codespell skip list is limited to local/build outputs, root-local `docs/superpowers/`, and generated parser outputs (`*.interp`, `*.tokens`, and the three generated modules). It does not skip source, tests, `.opencode/`, or normal documentation.
+Ruff targets Python 3.11, selects `E4`, `E7`, `E9`, `F`, `B`, and `I`, and force-excludes only the three generated parser modules below. basedpyright checks `src/` and `tests/` in `basic` mode for Python 3.11, treats warnings as failures, and ignores only those same generated files. Coverage measures `src/`, collects subprocess data, and omits only those files. codespell scans hidden files; it uses the case-sensitive exception list `expec,mape,MAPE,FPR,Hart,le` and the reviewed `.codespell-es.txt` vocabulary for intentional Spanish educational content (ADR-0014). The codespell skip list is limited to local/build outputs, root-local `docs/superpowers/`, and generated parser outputs (`*.interp`, `*.tokens`, and the three generated modules). It does not skip source, tests, `.opencode/`, or normal documentation.
 
 The only generated ANTLR Python exclusions are:
 
@@ -126,13 +126,20 @@ See [Verification Process](#verification-process) for the exact PowerShell full-
 For a strict local documentation build, install the locked docs group and set the documented upstream warning exception only for that build:
 
 ```powershell
-uv sync --locked --python 3.10 --group docs --no-dev
-$env:NO_MKDOCS_2_WARNING = "1"
-uv run --locked --python 3.10 --group docs --no-dev mkdocs build --strict
-Remove-Item Env:\NO_MKDOCS_2_WARNING
+uv sync --locked --python 3.11 --group docs --no-dev
+$priorMkdocsWarning = $env:NO_MKDOCS_2_WARNING
+try {
+    # Suppress only Material's upstream MkDocs 2.0 advisory during this build.
+    $env:NO_MKDOCS_2_WARNING = "1"
+    uv run --locked --python 3.11 --group docs --no-dev mkdocs build --strict
+    if ($LASTEXITCODE -ne 0) { throw "Strict documentation build failed" }
+} finally {
+    if ($null -eq $priorMkdocsWarning) { Remove-Item Env:\NO_MKDOCS_2_WARNING -ErrorAction SilentlyContinue }
+    else { $env:NO_MKDOCS_2_WARNING = $priorMkdocsWarning }
+}
 ```
 
-`NO_MKDOCS_2_WARNING=1` suppresses Material for MkDocs' upstream MkDocs 2.0 advisory only; keep it scoped to `mkdocs build --strict`. The docs workflow validates every push, pull request, and manual dispatch. It deploys only on `main` when a push changes root `docs/**` or `mkdocs.yml`, or on a manual dispatch. The serialized deploy job explicitly checks out `main`, reruns the locked strict build, and only then runs `mkdocs gh-deploy --force`. Nix remains in `.github/workflows/main.yml` with weekly and manual triggers; it does not run Python quality checks.
+`NO_MKDOCS_2_WARNING=1` suppresses Material for MkDocs' upstream MkDocs 2.0 advisory only; keep it scoped to `mkdocs build --strict`. The docs workflow validates every push, pull request, and manual dispatch. Root policy requires main-only deployment. Actual `docs.yml` also admits `integration/Kafe_Gesha_Clustering_v2`, checks out `github.ref_name`, strictly rebuilds that selected branch in its serialized deploy job, then deploys on eligible changed-doc pushes or manual dispatch. This is pre-existing policy drift, unresolved by the extension documentation task. No workflow was changed or dispatched, and local strict-build success does not establish global policy alignment. Nix remains in `.github/workflows/main.yml` with weekly and manual triggers; it does not run Python quality checks.
 
 Inspect the checked-in configuration and workflows before claiming a gate exists. A local pass or configured workflow does not prove hosted CI; record remote results only after observing the run at the exact pushed commit. Keep Definition of Done, `.opencode/history/`, `docs/`, and `.opencode/knowledge/` current for significant changes.
 
@@ -149,6 +156,16 @@ The implemented quality gate:
 - Imports the interpreter entrypoint in a harness smoke test so the central pytest-cov process also records owned source; importing the CLI must not execute a program or print output. This avoids a no-data warning without disabling Coverage.py warnings.
 - Runs the PowerShell full-suite command above locally and the equivalent command in `.github/workflows/tests.yml`, using absolute `${GITHUB_WORKSPACE}` source and config paths. Expected KAFE diagnostics are fixture outcomes, not permission to ignore Python warnings or extra output.
 
+## Dependency audit maintenance
+
+The Python workflow audits the complete locked dependency graph, including optional packages, before its quality and full-suite checks. Use `uv audit --locked --preview-features audit`. Preserve `exclude-newer = "7 days"`; the existing package-specific security fast lane covers Brotli/Brotlicffi, certifi and Pillow. These age exceptions permit patched releases and do not ignore advisories. The October 2026 repair selects Brotli 1.2.1, brotlicffi 1.2.1.0 and filelock 4.2.1 without adding direct dependencies. Optional HF compatibility is checked in an independent environment; the baseline must still omit `datasets`.
+
+Extension developer jobs use Node 24 LTS because the pinned development tools require Node 22 or newer. The native VS Code 1.96.0 host and product engine constraint are separate. Ubuntu's unit job runs `npm audit --audit-level=low` against the complete graph after `npm ci`. Scoped overrides select `@azure/msal-node` 7.1.0 under Azure Identity and `serialize-javascript` 7.1.3 under test-cli/Mocha. Recheck actual parent API compatibility, native execution and packaging before changing/removing these overrides. The unused `@vscode/vsce-sign` install script is explicitly denied; ordinary unsigned packaging does not require its copied/downloaded binary. Integration patch `d074ff9` selects only qs 6.16.1 in the existing `@vscode/vsce` → `typed-rest-client` development chain for [GHSA-6pq8-jhm2-2vcw](https://github.com/advisories/GHSA-6pq8-jhm2-2vcw). The installed development graph matches the lock; overrides, signing policy, product dependencies and runtime pins are unchanged.
+
+The npm installer still reports the upstream glob 10.5.0 deprecation through test-cli's supported Mocha 11 range. This is a narrow installer-warning exception while that upstream range remains; do not filter logs, relax audits or force an unrelated Mocha/glob major merely to remove the notice. Python warnings, exact streams and coverage remain strict. See [uv's per-package age policy](https://docs.astral.sh/uv/concepts/resolution/#reproducible-resolutions), [Node LTS releases](https://nodejs.org/en/about/previous-releases), [the MSAL advisory](https://github.com/advisories/GHSA-xcx6-jx8p-x3h5) and [the serializer advisory](https://github.com/yahoo/serialize-javascript/security/advisories/GHSA-m5mm-p8h7-m29v).
+
+The extension unit matrix runs on Ubuntu, Windows and actual macOS 26 Intel hosts. The standard `macos-26-intel` label avoids the ARM pool that repeatedly failed runner acquisition during this repair; setup logs the OS and asserts Darwin/x64. Every unit/freshness check and the native Windows dependency on the complete matrix remain required. This is x64 Mac evidence; ARM64 host acceptance stays deferred until it is observed separately. Do not treat missing runner capacity as a passing test or simulate the macOS gate on Linux.
+
 ## Quality Standards
 
 The Reviewer (`/dod`) evaluates the applicable mirrored root policies and relevant project knowledge, including this document, `conventions.md`, and `architecture.md`. Knowledge provides technical criteria and evidence within those policies; it cannot exclude repository invariants or override runtime/user instructions. Review against documented requirements without inventing additional ones.
@@ -162,3 +179,46 @@ The Reviewer (`/dod`) evaluates the applicable mirrored root policies and releva
   - ❌ Staged or committed generated parser files, debug `print()`, or context-less TODOs. Ignored parser outputs may exist locally for execution.
   - ❌ Marking missing migration gates passed, or inferring child-process coverage/warning enforcement from parent pytest configuration alone.
 - **Extreme homogeneity:** the repository must look like itself everywhere — naming, quoting, import order, error handling follow `conventions.md`; reviewers reject deviations without documented justification.
+
+## Unified Tutor verification boundaries (2026-10-27)
+
+ADR-0033 records response preservation, one guided policy, independent Pause and archive-v2 migration at the v1 key. Verify original-v1 strict rejection, all former levels, paused mode, unchanged draft/content/identity/dates/selection, failed-write recovery and unsupported older readers after successful v2 save. Export remains schema 1. No style memory, answer keys or automated study scoring are introduced.
+
+Historical profiling remains attributed to `86b78ff`; the separate `524dac5` confirmation retains its workload/count method and observable observer assertions. Neither establishes native/provider latency. Historical final review correction `c944d88` added 22 regressions for nested source/authorization publication, registry iteration, proposal callbacks and original cancellation cleanup. That checkpoint passed 1,032 extension checks plus one existing Windows symlink skip and all 42 real-browser cases, including Stop selection and late focus. Syntax and three reference freshness checks passed. Its 67-file VSIX was 432,587 bytes, SHA256 `5938812a3f2199c81a503ddd5c538eb08f2770148236ead07290e127ac1d5227`; its transformed README links used `b4d5371`. These package and aggregate receipts precede activity tuning and do not establish current-candidate acceptance. Earlier Task11 packages remain preserved as superseded evidence.
+
+### Activity tuning evidence (updated 2026-10-28)
+
+Source tasks separate instruction/reference transport from actual answer quality. Task 1 recorded 1,040 extension passes and one existing Windows symlink skip; Task 2 recorded 1,049 and that skip plus 47 relevant Python checks. Task 4 recorded 1,056 and that skip, followed by independently reviewed code-request selector corrections through `39d43c5`. Task 7 at `e0794c1` passed 113 focused checks, syntax, spelling, authored policy and all three reference freshness builders. Its canonical six prompts/oracles and assessment-boundary scenarios remained unchanged. The final extension aggregate on `e0794c1` product/tests and frozen documentation drafts passed 1,073 tests, with one existing Windows symlink skip and zero failures, in 29.234 seconds. This is source/regression evidence, not a learning result.
+
+The two Flash samples (`156957e` / guided-5 and `39d43c5` / guided-6) and the Pro comparison (`bce92ee` equivalent reviewed bytes / guided-6) each completed six actual requests/replies with zero tool calls or transport failures and were independently rejected for material answer defects. Guided-7 at `e0794c1` completed six canonical and two predefined held-out replies: eight requests/completions/settlements, 3,009 contiguous sanitized records, zero tools/failures. Independent actual-answer review was mixed. Correct FN/FP comparison, XOR threshold/count/upper bound, second-label fraud sensitivity and bounded positional KAFE help coexist with X3's invented training/settings and incorrect loss-trends requirement for overfitting, plus X2 isolation/redundancy and draft-feedback concerns. The full quality goal is not complete; Pro remains an experimental comparison default, without a student-readiness or model-winner claim. Full exports/transcripts, diagnostics and reviews remain local. Those first four rounds used 26 provider requests; the earlier four-request pilot is separate. Tokens/cost were not measured; novice comprehension, 30-minute completion, learning gains and SUS remain unobserved. Read-only reasoning feasibility identifies a required new private-history/snapshot/parser contract outside the disabled-thinking comparison amendment; no thinking-enabled call or implementation was made. The later user checkpoint decision does not approve that option.
+
+The separate seven-member classroom ZIP is independently approved: 490,107 bytes, SHA256 `96819195821a0dbf829a85138349badf3a962f980619daaedb3a85893ff03e9d`. Full retained teacher CLI outputs were independently checked, including all predicted labels, matrix counts, empty stderr and portable baseline paths. They establish those particular programs on the fixed didactic split, not the invented live-dialogue matrices or classroom efficacy. Teacher solutions/results and original row IDs remain excluded; there is no public ZIP URL or installed interpreter claim.
+
+A fresh input comparison against retained strict Python evidence confirms unchanged `src`, `tests`, `pyproject.toml`, `uv.lock` and both Python reference verifiers. The retained run remains 787 passes, four documented convergence skips and 86.89% strict child-inclusive coverage; no new full Python run is claimed. Affected references have separate fresh scoped receipts, including Task 7's unchanged-bundle freshness checks. Task11 zero-finding npm/uv audits remain attributed to their unchanged lock/configuration inputs, without a new vulnerability-database query claim.
+
+Historical native receipts: `edbedc7` passed non-native gates but failed a stale trusted Setup assertion; `507865d` then passed 12/12 trusted and 11/12 untrusted cases, failing the Setup severity predicate before the final no-terminal assertion and packaging. Task 9 corrected that test-only expectation to the existing information-notification contract without changing trust or production behavior.
+
+Task 9 Stage A at `9c25d04` passed 1,087 extension tests with one existing Windows symlink skip and zero failures, plus 134 focused composition/reference/evaluation checks, 211 native-fixture/host unit checks and 47 fresh affected Python reference/policy checks. All three reference freshness builders, syntax, spelling, authored policy and whitespace checks passed. Canonical prompts/oracles and assessment boundaries remain unchanged. Retained local full Python evidence remains 787 passes, four documented skips and 86.89% strict child-inclusive coverage with unchanged input proof; it is not a fresh full local run.
+
+On 2026-10-28 the user chose **Keep the current checkpoint**. Source remains at `9c25d04` / `kafe-guided-7`, `deepseek-v4-pro`, thinking disabled and streaming enabled. No further model calls, reasoning-mode experiment or protocol implementation is approved by that choice. The full answer-quality goal remains **incomplete**; retaining this checkpoint is not a model-winner, novice-readiness or classroom-efficacy verdict.
+
+The final rehearsal on `9c25d04` completed the six canonical messages and one additional constructor request H3: seven requests/completions/completed settlements, 3,114 contiguous sanitized diagnostic records, zero tools and zero transport failures. Independent actual-answer review did not accept the sample. F1/F2 fraud interpretation and comparison were supported. X3 recalled the earlier 75% XOR baseline as about 50% and invented training membership and absent validation; X1 gave an unsupported cause for near-threshold scores, X2 overstated experimental isolation and F3 manufactured a conditional draft gap. H3 supplied valid `machine.logistic_regression(0.1, 1000)` and `machine.gaussian_nb()` creation fragments, with a minor inaccurate introductory claim about two forms for each model. Earlier H1/H2 remain round4-only evidence. Across five tuning rounds, 33 requests were made (6+6+6+8+7); the earlier four-request pilot is separate. Tokens and cost were not measured. These are real model answers to synthetic learner reports, not observed classifier results or novice outcomes.
+
+Source `9c25d04` was pushed and its remote SHA independently verified. Its automatic Python workflow `40634874604` passed; extension workflow `40634874680` passed all three-platform units, layout and pinned-reference gates. Real Windows VS Code 1.96 job `122639811898` completed 12/12 trusted and 12/12 genuinely untrusted cases, including denied Run/Setup and the final no-KAFE-terminal assertion, then passed VSIX packaging and verification. Docs workflow `40634874746` validated successfully; deployment was skipped. Known DialogService headless trust-prompt stderr was retained without suppression or trust changes, so this is a completed native gate rather than a claim of pristine startup logs. These exact-revision CI receipts apply to source `9c25d04`; later documentation-only commits require their own delivery receipts. The local 1.143.1 provider rehearsal remains separate from pinned 1.96 CI.
+
+Final metadata/docs-only validation and the single scoped independent whole-wave re-review have separate receipts. Final package inspection/push bookkeeping remain root-owned. Managed installation, physical IME/speech, publication, novice outcomes and research collection remain unobserved.
+
+## Concurrent terminal integration (2026-10-28)
+
+The final delivery also preserves the concurrently pushed Run-output work from `039fcea`: unbuffered Python output, retained native terminal results and no Run entries in the rendered Tutor conversation. The Tutor policy, provider configuration and canonical rehearsal prompts remain unchanged. A fresh combined-tree aggregate passed 1,091 tests with one existing Windows skip and zero failures (1,092 total, 40.328 s); all 42 rendered browser cases passed (24.706 s). The earlier `9c25d04` native CI remains an exact-revision historical receipt; merged-source packaging and CI require their own receipts.
+
+These fresh unit/browser results cover the combined `dcf1de2` documentation and `039fcea` terminal source. They do not establish a new native-host run or physical terminal visual acceptance. No interpreter/runtime/dependency input changed and no full Python or model rehearsal was repeated for this merge.
+
+
+## Stopped reasoning follow-up and delivery (2026-10-28)
+
+On 28 October 2026, a later approved text-only reasoning feasibility follow-up produced 67 provider attempts: 63 completed replies and four initial 30-second timeouts. These are separate from the earlier 33 activity-tuning requests and the older four-request pilot. Existing blinded reviews found no clean accepted arm in the reviewed comparisons. The final 20-request cost-guidance ablation completed before the user stop was verified, but its answers remain unreviewed. No experimental policy or provider setting was adopted; production remains at the cad0bd1 implementation with kafe-guided-7, deepseek-v4-pro, thinking disabled and a 30-second timeout. Token usage and cost were not measured.
+
+The retained exact-revision baseline at cad0bd11 has successful Python workflow 40638786830, extension workflow 40638786738 (including Windows native job 122652172858), and documentation workflow 40638786754. These historical receipts are separate from verification of a later documentation commit. No fresh application-suite result is inferred from this documentation edit.
+
+The user stopped the experiment and then authorized documentation, commits, pushing and CI repair until green. That delivery instruction does not resume provider calls, answer-quality review, tuning or adoption. Detailed experiment harnesses, transcripts and reviews remain local ignored artifacts. Further quality work requires explicit resumption.

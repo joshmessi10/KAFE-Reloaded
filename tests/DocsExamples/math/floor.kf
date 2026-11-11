@@ -1,0 +1,4 @@
+import math;
+
+show(math.floor(2.9));
+show(math.floor(-2.1));

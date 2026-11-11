@@ -1,0 +1,6 @@
+import numk;
+
+List[List[INT]] a = [[1, 2]];
+List[List[INT]] b = [[3, 4]];
+show(numk.concatenate([a, b], 0));
+show(numk.concatenate([a, b], 1));

@@ -1,0 +1,11 @@
+-- for loop: repeats for each number in range(3)
+for (i in range(3)):
+    show(i);
+;
+-- while loop: repeats while the condition is true
+INT counter = 3;
+while (counter > 0):
+    show(counter);
+    counter = counter - 1;
+;
+show("Liftoff!");

@@ -1,0 +1,43 @@
+<svg viewBox="0 0 560 210" role="img" aria-labelledby="ill-tsc-t ill-tsc-d" xmlns="http://www.w3.org/2000/svg">
+<title id="ill-tsc-t">Escribir, guardar, ejecutar, leer / Write, save, run, read</title>
+<desc id="ill-tsc-d">Four stations in a row: a page where lines of code are written, a disk that saves the .kf file, a terminal that runs the program, and a screen where the result appears. A highlight moves from one station to the next and then starts again.</desc>
+<style>
+@keyframes ill-tsc-hl { 0%,20% { transform: translateX(0) } 25%,45% { transform: translateX(140px) } 50%,70% { transform: translateX(280px) } 75%,95% { transform: translateX(420px) } 100% { transform: translateX(0) } }
+@keyframes ill-tsc-w1 { 0%,2% { transform: scaleX(0) } 10%,100% { transform: scaleX(1) } }
+@keyframes ill-tsc-w2 { 0%,9% { transform: scaleX(0) } 18%,100% { transform: scaleX(1) } }
+@keyframes ill-tsc-sv { 0%,27% { opacity: 0 } 32%,100% { opacity: 1 } }
+@keyframes ill-tsc-run { 0%,52% { opacity: 0 } 57%,100% { opacity: 1 } }
+@keyframes ill-tsc-out { 0%,77% { opacity: 0 } 82%,96% { opacity: 1 } 100% { opacity: 0 } }
+.ill-tsc-hl { animation: ill-tsc-hl 8s ease-in-out infinite; }
+.ill-tsc-w1 { transform-box: fill-box; transform-origin: left; animation: ill-tsc-w1 8s linear infinite; }
+.ill-tsc-w2 { transform-box: fill-box; transform-origin: left; animation: ill-tsc-w2 8s linear infinite; }
+.ill-tsc-sv { animation: ill-tsc-sv 8s linear infinite; }
+.ill-tsc-run { animation: ill-tsc-run 8s linear infinite; }
+.ill-tsc-out { animation: ill-tsc-out 8s linear infinite; }
+</style>
+<rect class="k-accent ill-tsc-hl" x="14" y="22" width="112" height="132" rx="16" opacity="0.25"/>
+<path class="k-thin" d="M126 88 H154 M266 88 H294 M406 88 H434"/>
+<path class="k-line" d="M146 80 L156 88 L146 96 M286 80 L296 88 L286 96 M426 80 L436 88 L426 96"/>
+<rect class="k-paper" x="30" y="36" width="80" height="104" rx="8"/>
+<rect class="k-line" x="30" y="36" width="80" height="104" rx="8"/>
+<rect class="k-soft ill-tsc-w1" x="42" y="58" width="56" height="10" rx="5"/>
+<rect class="k-soft ill-tsc-w2" x="42" y="80" width="42" height="10" rx="5"/>
+<path class="k-accent-line" d="M78 128 L100 106 L106 112 L84 134 Z"/>
+<text x="56" y="184">1</text>
+<rect class="k-paper" x="176" y="44" width="88" height="88" rx="10"/>
+<rect class="k-line" x="176" y="44" width="88" height="88" rx="10"/>
+<rect class="k-line" x="194" y="44" width="52" height="26" rx="3"/>
+<rect class="k-soft" x="192" y="90" width="56" height="34" rx="4"/>
+<text class="ill-tsc-sv" x="204" y="112">.kf</text>
+<text x="196" y="184">2</text>
+<rect class="k-paper" x="312" y="40" width="96" height="88" rx="10"/>
+<rect class="k-line" x="312" y="40" width="96" height="88" rx="10"/>
+<text x="324" y="64">&gt;_</text>
+<path class="k-accent ill-tsc-run" d="M350 80 L374 94 L350 108 Z"/>
+<text x="336" y="184">3</text>
+<rect class="k-line" x="452" y="40" width="96" height="76" rx="10"/>
+<path class="k-line" d="M500 116 V132 M478 136 H522"/>
+<rect class="k-accent ill-tsc-out" x="464" y="58" width="64" height="10" rx="5"/>
+<rect class="k-accent ill-tsc-out" x="464" y="82" width="46" height="10" rx="5"/>
+<text x="476" y="184">4</text>
+</svg>

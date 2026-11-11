@@ -1,0 +1,4 @@
+import math;
+
+show(math.cosh(0));
+show(math.cosh(1));

@@ -1,0 +1,251 @@
+{
+  "name": "kafe-neural-suite",
+  "displayName": "KAFE - Neural Language Suite",
+  "description": "Edit and run KAFE programs with a guided AI tutor.",
+  "version": "2.4.1",
+  "publisher": "KAFEGROUP",
+  "icon": "icon.png",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/joshmessi10/KAFE-Reloaded"
+  },
+  "bugs": {
+    "url": "https://github.com/joshmessi10/KAFE-Reloaded/issues"
+  },
+  "engines": {
+    "vscode": "^1.96.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Data Science",
+    "Education"
+  ],
+  "keywords": [
+    "kafe",
+    "machine-learning",
+    "deep-learning",
+    "education",
+    "dsl"
+  ],
+  "main": "./extension.js",
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": "limited",
+      "description": "Message-only conversation is available. Workspace files, edits and Run require workspace trust."
+    }
+  },
+  "activationEvents": [
+    "onLanguage:kafe",
+    "onCommand:kafe.runFile",
+    "onCommand:kafe.installRuntime",
+    "onCommand:kafe.installHuggingFacePack",
+    "onCommand:kafe.installKagglePack",
+    "onCommand:kafe.openTutor",
+    "onCommand:kafe.configureProvider",
+    "onCommand:kafe.clearProviderKey",
+    "onCommand:kafe.clearTutorProgress",
+    "onCommand:kafe.newConversation",
+    "onCommand:kafe.switchConversation",
+    "onCommand:kafe.renameConversation",
+    "onCommand:kafe.deleteConversation",
+    "onCommand:kafe.exportConversation",
+    "onCommand:kafe.toggleTeachingPause",
+    "onView:kafeTutorView"
+  ],
+  "contributes": {
+    "languages": [
+      {
+        "id": "kafe",
+        "aliases": [
+          "KAFE",
+          "Kafe Language"
+        ],
+        "extensions": [
+          ".kf"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "kafe",
+        "scopeName": "source.kafe",
+        "path": "./syntaxes/kafe.tmLanguage.json"
+      }
+    ],
+    "snippets": [
+      {
+        "language": "kafe",
+        "path": "./snippets/kafe.json"
+      }
+    ],
+    "commands": [
+      {
+        "command": "kafe.runFile",
+        "title": "KAFE: Run File",
+        "icon": "$(play)",
+        "enablement": "editorLangId == kafe && isWorkspaceTrusted"
+      },
+      {
+        "command": "kafe.installRuntime",
+        "title": "KAFE: Install Runtime",
+        "icon": "$(cloud-download)",
+        "enablement": "isWorkspaceTrusted"
+      },
+      {
+        "command": "kafe.installHuggingFacePack",
+        "title": "KAFE: Install Hugging Face Pack",
+        "icon": "$(cloud-download)",
+        "enablement": "isWorkspaceTrusted"
+      },
+      {
+        "command": "kafe.installKagglePack",
+        "title": "KAFE: Install Kaggle Pack",
+        "icon": "$(cloud-download)",
+        "enablement": "isWorkspaceTrusted"
+      },
+      {
+        "command": "kafe.openTutor",
+        "title": "KAFE: Open Tutor",
+        "icon": "$(mortar-board)"
+      },
+      {
+        "command": "kafe.configureProvider",
+        "title": "KAFE: Configure Provider Key"
+      },
+      {
+        "command": "kafe.clearProviderKey",
+        "title": "KAFE: Clear Provider Key"
+      },
+      {
+        "command": "kafe.clearTutorProgress",
+        "title": "KAFE: Clear Legacy Tutor Progress"
+      },
+      {
+        "command": "kafe.newConversation",
+        "title": "KAFE: New Conversation",
+        "icon": "$(add)"
+      },
+      {
+        "command": "kafe.switchConversation",
+        "title": "KAFE: Switch Conversation",
+        "icon": "$(history)"
+      },
+      {
+        "command": "kafe.renameConversation",
+        "title": "KAFE: Rename Conversation"
+      },
+      {
+        "command": "kafe.deleteConversation",
+        "title": "KAFE: Delete Conversation"
+      },
+      {
+        "command": "kafe.exportConversation",
+        "title": "KAFE: Export Conversation"
+      },
+      {
+        "command": "kafe.toggleTeachingPause",
+        "title": "KAFE: Pause/Resume Teaching"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "kafeTutor",
+          "title": "KAFE Tutor",
+          "icon": "media/tutor.svg"
+        }
+      ]
+    },
+    "views": {
+      "kafeTutor": [
+        {
+          "id": "kafeTutorView",
+          "name": "KAFE Tutor",
+          "type": "webview"
+        }
+      ]
+    },
+    "keybindings": [
+      {
+        "command": "kafe.runFile",
+        "key": "ctrl+f5",
+        "mac": "cmd+f5",
+        "when": "editorLangId == kafe && isWorkspaceTrusted"
+      }
+    ],
+    "menus": {
+      "editor/title": [
+        {
+          "command": "kafe.runFile",
+          "when": "editorLangId == kafe && isWorkspaceTrusted",
+          "group": "navigation"
+        }
+      ],
+      "view/title": [
+        {
+          "command": "kafe.openTutor",
+          "when": "view == kafeTutorView",
+          "group": "navigation"
+        },
+        {
+          "command": "kafe.newConversation",
+          "when": "view == kafeTutorView",
+          "group": "2_conversation@1"
+        },
+        {
+          "command": "kafe.switchConversation",
+          "when": "view == kafeTutorView",
+          "group": "navigation@2"
+        },
+        {
+          "command": "kafe.renameConversation",
+          "when": "view == kafeTutorView",
+          "group": "2_conversation"
+        },
+        {
+          "command": "kafe.exportConversation",
+          "when": "view == kafeTutorView",
+          "group": "2_conversation"
+        },
+        {
+          "command": "kafe.deleteConversation",
+          "when": "view == kafeTutorView",
+          "group": "2_conversation"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "references:build": "node scripts/build-tutor-references.cjs && node scripts/build-library-references.cjs && node scripts/build-library-evals.cjs",
+    "references:check": "node scripts/build-tutor-references.cjs --check && node scripts/build-library-references.cjs --check && node scripts/build-library-evals.cjs --check",
+    "references:verify": "python scripts/verify-tutor-references.py && python scripts/verify-library-references.py",
+    "test:layout": "node --test test/layout/tutorView.layout.test.cjs",
+    "test:unit": "node test/run-unit-tests.js",
+    "test:extension": "node test/run-extension-host-tests.js",
+    "test": "npm run test:unit && npm run test:extension"
+  },
+  "dependencies": {
+    "yauzl": "3.4.0"
+  },
+  "devDependencies": {
+    "@vscode/test-cli": "0.0.15",
+    "@vscode/test-electron": "3.1.0",
+    "@vscode/vsce": "4.0.0"
+  },
+  "overrides": {
+    "@azure/identity": {
+      "@azure/msal-node": "7.1.0"
+    },
+    "@vscode/test-cli": {
+      "mocha": {
+        "diff": "8.0.3",
+        "serialize-javascript": "7.1.3"
+      }
+    }
+  },
+  "allowScripts": {
+    "@vscode/vsce-sign": false
+  }
+}

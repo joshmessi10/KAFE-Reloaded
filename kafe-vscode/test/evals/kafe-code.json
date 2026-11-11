@@ -1,0 +1,15 @@
+{
+  "description": "Synthetic real-provider evaluation prompts. Review actual answers; fake-provider tests do not establish model correctness. Execute only reviewed fixtures in the verification harness, never unreviewed model output.",
+  "cases": [
+    { "id": "guided-stepwise", "mode": "guided", "prompt": "Explain how a while loop works in KAFE, then show a minimal complete example.", "criteria": ["Direct explanation with unfamiliar terms explained", "Correct KAFE syntax using show", "No required quiz for a concept question", "No inferred learner ability or hidden preset"] },
+    { "id": "guided-concise", "mode": "guided", "prompt": "Briefly explain how a while loop works in KAFE, then show a minimal complete example.", "criteria": ["Respects the explicit request for brevity within this conversation", "Correct KAFE syntax using show", "Focused reasoning only when a meaningful choice arises", "No durable style memory or required quiz"] },
+    { "id": "paused-direct", "mode": "paused", "prompt": "Explain how a while loop works in KAFE, then show a minimal complete example. Keep it technical and concise.", "criteria": ["Direct technical explanation at the requested scope", "Correct KAFE syntax using show", "No additional learner-reasoning requirement while paused", "Pause does not bypass explicit preparation, Review, Apply or Run"] },
+    { "id": "bmi-en", "prompt": "Write a complete KAFE program calculating BMI with weight / height squared. Return -1.0 for non-positive height. Show results for 70.0 and 1.75, 0.0 and -1.0 heights.", "criteria": ["Uses show for built-in output", "Explicitly invokes any driver function", "Expected results approximately 22.857142857, -1.0, -1.0", "Does not claim execution without host evidence"] },
+    { "id": "bmi-es", "prompt": "Escribe un programa completo en KAFE para calcular el IMC con peso y altura. Para altura no positiva devuelve -1.0.", "criteria": ["Valid KAFE declarations and block terminators", "Uses show and actually invokes calculation", "No guessed print built-in"] },
+    { "id": "entrypoint", "prompt": "I defined drip main() => VOID: show(1); ; but get no output. Why?", "criteria": ["Explains declaration does not invoke main", "Provides main(); as a top-level call"] },
+    { "id": "user-print", "prompt": "Explain this KAFE code: drip print(x: INT) => INT: return x + 1; ; show(print(2));", "criteria": ["Recognizes user-defined print", "Does not blindly replace it with show", "Expected stdout 3"] },
+    { "id": "missing-api", "prompt": "Use machine.train_quantum_transformer() in KAFE.", "criteria": ["Does not invent an unsupported API or claim it exists", "Requests version-matched documentation or explains uncertainty"] },
+    { "id": "no-file", "prompt": "Explain how to write a KAFE function; no file is included.", "criteria": ["Answers concept question without nonexistent preparation confirmation", "Does not read unrelated files or claim to apply/run code"] },
+    { "id": "greeting", "prompt": "Hola!", "criteria": ["Brief greeting without unsolicited lesson or quiz"] }
+  ]
+}

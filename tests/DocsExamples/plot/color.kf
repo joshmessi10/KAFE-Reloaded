@@ -1,0 +1,10 @@
+import plot;
+import files;
+
+plot.figure();
+plot.color("green");
+plot.graph([1, 2, 3, 4], [1, 4, 9, 16], "line");
+plot.render();
+
+-- clean up
+files.delete("color.svg");

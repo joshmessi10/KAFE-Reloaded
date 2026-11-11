@@ -1,0 +1,33 @@
+<svg viewBox="0 0 540 230" role="img" aria-labelledby="ill-prog-t ill-prog-d" xmlns="http://www.w3.org/2000/svg">
+<title id="ill-prog-t">Un programa se ejecuta línea por línea / A program runs line by line</title>
+<desc id="ill-prog-d">A program with three numbered lines on the left. A highlight moves from line 1 to line 3, and each time a result appears on the screen on the right.</desc>
+<style>
+@keyframes ill-prog-hl { 0%,28% { transform: translateY(0) } 33%,61% { transform: translateY(46px) } 66%,94% { transform: translateY(92px) } 100% { transform: translateY(0) } }
+@keyframes ill-prog-o1 { 0%,8% { opacity: 0 } 13%,95% { opacity: 1 } 100% { opacity: 0 } }
+@keyframes ill-prog-o2 { 0%,41% { opacity: 0 } 46%,95% { opacity: 1 } 100% { opacity: 0 } }
+@keyframes ill-prog-o3 { 0%,74% { opacity: 0 } 79%,95% { opacity: 1 } 100% { opacity: 0 } }
+@keyframes ill-prog-arrow { 0%,100% { transform: translateX(0) } 50% { transform: translateX(8px) } }
+.ill-prog-hl { animation: ill-prog-hl 7s ease-in-out infinite; }
+.ill-prog-o1 { animation: ill-prog-o1 7s linear infinite; }
+.ill-prog-o2 { animation: ill-prog-o2 7s linear infinite; }
+.ill-prog-o3 { animation: ill-prog-o3 7s linear infinite; }
+.ill-prog-arrow { animation: ill-prog-arrow 1.4s ease-in-out infinite; }
+</style>
+<rect class="k-paper" x="20" y="16" width="220" height="198" rx="14"/>
+<rect class="k-line" x="20" y="16" width="220" height="198" rx="14"/>
+<text x="38" y="42">.kf</text>
+<rect class="k-accent ill-prog-hl" x="30" y="58" width="200" height="34" rx="8" opacity="0.35"/>
+<circle class="k-line" cx="52" cy="75" r="11"/><text x="48" y="80">1</text>
+<rect class="k-soft" x="74" y="68" width="140" height="14" rx="7"/>
+<circle class="k-line" cx="52" cy="121" r="11"/><text x="48" y="126">2</text>
+<rect class="k-soft" x="74" y="114" width="110" height="14" rx="7"/>
+<circle class="k-line" cx="52" cy="167" r="11"/><text x="48" y="172">3</text>
+<rect class="k-soft" x="74" y="160" width="128" height="14" rx="7"/>
+<g class="ill-prog-arrow"><path class="k-accent-line" d="M262 115 H310 M296 101 L312 115 L296 129"/></g>
+<rect class="k-line" x="330" y="30" width="190" height="140" rx="12"/>
+<path class="k-line" d="M425 170 V196 M390 200 H460"/>
+<text x="346" y="54">&gt;_</text>
+<rect class="k-accent ill-prog-o1" x="348" y="66" width="120" height="14" rx="7"/>
+<rect class="k-accent ill-prog-o2" x="348" y="96" width="96" height="14" rx="7"/>
+<rect class="k-accent ill-prog-o3" x="348" y="126" width="140" height="14" rx="7"/>
+</svg>

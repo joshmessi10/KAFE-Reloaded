@@ -1,0 +1,3 @@
+import pardos;
+
+PARDOS students = pardos.read_csv("data/student.csv");

@@ -1,0 +1,7 @@
+INT x = 10;
+x = x + 5;
+show(x);
+
+List[INT] L = [1, 2];
+L[0] = 99;
+show(L);

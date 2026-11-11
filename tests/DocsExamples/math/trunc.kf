@@ -1,0 +1,4 @@
+import math;
+
+show(math.trunc(2.9));
+show(math.trunc(-2.9));

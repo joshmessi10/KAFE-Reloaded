@@ -1,0 +1,2 @@
+Syntax Error [Line 1, Column 4]: mismatched input 'show' expecting ID
+Exception: SyntaxError at line 1:4 -> mismatched input 'show' expecting ID

@@ -1,0 +1,7 @@
+import gesha;
+import machine;
+
+GESHA layer = gesha.create_dense(1, "sigmoid", [2], 0.0, 42);
+GESHA model = gesha.sequential([layer]);
+MACHINE lr = machine.linear_regression();
+show("ok");

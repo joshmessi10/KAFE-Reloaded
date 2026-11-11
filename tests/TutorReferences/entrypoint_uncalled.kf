@@ -1,0 +1,4 @@
+-- A declaration alone produces no output; main is not automatic.
+drip main() => VOID:
+    show("Should not run");
+;

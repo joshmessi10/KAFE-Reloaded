@@ -1,0 +1,7 @@
+import pardos;
+import files;
+
+PARDOS study = pardos.DataFrame(["hours", "score"], [[2, 60], [4, 75]]);
+study.to_csv("data/saved.csv");
+show(files.read("data/saved.csv"));
+files.delete("data/saved.csv");

@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "description": "Shared safe text inputs for bundled references, development packs, and future managed releases. Presentation assets are excluded explicitly.",
+  "sections": [
+    { "source": "docs/getting-started", "target": "getting-started", "extensions": [".md"], "required": true },
+    { "source": "docs/language", "target": "language", "extensions": [".md"], "required": true },
+    { "source": "docs/libraries", "target": "libraries", "extensions": [".md"], "required": true },
+    { "source": "docs/specification", "target": "specification", "extensions": [".md"], "required": true },
+    { "source": "docs/errors", "target": "errors", "extensions": [".md"], "required": true },
+    { "source": "docs/examples", "target": "examples", "extensions": [".md", ".kf"], "required": true },
+    { "source": "docs/ejemplos", "target": "examples/tutorials", "extensions": [".md", ".kf"], "excludedExtensions": [".svg"], "required": false }
+  ],
+  "files": [
+    { "source": "src/Kafe_Grammar.g4", "target": "grammar/Kafe_Grammar.g4" },
+    { "source": "src/Kafe_Lexer.g4", "target": "grammar/Kafe_Lexer.g4" }
+  ]
+}

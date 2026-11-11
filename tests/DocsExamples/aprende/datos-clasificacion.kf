@@ -1,0 +1,11 @@
+import machine;
+
+-- Peso de cada fruta en gramos: 0 = uva, 1 = sandía
+List[FLOAT] peso = [5.0, 6.0, 7.0, 3000.0, 3500.0, 4000.0];
+List[INT] fruta = [0, 0, 0, 1, 1, 1];
+
+MACHINE modelo = machine.knn(3);
+modelo.fit(peso, fruta);
+
+-- ¿Qué fruta es una de 6.5 g? ¿Y una de 3200 g?
+show(modelo.predict([6.5, 3200.0]));

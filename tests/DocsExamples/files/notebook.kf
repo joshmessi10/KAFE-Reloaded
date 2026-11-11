@@ -1,0 +1,7 @@
+import files;
+
+files.create("notebook-demo.txt");
+files.write("notebook-demo.txt", "KAFE");
+STR page = files.read("notebook-demo.txt");
+show(page);
+files.delete("notebook-demo.txt");

@@ -1,0 +1,4 @@
+import files;
+
+STR content = files.read("data/notebook.txt");
+show(content);

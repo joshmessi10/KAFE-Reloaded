@@ -1,191 +1,165 @@
-# PARDOS — DataFrames
+# PARDOS: tablas de datos
 
-PARDOS is KAFE's Pandas-inspired DataFrame library. It loads, manipulates, and analyzes tabular data from CSV files.
+La librería **PARDOS** sirve para trabajar con **tablas de datos**: leerlas de un archivo, mirarlas, filtrarlas, resumirlas, juntarlas y prepararlas para entrenar modelos de Machine Learning. Está inspirada en *Pandas*, la librería de tablas más usada en Python, pero escrita desde cero dentro de KAFE para que puedas ver cómo funciona.
 
-**Import:**
+## ¿Qué es una tabla? { #what-is-a-table }
 
-```kafe
-import pardos;
+Una **tabla** (en inglés, *DataFrame*) es como una **hoja de cálculo** o la lista de tu clase:
+
+- Cada **fila** es una cosa que estudiamos: aquí, un estudiante.
+- Cada **columna** es algo que sabemos de todas ellas: su nombre, su edad, su nota, su ciudad.
+- La primera fila tiene los **títulos** de las columnas.
+
+<figure class="kafe-fig">
+--8<-- "docs/assets/illustrations/pardos-tabla.svg"
+<figcaption>Primero se ilumina una fila (todo lo que sabemos de Luis) y después una columna (la nota de todos).</figcaption>
+</figure>
+
+Esta tabla está guardada en un archivo de texto llamado `students.csv`:
+
+```text
+--8<-- "tests/DocsExamples/pardos/data/students.csv"
 ```
 
----
-
-## Main functions
-
-| Function | Signature | Description |
-|---------|-------|-------------|
-| `pardos.read_csv` | `(STR) -> PARDOS` | Reads a CSV file and returns a DataFrame |
-| `pardos.DataFrame` | `(List[STR], List[List[ANY]]) -> PARDOS` | Creates a DataFrame from column names and data |
-
----
-
-## DataFrame methods
-
-### Exploration
-
-| Method | Signature | Description |
-|--------|-------|-------------|
-| `df.head` | `(n?) -> PARDOS` | First n rows (default: 5) |
-| `df.tail` | `(n?) -> PARDOS` | Last n rows (default: 5) |
-| `df.shape` | `() -> List[INT]` | [rows, columns] |
-| `df.col` | `(STR) -> List[ANY]` | Returns a column as a list |
-| `df.dtypes` | `() -> List[List[STR]]` | Types of each column |
-| `df.info` | `() -> STR` | DataFrame summary |
-| `df.describe` | `() -> PARDOS` | Descriptive statistics |
-
-### Grouping and analysis
-
-| Method | Signature | Description |
-|--------|-------|-------------|
-| `df.value_counts` | `(STR) -> PARDOS` | Counts each unique value |
-| `df.mean` | `(STR) -> FLOAT` | Arithmetic mean of a column |
-| `df.sum` | `(STR) -> FLOAT` | Sum of a column |
-| `df.agg` | `(STR, STR) -> NUM` | Aggregation: `sum`, `mean`, `min`, `max`, `count` |
-| `df.round` | `(n?) -> PARDOS` | Rounds floating-point values (default: 4 decimal places) |
-
-### Filtering
-
-| Method | Signature | Description |
-|--------|-------|-------------|
-| `df.query` | `(STR) -> PARDOS` | Filters rows using a KAFE expression |
-
----
-
-## Example: Create a DataFrame
+Con dos líneas de KAFE la lees y la muestras:
 
 ```kafe
-import pardos;
-
-List[STR] cols = ["name", "age", "city"];
-List[List[ANY]] data = [
-    ["Ana", 25, "Bogotá"],
-    ["Luis", 30, "Medellín"],
-    ["María", 28, "Cali"]
-];
-
-PARDOS df = pardos.DataFrame(cols, data);
-show(df);
+--8<-- "tests/DocsExamples/pardos/first-table.kf"
 ```
 
-## Example: Read a CSV file
-
-```kafe
-import pardos;
-
-PARDOS df = pardos.read_csv("data.csv");
-show(df.head(3));
-show(df.shape);
-show(df.dtypes);
+```text
+--8<-- "tests/DocsExamples/pardos/first-table.expec"
 ```
 
-## Example: Statistics
+!!! tip "¿Qué pasó aquí?"
+    1. `import pardos;` trajo la librería.
+    2. `pardos.read_csv(...)` leyó el archivo y creó una tabla. Su tipo en KAFE es `PARDOS`.
+    3. `show(students)` la mostró en una línea: `cols` son los títulos de las columnas y `rows` son las filas, cada una entre corchetes.
 
-```kafe
-import pardos;
+## Antes de empezar: importar la librería { #import }
 
-PARDOS df = pardos.read_csv("sales.csv");
+Una librería es una **caja de herramientas** extra. Para usarla, primero la traes con `import pardos;` y luego usas cada herramienta con `pardos.` delante, como `pardos.read_csv(...)`. Las tablas que te devuelve traen sus propias herramientas, los **métodos**, que se escriben con un punto después del nombre de la tabla: `students.head(2)`.
 
--- Mean of a column
-FLOAT mean_sales = df.mean("sales");
-show("Mean sales: " + str(mean_sales));
+!!! warning "Error común: olvidar el `import`"
+    Si usas `pardos.` sin haber escrito `import pardos;`, KAFE no sabe de qué caja hablas:
 
--- Total sum
-FLOAT total = df.sum("sales");
-show("Total: " + str(total));
+    ```kafe
+    --8<-- "tests/DocsExamples/pardos/no-import.error.kf"
+    ```
 
--- Full statistics
-PARDOS stats = df.describe();
-show(stats);
+    ```text
+    --8<-- "tests/DocsExamples/pardos/no-import.error.stderr.expec"
+    ```
 
--- Value counts
-PARDOS counts = df.value_counts("category");
-show(counts);
-```
+## Cómo funciona por dentro { #inside }
 
-## Example: Filter with query
+PARDOS vive en la carpeta `src/lib/KafePARDOS/` del código de KAFE y tiene tres archivos:
 
-```kafe
-import pardos;
-
-PARDOS df = pardos.read_csv("employees.csv");
-
--- Simple filter
-PARDOS older_employees = df.query("age > 30");
-show(older_employees);
-
--- Multiple conditions (AND)
-PARDOS filtered = df.query("age > 28 && salary > 50000");
-show(filtered);
-
--- Multiple conditions (OR)
-PARDOS filtered2 = df.query("city == 'Bogotá' || city == 'Medellín'");
-show(filtered2);
-```
-
----
-
-## query expression support
-
-The `query()` method accepts complete KAFE expressions:
-
-| Operator | Use |
-|----------|-----|
-| `==` | Equality |
-| `!=` | Inequality |
-| `<`, `<=`, `>`, `>=` | Comparison |
-| `&&` | Logical AND |
-| `\|\|` | Logical OR |
-
-```kafe
--- String comparisons
-PARDOS result = df.query("name != 'Alice'");
-
--- Combined conditions
-PARDOS result2 = df.query("(age > 25 && salary > 40000) || city == 'Bogotá'");
-```
-
----
-
-## Delimiter detection
-
-`read_csv` detects the delimiter automatically:
-
-- If there are more `;` characters than `,` characters, it uses `;` as the delimiter.
-- Otherwise, it uses `,`.
-
----
-
-## Error handling
-
-| Error | Cause |
-|-------|-------|
-| **File not found** | CSV file does not exist at the specified path |
-| **Column not found** | Invalid column name in `col`, `query`, etc. |
-| **Inconsistent dimensions** | Number of columns does not match the data |
-| **Incorrect types** | Operation is not valid for the column type |
-
-## Preparing tabular data for ML
-
-Inspect columns before turning a table into model features. `pardos.to_matrix(df)` keeps numeric columns and converts values to floats; string labels should be extracted with `df.col` first and encoded for the model. Split samples before fitting a scaler; see the [MACHINE workflow](../ejemplos/machine-kaggle.md).
-
-| Operation | Use |
+| Archivo | Qué guarda |
 |---|---|
-| `pardos.read_json(path)` | Read a JSON array of records into a DataFrame. |
-| `pardos.to_matrix(df)` / `pardos.df_to_matrix(df)` | Extract numeric columns as a matrix. |
-| `pardos.flatten(nested)` | Flatten nested lists. |
-| `pardos.concat(a, b)` / `a.concat(b)` | Stack compatible DataFrames vertically. |
-| `pardos.merge(a, b, key, how)` / `a.merge(b, key, how)` | Join tables on a shared column. |
-| `df.rename(old, new)` / `df.drop(name)` | Change or remove a column. |
-| `df.fillna(value)` / `df.dropna()` / `df.ffill()` / `df.bfill()` | Handle missing values. |
-| `df.to_csv(path)` / `df.to_json(path)` | Save a table. |
-| `df.groupby(name)` | Group by a column; then call `mean()`, `sum()` or `count()`. |
+| `functions.py` | Las funciones que llamas con `pardos.`: `read_csv`, `read_json`, `concat`, `merge`, `to_matrix`, `flatten`. |
+| `DataFrame.py` | La clase `DataFrame` (la tabla y todos sus métodos) y la clase `GroupBy` (los grupos de [`groupby`](pardos/summarize.md#groupby)). |
+| `utils.py` | `infer_type`, la función que adivina el tipo de cada celda. |
 
-```kafe
-import pardos;
-PARDOS data = pardos.DataFrame(["hours", "score"], [[2, 60], [4, 75], [6, 90]]);
-show(data.head(2));
-show(data.mean("score"));
-show(pardos.to_matrix(data));
-```
+Por dentro, una tabla es solo **dos listas**:
 
-`read_csv` uses a simple delimiter-based parser that detects comma or semicolon from the file contents. Check the imported columns before training when fields may contain embedded delimiters or missing values.
+- `columns`: una lista de textos con los títulos, por ejemplo `['name', 'age', 'score', 'city']`.
+- `data`: una **lista de listas**, una lista por fila, por ejemplo `[['Ana', 10, 8.5, 'Lima'], ...]`.
+
+Mira cómo `read_csv` convierte una línea del archivo en una fila de `data`:
+
+<figure class="kafe-fig">
+--8<-- "docs/assets/illustrations/pardos-pordentro.svg"
+<figcaption>1) Se corta la línea en cada coma. 2) Cada trozo se convierte a número si se puede. 3) La fila terminada se añade al final de `data`.</figcaption>
+</figure>
+
+Paso a paso, `read_csv`:
+
+1. **Busca el archivo**: primero tal como escribiste la ruta y, si no está, junto a tu archivo `.kf`.
+2. **Lee todas las líneas** y quita las líneas vacías del final. Si el archivo está vacío, devuelve una tabla vacía.
+3. **Elige el separador**: cuenta los `;` y las `,` de todo el archivo. Si hay al menos tantos `;` como `,`, usa `;`; si no, `,`.
+4. **Lee los títulos** de la primera línea y quita los espacios sobrantes.
+5. **Corta cada línea** en trozos (`split`). Si a una línea le faltan trozos, los completa con celdas vacías.
+6. **Adivina el tipo** de cada trozo con `infer_type`: un trozo vacío pasa a ser `nan`; si se puede leer como entero, es `INT`; si no, si se puede leer como decimal, es `FLOAT`; si no, se queda como texto (`STR`).
+7. **Crea la tabla** con `columns` y `data`. Al crearla, comprueba que cada fila tenga tantos valores como columnas.
+
+Otras ideas que te ayudan a entender el resto de la librería:
+
+- **Los tipos se calculan, no se guardan.** [`dtypes`](pardos/inspect.md#dtypes) mira los valores de cada columna cada vez que lo llamas.
+- **Las tablas no cambian.** Casi todos los métodos (`head`, `query`, `drop`, `fillna`…) recorren `data` y construyen una tabla **nueva**. La original queda igual.
+- **`query` usa el intérprete de KAFE.** Para cada fila, crea variables con los nombres de las columnas y evalúa tu condición (más en [`query`](pardos/select.md#query)).
+- **`merge` usa un índice.** Primero apunta qué filas tiene cada valor de la clave y después busca ahí (más en [`merge`](pardos/combine.md#merge)).
+
+## Mapa de la librería { #map }
+
+| Página | Qué aprendes |
+|---|---|
+| [Crear y leer tablas](pardos/tables.md) | Escribir una tabla a mano, leer archivos CSV y JSON. |
+| [Mirar los datos](pardos/inspect.md) | Ver el principio y el final, el tamaño, los tipos y estadísticas rápidas. |
+| [Elegir columnas y filas](pardos/select.md) | Sacar una columna, renombrar, quitar columnas y filtrar filas. |
+| [Contar y resumir](pardos/summarize.md) | Contar valores, promedios, sumas, redondeos y resúmenes por grupo. |
+| [Datos que faltan](pardos/missing.md) | Rellenar o quitar los huecos (`nan`). |
+| [Juntar tablas](pardos/combine.md) | Apilar tablas (`concat`) y unirlas por una columna (`merge`). |
+| [Guardar tablas](pardos/save.md) | Guardar en CSV o JSON. |
+| [De tabla a números para MACHINE](pardos/to-numbers.md) | Convertir la tabla en una matriz para entrenar modelos. |
+
+## Resumen de todas las funciones { #summary }
+
+| Función o método | Página |
+|---|---|
+| [`pardos.DataFrame(columns, rows)`](pardos/tables.md#dataframe) | [Crear y leer tablas](pardos/tables.md) |
+| [`pardos.read_csv(path)`](pardos/tables.md#read_csv) | [Crear y leer tablas](pardos/tables.md) |
+| [`pardos.read_json(path)`](pardos/tables.md#read_json) | [Crear y leer tablas](pardos/tables.md) |
+| [`df.head(n)`](pardos/inspect.md#head) | [Mirar los datos](pardos/inspect.md) |
+| [`df.tail(n)`](pardos/inspect.md#tail) | [Mirar los datos](pardos/inspect.md) |
+| [`df.shape()`](pardos/inspect.md#shape) | [Mirar los datos](pardos/inspect.md) |
+| [`df.dtypes()`](pardos/inspect.md#dtypes) | [Mirar los datos](pardos/inspect.md) |
+| [`df.info()`](pardos/inspect.md#info) | [Mirar los datos](pardos/inspect.md) |
+| [`df.describe()`](pardos/inspect.md#describe) | [Mirar los datos](pardos/inspect.md) |
+| [`df.col(column)`](pardos/select.md#col) | [Elegir columnas y filas](pardos/select.md) |
+| [`df.rename(old, new)`](pardos/select.md#rename) | [Elegir columnas y filas](pardos/select.md) |
+| [`df.drop(column)`](pardos/select.md#drop) | [Elegir columnas y filas](pardos/select.md) |
+| [`df.query(condition)`](pardos/select.md#query) | [Elegir columnas y filas](pardos/select.md) |
+| [`df.value_counts(column)`](pardos/summarize.md#value_counts) | [Contar y resumir](pardos/summarize.md) |
+| [`df.mean(column)`](pardos/summarize.md#mean) | [Contar y resumir](pardos/summarize.md) |
+| [`df.sum(column)`](pardos/summarize.md#sum) | [Contar y resumir](pardos/summarize.md) |
+| [`df.agg(column, operation)`](pardos/summarize.md#agg) | [Contar y resumir](pardos/summarize.md) |
+| [`df.round(digits)`](pardos/summarize.md#round) | [Contar y resumir](pardos/summarize.md) |
+| [`df.groupby(column)`](pardos/summarize.md#groupby) | [Contar y resumir](pardos/summarize.md) |
+| [`groups.mean()`](pardos/summarize.md#groupby-mean) | [Contar y resumir](pardos/summarize.md) |
+| [`groups.sum()`](pardos/summarize.md#groupby-sum) | [Contar y resumir](pardos/summarize.md) |
+| [`groups.count()`](pardos/summarize.md#groupby-count) | [Contar y resumir](pardos/summarize.md) |
+| [`df.fillna(value)`](pardos/missing.md#fillna) | [Datos que faltan](pardos/missing.md) |
+| [`df.dropna()`](pardos/missing.md#dropna) | [Datos que faltan](pardos/missing.md) |
+| [`df.ffill()`](pardos/missing.md#ffill) | [Datos que faltan](pardos/missing.md) |
+| [`df.bfill()`](pardos/missing.md#bfill) | [Datos que faltan](pardos/missing.md) |
+| [`pardos.concat(first, second)`](pardos/combine.md#concat) | [Juntar tablas](pardos/combine.md) |
+| [`df.concat(other)`](pardos/combine.md#df-concat) | [Juntar tablas](pardos/combine.md) |
+| [`pardos.merge(left, right, key, how)`](pardos/combine.md#merge) | [Juntar tablas](pardos/combine.md) |
+| [`df.merge(other, key, how)`](pardos/combine.md#df-merge) | [Juntar tablas](pardos/combine.md) |
+| [`df.to_csv(path)`](pardos/save.md#to_csv) | [Guardar tablas](pardos/save.md) |
+| [`df.to_json(path)`](pardos/save.md#to_json) | [Guardar tablas](pardos/save.md) |
+| [`pardos.to_matrix(df)`](pardos/to-numbers.md#to_matrix) | [De tabla a números para MACHINE](pardos/to-numbers.md) |
+| [`pardos.df_to_matrix(df)`](pardos/to-numbers.md#to_matrix) | [De tabla a números para MACHINE](pardos/to-numbers.md) |
+| [`pardos.flatten(nested)`](pardos/to-numbers.md#flatten) | [De tabla a números para MACHINE](pardos/to-numbers.md) |
+
+## Errores frecuentes { #errors }
+
+| Error | Causa |
+|---|---|
+| `File '…' not found` | El archivo no existe en esa ruta ([ver ejemplo](pardos/tables.md#read_csv)). |
+| `Column '…' doesn't exist` | El nombre de la columna está mal escrito en `col`, `drop`, `rename`… ([ver ejemplo](pardos/select.md#col)). |
+| `Inconsistent dimensions` | Una fila no tiene tantos valores como columnas ([ver ejemplo](pardos/tables.md#dataframe)). |
+| `has no numeric values` / `Expected List[...]` | La operación no sirve para el tipo de esa columna, por ejemplo el promedio de una columna de texto. |
+
+!!! note
+    Muchos mensajes de PARDOS empiezan con el nombre de tu variable o con `pardos:` repetido, por ejemplo `pardos: pardos: concat: Columns do not match`. Lee la parte final: ahí está la explicación.
+
+## ¿Qué aprendiste?
+
+- Una tabla tiene filas (las cosas que estudias) y columnas (lo que sabes de ellas).
+- Por dentro es una lista de títulos (`columns`) y una lista de listas (`data`).
+- Para usar PARDOS escribes `import pardos;`, creas una tabla con `pardos.read_csv(...)` y la trabajas con sus métodos: `tabla.head()`, `tabla.query(...)`…
+
+[Empezar: crear y leer tablas :material-arrow-right:](pardos/tables.md){ .md-button .md-button--primary }
+[Siguiente librería: datasets de Kaggle](../bibliotecas/kaggle.md){ .md-button }

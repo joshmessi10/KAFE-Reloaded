@@ -1,0 +1,42 @@
+<svg viewBox="0 0 560 200" role="img" aria-labelledby="ill-nkd-t ill-nkd-d" xmlns="http://www.w3.org/2000/svg">
+<title id="ill-nkd-t">Multiplicar matrices: fila por columna / Matrix multiplication: row times column</title>
+<desc id="ill-nkd-d">Matrix [[1, 2], [3, 4]] times matrix [[5, 6], [7, 8]]. A highlight walks over each row of the first matrix and each column of the second. Each pair is multiplied number by number and added, filling one cell of the result: 1·5 + 2·7 = 19, 1·6 + 2·8 = 22, 3·5 + 4·7 = 43 and 3·6 + 4·8 = 50.</desc>
+<style>
+@keyframes ill-nkd-row { 0%,45% { transform: translateY(0) } 50%,95% { transform: translateY(40px) } 100% { transform: translateY(0) } }
+@keyframes ill-nkd-col { 0%,20% { transform: translateX(0) } 25%,45% { transform: translateX(40px) } 50%,70% { transform: translateX(0) } 75%,95% { transform: translateX(40px) } 100% { transform: translateX(0) } }
+@keyframes ill-nkd-cell { 0%,20% { transform: translate(0, 0) } 25%,45% { transform: translate(40px, 0) } 50%,70% { transform: translate(0, 40px) } 75%,95% { transform: translate(40px, 40px) } 100% { transform: translate(0, 0) } }
+@keyframes ill-nkd-s1 { 0%,4% { opacity: 0 } 10%,95% { opacity: 1 } 100% { opacity: 0 } }
+@keyframes ill-nkd-s2 { 0%,29% { opacity: 0 } 35%,95% { opacity: 1 } 100% { opacity: 0 } }
+@keyframes ill-nkd-s3 { 0%,54% { opacity: 0 } 60%,95% { opacity: 1 } 100% { opacity: 0 } }
+@keyframes ill-nkd-s4 { 0%,79% { opacity: 0 } 85%,95% { opacity: 1 } 100% { opacity: 0 } }
+.ill-nkd-row { animation: ill-nkd-row 12s steps(1, end) infinite; }
+.ill-nkd-col { animation: ill-nkd-col 12s steps(1, end) infinite; }
+.ill-nkd-cell { animation: ill-nkd-cell 12s steps(1, end) infinite; }
+.ill-nkd-s1 { animation: ill-nkd-s1 12s linear infinite; }
+.ill-nkd-s2 { animation: ill-nkd-s2 12s linear infinite; }
+.ill-nkd-s3 { animation: ill-nkd-s3 12s linear infinite; }
+.ill-nkd-s4 { animation: ill-nkd-s4 12s linear infinite; }
+</style>
+<rect class="k-accent ill-nkd-row" x="20" y="40" width="80" height="40" rx="4" opacity="0.35"/>
+<rect class="k-accent ill-nkd-col" x="150" y="40" width="40" height="80" rx="4" opacity="0.35"/>
+<rect class="k-accent ill-nkd-cell" x="280" y="40" width="40" height="40" rx="4" opacity="0.35"/>
+<rect class="k-line" x="20" y="40" width="80" height="80" rx="4"/>
+<path class="k-thin" d="M60 40 V120 M20 80 H100"/>
+<text x="35" y="65">1</text><text x="75" y="65">2</text><text x="35" y="105">3</text><text x="75" y="105">4</text>
+<text class="k-label" x="118" y="86">×</text>
+<rect class="k-line" x="150" y="40" width="80" height="80" rx="4"/>
+<path class="k-thin" d="M190 40 V120 M150 80 H230"/>
+<text x="165" y="65">5</text><text x="205" y="65">6</text><text x="165" y="105">7</text><text x="205" y="105">8</text>
+<text class="k-label" x="248" y="86">=</text>
+<rect class="k-line" x="280" y="40" width="80" height="80" rx="4"/>
+<path class="k-thin" d="M320 40 V120 M280 80 H360"/>
+<text class="ill-nkd-s1" x="290" y="65">19</text>
+<text class="ill-nkd-s2" x="330" y="65">22</text>
+<text class="ill-nkd-s3" x="290" y="105">43</text>
+<text class="ill-nkd-s4" x="330" y="105">50</text>
+<text class="ill-nkd-s1" x="385" y="55">1·5 + 2·7 = 19</text>
+<text class="ill-nkd-s2" x="385" y="85">1·6 + 2·8 = 22</text>
+<text class="ill-nkd-s3" x="385" y="115">3·5 + 4·7 = 43</text>
+<text class="ill-nkd-s4" x="385" y="145">3·6 + 4·8 = 50</text>
+<text x="20" y="160">(2, 2) × (2, 2) → (2, 2)</text>
+</svg>

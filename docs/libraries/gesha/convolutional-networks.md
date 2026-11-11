@@ -9,7 +9,7 @@ KAFE uses **channel-first** image tensors: `[channels][height][width]`. `kaggle.
 
 | Function | Signature | Description |
 |---------|-------|-------------|
-| `gesha.create_conv1d` | `(filters, kernel_size, activation, input_shape, stride, padding, seed) -> GESHA` | 1-D convolution for `[timesteps, features]` inputs |
+| `gesha.create_conv1d` | `(filters, kernel_size, activation, input_shape, stride, padding, seed) -> GESHA` | 1-D convolution for **`[channels, length]`** inputs |
 | `gesha.create_conv2d` | `(filters, kernel_size, activation, input_shape, stride, padding, seed, kernel_initializer, kernel_regularizer) -> GESHA` | 2-D convolution for `[channels, height, width]` inputs |
 | `gesha.create_conv2d_transpose` | `(filters, kernel_size, activation, input_shape, stride, padding, seed) -> GESHA` | Transposed 2-D convolution (upsampling) |
 | `gesha.create_depthwise_conv2d` | `(kernel_size, depth_multiplier, activation, input_shape, stride, padding, seed) -> GESHA` | Depthwise 2-D convolution |
@@ -44,9 +44,25 @@ For an input with height `H`, kernel height `K`, padding `P`, and stride `S`, th
 
 The parameter count is `filters × input_channels × kernel_height × kernel_width` plus biases. The same kernel weights are reused at every spatial location. In contrast, flattening the image first and using a dense layer would connect every pixel to every output unit.
 
+Conv2D, DepthwiseConv2D and Conv2DTranspose require `kernel_size` to contain exactly two positive **INTs**; a float shape such as `[3.0, 3.0]` is rejected by their constructors even though the wrapper's broad vector type accepts numeric lists. Conv2D and DepthwiseConv2D additionally require both kernel dimensions to be odd with `"same"` padding. Conv1D likewise requires an odd kernel with `"same"`. Filters, depth multipliers, strides and pooling dimensions are positive integer choices; use nonnegative integer padding and positive integer upsampling factors.
+
 ## Spatial dropout
 
-`gesha.spatial_dropout2d(rate=0.5, seed=None)` drops entire feature maps during training instead of individual scalar activations. This can discourage a CNN from relying too heavily on one channel. A high rate can underfit a small dataset; compare training and validation behavior. Prediction uses the complete network.
+`gesha.spatial_dropout2d(0.5, 42)` drops entire feature maps during training instead of individual scalar activations. These are positional KAFE arguments: rate, then seed. Omitting them uses rate `0.5` and an unseeded generator; `None` is not a KAFE literal. A high rate can underfit a small dataset; compare training and validation behavior. Prediction uses the complete network.
+
+## Conv1D and recurrent layouts differ
+
+Conv1D and MaxPooling1D use `[channels][length]`. RNN/LSTM/GRU use `[timesteps][features]`. For example, a single-channel three-position signal is `[[1.0, 2.0, 3.0]]` for Conv1D. Do not pass that layout directly to an RNN without arranging the axes to match the recurrent feature count. `permute_layer([1, 0])` changes the two-dimensional axis order; `reshape_layer` merely changes shape while preserving element order.
+
+## Normalization and weight files
+
+The implemented `batch_normalization` accepts one **CHW** sample and normalizes each channel over its spatial positions. It is not generic normalization of a dense vector or a statistic computed across the fit minibatch. Training updates running mean/variance; prediction uses that running state. `save_weights` saves trainable gamma/beta parameters but omits running mean/variance, so loading weights alone does not reproduce the complete normalization state.
+
+## A one-image prediction is still a batch
+
+`model.predict([image])` wraps one `[C,H,W]` image in a batch. Calling `model.predict(image)` treats the channel lists as separate samples and does not perform architecture-aware single-image detection. The same outer-batch rule applies to recurrent and token-sequence models.
+
+The bounded `tests/TutorLibraries/gesha-cnn.kf` fixture exercises all convolution/pooling/spatial factories, checks dimensions and predicts one batched image without downloading data or performing long training. Shape evidence establishes these examples' behavior, not the accuracy of arbitrary image models.
 
 ## Choosing layers
 

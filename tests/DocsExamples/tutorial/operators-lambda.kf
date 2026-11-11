@@ -1,0 +1,8 @@
+FUNC(INT)=>INT square = (y: INT) => y * y;
+show(square(4));
+
+drip apply(f: FUNC(INT) => INT, n: INT) => INT:
+    return f(n);
+;
+
+show(apply((y: INT) => y * y, 4));

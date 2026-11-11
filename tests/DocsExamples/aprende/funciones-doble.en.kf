@@ -1,0 +1,6 @@
+drip double(n: INT) => INT:
+    return n * 2;
+;
+
+show(double(4));
+show(double(21));

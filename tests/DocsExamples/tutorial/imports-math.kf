@@ -1,0 +1,3 @@
+import math;
+show(math.sqrt(16));
+show(math.pi);

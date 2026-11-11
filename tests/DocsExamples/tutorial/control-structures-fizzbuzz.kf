@@ -1,0 +1,11 @@
+for (i in range(1, 16)):
+    if (i % 15 == 0):
+        show("FizzBuzz");
+    elif (i % 3 == 0):
+        show("Fizz");
+    elif (i % 5 == 0):
+        show("Buzz");
+    else:
+        show(i);
+    ;
+;

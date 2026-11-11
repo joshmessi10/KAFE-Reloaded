@@ -1,0 +1,10 @@
+import plot;
+import files;
+
+plot.figure();
+plot.pointSize(8);
+plot.graph([1, 2, 3, 4], [1, 4, 9, 16], "point");
+plot.render();
+
+-- clean up
+files.delete("point-size.svg");

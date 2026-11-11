@@ -1,0 +1,5 @@
+import plot;
+
+plot.figure();
+plot.title("empty");
+plot.render();

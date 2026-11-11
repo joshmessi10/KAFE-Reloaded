@@ -1,0 +1,21 @@
+<svg viewBox="0 0 620 250" role="img" aria-labelledby="ill-her-t ill-her-d" xmlns="http://www.w3.org/2000/svg">
+<title id="ill-her-t">Cómo calcula KAFE la raíz cuadrada de 25 / How KAFE computes the square root of 25</title>
+<desc id="ill-her-d">A 25 by 1 rectangle of area 25 is reshaped step by step: the new width is the average of the old width and height. After a few steps it becomes a 5 by 5 square, so the square root of 25 is 5.</desc>
+<style>
+@keyframes ill-her-0 { 0%,0.0% { opacity: 0 } 2.0%,15.7% { opacity: 1 } 16.7%,100% { opacity: 0 } }
+.ill-her-0 { animation: ill-her-0 10s linear infinite; }
+@keyframes ill-her-1 { 0%,16.6% { opacity: 0 } 18.7%,32.3% { opacity: 1 } 33.3%,100% { opacity: 0 } }
+.ill-her-1 { animation: ill-her-1 10s linear infinite; }
+@keyframes ill-her-2 { 0%,33.2% { opacity: 0 } 35.3%,49.0% { opacity: 1 } 50.0%,100% { opacity: 0 } }
+.ill-her-2 { animation: ill-her-2 10s linear infinite; }
+@keyframes ill-her-3 { 0%,49.9% { opacity: 0 } 52.0%,65.7% { opacity: 1 } 66.7%,100% { opacity: 0 } }
+.ill-her-3 { animation: ill-her-3 10s linear infinite; }
+@keyframes ill-her-4 { 0%,66.6% { opacity: 0 } 68.7%,82.3% { opacity: 1 } 83.3%,100% { opacity: 0 } }
+.ill-her-4 { animation: ill-her-4 10s linear infinite; }
+@keyframes ill-her-5 { 0%,83.2% { opacity: 0 } 85.3%,99.0% { opacity: 1 } 100.0%,100% { opacity: 1 } }
+.ill-her-5 { animation: ill-her-5 10s linear infinite; }
+</style>
+<text x="400" y="70">area = 25</text>
+<text x="400" y="160" font-size="12">(guess + 25 / guess) / 2</text>
+<g class="ill-her-0" opacity="0"><rect class="k-accent" x="30" y="202.0" width="325.0" height="13.0" opacity="0.35"/><rect class="k-line" x="30" y="202.0" width="325.0" height="13.0"/><text x="178.5" y="235">25</text><text x="361.0" y="212.5">1</text><text class="k-label" x="400" y="120" font-size="17">guess = 25</text></g><g class="ill-her-1" opacity="0"><rect class="k-accent" x="30" y="190.0" width="169.0" height="25.0" opacity="0.35"/><rect class="k-line" x="30" y="190.0" width="169.0" height="25.0"/><text x="100.5" y="235">13</text><text x="205.0" y="206.5">1.923</text><text class="k-label" x="400" y="120" font-size="17">guess = 13</text></g><g class="ill-her-2" opacity="0"><rect class="k-accent" x="30" y="171.4" width="97.0" height="43.6" opacity="0.35"/><rect class="k-line" x="30" y="171.4" width="97.0" height="43.6"/><text x="64.5" y="235">7.462</text><text x="133.0" y="197.2">3.351</text><text class="k-label" x="400" y="120" font-size="17">guess = 7.4615</text></g><g class="ill-her-3" opacity="0"><rect class="k-accent" x="30" y="154.9" width="70.3" height="60.1" opacity="0.35"/><rect class="k-line" x="30" y="154.9" width="70.3" height="60.1"/><text x="51.1" y="235">5.406</text><text x="106.3" y="188.9">4.624</text><text class="k-label" x="400" y="120" font-size="17">guess = 5.406</text></g><g class="ill-her-4" opacity="0"><rect class="k-accent" x="30" y="150.2" width="65.2" height="64.8" opacity="0.35"/><rect class="k-line" x="30" y="150.2" width="65.2" height="64.8"/><text x="48.6" y="235">5.015</text><text x="101.2" y="186.6">4.985</text><text class="k-label" x="400" y="120" font-size="17">guess = 5.0152</text></g><g class="ill-her-5" opacity="1"><rect class="k-accent" x="30" y="150.0" width="65.0" height="65.0" opacity="0.35"/><rect class="k-line" x="30" y="150.0" width="65.0" height="65.0"/><text x="48.5" y="235">5</text><text x="101.0" y="186.5">5</text><text class="k-label" x="400" y="120" font-size="17">guess = 5</text></g>
+</svg>

@@ -1,0 +1,2 @@
+"cols: ['name', 'age', 'score', 'city', 'club'], rows: [['Ana', 10, 8.5, 'Lima', 'chess'], ['Sofia', 10, 9.5, 'Lima', 'music'], ['Elena', 11, 9.0, 'Quito', 'chess']]"
+"cols: ['name', 'age', 'score', 'city', 'club'], rows: [['Ana', 10, 8.5, 'Lima', 'chess'], ['Luis', 11, 7.0, 'Quito', None], ['Sofia', 10, 9.5, 'Lima', 'music'], ['Mateo', 12, 6.5, 'Cusco', None], ['Elena', 11, 9.0, 'Quito', 'chess']]"

@@ -1,0 +1,4 @@
+STR text = pour("How old are you? ");
+INT age = int(text);
+show("Next year you will be:");
+show(age + 1);

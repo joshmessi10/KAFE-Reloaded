@@ -1,0 +1,5 @@
+import pardos;
+
+PARDOS measures = pardos.DataFrame(["a", "b"], [[1.23456, 2.0], [2.5, 3.14159]]);
+show(measures.round());
+show(measures.round(1));

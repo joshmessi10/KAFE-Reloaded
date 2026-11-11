@@ -1,0 +1,995 @@
+const assert = require('node:assert/strict');
+const { createHash } = require('node:crypto');
+const { gzipSync } = require('node:zlib');
+const path = require('node:path');
+const test = require('node:test');
+
+const manifestTemplate = require('../../src/runtimeManifest.json');
+const { createRuntimeManager, getRuntimeTarget, isContainedFileLink, runtimeSetupUserMessage, validateAssetUrl } = require('../../src/runtimeManager');
+
+const STORAGE = 'C:/extension-storage';
+const runtimeEntries = {
+  'pyproject.toml': '[project]\nrequires-python = ">=3.11"\ndependencies = ["antlr4-python3-runtime==4.13.2"]\n',
+  'uv.lock': 'version = 1\n',
+  'src/Kafe.py': 'print("KAFE")\n',
+  'src/Kafe_GrammarLexer.py': '# generated\n',
+  'src/Kafe_GrammarParser.py': '# generated\n',
+  'src/Kafe_GrammarVisitor.py': '# generated\n',
+  'knowledge-pack/grammar/Kafe_Grammar.g4': 'grammar Kafe;\n',
+  'knowledge-pack/grammar/Kafe_Lexer.g4': 'lexer grammar Kafe_Lexer;\n',
+  'knowledge-pack/getting-started/index.md': 'Start here.\n',
+  'knowledge-pack/language/index.md': 'Language.\n',
+  'knowledge-pack/libraries/index.md': 'Libraries.\n',
+  'knowledge-pack/specification/index.md': 'Specification.\n',
+  'knowledge-pack/errors/index.md': 'Errors.\n',
+  'knowledge-pack/examples/index.md': 'Examples.\n',
+};
+
+function crc32(buffer) {
+  let crc = 0xffffffff;
+  for (const byte of buffer) {
+    crc ^= byte;
+    for (let bit = 0; bit < 8; bit++) crc = (crc >>> 1) ^ ((crc & 1) ? 0xedb88320 : 0);
+  }
+  return (crc ^ 0xffffffff) >>> 0;
+}
+
+function makeZip(entries) {
+  const localParts = [];
+  const centralParts = [];
+  let offset = 0;
+  const members = Array.isArray(entries) ? entries : Object.entries(entries).map(([name, contents]) => ({ name, contents }));
+  for (const member of members) {
+    const name = Buffer.from(member.name, 'utf8');
+    const contents = Buffer.from(member.contents ?? '');
+    const checksum = crc32(contents);
+    const external = member.symlink ? (0o120777 << 16) : (member.directory ? (0o040755 << 16) : (0o100644 << 16));
+    const local = Buffer.alloc(30);
+    local.writeUInt32LE(0x04034b50, 0);
+    local.writeUInt16LE(20, 4);
+    local.writeUInt16LE(0x0800, 6);
+    local.writeUInt32LE(checksum, 14);
+    local.writeUInt32LE(contents.length, 18);
+    local.writeUInt32LE(contents.length, 22);
+    local.writeUInt16LE(name.length, 26);
+    localParts.push(local, name, contents);
+
+    const central = Buffer.alloc(46);
+    central.writeUInt32LE(0x02014b50, 0);
+    central.writeUInt16LE((3 << 8) | 20, 4);
+    central.writeUInt16LE(20, 6);
+    central.writeUInt16LE(0x0800, 8);
+    central.writeUInt32LE(checksum, 16);
+    central.writeUInt32LE(contents.length, 20);
+    central.writeUInt32LE(contents.length, 24);
+    central.writeUInt16LE(name.length, 28);
+    central.writeUInt32LE(external >>> 0, 38);
+    central.writeUInt32LE(offset, 42);
+    centralParts.push(central, name);
+    offset += local.length + name.length + contents.length;
+  }
+  const centralDirectory = Buffer.concat(centralParts);
+  const end = Buffer.alloc(22);
+  end.writeUInt32LE(0x06054b50, 0);
+  end.writeUInt16LE(members.length, 8);
+  end.writeUInt16LE(members.length, 10);
+  end.writeUInt32LE(centralDirectory.length, 12);
+  end.writeUInt32LE(offset, 16);
+  return Buffer.concat([...localParts, centralDirectory, end]);
+}
+
+function makeTarGz(entries) {
+  const blocks = [];
+  for (const member of entries) {
+    const contents = Buffer.from(member.contents ?? '');
+    const header = Buffer.alloc(512);
+    const writeText = (value, start, length) => header.write(value, start, Math.min(Buffer.byteLength(value), length), 'utf8');
+    const writeOctal = (value, start, length) => header.write(value.toString(8).padStart(length - 1, '0') + '\0', start, length, 'ascii');
+    writeText(member.name, 0, 100);
+    writeOctal(0o644, 100, 8);
+    writeOctal(0, 108, 8);
+    writeOctal(0, 116, 8);
+    writeOctal(contents.length, 124, 12);
+    writeOctal(0, 136, 12);
+    header.fill(0x20, 148, 156);
+    header[156] = member.directory ? 0x35 : (member.typeFlag?.charCodeAt(0) ?? 0x30);
+    writeText('ustar\0', 257, 6);
+    writeText('00', 263, 2);
+    const checksum = header.reduce((sum, byte) => sum + byte, 0);
+    writeOctal(checksum, 148, 8);
+    blocks.push(header);
+    if (contents.length) {
+      const padded = Buffer.alloc(Math.ceil(contents.length / 512) * 512);
+      contents.copy(padded);
+      blocks.push(padded);
+    }
+  }
+  blocks.push(Buffer.alloc(1024));
+  return gzipSync(Buffer.concat(blocks));
+}
+
+class MemoryFileSystem {
+  constructor() {
+    this.directories = new Set([this.key(STORAGE), this.key(path.parse(STORAGE).root)]);
+    this.files = new Map();
+    this.displayPaths = new Map([
+      [this.key(STORAGE), path.resolve(STORAGE)],
+      [this.key(path.parse(STORAGE).root), path.resolve(path.parse(STORAGE).root)],
+    ]);
+  }
+
+  key(value) { return path.resolve(value).toLowerCase(); }
+  async mkdir(value, options = {}) {
+    const target = this.key(value);
+    if (this.directories.has(target)) return;
+    const parent = this.key(path.dirname(value));
+    if (!this.directories.has(parent)) {
+      if (!options.recursive) throw Object.assign(new Error('ENOENT'), { code: 'ENOENT' });
+      await this.mkdir(path.dirname(value), options);
+    }
+    this.directories.add(target);
+    this.displayPaths.set(target, path.resolve(value));
+  }
+  async writeFile(value, contents) {
+    const target = this.key(value);
+    if (!this.directories.has(this.key(path.dirname(value)))) throw Object.assign(new Error('ENOENT'), { code: 'ENOENT' });
+    this.files.set(target, Buffer.isBuffer(contents) ? Buffer.from(contents) : Buffer.from(contents));
+    if (!this.displayPaths.has(target)) this.displayPaths.set(target, path.resolve(value));
+  }
+  async readFile(value, encoding) {
+    const contents = this.files.get(this.key(value));
+    if (!contents) throw Object.assign(new Error('ENOENT'), { code: 'ENOENT' });
+    return encoding ? contents.toString(encoding) : Buffer.from(contents);
+  }
+  async access(value) {
+    const target = this.key(value);
+    if (!this.directories.has(target) && !this.files.has(target)) throw Object.assign(new Error('ENOENT'), { code: 'ENOENT' });
+  }
+  async stat(value) {
+    const target = this.key(value);
+    if (this.directories.has(target)) return { isDirectory: () => true, isFile: () => false, isSymbolicLink: () => false };
+    if (this.files.has(target)) return { isDirectory: () => false, isFile: () => true, isSymbolicLink: () => false, size: this.files.get(target).length };
+    throw Object.assign(new Error('ENOENT'), { code: 'ENOENT' });
+  }
+  async lstat(value) { return this.stat(value); }
+  async readdir(value) {
+    const parent = this.key(value);
+    if (!this.directories.has(parent)) throw Object.assign(new Error('ENOENT'), { code: 'ENOENT' });
+    const parentPath = this.displayPaths.get(parent) ?? path.resolve(value);
+    const children = new Set();
+    for (const candidate of [...this.directories, ...this.files.keys()]) {
+      const candidatePath = this.displayPaths.get(candidate) ?? candidate;
+      const relative = path.relative(parentPath, candidatePath);
+      if (!relative || relative.startsWith('..') || path.isAbsolute(relative)) continue;
+      children.add(relative.split(path.sep)[0]);
+    }
+    return [...children];
+  }
+  async rename(from, to) {
+    const source = this.key(from);
+    const target = this.key(to);
+    if (this.directories.has(target) || this.files.has(target)) throw Object.assign(new Error('EEXIST'), { code: 'EEXIST' });
+    await this.mkdir(path.dirname(to), { recursive: true });
+    const startsWith = candidate => candidate === source || candidate.startsWith(`${source}${path.sep}`);
+    const sourceDisplay = this.displayPaths.get(source) ?? path.resolve(from);
+    const targetDisplay = path.resolve(to);
+    for (const item of [...this.directories]) if (startsWith(item)) {
+      const oldDisplay = this.displayPaths.get(item) ?? item;
+      const relative = path.relative(sourceDisplay, oldDisplay);
+      this.directories.delete(item);
+      const renamed = `${target}${item.slice(source.length)}`;
+      this.directories.add(renamed);
+      this.displayPaths.delete(item);
+      this.displayPaths.set(renamed, relative ? path.join(targetDisplay, relative) : targetDisplay);
+    }
+    for (const [item, contents] of [...this.files]) if (startsWith(item)) {
+      const oldDisplay = this.displayPaths.get(item) ?? item;
+      const relative = path.relative(sourceDisplay, oldDisplay);
+      this.files.delete(item);
+      const renamed = `${target}${item.slice(source.length)}`;
+      this.files.set(renamed, contents);
+      this.displayPaths.delete(item);
+      this.displayPaths.set(renamed, path.join(targetDisplay, relative));
+    }
+  }
+  async rm(value, options = {}) {
+    const target = this.key(value);
+    const startsWith = candidate => candidate === target || candidate.startsWith(`${target}${path.sep}`);
+    const children = [...this.directories, ...this.files.keys()].filter(startsWith);
+    if (!children.length && !options.force) throw Object.assign(new Error('ENOENT'), { code: 'ENOENT' });
+    if (!options.recursive && children.length > 1) throw Object.assign(new Error('ENOTEMPTY'), { code: 'ENOTEMPTY' });
+    for (const item of children) { this.directories.delete(item); this.files.delete(item); this.displayPaths.delete(item); }
+  }
+  has(value) { return this.directories.has(this.key(value)) || this.files.has(this.key(value)); }
+}
+
+function digest(buffer) { return createHash('sha256').update(buffer).digest('hex'); }
+
+function makeFixture({ runtimeBytes = makeZip(runtimeEntries), uvBytes = makeZip({
+  // Real uv Windows zips are flat: uv.exe, uvw.exe and uvx.exe at the archive root.
+  'uv.exe': 'uv 0.11.3 test binary',
+}), published = true, runtimeOverrides = {}, transport = undefined, processRunner = undefined, confirmDownload = undefined } = {}) {
+  const manifest = structuredClone(manifestTemplate);
+  manifest.runtime.releasePublished = published;
+  manifest.runtime.archiveSha256 = digest(runtimeBytes);
+  manifest.uv.targets['win32-x64'].sha256 = digest(uvBytes);
+  Object.assign(manifest.runtime, runtimeOverrides);
+  const remoteManifest = {
+    runtime_version: manifest.runtime.version,
+    knowledge_pack_version: manifest.runtime.knowledgePackVersion,
+    python_requirement: manifest.runtime.pythonRequirement,
+    antlr_runtime_version: manifest.runtime.antlrRuntimeVersion,
+    source_revision: manifest.runtime.sourceRevision,
+    archive_sha256: manifest.runtime.archiveSha256,
+  };
+  const fs = new MemoryFileSystem();
+  const requests = [];
+  const processCalls = [];
+  const request = transport ?? (async (url) => {
+    requests.push(url);
+    if (url === manifest.runtime.manifestUrl) return { statusCode: 200, body: Buffer.from(JSON.stringify(remoteManifest)) };
+    if (url === manifest.runtime.archiveUrl) return { statusCode: 200, body: runtimeBytes };
+    if (url.includes('/uv/releases/download/')) return { statusCode: 200, body: uvBytes };
+    throw new Error(`Unexpected test transport URL: ${url}`);
+  });
+  const run = processRunner ?? (async (executable, args, options) => {
+    processCalls.push({ executable, args, options });
+    if (['python', 'python.exe'].includes(path.basename(executable).toLowerCase()) && args[0] === '--version') {
+      return { exitCode: 0, stdout: `Python ${manifest.runtime.pythonVersion}\n`, stderr: '' };
+    }
+    if (args[0] === '--version') return { exitCode: 0, stdout: 'uv 0.11.3\n', stderr: '' };
+    if (args[0] === 'sync') {
+      for (const executablePath of [
+        path.join(options.env.UV_PROJECT_ENVIRONMENT, 'Scripts', 'python.exe'),
+        path.join(options.env.UV_PROJECT_ENVIRONMENT, 'bin', 'python'),
+      ]) {
+        await fs.mkdir(path.dirname(executablePath), { recursive: true });
+        await fs.writeFile(executablePath, 'managed python');
+      }
+    }
+    return { exitCode: 0, stdout: '', stderr: '' };
+  });
+  const manager = createRuntimeManager({
+    storageRoot: STORAGE, fileSystem: fs, manifest, platform: 'win32', arch: 'x64', transport: request,
+    processRunner: run, confirmDownload: confirmDownload ?? (async () => true),
+  });
+  return { manager, fs, manifest, requests, processCalls, runtimeBytes, uvBytes, remoteManifest };
+}
+
+for (const mutation of ['same-size-pack', 'same-size-archive', 'sidecar-deleted', 'extra-file', 'configuration']) test(`managed knowledge authority rechecks actual current ${mutation} after readiness`, async () => {
+  const nativeFs = require('node:fs'), promises = require('node:fs/promises'), os = require('node:os');
+  const storageRoot = nativeFs.mkdtempSync(path.join(os.tmpdir(), 'kafe-authority-managed-')), f = makeFixture();
+  try {
+    const runtimeRoot = path.join(storageRoot, 'kafe-runtime', `runtime-${f.manifest.runtime.version}`), artifactRoot = path.join(storageRoot, 'kafe-runtime/artifacts', f.manifest.runtime.version);
+    for (const [name, text] of Object.entries(runtimeEntries)) { const filename = path.join(runtimeRoot, name); nativeFs.mkdirSync(path.dirname(filename), { recursive: true }); nativeFs.writeFileSync(filename, text); }
+    nativeFs.mkdirSync(artifactRoot, { recursive: true });
+    const archive = path.join(artifactRoot, `kafe-runtime-${f.manifest.runtime.version}.zip`), sidecar = path.join(artifactRoot, `kafe-runtime-${f.manifest.runtime.version}.manifest.json`);
+    nativeFs.writeFileSync(archive, f.runtimeBytes); nativeFs.writeFileSync(sidecar, JSON.stringify(f.remoteManifest));
+    const manager = createRuntimeManager({ storageRoot, fileSystem: promises, manifest: f.manifest, transport: async () => { throw Error('No network'); }, processRunner: async () => { throw Error('No execution'); } });
+    const ready = await manager.getReadyKnowledgePack(); assert.equal(ready.status, 'ready');
+    const start = performance.now(); assert.equal(ready.authority?.isCurrent(), true); const milliseconds = performance.now() - start;
+    if (mutation === 'same-size-pack') { const member = path.join(ready.knowledgeRoot, 'language/index.md'); const before = nativeFs.statSync(member); nativeFs.writeFileSync(member, 'language.\n'); nativeFs.utimesSync(member, before.atime, before.mtime); }
+    if (mutation === 'same-size-archive') { const before = nativeFs.statSync(archive), bytes = Buffer.from(f.runtimeBytes); bytes[0] ^= 1; nativeFs.writeFileSync(archive, bytes); nativeFs.utimesSync(archive, before.atime, before.mtime); }
+    if (mutation === 'sidecar-deleted') nativeFs.unlinkSync(sidecar);
+    if (mutation === 'extra-file') nativeFs.writeFileSync(path.join(ready.knowledgeRoot, 'extra.md'), 'new knowledge');
+    if (mutation === 'configuration') manager.manifest = { ...f.manifest, runtime: { ...f.manifest.runtime, sourceRevision: 'b'.repeat(40) } };
+    assert.equal(ready.authority.isCurrent(), false);
+    assert.deepEqual(f.requests, []); assert.deepEqual(f.processCalls, []);
+    if (mutation === 'same-size-pack' && process.env.KAFE_RUNTIME_FIXTURE_METRICS === '1') console.log(JSON.stringify({ authorityValidation: 'owned managed fixture', archiveBytes: f.runtimeBytes.length, files: ready.expectedFileCount, milliseconds }));
+  } finally { nativeFs.rmSync(storageRoot, { recursive: true, force: true }); }
+});
+
+for (const mutation of ['unchanged', 'extra-empty', 'missing-declared-empty', 'nested-empty']) test(`managed knowledge receipt and native Review preserve exact archive inventory with ${mutation}`, async () => {
+  const nativeFs = require('node:fs'), promises = require('node:fs/promises'), os = require('node:os');
+  const { CodeProposalProvider } = require('../../src/tutor/CodeProposalProvider');
+  const members = Object.entries(runtimeEntries).map(([name, contents]) => ({ name, contents }));
+  members.push({ name: 'knowledge-pack/declared/empty/', directory: true });
+  const f = makeFixture({ runtimeBytes: makeZip(members) });
+  const storageRoot = nativeFs.mkdtempSync(path.join(os.tmpdir(), 'kafe-inventory-managed-'));
+  try {
+    const runtimeRoot = path.join(storageRoot, 'kafe-runtime', `runtime-${f.manifest.runtime.version}`), artifactRoot = path.join(storageRoot, 'kafe-runtime/artifacts', f.manifest.runtime.version);
+    for (const [name, text] of Object.entries(runtimeEntries)) { const filename = path.join(runtimeRoot, name); nativeFs.mkdirSync(path.dirname(filename), { recursive: true }); nativeFs.writeFileSync(filename, text); }
+    nativeFs.mkdirSync(path.join(runtimeRoot, 'knowledge-pack/declared/empty'), { recursive: true });
+    nativeFs.mkdirSync(artifactRoot, { recursive: true });
+    nativeFs.writeFileSync(path.join(artifactRoot, `kafe-runtime-${f.manifest.runtime.version}.zip`), f.runtimeBytes);
+    nativeFs.writeFileSync(path.join(artifactRoot, `kafe-runtime-${f.manifest.runtime.version}.manifest.json`), JSON.stringify(f.remoteManifest));
+    const manager = createRuntimeManager({ storageRoot, fileSystem: promises, manifest: f.manifest, transport: async () => { throw Error('No network'); }, processRunner: async () => { throw Error('No execution'); } });
+    const captured = await manager.getReadyKnowledgePack(); assert.equal(captured.status, 'ready'); assert.equal(captured.authority.isCurrent(), true);
+    const uri = { scheme: 'file', toString: () => 'file:///owned/main.kf' }; let revoked = 0;
+    const provider = new CodeProposalProvider({ vscode: { Uri: { parse: text => ({ toString: () => text }) }, commands: { executeCommand: async () => {
+      if (mutation === 'extra-empty') nativeFs.mkdirSync(path.join(captured.knowledgeRoot, 'extra-empty'));
+      if (mutation === 'missing-declared-empty') nativeFs.rmdirSync(path.join(captured.knowledgeRoot, 'declared/empty'));
+      if (mutation === 'nested-empty') nativeFs.mkdirSync(path.join(captured.knowledgeRoot, 'language/nested/empty'), { recursive: true });
+    } } } });
+    provider.validateAuthority = async () => () => captured.authority.isCurrent();
+    provider.onAuthorityRevoked = () => { revoked++; };
+    const { id } = provider.stage({ uri, documentVersion: 1, contentSha256: digest(Buffer.from('print(1)')), newText: 'print(2)', preparation: { grantId: 'owned' } });
+    const review = await provider.open(id);
+    const fresh = await manager.getReadyKnowledgePack();
+    if (mutation === 'unchanged') { assert.equal(fresh.status, 'ready'); assert.equal(captured.authority.isCurrent(), true); assert.equal(review.status, 'opened'); assert.equal(provider.pending.reviewed, true); assert.equal(revoked, 0); }
+    else { assert.deepEqual(fresh, { status: 'unavailable', code: 'knowledge_integrity_failed' }); assert.equal(captured.authority.isCurrent(), false); assert.equal(review.status, 'stale'); assert.equal(provider.pending, null); assert.equal(revoked, 1); }
+    assert.deepEqual(f.requests, []); assert.deepEqual(f.processCalls, []);
+  } finally { nativeFs.rmSync(storageRoot, { recursive: true, force: true }); }
+});
+
+test('maps only the four pinned uv platforms and rejects unsupported targets', () => {
+  assert.equal(getRuntimeTarget('win32', 'x64').asset, 'uv-x86_64-pc-windows-msvc.zip');
+  assert.equal(getRuntimeTarget('darwin', 'x64').asset, 'uv-x86_64-apple-darwin.tar.gz');
+  assert.equal(getRuntimeTarget('darwin', 'arm64').asset, 'uv-aarch64-apple-darwin.tar.gz');
+  assert.equal(getRuntimeTarget('linux', 'x64').asset, 'uv-x86_64-unknown-linux-gnu.tar.gz');
+  assert.throws(() => getRuntimeTarget('win32', 'arm64'), /does not support/i);
+  assert.throws(() => getRuntimeTarget('linux', 'arm64'), /does not support/i);
+  assert.throws(() => getRuntimeTarget('freebsd', 'x64'), /does not support/i);
+});
+
+test('runtime manifest pins the published KAFE assets and official uv 0.11.3 checksums', () => {
+  assert.equal(manifestTemplate.runtime.releasePublished, false);
+  assert.equal(manifestTemplate.runtime.pythonVersion, '3.11.15');
+  assert.equal(manifestTemplate.runtime.archiveUrl, 'https://github.com/joshmessi10/KAFE-Reloaded/releases/download/kafe-runtime-v0.5.0/kafe-runtime-0.5.0.zip');
+  assert.equal(manifestTemplate.runtime.manifestUrl, 'https://github.com/joshmessi10/KAFE-Reloaded/releases/download/kafe-runtime-v0.5.0/kafe-runtime-0.5.0.manifest.json');
+  assert.deepEqual(Object.fromEntries(Object.entries(manifestTemplate.uv.targets).map(([key, value]) => [key, value.sha256])), {
+    'win32-x64': 'ae681c0aaec7cc96af184648cb88d73f8393ed60fa5880abdd6bdb910f9b227c',
+    'darwin-x64': 'b0e05e0b43a000fdc2132ee3f3400ba5dee427bc2337d3ec4eb8cf4f3d5722af',
+    'darwin-arm64': '2bc3d0c7bf2bd08325b1e170abac6f7e5b3346e1d4eab3370d17cefec934996f',
+    'linux-x64': 'c0f3236f146e55472663cfbcc9be3042a9f1092275bbe3fe2a56a6cbfd3da5ce',
+  });
+  for (const target of Object.values(manifestTemplate.uv.targets)) {
+    assert.ok(target.url.startsWith('https://releases.astral.sh/github/uv/releases/download/0.11.3/'));
+    assert.ok(target.checksumUrl.endsWith(`${target.asset}.sha256`));
+  }
+});
+
+test('accepts only HTTPS pinned release URLs and documented GitHub asset redirects', () => {
+  assert.equal(validateAssetUrl('https://github.com/joshmessi10/KAFE-Reloaded/releases/download/kafe-runtime-v0.2.0/kafe-runtime-0.2.0.zip'), true);
+  assert.equal(validateAssetUrl('https://release-assets.githubusercontent.com/asset?sig=test', { redirect: true }), true);
+  assert.throws(() => validateAssetUrl('http://github.com/joshmessi10/KAFE-Reloaded/releases/download/kafe-runtime-v0.2.0/kafe-runtime-0.2.0.zip'), /HTTPS/i);
+  assert.throws(() => validateAssetUrl('https://evil.example/runtime.zip', { redirect: true }), /not allowed/i);
+  assert.throws(() => validateAssetUrl('https://github.com.evil.example/runtime.zip', { redirect: true }), /not allowed/i);
+});
+
+test('setup failures expose actionable categories without returning raw diagnostics to the UI', () => {
+  assert.match(runtimeSetupUserMessage(new Error('getaddrinfo ENOTFOUND pypi.org')), /network|firewall/i);
+  assert.match(runtimeSetupUserMessage(new Error('certificate verify failed')), /certificate/i);
+  assert.match(runtimeSetupUserMessage(new Error('EPERM operation not permitted')), /permissions|security/i);
+  assert.match(runtimeSetupUserMessage(new Error('No space left on device')), /disk space/i);
+  assert.match(runtimeSetupUserMessage(new Error('Managed Python verification failed')), /Python 3\.11\.15/i);
+  assert.doesNotMatch(runtimeSetupUserMessage(new Error('token PRIVATE_PATH')), /PRIVATE_PATH|token/i);
+});
+
+test('unpublished pinned release reports unavailable without prompting or downloading uv', async () => {
+  let prompts = 0;
+  const fixture = makeFixture({ published: false, confirmDownload: async () => { prompts++; return true; } });
+  const result = await fixture.manager.installRuntime();
+  assert.equal(result.status, 'unavailable');
+  assert.match(result.message, /not published/i);
+  assert.equal(prompts, 0);
+  assert.deepEqual(fixture.requests, []);
+  assert.deepEqual(fixture.processCalls, []);
+});
+
+test('bundled runtime installs before its external release and downloads only uv', async () => {
+  const fixture = makeFixture({ published: false });
+  const bundledRoot = 'C:/extension/runtime';
+  await fixture.fs.mkdir(bundledRoot, { recursive: true });
+  await fixture.fs.writeFile(path.join(bundledRoot, 'kafe-runtime-0.5.0.manifest.json'),
+    JSON.stringify(fixture.remoteManifest));
+  await fixture.fs.writeFile(path.join(bundledRoot, 'kafe-runtime-0.5.0.zip'), fixture.runtimeBytes);
+  fixture.manager.bundledRuntimeRoot = bundledRoot;
+
+  const result = await fixture.manager.installRuntime();
+
+  assert.equal(result.status, 'ready', result.message);
+  assert.equal(fixture.requests.length, 1);
+  assert.match(fixture.requests[0], /uv\/releases\/download/);
+});
+
+test('runtime install emits coarse progress stages only and unpublished setup emits no download stage', async () => {
+  const f = makeFixture();
+  const stages = [];
+  assert.equal((await f.manager.installRuntime({ onProgress: e => stages.push(e) })).status, 'ready');
+  assert.deepEqual(stages.map(e => e.stage), ['checking', 'confirming', 'downloading', 'validating', 'extracting', 'syncing', 'verifying', 'ready']);
+  assert.ok(stages.every(e => Object.keys(e).length === 1));
+  const unpublished = makeFixture({ published: false });
+  const unavailableStages = [];
+  await unpublished.manager.installRuntime({ onProgress: e => unavailableStages.push(e.stage) });
+  assert.deepEqual(unavailableStages, ['checking']);
+  assert.deepEqual(unpublished.requests, []);
+});
+
+test('unsupported managed target returns actionable guidance without consent or transport', async () => {
+  const fixture = makeFixture({ published: true });
+  fixture.manager.platform = 'freebsd';
+  const result = await fixture.manager.installRuntime();
+  assert.equal(result.status, 'unsupported');
+  assert.match(result.message, /Windows x64.*macOS.*Linux x64/i);
+  assert.deepEqual(fixture.requests, []);
+});
+
+test('absent and cancelled first-download consent leave storage and transport untouched', async () => {
+  for (const confirmDownload of [undefined, async () => false]) {
+    const fixture = makeFixture({ confirmDownload });
+    if (!confirmDownload) fixture.manager.confirmDownload = undefined;
+    const result = await fixture.manager.installRuntime();
+    assert.equal(result.status, 'cancelled');
+    assert.deepEqual(fixture.requests, []);
+    assert.equal(fixture.fs.files.size, 0);
+  }
+});
+
+test('valid runtime and uv checksums stage, sync with isolated paths, and atomically promote', async () => {
+  const fixture = makeFixture();
+  const result = await fixture.manager.installRuntime();
+  assert.equal(result.status, 'ready', result.message);
+  assert.equal(result.runtimeVersion, '0.5.0');
+  assert.equal(fixture.requests.length, 3);
+  const sync = fixture.processCalls.find(call => call.args[0] === 'sync');
+  assert.ok(sync);
+  assert.deepEqual(sync.args, ['sync', '--locked', '--no-dev', '--inexact',
+    '--python', '3.11.15', '--managed-python', '--project', fixture.manager.paths.stagingRoot],
+  'first setup installs only the KAFE core; data packs are opt-in');
+  assert.equal(sync.options.cwd, fixture.manager.paths.stagingRoot);
+  assert.equal(sync.options.shell, false);
+  assert.equal(sync.options.env.UV_PROJECT_ENVIRONMENT, result.pythonEnvironment);
+  assert.equal(sync.options.env.UV_PYTHON_INSTALL_DIR, result.pythonInstallDir);
+  assert.equal(sync.options.env.UV_CACHE_DIR, result.uvCacheDir);
+  assert.equal(sync.options.env.UV_PYTHON, '3.11.15');
+  assert.equal(sync.options.env.UV_MANAGED_PYTHON, '1');
+  assert.equal(sync.options.env.HF_HOME, result.huggingFaceCacheDir);
+  assert.equal(result.pythonVersion, '3.11.15');
+  const pythonCheck = fixture.processCalls.find(call => path.basename(call.executable).toLowerCase() === 'python.exe');
+  assert.deepEqual(pythonCheck.args, ['--version']);
+  assert.ok(fixture.fs.has(result.runtimeRoot));
+  assert.ok(!fixture.fs.has(fixture.manager.paths.stagingRoot));
+  assert.equal((await fixture.manager.getReadyRuntime()).status, 'ready');
+});
+
+test('cache reuse validates metadata and avoids downloads and sync', async () => {
+  const fixture = makeFixture();
+  const first = await fixture.manager.installRuntime();
+  fixture.requests.length = 0;
+  fixture.processCalls.length = 0;
+  const cached = await fixture.manager.getReadyRuntime();
+  assert.equal(cached.status, 'ready');
+  assert.equal(cached.runtimeRoot, first.runtimeRoot);
+  assert.deepEqual(fixture.requests, []);
+  assert.deepEqual(fixture.processCalls, []);
+});
+
+test('cache reuse rejects a missing managed Python environment', async () => {
+  const fixture = makeFixture();
+  await fixture.manager.installRuntime();
+  await fixture.fs.rm(fixture.manager.paths.pythonExecutable, { force: true });
+  assert.equal((await fixture.manager.getReadyRuntime()).status, 'missing');
+});
+
+test('cache reuse permits only interpreter-generated Python caches and stderr diagnostics', async () => {
+  const fixture = makeFixture();
+  const installed = await fixture.manager.installRuntime();
+  const cache = path.join(installed.runtimeRoot, 'src', '__pycache__');
+  await fixture.fs.mkdir(cache, { recursive: true });
+  await fixture.fs.writeFile(path.join(cache, 'Kafe.cpython-313.pyc'), 'generated bytecode');
+  await fixture.fs.writeFile(path.join(installed.runtimeRoot, 'src', 'stderr.txt'), 'generated diagnostics');
+
+  assert.equal((await fixture.manager.getReadyRuntime()).status, 'ready');
+
+  await fixture.fs.writeFile(path.join(installed.runtimeRoot, 'src', 'unexpected.txt'), 'not allowed');
+  assert.equal((await fixture.manager.getReadyRuntime()).status, 'missing');
+});
+
+test('cache reuse permits KAFE to rewrite a packaged stderr diagnostic', async () => {
+  const fixture = makeFixture({ runtimeBytes: makeZip({ ...runtimeEntries, 'src/stderr.txt': '' }) });
+  const installed = await fixture.manager.installRuntime();
+  await fixture.fs.writeFile(path.join(installed.runtimeRoot, 'src', 'stderr.txt'), 'latest diagnostics');
+
+  assert.equal((await fixture.manager.getReadyRuntime()).status, 'ready');
+});
+
+test('cache reuse rejects a Python-shaped cache outside the runtime source tree', async () => {
+  const fixture = makeFixture();
+  const installed = await fixture.manager.installRuntime();
+  const cache = path.join(installed.runtimeRoot, 'knowledge-pack', '__pycache__');
+  await fixture.fs.mkdir(cache, { recursive: true });
+  await fixture.fs.writeFile(path.join(cache, 'content.cpython-313.pyc'), 'unexpected bytecode');
+
+  assert.equal((await fixture.manager.getReadyRuntime()).status, 'missing');
+});
+
+test('cached knowledge remains usable without uv', async () => {
+  const fixture = makeFixture();
+  await fixture.manager.installRuntime();
+  fixture.requests.length = 0;
+  fixture.processCalls.length = 0;
+  await fixture.fs.rm(fixture.manager.paths.uvRoot, { recursive: true });
+  const knowledge = await fixture.manager.getReadyKnowledgePack();
+  assert.equal(knowledge.status, 'ready');
+  assert.equal(knowledge.knowledgeRoot, path.join(fixture.manager.paths.runtimeRoot, 'knowledge-pack'));
+  assert.equal(knowledge.runtimeVersion, fixture.manifest.runtime.version);
+  assert.equal(knowledge.knowledgePackVersion, fixture.manifest.runtime.knowledgePackVersion);
+  assert.match(knowledge.expectedContentSha256, /^[a-f0-9]{64}$/);
+  assert.equal(knowledge.expectedFileCount, 8);
+  assert.equal((await fixture.manager.getReadyRuntime()).status, 'missing');
+  assert.deepEqual(fixture.requests, []);
+  assert.deepEqual(fixture.processCalls, []);
+});
+
+test('invalid cached pack is not missing-success', async () => {
+  const fixture = makeFixture();
+  await fixture.manager.installRuntime();
+  await fixture.fs.writeFile(path.join(fixture.manager.paths.runtimeRoot, 'knowledge-pack', 'language', 'index.md'), 'tampered');
+  const knowledge = await fixture.manager.getReadyKnowledgePack();
+  assert.deepEqual(knowledge, { status: 'unavailable', code: 'knowledge_integrity_failed' });
+});
+
+test('knowledge paths do not depend on uv target', async () => {
+  const fixture = makeFixture();
+  await fixture.manager.installRuntime();
+  fixture.manager.platform = 'freebsd';
+  fixture.requests.length = 0;
+  fixture.processCalls.length = 0;
+  const knowledge = await fixture.manager.getReadyKnowledgePack();
+  assert.equal(knowledge.status, 'ready');
+  assert.equal(knowledge.knowledgeRoot, path.join(fixture.manager.storageRoot, 'kafe-runtime', 'runtime-0.5.0', 'knowledge-pack'));
+  assert.equal((await fixture.manager.getReadyRuntime()).status, 'unsupported');
+  assert.deepEqual(fixture.requests, []);
+  assert.deepEqual(fixture.processCalls, []);
+});
+
+test('cache reuse rejects an edited extracted KAFE entry against the pinned archive', async () => {
+  const fixture = makeFixture();
+  const installed = await fixture.manager.installRuntime();
+  await fixture.fs.writeFile(path.join(installed.runtimeRoot, 'src', 'Kafe.py'), 'print("edited")\n');
+
+  assert.equal((await fixture.manager.getReadyRuntime()).status, 'missing');
+});
+
+test('cache reuse rejects an edited extracted uv executable against the pinned archive', async () => {
+  const fixture = makeFixture();
+  await fixture.manager.installRuntime();
+  await fixture.fs.writeFile(fixture.manager.paths.uvPath, 'edited uv executable');
+
+  assert.equal((await fixture.manager.getReadyRuntime()).status, 'missing');
+});
+
+test('oversized cached runtime archive is rejected from lstat size before readFile', async () => {
+  const fixture = makeFixture();
+  await fixture.manager.installRuntime();
+  const archivePath = fixture.manager.paths.runtimeArchive;
+  const archiveKey = fixture.fs.key(archivePath);
+  const originalStat = fixture.fs.stat.bind(fixture.fs);
+  const originalReadFile = fixture.fs.readFile.bind(fixture.fs);
+  let archiveReads = 0;
+  fixture.fs.lstat = async filePath => {
+    const info = await originalStat(filePath);
+    if (fixture.fs.key(filePath) === archiveKey) return { ...info, size: 64 * 1024 * 1024 + 1 };
+    return info;
+  };
+  fixture.fs.readFile = async (filePath, encoding) => {
+    if (fixture.fs.key(filePath) === archiveKey) archiveReads++;
+    return originalReadFile(filePath, encoding);
+  };
+
+  const result = await fixture.manager.getReadyRuntime();
+
+  assert.equal(archiveReads, 0, 'oversized cache must be rejected before allocating archive bytes');
+  assert.equal(result.status, 'missing');
+});
+
+test('aborting during runtime sync removes setup artifacts and never marks the runtime ready', async () => {
+  const controller = new AbortController();
+  let fixture;
+  fixture = makeFixture({ processRunner: async (_executable, args, options) => {
+    if (args[0] === '--version') return { exitCode: 0, stdout: 'uv 0.11.3\n', stderr: '' };
+    const paths = fixture.manager.paths;
+    assert.equal(options.signal, controller.signal);
+    assert.ok(fixture.fs.has(paths.runtimeArchive));
+    assert.ok(fixture.fs.has(paths.uvArchive));
+    assert.ok(fixture.fs.has(paths.stagingRoot));
+    assert.ok(fixture.fs.has(paths.uvPath));
+    controller.abort();
+    return { exitCode: 0, stdout: '', stderr: '' };
+  } });
+  const paths = fixture.manager.paths;
+
+  const result = await fixture.manager.installRuntime({ signal: controller.signal });
+
+  assert.equal(result.status, 'cancelled');
+  for (const temporary of [paths.runtimeArchive, paths.runtimeManifest, paths.uvArchive,
+    paths.stagingRoot, paths.uvStageRoot, paths.runtimeRoot, paths.uvRoot,
+    paths.pythonEnvironment]) {
+    assert.equal(fixture.fs.has(temporary), false, `${temporary} should be removed`);
+  }
+  assert.equal(fixture.fs.has(paths.pythonInstallDir), true, 'managed Python downloads are reusable');
+  assert.equal(fixture.fs.has(paths.uvCacheDir), true, 'verified package downloads are reusable');
+  assert.equal((await fixture.manager.getReadyRuntime()).status, 'missing');
+});
+
+test('cache metadata tampering prevents reuse', async () => {
+  const fixture = makeFixture();
+  const installed = await fixture.manager.installRuntime();
+  const markerPath = fixture.manager.paths.readyFile;
+  const marker = JSON.parse(await fixture.fs.readFile(markerPath, 'utf8'));
+  marker.runtimeVersion = '9.9.9';
+  await fixture.fs.writeFile(markerPath, JSON.stringify(marker));
+  assert.equal((await fixture.manager.getReadyRuntime()).status, 'missing');
+  assert.notEqual(installed.runtimeRoot, undefined);
+});
+
+test('rejects mismatched runtime hash before extraction and removes partial artifacts', async () => {
+  const fixture = makeFixture({ runtimeOverrides: { archiveSha256: '0'.repeat(64) } });
+  const result = await fixture.manager.installRuntime();
+  assert.equal(result.status, 'error');
+  assert.match(result.message, /SHA-256/i);
+  assert.equal((await fixture.manager.getReadyRuntime()).status, 'missing');
+  assert.equal(fixture.fs.has(fixture.manager.paths.stagingRoot), false);
+  assert.equal(fixture.fs.files.size, 0);
+});
+
+test('rejects mismatched pinned uv hash and removes runtime downloads', async () => {
+  const fixture = makeFixture();
+  fixture.manifest.uv.targets['win32-x64'].sha256 = '0'.repeat(64);
+  const result = await fixture.manager.installRuntime();
+  assert.equal(result.status, 'error');
+  assert.match(result.message, /uv .*SHA-256/i);
+  assert.equal((await fixture.manager.getReadyRuntime()).status, 'missing');
+  assert.equal(fixture.fs.files.size, 0);
+});
+
+test('rejects wrong runtime and knowledge-pack versions before extraction', async () => {
+  for (const override of [{ runtime_version: '9.9.9' }, { knowledge_pack_version: '9.9.9' }]) {
+    const fixture = makeFixture({ transport: async url => {
+      if (url === fixture.manifest.runtime.manifestUrl) return { statusCode: 200, body: Buffer.from(JSON.stringify({ ...fixture.remoteManifest, ...override })) };
+      return { statusCode: 200, body: url === fixture.manifest.runtime.archiveUrl ? fixture.runtimeBytes : fixture.uvBytes };
+    } });
+    const result = await fixture.manager.installRuntime();
+    assert.equal(result.status, 'error');
+    assert.match(result.message, /version/i);
+    assert.equal(fixture.fs.files.size, 0);
+  }
+});
+
+test('follows only documented HTTPS GitHub release-asset redirects', async () => {
+  const fixture = makeFixture();
+  const redirectUrl = 'https://release-assets.githubusercontent.com/kafe/asset?token=signed';
+  const originalTransport = async url => {
+    if (url === fixture.manifest.runtime.manifestUrl) return { statusCode: 200, body: Buffer.from(JSON.stringify(fixture.remoteManifest)) };
+    if (url === fixture.manifest.runtime.archiveUrl) return { statusCode: 302, headers: { location: redirectUrl } };
+    if (url === redirectUrl) return { statusCode: 200, body: fixture.runtimeBytes };
+    if (url === fixture.manifest.uv.targets['win32-x64'].url) return { statusCode: 200, body: fixture.uvBytes };
+    throw new Error('Unexpected URL');
+  };
+  fixture.manager.transport = originalTransport;
+  const accepted = await fixture.manager.installRuntime();
+  assert.equal(accepted.status, 'ready', accepted.message);
+
+  const foreign = makeFixture({ transport: async url => {
+    if (url === foreign.manifest.runtime.manifestUrl) return { statusCode: 200, body: Buffer.from(JSON.stringify(foreign.remoteManifest)) };
+    if (url === foreign.manifest.runtime.archiveUrl) return { statusCode: 302, headers: { location: 'https://evil.example/payload' } };
+    throw new Error('foreign redirect must be rejected before next request');
+  } });
+  const rejected = await foreign.manager.installRuntime();
+  assert.equal(rejected.status, 'error');
+  assert.match(rejected.message, /redirect|allowed/i);
+});
+
+test('rejects HTTP redirects and interrupted downloads with full cleanup', async () => {
+  for (const failure of [
+    async (url, fixture) => url === fixture.manifest.runtime.archiveUrl ? { statusCode: 302, headers: { location: 'http://release-assets.githubusercontent.com/file' } } : undefined,
+    async (url, fixture) => url === fixture.manifest.runtime.archiveUrl ? Promise.reject(new Error('connection interrupted')) : undefined,
+  ]) {
+    const fixture = makeFixture({ transport: async url => {
+      const value = await failure(url, fixture);
+      if (value) return value;
+      if (url === fixture.manifest.runtime.manifestUrl) return { statusCode: 200, body: Buffer.from(JSON.stringify(fixture.remoteManifest)) };
+      if (url === fixture.manifest.uv.targets['win32-x64'].url) return { statusCode: 200, body: fixture.uvBytes };
+      return { statusCode: 200, body: fixture.runtimeBytes };
+    } });
+    const result = await fixture.manager.installRuntime();
+    assert.equal(result.status, 'error');
+    assert.equal((await fixture.manager.getReadyRuntime()).status, 'missing');
+    assert.equal(fixture.fs.has(fixture.manager.paths.stagingRoot), false);
+    assert.equal(fixture.fs.files.size, 0);
+  }
+});
+
+test('rejects traversal, absolute, symlink, duplicate, colliding, and malformed ZIP members before writing', async () => {
+  const malicious = [
+    [{ name: '../escape', contents: 'bad' }],
+    [{ name: '/absolute', contents: 'bad' }],
+    [{ name: 'link', contents: 'target', symlink: true }],
+    [{ name: 'src/Kafe.py', contents: 'one' }, { name: 'src/Kafe.py', contents: 'two' }],
+    [{ name: 'Data/File.txt', contents: 'one' }, { name: 'data/file.TXT', contents: 'two' }],
+  ];
+  for (const entries of malicious) {
+    const runtimeBytes = makeZip(entries);
+    const fixture = makeFixture({ runtimeBytes });
+    const result = await fixture.manager.installRuntime();
+    assert.equal(result.status, 'error');
+    assert.equal(fixture.fs.files.size, 0);
+    assert.equal((await fixture.manager.getReadyRuntime()).status, 'missing');
+  }
+  const malformed = makeFixture({ runtimeBytes: Buffer.from('not a ZIP archive') });
+  const malformedResult = await malformed.manager.installRuntime();
+  assert.equal(malformedResult.status, 'error');
+  assert.equal(malformed.fs.files.size, 0);
+});
+
+test('rejects traversal, backslash, symlink, hardlink, and special members in tar.gz uv archives', async () => {
+  for (const member of [
+    { name: '../escape', contents: 'bad' },
+    { name: 'uv-x86_64\\escape', contents: 'bad' },
+    { name: 'uv-x86_64-unknown-linux-gnu/uv', contents: 'bad', typeFlag: '2' },
+    { name: 'uv-x86_64-unknown-linux-gnu/uv', contents: 'bad', typeFlag: '1' },
+    { name: 'uv-x86_64-unknown-linux-gnu/uv', contents: 'bad', typeFlag: 'x' },
+  ]) {
+    const uvBytes = makeTarGz([member]);
+    const fixture = makeFixture({ uvBytes });
+    fixture.manager.platform = 'linux';
+    fixture.manifest.uv.targets['linux-x64'].sha256 = digest(uvBytes);
+    fixture.manifest.uv.targets['linux-x64'].url = 'https://releases.astral.sh/github/uv/releases/download/0.11.3/uv-x86_64-unknown-linux-gnu.tar.gz';
+    const result = await fixture.manager.installRuntime();
+    assert.equal(result.status, 'error');
+    assert.match(result.message, /link|special|member|unsafe/i);
+    assert.equal(fixture.fs.files.size, 0);
+  }
+});
+
+test('rejects archive members exceeding the 128 MiB per-file limit in tar.gz uv archives', async () => {
+  const header = Buffer.alloc(512);
+  const writeText = (value, start, length) => header.write(value, start, Math.min(Buffer.byteLength(value), length), 'utf8');
+  const writeOctal = (value, start, length) => header.write(value.toString(8).padStart(length - 1, '0') + '\0', start, length, 'ascii');
+  writeText('uv-x86_64-unknown-linux-gnu/uv', 0, 100);
+  writeOctal(0o755, 100, 8);
+  writeOctal(0, 108, 8);
+  writeOctal(0, 116, 8);
+  writeOctal(128 * 1024 * 1024 + 1, 124, 12);
+  writeOctal(0, 136, 12);
+  header.fill(0x20, 148, 156);
+  header[156] = 0x30;
+  writeText('ustar\0', 257, 6);
+  writeText('00', 263, 2);
+  const checksum = header.reduce((sum, byte) => sum + byte, 0);
+  writeOctal(checksum, 148, 8);
+  const uvBytes = gzipSync(Buffer.concat([header, Buffer.alloc(1024)]));
+  const fixture = makeFixture({ uvBytes });
+  fixture.manager.platform = 'linux';
+  fixture.manifest.uv.targets['linux-x64'].sha256 = digest(uvBytes);
+  fixture.manifest.uv.targets['linux-x64'].url = 'https://releases.astral.sh/github/uv/releases/download/0.11.3/uv-x86_64-unknown-linux-gnu.tar.gz';
+  const result = await fixture.manager.installRuntime();
+  assert.equal(result.status, 'error');
+  assert.match(result.message, /exceeds the 134217728 byte per-file limit/i);
+});
+
+test('removes partial staging, environment, and downloaded artifacts after uv sync failure', async () => {
+  const fixture = makeFixture({ processRunner: async (executable, args, options) => {
+    fixture.processCalls.push({ executable, args, options });
+    if (args[0] === '--version') return { exitCode: 0, stdout: 'uv 0.11.3\n', stderr: '' };
+    return { exitCode: 1, stdout: '', stderr: 'sync failed' };
+  } });
+  const result = await fixture.manager.installRuntime();
+  assert.equal(result.status, 'error');
+  assert.match(result.message, /sync failed/i);
+  assert.equal((await fixture.manager.getReadyRuntime()).status, 'missing');
+  assert.equal(fixture.fs.has(fixture.manager.paths.stagingRoot), false);
+  assert.equal(fixture.fs.files.size, 0);
+});
+
+test('removes partially extracted files after an interrupted extraction', async () => {
+  const fixture = makeFixture();
+  const writeFile = fixture.fs.writeFile.bind(fixture.fs);
+  let wroteProjectFile = false;
+  fixture.fs.writeFile = async (filePath, contents, options) => {
+    if (filePath.endsWith(path.join('src', 'Kafe.py'))) throw new Error('disk full during extraction');
+    await writeFile(filePath, contents, options);
+    if (filePath.endsWith('pyproject.toml')) wroteProjectFile = true;
+  };
+  const result = await fixture.manager.installRuntime();
+  assert.equal(result.status, 'error');
+  assert.match(result.message, /disk full/i);
+  assert.equal(wroteProjectFile, true);
+  assert.equal((await fixture.manager.getReadyRuntime()).status, 'missing');
+  assert.equal(fixture.fs.has(fixture.manager.paths.stagingRoot), false);
+  assert.equal(fixture.fs.files.size, 0);
+});
+
+test('routes contributor workspaces through available uv without learner downloads', async () => {
+  const fixture = makeFixture({ published: false });
+  const contributorRoot = 'C:/KAFE';
+  await fixture.fs.mkdir(contributorRoot, { recursive: true });
+  await fixture.fs.mkdir(path.join(contributorRoot, 'src'), { recursive: true });
+  for (const file of ['pyproject.toml', 'uv.lock', 'src/Kafe.py']) await fixture.fs.writeFile(path.join(contributorRoot, file), 'present');
+  const resolved = await fixture.manager.resolveWorkspace(contributorRoot);
+  assert.equal(resolved.status, 'ready');
+  assert.equal(resolved.runtimeMode, 'contributor');
+  assert.equal(resolved.runtimeRoot, contributorRoot);
+  assert.equal(resolved.uvPath, 'uv');
+  assert.deepEqual(fixture.requests, []);
+  assert.equal(fixture.processCalls[0].args[0], '--version');
+});
+
+test('accepts an available contributor uv independently from the pinned learner uv version', async () => {
+  const fixture = makeFixture({ published: false, processRunner: async () => ({ exitCode: 0, stdout: 'uv 0.9.8 (system install)\n', stderr: '' }) });
+  const contributorRoot = 'C:/KAFE';
+  await fixture.fs.mkdir(contributorRoot, { recursive: true });
+  await fixture.fs.mkdir(path.join(contributorRoot, 'src'), { recursive: true });
+  for (const file of ['pyproject.toml', 'uv.lock', 'src/Kafe.py']) await fixture.fs.writeFile(path.join(contributorRoot, file), 'present');
+  const resolved = await fixture.manager.resolveWorkspace(contributorRoot);
+  assert.equal(resolved.status, 'ready');
+  assert.equal(resolved.runtimeMode, 'contributor');
+  assert.deepEqual(fixture.requests, []);
+});
+
+test('contributor routing remains available when the managed runtime target is unsupported', async () => {
+  const fixture = makeFixture({ published: false });
+  fixture.manager.platform = 'freebsd';
+  const contributorRoot = 'C:/KAFE';
+  await fixture.fs.mkdir(contributorRoot, { recursive: true });
+  await fixture.fs.mkdir(path.join(contributorRoot, 'src'), { recursive: true });
+  for (const file of ['pyproject.toml', 'uv.lock', 'src/Kafe.py']) await fixture.fs.writeFile(path.join(contributorRoot, file), 'present');
+  const resolved = await fixture.manager.resolveWorkspace(contributorRoot);
+  assert.equal(resolved.status, 'ready');
+  assert.equal(resolved.runtimeMode, 'contributor');
+  assert.deepEqual(fixture.requests, []);
+});
+
+test('missing contributor uv gives guidance and leaves the learner runtime untouched', async () => {
+  const fixture = makeFixture({ published: false, processRunner: async () => ({ exitCode: 1, stdout: '', stderr: 'uv not found' }) });
+  const contributorRoot = 'C:/KAFE';
+  await fixture.fs.mkdir(contributorRoot, { recursive: true });
+  await fixture.fs.mkdir(path.join(contributorRoot, 'src'), { recursive: true });
+  for (const file of ['pyproject.toml', 'uv.lock', 'src/Kafe.py']) await fixture.fs.writeFile(path.join(contributorRoot, file), 'present');
+  const resolved = await fixture.manager.resolveWorkspace(contributorRoot);
+  assert.equal(resolved.status, 'unavailable');
+  assert.match(resolved.message, /install uv/i);
+  assert.deepEqual(fixture.requests, []);
+});
+
+test('learner workspaces use only verified managed runtimes and unavailable routes do not launch KAFE', async () => {
+  const unavailable = makeFixture({ published: false });
+  const blocked = await unavailable.manager.resolveWorkspace('C:/learner');
+  assert.equal(blocked.status, 'unavailable');
+  assert.deepEqual(unavailable.requests, []);
+  assert.deepEqual(unavailable.processCalls, []);
+
+  const ready = makeFixture();
+  const installed = await ready.manager.installRuntime();
+  const resolved = await ready.manager.resolveWorkspace('C:/learner');
+  assert.equal(resolved.status, 'ready');
+  assert.equal(resolved.runtimeMode, 'managed');
+  assert.equal(resolved.runtimeRoot, installed.runtimeRoot);
+});
+
+test('extracts pinned tar.gz targets after checksum verification and rejects malformed tar data', async () => {
+  const tar = makeTarGz([{ name: 'uv-x86_64-unknown-linux-gnu/uv', contents: 'test executable' }]);
+  const fixture = makeFixture({ uvBytes: tar });
+  fixture.manager.platform = 'linux';
+  fixture.manager.arch = 'x64';
+  fixture.manifest.uv.targets['linux-x64'].sha256 = digest(tar);
+  fixture.manifest.uv.targets['linux-x64'].url = 'https://releases.astral.sh/github/uv/releases/download/0.11.3/uv-x86_64-unknown-linux-gnu.tar.gz';
+  const result = await fixture.manager.installRuntime();
+  assert.equal(result.status, 'ready', result.message);
+
+  const malformed = makeFixture({ uvBytes: Buffer.from('not a tar.gz') });
+  malformed.manager.platform = 'linux';
+  malformed.manager.arch = 'x64';
+  malformed.manifest.uv.targets['linux-x64'].sha256 = digest(malformed.uvBytes);
+  malformed.manifest.uv.targets['linux-x64'].url = 'https://releases.astral.sh/github/uv/releases/download/0.11.3/uv-x86_64-unknown-linux-gnu.tar.gz';
+  const rejected = await malformed.manager.installRuntime();
+  assert.equal(rejected.status, 'error');
+  assert.equal(malformed.fs.files.size, 0);
+});
+
+test('bundled runtime archive makes setup available before the GitHub release is published', () => {
+  const unpublished = structuredClone(manifestTemplate);
+  unpublished.runtime.releasePublished = false;
+  const bundled = createRuntimeManager({ storageRoot: STORAGE, bundledRuntimeRoot: 'C:/extension/runtime', manifest: unpublished });
+  assert.equal(bundled.isInstallAvailable(), true);
+  const remoteOnly = createRuntimeManager({ storageRoot: STORAGE, manifest: unpublished });
+  assert.equal(remoteOnly.isInstallAvailable(), false);
+  const published = structuredClone(manifestTemplate);
+  published.runtime.releasePublished = true;
+  assert.equal(createRuntimeManager({ storageRoot: STORAGE, manifest: published }).isInstallAvailable(), true);
+});
+
+test('managed python link is accepted only when it resolves to a file inside runtime storage', async () => {
+  const fs = require('node:fs/promises');
+  const os = require('node:os');
+  const base = await fs.mkdtemp(path.join(os.tmpdir(), 'kafe-link-'));
+  try {
+    const root = path.join(base, 'storage'), outside = path.join(base, 'outside');
+    await fs.mkdir(path.join(root, 'python', 'bin'), { recursive: true });
+    await fs.mkdir(path.join(root, 'env', 'bin'), { recursive: true });
+    await fs.mkdir(outside);
+    await fs.writeFile(path.join(root, 'python', 'bin', 'python3.11'), 'interpreter');
+    await fs.writeFile(path.join(outside, 'python'), 'foreign');
+    const link = async (name, target) => { const at = path.join(root, 'env', 'bin', name); await fs.symlink(target, at); return at; };
+    const inside = await link('python', path.join(root, 'python', 'bin', 'python3.11'));
+    const escaping = await link('escape', path.join(outside, 'python'));
+    const directory = await link('dir', path.join(root, 'python', 'bin'));
+    const dangling = await link('dangling', path.join(root, 'missing'));
+    const regular = path.join(root, 'python', 'bin', 'python3.11');
+    assert.equal(await isContainedFileLink(fs, path, inside, root), true);
+    assert.equal(await isContainedFileLink(fs, path, regular, root), false, 'regular files are handled by the strict file check');
+    assert.equal(await isContainedFileLink(fs, path, escaping, root), false);
+    assert.equal(await isContainedFileLink(fs, path, directory, root), false);
+    assert.equal(await isContainedFileLink(fs, path, dangling, root), false);
+    assert.equal(await isContainedFileLink({ lstat: fs.lstat, stat: fs.stat }, path, inside, root), false);
+  } finally {
+    await fs.rm(base, { recursive: true, force: true });
+  }
+});
+
+test('data pack installs its extra inexactly into the ready runtime without touching the core', async () => {
+  const fixture = makeFixture();
+  assert.equal((await fixture.manager.installRuntime()).status, 'ready');
+  fixture.processCalls.length = 0;
+  const result = await fixture.manager.installPack('kaggle');
+  assert.deepEqual(result, { status: 'ready', pack: 'kaggle', label: 'Kaggle' });
+  assert.equal(fixture.processCalls.length, 1);
+  const [sync] = fixture.processCalls;
+  const ready = await fixture.manager.getReadyRuntime();
+  assert.equal(ready.status, 'ready');
+  assert.equal(sync.executable, ready.uvPath);
+  assert.deepEqual(sync.args, ['sync', '--locked', '--no-dev', '--inexact', '--extra', 'kaggle',
+    '--python', '3.11.15', '--managed-python', '--project', ready.runtimeRoot]);
+  assert.equal(sync.options.cwd, ready.runtimeRoot);
+  assert.equal(sync.options.shell, false);
+  assert.equal(sync.options.env.UV_PROJECT_ENVIRONMENT, ready.pythonEnvironment);
+  assert.equal(sync.options.env.HF_HOME, ready.huggingFaceCacheDir);
+});
+
+test('data pack refuses unknown names and a missing runtime without launching uv', async () => {
+  const fixture = makeFixture();
+  for (const pack of ['extension', 'toString', '__proto__', undefined]) {
+    const result = await fixture.manager.installPack(pack);
+    assert.equal(result.status, 'error');
+  }
+  const missing = await fixture.manager.installPack('huggingface');
+  assert.equal(missing.status, 'unavailable');
+  assert.match(missing.message, /Install the KAFE runtime before the Hugging Face pack/);
+  assert.deepEqual(fixture.processCalls, []);
+});
+
+test('failed data pack keeps the ready core runtime and reports a dependency message', async () => {
+  let failPack = false;
+  const fixture = makeFixture({ processRunner: async (executable, args, options) => {
+    fixture.processCalls.push({ executable, args, options });
+    if (['python', 'python.exe'].includes(path.basename(executable).toLowerCase())) {
+      return { exitCode: 0, stdout: 'Python 3.11.15\n', stderr: '' };
+    }
+    if (args[0] === '--version') return { exitCode: 0, stdout: 'uv 0.11.3\n', stderr: '' };
+    if (args.includes('--extra')) return failPack
+      ? { exitCode: 1, stdout: '', stderr: 'pack resolution failed' } : { exitCode: 0, stdout: '', stderr: '' };
+    const python = path.join(options.env.UV_PROJECT_ENVIRONMENT, 'Scripts', 'python.exe');
+    await fixture.fs.mkdir(path.dirname(python), { recursive: true });
+    await fixture.fs.writeFile(python, 'managed python');
+    return { exitCode: 0, stdout: '', stderr: '' };
+  } });
+  const installed = await fixture.manager.installRuntime();
+  assert.equal(installed.status, 'ready', installed.message);
+  failPack = true;
+  const result = await fixture.manager.installPack('kaggle');
+  assert.equal(result.status, 'error');
+  assert.match(result.message, /pack resolution failed/);
+  assert.equal(result.userMessage, 'KAFE downloaded its runtime, but dependency installation failed.');
+  assert.equal((await fixture.manager.getReadyRuntime()).status, 'ready');
+});
+
+test('cancelled data pack reports cancellation', async () => {
+  const fixture = makeFixture();
+  assert.equal((await fixture.manager.installRuntime()).status, 'ready');
+  const controller = new AbortController();
+  controller.abort();
+  const result = await fixture.manager.installPack('huggingface', { signal: controller.signal });
+  assert.equal(result.status, 'cancelled');
+  assert.equal((await fixture.manager.getReadyRuntime()).status, 'ready');
+});
+
+test('pinned uv executables match the published archive layouts', () => {
+  // uv 0.11.3 ships Windows as a flat zip and Unix targets inside a named directory.
+  assert.deepEqual(Object.fromEntries(Object.entries(manifestTemplate.uv.targets).map(([key, value]) => [key, value.executable])), {
+    'win32-x64': 'uv.exe',
+    'darwin-x64': 'uv-x86_64-apple-darwin/uv',
+    'darwin-arm64': 'uv-aarch64-apple-darwin/uv',
+    'linux-x64': 'uv-x86_64-unknown-linux-gnu/uv',
+  });
+});

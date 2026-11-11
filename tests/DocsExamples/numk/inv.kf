@@ -1,0 +1,6 @@
+import numk;
+
+List[List[INT]] m = [[2, 1], [7, 4]];
+List[List[FLOAT]] back = numk.inv(m);
+show(back);
+show(numk.mul(m, back));

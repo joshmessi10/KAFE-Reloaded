@@ -110,3 +110,10 @@ Format for each entry:
 - Review: APPROVED (.opencode/progress/review.md)
 - Status: closed
 
+
+## 2026-11-11 — Docs content, batches A and B
+- Branch: feature/docs-redesign
+- Feature: illustrated bilingual lessons, tutorial and small-library reference with tested examples (ADR-0036)
+- Completed this session: NUMK English pages and PARDOS English overview, library subpages in the nav, fixed stale MATH anchors, Spanish codespell words, Ruff import-order fix in DummyClassifier.py
+- Tests: 1122 passed, 4 skipped, 87.15% coverage; 332 docs examples; Ruff, basedpyright, codespell, policy, uv audit, strict docs build green
+- Pending: push and hosted CI; batches C (MACHINE) and D (GESHA)

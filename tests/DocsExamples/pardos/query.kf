@@ -1,0 +1,15 @@
+import pardos;
+
+PARDOS students = pardos.read_csv("data/students.csv");
+
+PARDOS older = students.query("age > 10");
+show(older);
+
+PARDOS from_lima = students.query("city == 'Lima'");
+show(from_lima);
+
+PARDOS both = students.query("age > 10 && score >= 9.0");
+show(both);
+
+PARDOS either = students.query("city == 'Cusco' || score > 9");
+show(either);

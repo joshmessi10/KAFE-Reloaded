@@ -1,0 +1,65 @@
+<svg viewBox="0 0 560 220" role="img" aria-labelledby="ill-tl1tok-t ill-tl1tok-d" xmlns="http://www.w3.org/2000/svg">
+<title id="ill-tl1tok-t">El lexer corta una línea en tokens / The lexer cuts a line into tokens</title>
+<desc id="ill-tl1tok-d">The line INT total = 10 + 2; -- 12 is cut piece by piece. Seven tokens fall into labeled cards: INT_TYPE, ID, ASSIGN, INT, ADD, INT and SEMI. The comment fades away because the lexer skips it.</desc>
+<style>
+@keyframes ill-tl1tok-cut { 0%,8% { opacity: 0 } 16%,92% { opacity: 1 } 100% { opacity: 0 } }
+@keyframes ill-tl1tok-drop { 0% { transform: translateY(-60px); opacity: 0 } 6% { opacity: 1 } 14%,92% { transform: translateY(0); opacity: 1 } 100% { transform: translateY(0); opacity: 0 } }
+@keyframes ill-tl1tok-skip { 0%,62% { opacity: 1; transform: translateY(0) } 72%,92% { opacity: 0.3; transform: translateY(6px) } 100% { opacity: 1; transform: translateY(0) } }
+.ill-tl1tok-cut { animation: ill-tl1tok-cut 8s linear infinite; }
+.ill-tl1tok-chip { animation: ill-tl1tok-drop 8s cubic-bezier(.3,1.3,.6,1) infinite; }
+.ill-tl1tok-skip { opacity: 0.3; transform: translateY(6px); animation: ill-tl1tok-skip 8s ease-in-out infinite; }
+.ill-tl1tok-d0 { animation-delay: 1.2s; }
+.ill-tl1tok-d1 { animation-delay: 1.6s; }
+.ill-tl1tok-d2 { animation-delay: 2.1s; }
+.ill-tl1tok-d3 { animation-delay: 2.5s; }
+.ill-tl1tok-d4 { animation-delay: 3.0s; }
+.ill-tl1tok-d5 { animation-delay: 3.5s; }
+.ill-tl1tok-d6 { animation-delay: 3.9s; }
+</style>
+<rect class="k-soft" x="16" y="22" width="528" height="44" rx="10"/>
+<text x="30" y="50" style="font-size:18px">INT</text>
+<text x="82" y="50" style="font-size:18px">total</text>
+<text x="156" y="50" style="font-size:18px">=</text>
+<text x="187" y="50" style="font-size:18px">10</text>
+<text x="229" y="50" style="font-size:18px">+</text>
+<text x="260" y="50" style="font-size:18px">2</text>
+<text x="290" y="50" style="font-size:18px">;</text>
+<g class="ill-tl1tok-skip"><text x="330" y="50" style="font-size:18px">-- 12</text><path class="k-line" d="M326 44 H388"/></g>
+<g class="ill-tl1tok-cut"><path class="k-accent-line" d="M72 26 V62" stroke-dasharray="4 5"/><path class="k-accent-line" d="M146 26 V62" stroke-dasharray="4 5"/><path class="k-accent-line" d="M177 26 V62" stroke-dasharray="4 5"/><path class="k-accent-line" d="M219 26 V62" stroke-dasharray="4 5"/><path class="k-accent-line" d="M250 26 V62" stroke-dasharray="4 5"/><path class="k-accent-line" d="M280 26 V62" stroke-dasharray="4 5"/><path class="k-accent-line" d="M311 26 V62" stroke-dasharray="4 5"/></g>
+<g transform="translate(10 0)"><g class="ill-tl1tok-chip ill-tl1tok-d0">
+<rect class="k-paper" x="0" y="110" width="66" height="46" rx="8"/><rect class="k-line" x="0" y="110" width="66" height="46" rx="8"/>
+<text x="17" y="140" style="font-size:18px">INT</text>
+<text class="k-label" x="6" y="178" style="font-size:11px">INT_TYPE</text>
+</g></g>
+<g transform="translate(86 0)"><g class="ill-tl1tok-chip ill-tl1tok-d1">
+<rect class="k-paper" x="0" y="110" width="66" height="46" rx="8"/><rect class="k-line" x="0" y="110" width="66" height="46" rx="8"/>
+<text x="6" y="140" style="font-size:18px">total</text>
+<text class="k-label" x="26" y="178" style="font-size:11px">ID</text>
+</g></g>
+<g transform="translate(162 0)"><g class="ill-tl1tok-chip ill-tl1tok-d2">
+<rect class="k-paper" x="0" y="110" width="66" height="46" rx="8"/><rect class="k-line" x="0" y="110" width="66" height="46" rx="8"/>
+<text x="28" y="140" style="font-size:18px">=</text>
+<text class="k-label" x="13" y="178" style="font-size:11px">ASSIGN</text>
+</g></g>
+<g transform="translate(238 0)"><g class="ill-tl1tok-chip ill-tl1tok-d3">
+<rect class="k-paper" x="0" y="110" width="66" height="46" rx="8"/><rect class="k-line" x="0" y="110" width="66" height="46" rx="8"/>
+<text x="22" y="140" style="font-size:18px">10</text>
+<text class="k-label" x="23" y="178" style="font-size:11px">INT</text>
+</g></g>
+<g transform="translate(314 0)"><g class="ill-tl1tok-chip ill-tl1tok-d4">
+<rect class="k-paper" x="0" y="110" width="66" height="46" rx="8"/><rect class="k-line" x="0" y="110" width="66" height="46" rx="8"/>
+<text x="28" y="140" style="font-size:18px">+</text>
+<text class="k-label" x="23" y="178" style="font-size:11px">ADD</text>
+</g></g>
+<g transform="translate(390 0)"><g class="ill-tl1tok-chip ill-tl1tok-d5">
+<rect class="k-paper" x="0" y="110" width="66" height="46" rx="8"/><rect class="k-line" x="0" y="110" width="66" height="46" rx="8"/>
+<text x="28" y="140" style="font-size:18px">2</text>
+<text class="k-label" x="23" y="178" style="font-size:11px">INT</text>
+</g></g>
+<g transform="translate(466 0)"><g class="ill-tl1tok-chip ill-tl1tok-d6">
+<rect class="k-paper" x="0" y="110" width="66" height="46" rx="8"/><rect class="k-line" x="0" y="110" width="66" height="46" rx="8"/>
+<text x="28" y="140" style="font-size:18px">;</text>
+<text class="k-label" x="19" y="178" style="font-size:11px">SEMI</text>
+</g></g>
+<path class="k-thin" d="M280 76 V100 M270 92 L280 102 L290 92"/>
+</svg>

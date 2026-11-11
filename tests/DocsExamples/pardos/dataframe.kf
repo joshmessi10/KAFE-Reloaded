@@ -1,0 +1,7 @@
+import pardos;
+
+List[STR] columns = ["hours", "score"];
+List[List[INT]] rows = [[2, 60], [4, 75], [6, 90]];
+PARDOS study = pardos.DataFrame(columns, rows);
+show(study);
+show(study.columns);

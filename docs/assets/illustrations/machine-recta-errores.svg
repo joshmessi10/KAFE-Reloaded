@@ -1,0 +1,43 @@
+<svg viewBox="0 0 600 270" role="img" aria-labelledby="ill-mlr-t ill-mlr-d" xmlns="http://www.w3.org/2000/svg">
+<title id="ill-mlr-t">La recta gira hasta que los errores son pequeños / The line turns until the errors are small</title>
+<desc id="ill-mlr-d">Five points on a chart. A flat line starts at the average height; the vertical gaps between each point and the line are long and the sum of squared errors is 98. The line turns around its middle until the gaps almost vanish and the sum of squared errors drops to 1.9.</desc>
+<style>
+@keyframes ill-mlr-line { 0%,15% { transform: rotate(17.22deg) } 55%,100% { transform: rotate(0deg) } }
+@keyframes ill-mlr-b30 { 0%,15% { transform: scaleY(1) } 55%,100% { transform: scaleY(-0.0333) } }
+@keyframes ill-mlr-b4 { 0%,15% { transform: scaleY(1) } 55%,100% { transform: scaleY(0.225) } }
+@keyframes ill-mlr-meter { 0%,15% { transform: scaleY(1) } 55%,100% { transform: scaleY(0.0194) } }
+@keyframes ill-mlr-big { 0%,30% { opacity: 1 } 45%,100% { opacity: 0 } }
+@keyframes ill-mlr-small { 0%,40% { opacity: 0 } 55%,100% { opacity: 1 } }
+@keyframes ill-mlr-all { 0% { opacity: 0 } 4%,94% { opacity: 1 } 100% { opacity: 0 } }
+.ill-mlr-all { animation: ill-mlr-all 10s linear infinite; }
+.ill-mlr-line { transform-box: view-box; transform-origin: 300px 100px; animation: ill-mlr-line 10s ease-in-out infinite; }
+.kafe-fig .ill-mlr-bar { transform-box: view-box; stroke-width: 2.5; stroke-linecap: butt; }
+.ill-mlr-b30 { transform: scaleY(-0.0333); animation: ill-mlr-b30 10s ease-in-out infinite; }
+.ill-mlr-b4 { transform: scaleY(0.225); animation: ill-mlr-b4 10s ease-in-out infinite; }
+.ill-mlr-meter { transform-box: view-box; transform-origin: 552px 220px; transform: scaleY(0.0194); animation: ill-mlr-meter 10s ease-in-out infinite; }
+.ill-mlr-big { opacity: 0; animation: ill-mlr-big 10s linear infinite; }
+.ill-mlr-small { animation: ill-mlr-small 10s linear infinite; }
+</style>
+<path class="k-line" d="M60 20 V230 H500"/>
+<path class="k-thin" d="M60 180 H500 M60 140 H500 M60 100 H500 M60 60 H500"/>
+<text x="130" y="252">20</text><text x="210" y="252">30</text><text x="290" y="252">40</text><text x="370" y="252">50</text><text x="450" y="252">60</text>
+<text x="30" y="185">5</text><text x="22" y="145">10</text><text x="22" y="105">15</text><text x="22" y="65">20</text>
+<g class="ill-mlr-all">
+<line class="k-accent-line ill-mlr-bar ill-mlr-b30" style="transform-origin:140px 148px" x1="140" y1="148" x2="140" y2="100"/>
+<line class="k-accent-line ill-mlr-bar ill-mlr-b30" style="transform-origin:220px 124px" x1="220" y1="124" x2="220" y2="100"/>
+<line class="k-accent-line ill-mlr-bar" x1="300" y1="108" x2="300" y2="100"/>
+<line class="k-accent-line ill-mlr-bar ill-mlr-b4" style="transform-origin:380px 68px" x1="380" y1="68" x2="380" y2="100"/>
+<line class="k-accent-line ill-mlr-bar ill-mlr-b30" style="transform-origin:460px 52px" x1="460" y1="52" x2="460" y2="100"/>
+<line class="k-line ill-mlr-line" x1="100" y1="162" x2="500" y2="38"/>
+<circle class="k-fill" cx="140" cy="148" r="7"/>
+<circle class="k-fill" cx="220" cy="124" r="7"/>
+<circle class="k-fill" cx="300" cy="108" r="7"/>
+<circle class="k-fill" cx="380" cy="68" r="7"/>
+<circle class="k-fill" cx="460" cy="52" r="7"/>
+<rect class="k-thin" x="540" y="40" width="24" height="180" rx="3"/>
+<rect class="k-accent ill-mlr-meter" x="540" y="40" width="24" height="180"/>
+<text class="k-label" x="532" y="30">Σ e²</text>
+<text class="ill-mlr-big" x="540" y="244">98</text>
+<text class="ill-mlr-small" x="538" y="244">1.9</text>
+</g>
+</svg>

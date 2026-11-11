@@ -1,0 +1,13 @@
+INT x = 10;
+x = 20;
+show(x);
+
+List[INT] L = [1, 2, 3];
+L[0] = 99;
+append(L, 4);
+show(L);
+
+STR s = "Hello";
+STR s2 = s + " World";
+show(s);
+show(s2);

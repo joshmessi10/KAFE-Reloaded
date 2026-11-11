@@ -1,0 +1,4 @@
+import math;
+
+show(math.comb(5, 2));
+show(math.comb(10, 3));

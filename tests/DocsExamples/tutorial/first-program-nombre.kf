@@ -1,0 +1,2 @@
+STR nombre = pour("¿Cómo te llamas? ");
+show("Hola, " + nombre);

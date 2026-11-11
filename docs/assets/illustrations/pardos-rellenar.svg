@@ -1,0 +1,21 @@
+<svg viewBox="0 0 560 270" role="img" aria-labelledby="ill-pdf-t ill-pdf-d" xmlns="http://www.w3.org/2000/svg">
+<title id="ill-pdf-t">ffill y bfill rellenan huecos / ffill and bfill fill gaps</title>
+<desc id="ill-pdf-d">A temperature column 20, nan, 23, nan, 25 has two empty cells. With ffill each gap copies the value above it, giving 20, 20, 23, 23, 25. With bfill each gap copies the value below it, giving 20, 23, 23, 25, 25.</desc>
+<style>
+@keyframes ill-pdf-arrow { 0%,15% { stroke-dashoffset: 60 } 40%,100% { stroke-dashoffset: 0 } }
+@keyframes ill-pdf-val { 0%,38% { opacity: 0 } 50%,100% { opacity: 1 } }
+.ill-pdf-arrow { stroke-dasharray: 60; animation: ill-pdf-arrow 6s ease-in-out infinite alternate; }
+.ill-pdf-val { animation: ill-pdf-val 6s ease-in-out infinite alternate; }
+</style>
+<rect class="k-soft" x="40" y="20" width="120" height="35"/><rect class="k-soft" x="220" y="20" width="120" height="35"/><rect class="k-soft" x="400" y="20" width="120" height="35"/>
+<path class="k-line" d="M40 20 H160 V255 H40 Z M220 20 H340 V255 H220 Z M400 20 H520 V255 H400 Z"/>
+<path class="k-thin" d="M40 55 H160 M40 95 H160 M40 135 H160 M40 175 H160 M40 215 H160 M220 55 H340 M220 95 H340 M220 135 H340 M220 175 H340 M220 215 H340 M400 55 H520 M400 95 H520 M400 135 H520 M400 175 H520 M400 215 H520"/>
+<text class="k-label" x="56" y="43">temp</text><text class="k-label" x="236" y="43">ffill()</text><text class="k-label" x="416" y="43">bfill()</text>
+<text x="56" y="80">20</text><text x="56" y="120">nan</text><text x="56" y="160">23</text><text x="56" y="200">nan</text><text x="56" y="240">25</text>
+<text x="236" y="80">20</text><text x="236" y="160">23</text><text x="236" y="240">25</text>
+<text class="k-label ill-pdf-val" x="236" y="120">20</text><text class="k-label ill-pdf-val" x="236" y="200">23</text>
+<path class="k-accent-line ill-pdf-arrow" d="M300 70 Q325 92 300 113"/><path class="k-accent-line ill-pdf-arrow" d="M300 150 Q325 172 300 193"/>
+<text x="416" y="80">20</text><text x="416" y="160">23</text><text x="416" y="240">25</text>
+<text class="k-label ill-pdf-val" x="416" y="120">23</text><text class="k-label ill-pdf-val" x="416" y="200">25</text>
+<path class="k-accent-line ill-pdf-arrow" d="M480 153 Q505 132 480 113"/><path class="k-accent-line ill-pdf-arrow" d="M480 233 Q505 212 480 193"/>
+</svg>

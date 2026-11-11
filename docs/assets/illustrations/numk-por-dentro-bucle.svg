@@ -1,0 +1,30 @@
+<svg viewBox="0 0 560 200" role="img" aria-labelledby="ill-nkl-t ill-nkl-d" xmlns="http://www.w3.org/2000/svg">
+<title id="ill-nkl-t">El bucle que calcula una casilla de mul / The loop that computes one cell of mul</title>
+<desc id="ill-nkl-d">Row [1, 2] of the first matrix and column [5, 7] of the second. A counter k walks over both at the same time. The running sum starts at 0, becomes 5 after adding 1·5, and 19 after adding 2·7. Then 19 is written into cell C[0][0].</desc>
+<style>
+@keyframes ill-nkl-ka { 0%,30% { transform: translateX(0) } 38%,92% { transform: translateX(44px) } 100% { transform: translateX(0) } }
+@keyframes ill-nkl-kb { 0%,30% { transform: translateY(0) } 38%,92% { transform: translateY(44px) } 100% { transform: translateY(0) } }
+@keyframes ill-nkl-1 { 0%,2% { opacity: 0 } 6%,92% { opacity: 1 } 100% { opacity: 0 } }
+@keyframes ill-nkl-2 { 0%,12% { opacity: 0 } 17%,92% { opacity: 1 } 100% { opacity: 0 } }
+@keyframes ill-nkl-3 { 0%,40% { opacity: 0 } 45%,92% { opacity: 1 } 100% { opacity: 0 } }
+@keyframes ill-nkl-4 { 0%,66% { opacity: 0 } 71%,92% { opacity: 1 } 100% { opacity: 0 } }
+.ill-nkl-ka { animation: ill-nkl-ka 10s steps(1, end) infinite; }
+.ill-nkl-kb { animation: ill-nkl-kb 10s steps(1, end) infinite; }
+.ill-nkl-1 { animation: ill-nkl-1 10s linear infinite; }
+.ill-nkl-2 { animation: ill-nkl-2 10s linear infinite; }
+.ill-nkl-3 { animation: ill-nkl-3 10s linear infinite; }
+.ill-nkl-4 { animation: ill-nkl-4 10s linear infinite; }
+</style>
+<text x="20" y="30">A[0]</text>
+<rect class="k-accent ill-nkl-ka" x="20" y="45" width="40" height="40" rx="4" opacity="0.35"/>
+<rect class="k-line" x="20" y="45" width="40" height="40" rx="4"/><rect class="k-line" x="64" y="45" width="40" height="40" rx="4"/>
+<text x="35" y="70">1</text><text x="79" y="70">2</text>
+<text x="135" y="30">B[·][0]</text>
+<rect class="k-accent ill-nkl-kb" x="140" y="45" width="40" height="40" rx="4" opacity="0.35"/>
+<rect class="k-line" x="140" y="45" width="40" height="40" rx="4"/><rect class="k-line" x="140" y="89" width="40" height="40" rx="4"/>
+<text x="155" y="70">5</text><text x="155" y="114">7</text>
+<text class="ill-nkl-1" x="230" y="55">suma = 0</text>
+<text class="ill-nkl-2" x="230" y="85">k = 0: suma += 1·5 → 5</text>
+<text class="ill-nkl-3" x="230" y="115">k = 1: suma += 2·7 → 19</text>
+<text class="k-label ill-nkl-4" x="230" y="155">C[0][0] = 19</text>
+</svg>

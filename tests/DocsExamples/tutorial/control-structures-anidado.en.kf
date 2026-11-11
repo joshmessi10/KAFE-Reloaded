@@ -1,0 +1,11 @@
+INT age = 25;
+BOOL hasLicense = False;
+if (age >= 18):
+    if (hasLicense):
+        show("Can drive");
+    else:
+        show("Needs a license first");
+    ;
+else:
+    show("Is still under 18");
+;

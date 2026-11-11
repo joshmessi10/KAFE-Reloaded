@@ -1,0 +1,6 @@
+import pardos;
+
+PARDOS students = pardos.read_csv("data/students.csv");
+PARDOS no_age = students.drop("age");
+PARDOS by_city = no_age.groupby("city");
+show(by_city.mean());

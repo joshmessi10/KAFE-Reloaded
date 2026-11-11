@@ -1,0 +1,155 @@
+const { randomBytes } = require('node:crypto');
+const { readFileSync } = require('node:fs');
+const path = require('node:path');
+const { sanitize } = require('./TutorDiagnostics');
+
+function isRecord(value) {
+  return value !== null && typeof value === 'object' && !Array.isArray(value);
+}
+
+function isTutorMessage(value, session) {
+  if (!isRecord(value) || !Object.hasOwn(value, 'type')) return false;
+  if (!session) return false;
+  const snapshot = typeof session.snapshot === 'function' ? session.snapshot() : session;
+  if (!isRecord(snapshot) || typeof snapshot.sessionId !== 'string' || !snapshot.sessionId.trim() ||
+    !Number.isSafeInteger(snapshot.generation) || snapshot.generation < 0) return false;
+  if (value.sessionId !== snapshot.sessionId || value.generation !== snapshot.generation) return false;
+  const exact = fields => {
+    const keys = ['type', 'sessionId', 'generation', ...fields];
+    return Object.keys(value).length === keys.length && keys.every(key => Object.hasOwn(value, key));
+  };
+  switch (value.type) {
+    case 'configureProvider': case 'retryRuntimeSetup': return exact([]);
+    case 'setDraft': return exact(['text']) && typeof value.text === 'string';
+    case 'submitMessage': return exact(['submissionId', 'text', 'contextRevision']) &&
+      typeof value.submissionId === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value.submissionId) &&
+      typeof value.text === 'string' && Boolean(value.text.trim()) && Number.isSafeInteger(value.contextRevision) && value.contextRevision >= 0;
+    case 'setSourceIncluded': return exact(['sourceId', 'included', 'contextRevision']) &&
+      typeof value.sourceId === 'string' && Boolean(value.sourceId.trim()) && typeof value.included === 'boolean' && Number.isSafeInteger(value.contextRevision) && value.contextRevision >= 0;
+    case 'revealSource': return exact(['sourceId', 'contextRevision']) &&
+      snapshot.context?.restricted === false && Array.isArray(snapshot.context.sources) && Number.isSafeInteger(value.contextRevision) && value.contextRevision >= 0 && value.contextRevision === snapshot.context.revision &&
+      typeof value.sourceId === 'string' && [snapshot.context.activeSource, ...snapshot.context.sources].some(source => source?.included === true && source.id === value.sourceId);
+    case 'invokeAction': return typeof session.resolveAction === 'function' && Boolean(session.resolveAction(value));
+    case 'openLink': return exact(['url']) && isExternalLink(value.url);
+    case 'stopTurn': return exact(['turnId', 'turnGeneration']) && snapshot.turn !== null &&
+      ['preparing', 'responding', 'processing-tools'].includes(snapshot.turn?.status) && value.turnId === snapshot.turn.id &&
+      value.turnGeneration === snapshot.turn.turnGeneration;
+    default: return false;
+  }
+}
+
+function isExternalLink(value) {
+  if (typeof value !== 'string' || !/^https?:\/\//i.test(value) || /[\s\u0000-\u001f\u007f\\]/.test(value)) return false;
+  try {
+    const url = new URL(value);
+    return ['https:', 'http:'].includes(url.protocol) && !url.username && !url.password;
+  } catch { return false; }
+}
+
+function dispatchTutorMessage(message, onMessage, session) {
+  if (!isTutorMessage(message, session)) return false;
+  // TutorHostActions resolves again and atomically consumes before its side effect.
+  onMessage(message);
+  return true;
+}
+
+class TutorViewProvider {
+  constructor({ vscode, extensionUri, onMessage = () => {}, conversationSession, diagnostic = () => {} }) {
+    this.vscode = vscode;
+    this.extensionUri = extensionUri;
+    this.onMessage = onMessage;
+    this.conversationSession = conversationSession;
+    this.actionSession = conversationSession?.session || conversationSession;
+    this.diagnostic = diagnostic;
+    this.view = undefined;
+    this.releaseView = undefined;
+    this.hostMetadata = { revision: 0, providerKey: 'unknown', runtime: 'unknown', contextNotice: null };
+  }
+
+  resolveWebviewView(view) {
+    this.releaseView?.();
+    this.view = view;
+    if (this.conversationTitle) view.description = this.conversationTitle;
+    const { webview } = view;
+    const resourceRoot = this.vscode.Uri.joinPath(this.extensionUri, 'src', 'tutor');
+    webview.options = { enableScripts: true, localResourceRoots: [resourceRoot] };
+    const scriptUri = webview.asWebviewUri(this.vscode.Uri.joinPath(resourceRoot, 'tutorView.js'));
+    const timelineUri = webview.asWebviewUri(this.vscode.Uri.joinPath(resourceRoot, 'tutorTimeline.js'));
+    const styleUri = webview.asWebviewUri(this.vscode.Uri.joinPath(resourceRoot, 'tutorView.css'));
+    const nonce = randomBytes(16).toString('base64');
+    const template = readFileSync(path.join(__dirname, 'tutorView.html'), 'utf8');
+    // In-memory boot projection avoids depending on delivery of the first
+    // postMessage before the webview has installed its message listener.
+    const initialState = JSON.stringify(this.project(this.conversationSession?.snapshot() || null))
+      .replaceAll('<', '\\u003c').replaceAll('>', '\\u003e').replaceAll('&', '\\u0026')
+      .replaceAll('\u2028', '\\u2028').replaceAll('\u2029', '\\u2029');
+    webview.html = template
+      .replaceAll('{{CSP_SOURCE}}', webview.cspSource)
+      .replaceAll('{{NONCE}}', nonce)
+      .replaceAll('{{STYLE_URI}}', styleUri.toString())
+      .replaceAll('{{TIMELINE_URI}}', timelineUri.toString())
+      .replaceAll('{{SCRIPT_URI}}', scriptUri.toString())
+      .replace('{{INITIAL_STATE}}', () => initialState);
+    let disposalSubscription, released = false;
+    const messageSubscription = webview.onDidReceiveMessage(message => {
+      if (released || this.view !== view) return false;
+      if (!isTutorMessage(message, this.actionSession)) return false;
+      if (message.type === 'openLink') {
+        // Explicit external navigation is the only model-link effect. Internal native
+        // diff/source/terminal actions still require host-issued capabilities.
+        try { return Promise.resolve(this.vscode.env?.openExternal(this.vscode.Uri.parse(message.url))).catch(() => false); }
+        catch { return false; }
+      }
+      return dispatchTutorMessage(message, this.onMessage, this.actionSession);
+    });
+    const unsubscribe = this.conversationSession?.subscribe(state => this.render(state));
+    this.releaseView = () => {
+      if (released) return;
+      released = true;
+      unsubscribe?.();
+      messageSubscription?.dispose();
+      disposalSubscription?.dispose();
+      if (this.view === view) this.view = undefined;
+    };
+    disposalSubscription = view.onDidDispose?.(this.releaseView);
+    if (this.conversationSession) this.render(this.conversationSession.snapshot());
+  }
+
+  dispose() { this.releaseView?.(); this.releaseView = undefined; }
+
+  setConversationTitle(title) {
+    this.conversationTitle = title;
+    if (this.view) this.view.description = title;
+  }
+
+  setHostMetadata(patch) {
+    if (!isRecord(patch) || Object.keys(patch).some(key => !['providerKey', 'runtime'].includes(key)) ||
+      (Object.hasOwn(patch, 'providerKey') && !['unknown', 'missing', 'present', 'unavailable'].includes(patch.providerKey)) ||
+      (Object.hasOwn(patch, 'runtime') && !['unknown', 'preparing', 'ready', 'unavailable', 'failed'].includes(patch.runtime))) return;
+    if (Object.keys(patch).every(key => this.hostMetadata[key] === patch[key]) || this.hostMetadata.revision === Number.MAX_SAFE_INTEGER) return;
+    this.hostMetadata = { ...this.hostMetadata, ...patch, revision: this.hostMetadata.revision + 1 };
+    this.render(this.conversationSession?.snapshot());
+  }
+
+  project(state) {
+    if (!state) return null;
+    const { contextNotice = null, ...session } = state;
+    if (JSON.stringify(contextNotice) !== JSON.stringify(this.hostMetadata.contextNotice)) {
+      this.hostMetadata = { ...this.hostMetadata, contextNotice: structuredClone(contextNotice), revision: this.hostMetadata.revision + 1 };
+    }
+    return { ...session, view: structuredClone(this.hostMetadata) };
+  }
+
+  render(state) {
+    if (!this.view) return;
+    const trace = delivered => {
+      try { this.diagnostic(sanitize({ event: 'view-posted', revision: state?.revision, status: state?.turn?.status, delivered })); } catch {}
+    };
+    const result = this.view.webview.postMessage({ type: 'render', state: this.project(state) });
+    // VS Code's posting result is not a browser-render acknowledgement.
+    void Promise.resolve(result).then(delivered => trace(delivered === true), () => trace(false));
+    return result;
+  }
+}
+
+module.exports = { TutorViewProvider, isTutorMessage, dispatchTutorMessage };

@@ -1,0 +1,3 @@
+FUNC(INT)=>INT cuadrado = (x: INT) => x * x;
+show(cuadrado(5));
+show(cuadrado(12));

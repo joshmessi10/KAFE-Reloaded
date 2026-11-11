@@ -1,0 +1,2 @@
+INT total = 10 + 2;
+show(total);

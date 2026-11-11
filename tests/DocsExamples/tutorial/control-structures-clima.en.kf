@@ -1,0 +1,9 @@
+INT temperature = 30;
+if (temperature > 25):
+    show("It is hot: bring water");
+elif (temperature > 15):
+    show("It is nice");
+else:
+    show("It is cold: bring a coat");
+;
+show("End of the forecast");

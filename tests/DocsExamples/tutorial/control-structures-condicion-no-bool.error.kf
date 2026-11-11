@@ -1,0 +1,4 @@
+INT n = 1;
+if (n):
+    show("yes");
+;
