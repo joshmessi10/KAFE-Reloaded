@@ -1,4 +1,0 @@
-import machine;
-
-MACHINE forest = machine.random_forest_classifier();
-show(forest.predict([4.0]));

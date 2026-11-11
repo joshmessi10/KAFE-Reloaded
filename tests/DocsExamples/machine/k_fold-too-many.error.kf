@@ -1,3 +1,0 @@
-import machine;
-
-List[List[List[INT]]] folds = machine.k_fold(3, 5);

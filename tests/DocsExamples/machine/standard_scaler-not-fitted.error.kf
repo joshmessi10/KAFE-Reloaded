@@ -1,4 +1,0 @@
-import machine;
-
-MACHINE scaler = machine.standard_scaler();
-show(scaler.transform([[1.0, 2.0]]));

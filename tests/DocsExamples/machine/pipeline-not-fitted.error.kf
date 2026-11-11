@@ -1,4 +1,0 @@
-import machine;
-
-MACHINE pipe = machine.pipeline("scale", machine.standard_scaler(), "model", machine.linear_regression());
-show(pipe.predict([[90.0, 2.0]]));

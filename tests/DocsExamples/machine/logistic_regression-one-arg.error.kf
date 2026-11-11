@@ -1,3 +1,0 @@
-import machine;
-
-MACHINE model = machine.logistic_regression(0.5);

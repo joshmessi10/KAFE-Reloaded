@@ -1,5 +1,0 @@
-import machine;
-
-MACHINE poly = machine.polynomial_features(2);
-List[List[FLOAT]] wide = poly.fit_transform([[2.0, 3.0]]);
-show(poly.inverse_transform(wide));

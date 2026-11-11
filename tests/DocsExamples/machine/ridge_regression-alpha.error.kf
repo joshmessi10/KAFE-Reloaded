@@ -1,3 +1,0 @@
-import machine;
-
-MACHINE model = machine.ridge_regression(-1.0);

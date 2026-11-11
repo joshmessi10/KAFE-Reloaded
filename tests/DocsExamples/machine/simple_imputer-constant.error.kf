@@ -1,3 +1,0 @@
-import machine;
-
-MACHINE imputer = machine.simple_imputer("constant");

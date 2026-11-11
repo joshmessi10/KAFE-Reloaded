@@ -1,3 +1,0 @@
-import machine;
-
-MACHINE model = machine.knn_regressor(2, "closest");

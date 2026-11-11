@@ -1,5 +1,0 @@
-import machine;
-
-MACHINE scaler = machine.minmax_scaler();
-scaler.fit([[7.0, 1.0], [15.0, 9.0]]);
-show(scaler.transform([[11.0]]));

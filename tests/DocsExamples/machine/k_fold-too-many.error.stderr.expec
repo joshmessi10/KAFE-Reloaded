@@ -1,1 +1,0 @@
-Exception: machine: k_fold: n_splits cannot be greater than n_samples

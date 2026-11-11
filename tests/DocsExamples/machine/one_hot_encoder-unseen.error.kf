@@ -1,9 +1,0 @@
-import machine;
-import pardos;
-
-PARDOS pets = pardos.DataFrame(["pet"], [["cat"], ["dog"]]);
-PARDOS other = pardos.DataFrame(["pet"], [["bird"]]);
-
-MACHINE encoder = machine.one_hot_encoder();
-encoder.fit(pets, ["pet"]);
-show(encoder.transform(other));

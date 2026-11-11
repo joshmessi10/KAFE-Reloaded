@@ -1,6 +1,0 @@
-import machine;
-
-List[FLOAT] temp = [30.0, 28.0, 25.0];
-List[INT] rain = [0, 0, 0];
-MACHINE model = machine.gradient_boosting_classifier(5, 0.5, 2);
-model.fit(temp, rain);

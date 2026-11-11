@@ -1,4 +1,0 @@
-import machine;
-
-MACHINE tok = machine.tokenizer();
-show(tok.transform(["hello"]));

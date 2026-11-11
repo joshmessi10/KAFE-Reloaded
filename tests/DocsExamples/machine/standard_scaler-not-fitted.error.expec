@@ -1,1 +1,0 @@
-Exception: scaler: StandardScaler: Must call fit before transform
