@@ -1,0 +1,17 @@
+import machine;
+
+List[List[FLOAT]] houses = [[1.0, 1.0], [1.0, 2.0], [2.0, 1.0], [2.0, 2.0], [3.0, 2.0],
+                            [6.0, 6.0],
+                            [8.0, 8.0], [8.0, 9.0], [9.0, 8.0]];
+
+MACHINE small = machine.dbscan(0.5, 3);
+small.fit(houses);
+show(small.labels());
+show(small.n_clusters_);
+
+MACHINE big = machine.dbscan(5.0, 3);
+big.fit(houses);
+show(big.labels_);
+show(big.n_clusters_);
+show(big.eps);
+show(big.min_samples);

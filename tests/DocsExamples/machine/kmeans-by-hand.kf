@@ -1,0 +1,52 @@
+import math;
+
+List[List[FLOAT]] fruits = [[1.0, 1.0], [1.0, 2.0], [2.0, 1.0],
+                            [8.0, 8.0], [8.0, 9.0], [9.0, 8.0]];
+List[FLOAT] a = [1.0, 1.0];
+List[FLOAT] b = [8.0, 8.0];
+
+List[INT] group = [];
+for (i in range(0, len(fruits))):
+    FLOAT da = (fruits[i][0] - a[0]) * (fruits[i][0] - a[0]) + (fruits[i][1] - a[1]) * (fruits[i][1] - a[1]);
+    FLOAT db = (fruits[i][0] - b[0]) * (fruits[i][0] - b[0]) + (fruits[i][1] - b[1]) * (fruits[i][1] - b[1]);
+    if (da <= db):
+        append(group, 0);
+    else:
+        append(group, 1);
+    ;
+;
+show(group);
+
+FLOAT ax = 0.0;
+FLOAT ay = 0.0;
+FLOAT bx = 0.0;
+FLOAT by = 0.0;
+INT na = 0;
+INT nb = 0;
+for (i in range(0, len(fruits))):
+    if (group[i] == 0):
+        ax = ax + fruits[i][0];
+        ay = ay + fruits[i][1];
+        na = na + 1;
+    else:
+        bx = bx + fruits[i][0];
+        by = by + fruits[i][1];
+        nb = nb + 1;
+    ;
+;
+a = [ax / na, ay / na];
+b = [bx / nb, by / nb];
+show(math.round(a[0], 2));
+show(math.round(a[1], 2));
+show(math.round(b[0], 2));
+show(math.round(b[1], 2));
+
+FLOAT inertia = 0.0;
+for (i in range(0, len(fruits))):
+    List[FLOAT] c = a;
+    if (group[i] == 1):
+        c = b;
+    ;
+    inertia = inertia + (fruits[i][0] - c[0]) * (fruits[i][0] - c[0]) + (fruits[i][1] - c[1]) * (fruits[i][1] - c[1]);
+;
+show(math.round(inertia, 2));

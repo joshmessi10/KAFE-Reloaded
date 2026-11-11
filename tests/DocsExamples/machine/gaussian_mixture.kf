@@ -1,0 +1,22 @@
+import machine;
+import math;
+
+List[List[FLOAT]] weights = [[1.0], [2.0], [3.0], [10.0], [11.0], [12.0]];
+
+MACHINE model = machine.gaussian_mixture(2, 100, 0.001, 1);
+model.fit(weights);
+
+List[List[FLOAT]] means = model.means_;
+show(math.round(means[0][0], 2));
+show(math.round(means[1][0], 2));
+List[List[FLOAT]] spread = model.covariances_;
+show(math.round(spread[0][0], 2));
+show(math.round(spread[1][0], 2));
+List[FLOAT] share = model.weights_;
+show(math.round(share[0], 2));
+show(math.round(share[1], 2));
+
+show(model.predict([[2.5], [9.0]]));
+List[List[FLOAT]] p = model.predict_proba([[6.4]]);
+show(math.round(p[0][0], 2));
+show(math.round(p[0][1], 2));

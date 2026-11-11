@@ -1,0 +1,35 @@
+<svg viewBox="0 0 600 270" role="img" aria-labelledby="ill-ada-t ill-ada-d" xmlns="http://www.w3.org/2000/svg">
+<title id="ill-ada-t">AdaBoost agranda los ejemplos que falló / AdaBoost makes its mistakes bigger</title>
+<desc id="ill-ada-d">Five students at 1 to 5 hours: circles failed, squares passed. A first one-question tree cuts at 2.5 and gets student 4 wrong. That student grows, its weight rising from 0.2 to 0.5, while the four it got right shrink to 0.125, so the next tree pays more attention to the mistake.</desc>
+<style>
+@keyframes ill-ada-cut { 0%,10% { opacity: 0 } 18%,100% { opacity: 1 } }
+.ill-ada-cut { animation: ill-ada-cut 12s linear infinite; }
+@keyframes ill-ada-miss { 0%,28% { opacity: 0 } 36%,100% { opacity: 1 } }
+.ill-ada-miss { animation: ill-ada-miss 12s linear infinite; }
+@keyframes ill-ada-s0 { 0%,40% { transform: scale(1) } 55%,100% { transform: scale(0.791) } }
+.ill-ada-s0 { transform-box: view-box; transform-origin: 140px 120px; transform: scale(0.791); animation: ill-ada-s0 12s ease-in-out infinite; }
+@keyframes ill-ada-s1 { 0%,40% { transform: scale(1) } 55%,100% { transform: scale(0.791) } }
+.ill-ada-s1 { transform-box: view-box; transform-origin: 220px 120px; transform: scale(0.791); animation: ill-ada-s1 12s ease-in-out infinite; }
+@keyframes ill-ada-s2 { 0%,40% { transform: scale(1) } 55%,100% { transform: scale(0.791) } }
+.ill-ada-s2 { transform-box: view-box; transform-origin: 300px 120px; transform: scale(0.791); animation: ill-ada-s2 12s ease-in-out infinite; }
+@keyframes ill-ada-s3 { 0%,40% { transform: scale(1) } 55%,100% { transform: scale(1.581) } }
+.ill-ada-s3 { transform-box: view-box; transform-origin: 380px 120px; transform: scale(1.581); animation: ill-ada-s3 12s ease-in-out infinite; }
+@keyframes ill-ada-s4 { 0%,40% { transform: scale(1) } 55%,100% { transform: scale(0.791) } }
+.ill-ada-s4 { transform-box: view-box; transform-origin: 460px 120px; transform: scale(0.791); animation: ill-ada-s4 12s ease-in-out infinite; }
+@keyframes ill-ada-w0 { 0%,40% { opacity: 1 } 48%,100% { opacity: 0 } }
+.ill-ada-w0 { opacity: 0; animation: ill-ada-w0 12s linear infinite; }
+@keyframes ill-ada-w1 { 0%,52% { opacity: 0 } 60%,100% { opacity: 1 } }
+.ill-ada-w1 { animation: ill-ada-w1 12s linear infinite; }
+@keyframes ill-ada-all { 0% { opacity: 0 } 4%,94% { opacity: 1 } 100% { opacity: 0 } }
+.ill-ada-all { animation: ill-ada-all 12s linear infinite; }
+.ill-ada-dash { stroke-dasharray: 6 5; }
+</style>
+<path class="k-thin" d="M80 160 H500"/><text x="136" y="182">1</text><text x="216" y="182">2</text><text x="296" y="182">3</text><text x="376" y="182">4</text><text x="456" y="182">5</text>
+<g class="ill-ada-all">
+<g class="ill-ada-cut"><line class="k-accent-line ill-ada-dash" x1="260.0" y1="50" x2="260.0" y2="170"/><circle class="k-soft" cx="180.0" cy="60" r="10"/><rect class="k-soft" x="370" y="50" width="20" height="20"/></g>
+<g class="ill-ada-s0"><circle class="k-fill" cx="140" cy="120" r="12"/></g><g class="ill-ada-s1"><circle class="k-fill" cx="220" cy="120" r="12"/></g><g class="ill-ada-s2"><rect class="k-fill" x="288" y="108" width="24" height="24"/></g><g class="ill-ada-s3"><circle class="k-fill" cx="380" cy="120" r="12"/></g><g class="ill-ada-s4"><rect class="k-fill" x="448" y="108" width="24" height="24"/></g>
+<g class="ill-ada-miss"><circle class="k-accent-line" cx="380" cy="120" r="30"/></g>
+<g class="ill-ada-w0"><text x="128" y="222">0.2</text><text x="208" y="222">0.2</text><text x="288" y="222">0.2</text><text x="368" y="222">0.2</text><text x="448" y="222">0.2</text></g>
+<g class="ill-ada-w1"><text x="122" y="222">0.125</text><text x="202" y="222">0.125</text><text x="282" y="222">0.125</text><text x="362" y="222">0.5</text><text x="442" y="222">0.125</text></g>
+</g>
+</svg>

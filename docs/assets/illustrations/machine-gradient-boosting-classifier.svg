@@ -1,0 +1,35 @@
+<svg viewBox="0 0 600 270" role="img" aria-labelledby="ill-gbc-t ill-gbc-d" xmlns="http://www.w3.org/2000/svg">
+<title id="ill-gbc-t">Las probabilidades se separan árbol a árbol / Probabilities drift apart tree by tree</title>
+<desc id="ill-gbc-d">Six days on a probability-of-rain axis. All start at 0.33. After 1, 3 and 20 trees the four dry days drift left towards 0.11 to 0.18 and the two rainy days drift right past one half, to 0.82 and 0.76.</desc>
+<style>
+@keyframes ill-gbc-d0 { 0% { transform: translateX(92.4px); } 8%,24% { transform: translateX(92.4px); } 28%,44% { transform: translateX(79.8px); } 48%,64% { transform: translateX(54.6px); } 68%,100% { transform: translateX(0.0px); } }
+.ill-gbc-d0 { transform: translateX(0.0px); animation: ill-gbc-d0 14s ease-in-out infinite; }
+@keyframes ill-gbc-d1 { 0% { transform: translateX(92.4px); } 8%,24% { transform: translateX(92.4px); } 28%,44% { transform: translateX(79.8px); } 48%,64% { transform: translateX(54.6px); } 68%,100% { transform: translateX(0.0px); } }
+.ill-gbc-d1 { transform: translateX(0.0px); animation: ill-gbc-d1 14s ease-in-out infinite; }
+@keyframes ill-gbc-d2 { 0% { transform: translateX(92.4px); } 8%,24% { transform: translateX(92.4px); } 28%,44% { transform: translateX(79.8px); } 48%,64% { transform: translateX(54.6px); } 68%,100% { transform: translateX(0.0px); } }
+.ill-gbc-d2 { transform: translateX(0.0px); animation: ill-gbc-d2 14s ease-in-out infinite; }
+@keyframes ill-gbc-d3 { 0% { transform: translateX(63.0px); } 8%,24% { transform: translateX(63.0px); } 28%,44% { transform: translateX(71.4px); } 48%,64% { transform: translateX(84.0px); } 68%,100% { transform: translateX(0.0px); } }
+.ill-gbc-d3 { transform: translateX(0.0px); animation: ill-gbc-d3 14s ease-in-out infinite; }
+@keyframes ill-gbc-d4 { 0% { transform: translateX(-205.8px); } 8%,24% { transform: translateX(-205.8px); } 28%,44% { transform: translateX(-172.2px); } 48%,64% { transform: translateX(-134.4px); } 68%,100% { transform: translateX(0.0px); } }
+.ill-gbc-d4 { transform: translateX(0.0px); animation: ill-gbc-d4 14s ease-in-out infinite; }
+@keyframes ill-gbc-d5 { 0% { transform: translateX(-180.6px); } 8%,24% { transform: translateX(-180.6px); } 28%,44% { transform: translateX(-172.2px); } 48%,64% { transform: translateX(-134.4px); } 68%,100% { transform: translateX(0.0px); } }
+.ill-gbc-d5 { transform: translateX(0.0px); animation: ill-gbc-d5 14s ease-in-out infinite; }
+@keyframes ill-gbc-n0 { 0%,5% { opacity: 0 } 8%,24% { opacity: 1 } 27%,100% { opacity: 0 } }
+.ill-gbc-n0 { opacity: 0; animation: ill-gbc-n0 14s linear infinite; }
+@keyframes ill-gbc-n1 { 0%,25% { opacity: 0 } 28%,44% { opacity: 1 } 47%,100% { opacity: 0 } }
+.ill-gbc-n1 { opacity: 0; animation: ill-gbc-n1 14s linear infinite; }
+@keyframes ill-gbc-n2 { 0%,45% { opacity: 0 } 48%,64% { opacity: 1 } 67%,100% { opacity: 0 } }
+.ill-gbc-n2 { opacity: 0; animation: ill-gbc-n2 14s linear infinite; }
+@keyframes ill-gbc-n3 { 0%,65% { opacity: 0 } 68%,100% { opacity: 1 } }
+.ill-gbc-n3 { animation: ill-gbc-n3 14s linear infinite; }
+@keyframes ill-gbc-all { 0% { opacity: 0 } 4%,94% { opacity: 1 } 100% { opacity: 0 } }
+.ill-gbc-all { animation: ill-gbc-all 14s linear infinite; }
+.ill-gbc-dash { stroke-dasharray: 6 5; }
+</style>
+<path class="k-line" d="M80 225 H500"/><text x="76" y="248">0</text><text x="284.0" y="248">½</text><text x="496" y="248">1</text>
+<line class="k-thin ill-gbc-dash" x1="290.0" y1="25" x2="290.0" y2="225"/>
+<g class="ill-gbc-all">
+<g class="ill-gbc-d0"><circle class="k-fill" cx="126.2" cy="45" r="9"/></g><g class="ill-gbc-d1"><circle class="k-fill" cx="126.2" cy="75" r="9"/></g><g class="ill-gbc-d2"><circle class="k-fill" cx="126.2" cy="105" r="9"/></g><g class="ill-gbc-d3"><circle class="k-fill" cx="155.6" cy="135" r="9"/></g><g class="ill-gbc-d4"><rect class="k-accent" x="415.4" y="156" width="18" height="18"/></g><g class="ill-gbc-d5"><rect class="k-accent" x="390.2" y="186" width="18" height="18"/></g>
+<text class="k-label ill-gbc-n0" x="440" y="30">🌳 × 0</text><text class="k-label ill-gbc-n1" x="440" y="30">🌳 × 1</text><text class="k-label ill-gbc-n2" x="440" y="30">🌳 × 3</text><text class="k-label ill-gbc-n3" x="440" y="30">🌳 × 20</text>
+</g>
+</svg>

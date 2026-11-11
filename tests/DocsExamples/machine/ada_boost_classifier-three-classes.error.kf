@@ -1,0 +1,6 @@
+import machine;
+
+List[FLOAT] hours = [1.0, 2.0, 3.0];
+List[INT] level = [0, 1, 2];
+MACHINE model = machine.ada_boost_classifier(5, 1.0);
+model.fit(hours, level);

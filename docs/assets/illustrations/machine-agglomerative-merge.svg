@@ -1,0 +1,26 @@
+<svg viewBox="0 0 600 270" role="img" aria-labelledby="ill-agg-t ill-agg-d" xmlns="http://www.w3.org/2000/svg">
+<title id="ill-agg-t">Agglomerative junta primero lo más cercano / Agglomerative joins the closest first</title>
+<desc id="ill-agg-d">Five houses on a street at 1, 2, 6, 7 and 15. First 1 and 2 join at distance 1, then 6 and 7 at distance 1, then both pairs join at distance 4, building a tree. A cut above that level leaves two groups: the four houses together and the house at 15 alone.</desc>
+<style>
+@keyframes ill-agg-m1 { 0%,10% { opacity: 0 } 18%,100% { opacity: 1 } }
+.ill-agg-m1 { animation: ill-agg-m1 12s linear infinite; }
+@keyframes ill-agg-m2 { 0%,24% { opacity: 0 } 32%,100% { opacity: 1 } }
+.ill-agg-m2 { animation: ill-agg-m2 12s linear infinite; }
+@keyframes ill-agg-m3 { 0%,40% { opacity: 0 } 48%,100% { opacity: 1 } }
+.ill-agg-m3 { animation: ill-agg-m3 12s linear infinite; }
+@keyframes ill-agg-cut { 0%,60% { opacity: 0 } 68%,100% { opacity: 1 } }
+.ill-agg-cut { animation: ill-agg-cut 12s linear infinite; }
+@keyframes ill-agg-all { 0% { opacity: 0 } 4%,94% { opacity: 1 } 100% { opacity: 0 } }
+.ill-agg-all { animation: ill-agg-all 12s linear infinite; }
+.ill-agg-dash { stroke-dasharray: 6 5; }
+</style>
+<path class="k-thin" d="M60 230 H490"/><text x="84" y="252">1</text><text x="112" y="252">2</text><text x="224" y="252">6</text><text x="252" y="252">7</text><text x="476" y="252">15</text>
+<text x="30" y="180">1</text><text x="30" y="75">4</text>
+<g class="ill-agg-all">
+<circle class="k-fill" cx="88" cy="215" r="7"/><circle class="k-fill" cx="116" cy="215" r="7"/><circle class="k-fill" cx="228" cy="215" r="7"/><circle class="k-fill" cx="256" cy="215" r="7"/><circle class="k-fill" cx="480" cy="215" r="7"/>
+<path class="k-accent-line ill-agg-m1" d="M88 208 V175 H116 V208"/>
+<path class="k-accent-line ill-agg-m2" d="M228 208 V175 H256 V208"/>
+<path class="k-accent-line ill-agg-m3" d="M102.0 175 V70 H242.0 V175"/>
+<g class="ill-agg-cut"><line class="k-line ill-agg-dash" x1="60" y1="17.5" x2="500" y2="17.5"/><rect class="k-soft" x="72" y="200" width="200" height="30" rx="10"/><rect class="k-soft" x="464" y="200" width="32" height="30" rx="10"/></g>
+</g>
+</svg>

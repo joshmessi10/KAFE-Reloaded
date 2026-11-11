@@ -1,0 +1,3 @@
+import machine;
+
+MACHINE model = machine.agglomerative_clustering(2, "closest");

@@ -1,0 +1,33 @@
+<svg viewBox="0 0 600 270" role="img" aria-labelledby="ill-gbr-t ill-gbr-d" xmlns="http://www.w3.org/2000/svg">
+<title id="ill-gbr-t">Cada árbol corrige un poco lo que falta / Each tree fixes a bit of what is left</title>
+<desc id="ill-gbr-d">Four flats priced 10, 20, 30 and 40. The prediction bars start flat at the average, 25. After 1, 2, 5 and 50 trees they move step by step towards each point: 20 and 30, then 15 and 31.67, then 11.46 and 38.4, and finally they land on 10, 20, 30 and 40.</desc>
+<style>
+@keyframes ill-gbr-b0 { 0% { transform: translateY(-67.5px); } 8%,20% { transform: translateY(-67.5px); } 24%,36% { transform: translateY(-45.0px); } 40%,52% { transform: translateY(-22.5px); } 56%,68% { transform: translateY(-6.6px); } 72%,100% { transform: translateY(0.0px); } }
+.ill-gbr-b0 { transform: translateY(0.0px); animation: ill-gbr-b0 14s ease-in-out infinite; }
+@keyframes ill-gbr-b1 { 0% { transform: translateY(-22.5px); } 8%,20% { transform: translateY(-22.5px); } 24%,36% { transform: translateY(0.0px); } 40%,52% { transform: translateY(-7.5px); } 56%,68% { transform: translateY(-0.3px); } 72%,100% { transform: translateY(0.0px); } }
+.ill-gbr-b1 { transform: translateY(0.0px); animation: ill-gbr-b1 14s ease-in-out infinite; }
+@keyframes ill-gbr-b2 { 0% { transform: translateY(22.5px); } 8%,20% { transform: translateY(22.5px); } 24%,36% { transform: translateY(0.0px); } 40%,52% { transform: translateY(-7.5px); } 56%,68% { transform: translateY(-0.3px); } 72%,100% { transform: translateY(0.0px); } }
+.ill-gbr-b2 { transform: translateY(0.0px); animation: ill-gbr-b2 14s ease-in-out infinite; }
+@keyframes ill-gbr-b3 { 0% { transform: translateY(67.5px); } 8%,20% { transform: translateY(67.5px); } 24%,36% { transform: translateY(45.0px); } 40%,52% { transform: translateY(37.5px); } 56%,68% { transform: translateY(7.2px); } 72%,100% { transform: translateY(0.0px); } }
+.ill-gbr-b3 { transform: translateY(0.0px); animation: ill-gbr-b3 14s ease-in-out infinite; }
+@keyframes ill-gbr-n0 { 0%,5% { opacity: 0 } 8%,20% { opacity: 1 } 23%,100% { opacity: 0 } }
+.ill-gbr-n0 { opacity: 0; animation: ill-gbr-n0 14s linear infinite; }
+@keyframes ill-gbr-n1 { 0%,21% { opacity: 0 } 24%,36% { opacity: 1 } 39%,100% { opacity: 0 } }
+.ill-gbr-n1 { opacity: 0; animation: ill-gbr-n1 14s linear infinite; }
+@keyframes ill-gbr-n2 { 0%,37% { opacity: 0 } 40%,52% { opacity: 1 } 55%,100% { opacity: 0 } }
+.ill-gbr-n2 { opacity: 0; animation: ill-gbr-n2 14s linear infinite; }
+@keyframes ill-gbr-n3 { 0%,53% { opacity: 0 } 56%,68% { opacity: 1 } 71%,100% { opacity: 0 } }
+.ill-gbr-n3 { opacity: 0; animation: ill-gbr-n3 14s linear infinite; }
+@keyframes ill-gbr-n4 { 0%,69% { opacity: 0 } 72%,100% { opacity: 1 } }
+.ill-gbr-n4 { animation: ill-gbr-n4 14s linear infinite; }
+@keyframes ill-gbr-all { 0% { opacity: 0 } 4%,94% { opacity: 1 } 100% { opacity: 0 } }
+.ill-gbr-all { animation: ill-gbr-all 14s linear infinite; }
+.ill-gbr-dash { stroke-dasharray: 6 5; }
+</style>
+<path class="k-line" d="M60 20 V230 H500"/><text x="156" y="252">1</text><text x="256" y="252">2</text><text x="356" y="252">3</text><text x="456" y="252">4</text>
+<text x="30" y="190.0">10</text><text x="30" y="122.5">25</text><text x="30" y="55.0">40</text>
+<g class="ill-gbr-all">
+<circle class="k-fill" cx="160" cy="185.0" r="7"/><circle class="k-fill" cx="260" cy="140.0" r="7"/><circle class="k-fill" cx="360" cy="95.0" r="7"/><circle class="k-fill" cx="460" cy="50.0" r="7"/><g class="ill-gbr-b0"><line class="k-accent-line" x1="130" y1="185.0" x2="190" y2="185.0"/></g><g class="ill-gbr-b1"><line class="k-accent-line" x1="230" y1="140.0" x2="290" y2="140.0"/></g><g class="ill-gbr-b2"><line class="k-accent-line" x1="330" y1="95.0" x2="390" y2="95.0"/></g><g class="ill-gbr-b3"><line class="k-accent-line" x1="430" y1="50.0" x2="490" y2="50.0"/></g>
+<text class="k-label ill-gbr-n0" x="90" y="40">🌳 × 0</text><text class="k-label ill-gbr-n1" x="90" y="40">🌳 × 1</text><text class="k-label ill-gbr-n2" x="90" y="40">🌳 × 2</text><text class="k-label ill-gbr-n3" x="90" y="40">🌳 × 5</text><text class="k-label ill-gbr-n4" x="90" y="40">🌳 × 50</text>
+</g>
+</svg>

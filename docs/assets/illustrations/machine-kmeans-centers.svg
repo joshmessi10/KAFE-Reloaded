@@ -1,0 +1,42 @@
+<svg viewBox="0 0 600 270" role="img" aria-labelledby="ill-kms-t ill-kms-d" xmlns="http://www.w3.org/2000/svg">
+<title id="ill-kms-t">Los centros de K-Means se mueven hasta quedar quietos / K-Means centres move until they settle</title>
+<desc id="ill-kms-d">Six fruits in two clumps. Two centres, marked with crosses, start in arbitrary places. Each fruit takes the colour of its nearest centre, then each centre moves to the middle of its fruits. After 3 rounds the centres sit in the middle of each clump and stop moving.</desc>
+<style>
+@keyframes ill-kms-p0c0 { 0% { opacity: 1; } 10%,29% { opacity: 1; } 33%,52% { opacity: 1; } 56%,100% { opacity: 1; } }
+.ill-kms-p0c0 { opacity: 1; animation: ill-kms-p0c0 14s ease-in-out infinite; }
+@keyframes ill-kms-p0c1 { 0% { opacity: 0; } 10%,29% { opacity: 0; } 33%,52% { opacity: 0; } 56%,100% { opacity: 0; } }
+.ill-kms-p0c1 { opacity: 0; animation: ill-kms-p0c1 14s ease-in-out infinite; }
+@keyframes ill-kms-p1c0 { 0% { opacity: 1; } 10%,29% { opacity: 1; } 33%,52% { opacity: 1; } 56%,100% { opacity: 1; } }
+.ill-kms-p1c0 { opacity: 1; animation: ill-kms-p1c0 14s ease-in-out infinite; }
+@keyframes ill-kms-p1c1 { 0% { opacity: 0; } 10%,29% { opacity: 0; } 33%,52% { opacity: 0; } 56%,100% { opacity: 0; } }
+.ill-kms-p1c1 { opacity: 0; animation: ill-kms-p1c1 14s ease-in-out infinite; }
+@keyframes ill-kms-p2c0 { 0% { opacity: 0; } 10%,29% { opacity: 0; } 33%,52% { opacity: 1; } 56%,100% { opacity: 1; } }
+.ill-kms-p2c0 { opacity: 1; animation: ill-kms-p2c0 14s ease-in-out infinite; }
+@keyframes ill-kms-p2c1 { 0% { opacity: 1; } 10%,29% { opacity: 1; } 33%,52% { opacity: 0; } 56%,100% { opacity: 0; } }
+.ill-kms-p2c1 { opacity: 0; animation: ill-kms-p2c1 14s ease-in-out infinite; }
+@keyframes ill-kms-p3c0 { 0% { opacity: 0; } 10%,29% { opacity: 0; } 33%,52% { opacity: 0; } 56%,100% { opacity: 0; } }
+.ill-kms-p3c0 { opacity: 0; animation: ill-kms-p3c0 14s ease-in-out infinite; }
+@keyframes ill-kms-p3c1 { 0% { opacity: 1; } 10%,29% { opacity: 1; } 33%,52% { opacity: 1; } 56%,100% { opacity: 1; } }
+.ill-kms-p3c1 { opacity: 1; animation: ill-kms-p3c1 14s ease-in-out infinite; }
+@keyframes ill-kms-p4c0 { 0% { opacity: 0; } 10%,29% { opacity: 0; } 33%,52% { opacity: 0; } 56%,100% { opacity: 0; } }
+.ill-kms-p4c0 { opacity: 0; animation: ill-kms-p4c0 14s ease-in-out infinite; }
+@keyframes ill-kms-p4c1 { 0% { opacity: 1; } 10%,29% { opacity: 1; } 33%,52% { opacity: 1; } 56%,100% { opacity: 1; } }
+.ill-kms-p4c1 { opacity: 1; animation: ill-kms-p4c1 14s ease-in-out infinite; }
+@keyframes ill-kms-p5c0 { 0% { opacity: 0; } 10%,29% { opacity: 0; } 33%,52% { opacity: 0; } 56%,100% { opacity: 0; } }
+.ill-kms-p5c0 { opacity: 0; animation: ill-kms-p5c0 14s ease-in-out infinite; }
+@keyframes ill-kms-p5c1 { 0% { opacity: 1; } 10%,29% { opacity: 1; } 33%,52% { opacity: 1; } 56%,100% { opacity: 1; } }
+.ill-kms-p5c1 { opacity: 1; animation: ill-kms-p5c1 14s ease-in-out infinite; }
+@keyframes ill-kms-c0 { 0% { transform: translate(30.0px, -119.0px); } 10%,29% { transform: translate(30.0px, -119.0px); } 33%,52% { transform: translate(-15.0px, -3.5px); } 56%,100% { transform: translate(0.0px, 0.0px); } }
+.ill-kms-c0 { transform: translate(0.0px, 0.0px); animation: ill-kms-c0 14s ease-in-out infinite; }
+@keyframes ill-kms-c1 { 0% { transform: translate(-60.0px, 91.0px); } 10%,29% { transform: translate(-60.0px, 91.0px); } 33%,52% { transform: translate(-71.2px, 38.5px); } 56%,100% { transform: translate(0.0px, 0.0px); } }
+.ill-kms-c1 { transform: translate(0.0px, 0.0px); animation: ill-kms-c1 14s ease-in-out infinite; }
+@keyframes ill-kms-all { 0% { opacity: 0 } 4%,94% { opacity: 1 } 100% { opacity: 0 } }
+.ill-kms-all { animation: ill-kms-all 14s linear infinite; }
+.ill-kms-dash { stroke-dasharray: 6 5; }
+</style>
+<path class="k-line" d="M60 20 V230 H510"/>
+<g class="ill-kms-all">
+<circle class="k-fill ill-kms-p0c0" cx="105" cy="209" r="8"/><rect class="k-accent ill-kms-p0c1" x="97" y="201" width="16" height="16"/><circle class="k-fill ill-kms-p1c0" cx="105" cy="188" r="8"/><rect class="k-accent ill-kms-p1c1" x="97" y="180" width="16" height="16"/><circle class="k-fill ill-kms-p2c0" cx="150" cy="209" r="8"/><rect class="k-accent ill-kms-p2c1" x="142" y="201" width="16" height="16"/><circle class="k-fill ill-kms-p3c0" cx="420" cy="62" r="8"/><rect class="k-accent ill-kms-p3c1" x="412" y="54" width="16" height="16"/><circle class="k-fill ill-kms-p4c0" cx="420" cy="41" r="8"/><rect class="k-accent ill-kms-p4c1" x="412" y="33" width="16" height="16"/><circle class="k-fill ill-kms-p5c0" cx="465" cy="62" r="8"/><rect class="k-accent ill-kms-p5c1" x="457" y="54" width="16" height="16"/>
+<g class="ill-kms-c0"><path class="k-line" d="M107.0 189.0 L133.0 215.0 M133.0 189.0 L107.0 215.0"/></g><g class="ill-kms-c1"><path class="k-accent-line" d="M422.0 42.0 L448.0 68.0 M448.0 42.0 L422.0 68.0"/></g>
+</g>
+</svg>

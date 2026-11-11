@@ -1,0 +1,12 @@
+import machine;
+
+List[List[FLOAT]] street = [[1.0], [2.0], [6.0], [7.0], [15.0]];
+
+MACHINE model = machine.agglomerative_clustering(2, "single");
+model.fit(street);
+
+show(model.labels_);
+show(model.children_);
+show(model.distances_);
+show(model.linkage);
+show(model.n_clusters);
