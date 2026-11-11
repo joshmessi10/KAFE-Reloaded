@@ -1,0 +1,22 @@
+<svg viewBox="0 0 600 270" role="img" aria-labelledby="ill-lda-t ill-lda-d" xmlns="http://www.w3.org/2000/svg">
+<title id="ill-lda-t">LDA busca la dirección que mejor separa los grupos / LDA finds the direction that best separates the groups</title>
+<desc id="ill-lda-d">Circles in the lower left and squares in the upper right. A line turns to the direction where the two groups are farthest apart compared with how spread out each one is. Their shadows on that line form a row where the circles and squares do not overlap.</desc>
+<style>
+@keyframes ill-lda-turn { 0%,12% { transform: rotate(-82.9deg) } 45%,100% { transform: rotate(0deg) } }
+.ill-lda-turn { transform-box: view-box; transform-origin: 197.0px 141.0px; animation: ill-lda-turn 10s ease-in-out infinite; }
+@keyframes ill-lda-shadow { 0%,50% { opacity: 0 } 60%,100% { opacity: 1 } }
+.ill-lda-shadow { animation: ill-lda-shadow 10s linear infinite; }
+@keyframes ill-lda-line1d { 0%,65% { opacity: 0 } 75%,100% { opacity: 1 } }
+.ill-lda-line1d { animation: ill-lda-line1d 10s linear infinite; }
+@keyframes ill-lda-all { 0% { opacity: 0 } 4%,94% { opacity: 1 } 100% { opacity: 0 } }
+.ill-lda-all { animation: ill-lda-all 10s linear infinite; }
+.ill-lda-dash { stroke-dasharray: 6 5; }
+</style>
+<path class="k-line" d="M80 20 V245 H330"/>
+<g class="ill-lda-all">
+<g class="ill-lda-turn"><line class="k-accent-line" x1="58.1" y1="158.4" x2="335.9" y2="123.6"/></g>
+<g class="ill-lda-shadow"><line class="k-thin" x1="106" y1="193" x2="101.0" y2="153.0"/><line class="k-thin" x1="132" y1="219" x2="123.4" y2="150.2"/><line class="k-thin" x1="158" y1="167" x2="155.4" y2="146.2"/><line class="k-thin" x1="236" y1="115" x2="238.6" y2="135.8"/><line class="k-thin" x1="288" y1="63" x2="296.2" y2="128.6"/><line class="k-thin" x1="262" y1="89" x2="267.4" y2="132.2"/></g>
+<circle class="k-fill" cx="106" cy="193" r="8"/><circle class="k-fill" cx="132" cy="219" r="8"/><circle class="k-fill" cx="158" cy="167" r="8"/><rect class="k-accent" x="228" y="107" width="16" height="16"/><rect class="k-accent" x="280" y="55" width="16" height="16"/><rect class="k-accent" x="254" y="81" width="16" height="16"/>
+<g class="ill-lda-line1d"><path class="k-line" d="M360 140 H580"/><circle class="k-fill" cx="403.0" cy="140" r="6"/><circle class="k-fill" cx="418.6" cy="140" r="6"/><circle class="k-fill" cx="441.0" cy="140" r="6"/><circle class="k-accent" cx="499.0" cy="140" r="6"/><circle class="k-accent" cx="539.2" cy="140" r="6"/><circle class="k-accent" cx="519.1" cy="140" r="6"/></g>
+</g>
+</svg>

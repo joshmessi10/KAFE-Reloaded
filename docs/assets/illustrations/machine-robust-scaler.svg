@@ -1,0 +1,18 @@
+<svg viewBox="0 0 600 270" role="img" aria-labelledby="ill-rob-t ill-rob-d" xmlns="http://www.w3.org/2000/svg">
+<title id="ill-rob-t">Un dato raro aplasta a StandardScaler, pero no a RobustScaler / An outlier squashes StandardScaler but not RobustScaler</title>
+<desc id="ill-rob-d">Coins 1, 2, 3, 4 and an outlier of 100. With StandardScaler the four normal coins are squashed together between −0.54 and −0.46, and the outlier sits at 2. With RobustScaler they stay spread out at −1, −0.5, 0 and 0.5, and only the outlier flies off to 48.5.</desc>
+<style>
+@keyframes ill-rob-s { 0%,15% { opacity: 0 } 25%,100% { opacity: 1 } }
+.ill-rob-s { animation: ill-rob-s 10s linear infinite; }
+@keyframes ill-rob-r { 0%,45% { opacity: 0 } 55%,100% { opacity: 1 } }
+.ill-rob-r { animation: ill-rob-r 10s linear infinite; }
+@keyframes ill-rob-all { 0% { opacity: 0 } 4%,94% { opacity: 1 } 100% { opacity: 0 } }
+.ill-rob-all { animation: ill-rob-all 10s linear infinite; }
+.ill-rob-dash { stroke-dasharray: 6 5; }
+</style>
+<text class="k-label" x="20" y="45">1 2 3 4 · 100</text>
+<g class="ill-rob-all">
+<g class="ill-rob-s"><text class="k-label" x="20" y="115">Standard</text><path class="k-line" d="M120 120 H560"/><text x="144.0" y="142">-1</text><text x="294.0" y="142">0</text><text x="444.0" y="142">1</text><text x="594.0" y="142">2</text><circle class="k-fill" cx="219.0" cy="120" r="7"/><circle class="k-fill" cx="223.5" cy="120" r="7"/><circle class="k-fill" cx="226.5" cy="120" r="7"/><circle class="k-fill" cx="231.0" cy="120" r="7"/><circle class="k-fill" cx="600.0" cy="120" r="7"/><path class="k-accent-line" d="M216.0 100 H234.0"/></g>
+<g class="ill-rob-r"><text class="k-label" x="20" y="205">Robust</text><path class="k-line" d="M120 210 H560"/><text x="144.0" y="232">-1</text><text x="294.0" y="232">0</text><text x="444.0" y="232">1</text><text x="594.0" y="232">2</text><circle class="k-accent" cx="150.0" cy="210" r="7"/><circle class="k-accent" cx="225.0" cy="210" r="7"/><circle class="k-accent" cx="300.0" cy="210" r="7"/><circle class="k-accent" cx="375.0" cy="210" r="7"/><path class="k-accent-line" d="M645.0 210 H690.0 M682.0 204 L690.0 210 L682.0 216"/><text class="k-label" x="696.0" y="215">48.5</text></g>
+</g>
+</svg>

@@ -1,0 +1,19 @@
+<svg viewBox="0 0 600 270" role="img" aria-labelledby="ill-mmx-t ill-mmx-d" xmlns="http://www.w3.org/2000/svg">
+<title id="ill-mmx-t">MinMaxScaler estira los datos entre 0 y 1 / MinMaxScaler stretches the data between 0 and 1</title>
+<desc id="ill-mmx-d">Pet weights 7, 9, 9 and 15 kilograms on a top ruler. They slide down to a ruler from 0 to 1: the lightest lands on 0, the heaviest on 1, and the two 9 kilogram pets on 0.25.</desc>
+<style>
+@keyframes ill-mmx-m0 { 0%,20% { transform: translate(80.0px, 140.0px) } 60%,100% { transform: translate(0, 0) } }
+.ill-mmx-m0 { animation: ill-mmx-m0 10s ease-in-out infinite; }
+@keyframes ill-mmx-m1 { 0%,20% { transform: translate(50.0px, 140.0px) } 60%,100% { transform: translate(0, 0) } }
+.ill-mmx-m1 { animation: ill-mmx-m1 10s ease-in-out infinite; }
+@keyframes ill-mmx-m2 { 0%,20% { transform: translate(50.0px, 124.0px) } 60%,100% { transform: translate(0, 0) } }
+.ill-mmx-m2 { animation: ill-mmx-m2 10s ease-in-out infinite; }
+@keyframes ill-mmx-m3 { 0%,20% { transform: translate(-40.0px, 140.0px) } 60%,100% { transform: translate(0, 0) } }
+.ill-mmx-m3 { animation: ill-mmx-m3 10s ease-in-out infinite; }
+@keyframes ill-mmx-all { 0% { opacity: 0 } 4%,94% { opacity: 1 } 100% { opacity: 0 } }
+.ill-mmx-all { animation: ill-mmx-all 10s linear infinite; }
+.ill-mmx-dash { stroke-dasharray: 6 5; }
+</style>
+<text class="k-label" x="20" y="64">kg</text><path class="k-line" d="M100 70 H560"/><text class="k-label" x="20" y="204">0–1</text><path class="k-line" d="M100 210 H560"/><text x="92" y="92">5</text><text x="292" y="92">10</text><text x="492" y="92">15</text><text x="90" y="232">0</text><text x="200.0" y="232">0.25</text><text x="310.0" y="232">0.5</text><text x="420.0" y="232">0.75</text><text x="530" y="232">1</text>
+<g class="ill-mmx-all"><circle class="k-accent ill-mmx-m0" cx="100" cy="198" r="8"/><circle class="k-accent ill-mmx-m1" cx="210.0" cy="198" r="8"/><circle class="k-accent ill-mmx-m2" cx="210.0" cy="182" r="8"/><circle class="k-accent ill-mmx-m3" cx="540" cy="198" r="8"/></g>
+</svg>
