@@ -192,10 +192,6 @@ nav:
           - Errores de sintaxis: errors/syntax-errors.md
           - Errores semánticos: errors/semantic-errors.md
           - Referencia de errores: errors/error-reference.md
-      - Extensión de VS Code:
-          - Confiabilidad del tutor: extension/tutor-reliability.md
-          - Alineación de evaluación: extension/evaluation-alignment.md
-      - Guía de estilo: contribuir/guia-de-estilo.md
   - Acerca de:
       - Créditos: about/credits.md
       - Licencia: about/license.md
@@ -395,3 +391,7 @@ not_in_nav: |
   /ejemplos/gesha/nivel-6.md
   /ejemplos/gesha/nivel-7.md
   /ejemplos/gesha/nivel-8.md
+  /contribuir/guia-de-estilo.md
+  /contribuir/guia-de-estilo.en.md
+  /extension/tutor-reliability.md
+  /extension/evaluation-alignment.md

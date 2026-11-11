@@ -1,16 +1,16 @@
-# Formal grammar (EBNF)
+# Gramática formal (EBNF)
 
-The following BNF/EBNF grammar describes the syntax of the KAFE language.
+La siguiente gramática en notación BNF/EBNF describe la sintaxis completa del lenguaje KAFE.
 
-!!! info "Notation"
-    - `::=` defines a production.
-    - `|` separates alternatives.
-    - `[ ]` marks an optional item.
-    - `{ }` marks repetition (zero or more times).
+!!! info "Notación"
+    - `::=` define una producción gramatical.
+    - `|` separa alternativas.
+    - `[ ]` indica un elemento opcional.
+    - `{ }` indica repetición (cero o más veces).
 
 ---
 
-## Programs and declarations
+## Programas y declaraciones { #programs-and-declarations }
 
 ```
 program         ::= { simpleImport ';' } { stmt ';' }
@@ -40,7 +40,7 @@ paramDecl       ::= ID ':' typeDecl
 
 ---
 
-## Types
+## Tipos { #types }
 
 ```
 typeDecl       ::= 'INT' | 'FLOAT' | 'BOOL' | 'STR' | 'VOID'
@@ -53,7 +53,7 @@ paramList_typeDecl ::= typeDecl { ',' typeDecl }
 
 ---
 
-## Statements
+## Estructuras y sentencias { #statements }
 
 ```
 ifElseExpr     ::= 'if' '(' expr ')' ':' block
@@ -71,7 +71,7 @@ lenCall        ::= 'len' '(' expr ')'
 
 ---
 
-## Expressions
+## Expresiones { #expressions }
 
 ```
 expr              ::= logicExpr
@@ -86,24 +86,24 @@ unaryExpr         ::= ('-' | '!') unaryExpr | primaryExpr
 
 ---
 
-## Primary expressions
+## Expresiones primarias { #primary-expressions }
 
 ```
 primaryExpr
-    ::= primaryExpr '[' expr ']'                                  -- Indexing
-    | object                                                      -- Object method or constant
-    | functionCall                                                -- Function call
-    | pourStmt                                                    -- Read input
-    | lenCall                                                     -- Length
-    | 'range' '(' expr [ ',' expr ] [ ',' expr ] ')'               -- Range
-    | 'int' '(' expr ')'                                          -- Cast to INT
-    | 'float' '(' expr ')'                                        -- Cast to FLOAT
-    | 'str' '(' expr ')'                                          -- Cast to STR
-    | 'bool' '(' expr ')'                                         -- Cast to BOOL
-    | lambdaExpr                                                  -- Lambda
+    ::= primaryExpr '[' expr ']'                                  -- Indexación
+    | object                                                      -- Método o constante de objeto
+    | functionCall                                                -- Llamada a función
+    | pourStmt                                                    -- Lectura de entrada
+    | lenCall                                                     -- Longitud
+    | 'range' '(' expr [ ',' expr ] [ ',' expr ] ')'               -- Rango
+    | 'int' '(' expr ')'                                          -- Conversión a INT
+    | 'float' '(' expr ')'                                        -- Conversión a FLOAT
+    | 'str' '(' expr ')'                                          -- Conversión a STR
+    | 'bool' '(' expr ')'                                         -- Conversión a BOOL
+    | lambdaExpr                                                  -- Expresión lambda
     | literal                                                     -- Literal
-    | ID                                                          -- Variable
-    | '(' expr ')'                                                -- Grouping
+    | ID                                                          -- Variable o identificador
+    | '(' expr ')'                                                -- Agrupación
 
 object ::= ID '.' ID '(' [ expr { ',' expr } ] ')'
          | ID '.' ID
@@ -111,7 +111,7 @@ object ::= ID '.' ID '(' [ expr { ',' expr } ] ')'
 
 ---
 
-## Function calls (curriable)
+## Llamadas a función (currificables) { #function-calls }
 
 ```
 functionCall ::= ID '(' [ argList ] ')' { '(' [ argList ] ')' }
@@ -121,7 +121,7 @@ arg          ::= expr | lambdaExpr
 
 ---
 
-## Lambdas
+## Funciones lambda { #lambdas }
 
 ```
 lambdaExpr ::= '(' paramList ')' '=>' expr
@@ -129,7 +129,7 @@ lambdaExpr ::= '(' paramList ')' '=>' expr
 
 ---
 
-## Literals
+## Literales { #literals }
 
 ```
 literal         ::= INT_LITERAL
@@ -150,9 +150,9 @@ BOOL_LITERAL    ::= 'True' | 'False'
 
 ---
 
-## Comments
+## Comentarios { #comments }
 
 ```
-LINE_COMMENT  ::= '--' ~[\r\n]*        (ignored)
-BLOCK_COMMENT ::= '->' ( BLOCK_COMMENT | ~[<] | '<' ~[-] )* '<-' (ignored)
+LINE_COMMENT  ::= '--' ~[\r\n]*        (ignorado)
+BLOCK_COMMENT ::= '->' ( BLOCK_COMMENT | ~[<] | '<' ~[-] )* '<-' (ignorado)
 ```

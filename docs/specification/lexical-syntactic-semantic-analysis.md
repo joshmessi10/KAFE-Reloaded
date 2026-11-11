@@ -1,51 +1,51 @@
-# Lexical, syntactic, and semantic analysis
+# Análisis léxico, sintáctico y semántico
 
-KAFE is technically a **hybrid interpreted language based on the Visitor pattern**. Its execution model follows a sequential three-phase pipeline.
+KAFE es técnicamente un **lenguaje interpretado híbrido basado en el patrón Visitor**. Su modelo de ejecución sigue una tubería (*pipeline*) secuencial de tres etapas.
 
 ---
 
-## Execution pipeline
+## Tubería de ejecución { #execution-pipeline }
 
 ```
 ┌──────────────────────────────────────────────────────────┐
-│                    Source code (.kf)                       │
+│                   Código fuente (.kf)                    │
 └──────────────────────┬───────────────────────────────────┘
                        │
                        ▼
 ┌──────────────────────────────────────────────────────────┐
-│  PHASE 1: LEXICAL ANALYSIS (Lexer - Kafe_Lexer.g4)     │
-│  Converts the character stream into tokens               │
-│  Input: "INT x = 5;" → Tokens: [INT, x, =, 5, ;]    │
+│  FASE 1: ANÁLISIS LÉXICO (Lexer - Kafe_Lexer.g4)         │
+│  Convierte la secuencia de caracteres en tokens          │
+│  Entrada: "INT x = 5;" → Tokens: [INT, x, =, 5, ;]       │
 └──────────────────────┬───────────────────────────────────┘
                        │
                        ▼
 ┌──────────────────────────────────────────────────────────┐
-│  PHASE 2: SYNTAX ANALYSIS (Parser - Kafe_Grammar.g4)   │
-│  Builds an abstract syntax tree (AST)                    │
-│  Validates the language grammar                           │
+│  FASE 2: ANÁLISIS SINTÁCTICO (Parser - Kafe_Grammar.g4)  │
+│  Construye el árbol de sintaxis abstracta (AST)          │
+│  Valida la gramática del lenguaje                        │
 └──────────────────────┬───────────────────────────────────┘
                        │
                        ▼
 ┌──────────────────────────────────────────────────────────┐
-│  PHASE 3: SEMANTIC ANALYSIS AND EXECUTION                │
+│  FASE 3: ANÁLISIS SEMÁNTICO Y EJECUCIÓN                  │
 │  (Visitor - InterpreterVisitor.py)                       │
-│  Traverses the AST, checks types, and evaluates expressions│
-│  Result: Direct program execution                         │
+│  Recorre el AST, comprueba tipos y evalúa expresiones    │
+│  Resultado: Ejecución directa del programa               │
 └──────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## Phase 1: Lexical analysis
+## Fase 1: Análisis léxico { #phase-1-lexical-analysis }
 
-**File**: `Kafe_Lexer.g4`
+**Archivo**: `Kafe_Lexer.g4`
 
-The lexer converts source code into a sequence of tokens using ANTLR4.
+El analizador léxico (*lexer*) convierte el código fuente en una secuencia ordenada de tokens mediante ANTLR4.
 
-### Token definitions
+### Definición de tokens
 
 ```
--- Keywords
+-- Palabras clave
 DRIP        : 'drip';
 SHOW        : 'show';
 RETURN      : 'return';
@@ -55,7 +55,7 @@ ELSE        : 'else';
 FUNC        : 'FUNC';
 IMPORT      : 'import';
 
--- Operators
+-- Operadores
 ADD         : '+';
 SUB         : '-';
 MUL         : '*';
@@ -69,7 +69,7 @@ NEQ         : '!=';
 ASSIGN      : '=';
 NOT         : '!';
 
--- Types
+-- Tipos
 INT_TYPE    : 'INT';
 FLOAT_TYPE  : 'FLOAT';
 BOOL_TYPE   : 'BOOL';
@@ -77,36 +77,36 @@ STRING_TYPE : 'STR';
 VOID_TYPE   : 'VOID';
 LIST        : 'List';
 
--- Literals
+-- Literales
 INT         : [0-9]+;
 FLOAT       : [0-9]+ '.' [0-9]+ ([eE] [+-]? [0-9]+)?;
 BOOL        : 'True' | 'False';
 STRING      : '"' ( ~["\\\r\n] | '\\' . )* '"';
 
--- Identifiers
+-- Identificadores
 ID          : [a-zA-Z_] [a-zA-Z0-9_]*;
 
--- Comments (ignored)
+-- Comentarios (ignorados)
 LINE_COMMENT  : '--' ~[\r\n]* -> skip;
 BLOCK_COMMENT : '->' ( BLOCK_COMMENT | ~[<] | '<' ~[-] )* '<-' -> skip;
 ```
 
-### Tokenization example
+### Ejemplo de tokenización
 
 ```
-Source: INT x = 5 + 3;
+Fuente: INT x = 5 + 3;
 Tokens: [INT_TYPE, ID("x"), ASSIGN, INT("5"), ADD, INT("3"), SEMI]
 ```
 
 ---
 
-## Phase 2: Syntax analysis
+## Fase 2: Análisis sintáctico { #phase-2-syntax-analysis }
 
-**File**: `Kafe_Grammar.g4`
+**Archivo**: `Kafe_Grammar.g4`
 
-The parser validates the code structure against the grammar and builds an AST.
+El analizador sintáctico (*parser*) valida la estructura del código contra las reglas de la gramática y genera el árbol de sintaxis abstracta (AST).
 
-### Main rules
+### Reglas principales
 
 ```
 program   : (simpleImport SEMI)* (stmt SEMI)*;
@@ -118,53 +118,53 @@ stmt      : varDecl | assignStmt | functionDecl
 varDecl   : typeDecl ID (ASSIGN expr)?;
 expr      : logicExpr;
 logicExpr : equalityExpr ((OR | AND) equalityExpr)*;
--- ... (operator precedence is encoded in chained rules)
+-- ... (la precedencia de operadores se codifica en reglas encadenadas)
 ```
 
-### AST generation
+### Generación del AST
 
 ```python
-# In Kafe.py (entry point)
+# En Kafe.py (punto de entrada)
 input_stream = InputStream(source_text)
 lexer = Kafe_GrammarLexer(input_stream)
 tokens = CommonTokenStream(lexer)
 parser = Kafe_GrammarParser(tokens)
-tree = parser.program()  # AST root
+tree = parser.program()  # Raíz del AST
 ```
 
 ---
 
-## Phase 3: Semantic analysis and execution
+## Fase 3: Análisis semántico y ejecución { #phase-3-semantic-analysis-and-execution }
 
-**File**: `InterpreterVisitor.py`
+**Archivo**: `InterpreterVisitor.py`
 
-The visitor traverses the AST to perform:
+El visitante (*visitor*) recorre los nodos del AST para ejecutar:
 
-1. **Dynamic type checking** (at runtime)
-2. **Expression evaluation**
-3. **Statement execution**
+1. **Comprobación dinámica de tipos** (en tiempo de ejecución)
+2. **Evaluación de expresiones**
+3. **Ejecución de sentencias y control de flujo**
 
-### Visitor Pattern
+### Patrón Visitor
 
 ```python
 class InterpreterVisitor(Kafe_GrammarVisitor):
     def __init__(self):
-        self.variables = {}           # Variable store
-        self.scope_stack = [{}]       # Scope stack
-        self.libraries = {            # Available libraries
+        self.variables = {}           # Almacén de variables
+        self.scope_stack = [{}]       # Pila de ámbitos
+        self.libraries = {            # Librerías disponibles
             "numk": [...], "math": [...], ...
         }
 
     def visitVarDecl(self, ctx):
-        # Declare a typed variable
+        # Declaración de variable tipada
         ...
 
     def visitFunctionCall(self, ctx):
-        # Call a function with currying support
+        # Llamada a función con soporte de currificación
         ...
 ```
 
-### Scope management
+### Gestión de ámbitos
 
 ```python
 def push_scope(self):
@@ -179,26 +179,26 @@ def pop_scope(self):
 
 ---
 
-## ANTLR4 parser
+## Analizador sintáctico ANTLR4 { #antlr4-parser }
 
-KAFE uses an **LL(*)** parser that resolves ambiguity through:
+KAFE utiliza un analizador **LL(*)** que resuelve ambigüedades mediante:
 
-1. **Static precedence**: Defined by the order of rules in the grammar.
-2. **Maximal munch (greedy)**: The lexer builds the longest possible token.
-3. **Limited backtracking**: ANTLR4 uses adaptive lookahead.
+1. **Precedencia estática**: Determinada por el orden de las reglas en la gramática.
+2. **Máxima coincidencia (*maximal munch*)**: El lexer construye el token más largo disponible.
+3. **Retroceso acotado (*lookahead* adaptativo)**: ANTLR4 inspecciona símbolos hacia adelante según se requiera.
 
 ---
 
-## Pipeline error handling
+## Manejo de errores en la tubería { #pipeline-error-handling }
 
-| Phase | Error type | Example |
-|------|---------------|---------|
-| **Lexical** | Unrecognized token | Invalid character in code |
-| **Syntactic** | Invalid structure | `INT = 5;` (identifier is missing) |
-| **Semantic** | Incorrect type | `INT x = "hello";` |
-| **Runtime** | Execution error | `x / 0`, index out of range |
+| Fase | Tipo de error | Ejemplo |
+|---|---|---|
+| **Léxica** | Token no reconocido | Carácter inválido en el código |
+| **Sintáctica** | Estructura no válida | `INT = 5;` (falta el identificador) |
+| **Semántica** | Tipo incompatible | `INT x = "hola";` |
+| **Tiempo de ejecución** | Error de ejecución | `x / 0`, índice fuera de rango |
 
-### Custom error listener
+### Oyente de errores personalizado
 
 ```python
 class KafeErrorListener(ErrorListener):

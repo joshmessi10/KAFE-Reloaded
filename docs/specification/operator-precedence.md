@@ -1,70 +1,70 @@
-# Operator precedence
+# Precedencia de operadores
 
-Precedence determines evaluation order when parentheses are absent.
-
----
-
-## Precedence table
-
-| Level | Operators | Associativity | Formal description |
-|-------|-----------|---------------|-------------------|
-| 1 | `()`, `[]`, `.` | Left | Grouping, indexing, and member access |
-| 2 | `f(args)` | Left | Function calls and currying |
-| 3 | `!`, `-` | Right | Unary NOT and negation |
-| 4 | `^` | Right | Exponentiation |
-| 5 | `*`, `/`, `%` | Left | Multiplication, division, and modulo |
-| 6 | `+`, `-` | Left | Addition/concatenation and subtraction |
-| 7 | `<`, `<=`, `>`, `>=` | Left | Relational comparison |
-| 8 | `==`, `!=` | Left | Equality |
-| 9 | `&&`, `\|\|` | Left | Logical conjunction and disjunction (same precedence) |
-
-Assignment is a statement, not an expression, so it is not included in this precedence table. Compound assignment operators such as `+=` and `-=` are not supported.
+La precedencia determina el orden de evaluación de las operaciones cuando no hay paréntesis explícitos.
 
 ---
 
-## Precedence examples
+## Tabla de precedencia { #precedence-table }
+
+| Nivel | Operadores | Asociatividad | Descripción formal |
+|---|---|---|---|
+| 1 | `()`, `[]`, `.` | Izquierda | Agrupación, indexación y acceso a miembros |
+| 2 | `f(args)` | Izquierda | Llamadas a funciones y currificación |
+| 3 | `!`, `-` | Derecha | NOT unario y negación |
+| 4 | `^` | Derecha | Exponenciación |
+| 5 | `*`, `/`, `%` | Izquierda | Multiplicación, división y módulo |
+| 6 | `+`, `-` | Izquierda | Suma/concatenación y resta |
+| 7 | `<`, `<=`, `>`, `>=` | Izquierda | Comparación relacional |
+| 8 | `==`, `!=` | Izquierda | Igualdad y desigualdad |
+| 9 | `&&`, `\|\|` | Izquierda | Conjunción y disyunción lógica (misma precedencia) |
+
+La asignación es una sentencia y no una expresión, por lo que no forma parte de esta tabla. Los operadores de asignación compuesta como `+=` y `-=` no están soportados en el lenguaje.
+
+---
+
+## Ejemplos de precedencia { #precedence-examples }
 
 ```kafe
--- Level 5 vs. 6: multiplication before addition
-show(5 + 4 * 2);      -- 13, not 18
+-- Nivel 5 frente a 6: la multiplicación precede a la suma
+show(5 + 4 * 2);      -- 13, no 18
 
--- Level 4 vs. 5: exponentiation before multiplication
-show(5 ^ 2 * 2);      -- 50, not 100
+-- Nivel 4 frente a 5: la exponenciación precede a la multiplicación
+show(5 ^ 2 * 2);      -- 50, no 100
 
--- Level 3: unary operators
+-- Nivel 3: operadores unarios
 show(-3 - -3);        -- 0
 
--- Parentheses change precedence (level 1)
+-- Los paréntesis modifican la precedencia (nivel 1)
 show((5 + 4) * 2);    -- 18
 ```
 
 ---
 
-## Resolving ambiguities
+## Resolución de ambigüedades { #resolving-ambiguities }
 
-KAFE uses the **LL(*)** parser provided by ANTLR4. Syntactic ambiguities are resolved through:
+KAFE utiliza el analizador sintáctico **LL(*)** provisto por ANTLR4. Las ambigüedades sintácticas se resuelven mediante:
 
-1. **Static precedence**: Defined by the order of rules in the grammar.
-2. **Maximal munch (greedy)**: The lexer always tries to build the longest possible token.
+1. **Precedencia estática**: Definida por el orden secuencial de las reglas en la gramática.
+2. **Máxima coincidencia (*maximal munch* o voraz)**: El analizador léxico siempre intenta construir el token más largo posible.
 
-### Maximal-munch examples
+### Ejemplos de máxima coincidencia
 
 ```
--- The lexer recognizes "123" as one INT token, not as 1, 2, and 3
+-- El analizador reconoce "123" como un único token INT, no como 1, 2 y 3
 123
 
--- "==" is recognized as one EQ token, not as two "=" tokens
+-- "==" se reconoce como un token EQ, no como dos tokens "="
 a == b
 
--- "->" starts a block comment; it is not '-' followed by '>'
--> comment <-
+-- "->" inicia un comentario de bloque; no es '-' seguido de '>'
+-> comentario <-
 ```
 
 ---
 
-## Grammar implementation
+## Implementación en la gramática { #grammar-implementation }
 
-In the ANTLR4 grammar, precedence is encoded with chained rules from highest to lowest:
+En la gramática ANTLR4 de KAFE, la precedencia se implementa mediante reglas encadenadas de mayor a menor jerarquía:
 
 ```
 expr          : logicExpr ;
@@ -77,4 +77,4 @@ powerExpr     : unaryExpr (POW unaryExpr)* ;
 unaryExpr     : (SUB | NOT) unaryExpr | primaryExpr ;
 ```
 
-Each level in the rule hierarchy corresponds to a precedence level in the table.
+Cada nivel en la jerarquía de reglas corresponde exactamente a un nivel de precedencia en la tabla.

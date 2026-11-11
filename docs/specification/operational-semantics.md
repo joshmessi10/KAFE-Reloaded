@@ -1,36 +1,36 @@
-# Operational semantics
+# Semántica operacional
 
-KAFE semantics are described using **Big-Step Operational Semantics**.
-
----
-
-## Program state
-
-The state is defined by the tuple **⟨ρ, σ⟩**:
-
-| Component | Symbol | Description |
-|------------|---------|-------------|
-| **Environment** | ρ (rho) | Maps identifiers to memory locations or direct values |
-| **Store** | σ (sigma) | Holds data for mutable structures such as lists and GESHA objects |
+La semántica formal de KAFE se describe mediante **Semántica Operacional de Paso Grande** (*Big-Step Operational Semantics*).
 
 ---
 
-## Evaluation judgment
+## Estado del programa { #program-state }
+
+El estado de ejecución se define mediante la tupla **⟨ρ, σ⟩**:
+
+| Componente | Símbolo | Descripción |
+|---|---|---|
+| **Entorno** (*environment*) | ρ (rho) | Mapea identificadores a ubicaciones de memoria o valores directos |
+| **Memoria** (*store*) | σ (sigma) | Almacena los datos de estructuras mutables como listas y objetos de GESHA |
+
+---
+
+## Juicio de evaluación { #evaluation-judgment }
 
 > **⟨e, ρ, σ⟩ ⇓ ⟨v, σ'⟩**
 
-This states that expression `e`, in environment `ρ` and store `σ`, evaluates to value `v` and produces a new store `σ'`.
+Esta relación formal establece que la expresión `e`, evaluada bajo el entorno `ρ` y la memoria `σ`, produce el valor `v` y un nuevo estado de memoria `σ'`.
 
 ---
 
-## Semantic rules
+## Reglas semánticas { #semantic-rules }
 
-### Literals
+### Literales
 
 ```
-⟨n, ρ, σ⟩ ⇓ ⟨n, σ⟩      (where n is a numeric literal)
-⟨s, ρ, σ⟩ ⇓ ⟨s, σ⟩      (where s is a string literal)
-⟨b, ρ, σ⟩ ⇓ ⟨b, σ⟩      (where b is a boolean literal)
+⟨n, ρ, σ⟩ ⇓ ⟨n, σ⟩      (donde n es un literal numérico)
+⟨s, ρ, σ⟩ ⇓ ⟨s, σ⟩      (donde s es una cadena de texto)
+⟨b, ρ, σ⟩ ⇓ ⟨b, σ⟩      (donde b es un literal booleano)
 ```
 
 ### Variables
@@ -41,7 +41,7 @@ This states that expression `e`, in environment `ρ` and store `σ`, evaluates t
 ⟨x, ρ, σ⟩ ⇓ ⟨v, σ⟩
 ```
 
-### Assignment
+### Asignación
 
 ```
 ⟨e, ρ, σ⟩ ⇓ ⟨v, σ'⟩    ρ' = ρ[x ↦ loc]    σ'' = σ'[loc ↦ v]
@@ -49,7 +49,7 @@ This states that expression `e`, in environment `ρ` and store `σ`, evaluates t
 ⟨x = e, ρ, σ⟩ ⇓ ⟨v, σ''⟩
 ```
 
-### Arithmetic operations
+### Operaciones aritméticas
 
 ```
 ⟨e1, ρ, σ⟩ ⇓ ⟨v1, σ'⟩    ⟨e2, ρ, σ'⟩ ⇓ ⟨v2, σ''⟩
@@ -57,7 +57,7 @@ This states that expression `e`, in environment `ρ` and store `σ`, evaluates t
 ⟨e1 + e2, ρ, σ⟩ ⇓ ⟨v1 + v2, σ''⟩
 ```
 
-### Conditionals
+### Condicionales
 
 ```
 ⟨e, ρ, σ⟩ ⇓ ⟨True, σ'⟩    ⟨b1, ρ, σ'⟩ ⇓ ⟨v, σ''⟩
@@ -69,7 +69,7 @@ This states that expression `e`, in environment `ρ` and store `σ`, evaluates t
 ⟨if (e): b1; else: b2;, ρ, σ⟩ ⇓ ⟨v, σ''⟩
 ```
 
-### Functions (closures)
+### Funciones (clausuras)
 
 ```
 ρ' = ρ[f ↦ ⟨e, ρ⟩]
@@ -77,7 +77,7 @@ This states that expression `e`, in environment `ρ` and store `σ`, evaluates t
 ⟨drip f(x) => T: e;, ρ, σ⟩ ⇓ ⟨closure, ρ'⟩
 ```
 
-### Function application
+### Aplicación de funciones
 
 ```
 ρ(f) = ⟨e, ρf⟩    ρf' = ρf[x ↦ v]    ⟨e, ρf', σ⟩ ⇓ ⟨v', σ'⟩
@@ -85,40 +85,40 @@ This states that expression `e`, in environment `ρ` and store `σ`, evaluates t
 ⟨f(v), ρ, σ⟩ ⇓ ⟨v', σ'⟩
 ```
 
-### Currying
+### Currificación
 
 ```
-⟨f, ρ, σ⟩ ⇓ ⟨partial_closure, σ⟩    k < n (missing arguments)
+⟨f, ρ, σ⟩ ⇓ ⟨partial_closure, σ⟩    k < n (faltan argumentos)
 ─────────────────────────────────────────────────────────────
 ⟨f(a1...ak), ρ, σ⟩ ⇓ ⟨new_closure, σ⟩
 ```
 
 ---
 
-## Evaluation strategy
+## Estrategia de evaluación { #evaluation-strategy }
 
-- **Eager evaluation**: All expressions and arguments are evaluated completely before they are used.
-- **Left-to-right order**: Operands and arguments are evaluated from left to right.
-
----
-
-## Environment and scope
-
-| Concept | Description |
-|----------|-------------|
-| **Global environment** | Variables declared outside functions |
-| **Local environment** | Variables inside functions or blocks |
-| **Environment closure** | Functions capture ρ when they are defined (shallow copy) |
-| **Scope stack** | `scope_stack` manages nested scopes |
+- **Evaluación voraz (*eager*)**: Todas las expresiones y argumentos se evalúan por completo antes de ser utilizados.
+- **Orden de izquierda a derecha**: Los operandos y argumentos se evalúan estrictamente de izquierda a derecha.
 
 ---
 
-## Mutation
+## Entorno y ámbitos { #environment-and-scope }
+
+| Concepto | Descripción |
+|---|---|
+| **Entorno global** | Variables declaradas fuera de funciones |
+| **Entorno local** | Variables dentro de funciones o bloques |
+| **Clausura del entorno** | Las funciones capturan ρ al ser definidas (copia superficial) |
+| **Pila de ámbitos** | `scope_stack` gestiona los ámbitos anidados |
+
+---
+
+## Mutación { #mutation }
 
 ```
 σ(loc) = v_old    ⟨e, ρ, σ⟩ ⇓ ⟨v_new, σ'⟩
 ─────────────────────────────────────────────
-σ'[loc ↦ v_new] updates the store
+σ'[loc ↦ v_new] actualiza la memoria
 ```
 
-Lists are mutable structures: `list[i] = value` updates the store directly. Strings (STR) are immutable.
+Las listas (`List`) son estructuras mutables: `list[i] = value` actualiza la memoria directamente. Las cadenas (`STR`), por el contrario, son inmutables.
