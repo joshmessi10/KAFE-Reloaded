@@ -1,0 +1,11 @@
+import machine;
+import pardos;
+
+PARDOS pets = pardos.DataFrame(["name", "pet"], [["Luna", "cat"], ["Max", "dog"], ["Nemo", "fish"], ["Tom", "cat"]]);
+
+MACHINE encoder = machine.one_hot_encoder();
+PARDOS wide = encoder.fit_transform(pets, ["pet"]);
+show(wide);
+show(encoder.columns_);
+show(encoder.handle_unknown);
+show(encoder.inverse_transform(wide));

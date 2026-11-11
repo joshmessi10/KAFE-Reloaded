@@ -1,0 +1,10 @@
+import machine;
+import pardos;
+
+PARDOS shirts = pardos.DataFrame(["color", "size"], [["red", "small"], ["blue", "large"], ["red", "medium"], ["green", "small"]]);
+
+MACHINE encoder = machine.ordinal_encoder();
+PARDOS coded = encoder.fit_transform(shirts, ["size"]);
+show(coded);
+show(encoder.columns_);
+show(encoder.inverse_transform(coded));

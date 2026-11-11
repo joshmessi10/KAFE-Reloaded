@@ -1,0 +1,13 @@
+import machine;
+
+List[List[FLOAT]] houses = [[1.0, 5.0, 2.0], [2.0, 3.0, 1.0], [3.0, 8.0, 4.0], [4.0, 1.0, 3.0], [5.0, 6.0, 6.0]];
+List[FLOAT] price = [8.0, 7.0, 18.0, 17.0, 28.0];
+
+MACHINE rfe = machine.recursive_feature_elimination(2);
+rfe.fit(houses, price);
+show(rfe.n_features);
+show(rfe.n_features_in_);
+show(rfe.ranking_);
+show(rfe.support_);
+show(rfe.selected_indices_);
+show(rfe.transform(houses)[0]);

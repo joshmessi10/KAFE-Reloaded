@@ -1,0 +1,12 @@
+import machine;
+
+List[List[FLOAT]] side = [[1.0], [2.0], [3.0], [4.0]];
+List[FLOAT] area = [1.0, 4.0, 9.0, 16.0];
+
+MACHINE poly = machine.polynomial_features(2, False);
+List[List[FLOAT]] wide = poly.fit_transform(side);
+show(wide);
+
+MACHINE model = machine.linear_regression();
+model.fit(wide, area);
+show(model.predict(poly.transform([[5.0]])));

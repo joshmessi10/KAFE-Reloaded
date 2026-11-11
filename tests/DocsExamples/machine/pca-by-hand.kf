@@ -1,0 +1,34 @@
+import math;
+
+List[FLOAT] x = [1.0, 2.0, 3.0, 4.0];
+List[FLOAT] y = [1.0, 3.0, 2.0, 4.0];
+INT n = len(x);
+
+FLOAT mx = 0.0;
+FLOAT my = 0.0;
+for (i in range(0, n)):
+    mx = mx + x[i] / n;
+    my = my + y[i] / n;
+;
+
+FLOAT vx = 0.0;
+FLOAT vy = 0.0;
+FLOAT cxy = 0.0;
+for (i in range(0, n)):
+    vx = vx + (x[i] - mx) * (x[i] - mx) / (n - 1);
+    vy = vy + (y[i] - my) * (y[i] - my) / (n - 1);
+    cxy = cxy + (x[i] - mx) * (y[i] - my) / (n - 1);
+;
+show(math.round(vx, 3));
+show(math.round(vy, 3));
+show(math.round(cxy, 3));
+
+FLOAT half = (vx + vy) / 2;
+FLOAT gap = math.sqrt((vx - vy) * (vx - vy) / 4 + cxy * cxy);
+show(math.round(half + gap, 3));
+show(math.round(half - gap, 3));
+
+FLOAT d = math.sqrt(0.5);
+for (i in range(0, n)):
+    show(math.round((x[i] - mx) * d + (y[i] - my) * d, 2));
+;

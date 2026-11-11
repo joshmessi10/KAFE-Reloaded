@@ -1,0 +1,1 @@
+Exception: pca: PCA: n_components (3) cannot exceed n_features (2)

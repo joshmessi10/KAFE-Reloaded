@@ -1,0 +1,4 @@
+import machine;
+
+MACHINE rfe = machine.recursive_feature_elimination(4);
+rfe.fit([[1.0, 5.0, 2.0], [2.0, 3.0, 1.0], [3.0, 8.0, 4.0], [4.0, 1.0, 3.0]], [8.0, 7.0, 18.0, 17.0]);
