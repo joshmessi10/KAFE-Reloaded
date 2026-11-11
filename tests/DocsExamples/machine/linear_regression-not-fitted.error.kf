@@ -1,0 +1,4 @@
+import machine;
+
+MACHINE model = machine.linear_regression();
+show(model.predict([6.0]));

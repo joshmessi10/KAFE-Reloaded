@@ -1,0 +1,38 @@
+<svg viewBox="0 0 560 210" role="img" aria-labelledby="ill-mfp-t ill-mfp-d" xmlns="http://www.w3.org/2000/svg">
+<title id="ill-mfp-t">fit aprende de ejemplos y predict responde / fit learns from examples and predict answers</title>
+<desc id="ill-mfp-d">Three example rows, each with a question cell and an answer cell, slide into a box: that is fit. Three bars light up inside the box: the numbers the model learned. Then a new row with a question mark slides into the box and an answer comes out on the right: that is predict.</desc>
+<style>
+@keyframes ill-mfp-train { 0%,8% { transform: translateX(0); opacity: 1 } 30%,92% { transform: translateX(150px); opacity: 0 } 100% { transform: translateX(0); opacity: 1 } }
+@keyframes ill-mfp-bars { 0%,28% { opacity: 0 } 36%,100% { opacity: 1 } }
+@keyframes ill-mfp-query { 0%,45% { transform: translateX(0); opacity: 0 } 52% { transform: translateX(0); opacity: 1 } 72%,92% { transform: translateX(150px); opacity: 0 } 100% { transform: translateX(0); opacity: 1 } }
+@keyframes ill-mfp-out { 0%,72% { opacity: 0 } 80%,100% { opacity: 1 } }
+.ill-mfp-train { animation: ill-mfp-train 12s ease-in-out infinite; }
+.ill-mfp-bars { animation: ill-mfp-bars 12s linear infinite; }
+.ill-mfp-query { animation: ill-mfp-query 12s ease-in-out infinite; }
+.ill-mfp-out { animation: ill-mfp-out 12s linear infinite; }
+</style>
+<text class="k-label" x="150" y="38">fit</text>
+<path class="k-thin" d="M130 50 H205 M195 44 L205 50 L195 56"/>
+<text class="k-label" x="368" y="38">predict</text>
+<path class="k-thin" d="M352 50 H427 M417 44 L427 50 L417 56"/>
+<rect class="k-line" x="218" y="30" width="124" height="150" rx="12"/>
+<g class="ill-mfp-bars">
+<rect class="k-accent" x="240" y="70" width="80" height="12" rx="3"/>
+<rect class="k-accent" x="240" y="98" width="52" height="12" rx="3"/>
+<rect class="k-accent" x="240" y="126" width="66" height="12" rx="3"/>
+</g>
+<g class="ill-mfp-train">
+<rect class="k-line" x="30" y="62" width="44" height="24" rx="4"/><rect class="k-fill" x="80" y="62" width="30" height="24" rx="4"/>
+<rect class="k-line" x="30" y="92" width="44" height="24" rx="4"/><rect class="k-fill" x="80" y="92" width="30" height="24" rx="4"/>
+<rect class="k-line" x="30" y="122" width="44" height="24" rx="4"/><rect class="k-fill" x="80" y="122" width="30" height="24" rx="4"/>
+</g>
+<g class="ill-mfp-query">
+<rect class="k-line" x="30" y="160" width="44" height="24" rx="4"/>
+<rect class="k-thin" x="80" y="160" width="30" height="24" rx="4"/>
+<text class="k-label" x="90" y="178">?</text>
+</g>
+<g class="ill-mfp-out">
+<rect class="k-accent" x="440" y="92" width="44" height="28" rx="4"/>
+<path class="k-line" d="M452 106 L459 113 L472 99"/>
+</g>
+</svg>
