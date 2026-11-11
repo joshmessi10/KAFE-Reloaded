@@ -1,0 +1,1 @@
+GESHA layer = gesha.create_dense(1, "sigmoid", [2]);

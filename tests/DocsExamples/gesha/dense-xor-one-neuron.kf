@@ -1,0 +1,12 @@
+import gesha;
+
+List[List[FLOAT]] X = [[0.0, 0.0], [0.0, 1.0], [1.0, 0.0], [1.0, 1.0]];
+List[INT] y = [0, 1, 1, 0];
+
+GESHA output = gesha.create_dense(1, "sigmoid", [2], 0.0, 1);
+GESHA model = gesha.sequential([output]);
+model.compile("adam", "binary_crossentropy", []);
+model.set_lr(0.5);
+model.fit(X, y, 12, 1);
+
+show(model.predict_label(X));

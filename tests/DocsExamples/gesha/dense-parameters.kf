@@ -1,0 +1,9 @@
+import gesha;
+
+GESHA layer = gesha.create_dense(3, "relu", [4], 0.0, 1);
+List[List[FLOAT]] w = layer.weights;
+List[FLOAT] b = layer.biases;
+show(len(w));
+show(len(w[0]));
+show(len(b));
+show(len(w) * len(w[0]) + len(b));

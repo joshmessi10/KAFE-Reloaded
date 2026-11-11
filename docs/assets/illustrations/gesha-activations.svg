@@ -1,0 +1,24 @@
+<svg viewBox="0 0 600 270" role="img" aria-labelledby="ill-act-t ill-act-d" xmlns="http://www.w3.org/2000/svg">
+<title id="ill-act-t">Tres funciones de activación / Three activation functions</title>
+<desc id="ill-act-d">Three curves draw one after another: sigmoid, an S between 0 and 1; tanh, an S between −1 and 1; and ReLU, flat at 0 for negative inputs and a straight line for positive ones. Dots mark sigmoid and tanh at −2, 0 and 2.</desc>
+<style>
+@keyframes ill-act-sig { 0%,5% { opacity: 0 } 15%,100% { opacity: 1 } }
+.ill-act-sig { animation: ill-act-sig 10s linear infinite; }
+@keyframes ill-act-tanh { 0%,25% { opacity: 0 } 35%,100% { opacity: 1 } }
+.ill-act-tanh { animation: ill-act-tanh 10s linear infinite; }
+@keyframes ill-act-relu { 0%,45% { opacity: 0 } 55%,100% { opacity: 1 } }
+.ill-act-relu { animation: ill-act-relu 10s linear infinite; }
+@keyframes ill-act-pts { 0%,65% { opacity: 0 } 75%,100% { opacity: 1 } }
+.ill-act-pts { animation: ill-act-pts 10s linear infinite; }
+@keyframes ill-act-all { 0% { opacity: 0 } 4%,94% { opacity: 1 } 100% { opacity: 0 } }
+.ill-act-all { animation: ill-act-all 10s linear infinite; }
+.ill-act-dash { stroke-dasharray: 6 5; }
+</style>
+<path class="k-thin" d="M50 135 H560 M300 20 V250"/><text x="172" y="160">−2</text><text x="416" y="160">2</text><text x="306" y="60">1</text><text x="306" y="220">−1</text>
+<g class="ill-act-all">
+<g class="ill-act-sig"><path class="k-line" d="M60 133.6 L66 133.4 L72 133.2 L78 133.1 L84 132.9 L90 132.7 L96 132.4 L102 132.2 L108 131.9 L114 131.6 L120 131.2 L126 130.8 L132 130.4 L138 130.0 L144 129.5 L150 128.9 L156 128.3 L162 127.7 L168 127.0 L174 126.3 L180 125.5 L186 124.6 L192 123.7 L198 122.6 L204 121.6 L210 120.4 L216 119.2 L222 117.9 L228 116.5 L234 115.0 L240 113.5 L246 111.9 L252 110.2 L258 108.5 L264 106.7 L270 104.8 L276 102.9 L282 101.0 L288 99.0 L294 97.0 L300 95.0 L306 93.0 L312 91.0 L318 89.0 L324 87.1 L330 85.2 L336 83.3 L342 81.5 L348 79.8 L354 78.1 L360 76.5 L366 75.0 L372 73.5 L378 72.1 L384 70.8 L390 69.6 L396 68.4 L402 67.4 L408 66.3 L414 65.4 L420 64.5 L426 63.7 L432 63.0 L438 62.3 L444 61.7 L450 61.1 L456 60.5 L462 60.0 L468 59.6 L474 59.2 L480 58.8 L486 58.4 L492 58.1 L498 57.8 L504 57.6 L510 57.3 L516 57.1 L522 56.9 L528 56.8 L534 56.6 L540 56.4"/><text class="k-label" x="470" y="49">sigmoid</text></g>
+<g class="ill-act-tanh"><path class="k-accent-line" d="M60 214.9 L66 214.9 L72 214.9 L78 214.9 L84 214.9 L90 214.9 L96 214.8 L102 214.8 L108 214.7 L114 214.7 L120 214.6 L126 214.5 L132 214.4 L138 214.3 L144 214.1 L150 213.9 L156 213.7 L162 213.4 L168 213.1 L174 212.6 L180 212.1 L186 211.5 L192 210.7 L198 209.8 L204 208.7 L210 207.4 L216 205.8 L222 203.9 L228 201.7 L234 199.0 L240 195.9 L246 192.3 L252 188.1 L258 183.3 L264 178.0 L270 172.0 L276 165.4 L282 158.3 L288 150.8 L294 143.0 L300 135.0 L306 127.0 L312 119.2 L318 111.7 L324 104.6 L330 98.0 L336 92.0 L342 86.7 L348 81.9 L354 77.7 L360 74.1 L366 71.0 L372 68.3 L378 66.1 L384 64.2 L390 62.6 L396 61.3 L402 60.2 L408 59.3 L414 58.5 L420 57.9 L426 57.4 L432 56.9 L438 56.6 L444 56.3 L450 56.1 L456 55.9 L462 55.7 L468 55.6 L474 55.5 L480 55.4 L486 55.3 L492 55.3 L498 55.2 L504 55.2 L510 55.1 L516 55.1 L522 55.1 L528 55.1 L534 55.1 L540 55.1"/><text class="k-label" x="470" y="80.2">tanh</text></g>
+<g class="ill-act-relu"><path class="k-line ill-act-dash" d="M60 135.0 L66 135.0 L72 135.0 L78 135.0 L84 135.0 L90 135.0 L96 135.0 L102 135.0 L108 135.0 L114 135.0 L120 135.0 L126 135.0 L132 135.0 L138 135.0 L144 135.0 L150 135.0 L156 135.0 L162 135.0 L168 135.0 L174 135.0 L180 135.0 L186 135.0 L192 135.0 L198 135.0 L204 135.0 L210 135.0 L216 135.0 L222 135.0 L228 135.0 L234 135.0 L240 135.0 L246 135.0 L252 135.0 L258 135.0 L264 135.0 L270 135.0 L276 135.0 L282 135.0 L288 135.0 L294 135.0 L300 135.0 L306 127.0 L312 119.0 L318 111.0 L324 103.0 L330 95.0 L336 87.0 L342 79.0 L348 71.0 L354 63.0 L360 55.0 L366 47.0 L372 39.0 L378 31.0 L384 23.0"/><text class="k-label" x="390.0" y="27.0">ReLU</text></g>
+<g class="ill-act-pts"><circle class="k-fill" cx="180" cy="125.5" r="6"/><circle class="k-accent" cx="180" cy="212.1" r="6"/><circle class="k-fill" cx="300" cy="95.0" r="6"/><circle class="k-accent" cx="300" cy="135.0" r="6"/><circle class="k-fill" cx="420" cy="64.5" r="6"/><circle class="k-accent" cx="420" cy="57.9" r="6"/></g>
+</g>
+</svg>

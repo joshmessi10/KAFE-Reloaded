@@ -1,0 +1,4 @@
+import gesha;
+
+GESHA relu = gesha.sequential([gesha.relu_layer()]);
+show(relu.predict([-2.0, 0.0, 2.0]));
