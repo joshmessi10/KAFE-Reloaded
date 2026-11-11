@@ -1,0 +1,16 @@
+import math;
+
+List[FLOAT] real = [4.0, 6.0, 8.0, 10.0];
+List[FLOAT] guess = [3.0, 7.0, 6.0, 10.0];
+
+FLOAT abs_sum = 0.0;
+FLOAT sq_sum = 0.0;
+for (i in range(0, len(real))):
+    FLOAT e = real[i] - guess[i];
+    show(e);
+    abs_sum = abs_sum + math.abs(e);
+    sq_sum = sq_sum + e * e;
+;
+show(abs_sum / len(real));
+show(sq_sum / len(real));
+show(math.round(math.sqrt(sq_sum / len(real)), 2));

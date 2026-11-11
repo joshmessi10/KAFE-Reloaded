@@ -1,0 +1,7 @@
+import machine;
+import math;
+
+List[INT] real = [1, 1, 1, 1, 0, 0, 0, 0, 0, 0];
+List[INT] guess = [1, 1, 1, 0, 1, 1, 0, 0, 0, 0];
+
+show(math.round(machine.f1_score(real, guess), 3));

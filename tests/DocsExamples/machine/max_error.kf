@@ -1,0 +1,6 @@
+import machine;
+
+List[FLOAT] real = [4.0, 6.0, 8.0, 10.0];
+List[FLOAT] guess = [3.0, 7.0, 6.0, 10.0];
+
+show(machine.max_error(real, guess));

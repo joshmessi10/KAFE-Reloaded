@@ -1,0 +1,7 @@
+import machine;
+import math;
+
+List[FLOAT] real = [4.0, 6.0, 8.0, 10.0];
+List[FLOAT] guess = [3.0, 7.0, 6.0, 10.0];
+
+show(math.round(machine.mean_absolute_percentage_error(real, guess), 2));

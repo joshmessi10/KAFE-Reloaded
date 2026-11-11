@@ -1,0 +1,5 @@
+import machine;
+
+MACHINE encoder = machine.label_encoder();
+encoder.fit(["pear", "apple", "kiwi"]);
+show(encoder.transform(["mango"]));

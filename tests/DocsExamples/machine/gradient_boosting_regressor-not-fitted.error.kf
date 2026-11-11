@@ -1,0 +1,4 @@
+import machine;
+
+MACHINE model = machine.gradient_boosting_regressor(10, 0.5, 1);
+show(model.predict([1.0]));

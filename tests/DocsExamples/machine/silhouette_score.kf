@@ -1,0 +1,7 @@
+import machine;
+import math;
+
+List[List[FLOAT]] homes = [[1.0], [2.0], [3.0], [6.0], [8.0]];
+List[INT] group = [0, 0, 0, 1, 1];
+
+show(math.round(machine.silhouette_score(homes, group), 3));

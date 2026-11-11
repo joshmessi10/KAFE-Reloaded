@@ -1,0 +1,1 @@
+Exception: machine: roc_auc_score: only supports binary classification

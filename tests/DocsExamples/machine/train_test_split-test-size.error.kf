@@ -1,0 +1,5 @@
+import machine;
+
+List[List[FLOAT]] hours = [[1.0], [2.0], [3.0], [4.0]];
+List[FLOAT] grade = [3.0, 5.0, 7.0, 9.0];
+MACHINE split = machine.train_test_split(hours, grade, 20.0, 42);

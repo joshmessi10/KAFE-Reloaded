@@ -1,0 +1,7 @@
+import machine;
+import math;
+
+List[INT] real = [1, 1, 1, 1, 0, 0, 0, 0, 0, 0];
+List[FLOAT] spam = [0.9, 0.8, 0.7, 0.3, 0.6, 0.55, 0.2, 0.2, 0.1, 0.1];
+
+show(math.round(machine.roc_auc_score(real, spam), 3));

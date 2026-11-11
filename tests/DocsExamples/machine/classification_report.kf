@@ -1,0 +1,6 @@
+import machine;
+
+List[INT] real = [1, 1, 1, 1, 0, 0, 0, 0, 0, 0];
+List[INT] guess = [1, 1, 1, 0, 1, 1, 0, 0, 0, 0];
+
+show(machine.classification_report(real, guess));

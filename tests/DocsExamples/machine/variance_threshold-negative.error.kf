@@ -1,0 +1,3 @@
+import machine;
+
+MACHINE filter = machine.variance_threshold(-1.0);

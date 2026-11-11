@@ -1,0 +1,4 @@
+import machine;
+
+MACHINE lda = machine.linear_discriminant_analysis();
+lda.fit([[2.0, 1.0], [3.0, 2.0]], [0, 0]);

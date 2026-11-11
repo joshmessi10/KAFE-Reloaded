@@ -1,0 +1,12 @@
+import machine;
+import gesha;
+import math;
+
+List[List[FLOAT]] X = [[0.0], [1.0], [2.0], [3.0]];
+List[FLOAT] y = [0.0, 1.0, 2.0, 3.0];
+GESHA output = gesha.create_dense(1, "linear", [1], 0.0, 42);
+GESHA network = gesha.sequential([output]);
+network.compile("adam", "mse", []);
+network.fit(X, y, 5, 2);
+List[List[FLOAT]] p = network.predict(X);
+show(math.round(machine.mean_squared_error(y, p), 2));
