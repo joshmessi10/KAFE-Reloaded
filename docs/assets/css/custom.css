@@ -58,11 +58,6 @@
   --kafe-soft-bg: #1b1f10;
 }
 
-/* Section titles in the left navigation stand out from the links. */
-.md-nav--primary .md-nav__item--section > .md-nav__link {
-  color: var(--md-default-fg-color);
-}
-
 .md-nav--primary .md-nav__link--active {
   font-weight: 700;
 }
