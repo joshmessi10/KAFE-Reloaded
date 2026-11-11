@@ -1,0 +1,3 @@
+FUNC(INT)=>INT square = (x: INT) => x * x;
+show(square(5));
+show(square(12));

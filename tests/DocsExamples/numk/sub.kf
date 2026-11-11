@@ -1,0 +1,5 @@
+import numk;
+
+List[List[INT]] before = [[10, 20], [30, 40]];
+List[List[INT]] sold = [[1, 2], [3, 4]];
+show(numk.sub(before, sold));

@@ -1,0 +1,6 @@
+drip licuadora(fruta: STR) => STR:
+    return "jugo de " + fruta;
+;
+
+show(licuadora("mango"));
+show(licuadora("fresa"));

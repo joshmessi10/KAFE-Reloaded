@@ -1,0 +1,5 @@
+drip saludar(nombre: STR) => VOID:
+    show("Hola " + nombre);
+;
+
+saludar("Ana");

@@ -1,0 +1,4 @@
+import math;
+
+show(math.isnan(math.nan));
+show(math.isnan(3.0));

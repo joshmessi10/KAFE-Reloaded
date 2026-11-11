@@ -1,0 +1,4 @@
+import math;
+
+show(math.radians(180));
+show(math.radians(90));

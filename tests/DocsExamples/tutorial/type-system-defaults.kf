@@ -1,0 +1,10 @@
+INT a;
+FLOAT b;
+BOOL c;
+STR d;
+List[INT] e;
+show(a);
+show(b);
+show(c);
+show(d);
+show(e);

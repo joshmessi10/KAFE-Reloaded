@@ -1,0 +1,4 @@
+import math;
+
+show(math.sqrt(25));
+show(math.sqrt(2));

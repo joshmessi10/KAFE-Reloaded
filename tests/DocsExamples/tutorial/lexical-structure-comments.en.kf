@@ -1,0 +1,12 @@
+-- Single-line comment: KAFE ignores it.
+INT points = 10;  -- It can also go at the end of a line.
+->
+  Multiline comment.
+  Everything between the arrows is ignored.
+<-
+->
+  Level 1
+  -> Level 2, inside level 1 <-
+  Still in level 1
+<-
+show(points);

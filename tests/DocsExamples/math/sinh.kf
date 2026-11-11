@@ -1,0 +1,4 @@
+import math;
+
+show(math.sinh(0));
+show(math.sinh(1));

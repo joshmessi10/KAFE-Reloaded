@@ -1,0 +1,4 @@
+import math;
+
+show(math.lgamma(5));
+show(math.log(24));

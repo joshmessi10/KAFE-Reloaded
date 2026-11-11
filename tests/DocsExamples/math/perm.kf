@@ -1,0 +1,4 @@
+import math;
+
+show(math.perm(5, 2));
+show(math.perm(10, 3));

@@ -1,0 +1,9 @@
+INT age = 10;
+FLOAT height = 1.35;
+BOOL likes_coffee = True;
+STR name = 'Ana';
+show(age);
+show(height);
+show(likes_coffee);
+show(name);
+show(2 ^ 100);

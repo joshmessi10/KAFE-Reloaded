@@ -1,0 +1,27 @@
+<svg viewBox="0 0 560 230" role="img" aria-labelledby="ill-fn-t ill-fn-d" xmlns="http://www.w3.org/2000/svg">
+<title id="ill-fn-t">Una función es como una licuadora / A function is like a blender</title>
+<desc id="ill-fn-d">A fruit goes into a box labeled drip, the box shakes, and a glass on the right fills with juice: input, process, output.</desc>
+<style>
+@keyframes ill-fn-in { 0% { transform: translate(0,0); opacity: 1 } 25% { transform: translate(150px,40px); opacity: 1 } 30%,100% { transform: translate(150px,40px); opacity: 0 } }
+@keyframes ill-fn-shake { 0%,30% { transform: rotate(0) } 34% { transform: rotate(-3deg) } 38% { transform: rotate(3deg) } 42% { transform: rotate(-3deg) } 46% { transform: rotate(3deg) } 50%,100% { transform: rotate(0) } }
+@keyframes ill-fn-fill { 0%,50% { transform: scaleY(0) } 75%,92% { transform: scaleY(1) } 100% { transform: scaleY(0) } }
+@keyframes ill-fn-drip { 0%,50% { opacity: 0; transform: translateY(0) } 55% { opacity: 1 } 75% { opacity: 1; transform: translateY(40px) } 76%,100% { opacity: 0 } }
+.ill-fn-in { animation: ill-fn-in 5s ease-in infinite; }
+.ill-fn-box { transform-box: fill-box; transform-origin: 50% 100%; animation: ill-fn-shake 5s linear infinite; }
+.ill-fn-fill { transform-box: fill-box; transform-origin: 50% 100%; animation: ill-fn-fill 5s ease-out infinite; }
+.ill-fn-drip { animation: ill-fn-drip 5s linear infinite; }
+</style>
+<g class="ill-fn-in"><circle class="k-accent" cx="60" cy="60" r="22"/><path class="k-line" d="M60 38 Q64 26 74 24"/></g>
+<text x="26" y="120" font-size="13">in</text>
+<g class="ill-fn-box">
+<path class="k-line" d="M190 70 H330 L312 170 H208 Z"/>
+<rect class="k-line" x="200" y="170" width="120" height="40" rx="8"/>
+<text class="k-label" x="236" y="196" font-size="16">drip</text>
+<path class="k-thin" d="M230 120 L260 105 L290 120"/>
+</g>
+<path class="k-line" d="M330 110 H458 Q470 110 470 122 V128"/>
+<circle class="k-accent ill-fn-drip" cx="470" cy="134" r="5"/>
+<rect class="k-accent ill-fn-fill" x="437" y="168" width="66" height="41"/>
+<path class="k-line" d="M428 150 L436 210 H504 L512 150"/>
+<text x="518" y="190" font-size="13">out</text>
+</svg>

@@ -1,0 +1,4 @@
+import math;
+
+show(math.ceil(2.1));
+show(math.ceil(-2.9));

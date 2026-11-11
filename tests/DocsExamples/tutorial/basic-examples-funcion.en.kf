@@ -1,0 +1,10 @@
+drip add(a: INT, b: INT) => INT:
+    return a + b;
+;
+show(add(3, 4));
+-- Currying: giving only the first value creates a new function
+drip subtract(a: INT, b: INT) => INT:
+    return a - b;
+;
+FUNC(INT)=>INT subtractFrom5 = subtract(5);
+show(subtractFrom5(3));

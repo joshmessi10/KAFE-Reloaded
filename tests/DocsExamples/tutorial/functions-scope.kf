@@ -1,0 +1,11 @@
+INT x = 10;
+drip example() => VOID:
+    INT x = 20;
+    show(x);
+;
+drip tryToChange() => VOID:
+    x = 50;
+;
+example();
+tryToChange();
+show(x);

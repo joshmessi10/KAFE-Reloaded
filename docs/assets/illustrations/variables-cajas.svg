@@ -1,0 +1,43 @@
+<svg viewBox="0 0 560 220" role="img" aria-labelledby="ill-var-t ill-var-d" xmlns="http://www.w3.org/2000/svg">
+<title id="ill-var-t">Variables como cajas con etiqueta / Variables as labeled boxes</title>
+<desc id="ill-var-d">Four open boxes labeled INT, STR, FLOAT and BOOL. The values 10, "Ana", 1.35 and True fall one by one into their box.</desc>
+<style>
+@keyframes ill-var-drop { 0% { transform: translateY(-70px); opacity: 0 } 12% { opacity: 1 } 30%,88% { transform: translateY(0); opacity: 1 } 100% { transform: translateY(0); opacity: 0 } }
+@keyframes ill-var-glow { 0%,25% { opacity: 0 } 32%,40% { opacity: 0.4 } 50%,100% { opacity: 0 } }
+.ill-var-v { animation: ill-var-drop 6s cubic-bezier(.3,1.4,.6,1) infinite; }
+.ill-var-g { opacity: 0; animation: ill-var-glow 6s ease-out infinite; }
+.ill-var-2 { animation-delay: .5s; } .ill-var-3 { animation-delay: 1s; } .ill-var-4 { animation-delay: 1.5s; }
+</style>
+<g transform="translate(20 0)">
+<rect class="k-accent ill-var-g" x="0" y="110" width="110" height="80" rx="8"/>
+<path class="k-line" d="M0 110 V182 Q0 190 8 190 H102 Q110 190 110 182 V110"/>
+<path class="k-line" d="M0 110 L-14 96 M110 110 L124 96"/>
+<rect class="k-paper" x="25" y="168" width="60" height="20" rx="4"/><rect class="k-thin" x="25" y="168" width="60" height="20" rx="4"/>
+<text class="k-label" x="40" y="183">INT</text>
+<text class="ill-var-v" x="40" y="148" font-size="24">10</text>
+</g>
+<g transform="translate(155 0)">
+<rect class="k-accent ill-var-g ill-var-2" x="0" y="110" width="110" height="80" rx="8"/>
+<path class="k-line" d="M0 110 V182 Q0 190 8 190 H102 Q110 190 110 182 V110"/>
+<path class="k-line" d="M0 110 L-14 96 M110 110 L124 96"/>
+<rect class="k-paper" x="25" y="168" width="60" height="20" rx="4"/><rect class="k-thin" x="25" y="168" width="60" height="20" rx="4"/>
+<text class="k-label" x="40" y="183">STR</text>
+<text class="ill-var-v ill-var-2" x="18" y="148" font-size="22">"Ana"</text>
+</g>
+<g transform="translate(290 0)">
+<rect class="k-accent ill-var-g ill-var-3" x="0" y="110" width="110" height="80" rx="8"/>
+<path class="k-line" d="M0 110 V182 Q0 190 8 190 H102 Q110 190 110 182 V110"/>
+<path class="k-line" d="M0 110 L-14 96 M110 110 L124 96"/>
+<rect class="k-paper" x="20" y="168" width="70" height="20" rx="4"/><rect class="k-thin" x="20" y="168" width="70" height="20" rx="4"/>
+<text class="k-label" x="30" y="183">FLOAT</text>
+<text class="ill-var-v ill-var-3" x="25" y="148" font-size="24">1.35</text>
+</g>
+<g transform="translate(425 0)">
+<rect class="k-accent ill-var-g ill-var-4" x="0" y="110" width="110" height="80" rx="8"/>
+<path class="k-line" d="M0 110 V182 Q0 190 8 190 H102 Q110 190 110 182 V110"/>
+<path class="k-line" d="M0 110 L-14 96 M110 110 L124 96"/>
+<rect class="k-paper" x="25" y="168" width="60" height="20" rx="4"/><rect class="k-thin" x="25" y="168" width="60" height="20" rx="4"/>
+<text class="k-label" x="36" y="183">BOOL</text>
+<text class="ill-var-v ill-var-4" x="22" y="148" font-size="24">True</text>
+</g>
+</svg>

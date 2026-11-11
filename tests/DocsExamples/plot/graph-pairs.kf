@@ -1,0 +1,9 @@
+import plot;
+import files;
+
+plot.figure();
+plot.graph([[1, 2], [2, 5], [3, 1], [4, 4]], "point");
+plot.render();
+
+-- clean up
+files.delete("graph-pairs.svg");

@@ -1,0 +1,19 @@
+<svg width="600" height="600" xmlns="http://www.w3.org/2000/svg">
+<rect width="100%" height="100%" fill="white"/>
+<path d="M 240,300 L 60.0,300.00000000000006 A 180,180 0 0,1 420.0,300.0 Z" fill="#f4d03f" stroke="white" stroke-width="1"/>
+<text x="240.0" y="180.0" font-size="12" text-anchor="middle" dominant-baseline="middle">50.0%</text>
+<path d="M 240,300 L 420.0,300.0 A 180,180 0 0,1 184.37694101250946,471.19017293312766 Z" fill="#82e0aa" stroke="white" stroke-width="1"/>
+<text x="310.5342302750968" y="397.0820393249937" font-size="12" text-anchor="middle" dominant-baseline="middle">30.0%</text>
+<path d="M 240,300 L 184.37694101250946,471.19017293312766 A 180,180 0 0,1 60.0,300.00000000000006 Z" fill="#ec7063" stroke="white" stroke-width="1"/>
+<text x="142.91796067500633" y="370.5342302750968" font-size="12" text-anchor="middle" dominant-baseline="middle">20.0%</text>
+<rect x="420" y="15" width="160" height="120" fill="white" stroke="#ccc" rx="5"/>
+<text x="430" y="40" font-size="12" font-weight="bold">
+  <tspan x="430" dy="0">Legend</tspan>
+</text>
+<rect x="430" y="60" width="10" height="10" fill="#f4d03f"/>
+<text x="445" y="70" font-size="10">A</text>
+<rect x="430" y="80" width="10" height="10" fill="#82e0aa"/>
+<text x="445" y="90" font-size="10">B</text>
+<rect x="430" y="100" width="10" height="10" fill="#ec7063"/>
+<text x="445" y="110" font-size="10">C</text>
+</svg>

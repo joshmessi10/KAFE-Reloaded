@@ -1,0 +1,3 @@
+List[INT] nums = [1, 2, 1, 3];
+remove(nums, 1);
+show(nums);

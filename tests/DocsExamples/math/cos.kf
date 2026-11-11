@@ -1,0 +1,4 @@
+import math;
+
+show(math.cos(0));
+show(math.cos(math.pi));

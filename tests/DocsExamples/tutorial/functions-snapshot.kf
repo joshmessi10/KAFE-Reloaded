@@ -1,0 +1,5 @@
+INT bonus = 10;
+FUNC(INT)=>INT addBonus = (n: INT) => n + bonus;
+show(addBonus(1));
+bonus = 100;
+show(addBonus(1));

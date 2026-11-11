@@ -1,0 +1,4 @@
+import pardos;
+
+PARDOS pets = pardos.read_json("data/pets.json");
+show(pets);

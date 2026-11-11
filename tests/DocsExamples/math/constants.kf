@@ -1,0 +1,7 @@
+import math;
+
+show(math.pi);
+show(math.e);
+show(math.tau);
+show(math.inf);
+show(math.nan);

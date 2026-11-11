@@ -1,0 +1,16 @@
+show(5 + 4);
+show(10 - 3);
+show(3 * 4);
+show(10 / 4);
+show(5 ^ 2);
+show(17 % 5);
+show(5 + 4 * 2);
+show((5 + 4) * 2);
+show(4 == 5);
+show(4 != 5);
+show(6 <= 6);
+show(True && False);
+show(True || False);
+show(!True);
+show("Hello" + " " + "KAFE");
+show([1, 2] + [3, 4]);

@@ -1,0 +1,2 @@
+import huggingface;
+show("huggingface is ready");

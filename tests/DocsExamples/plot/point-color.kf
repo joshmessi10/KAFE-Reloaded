@@ -1,0 +1,10 @@
+import plot;
+import files;
+
+plot.figure();
+plot.pointColor("orange");
+plot.graph([1, 2, 3, 4], [1, 4, 9, 16], "point");
+plot.render();
+
+-- clean up
+files.delete("point-color.svg");

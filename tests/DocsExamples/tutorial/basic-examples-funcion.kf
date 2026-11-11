@@ -1,0 +1,10 @@
+drip sumar(a: INT, b: INT) => INT:
+    return a + b;
+;
+show(sumar(3, 4));
+-- Currificación: dar solo el primer valor crea una función nueva
+drip restar(a: INT, b: INT) => INT:
+    return a - b;
+;
+FUNC(INT)=>INT restarDe5 = restar(5);
+show(restarDe5(3));

@@ -1,0 +1,5 @@
+import numk;
+
+List[List[INT]] sales = [[1, 2], [3, 4]];
+show(numk.sum_axis(sales, 0));
+show(numk.sum_axis(sales, 1));

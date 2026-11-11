@@ -1,0 +1,4 @@
+import math;
+
+show(math.log10(1000));
+show(math.log10(0.01));

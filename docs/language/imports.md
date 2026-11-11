@@ -1,80 +1,63 @@
-# Import system
+# Imports
 
-The module system extends the language by loading built-in libraries or custom KAFE files.
+KAFE trae poco "en el bolsillo": variables, listas, funciones y `show`. Para matemáticas, gráficas, tablas de datos o inteligencia artificial necesitas **librerías**. Un `import` le dice a KAFE qué librería vas a usar.
 
----
+## La idea en una frase
 
-## Syntax
+`import nombre;` (en inglés, *importar*) trae una librería o un archivo `.kf` a tu programa para que puedas usar lo que contiene.
 
-```kafe
-import library_name;
-```
+## Una comparación de la vida diaria
 
----
+Piensa en una **caja de herramientas**. No cargas todas las herramientas del mundo: antes de empezar sacas las que vas a necesitar. Si vas a colgar un cuadro, sacas el martillo. Si después intentas usar un taladro que no sacaste, no lo encuentras.
 
-## Built-in libraries
-
-| Import name | Library | Purpose |
-|----------------------|----------|-----------|
-| `numk` | KafeNUMK | NumPy-style linear algebra |
-| `math` | KafeMATH | Mathematical functions |
-| `plot` | KafePLOT | Data visualization (SVG) |
-| `files` | KafeFILES | File I/O |
-| `gesha` | KafeGESHA | Deep learning and neural networks |
-| `pardos` | KafePARDOS | DataFrames and CSV |
-| `machine` | KafeMACHINE | ML utilities |
+## Tu primer import
 
 ```kafe
-import numk;
-import math;
-import plot;
-import files;
-import gesha;
-import pardos;
-import machine;
+--8<-- "tests/DocsExamples/tutorial/imports-math.kf"
 ```
 
----
-
-## Import rules
-
-1. **Placement**: Imports must appear at the beginning of the file.
-2. **Scope**: An import is global to the file.
-3. **Aliases**: Aliases (`as`) are not currently supported.
-4. **Error**: Using a library that has not been imported causes a runtime error.
-
----
-
-## Module resolution algorithm
-
-When `import M;` is used for a user module, the runtime searches for `M.kf` in this order. Built-in library names resolve through the library registry instead:
-
-1. The directory of the currently executing KAFE file.
-2. `src/language_components/imports/` in the KAFE installation.
-3. `src/language_components/` in the KAFE installation.
-
-```kafe
--- If the current file is /project/program.kf
--- and it imports utilities, KAFE searches:
---   1. /project/utilities.kf
---   2. <KAFE installation>/src/language_components/imports/utilities.kf
---   3. <KAFE installation>/src/language_components/utilities.kf
+```text
+--8<-- "tests/DocsExamples/tutorial/imports-math.expec"
 ```
 
----
+!!! tip "¿Qué pasó aquí?"
+    1. `import math;` sacó la caja de herramientas de matemáticas.
+    2. `math.sqrt(16)` usó la función `sqrt` (raíz cuadrada) **de** la librería `math`. El punto `.` se lee "de": "`sqrt` de `math`".
+    3. `math.pi` no lleva paréntesis: es una **constante**, un valor guardado en la librería.
 
-## Importing KAFE files
+## Reglas de los imports
 
-You can import your own `.kf` files:
+- Escribe un `import` por línea, cada uno con su `;`. No puedes importar varias librerías separadas por comas.
+- Los imports van **al principio** del archivo, antes de cualquier otra línea.
+- Un import vale para **todo** el archivo.
+- No existen alias: no puedes escribir `import math as m;`.
+- Las claves distinguen mayúsculas y minúsculas: `math` funciona, `Math` no.
 
-```kafe
--- In main.kf
-import utilities;
+!!! warning "Un import en medio del programa detiene todo en silencio"
+    Si escribes un `import` después de otra línea (por ejemplo, después de un `show`), KAFE ejecuta lo anterior y luego **se detiene sin mostrar ningún mensaje**. Pon siempre todos los imports arriba.
 
--- utilities.kf must be in one of the search locations
-```
+## Las librerías de KAFE
 
-### Creating a module
+Cada librería tiene una **clave**: la palabra exacta que escribes después de `import`.
+
+| Clave | Librería | Para qué sirve |
+|---|---|---|
+| `math` | KafeMATH | Funciones y constantes matemáticas: raíces, potencias, `pi`… [Ver página](../libraries/math.md) |
+| `numk` | KafeNUMK | Vectores y matrices, al estilo de NumPy. [Ver página](../libraries/numk.md) |
+| `plot` | KafePLOT | Dibujar gráficas (líneas, puntos, barras) como imágenes SVG. [Ver página](../libraries/plot.md) |
+| `files` | KafeFILES | Leer y escribir archivos de texto. [Ver página](../libraries/files.md) |
+| `pardos` | KafePARDOS | Tablas de datos (DataFrames) y archivos CSV, al estilo de Pandas. [Ver página](../libraries/pardos.md) |
+| `machine` | KafeMACHINE | Aprendizaje automático: modelos, preprocesamiento y métricas. [Ver página](../libraries/machine.md) |
+| `gesha` | KafeGESHA | Redes neuronales y aprendizaje profundo. [Ver página](../libraries/gesha.md) |
+| `huggingface` | KafeHF | Cargar conjuntos de datos de Hugging Face. Necesita un paquete opcional. [Ver página](../bibliotecas/huggingface.md) |
+| `kaggle` | KafeKAGGLE | Descargar conjuntos de datos públicos de Kaggle. Necesita un paquete opcional. [Ver página](../bibliotecas/kaggle.md) |
+
+!!! note "`geshaDeep` y `geshaV2` son nombres viejos"
+    La clave oficial para aprendizaje profundo es `gesha`. Las claves `geshaDeep` y `geshaV2` todavía funcionan y llevan a la misma librería, pero están **obsoletas**: se mantienen solo para que los programas antiguos sigan funcionando y se quitarán más adelante. En programas nuevos usa `gesha`.
+
+## Importar tus propios archivos
+
+También puedes guardar funciones en un archivo `.kf` y usarlas desde otro. Supón que tienes estos dos archivos en la misma carpeta:
 
 ```kafe
 -- utilities.kf
@@ -91,48 +74,57 @@ drip isEven(n: INT) => BOOL:
 -- program.kf
 import utilities;
 
-show(utilities.add(3, 4));  -- 7
-show(utilities.isEven(4)); -- True
+show(add(3, 4));
+show(isEven(4));
 ```
 
----
+Al ejecutar `program.kf` verás `7` y `True`.
 
-## Cycle and cache handling
+!!! warning "Sin prefijo"
+    Las funciones de tu archivo se usan **por su nombre**, sin `utilities.` delante: `add(3, 4)`, no `utilities.add(3, 4)`. El prefijo con punto solo funciona con las librerías de la tabla de arriba. Escribir `utilities.add(3, 4)` da el error `Variable 'utilities' not defined`.
 
-KAFE uses a cache to:
+¿Qué hace KAFE con `import utilities;`?
 
-1. **Optimize loading**: A module is executed only the first time it is imported.
-2. **Prevent cycles**: If module A imports B and B imports A, the second import is ignored.
-3. **Maintain consistency**: Definitions are retrieved from the cache.
+1. Revisa si `utilities` es una de las librerías de la tabla. Si lo es, la activa y listo.
+2. Si no, busca el archivo `utilities.kf` en este orden:
+    1. La carpeta del archivo que estás ejecutando.
+    2. `src/language_components/imports/` dentro de la instalación de KAFE.
+    3. `src/language_components/` dentro de la instalación de KAFE.
+3. Ejecuta el archivo completo una sola vez. Todo lo que define (funciones y variables) queda disponible en tu programa, y si el archivo tiene un `show`, también verás su salida.
+
+??? info "Para curiosos 🤓: imports repetidos y circulares"
+    KAFE recuerda qué archivos ya importó. Si importas el mismo archivo dos veces, la segunda vez no hace nada. Esto también evita los **ciclos**: si `module_a.kf` importa `module_b.kf` y `module_b.kf` importa `module_a.kf`, el segundo import se ignora y el programa no se queda dando vueltas.
+
+## Errores comunes
+
+### Usar una librería sin importarla
 
 ```kafe
--- Circular import example (prevented)
--- module_a.kf
-import module_b;
-drip functionA() => VOID: show("A"); ;
-
--- module_b.kf
-import module_a;  -- Ignored because of the cache
-drip functionB() => VOID: show("B"); ;
+--8<-- "tests/DocsExamples/tutorial/imports-not-imported.error.kf"
 ```
 
----
+```text
+--8<-- "tests/DocsExamples/tutorial/imports-not-imported.error.stderr.expec"
+```
 
-## Complete example
+Es el taladro que no sacaste de la caja. Agrega `import math;` en la primera línea.
+
+### Escribir la clave con otra mayúscula
 
 ```kafe
--- Main program
-import math;
-import numk;
-
--- Use functions from math
-FLOAT pi = math.pi;
-show(math.sqrt(16));  -- 4.0
-
--- Use functions from numk
-List[List[INT]] A = [[1, 2], [3, 4]];
-List[List[INT]] B = [[5, 6], [7, 8]];
-
-show(numk.add(A, B));      -- [[6,8],[10,12]]
-show(numk.transpose(A));   -- [[1,3],[2,4]]
+--8<-- "tests/DocsExamples/tutorial/imports-wrong-case.error.kf"
 ```
+
+```text
+--8<-- "tests/DocsExamples/tutorial/imports-wrong-case.error.stderr.expec"
+```
+
+`Math` no es una librería de KAFE, así que KAFE la busca como archivo `Math.kf` y no lo encuentra (`<REPO>` es la carpeta donde está KAFE). Escribe la clave exactamente como en la tabla: `math`.
+
+## ¿Qué aprendiste?
+
+- `import clave;` va al principio del archivo, una librería por línea.
+- Lo que trae una librería se usa con un punto: `math.sqrt(16)`.
+- También puedes importar tus propios archivos `.kf` y usar sus funciones por su nombre.
+
+[Siguiente: Librerías: MATH :material-arrow-right:](../libraries/math.md){ .md-button .md-button--primary }

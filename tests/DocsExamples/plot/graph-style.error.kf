@@ -1,0 +1,4 @@
+import plot;
+
+plot.figure();
+plot.graph([1, 2, 3], [10, 20, 30], "dots");

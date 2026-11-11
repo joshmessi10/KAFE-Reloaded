@@ -1,0 +1,24 @@
+<svg viewBox="0 0 560 210" role="img" aria-labelledby="ill-nkr-t ill-nkr-d" xmlns="http://www.w3.org/2000/svg">
+<title id="ill-nkr-t">reshape: los mismos huevos, otra caja / reshape: same eggs, another carton</title>
+<desc id="ill-nkr-d">Six numbers 1 to 6 start in one long row with shape (6,). The first three move up to form the first row of a table and the last three form the second row. The result has shape (2, 3) and the numbers keep their order.</desc>
+<style>
+@keyframes ill-nkr-top { 0%,15% { transform: translate(-100px, 110px) } 45%,92% { transform: translate(0, 0) } 100% { transform: translate(-100px, 110px) } }
+@keyframes ill-nkr-bot { 0%,15% { transform: translate(20px, 70px) } 45%,92% { transform: translate(0, 0) } 100% { transform: translate(20px, 70px) } }
+@keyframes ill-nkr-lab { 0%,45% { opacity: 0 } 52%,92% { opacity: 1 } 100% { opacity: 0 } }
+.ill-nkr-top { animation: ill-nkr-top 7s ease-in-out infinite; }
+.ill-nkr-bot { animation: ill-nkr-bot 7s ease-in-out infinite; }
+.ill-nkr-lab { animation: ill-nkr-lab 7s linear infinite; }
+</style>
+<text x="20" y="185">(6,)</text>
+<path class="k-thin" d="M100 200 H340"/>
+<g class="ill-nkr-top">
+<rect class="k-line" x="200" y="50" width="40" height="40" rx="20"/><rect class="k-line" x="240" y="50" width="40" height="40" rx="20"/><rect class="k-line" x="280" y="50" width="40" height="40" rx="20"/>
+<text x="215" y="75">1</text><text x="255" y="75">2</text><text x="295" y="75">3</text>
+</g>
+<g class="ill-nkr-bot">
+<rect class="k-line" x="200" y="90" width="40" height="40" rx="20"/><rect class="k-line" x="240" y="90" width="40" height="40" rx="20"/><rect class="k-line" x="280" y="90" width="40" height="40" rx="20"/>
+<text x="215" y="115">4</text><text x="255" y="115">5</text><text x="295" y="115">6</text>
+</g>
+<rect class="k-accent-line ill-nkr-lab" x="194" y="44" width="132" height="92" rx="8"/>
+<text class="k-label ill-nkr-lab" x="350" y="95">(2, 3)</text>
+</svg>

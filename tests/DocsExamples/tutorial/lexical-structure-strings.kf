@@ -1,0 +1,11 @@
+STR single = 'Hello';
+STR double = "World";
+STR empty = "";
+show(single);
+show(double);
+show(empty);
+show("line 1\nline 2");
+show("a\tb");
+show("back\\slash");
+show("say \"hi\"");
+show('it\'s');

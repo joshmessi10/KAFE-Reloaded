@@ -1,0 +1,3 @@
+show(True + 1);
+show(True + True);
+show(1 == True);

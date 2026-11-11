@@ -1,0 +1,4 @@
+STR texto = pour("¿Cuántos años tienes? ");
+INT edad = int(texto);
+show("El año que viene tendrás:");
+show(edad + 1);

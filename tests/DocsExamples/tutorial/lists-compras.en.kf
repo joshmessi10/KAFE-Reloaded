@@ -1,0 +1,6 @@
+List[STR] shopping = ["bread", "milk"];
+append(shopping, "eggs");
+show(shopping);
+remove(shopping, "bread");
+show(shopping);
+show(len(shopping));

@@ -1,0 +1,3 @@
+import files;
+
+STR content = files.read("missing.txt");

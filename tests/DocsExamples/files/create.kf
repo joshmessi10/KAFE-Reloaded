@@ -1,0 +1,8 @@
+import files;
+
+files.create("create-demo.txt");
+STR content = files.read("create-demo.txt");
+show(content == "");
+
+-- clean up
+files.delete("create-demo.txt");

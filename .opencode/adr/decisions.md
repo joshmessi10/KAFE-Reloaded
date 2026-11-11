@@ -1081,3 +1081,32 @@ Material already provides the FastAPI-like layout, so no theme change is needed.
 - Two MkDocs configurations with separate `docs_dir`: rejected because it duplicates configuration and deployment.
 - Exact FastAPI teal/amber palette: rejected by the user in favor of the logo colors.
 - Moving files into new folders now: deferred to avoid breaking URLs before content is rewritten.
+
+## ADR-0036: Documentation Examples Are Tested Fixtures
+
+- **Status**: accepted
+- **Date**: 2026-11-09
+
+### Context
+
+The beginner documentation (ADR-0035) will contain hundreds of KAFE examples: one or more per library function plus every lesson and tutorial page. Examples pasted into Markdown silently drift from the interpreter when a library changes, and readers who copy a broken example have no way to tell.
+
+### Decision
+
+Every runnable KAFE example shown in the documentation lives as a fixture under `tests/DocsExamples/<area>/`: `<name>.kf` with `<name>.expec`, or `<name>.error.kf` with `.error.expec` and `.error.stderr.expec` for common mistakes. `tests/test_DocsExamples.py` collects them with the existing `tests/utils.py` helpers, so they run in the normal pytest gate with `PYTHONWARNINGS=error` and child-process coverage. Pages include the same files with `pymdownx.snippets` (`--8<--`). Examples whose code and output are language-neutral are shared by both languages; examples with Spanish text or identifiers have an `<name>.en.kf` counterpart. Examples that need network access or optional packages are not run; only their missing-dependency path is tested. The docs deployment trigger also watches `tests/DocsExamples/`. Illustrations are inline animated SVG files in `docs/assets/illustrations/` that use theme classes from `custom.css` and respect `prefers-reduced-motion`.
+
+### Rationale
+
+Including the tested file is the smallest mechanism that guarantees the displayed code and output match the interpreter, and it reuses the existing fixture harness instead of adding a documentation test tool.
+
+### Consequences
+
+- A library change that breaks a documented example fails CI.
+- The test suite grows by several hundred short child-process runs.
+- Writers cannot use illustrative output that the interpreter does not produce.
+
+### Alternatives Considered
+
+- Examples pasted directly into Markdown and checked by hand: rejected because they drift.
+- A doctest-style extractor that parses Markdown code blocks: rejected as extra custom infrastructure.
+- GIF or video animations: rejected by the user in favor of lightweight theme-aware SVG.

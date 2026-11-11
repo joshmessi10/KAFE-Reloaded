@@ -1,0 +1,5 @@
+-- Una receta: cada línea es una instrucción
+show("1. Calentar la leche");
+show("2. Agregar el chocolate");
+show("3. Revolver");
+show("¡Listo!");

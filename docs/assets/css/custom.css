@@ -46,8 +46,22 @@
   opacity: 1;
 }
 
+/* Full horizontal logo (bean + KAFE + RELOADED). */
+.md-header__button.md-logo {
+  margin: 0.2rem 0.4rem;
+}
+
 .md-header__button.md-logo img {
-  height: 1.8rem;
+  height: 2.1rem;
+  width: auto;
+}
+
+/* The logo already says KAFE Reloaded, so hide the repeated site name
+   while the logo is visible (wide screens); keep the page title topic. */
+@media screen and (min-width: 76.25em) {
+  .md-header__title:not(.md-header__title--active) .md-header__topic:first-child {
+    visibility: hidden;
+  }
 }
 
 /* Thin lime line under the header, a nod to the logo's "RELOADED" bars. */
@@ -157,3 +171,76 @@
   font-size: 1.08em;
   color: var(--md-typeset-color);
 }
+
+/* ---------- Illustrations ---------- */
+
+/* Inline SVG figures. Shapes use these classes so they follow the theme.
+   Each SVG holds its own prefixed @keyframes; the static style of every shape
+   is its final state, so with reduced motion the finished picture shows. */
+.kafe-fig {
+  margin: 1.5rem auto;
+  text-align: center;
+}
+
+.kafe-fig svg {
+  width: 100%;
+  max-width: 34rem;
+  height: auto;
+  color: var(--md-default-fg-color);
+  overflow: visible;
+}
+
+.kafe-fig figcaption {
+  font-size: 0.75rem;
+  color: var(--md-default-fg-color--light);
+  max-width: 30rem;
+  margin: 0.4rem auto 0;
+}
+
+.kafe-fig .k-line { fill: none; stroke: currentColor; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+.kafe-fig .k-thin { fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; opacity: 0.45; }
+.kafe-fig .k-fill { fill: currentColor; }
+.kafe-fig .k-soft { fill: var(--md-default-fg-color--lightest); }
+.kafe-fig .k-accent { fill: var(--md-accent-fg-color); }
+.kafe-fig .k-accent-line { fill: none; stroke: var(--md-accent-fg-color); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+.kafe-fig .k-paper { fill: var(--md-default-bg-color); }
+.kafe-fig svg { font-size: 14px; } /* inherited, so a font-size attribute on <text> still wins */
+.kafe-fig text { fill: currentColor; font-family: var(--md-code-font-family, monospace); }
+.kafe-fig text.k-label { font-family: var(--md-text-font-family, sans-serif); font-weight: 700; }
+
+@media (prefers-reduced-motion: reduce) {
+  .kafe-fig svg * {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* KAFE syntax colors (kafe-highlight.js): Material lays code out as a grid
+   of Pygments line spans; our token spans are inline, so use a block. */
+.md-typeset .language-kafe code[data-kafe-hl] {
+  display: block;
+}
+
+/* KAFE token palette (light / dark), readable on each code background. */
+[data-md-color-scheme="default"] .language-kafe {
+  --kafe-tk-keyword: #8a2be2; --kafe-tk-type: #0b7a75; --kafe-tk-func: #1f5fbf;
+  --kafe-tk-string: #b45309; --kafe-tk-number: #c2185b; --kafe-tk-comment: #6b7280;
+  --kafe-tk-op: #4b5563; --kafe-tk-cast: #0e7490;
+}
+[data-md-color-scheme="slate"] .language-kafe {
+  --kafe-tk-keyword: #d19bff; --kafe-tk-type: #5eead4; --kafe-tk-func: #7cb7ff;
+  --kafe-tk-string: #fbbf77; --kafe-tk-number: #ff8fb8; --kafe-tk-comment: #9ca3af;
+  --kafe-tk-op: #c6f21a; --kafe-tk-cast: #67e8f9;
+}
+.md-typeset .language-kafe .k { color: var(--kafe-tk-keyword); font-weight: 600; }
+.md-typeset .language-kafe .kt { color: var(--kafe-tk-type); font-weight: 600; }
+.md-typeset .language-kafe .nf { color: var(--kafe-tk-func); }
+.md-typeset .language-kafe .nb { color: var(--kafe-tk-cast); }
+.md-typeset .language-kafe .s1,
+.md-typeset .language-kafe .s2 { color: var(--kafe-tk-string); }
+.md-typeset .language-kafe .m,
+.md-typeset .language-kafe .kc { color: var(--kafe-tk-number); }
+.md-typeset .language-kafe .c1,
+.md-typeset .language-kafe .cm { color: var(--kafe-tk-comment); font-style: italic; }
+.md-typeset .language-kafe .o,
+.md-typeset .language-kafe .p { color: var(--kafe-tk-op); }

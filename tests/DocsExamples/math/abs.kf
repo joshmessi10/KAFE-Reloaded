@@ -1,0 +1,5 @@
+import math;
+
+show(math.abs(-7));
+show(math.abs(3.5));
+show(math.abs(0));

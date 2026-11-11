@@ -1,0 +1,12 @@
+import plot;
+import files;
+
+List[INT] x = [1, 2, 3, 4];
+List[INT] y = [1, 4, 9, 16];
+
+plot.figure();
+plot.graph(x, y);
+plot.render();
+
+-- clean up
+files.delete("figure.svg");

@@ -1,0 +1,9 @@
+drip half(x: FLOAT) => FLOAT:
+    return x / 2.0;
+;
+
+drip apply(f: FUNC(INT) => INT, n: INT) => INT:
+    return f(n);
+;
+
+show(apply(half, 4));

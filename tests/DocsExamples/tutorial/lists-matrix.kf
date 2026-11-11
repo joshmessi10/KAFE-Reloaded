@@ -1,0 +1,12 @@
+List[List[INT]] matrix = [
+    [1, 2, 3],
+    [4, 5, 6],
+    [7, 8, 9]
+];
+show(matrix[0]);
+show(matrix[1][2]);
+show(matrix[-1][-1]);
+matrix[1][1] = 0;
+show(matrix);
+show(len(matrix));
+show(len(matrix[0]));

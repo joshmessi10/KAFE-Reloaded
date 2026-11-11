@@ -1,0 +1,6 @@
+import math;
+
+show(0.1 + 0.2 == 0.3);
+show(math.isclose(0.1 + 0.2, 0.3));
+show(math.isclose(1.0, 1.1));
+show(math.isclose(1.0, 1.1, 0.2));

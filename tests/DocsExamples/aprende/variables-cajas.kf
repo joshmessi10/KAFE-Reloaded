@@ -1,0 +1,10 @@
+INT edad = 10;
+STR nombre = "Ana";
+FLOAT altura = 1.35;
+BOOL tieneMascota = True;
+show(nombre);
+show(edad);
+show(altura);
+show(tieneMascota);
+edad = edad + 1;
+show(edad);

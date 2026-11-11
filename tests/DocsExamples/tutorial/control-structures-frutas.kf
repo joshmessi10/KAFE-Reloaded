@@ -1,0 +1,4 @@
+List[STR] frutas = ["manzana", "pera", "uva"];
+for (fruta in frutas):
+    show("Me gusta la " + fruta);
+;

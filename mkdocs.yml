@@ -1,4 +1,4 @@
-site_name: KAFE
+site_name: KAFE Reloaded
 site_description: Aprende a programar, Machine Learning y redes neuronales con KAFE, paso a paso.
 site_url: https://joshmessi10.github.io/KAFE-Reloaded/
 repo_url: https://github.com/joshmessi10/KAFE-Reloaded
@@ -7,7 +7,7 @@ repo_name: KAFE-Reloaded
 theme:
   name: material
   language: es
-  logo: assets/images/kafe-bean.png
+  logo: assets/images/kafe-logo-horizontal.png
   favicon: assets/images/favicon.png
   palette:
     # Colors come from the KAFE Reloaded logo and are defined in custom.css.
@@ -63,13 +63,54 @@ nav:
           - Listas: language/lists.md
           - Imports: language/imports.md
   - Librerías:
-      - NUMK (álgebra lineal): libraries/numk.md
-      - MATH (matemáticas): libraries/math.md
-      - PLOT (gráficas): libraries/plot.md
-      - FILES (archivos): libraries/files.md
-      - PARDOS (tablas de datos): libraries/pardos.md
-      - Datasets de Kaggle: bibliotecas/kaggle.md
-      - Datasets de Hugging Face: bibliotecas/huggingface.md
+      - MATH (matemáticas):
+          - Resumen y cómo funciona: libraries/math.md
+          - Constantes: libraries/math/constants.md
+          - Redondeo: libraries/math/rounding.md
+          - Potencias y raíces: libraries/math/powers.md
+          - Logaritmos: libraries/math/logarithms.md
+          - Restos y divisores: libraries/math/division.md
+          - Trigonometría: libraries/math/trigonometry.md
+          - Hiperbólicas: libraries/math/hyperbolic.md
+          - Combinatoria: libraries/math/combinatorics.md
+          - Listas de números: libraries/math/lists.md
+          - Comprobar números: libraries/math/checks.md
+          - Funciones especiales: libraries/math/special.md
+      - FILES (archivos):
+          - Resumen y cómo funciona: libraries/files.md
+          - Referencia: libraries/files/reference.md
+      - PLOT (gráficas):
+          - Resumen y cómo funciona: libraries/plot.md
+          - Líneas y puntos: libraries/plot/lines.md
+          - Barras y pasteles: libraries/plot/bars-pies.md
+          - Títulos, ejes y colores: libraries/plot/style.md
+      - NUMK (álgebra lineal):
+          - Resumen y cómo funciona: libraries/numk.md
+          - Crear y medir tensores: libraries/numk/creating.md
+          - Operaciones casilla por casilla: libraries/numk/element-wise.md
+          - Multiplicar matrices: libraries/numk/matrix-multiplication.md
+          - Broadcasting: libraries/numk/broadcasting.md
+          - "Reducir: sumas y máximos": libraries/numk/reductions.md
+          - Cambiar la forma: libraries/numk/reshaping.md
+          - Convolución: libraries/numk/convolution.md
+      - PARDOS (tablas de datos):
+          - Resumen y cómo funciona: libraries/pardos.md
+          - Crear y leer tablas: libraries/pardos/tables.md
+          - Mirar los datos: libraries/pardos/inspect.md
+          - Elegir columnas y filas: libraries/pardos/select.md
+          - Contar y resumir: libraries/pardos/summarize.md
+          - Datos que faltan: libraries/pardos/missing.md
+          - Juntar tablas: libraries/pardos/combine.md
+          - Guardar tablas: libraries/pardos/save.md
+          - De tabla a números para MACHINE: libraries/pardos/to-numbers.md
+      - Datasets de Kaggle:
+          - Resumen y cómo funciona: bibliotecas/kaggle.md
+          - Tablas: bibliotecas/kaggle/tablas.md
+          - Imágenes: bibliotecas/kaggle/imagenes.md
+          - Frases con etiqueta: bibliotecas/kaggle/texto.md
+      - Datasets de Hugging Face:
+          - Resumen y cómo funciona: bibliotecas/huggingface.md
+          - Referencia: bibliotecas/huggingface/referencia.md
       - MACHINE (Machine Learning):
           - Resumen: libraries/machine.md
           - Contratos y límites de la API: libraries/machine/contracts.md
@@ -167,6 +208,10 @@ markdown_extensions:
       anchor_linenums: true
       line_spans: __span
       pygments_lang_class: true
+      # KAFE has no Pygments lexer: keep the block name so kafe-highlight.js can color it.
+      extend_pygments_lang:
+        - name: kafe
+          lang: text
   - pymdownx.inlinehilite
   - pymdownx.snippets:
       check_paths: true
@@ -188,6 +233,7 @@ extra_javascript:
   - https://cdn.jsdelivr.net/npm/katex@0.16.25/dist/katex.min.js
   - https://cdn.jsdelivr.net/npm/katex@0.16.25/dist/contrib/auto-render.min.js
   - assets/js/math.js
+  - assets/js/kafe-highlight.js
 
 extra_css:
   - https://cdn.jsdelivr.net/npm/katex@0.16.25/dist/katex.min.css
@@ -298,6 +344,39 @@ plugins:
             Alineación de evaluación: Evaluation alignment
             Guía de estilo: Style guide
             Acerca de: About
+            Resumen y cómo funciona: Overview and internals
+            Constantes: Constants
+            Redondeo: Rounding
+            Potencias y raíces: Powers and roots
+            Logaritmos: Logarithms
+            Restos y divisores: Remainders and divisors
+            Trigonometría: Trigonometry
+            Hiperbólicas: Hyperbolic
+            Combinatoria: Combinatorics
+            Listas de números: Lists of numbers
+            Comprobar números: Checking numbers
+            Funciones especiales: Special functions
+            Referencia: Reference
+            Líneas y puntos: Lines and points
+            Barras y pasteles: Bars and pies
+            Títulos, ejes y colores: Titles, axes and colors
+            Crear y medir tensores: Creating and measuring tensors
+            Operaciones casilla por casilla: Element-wise operations
+            Multiplicar matrices: Multiplying matrices
+            "Reducir: sumas y máximos": "Reductions: sums and maximums"
+            Cambiar la forma: Changing the shape
+            Convolución: Convolution
+            Crear y leer tablas: Creating and reading tables
+            Mirar los datos: Looking at the data
+            Elegir columnas y filas: Choosing columns and rows
+            Contar y resumir: Counting and summarizing
+            Datos que faltan: Missing data
+            Juntar tablas: Combining tables
+            Guardar tablas: Saving tables
+            De tabla a números para MACHINE: From table to numbers for MACHINE
+            Tablas: Tables
+            Imágenes: Images
+            Frases con etiqueta: Labeled sentences
             Créditos: Credits
             Licencia: License
 

@@ -1,0 +1,5 @@
+import pardos;
+
+PARDOS students = pardos.read_csv("data/students.csv");
+PARDOS renamed = students.rename("score", "grade");
+show(renamed.columns);

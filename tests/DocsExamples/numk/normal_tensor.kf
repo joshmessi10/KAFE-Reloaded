@@ -1,0 +1,4 @@
+import numk;
+
+show(numk.normal_tensor([3], 170, 10, 1));
+show(numk.shape(numk.normal_tensor([2, 2])));

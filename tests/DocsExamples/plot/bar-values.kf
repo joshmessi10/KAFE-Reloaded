@@ -1,0 +1,9 @@
+import plot;
+import files;
+
+plot.figure();
+plot.barValues(True);
+plot.bar(["A", "B", "C"], [4, 9, 6]);
+
+-- clean up
+files.delete("bar-values.svg");

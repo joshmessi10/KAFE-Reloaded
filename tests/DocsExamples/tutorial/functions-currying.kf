@@ -1,0 +1,8 @@
+drip add(a: INT, b: INT) => INT:
+    return a + b;
+;
+show(add(10, 5));
+show(add(10)(5));
+FUNC(INT)=>INT addTen = add(10);
+show(addTen(5));
+show(addTen(100));

@@ -1,0 +1,28 @@
+<svg viewBox="0 0 640 260" role="img" aria-labelledby="ill-pin-t ill-pin-d" xmlns="http://www.w3.org/2000/svg">
+<title id="ill-pin-t">plot.title → series → render → demo.svg</title>
+<desc id="ill-pin-d">Step 1: settings such as title and color are stored in module variables. Step 2: graph adds a series with its x and y lists to a list of series. Step 3: render finds the smallest and largest values and scales every point to pixels, drawing lines and circles. Step 4: the SVG text is saved in a file named like the program, and the settings are reset.</desc>
+<style>
+@keyframes ill-pin-s1 { 0%,2% { opacity: 0 } 8%,92% { opacity: 1 } 100% { opacity: 0 } }
+@keyframes ill-pin-s2 { 0%,20% { opacity: 0 } 26%,92% { opacity: 1 } 100% { opacity: 0 } }
+@keyframes ill-pin-s3 { 0%,40% { opacity: 0 } 46%,92% { opacity: 1 } 100% { opacity: 0 } }
+@keyframes ill-pin-s4 { 0%,64% { opacity: 0 } 70%,92% { opacity: 1 } 100% { opacity: 0 } }
+@keyframes ill-pin-draw { 0%,46% { stroke-dashoffset: 260 } 62%,100% { stroke-dashoffset: 0 } }
+@keyframes ill-pin-pt { 0%,48% { opacity: 0 } 60%,92% { opacity: 1 } 100% { opacity: 0 } }
+.ill-pin-s1 { animation: ill-pin-s1 11s linear infinite; }
+.ill-pin-s2 { animation: ill-pin-s2 11s linear infinite; }
+.ill-pin-s3 { animation: ill-pin-s3 11s linear infinite; }
+.ill-pin-s4 { animation: ill-pin-s4 11s linear infinite; }
+.ill-pin-draw { stroke-dasharray: 260; animation: ill-pin-draw 11s ease-in-out infinite; }
+.ill-pin-pt { animation: ill-pin-pt 11s linear infinite; }
+</style>
+<g class="ill-pin-s1"><text class="k-label" x="10" y="34">1</text><rect class="k-soft" x="32" y="16" width="352" height="28" rx="6"/><text x="44" y="35">title = "y = x^2"   color = "blue"</text></g>
+<g class="ill-pin-s2"><text class="k-label" x="10" y="94">2</text><rect class="k-soft" x="32" y="76" width="352" height="28" rx="6"/><text x="44" y="95">series = [ {xs: [1,2,3], ys: [1,4,9]} ]</text></g>
+<g class="ill-pin-s3"><text class="k-label" x="10" y="154">3</text><rect class="k-soft" x="32" y="136" width="352" height="28" rx="6"/><text x="44" y="155">min, max → x_scale(x), y_scale(y)</text></g>
+<g class="ill-pin-s4"><text class="k-label" x="10" y="214">4</text><rect class="k-paper k-line" x="32" y="196" width="352" height="28" rx="6"/><text x="44" y="215">&lt;svg&gt;…&lt;/svg&gt; → demo.svg</text></g>
+<rect class="k-paper k-line" x="400" y="16" width="220" height="208" rx="8"/>
+<g class="ill-pin-s1"><text class="k-label" x="510" y="40" text-anchor="middle">y = x^2</text></g>
+<g class="ill-pin-s3"><path class="k-thin" d="M430 196 H600 M430 196 V56"/></g>
+<path class="k-accent-line ill-pin-draw" d="M440 186 L515 141 L590 66"/>
+<g class="ill-pin-pt"><circle class="k-accent" cx="440" cy="186" r="5"/><circle class="k-accent" cx="515" cy="141" r="5"/><circle class="k-accent" cx="590" cy="66" r="5"/></g>
+<g class="ill-pin-s4"><text x="510" y="246" text-anchor="middle">demo.svg</text></g>
+</svg>

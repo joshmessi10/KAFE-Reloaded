@@ -1,0 +1,5 @@
+import numk;
+
+List[INT] amounts = [2, 1, 3];
+List[INT] prices = [5, 10, 4];
+show(numk.dot(amounts, prices));

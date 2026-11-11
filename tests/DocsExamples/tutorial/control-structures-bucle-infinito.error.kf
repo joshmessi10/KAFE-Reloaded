@@ -1,0 +1,5 @@
+INT i = 0;
+INT steps = 0;
+while (i < 5):
+    steps = steps + 1;
+;

@@ -1,0 +1,30 @@
+<svg viewBox="0 0 520 260" role="img" aria-labelledby="ill-lr-t ill-lr-d" xmlns="http://www.w3.org/2000/svg">
+<title id="ill-lr-t">El modelo aprende una recta a partir de ejemplos / The model learns a line from examples</title>
+<desc id="ill-lr-d">Five example points appear on a chart. A straight line is drawn through them. Then a new value on the horizontal axis is followed up to the line to read the prediction.</desc>
+<style>
+@keyframes ill-lr-pt { 0% { opacity: 0; transform: scale(0) } 8%,92% { opacity: 1; transform: scale(1) } 100% { opacity: 0 } }
+@keyframes ill-lr-line { 0%,30% { stroke-dashoffset: 420 } 50%,92% { stroke-dashoffset: 0 } 100% { stroke-dashoffset: 0; opacity: 0 } }
+@keyframes ill-lr-new { 0%,55% { opacity: 0 } 62%,92% { opacity: 1 } 100% { opacity: 0 } }
+@keyframes ill-lr-guide { 0%,60% { stroke-dashoffset: 120 } 75%,92% { stroke-dashoffset: 0 } 100% { opacity: 0 } }
+.ill-lr-pt { transform-box: fill-box; transform-origin: center; animation: ill-lr-pt 8s ease-out infinite; }
+.ill-lr-line { stroke-dasharray: 420; animation: ill-lr-line 8s ease-in-out infinite; }
+.ill-lr-new { animation: ill-lr-new 8s linear infinite; }
+.ill-lr-guide { stroke-dasharray: 6 6; animation: ill-lr-guide 8s linear infinite; }
+</style>
+<path class="k-line" d="M60 20 V220 H500"/>
+<path class="k-thin" d="M60 180 H500 M60 140 H500 M60 100 H500 M60 60 H500"/>
+<text x="40" y="225">0</text>
+<text x="96" y="244">1</text><text x="166" y="244">2</text><text x="236" y="244">3</text><text x="306" y="244">4</text><text x="376" y="244">5</text><text x="446" y="244">6</text>
+<line class="k-accent-line ill-lr-line" x1="70" y1="198" x2="470" y2="40"/>
+<circle class="k-fill ill-lr-pt" cx="100" cy="186" r="8"/>
+<circle class="k-fill ill-lr-pt" style="animation-delay:.3s" cx="170" cy="160" r="8"/>
+<circle class="k-fill ill-lr-pt" style="animation-delay:.6s" cx="240" cy="129" r="8"/>
+<circle class="k-fill ill-lr-pt" style="animation-delay:.9s" cx="310" cy="103" r="8"/>
+<circle class="k-fill ill-lr-pt" style="animation-delay:1.2s" cx="380" cy="76" r="8"/>
+<g class="ill-lr-new">
+<path class="k-accent-line" d="M450 220 V212"/>
+<text class="k-label" x="436" y="210" font-size="20">?</text>
+</g>
+<path class="k-accent-line ill-lr-guide" d="M450 220 V50 H60"/>
+<circle class="k-accent ill-lr-new" cx="450" cy="50" r="10"/>
+</svg>

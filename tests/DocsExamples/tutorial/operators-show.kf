@@ -1,0 +1,4 @@
+show(5 + 4 * 2);
+show("Hello KAFE");
+show([1, 2, 3]);
+show(True);

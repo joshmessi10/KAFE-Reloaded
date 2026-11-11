@@ -1,0 +1,10 @@
+drip apply(f: FUNC(INT)=>INT, n: INT) => INT:
+    return f(n);
+;
+drip inc(x: INT) => INT:
+    return x + 1;
+;
+FUNC(INT)=>INT square = (y: INT) => y * y;
+show(apply(inc, 5));
+show(apply(square, 4));
+show(apply((z: INT) => z * 3, 4));

@@ -1,0 +1,4 @@
+import math;
+
+show(math.lcm(4, 6));
+show(math.lcm(2, 3, 5));

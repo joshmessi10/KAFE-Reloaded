@@ -1,0 +1,6 @@
+drip blender(fruit: STR) => STR:
+    return fruit + " juice";
+;
+
+show(blender("mango"));
+show(blender("strawberry"));

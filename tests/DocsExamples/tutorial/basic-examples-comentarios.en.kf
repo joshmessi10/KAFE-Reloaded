@@ -1,0 +1,8 @@
+-- Single-line comment
+INT x = 10;  -- comment at the end of a line
+->
+This is a comment
+over several lines
+<-
+INT y = 20;
+show(x + y);

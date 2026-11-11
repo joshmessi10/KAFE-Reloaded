@@ -1,0 +1,2 @@
+import kaggle;
+PARDOS df = kaggle.load_dataset_split("uciml/iris");

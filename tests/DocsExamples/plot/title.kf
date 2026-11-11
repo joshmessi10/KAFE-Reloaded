@@ -1,0 +1,10 @@
+import plot;
+import files;
+
+plot.figure();
+plot.title("y = x^2");
+plot.graph([1, 2, 3, 4], [1, 4, 9, 16]);
+plot.render();
+
+-- clean up
+files.delete("title.svg");

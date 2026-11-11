@@ -1,0 +1,12 @@
+-- Comentario de una línea: KAFE lo ignora.
+INT puntos = 10;  -- También puede ir al final de una línea.
+->
+  Comentario de varias líneas.
+  Todo lo que está entre las flechas se ignora.
+<-
+->
+  Nivel 1
+  -> Nivel 2, dentro del nivel 1 <-
+  Seguimos en el nivel 1
+<-
+show(puntos);

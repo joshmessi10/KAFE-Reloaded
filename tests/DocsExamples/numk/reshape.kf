@@ -1,0 +1,6 @@
+import numk;
+
+List[INT] eggs = [1, 2, 3, 4, 5, 6];
+show(numk.reshape(eggs, [2, 3]));
+show(numk.reshape(eggs, [3, 2]));
+show(numk.reshape([[1, 2], [3, 4]], [4]));

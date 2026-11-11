@@ -1,0 +1,2 @@
+import kaggle;
+List[List[List[List[FLOAT]]]] imgs = kaggle.load_images("ayush1220/cifar10", 32, 32, "rgb", -1);

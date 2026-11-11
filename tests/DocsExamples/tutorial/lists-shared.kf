@@ -1,0 +1,4 @@
+List[INT] original = [1, 2];
+List[INT] other = original;
+append(other, 3);
+show(original);

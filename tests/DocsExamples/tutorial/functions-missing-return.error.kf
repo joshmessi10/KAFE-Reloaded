@@ -1,0 +1,4 @@
+drip greet(name: STR) => STR:
+    show(name);
+;
+STR message = greet("Ana");

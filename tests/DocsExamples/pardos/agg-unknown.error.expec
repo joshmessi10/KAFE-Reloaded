@@ -1,0 +1,1 @@
+Exception: students: pardos: Unsupported aggregation 'median'. Supported: ['sum', 'mean', 'min', 'max', 'count']

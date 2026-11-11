@@ -1,0 +1,7 @@
+show(range(4));
+show(range(1, 5));
+show(range(0, 10, 2));
+show(range(5, 0, -1));
+for (i in range(3)):
+    show(i * 10);
+;

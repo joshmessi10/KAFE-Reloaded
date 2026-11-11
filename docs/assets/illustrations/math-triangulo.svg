@@ -1,0 +1,24 @@
+<svg viewBox="0 0 520 240" role="img" aria-labelledby="ill-hyp-t ill-hyp-d" xmlns="http://www.w3.org/2000/svg">
+<title id="ill-hyp-t">hypot y dist: el lado largo del triángulo / hypot and dist: the long side of the triangle</title>
+<desc id="ill-hyp-d">From point (0, 0) we walk 4 steps right and 3 steps up. The straight line between start and end, the hypotenuse, measures 5.</desc>
+<style>
+@keyframes ill-hyp-a { 0%,5% { stroke-dashoffset: 320 } 30%,92% { stroke-dashoffset: 0 } 100% { stroke-dashoffset: 0; opacity: 0 } }
+@keyframes ill-hyp-b { 0%,30% { stroke-dashoffset: 320 } 50%,92% { stroke-dashoffset: 0 } 100% { stroke-dashoffset: 0; opacity: 0 } }
+@keyframes ill-hyp-c { 0%,55% { stroke-dashoffset: 420 } 78%,92% { stroke-dashoffset: 0 } 100% { stroke-dashoffset: 0; opacity: 0 } }
+@keyframes ill-hyp-t { 0%,78% { opacity: 0 } 84%,92% { opacity: 1 } 100% { opacity: 0 } }
+.ill-hyp-a { stroke-dasharray: 320; animation: ill-hyp-a 7s ease-in-out infinite; }
+.ill-hyp-b { stroke-dasharray: 320; animation: ill-hyp-b 7s ease-in-out infinite; }
+.ill-hyp-c { stroke-dasharray: 420; animation: ill-hyp-c 7s ease-in-out infinite; }
+.ill-hyp-t { animation: ill-hyp-t 7s linear infinite; }
+</style>
+<path class="k-thin" d="M80 30 V200 M140 30 V200 M200 30 V200 M260 30 V200 M320 30 V200 M80 200 H340 M80 140 H340 M80 80 H340 M80 30 H340" opacity="0.25"/>
+<path class="k-line ill-hyp-a" d="M80 200 H320"/>
+<path class="k-line ill-hyp-b" d="M320 200 V20"/>
+<path class="k-accent-line ill-hyp-c" style="stroke-width:5" d="M80 200 L320 20"/>
+<circle class="k-fill" cx="80" cy="200" r="7"/><circle class="k-fill" cx="320" cy="20" r="7"/>
+<text x="40" y="225">(0, 0)</text><text x="330" y="24">(4, 3)</text>
+<text class="k-label" x="190" y="225">4</text><text class="k-label" x="332" y="115">3</text>
+<path class="k-line" d="M304 200 V184 H320"/>
+<text class="k-label ill-hyp-t" x="150" y="96" font-size="22">5</text>
+<text class="ill-hyp-t" x="370" y="150">√(4² + 3²) = 5</text>
+</svg>

@@ -1,0 +1,4 @@
+import math;
+
+show(math.isinf(math.inf));
+show(math.isinf(1000000));

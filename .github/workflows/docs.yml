@@ -36,7 +36,7 @@ jobs:
               changed_paths="$(git diff --no-renames --name-only "$BEFORE_SHA" "$AFTER_SHA")"
             fi
 
-            if grep -Eq '^(docs/.*|mkdocs\.yml)$' <<< "$changed_paths"; then
+            if grep -Eq '^(docs/.*|tests/DocsExamples/.*|mkdocs\.yml)$' <<< "$changed_paths"; then
               docs_changed=true
             fi
           fi

@@ -1,0 +1,4 @@
+import math;
+
+show(math.cbrt(27));
+show(math.cbrt(-8));

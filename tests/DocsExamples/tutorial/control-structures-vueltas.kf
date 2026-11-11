@@ -1,0 +1,6 @@
+INT vuelta = 1;
+while (vuelta <= 3):
+    show(vuelta);
+    vuelta = vuelta + 1;
+;
+show("¡Meta!");

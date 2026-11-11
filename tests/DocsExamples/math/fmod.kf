@@ -1,0 +1,4 @@
+import math;
+
+show(math.fmod(10, 3));
+show(math.fmod(-10, 3));

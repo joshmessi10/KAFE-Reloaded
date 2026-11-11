@@ -1,0 +1,10 @@
+show(4 == 5);
+show(5 == 5);
+show(4 != 5);
+show(4 < 5);
+show(6 <= 6);
+show(7 > 9);
+show(7 >= 7);
+show('asdf' == 'asdf');
+show([12, 1] == [12, 1]);
+show(5 == 5.0);

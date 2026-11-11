@@ -1,0 +1,8 @@
+import numk;
+
+List[List[List[INT]]] image = [[[1, 2, 3], [4, 5, 6], [7, 8, 9]]];
+List[List[List[List[INT]]]] kernel = [[[[1, 0], [0, 1]]]];
+show(numk.conv2d_chw(image, kernel, [0]));
+show(numk.conv2d_chw(image, kernel, [100]));
+List[List[List[List[INT]]]] blur = [[[[1, 1, 1], [1, 1, 1], [1, 1, 1]]]];
+show(numk.conv2d_chw(image, blur, [0], 1, "same"));

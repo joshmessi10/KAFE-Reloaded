@@ -1,0 +1,7 @@
+drip makeAdder(a: INT) => FUNC(INT)=>INT:
+    return (b: INT) => a + b;
+;
+FUNC(INT)=>INT addFive = makeAdder(5);
+show(addFive(1));
+show(addFive(10));
+show(makeAdder(2)(3));

@@ -1,0 +1,6 @@
+show(5 + 2.0);
+show(5 * 2.0);
+show(10 / 4);
+show(10 / 5);
+show("ab" + "cd");
+show("Age: " + str(10));

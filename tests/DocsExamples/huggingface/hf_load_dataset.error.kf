@@ -1,0 +1,2 @@
+import huggingface;
+PARDOS df = huggingface.hf_load_dataset("scikit-learn/iris");

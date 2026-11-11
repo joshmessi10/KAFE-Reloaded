@@ -1,0 +1,12 @@
+-- ¿Salgo a jugar? 1 = sí, 0 = no
+drip neurona(sol: FLOAT, tarea: FLOAT, amigos: FLOAT) => INT:
+    FLOAT suma = sol * 0.4 + tarea * 0.9 + amigos * 0.5;
+    if (suma > 1.0):
+        return 1;
+    ;
+    return 0;
+;
+
+show(neurona(1.0, 1.0, 0.0));
+show(neurona(1.0, 0.0, 1.0));
+show(neurona(0.0, 1.0, 1.0));

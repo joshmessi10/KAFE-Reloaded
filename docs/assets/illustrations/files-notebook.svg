@@ -1,0 +1,30 @@
+<svg viewBox="0 0 560 190" role="img" aria-labelledby="ill-fnb-t ill-fnb-d" xmlns="http://www.w3.org/2000/svg">
+<title id="ill-fnb-t">create, write, read, delete</title>
+<desc id="ill-fnb-d">The life of a file as a notebook. create makes an empty page. write puts lines on the page. read copies the lines out to the program. delete throws the page away.</desc>
+<style>
+@keyframes ill-fnb-new { 0%,4% { opacity: 0; transform: translateY(-12px) } 12%,94% { opacity: 1; transform: translateY(0) } 100% { opacity: 0 } }
+@keyframes ill-fnb-ink { 0%,22% { stroke-dashoffset: 60 } 36%,100% { stroke-dashoffset: 0 } }
+@keyframes ill-fnb-out { 0%,44% { opacity: 0; transform: translateY(0) } 54% { opacity: 1; transform: translateY(0) } 64%,94% { opacity: 1; transform: translateY(26px) } 100% { opacity: 0 } }
+@keyframes ill-fnb-bin { 0%,68% { opacity: 1; transform: translateY(0) } 82%,100% { opacity: 0.25; transform: translateY(14px) } }
+@keyframes ill-fnb-x { 0%,76% { opacity: 0 } 84%,100% { opacity: 1 } }
+.ill-fnb-new { animation: ill-fnb-new 9s ease-out infinite; }
+.ill-fnb-ink { stroke-dasharray: 60; animation: ill-fnb-ink 9s ease-in-out infinite; }
+.ill-fnb-out { animation: ill-fnb-out 9s ease-in-out infinite; }
+.ill-fnb-bin { opacity: 0.25; transform: translateY(14px); animation: ill-fnb-bin 9s ease-in-out infinite; }
+.ill-fnb-x { animation: ill-fnb-x 9s linear infinite; }
+</style>
+<g class="ill-fnb-new"><rect class="k-paper k-line" x="30" y="30" width="80" height="100" rx="6"/></g>
+<text class="k-label" x="70" y="165" text-anchor="middle">create</text>
+<path class="k-thin" d="M120 80 H150"/>
+<rect class="k-paper k-line" x="160" y="30" width="80" height="100" rx="6"/>
+<path class="k-accent-line ill-fnb-ink" d="M172 55 H228 M172 75 H228 M172 95 H210"/>
+<text class="k-label" x="200" y="165" text-anchor="middle">write</text>
+<path class="k-thin" d="M250 80 H280"/>
+<rect class="k-paper k-line" x="290" y="30" width="80" height="100" rx="6"/>
+<path class="k-line" d="M302 55 H358 M302 75 H358 M302 95 H340"/>
+<g class="ill-fnb-out"><rect class="k-soft" x="380" y="50" width="34" height="22" rx="4"/><path class="k-accent-line" d="M386 61 H408"/></g>
+<text class="k-label" x="330" y="165" text-anchor="middle">read</text>
+<g class="ill-fnb-bin"><rect class="k-paper k-line" x="440" y="30" width="80" height="100" rx="6"/><path class="k-line" d="M452 55 H508 M452 75 H508 M452 95 H490"/></g>
+<path class="k-accent-line ill-fnb-x" d="M450 40 L510 120 M510 40 L450 120"/>
+<text class="k-label" x="480" y="165" text-anchor="middle">delete</text>
+</svg>

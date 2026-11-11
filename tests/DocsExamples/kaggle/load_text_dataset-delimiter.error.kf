@@ -1,0 +1,2 @@
+import kaggle;
+PARDOS df = kaggle.load_text_dataset("marklvl/sentiment-labelled-sentences-data-set", "", "; ");

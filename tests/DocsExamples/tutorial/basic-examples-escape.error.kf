@@ -1,0 +1,2 @@
+STR s = "a\qb";
+show(s);

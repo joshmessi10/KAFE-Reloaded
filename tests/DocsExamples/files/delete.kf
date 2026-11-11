@@ -1,0 +1,9 @@
+import files;
+
+files.create("delete-demo.txt");
+files.delete("delete-demo.txt");
+
+-- it is gone, so we can create it again
+files.create("delete-demo.txt");
+files.delete("delete-demo.txt");
+show("OK");

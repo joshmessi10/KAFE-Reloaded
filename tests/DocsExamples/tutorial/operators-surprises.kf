@@ -1,0 +1,6 @@
+show(True || False && False);
+show(True || (False && False));
+show(3 > 2 > 1);
+show(3 > 2 && 2 > 1);
+show(-2 ^ 2);
+show(-(2 ^ 2));

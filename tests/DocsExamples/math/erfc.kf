@@ -1,0 +1,4 @@
+import math;
+
+show(math.erfc(0));
+show(math.erfc(1));

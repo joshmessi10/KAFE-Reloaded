@@ -1,0 +1,4 @@
+import math;
+
+show(math.ulp(1.0));
+show(math.ulp(1000000.0));

@@ -1,0 +1,5 @@
+import math;
+
+show(math.sin(0));
+show(math.sin(math.pi / 2));
+show(math.sin(math.radians(30)));

@@ -1,0 +1,17 @@
+-- Basic types
+INT age = 25;
+FLOAT pi = 3.14;
+BOOL active = True;
+STR name = "KAFE";
+show(name);
+show(age);
+-- Lists and lists inside lists
+List[INT] numbers = [1, 2, 3, 4, 5];
+List[List[INT]] matrix = [[1, 2], [3, 4]];
+show(numbers);
+show(matrix);
+-- No initial value: KAFE uses a default one
+INT x;
+List[INT] empty;
+show(x);
+show(empty);

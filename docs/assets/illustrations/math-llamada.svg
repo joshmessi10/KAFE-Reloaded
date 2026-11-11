@@ -1,0 +1,39 @@
+<svg viewBox="0 0 640 250" role="img" aria-labelledby="ill-call-t ill-call-d" xmlns="http://www.w3.org/2000/svg">
+<title id="ill-call-t">Cómo KAFE llama a math.sqrt / How KAFE calls math.sqrt</title>
+<desc id="ill-call-d">A token travels from the line math.sqrt(16) in the program, to the KAFE interpreter, to the math toolbox, through a type check, into the sqrt function, and the result 4.0 travels back to the screen.</desc>
+<style>
+@keyframes ill-call-go { 0% { transform: translateX(0); opacity: 0 } 4% { opacity: 1 } 16% { transform: translateX(150px) } 30% { transform: translateX(300px) } 44%,50% { transform: translateX(450px); opacity: 1 } 54% { opacity: 0 } 100% { transform: translateX(450px); opacity: 0 } }
+@keyframes ill-call-back { 0%,52% { transform: translateX(450px); opacity: 0 } 56% { opacity: 1 } 80% { transform: translateX(0); opacity: 1 } 92% { transform: translateX(0); opacity: 1 } 100% { transform: translateX(0); opacity: 0 } }
+@keyframes ill-call-hl1 { 0%,10%,24%,100% { opacity: 0 } 13%,20% { opacity: .35 } }
+@keyframes ill-call-hl2 { 0%,24%,38%,100% { opacity: 0 } 27%,34% { opacity: .35 } }
+@keyframes ill-call-hl3 { 0%,38%,52%,100% { opacity: 0 } 41%,48% { opacity: .35 } }
+@keyframes ill-call-ok { 0%,30%,90%,100% { opacity: 0 } 34%,86% { opacity: 1 } }
+.ill-call-go { animation: ill-call-go 8s ease-in-out infinite; }
+.ill-call-back { animation: ill-call-back 8s ease-in-out infinite; }
+.ill-call-h1 { opacity: 0; animation: ill-call-hl1 8s linear infinite; }
+.ill-call-h2 { opacity: 0; animation: ill-call-hl2 8s linear infinite; }
+.ill-call-h3 { opacity: 0; animation: ill-call-hl3 8s linear infinite; }
+.ill-call-ok { animation: ill-call-ok 8s linear infinite; }
+</style>
+<rect class="k-line" x="10" y="60" width="120" height="110" rx="12"/>
+<text x="22" y="90">.kf</text>
+<text x="22" y="122" font-size="12">math.sqrt(16)</text>
+<rect class="k-accent ill-call-h1" x="160" y="60" width="120" height="110" rx="12"/>
+<rect class="k-line" x="160" y="60" width="120" height="110" rx="12"/>
+<text class="k-label" x="186" y="104">KAFE</text>
+<text x="172" y="130" font-size="11">Interpreter</text><text x="180" y="146" font-size="11">Visitor</text>
+<rect class="k-accent ill-call-h2" x="310" y="60" width="120" height="110" rx="12"/>
+<rect class="k-line" x="310" y="60" width="120" height="110" rx="12"/>
+<text class="k-label" x="340" y="104">math</text>
+<text x="322" y="130" font-size="11">check_sig</text>
+<text class="ill-call-ok k-label" x="400" y="132" font-size="16">✓</text>
+<text x="322" y="148" font-size="11">INT ✓ FLOAT ✓</text>
+<rect class="k-accent ill-call-h3" x="460" y="60" width="160" height="110" rx="12"/>
+<rect class="k-line" x="460" y="60" width="160" height="110" rx="12"/>
+<text class="k-label" x="500" y="104">sqrt(x)</text>
+<text x="472" y="130" font-size="11">functions.py</text>
+<path class="k-thin" d="M130 115 H160 M280 115 H310 M430 115 H460"/>
+<g class="ill-call-go"><circle class="k-accent" cx="70" cy="40" r="12"/><text x="62" y="45" font-size="12">16</text></g>
+<g class="ill-call-back"><circle class="k-accent" cx="70" cy="200" r="16"/><text x="56" y="205" font-size="12">4.0</text></g>
+<path class="k-thin" d="M70 186 V172"/>
+</svg>

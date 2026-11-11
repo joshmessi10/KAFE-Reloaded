@@ -1,0 +1,7 @@
+import plot;
+import files;
+
+plot.graph([2, 4, 3, 5]);
+
+-- clean up
+files.delete("graph-quick.svg");

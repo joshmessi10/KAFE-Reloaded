@@ -1,0 +1,1 @@
+Exception: numk: reshape: Cannot reshape tensor of size 6 into shape (4, 2)

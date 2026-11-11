@@ -1,0 +1,11 @@
+INT edad = 25;
+BOOL tieneLicencia = False;
+if (edad >= 18):
+    if (tieneLicencia):
+        show("Puede conducir");
+    else:
+        show("Primero necesita una licencia");
+    ;
+else:
+    show("Todavía es menor de edad");
+;

@@ -1,0 +1,3 @@
+import numk;
+
+show(numk.zeros_matrix(2, 3));

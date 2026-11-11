@@ -1,0 +1,6 @@
+import math;
+
+show(math.tanh(0));
+show(math.tanh(1));
+show(math.tanh(10));
+show(math.tanh(-10));

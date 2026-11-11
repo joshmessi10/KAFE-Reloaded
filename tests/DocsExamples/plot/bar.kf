@@ -1,0 +1,13 @@
+import plot;
+import files;
+
+List[STR] labels = ["A", "B", "C", "D"];
+List[INT] values = [3, 7, 5, 2];
+
+plot.figure();
+plot.title("A B C D");
+plot.ylabel("n");
+plot.bar(labels, values);
+
+-- clean up
+files.delete("bar.svg");

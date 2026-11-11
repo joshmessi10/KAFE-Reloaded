@@ -1,8 +1,12 @@
 # Active Work
 
+## Documentation site content, batches A and B (2026-11-11)
+
+Branch `feature/docs-redesign`. Batches A (five "Aprende" lessons and the ten tutorial pages) and B (per-function reference for MATH, FILES, PLOT, NUMK, PARDOS, Kaggle and Hugging Face) are written in Spanish and English with 332 tested examples (ADR-0036) and committed locally. Local gates pass; hosted CI is pending until the branch is pushed. Next: batch C (MACHINE), then batch D (GESHA), following `docs/superpowers/plans/2026-11-09-docs-content-illustrated.md`.
+
 ## Documentation site redesign, phase 1 (2026-11-09)
 
-Branch `feature/docs-redesign`, created from `feature/vsc-extension` because `main` lacks the current documentation. Phase 1 is implemented locally: logo theme, ES/EN switch, new navigation, bilingual home page, "Aprende" placeholders and style guide (ADR-0035). Strict docs build and codespell pass locally; nothing is committed or pushed and hosted CI is pending. Next: user review and commit, then a design spec for phase 2 ("Aprende" lessons).
+Branch `feature/docs-redesign`, created from `feature/vsc-extension` because `main` lacks the current documentation. Phase 1 is committed (`64b84d85`): logo theme, ES/EN switch, new navigation, bilingual home page, "Aprende" placeholders and style guide (ADR-0035). Strict docs build and codespell passed locally; hosted CI is pending.
 
 ## Current delivery scope (2026-10-28)
 

@@ -1,0 +1,3 @@
+import math;
+
+show(math.gamma(2.5));

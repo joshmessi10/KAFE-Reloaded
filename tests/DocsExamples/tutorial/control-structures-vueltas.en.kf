@@ -1,0 +1,6 @@
+INT lap = 1;
+while (lap <= 3):
+    show(lap);
+    lap = lap + 1;
+;
+show("Finish line!");

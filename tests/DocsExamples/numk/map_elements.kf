@@ -1,0 +1,6 @@
+import numk;
+
+FUNC(INT)=>INT square = (x: INT) => x * x;
+show(numk.map_elements(square, [[1, 2], [3, 4]]));
+FUNC(INT, INT)=>FLOAT middle = (a: INT, b: INT) => (a + b) / 2;
+show(numk.map_elements(middle, [1, 8, 3], [5, 2, 9]));

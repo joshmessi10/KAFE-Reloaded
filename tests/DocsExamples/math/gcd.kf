@@ -1,0 +1,4 @@
+import math;
+
+show(math.gcd(12, 18));
+show(math.gcd(12, 18, 30));

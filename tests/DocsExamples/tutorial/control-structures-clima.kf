@@ -1,0 +1,9 @@
+INT temperatura = 30;
+if (temperatura > 25):
+    show("Hace calor: lleva agua");
+elif (temperatura > 15):
+    show("Está agradable");
+else:
+    show("Hace frío: lleva abrigo");
+;
+show("Fin del pronóstico");

@@ -1,0 +1,10 @@
+INT integer = 42;
+FLOAT decimal = 3.14;
+FLOAT scientific = 2.5e10;
+FLOAT scientific2 = 1.2e-3;
+FLOAT scientific3 = 3E2;
+show(integer);
+show(decimal);
+show(scientific);
+show(scientific2);
+show(scientific3);

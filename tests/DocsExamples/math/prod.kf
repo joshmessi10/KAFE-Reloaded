@@ -1,0 +1,4 @@
+import math;
+
+show(math.prod([1, 2, 3, 4]));
+show(math.prod(1, 5));

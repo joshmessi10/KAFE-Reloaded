@@ -1,0 +1,3 @@
+-- If you see these two results, KAFE is ready.
+show("KAFE works!");
+show(2 + 3);

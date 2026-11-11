@@ -1,0 +1,5 @@
+-- A recipe: every line is one instruction
+show("1. Warm the milk");
+show("2. Add the chocolate");
+show("3. Stir");
+show("Done!");

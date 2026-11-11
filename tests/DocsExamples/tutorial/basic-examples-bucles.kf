@@ -1,0 +1,11 @@
+-- Bucle for: repite para cada número de range(3)
+for (i in range(3)):
+    show(i);
+;
+-- Bucle while: repite mientras la condición sea verdadera
+INT contador = 3;
+while (contador > 0):
+    show(contador);
+    contador = contador - 1;
+;
+show("¡Despegue!");

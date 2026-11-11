@@ -1,0 +1,4 @@
+drip countUp(n: INT) => INT:
+    return countUp(n + 1);
+;
+show(countUp(1));

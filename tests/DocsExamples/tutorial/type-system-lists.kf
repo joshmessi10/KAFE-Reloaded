@@ -1,0 +1,10 @@
+List[INT] numbers = [];
+List[BOOL] flags = [True, False, True];
+List[List[INT]] matrix = [[1, 2], [3, 4]];
+List[List[List[BOOL]]] cube = [[[True, False]]];
+List[List[INT]] ragged = [[1], [2, 3]];
+show(numbers);
+show(flags);
+show(matrix);
+show(cube);
+show(ragged);
