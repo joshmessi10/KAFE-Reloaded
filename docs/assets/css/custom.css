@@ -4,19 +4,36 @@
 
 :root {
   --kafe-lime: #c6f21a;
-  --kafe-lime-dark: #5a7a00; /* lime that stays readable on white (≈5:1) */
+  --kafe-lime-dark: #476300; /* lime that stays readable on white (≈6.8:1) */
   --kafe-black: #0d0d0d;
+}
+
+/* The site has its own dark theme, so browsers must not repaint the light
+   theme dark (Chrome Auto Dark Mode turned text unreadable and links yellow).
+   "only light" opts out of that; the dark theme declares dark. */
+:root {
+  color-scheme: only light;
+}
+
+:root:has(body[data-md-color-scheme="slate"]) {
+  color-scheme: dark;
 }
 
 /* Light mode */
 [data-md-color-scheme="default"] {
+  color-scheme: only light;
+  --md-default-fg-color: rgba(0, 0, 0, 0.9);
+  --md-default-fg-color--light: rgba(0, 0, 0, 0.62);
+  --md-typeset-color: #1a1a1a;
   --md-primary-fg-color: var(--kafe-black);
   --md-primary-fg-color--light: #2b2b2b;
   --md-primary-fg-color--dark: #000000;
   --md-primary-bg-color: #ffffff;
   --md-accent-fg-color: var(--kafe-lime-dark);
-  --md-accent-fg-color--transparent: rgba(90, 122, 0, 0.1);
+  --md-accent-fg-color--transparent: rgba(71, 99, 0, 0.1);
   --md-typeset-a-color: var(--kafe-lime-dark);
+  --md-code-bg-color: #f3f5ee;
+  --md-code-fg-color: #1f2a10;
   --kafe-soft-bg: #f6fbe4;
 }
 
@@ -24,6 +41,11 @@
 [data-md-color-scheme="slate"] {
   --md-hue: 0;
   --md-default-bg-color: #121212;
+  --md-default-fg-color: rgba(255, 255, 255, 0.9);
+  --md-default-fg-color--light: rgba(255, 255, 255, 0.68);
+  --md-default-fg-color--lighter: rgba(255, 255, 255, 0.42);
+  --md-default-fg-color--lightest: rgba(255, 255, 255, 0.12);
+  --md-typeset-color: #e8e8e8;
   --md-primary-fg-color: var(--kafe-black);
   --md-primary-fg-color--light: #2b2b2b;
   --md-primary-fg-color--dark: #000000;
@@ -31,7 +53,18 @@
   --md-accent-fg-color: var(--kafe-lime);
   --md-accent-fg-color--transparent: rgba(198, 242, 26, 0.12);
   --md-typeset-a-color: var(--kafe-lime);
+  --md-code-bg-color: #1c1f17;
+  --md-code-fg-color: #e8eadf;
   --kafe-soft-bg: #1b1f10;
+}
+
+/* Section titles in the left navigation stand out from the links. */
+.md-nav--primary .md-nav__item--section > .md-nav__link {
+  color: var(--md-default-fg-color);
+}
+
+.md-nav--primary .md-nav__link--active {
+  font-weight: 700;
 }
 
 /* Header and tabs stay black in both modes, like the logo. */

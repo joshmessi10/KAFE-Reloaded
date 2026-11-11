@@ -6,6 +6,7 @@ repo_name: KAFE-Reloaded
 
 theme:
   name: material
+  custom_dir: overrides
   language: es
   logo: assets/images/kafe-logo-horizontal.png
   favicon: assets/images/favicon.png
