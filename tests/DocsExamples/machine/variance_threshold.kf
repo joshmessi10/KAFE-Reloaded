@@ -1,0 +1,16 @@
+import machine;
+
+List[List[FLOAT]] students = [[1.0, 6.0, 10.0], [1.0, 6.5, 14.0], [1.0, 7.0, 12.0], [1.0, 6.5, 16.0]];
+
+MACHINE filter = machine.variance_threshold();
+List[List[FLOAT]] kept = filter.fit_transform(students);
+show(filter.variances_);
+show(filter.selected_indices_);
+show(kept[0]);
+
+MACHINE strict = machine.variance_threshold(0.5);
+strict.fit(students);
+show(strict.threshold);
+show(strict.selected_indices_);
+show(strict.n_features_in_);
+show(strict.n_features_out_);

@@ -1,0 +1,1 @@
+Exception: encoder: OneHotEncoder: Unseen category 'bird' in column 'pet'. Use handle_unknown='ignore' to ignore unknown categories.

@@ -1,0 +1,24 @@
+<svg viewBox="0 0 600 270" role="img" aria-labelledby="ill-knn-t ill-knn-d" xmlns="http://www.w3.org/2000/svg">
+<title id="ill-knn-t">Los 3 vecinos más cercanos votan / The 3 nearest neighbours vote</title>
+<desc id="ill-knn-d">Circles and squares on a grid and a new point marked with a question mark. A circle grows around the new point until it holds its 3 nearest neighbours: two circles and one square. The new point becomes a circle, 2 votes to 1.</desc>
+<style>
+@keyframes ill-knn-grow { 0%,15% { transform: scale(0) } 50%,100% { transform: scale(1) } }
+.ill-knn-ring { transform-box: view-box; transform-origin: 220px 110px; animation: ill-knn-grow 10s ease-in-out infinite; }
+@keyframes ill-knn-near { 0%,50% { opacity: 0 } 58%,100% { opacity: 1 } }
+.ill-knn-near { animation: ill-knn-near 10s linear infinite; }
+@keyframes ill-knn-ask { 0%,58% { opacity: 1 } 66%,100% { opacity: 0 } }
+.ill-knn-ask { opacity: 0; animation: ill-knn-ask 10s linear infinite; }
+@keyframes ill-knn-answer { 0%,62% { opacity: 0 } 70%,100% { opacity: 1 } }
+.ill-knn-answer { animation: ill-knn-answer 10s linear infinite; }
+@keyframes ill-knn-all { 0% { opacity: 0 } 4%,94% { opacity: 1 } 100% { opacity: 0 } }
+.ill-knn-all { animation: ill-knn-all 10s linear infinite; }
+</style>
+<path class="k-thin" d="M100 20 V230 H360"/>
+<g class="ill-knn-all">
+<circle class="k-soft ill-knn-ring" cx="220" cy="110" r="90"/>
+<circle class="k-fill" cx="140" cy="190" r="8"/><circle class="k-fill" cx="180" cy="190" r="8"/><rect class="k-fill" x="252" y="102" width="16" height="16"/><rect class="k-fill" x="292" y="22" width="16" height="16"/><circle class="k-fill" cx="140" cy="110" r="8"/>
+<g class="ill-knn-near"><line class="k-accent-line" x1="220" y1="110" x2="260" y2="110"/><line class="k-accent-line" x1="220" y1="110" x2="140" y2="110"/><line class="k-accent-line" x1="220" y1="110" x2="180" y2="190"/></g>
+<g class="ill-knn-ask"><circle class="k-paper" cx="220" cy="110" r="11"/><circle class="k-thin" cx="220" cy="110" r="11"/><text class="k-label" x="216" y="115">?</text></g>
+<g class="ill-knn-answer"><circle class="k-accent" cx="220" cy="110" r="10"/><text class="k-label" x="400" y="100">k = 3</text><circle class="k-fill" cx="410" cy="135" r="8"/><circle class="k-fill" cx="440" cy="135" r="8"/><rect class="k-fill" x="462" y="127" width="16" height="16"/><text x="400" y="180">2 : 1</text></g>
+</g>
+</svg>

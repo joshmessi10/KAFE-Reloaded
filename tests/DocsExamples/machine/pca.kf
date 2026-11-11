@@ -1,0 +1,19 @@
+import machine;
+import math;
+
+List[List[FLOAT]] points = [[1.0, 1.0], [2.0, 3.0], [3.0, 2.0], [4.0, 4.0]];
+
+MACHINE pca = machine.pca(1);
+List[List[FLOAT]] shadow = pca.fit_transform(points);
+pca.round(3);
+show(pca.mean_);
+show(pca.explained_variance_);
+show(pca.components_);
+for (i in range(0, len(shadow))):
+    show(math.round(shadow[i][0], 2));
+;
+List[List[FLOAT]] back = pca.inverse_transform(shadow);
+for (i in range(0, len(back))):
+    List[FLOAT] row = [math.round(back[i][0], 2), math.round(back[i][1], 2)];
+    show(row);
+;

@@ -83,3 +83,6 @@ profesor
 responde
 significan
 termine
+calle
+represente
+percentil

@@ -1,0 +1,23 @@
+<svg viewBox="0 0 600 270" role="img" aria-labelledby="ill-rfr-t ill-rfr-d" xmlns="http://www.w3.org/2000/svg">
+<title id="ill-rfr-t">El bosque promedia los escalones de sus árboles / The forest averages its trees' steps</title>
+<desc id="ill-rfr-d">The ice-cream sales points. Three thin step lines appear one at a time, each from a tree that saw a different random sample of the data. Then their average appears as a thicker line with smaller, smoother steps.</desc>
+<style>
+@keyframes ill-rfr-t0 { 0%,5% { opacity: 0 } 12%,100% { opacity: 1 } }
+.ill-rfr-t0 { animation: ill-rfr-t0 10s linear infinite; }
+@keyframes ill-rfr-t1 { 0%,15% { opacity: 0 } 22%,100% { opacity: 1 } }
+.ill-rfr-t1 { animation: ill-rfr-t1 10s linear infinite; }
+@keyframes ill-rfr-t2 { 0%,25% { opacity: 0 } 32%,100% { opacity: 1 } }
+.ill-rfr-t2 { animation: ill-rfr-t2 10s linear infinite; }
+@keyframes ill-rfr-avg { 0%,45% { opacity: 0 } 55%,100% { opacity: 1 } }
+.ill-rfr-avg { animation: ill-rfr-avg 10s linear infinite; }
+@keyframes ill-rfr-all { 0% { opacity: 0 } 4%,94% { opacity: 1 } 100% { opacity: 0 } }
+.ill-rfr-all { animation: ill-rfr-all 10s linear infinite; }
+</style>
+<path class="k-line" d="M60 20 V230 H500"/>
+<text x="142" y="252">15</text><text x="196" y="252">18</text><text x="322" y="252">25</text><text x="376" y="252">28</text><text x="448" y="252">32</text>
+<g class="ill-rfr-all">
+<path class="k-thin ill-rfr-t0" d="M80 167.0 H267.0 V86.0 H490"/><path class="k-thin ill-rfr-t1" d="M80 148.0 H357.0 V74.0 H490"/><path class="k-thin ill-rfr-t2" d="M80 170.0 H177.0 V105.5 H490"/>
+<path class="k-accent-line ill-rfr-avg" d="M80 161.7 H177.0 V140.2 H267.0 V113.2 H357.0 V88.5 H490"/>
+<circle class="k-fill" cx="150" cy="170" r="7"/><circle class="k-fill" cx="204" cy="164" r="7"/><circle class="k-fill" cx="330" cy="110" r="7"/><circle class="k-fill" cx="384" cy="98" r="7"/><circle class="k-fill" cx="456" cy="50" r="7"/>
+</g>
+</svg>

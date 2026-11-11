@@ -1,0 +1,15 @@
+import machine;
+import math;
+
+List[FLOAT] day = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0];
+List[FLOAT] temp = [1.0, 4.0, 6.0, 7.0, 6.0, 4.0, 1.0];
+
+MACHINE line = machine.svr(10.0, 0.5, "linear");
+line.fit(day, temp);
+show(math.round(line.score(day, temp), 2));
+
+MACHINE curve = machine.svr(10.0, 0.5, "rbf");
+curve.fit(day, temp);
+show(math.round(curve.score(day, temp), 2));
+List[FLOAT] guess = curve.predict([4.0]);
+show(math.round(guess[0], 1));

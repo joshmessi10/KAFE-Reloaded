@@ -1,0 +1,13 @@
+import machine;
+import math;
+
+List[FLOAT] size = [1.0, 2.0, 3.0, 4.0];
+List[FLOAT] price = [10.0, 20.0, 30.0, 40.0];
+
+List[INT] trees = [1, 2, 5, 50];
+for (i in range(0, len(trees))):
+    MACHINE model = machine.gradient_boosting_regressor(trees[i], 0.5, 1);
+    model.fit(size, price);
+    List[FLOAT] guess = model.predict([1.0]);
+    show(str(trees[i]) + ": " + str(math.round(guess[0], 2)));
+;

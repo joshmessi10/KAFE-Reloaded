@@ -1,0 +1,16 @@
+import machine;
+import math;
+
+List[FLOAT] size = [30.0, 40.0, 50.0, 60.0, 80.0];
+List[FLOAT] price = [10.0, 14.0, 17.0, 21.0, 28.0];
+
+MACHINE flat = machine.knn_regressor(2, "uniform");
+MACHINE near = machine.knn_regressor(2, "distance");
+flat.fit(size, price);
+near.fit(size, price);
+
+List[FLOAT] a = flat.predict([42.0]);
+List[FLOAT] b = near.predict([42.0]);
+show(a[0]);
+show(math.round(b[0], 2));
+show(near.weights);

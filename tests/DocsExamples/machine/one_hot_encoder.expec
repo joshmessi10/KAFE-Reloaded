@@ -1,0 +1,4 @@
+"cols: ['name', 'pet_cat', 'pet_dog', 'pet_fish'], rows: [['Luna', 1, 0, 0], ['Max', 0, 1, 0], ['Nemo', 0, 0, 1], ['Tom', 1, 0, 0]]"
+['pet']
+error
+"cols: ['name', 'pet'], rows: [['Luna', 'cat'], ['Max', 'dog'], ['Nemo', 'fish'], ['Tom', 'cat']]"

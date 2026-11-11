@@ -1,0 +1,19 @@
+import machine;
+
+List[List[FLOAT]] hours = [[1.0], [2.0], [3.0], [4.0], [5.0], [6.0], [7.0], [8.0], [9.0], [10.0]];
+List[FLOAT] grade = [3.0, 5.0, 7.0, 9.0, 11.0, 13.0, 15.0, 17.0, 19.0, 21.0];
+
+MACHINE split = machine.train_test_split(hours, grade, 0.2, 42);
+List[List[FLOAT]] X_train = split[0];
+List[List[FLOAT]] X_test = split[1];
+List[FLOAT] y_train = split[2];
+List[FLOAT] y_test = split[3];
+
+show(len(X_train));
+show(len(X_test));
+show(X_test);
+show(y_test);
+
+MACHINE model = machine.linear_regression();
+model.fit(X_train, y_train);
+show(model.score(X_test, y_test));

@@ -1,0 +1,22 @@
+import math;
+
+List[FLOAT] weight = [7.0, 9.0, 9.0, 15.0];
+
+FLOAT mean = 0.0;
+for (i in range(0, len(weight))):
+    mean = mean + weight[i] / len(weight);
+;
+show(mean);
+
+FLOAT variance = 0.0;
+for (i in range(0, len(weight))):
+    variance = variance + (weight[i] - mean) * (weight[i] - mean) / len(weight);
+;
+show(variance);
+
+FLOAT std = math.sqrt(variance);
+show(std);
+
+for (i in range(0, len(weight))):
+    show(math.round((weight[i] - mean) / std, 2));
+;

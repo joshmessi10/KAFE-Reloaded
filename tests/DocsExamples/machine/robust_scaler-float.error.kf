@@ -1,0 +1,3 @@
+import machine;
+
+MACHINE robust = machine.robust_scaler(1, 1, 10.0);

@@ -1,0 +1,18 @@
+import machine;
+
+List[List[FLOAT]] fruits = [[150.0], [160.0], [155.0], [170.0], [165.0], [158.0], [162.0], [168.0], [5.0], [6.0], [4.0], [7.0]];
+List[INT] kind = [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1];
+
+MACHINE split = machine.stratified_train_test_split(fruits, kind, 0.25, 3);
+List[INT] y_train = split[2];
+List[INT] y_test = split[3];
+
+show(len(y_train));
+show(len(y_test));
+show(y_test);
+
+INT grapes = 0;
+for (i in range(0, len(y_test))):
+    grapes = grapes + y_test[i];
+;
+show(grapes);

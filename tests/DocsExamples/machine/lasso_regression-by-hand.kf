@@ -1,0 +1,16 @@
+import math;
+
+FLOAT top = 20.0;
+FLOAT bottom = 10.0;
+List[FLOAT] alphas = [0.0, 10.0, 20.0, 30.0];
+
+for (i in range(0, len(alphas))):
+    FLOAT ridge = top / (bottom + alphas[i]);
+    FLOAT rest = top - alphas[i];
+    if (rest < 0.0):
+        rest = 0.0;
+    ;
+    FLOAT lasso = rest / bottom;
+    show(math.round(ridge, 2));
+    show(math.round(lasso, 2));
+;

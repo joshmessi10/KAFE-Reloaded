@@ -1,0 +1,8 @@
+import machine;
+import pardos;
+
+PARDOS pets = pardos.DataFrame(["pet", "color"], [["cat", "black"], ["dog", "white"], ["cat", "black"], ["cat", "brown"]]);
+
+MACHINE imputer = machine.simple_imputer("most_frequent");
+imputer.fit(pets);
+show(imputer.statistics_);

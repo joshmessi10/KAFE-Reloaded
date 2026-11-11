@@ -1,0 +1,28 @@
+import math;
+
+List[FLOAT] x = [1.0, 2.0, 3.0, 4.0, 5.0];
+List[FLOAT] y = [3.0, 5.0, 7.0, 9.0, 11.0];
+FLOAT alpha = 10.0;
+
+List[FLOAT] tries = [0.5, 1.0, 1.5, 2.0];
+for (t in range(0, len(tries))):
+    FLOAT w = tries[t];
+    FLOAT start = 7.0 - w * 3.0;
+    FLOAT errors = 0.0;
+    for (i in range(0, len(x))):
+        FLOAT e = y[i] - (w * x[i] + start);
+        errors = errors + e * e;
+    ;
+    FLOAT penalty = alpha * w * w;
+    show(math.round(errors + penalty, 2));
+;
+
+FLOAT top = 0.0;
+FLOAT bottom = 0.0;
+for (i in range(0, len(x))):
+    top = top + (x[i] - 3.0) * (y[i] - 7.0);
+    bottom = bottom + (x[i] - 3.0) * (x[i] - 3.0);
+;
+show(top);
+show(bottom);
+show(math.round(top / (bottom + alpha), 2));

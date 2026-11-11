@@ -1,0 +1,6 @@
+import machine;
+
+List[List[List[INT]]] folds = machine.k_fold(6, 3, True, 7);
+for (i in range(0, len(folds))):
+    show(folds[i][1]);
+;

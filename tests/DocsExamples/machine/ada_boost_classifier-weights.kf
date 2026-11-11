@@ -1,0 +1,18 @@
+import machine;
+import math;
+
+List[FLOAT] hours = [1.0, 2.0, 3.0, 4.0, 5.0];
+List[INT] passed = [0, 0, 1, 0, 1];
+
+MACHINE model = machine.ada_boost_classifier(3, 1.0);
+model.fit(hours, passed);
+
+List[FLOAT] errors = model.estimator_errors_;
+List[FLOAT] alphas = model.estimator_weights_;
+for (i in range(0, 3)):
+    show(str(math.round(errors[i], 3)) + " -> " + str(math.round(alphas[i], 2)));
+;
+show(model.predict(hours));
+show(model.score(hours, passed));
+show(model.n_estimators);
+show(model.learning_rate);

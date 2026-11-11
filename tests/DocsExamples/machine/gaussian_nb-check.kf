@@ -1,0 +1,17 @@
+import machine;
+import math;
+
+List[FLOAT] weight = [3.0, 4.0, 5.0, 6.0, 8.0, 10.0, 12.0, 14.0];
+List[INT] kind = [0, 0, 0, 1, 1, 1, 1, 1];
+
+MACHINE model = machine.gaussian_nb();
+model.fit(weight, kind);
+
+show(model.class_prior_);
+show(model.theta_);
+show(model.var_[1]);
+
+List[List[FLOAT]] p = model.predict_proba([6.0]);
+show(math.round(p[0][0], 3));
+show(math.round(p[0][1], 3));
+show(model.predict([6.0]));

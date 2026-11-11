@@ -1,0 +1,17 @@
+import math;
+
+List[FLOAT] same = [1.0, 3.0];
+List[FLOAT] other = [6.0, 8.0];
+FLOAT me = 2.0;
+
+FLOAT a = 0.0;
+for (p in same):
+    a = a + math.abs(p - me) / len(same);
+;
+FLOAT b = 0.0;
+for (p in other):
+    b = b + math.abs(p - me) / len(other);
+;
+show(a);
+show(b);
+show((b - a) / b);

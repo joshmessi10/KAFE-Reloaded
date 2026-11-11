@@ -1,0 +1,29 @@
+List[INT] real = [1, 1, 1, 1, 0, 0, 0, 0, 0, 0];
+List[INT] guess = [1, 1, 1, 0, 1, 1, 0, 0, 0, 0];
+
+INT tp = 0;
+INT fp = 0;
+INT fn = 0;
+INT tn = 0;
+for (i in range(0, len(real))):
+    if (real[i] == 1):
+        if (guess[i] == 1):
+            tp = tp + 1;
+        else:
+            fn = fn + 1;
+        ;
+    else:
+        if (guess[i] == 1):
+            fp = fp + 1;
+        else:
+            tn = tn + 1;
+        ;
+    ;
+;
+show(tp);
+show(fp);
+show(fn);
+show(tn);
+show((tp + tn) / len(real));
+show(tp / (tp + fp));
+show(tp / (tp + fn));

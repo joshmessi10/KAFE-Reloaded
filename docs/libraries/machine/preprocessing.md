@@ -1,784 +1,671 @@
-# MACHINE · Preprocesamiento y reducción
+# MACHINE: preprocesamiento y reducción
 
-[Return to Index](../machine.md)
+Antes de enseñarle a un modelo, casi siempre hay que **preparar los datos**: ponerlos en la misma escala, rellenar huecos, convertir palabras en números o quedarse solo con las columnas útiles. Las herramientas de esta página **no predicen nada**: transforman los datos para que los modelos aprendan mejor.
 
-[Pinned KAFE call contracts and limits](contracts.md) distinguish the supported DSL from Python backend options. Every `fit` below returns the same `MACHINE`; transformed PARDOS inputs retain PARDOS output, while matrix inputs retain matrix output.
+| Herramienta | Qué hace |
+|---|---|
+| [`StandardScaler`](#standardscaler) | Centra cada columna en 0 y la mide en "desviaciones". |
+| [`MinMaxScaler`](#minmaxscaler) | Estira cada columna entre 0 y 1. |
+| [`RobustScaler`](#robustscaler) | Escala sin dejarse engañar por datos raros. |
+| [`SimpleImputer`](#simpleimputer) | Rellena los datos que faltan. |
+| [`LabelEncoder`](#labelencoder) | Cambia etiquetas de texto por números. |
+| [`OneHotEncoder`](#onehotencoder) | Abre una columna de 0 y 1 por cada categoría. |
+| [`OrdinalEncoder`](#ordinalencoder) | Cambia las categorías de una columna por números. |
+| [`PCA`](#pca) | Resume muchas columnas en pocas sin perder casi nada. |
+| [`LinearDiscriminantAnalysis`](#lineardiscriminantanalysis) | Resume columnas para que los grupos queden separados. |
+| [`PolynomialFeatures`](#polynomialfeatures) | Agrega columnas como $x^2$ para dibujar curvas. |
+| [`VarianceThreshold`](#variancethreshold) | Quita las columnas que casi no cambian. |
+| [`RecursiveFeatureElimination`](#recursivefeatureelimination) | Quita, una a una, las columnas que menos ayudan. |
+| [`Tokenizer`](#tokenizer) | Convierte texto en listas de números. |
 
-## StandardScaler
+!!! tip "Antes de empezar: `fit`, `transform` y `fit_transform`"
+    Todas las herramientas siguen la misma receta:
 
-Standardizes features by removing the mean and scaling to unit variance (z-score): $z = (x - \mu) / \sigma$.
+    - `fit(X)` **mira** los datos y aprende lo que necesita (promedios, mínimos, categorías…).
+    - `transform(X)` **aplica** lo aprendido, a esos datos o a datos nuevos.
+    - `fit_transform(X)` hace las dos cosas de una vez.
+    - Muchas tienen `inverse_transform`, que deshace la transformación.
 
-### Methods
+    Aprende (`fit`) **solo con los datos de entrenamiento** y aplica (`transform`) esos mismos números a los datos de prueba. Si no, el modelo "espía" el examen. [`Pipeline`](selection.md#pipeline) hace esto por ti.
 
-| Method | Signature | Description |
-|--------|-----------|-------------|
-| `ss.fit(X)` | `(List[List[NUM]]) -> MACHINE` | Calculates the mean and standard deviation |
-| `ss.transform(X)` | `(List[List[NUM]]) -> List[List[FLOAT]]` | Standardizes the data |
-| `ss.fit_transform(X)` | `(List[List[NUM]]) -> List[List[FLOAT]]` | Fit + transform |
-| `ss.inverse_transform(X)` | `(List[List[NUM]]) -> List[List[FLOAT]]` | Reverses the standardization |
+## StandardScaler: centrar y medir en desviaciones { #standardscaler }
 
-### Properties
+### La idea en una frase
 
-| Property | Type | Description |
-|----------|------|-------------|
-| `ss.mean_` | `List[FLOAT]` | Mean of each feature |
-| `ss.scale_` | `List[FLOAT]` | Standard deviation of each feature |
+**StandardScaler** resta a cada columna su **promedio** y la divide por su **desviación estándar**. Así cada columna queda centrada en 0, y un valor de 1 significa "una desviación por encima de lo normal".
 
-### Example
+### Una comparación de la vida diaria
 
-```kafe
-import machine;
+Sacaste 15 en un examen de 20 y 70 en uno de 100. ¿Cuál fue mejor? Depende de **cómo le fue al resto**. Si el promedio del primero fue 10 y casi todos sacaron entre 7 y 13, tu 15 es excelente. Estandarizar es comparar contra el promedio del grupo.
 
-List[List[FLOAT]] data = [[1.0, 4.0], [3.0, 6.0], [5.0, 8.0]];
+<figure class="kafe-fig">
+--8<-- "docs/assets/illustrations/machine-standard-scaler.svg"
+<figcaption>Pesos de mascotas de 7, 9, 9 y 15 kg en la regla de arriba. Bajan a una regla medida en desviaciones: el promedio, 10, cae en 0, y los puntos caen en −1, −0.33, −0.33 y 1.67.</figcaption>
+</figure>
 
-MACHINE ss = machine.standard_scaler();
-List[List[FLOAT]] scaled = ss.fit_transform(data);
-show(scaled);  -- [[-1.224..., -1.224...], [0.0, 0.0], [1.224..., 1.224...]]
-
-List[List[FLOAT]] original = ss.inverse_transform(scaled);
-show(original);  -- [[1.0, 4.0], [3.0, 6.0], [5.0, 8.0]]
-```
-
----
-
-## MinMaxScaler
-
-Scales features to a fixed range (by default, [0, 1]): $X_{norm} = (X - X_{min}) / (X_{max} - X_{min})$.
-
-### Methods
-
-| Method | Signature | Description |
-|--------|-----------|-------------|
-| `mms.fit(X)` | `(List[List[NUM]]) -> MACHINE` | Calculates the minimum and maximum |
-| `mms.transform(X)` | `(List[List[NUM]]) -> List[List[FLOAT]]` | Scales the data |
-| `mms.fit_transform(X)` | `(List[List[NUM]]) -> List[List[FLOAT]]` | Fit + transform |
-| `mms.inverse_transform(X)` | `(List[List[NUM]]) -> List[List[FLOAT]]` | Reverses the scaling |
-
-### Properties
-
-| Property | Type | Description |
-|----------|------|-------------|
-| `mms.data_min_` | `List[FLOAT]` | Minimum of each feature |
-| `mms.data_max_` | `List[FLOAT]` | Maximum of each feature |
-| `mms.scale_` | `List[FLOAT]` | Scale of each feature (1 / range) |
-
-### Example
+### Tu primer StandardScaler
 
 ```kafe
-import machine;
-
-List[List[FLOAT]] data = [[1.0, 10.0], [3.0, 20.0], [5.0, 30.0]];
-
-MACHINE mms = machine.minmax_scaler();
-List[List[FLOAT]] scaled = mms.fit_transform(data);
-show(scaled);  -- [[0.0, 0.0], [0.5, 0.5], [1.0, 1.0]]
+--8<-- "tests/DocsExamples/machine/standard_scaler.kf"
 ```
-
----
-
-## RobustScaler
-
-Scales features using statistics that are robust to outliers: the median (Q2) for centering and the IQR (Q3 − Q1) for scaling.
-
-### Theory
-
-Unlike StandardScaler (which uses the mean and standard deviation) or MinMaxScaler (which uses the minimum and maximum), RobustScaler uses statistics that are not affected by extreme values:
-
-$$X_{scaled} = \frac{X - \text{median}}{IQR}$$
-
-Here, $\text{median} = Q2$ (the 50th percentile) and $IQR = Q3 - Q1$ (the 75th percentile − the 25th percentile).
-
-### Methods
-
-| Method | Signature | Description |
-|--------|-----------|-------------|
-| `rs.fit(X)` | `(List[List[NUM]]) -> MACHINE` | Calculates the median and IQR for each feature |
-| `rs.transform(X)` | `(List[List[NUM]]) -> List[List[FLOAT]]` | Scales the data |
-| `rs.fit_transform(X)` | `(List[List[NUM]]) -> List[List[FLOAT]]` | Fit + transform |
-| `rs.inverse_transform(X)` | `(List[List[NUM]]) -> List[List[FLOAT]]` | Reverses the scaling |
-
-### Properties
-
-| Property | Type | Description |
-|----------|------|-------------|
-| `rs.center_` | `List[FLOAT]` | Median of each feature |
-| `rs.scale_` | `List[FLOAT]` | IQR of each feature |
-
-### Constructor Parameters
-
-```kafe
--- with_centering=1 (centers using the median), with_scaling=1 (scales using the IQR)
--- The backend defaults are quantile_low=25.0 and quantile_high=75.0.
-MACHINE rs = machine.robust_scaler();
-```
-
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `with_centering` | INT | 1 | If 1, centers using the median (0 = no centering) |
-| `with_scaling` | INT | 1 | If 1, scales using the IQR (0 = no scaling) |
-| `quantile_low` | INT when supplied | 25.0 internally | Optional third positional argument |
-
-The current KAFE gate accepts zero, one, two or three **INT** arguments. For example, `machine.robust_scaler(1, 1, 20)` changes the lower percentile. It rejects a FLOAT third argument and rejects a fourth argument; the upper percentile stays at the backend default 75.0. Do not pass Python keyword arguments or advertise a configurable fourth percentile. At least one of centering/scaling must be enabled, and the quantile range must be valid.
-
-### Example
-
-```kafe
-import machine;
-
-List[List[FLOAT]] data = [[1.0, 4.0], [3.0, 6.0], [5.0, 100.0]];
-
-MACHINE rs = machine.robust_scaler();
-List[List[FLOAT]] scaled = rs.fit_transform(data);
-show(rs.center_);   -- [3.0, 6.0] (medians)
-show(rs.scale_);    -- [2.0, 48.0] (interpolated IQRs)
-
-List[List[FLOAT]] restored = rs.inverse_transform(scaled);
-show(restored);  -- [[1.0, 4.0], [3.0, 6.0], [5.0, 100.0]]
-```
-
-### Comparison with Other Scalers
-
-| Scaler | Center | Scale | Robust to outliers |
-|--------|--------|-------|-------------------:|
-| StandardScaler | Mean | Standard deviation | No |
-| MinMaxScaler | Min | Max − Min | No |
-| **RobustScaler** | **Median** | **IQR** | **Yes** |
-
-### When to Use
-
-- **Outliers are present** — the primary use case
-- Data with a skewed distribution
-- When the mean/standard deviation are not representative
-
----
-
-## SimpleImputer
-
-Imputes missing values in PARDOS or nested matrix input using a configurable strategy. Use `math.nan` for a missing numeric value in a pure KAFE example; backend None is also treated as missing.
-
-### Strategies
-
-| Strategy | Description |
-|----------|-------------|
-| `"mean"` | Fills with the mean of each column |
-| `"median"` | Fills with the median of each column |
-| `"most_frequent"` | Fills with the mode of each column |
-| `"constant"` | Fills with a constant value (use `simple_imputer_constant(v)`) |
-
-### Methods
-
-| Method | Signature | Description |
-|--------|-----------|-------------|
-| `imp.fit(X)` | `(PARDOS or matrix) -> MACHINE` | Calculates per-column statistics. All-missing columns fail outside the constant strategy |
-| `imp.transform(X)` | `(PARDOS or matrix) -> same container form` | Imputes missing values |
-| `imp.fit_transform(X)` | `(PARDOS or matrix) -> same container form` | Fit + transform |
-
-### Properties
-
-| Property | Type | Description |
-|----------|------|-------------|
-| `imp.statistics_` | List of fill values | Numeric statistics or the selected constant/category value per column |
-
-### Example
-
-```kafe
-import pardos;
-import machine;
-
-PARDOS df = pardos.read_csv("data.csv");
--- df contains: [[2.0, 6.0, 5.0], [4.0, nan, 5.0], [6.0, 12.0, nan], [4.0, 6.0, 5.0]]
-
-MACHINE imp = machine.simple_imputer("mean");
-PARDOS imputed = imp.fit_transform(df);
-show(imputed);
--- [[2.0, 6.0, 5.0], [4.0, 8.0, 5.0], [6.0, 12.0, 5.0], [4.0, 6.0, 5.0]]
-
--- Constant strategy
-MACHINE imp_c = machine.simple_imputer_constant(0.0);
-PARDOS imputed_c = imp_c.fit_transform(df);
-```
-
----
-
-## LabelEncoder
-
-Encodes text labels as ordinal integer values.
-
-### Methods
-
-| Method | Signature | Description |
-|--------|-----------|-------------|
-| `le.fit(labels)` | `(List[ANY]) -> MACHINE` | Learns the unique classes (sorted) |
-| `le.transform(labels)` | `(List[ANY]) -> List[INT]` | Converts labels to integers |
-| `le.fit_transform(labels)` | `(List[ANY]) -> List[INT]` | Fit + transform in one step |
-| `le.inverse_transform(encoded)` | `(List[INT]) -> List[STR]` | Converts integers back to labels |
-
-### Properties
-
-| Property | Type | Description |
-|----------|------|-------------|
-| `le.classes_` | `List[STR]` | Sorted list of unique classes |
-
-### Example
-
-```kafe
-import machine;
-
-MACHINE le = machine.label_encoder();
-
-List[STR] labels = ["cat", "dog", "bird", "cat", "bird"];
-le.fit(labels);
-show(le.classes_);  -- [bird, cat, dog]
-
-List[INT] encoded = le.transform(labels);
-show(encoded);  -- [1, 2, 0, 1, 0]
-
-List[STR] decoded = le.inverse_transform(encoded);
-show(decoded);  -- [cat, dog, bird, cat, bird]
-```
-
----
-
-## OneHotEncoder
-
-Encodes categorical DataFrame columns as a binary (one-hot) representation.
-
-### Methods
-
-| Method | Signature | Description |
-|--------|-----------|-------------|
-| `ohe.fit(df, columns)` | `(PARDOS, List[STR]) -> MACHINE` | Learns categories from selected columns |
-| `ohe.transform(df)` | `(PARDOS) -> PARDOS` | Transforms the DataFrame using one-hot encoding |
-| `ohe.fit_transform(df, columns)` | `(PARDOS, List[STR]) -> PARDOS` | Fit + transform |
-| `ohe.inverse_transform(df)` | `(PARDOS) -> PARDOS` | Restores categories; each encoded group must have exactly one active category |
-
-### Example
-
-```kafe
-import pardos;
-import machine;
-
-List[STR] cols = ["color", "size"];
-List[List[STR]] data = [
-    ["red", "S"],
-    ["blue", "M"],
-    ["green", "L"],
-    ["red", "M"]
-];
-PARDOS df = pardos.DataFrame(cols, data);
-
--- One-hot encode a single column
-MACHINE ohe = machine.one_hot_encoder();
-PARDOS encoded = ohe.fit_transform(df, ["color"]);
-show(encoded);
--- Columns: size, color_blue, color_green, color_red
--- Rows: [[S,0,0,1], [M,1,0,0], [L,0,1,0], [M,0,0,1]]
-
--- Multiple columns
-MACHINE ohe2 = machine.one_hot_encoder();
-PARDOS encoded2 = ohe2.fit_transform(df, ["color", "size"]);
-show(encoded2);
-```
-
----
-
-## OrdinalEncoder
-
-Encodes categorical DataFrame columns as ordinal integer values, ordered alphabetically by category.
-
-### Methods
-
-| Method | Signature | Description |
-|--------|-----------|-------------|
-| `oe.fit(df, columns)` | `(PARDOS, List[STR]) -> MACHINE` | Learns the sorted unique categories in the specified columns |
-| `oe.transform(df)` | `(PARDOS) -> PARDOS` | Transforms categorical columns into ordinal integer values |
-| `oe.fit_transform(df, columns)` | `(PARDOS, List[STR]) -> PARDOS` | Fit + transform in one step |
-| `oe.inverse_transform(df)` | `(PARDOS) -> PARDOS` | Converts ordinal values back to the original categories |
-
-### Properties
-
-| Property | Type | Description |
-|----------|------|-------------|
-| `oe.categories_` | Backend mapping | Mapping of columns to lists of sorted categories |
-| `oe.columns_` | `List[STR]` | Names of the encoded columns |
-
-### Example
-
-```kafe
-import pardos;
-import machine;
-
-List[STR] cols = ["color", "size"];
-List[List[STR]] data = [
-    ["red", "S"],
-    ["blue", "M"],
-    ["green", "L"],
-    ["red", "M"]
-];
-PARDOS df = pardos.DataFrame(cols, data);
-
--- Ordinal-encode a single column
-MACHINE oe = machine.ordinal_encoder();
-PARDOS encoded = oe.fit_transform(df, ["color"]);
-show(encoded);
--- Columns: color, size
--- Rows: [[2, S], [0, M], [1, L], [2, M]]
--- Categories sorted alphabetically: blue=0, green=1, red=2
-
--- Multiple columns
-MACHINE oe2 = machine.ordinal_encoder();
-PARDOS encoded2 = oe2.fit_transform(df, ["color", "size"]);
-
--- Reverse the encoding
-PARDOS decoded = oe2.inverse_transform(encoded2);
-show(decoded);
-```
-
----
-
-## PCA (Principal Component Analysis)
-
-Reduces data dimensionality by finding the directions of greatest variance using the Jacobi algorithm.
-
-### Methods
-
-| Method | Signature | Description |
-|--------|-----------|-------------|
-| `pca.fit(X)` | `(PARDOS or List[List[NUM]]) -> MACHINE` | Fits the model to the data |
-| `pca.transform(X)` | `(PARDOS or List[List[NUM]]) -> same container form` | Transforms data into principal components |
-| `pca.fit_transform(X)` | `(PARDOS or matrix) -> same container form` | Fit and project |
-| `pca.inverse_transform(X)` | `(PARDOS or matrix) -> same container form` | Reconstructs an approximation from the retained components |
-| `pca.round(n)` | `(INT) -> MACHINE` | Rounds internal values to n decimal places |
-
-`pca.round()` uses four decimals by default. It changes fitted state and returns the same receiver.
-
-### Properties
-
-| Property | Type | Description |
-|----------|------|-------------|
-| `pca.components_` | `List[List[FLOAT]]` | Eigenvectors (components) |
-| `pca.mean_` | `List[FLOAT]` | Mean of each feature |
-| `pca.explained_variance_` | `List[FLOAT]` | Variance explained by each component |
-
-### Example
-
-```kafe
-import pardos;
-import machine;
-
-List[STR] cols = ["X", "Y", "Z"];
-List[List[FLOAT]] data = [
-    [1.0, 1.0, 2.5],
-    [2.0, 1.0, 4.5],
-    [3.0, 2.0, 7.0],
-    [1.0, 2.0, 3.0],
-    [2.0, 2.0, 5.0],
-    [3.0, 1.0, 6.5]
-];
-
-PARDOS df = pardos.DataFrame(cols, data);
-
--- Reduce from 3D to 2D
-MACHINE pca_model = machine.pca(2);
-pca_model.fit(df);
-pca_model.round(4);
-
-show(pca_model.mean_);
-show(pca_model.explained_variance_);
-
-PARDOS reduced = pca_model.transform(df);
-show(reduced.round(4));
-```
-
-### Internal Algorithm
-
-PCA uses the **Jacobi algorithm** to calculate eigenvalues and eigenvectors:
-
-1. **Mean centering**: Subtract the mean of each feature
-2. **Covariance matrix**: $C = (X^T \cdot X) / (n - 1)$
-3. **Jacobi**: Iterations to diagonalize the covariance matrix
-4. **Sorting**: Sort components by explained variance (descending)
-
----
-
-## LinearDiscriminantAnalysis (Linear Discriminant Analysis)
-
-Implements LDA, a supervised dimensionality-reduction technique that maximizes class separation and also works as a linear classifier.
-
-### Theory
-
-LDA maximizes the ratio of between-class to within-class variance:
-
-$$J(w) = \frac{w^T S_B w}{w^T S_W w}$$
-
-Where:
-- $S_W = \sum_{k=1}^{K} \sum_{x \in C_k} (x - \mu_k)(x - \mu_k)^T$ — within-class scatter
-- $S_B = \sum_{k=1}^{K} n_k (\mu_k - \mu)(\mu_k - \mu)^T$ — between-class scatter
-
-**Solution**: Solve the eigenvalue problem $S_W^{-1} S_B w = \lambda w$. The eigenvectors with the largest eigenvalues are the optimal directions.
-
-**Constraint**: $n\_components \leq K - 1$ (at most the number of classes minus one components).
-
-### Methods
-
-| Method | Signature | Description |
-|--------|-----------|-------------|
-| `lda.fit(X, y)` | `(List[List[NUM]], List[INT]) -> MACHINE` | Fits LDA by calculating scatter matrices and eigenvectors |
-| `lda.transform(X)` | `(List[List[NUM]]) -> List[List[FLOAT]]` | Projects data into a lower-dimensional space |
-| `lda.fit_transform(X, y)` | `(List[List[NUM]], List[INT]) -> List[List[FLOAT]]` | Fit + transform in one step |
-| `lda.predict(X)` | `(List[List[NUM]]) -> List[INT]` | Predicts classes by distance in the projected space |
-| `lda.score(X, y)` | `(List[List[NUM]], List[INT]) -> FLOAT` | Calculates accuracy (default) or a custom metric |
-
-### Constructor Parameters
-
-```kafe
--- n_components: number of components (default: None = min(n_classes-1, n_features))
-MACHINE lda = machine.linear_discriminant_analysis(2);
-```
-
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `n_components` | INT | None | Number of components (max: n_classes - 1) |
-
-Only the component count is a KAFE factory argument. Backend solver/covariance options are not exposed. The current Jacobi implementation assumes at least two input features; a one-feature fit fails with an index error despite the broad numeric input gate.
-
-### Properties
-
-| Property | Type | Description |
-|----------|------|-------------|
-| `lda.scalings_` | `List[List[FLOAT]]` | Eigenvectors (projection directions) |
-| `lda.explained_variance_ratio_` | `List[FLOAT]` | Proportion of variance explained by each component |
-| `lda.means_` | `List[List[FLOAT]]` | Mean of each feature for each class |
-| `lda.classes_` | `List[INT]` | Unique classes |
-| `lda.prior_` | `List[FLOAT]` | Prior probability of each class |
-
-### Example
-
-```kafe
-import machine;
-
-List[List[FLOAT]] X = [[1.0, 2.0], [2.0, 3.0], [3.0, 3.0],
-                        [6.0, 5.0], [7.0, 7.0], [8.0, 6.0]];
-List[INT] y = [0, 0, 0, 1, 1, 1];
-
--- Reduce from 2D to 1D
-MACHINE lda = machine.linear_discriminant_analysis(1);
-lda.fit(X, y);
-
--- Transform into the projected space
-List[List[FLOAT]] X_proj = lda.transform(X);
-show(X_proj);
-
--- Classify
-List[INT] preds = lda.predict([[2.0, 2.0], [7.0, 7.0]]);
-show(preds);  -- [0, 1]
-
--- Evaluate
-FLOAT acc = lda.score(X, y);
-show(acc);  -- 1.0
-```
-
-### Comparison with PCA
-
-| Aspect | PCA | LDA |
-|--------|-----|-----|
-| Objective | Maximize total variance | Maximize class separation |
-| Supervision | Unsupervised | Supervised |
-| Input | X only | X and y |
-| Directions | Components with the greatest variance | Directions with the greatest discrimination |
-| n_components | ≤ d (features) | ≤ K - 1 (classes - 1) |
-| Main use | Visualization, noise reduction | Classification, supervised reduction |
-
-### Internal Algorithm
-
-1. **Calculate per-class means**: Mean of each feature for each class
-2. **Within-class scatter ($S_W$)**: Sum of outer products $(x - \mu_k)(x - \mu_k)^T$
-3. **Between-class scatter ($S_B$)**: Weighted sum of outer products of means
-4. **Invert $S_W$**: Gauss-Jordan elimination with partial pivoting
-5. **Product $M = S_W^{-1} S_B$**: Combined matrix
-6. **Jacobi**: Diagonalize the symmetrized $M$ to obtain eigenvalues and eigenvectors
-7. **Sort**: Select eigenvectors with the largest eigenvalues
-8. **Project**: $Y = X \cdot W$
-
-### When to Use
-
-- Classification with linearly separable classes
-- Supervised dimensionality reduction (preprocessing)
-- Data with Gaussian distributions for each class
-- When the projection directions need to be interpretable
-
-### When Not to Use
-
-- Nonlinear relationships (use Kernel LDA)
-- Classes with very different covariances (use QDA)
-- Categorical data without transformation
-
----
-
-## PolynomialFeatures
-
-Generates polynomial features up to a specified degree, allowing linear models to capture nonlinear relationships.
-
-### Theory
-
-For $d$ features and degree $n$, it generates all combinations of powers $p_1 + p_2 + \cdots + p_d \leq n$:
-
-$$[x_1, x_2] \xrightarrow{\text{degree}=2} [1, x_2, x_2^2, x_1, x_1 x_2, x_1^2]$$
-
-Number of output features (with bias): $\binom{d+n}{n} = \frac{(d+n)!}{d! \cdot n!}$
-
-**Example** with degree=2 and 2 features:
-
-| Feature | Powers | Value |
-|---------|--------|-------|
-| 1 (bias) | $(0,0)$ | $1$ |
-| x1 | $(0,1)$ | $x_2$ |
-| x1² | $(0,2)$ | $x_2^2$ |
-| x0 | $(1,0)$ | $x_1$ |
-| x0*x1 | $(1,1)$ | $x_1 \cdot x_2$ |
-| x0² | $(2,0)$ | $x_1^2$ |
-
-### Methods
-
-| Method | Signature | Description |
-|--------|-----------|-------------|
-| `pf.fit(data)` | `(List[List[NUM]] or PARDOS) -> MACHINE` | Fits PolynomialFeatures (calculates dimensions) |
-| `pf.transform(data)` | `(List[List[NUM]] or PARDOS) -> List[List[FLOAT]]` | Transforms features into polynomial features |
-| `pf.fit_transform(data)` | `(List[List[NUM]] or PARDOS) -> List[List[FLOAT]]` | Fit + transform |
-
-### Constructor Parameters
-
-```kafe
--- degree=2, include_bias=True (default values)
-MACHINE pf = machine.polynomial_features(2, True);
-```
-
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `degree` | INT | 2 | Maximum polynomial degree |
-| `include_bias` | BOOL | `True` | Whether to include a bias column (ones) |
-
-### Properties
-
-| Property | Type | Description |
-|----------|------|-------------|
-| `pf.n_features_in_` | `INT` | Number of input features |
-| `pf.n_features_out_` | `INT` | Number of output features |
-
-### Example
-
-```kafe
-import machine;
-
-List[List[FLOAT]] X = [[1.0, 2.0], [3.0, 4.0], [5.0, 6.0]];
-
-MACHINE pf = machine.polynomial_features(2, True);
-List[List[FLOAT]] X_poly = pf.fit_transform(X);
-
-show(pf.n_features_in_);   -- 2
-show(pf.n_features_out_);  -- 6 (1 bias + 2 original + 3 polynomial)
-
-```
-
-This is a feature-expansion example. Training a regression model additionally needs declared targets and enough independent training samples; a tiny expanded or collinear matrix can make ordinary least squares singular. Output column ordering is the KAFE implementation ordering above, not an assumed sklearn ordering.
-
-### Comparison with a Simple Linear Model
-
-| Aspect | Linear Regression | PolynomialFeatures + Linear Regression |
-|--------|-------------------|----------------------------------------|
-| Relationships captured | Linear only | Linear + polynomial |
-| Number of features | $d$ | $\binom{d+n}{n}$ |
-| Overfitting | Low | Possible if the degree is high |
-| Scaling required | Optional | Recommended |
-
-### Limitations
-
-- **Curse of dimensionality**: The number of features grows exponentially with the degree
-- **Overfitting**: A high degree can memorize noise
-- **Not invertible**: `inverse_transform` is not implemented
-- **Multicollinearity**: Polynomial features are highly correlated
-
----
-
-## VarianceThreshold
-
-Removes features with variance below a threshold. This unsupervised feature-selection method filters constant or nearly constant features.
-
-### Theory
-
-For each feature $j$, it calculates the population variance:
-
-$$\text{Var}(j) = \frac{1}{n} \sum_{i=1}^{n} (x_{ij} - \bar{x}_j)^2$$
-
-**Selection rule**: Keep feature $j$ if $\text{Var}(j) > \text{threshold}$.
-
-- Feature with variance 0 → constant → no information
-- Feature with low variance → little discriminatory power
-- Default threshold: 0.0 (removes only constant features)
-
-### Methods
-
-| Method | Signature | Description |
-|--------|-----------|-------------|
-| `vt.fit(X)` | `(List[List[NUM]]) -> MACHINE` | Calculates variances and selects features |
-| `vt.transform(X)` | `(List[List[NUM]]) -> List[List[FLOAT]]` | Removes low-variance features |
-| `vt.fit_transform(X)` | `(List[List[NUM]]) -> List[List[FLOAT]]` | Fit + transform |
-
-### Constructor Parameters
-
-```kafe
--- threshold=0.0 (default value)
-MACHINE vt = machine.variance_threshold(0.0);
-```
-
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `threshold` | FLOAT | 0.0 | Minimum variance threshold (non-negative) |
-
-### Properties
-
-| Property | Type | Description |
-|----------|------|-------------|
-| `vt.variances_` | `List[FLOAT]` | Variance of each feature |
-| `vt.selected_indices_` | `List[INT]` | Indices of the selected features |
-| `vt.n_features_in_` | `INT` | Number of input features |
-| `vt.n_features_out_` | `INT` | Number of output features |
-
-### Example
-
-```kafe
-import machine;
-
-List[List[FLOAT]] X = [[1.0, 0.0, 3.0],
-                        [2.0, 0.0, 6.0],
-                        [3.0, 0.0, 9.0],
-                        [4.0, 0.0, 12.0]];
-
--- Remove constant features (threshold=0)
-MACHINE vt = machine.variance_threshold(0.0);
-List[List[FLOAT]] X_new = vt.fit_transform(X);
-show(X_new);  -- [[1.0, 3.0], [2.0, 6.0], [3.0, 9.0], [4.0, 12.0]]
-
-show(vt.variances_);       -- [1.25, 0.0, 10.125]
-show(vt.selected_indices_); -- [0, 2]
-show(vt.n_features_out_);   -- 2
-```
-
-### Comparison with Other Methods
-
-| Aspect | VarianceThreshold | Lasso (L1) | RFE |
-|--------|-------------------|------------|-----|
-| Type | Filter (unsupervised) | Embedded (supervised) | Wrapper (supervised) |
-| Requires y | No | Yes | Yes |
-| Speed | Very fast | Fast | Slow |
-| Detects interactions | No | Partially | Yes |
-| Computational cost | $O(n \cdot d)$ | $O(n \cdot d \cdot iter)$ | $O(d \cdot T_{model} \cdot (d-k))$ |
-
----
-
-## RecursiveFeatureElimination (RFE)
-
-Selects features by recursive elimination using the factory's fixed linear-regression estimator. It repeatedly trains that model and removes the least important feature until the desired number remains. The Python class can receive another estimator, but that constructor capability is not exposed by the KAFE factory.
-
-### Theory
-
-RFE is a **wrapper method** that uses an estimator to evaluate feature importance:
-
-1. Train the estimator with all active features
-2. Calculate importance: $\text{importance}_j = |w_j|$ for linear models
-3. Remove the least important feature
-4. Repeat until $k$ features remain
-
-**Ranking**: Features removed first receive a high rank (less important). The remaining features receive rank 1.
-
-- **Time complexity**: $O(d \cdot T_{model} \cdot (d - k))$, where $T_{model}$ is the training time
-- **Space**: $O(d)$ for ranking and support
-
-### Methods
-
-| Method | Signature | Description |
-|--------|-----------|-------------|
-| `rfe.fit(X, y)` | `(List[List[NUM]], List[NUM]) -> MACHINE` | Recursively trains and selects features |
-| `rfe.transform(X)` | `(List[List[NUM]]) -> List[List[FLOAT]]` | Selects only the chosen features |
-| `rfe.fit_transform(X, y)` | `(List[List[NUM]], List[NUM]) -> List[List[FLOAT]]` | Fit + transform |
-
-### Constructor Parameters
-
-```kafe
--- Default linear estimator; select two features.
-MACHINE rfe = machine.recursive_feature_elimination(2);
-```
-
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `n_features` | INT | 1 | Number of features to select |
-| `max_iter` | INT | 100 | Accepted second positional argument; currently ignored |
-
-The valid positional forms are `machine.recursive_feature_elimination()`, `(n_features)` and `(n_features, max_iter)`. Passing a `MACHINE` estimator is rejected. Use nonsingular training features; an intermediate linear fit can fail on a singular matrix. `inverse_transform` is explicitly unimplemented.
-
-### Properties
-
-| Property | Type | Description |
-|----------|------|-------------|
-| `rfe.selected_indices_` | `List[INT]` | Indices of the selected features |
-| `rfe.ranking_` | `List[INT]` | Importance ranking (1 = most important) |
-| `rfe.support_` | `List[BOOL]` | Boolean mask of the selected features |
-| `rfe.n_features_in_` | `INT` | Number of input features |
-
-### Example
-
-```kafe
-import machine;
-
-List[List[FLOAT]] X = [[5.0, 0.1, 3.0], [4.0, 9.2, 6.0],
-                     [7.0, 0.3, 1.0], [10.0, 4.4, 8.0]];
-List[FLOAT] y = [1.0, 2.0, 3.0, 4.0];
-
--- Select the 2 best features
-MACHINE rfe = machine.recursive_feature_elimination(2);
-rfe.fit(X, y);
-
-show(rfe.selected_indices_); -- [0, 2]
-show(rfe.support_);          -- [True, False, True]
-
-List[List[FLOAT]] X_new = rfe.transform(X);
-show(len(X_new[0]));  -- 2
-```
-
-### Comparison with Other Methods
-
-| Aspect | RFE | VarianceThreshold | Lasso (L1) |
-|--------|-----|-------------------|------------|
-| Type | Wrapper | Filter | Embedded |
-| Requires y | Yes | No | Yes |
-| Speed | Slow | Very fast | Fast |
-| Detects interactions | Yes | No | Partially |
-| Instability | High | None | Medium |
-| KAFE factory base model | Fixed linear regression | None | Linear |
-
----
-
-## Tokenizer
-
-`machine.tokenizer()` accepts optional positional `num_words: INT` and then `oov_token: STR`. A nonnegative word limit of 0 keeps all words. `fit(texts)` returns the same MACHINE and replaces its previous vocabulary. `transform(texts)` and `fit_transform(texts)` return one integer sequence per string.
-
-```kafe
-import machine;
-
-MACHINE tokens = machine.tokenizer(10, "<oov>");
-show(tokens.fit_transform(["red red blue", "blue green"]));
-show(tokens.transform(["new red"]));
-show(tokens.vocabulary_size);
-```
-
-Expected output:
 
 ```text
-[[2, 2, 3], [3, 4]]
-[[1, 2]]
-5
+--8<-- "tests/DocsExamples/machine/standard_scaler.expec"
 ```
 
-The word order is descending training frequency with first occurrence breaking ties. Index 0 is reserved for padding; a nonempty OOV token uses index 1, and known words start at 2. Without an OOV token unknown words are skipped. `vocabulary_size` includes the reserved indices and can supply an embedding input size. `word_index` and `index_word` are backend mappings, not a KAFE `Dict` declaration type.
+!!! tip "¿Qué pasó aquí?"
+    1. `mean_` guarda el promedio de cada columna: `10.0` y `4.0`.
+    2. `scale_` guarda la desviación: `3.0` y `2.24`.
+    3. La primera mascota pesa 7: (7 − 10) ÷ 3 = `-1.0`.
+    4. `inverse_transform` deshace todo: vuelve a `[15.0, 7.0]`.
 
-Tokenization lowercases and splits with ASCII `[a-z0-9]`. Accents and other characters can split a word; the implementation does not preserve arbitrary Unicode words or provide stemming/stop-word configuration. Fit requires a nonempty list of strings; transform requires fit first. See the [call contracts](contracts.md) for shape and method boundaries.
+### Las matemáticas con números pequeños { #standardscaler-math }
+
+$$z = \frac{x - \text{promedio}}{\text{desviación}}$$
+
+```kafe
+--8<-- "tests/DocsExamples/machine/standard_scaler-by-hand.kf"
+```
+
+```text
+--8<-- "tests/DocsExamples/machine/standard_scaler-by-hand.expec"
+```
+
+La **varianza** (`9.0`) es el promedio de las distancias al promedio, elevadas al cuadrado. La **desviación** es su raíz: `3.0`.
+
+| Llamada | Qué hace |
+|---|---|
+| `machine.standard_scaler()` | Crea la herramienta. |
+| `fit` / `transform` / `fit_transform` / `inverse_transform` | Aprender, aplicar y deshacer. |
+| `mean_` / `scale_` | El promedio y la desviación de cada columna. |
+
+??? warning "Error común: transformar sin aprender"
+    ```kafe
+    --8<-- "tests/DocsExamples/machine/standard_scaler-not-fitted.error.kf"
+    ```
+
+    ```text
+    --8<-- "tests/DocsExamples/machine/standard_scaler-not-fitted.error.stderr.expec"
+    ```
+
+!!! note "¿Cuándo usarlo?"
+    Con los modelos que **miden distancias o dan pasos de gradiente**: [KNN](classifiers.md#knn), [SVM](linear.md#svm-support-vector-machine-classifier), [K-Means](clustering.md#kmeans), la regresión logística y PCA. A los árboles no les afecta la escala.
+
+## MinMaxScaler: todo entre 0 y 1 { #minmaxscaler }
+
+### La idea en una frase
+
+**MinMaxScaler** estira cada columna para que su valor más pequeño sea **0** y el más grande sea **1**.
+
+### Una comparación de la vida diaria
+
+Es como convertir notas de distintos exámenes a porcentaje: el peor resultado del grupo queda en 0 % y el mejor en 100 %.
+
+<figure class="kafe-fig">
+--8<-- "docs/assets/illustrations/machine-minmax-scaler.svg"
+<figcaption>Pesos de 7, 9, 9 y 15 kg bajan a una regla de 0 a 1: el más liviano cae en 0, el más pesado en 1 y los dos de 9 kg en 0.25.</figcaption>
+</figure>
+
+```kafe
+--8<-- "tests/DocsExamples/machine/minmax_scaler.kf"
+```
+
+```text
+--8<-- "tests/DocsExamples/machine/minmax_scaler.expec"
+```
+
+!!! tip "¿Qué pasó aquí?"
+    La fórmula es $x' = \dfrac{x - \text{mín}}{\text{máx} - \text{mín}}$. Para 9 kg: (9 − 7) ÷ (15 − 7) = `0.25`. `scale_` es $1 \div (\text{máx} - \text{mín})$ = `0.125`. Un dato nuevo de 11 kg queda en `0.5`.
+
+| Llamada | Qué hace |
+|---|---|
+| `machine.minmax_scaler()` | Crea la herramienta. |
+| `fit` / `transform` / `fit_transform` / `inverse_transform` | Aprender, aplicar y deshacer. |
+| `data_min_` / `data_max_` / `scale_` | El mínimo, el máximo y la escala de cada columna. |
+
+??? warning "Error común: cambiar la cantidad de columnas"
+    ```kafe
+    --8<-- "tests/DocsExamples/machine/minmax_scaler-columns.error.kf"
+    ```
+
+    ```text
+    --8<-- "tests/DocsExamples/machine/minmax_scaler-columns.error.stderr.expec"
+    ```
+
+## RobustScaler: a prueba de datos raros { #robustscaler }
+
+### La idea en una frase
+
+**RobustScaler** usa la **mediana** (el valor del medio) en vez del promedio, y el **rango intercuartílico** (el ancho de la mitad central de los datos) en vez de la desviación. Así, un dato rarísimo no arruina la escala de los demás.
+
+### Una comparación de la vida diaria
+
+En un barrio, nueve casas valen alrededor de 100 y una mansión vale 10 000. El promedio dice que una casa "típica" vale 1 090, y eso no describe a nadie. La mediana dice 100.
+
+<figure class="kafe-fig">
+--8<-- "docs/assets/illustrations/machine-robust-scaler.svg"
+<figcaption>Monedas de 1, 2, 3 y 4, y un dato raro de 100. Con StandardScaler las cuatro monedas normales quedan aplastadas entre −0.54 y −0.46, y el raro en 2. Con RobustScaler quedan separadas en −1, −0.5, 0 y 0.5, y solo el raro sale disparado a 48.5.</figcaption>
+</figure>
+
+```kafe
+--8<-- "tests/DocsExamples/machine/robust_scaler.kf"
+```
+
+```text
+--8<-- "tests/DocsExamples/machine/robust_scaler.expec"
+```
+
+!!! tip "¿Qué pasó aquí?"
+    La mediana de 1, 2, 3, 4, 100 es `3` (`center_`). El percentil 25 es 2 y el 75 es 4, así que el rango intercuartílico es `2` (`scale_`). La fórmula es $(x - \text{mediana}) \div \text{RIC}$: la moneda de 1 queda en (1 − 3) ÷ 2 = `-1.0`.
+
+### Ajustes { #robustscaler-options }
+
+```kafe
+--8<-- "tests/DocsExamples/machine/robust_scaler-options.kf"
+```
+
+```text
+--8<-- "tests/DocsExamples/machine/robust_scaler-options.expec"
+```
+
+- `machine.robust_scaler(1, 0)` solo **centra** (resta la mediana) y no escala.
+- `machine.robust_scaler(1, 1, 0)` usa como rango del percentil 0 al 75: de 1 a 4, ancho `3.0`.
+
+| Llamada | Qué hace |
+|---|---|
+| `machine.robust_scaler(with_centering, with_scaling, quantile_low, quantile_high)` | Todos son `INT` opcionales: `1`/`0` para centrar y escalar, y los percentiles del rango (por defecto `25` y `75`). |
+| `fit` / `transform` / `fit_transform` / `inverse_transform` | Aprender, aplicar y deshacer. |
+| `center_` / `scale_` | La mediana y el rango de cada columna. |
+
+??? warning "Error común: percentiles con decimales"
+    En KAFE los percentiles se escriben como enteros:
+
+    ```kafe
+    --8<-- "tests/DocsExamples/machine/robust_scaler-float.error.kf"
+    ```
+
+    ```text
+    --8<-- "tests/DocsExamples/machine/robust_scaler-float.error.stderr.expec"
+    ```
+
+## SimpleImputer: rellenar huecos { #simpleimputer }
+
+### La idea en una frase
+
+Cuando falta un dato (`math.nan`), **SimpleImputer** lo rellena con un valor típico de su columna: el promedio, la mediana, el valor más frecuente o un número fijo.
+
+### Una comparación de la vida diaria
+
+Si un termómetro falló un día, no tiras toda la semana: anotas para ese día la temperatura típica de la semana.
+
+<figure class="kafe-fig">
+--8<-- "docs/assets/illustrations/machine-simple-imputer.svg"
+<figcaption>Una tabla de cuatro días con dos columnas y dos huecos marcados con "?". Debajo aparece el promedio de cada columna, 22 y 8, y los huecos se rellenan con esos promedios.</figcaption>
+</figure>
+
+```kafe
+--8<-- "tests/DocsExamples/machine/simple_imputer.kf"
+```
+
+```text
+--8<-- "tests/DocsExamples/machine/simple_imputer.expec"
+```
+
+!!! tip "¿Qué pasó aquí?"
+    1. Con `"mean"`, el promedio de la primera columna sin el hueco es (20 + 22 + 24) ÷ 3 = `22`, y el de la segunda es (4 + 6 + 14) ÷ 3 = `8`.
+    2. Con `"median"`, la segunda columna da `6`: la mediana no se deja arrastrar por el 14.
+
+Para texto se usa `"most_frequent"`, el valor que más se repite:
+
+```kafe
+--8<-- "tests/DocsExamples/machine/simple_imputer-most-frequent.kf"
+```
+
+```text
+--8<-- "tests/DocsExamples/machine/simple_imputer-most-frequent.expec"
+```
+
+Y para rellenar con un número fijo hay una función aparte:
+
+```kafe
+--8<-- "tests/DocsExamples/machine/simple_imputer_constant.kf"
+```
+
+```text
+--8<-- "tests/DocsExamples/machine/simple_imputer_constant.expec"
+```
+
+| Llamada | Qué hace |
+|---|---|
+| `machine.simple_imputer(strategy)` | `strategy`: `"mean"`, `"median"` o `"most_frequent"`. |
+| `machine.simple_imputer_constant(fill_value)` | Rellena siempre con `fill_value`. |
+| `fit` / `transform` / `fit_transform` | Aprender y rellenar. |
+| `statistics_` / `strategy` / `fill_value` | El valor de relleno de cada columna y los ajustes. |
+
+??? warning "Error común: pedir `\"constant\"` a `simple_imputer`"
+    ```kafe
+    --8<-- "tests/DocsExamples/machine/simple_imputer-constant.error.kf"
+    ```
+
+    ```text
+    --8<-- "tests/DocsExamples/machine/simple_imputer-constant.error.stderr.expec"
+    ```
+
+## LabelEncoder: palabras a números { #labelencoder }
+
+### La idea en una frase
+
+Los modelos solo entienden números. **LabelEncoder** ordena las etiquetas alfabéticamente y le da a cada una un número: 0, 1, 2…
+
+### Una comparación de la vida diaria
+
+Es la lista de asistencia de una clase: en vez de "Ana", "Beto", "Carla", la profesora dice "número 0, número 1, número 2".
+
+<figure class="kafe-fig">
+--8<-- "docs/assets/illustrations/machine-label-encoder.svg"
+<figcaption>Cuatro palabras: pear, apple, pear, kiwi. Aparece un diccionario en orden alfabético (apple 0, kiwi 1, pear 2) y cada palabra se convierte en su número: 2, 0, 2, 1.</figcaption>
+</figure>
+
+```kafe
+--8<-- "tests/DocsExamples/machine/label_encoder.kf"
+```
+
+```text
+--8<-- "tests/DocsExamples/machine/label_encoder.expec"
+```
+
+| Llamada | Qué hace |
+|---|---|
+| `machine.label_encoder()` | Crea la herramienta. Trabaja con una **lista** de etiquetas (`List[STR]`). |
+| `fit` / `transform` / `fit_transform` / `inverse_transform` | Aprender, codificar y decodificar. |
+| `classes_` | Las etiquetas en orden: la posición es su número. |
+
+??? warning "Error común: una etiqueta que no vio"
+    ```kafe
+    --8<-- "tests/DocsExamples/machine/label_encoder-unseen.error.kf"
+    ```
+
+    ```text
+    --8<-- "tests/DocsExamples/machine/label_encoder-unseen.error.stderr.expec"
+    ```
+
+!!! note "Úsalo para `y`, no para `X`"
+    Si conviertes "rojo, verde, azul" en 0, 1, 2 dentro de `X`, el modelo creerá que azul es "el doble" que verde. Para columnas de datos usa [`OneHotEncoder`](#onehotencoder).
+
+## OneHotEncoder: una columna por categoría { #onehotencoder }
+
+### La idea en una frase
+
+**OneHotEncoder** reemplaza una columna de categorías por **una columna por categoría**, con un `1` donde corresponde y `0` en las demás. Así ninguna categoría parece "más grande" que otra.
+
+### Una comparación de la vida diaria
+
+En un formulario, en vez de escribir tu mascota, marcas una casilla: ☑ gato ☐ perro ☐ pez.
+
+<figure class="kafe-fig">
+--8<-- "docs/assets/illustrations/machine-one-hot-encoder.svg"
+<figcaption>Una columna "pet" con cat, dog, fish y cat. Aparecen tres columnas nuevas (pet_cat, pet_dog y pet_fish) y cada fila enciende un 1 en la columna de su mascota y 0 en las demás.</figcaption>
+</figure>
+
+Trabaja con tablas [PARDOS](../pardos.md) y le dices qué columnas convertir:
+
+```kafe
+--8<-- "tests/DocsExamples/machine/one_hot_encoder.kf"
+```
+
+```text
+--8<-- "tests/DocsExamples/machine/one_hot_encoder.expec"
+```
+
+| Llamada | Qué hace |
+|---|---|
+| `machine.one_hot_encoder()` | Crea la herramienta. |
+| `fit(df, columnas)` / `fit_transform(df, columnas)` | Aprende las categorías de esas columnas (y las convierte). |
+| `transform(df)` / `inverse_transform(df)` | Convertir y deshacer. |
+| `columns_` / `handle_unknown` | Las columnas convertidas y qué hacer con categorías nuevas (`"error"`). |
+
+??? warning "Error común: una categoría que no vio"
+    ```kafe
+    --8<-- "tests/DocsExamples/machine/one_hot_encoder-unseen.error.kf"
+    ```
+
+    ```text
+    --8<-- "tests/DocsExamples/machine/one_hot_encoder-unseen.error.stderr.expec"
+    ```
+
+## OrdinalEncoder: categorías a números, en una tabla { #ordinalencoder }
+
+### La idea en una frase
+
+**OrdinalEncoder** hace lo mismo que LabelEncoder, pero sobre **columnas de una tabla**: cambia cada categoría por su posición en **orden alfabético**.
+
+```kafe
+--8<-- "tests/DocsExamples/machine/ordinal_encoder.kf"
+```
+
+```text
+--8<-- "tests/DocsExamples/machine/ordinal_encoder.expec"
+```
+
+!!! warning "Orden alfabético, no de tamaño"
+    Las tallas quedaron `large = 0`, `medium = 1`, `small = 2`: en orden alfabético, **no** de chica a grande. Si el orden importa para tu modelo, revisa que el alfabético tenga sentido o usa `OneHotEncoder`.
+
+| Llamada | Qué hace |
+|---|---|
+| `machine.ordinal_encoder()` | Crea la herramienta. |
+| `fit(df, columnas)` / `fit_transform(df, columnas)` / `transform` / `inverse_transform` | Igual que `OneHotEncoder`. |
+| `columns_` | Las columnas convertidas. |
+
+??? warning "Error común: una columna que no existe"
+    ```kafe
+    --8<-- "tests/DocsExamples/machine/ordinal_encoder-column.error.kf"
+    ```
+
+    ```text
+    --8<-- "tests/DocsExamples/machine/ordinal_encoder-column.error.stderr.expec"
+    ```
+
+## PCA: la mejor sombra { #pca }
+
+### La idea en una frase
+
+**PCA** (*Principal Component Analysis*, análisis de componentes principales) busca la **dirección en la que los datos están más extendidos** y los proyecta sobre ella. Así resume muchas columnas en pocas, perdiendo lo menos posible.
+
+### Una comparación de la vida diaria
+
+Si iluminas un lápiz con una linterna, su sombra puede ser un punto (si lo alumbras de punta) o una raya larga (si lo alumbras de lado). PCA busca el ángulo con la **sombra más larga**: la que más información conserva.
+
+<figure class="kafe-fig">
+--8<-- "docs/assets/illustrations/machine-pca-shadow.svg"
+<figcaption>Cuatro puntos en una cuadrícula. Una línea gira hasta apuntar en diagonal, donde los puntos están más extendidos. Cada punto deja caer su sombra sobre la línea, y las sombras se vuelven una sola fila de números: −2.12, 0, 0 y 2.12.</figcaption>
+</figure>
+
+### Tu primer PCA
+
+```kafe
+--8<-- "tests/DocsExamples/machine/pca.kf"
+```
+
+```text
+--8<-- "tests/DocsExamples/machine/pca.expec"
+```
+
+!!! tip "¿Qué pasó aquí?"
+    1. `machine.pca(1)` resume **2 columnas en 1**.
+    2. `components_` es la dirección: `[0.707, 0.707]`, la diagonal.
+    3. `explained_variance_` (`3.0`) dice cuánta dispersión hay en esa dirección.
+    4. Las sombras son `-2.12`, `0.0`, `0.0` y `2.12`.
+    5. `inverse_transform` vuelve a 2 columnas, pero solo recupera lo que había en la sombra: los puntos (2, 3) y (3, 2) quedan los dos en (2.5, 2.5). Esa es la información que se pierde.
+
+### Las matemáticas con números pequeños { #pca-math }
+
+PCA mira la **matriz de covarianza**: cuánto varía cada columna y cuánto varían juntas.
+
+```kafe
+--8<-- "tests/DocsExamples/machine/pca-by-hand.kf"
+```
+
+```text
+--8<-- "tests/DocsExamples/machine/pca-by-hand.expec"
+```
+
+1. Las varianzas de las dos columnas son `1.667` y su covarianza es `1.333`: crecen juntas.
+2. Para una matriz de 2 × 2 hay fórmula directa de sus **valores propios**: `3.0` (la dirección diagonal) y `0.333` (la perpendicular). El grande es el que conserva PCA.
+3. Las sombras son el producto de cada punto (menos el promedio) por la dirección $(\sqrt{0.5}, \sqrt{0.5})$.
+
+??? info "Para curiosos 🤓"
+    Con $X$ centrada, la covarianza es $C = \frac{1}{n-1}X^T X$. Los componentes principales son los **vectores propios** de $C$ ordenados por su **valor propio** $\lambda$; cada $\lambda$ es la varianza en esa dirección. Conservar $k$ componentes guarda la fracción $\sum_{i \le k}\lambda_i \big/ \sum_i \lambda_i$ de la varianza total: aquí $3 \div 3.333 = 90\%$.
+
+| Llamada | Qué hace |
+|---|---|
+| `machine.pca(n_components)` | Crea la herramienta; `n_components` (`INT`) es cuántas columnas quedan. |
+| `fit` / `transform` / `fit_transform` / `inverse_transform` | Aprender, proyectar y volver (aproximadamente). |
+| `components_` / `explained_variance_` / `mean_` | Las direcciones, su varianza y el promedio. |
+| `pca.round(decimales)` | Redondea los números guardados para mostrarlos. |
+
+??? warning "Error común: pedir más componentes que columnas"
+    ```kafe
+    --8<-- "tests/DocsExamples/machine/pca-too-many.error.kf"
+    ```
+
+    ```text
+    --8<-- "tests/DocsExamples/machine/pca-too-many.error.stderr.expec"
+    ```
+
+## LinearDiscriminantAnalysis: separar al resumir { #lineardiscriminantanalysis }
+
+### La idea en una frase
+
+**LDA** también resume columnas proyectando, pero **conoce los grupos** y elige la dirección en la que los grupos quedan **más separados** entre sí y más **apretados** por dentro. Además puede clasificar.
+
+### Una comparación de la vida diaria
+
+Para fotografiar dos equipos de fútbol, PCA busca el ángulo donde se ve a más gente; LDA busca el ángulo donde **no se mezclan las camisetas**.
+
+<figure class="kafe-fig">
+--8<-- "docs/assets/illustrations/machine-lda-direction.svg"
+<figcaption>Círculos abajo a la izquierda y cuadrados arriba a la derecha. Una línea gira hacia la dirección donde los dos grupos quedan más lejos entre sí, comparado con lo dispersos que están por dentro. Sus sombras sobre esa línea forman una fila donde círculos y cuadrados no se mezclan.</figcaption>
+</figure>
+
+```kafe
+--8<-- "tests/DocsExamples/machine/linear_discriminant_analysis.kf"
+```
+
+```text
+--8<-- "tests/DocsExamples/machine/linear_discriminant_analysis.expec"
+```
+
+!!! tip "¿Qué pasó aquí?"
+    1. Con 2 grupos, LDA deja **1** dirección: `n_components` es `1`.
+    2. `prior_` y `means_` son la proporción y el centro de cada grupo.
+    3. `predict` clasifica `[3, 3]` en el grupo 0 y `[7, 6]` en el 1. La exactitud es `1.0`.
+    4. `transform` da la sombra de cada mascota: los gatos quedan entre 1.7 y 3.93 y los perros entre 7.47 y 10.09, sin mezclarse.
+
+??? info "Para curiosos 🤓"
+    LDA maximiza el **cociente de Fisher**: la distancia entre los centros de los grupos sobre la dispersión dentro de cada grupo. Con dos grupos, la mejor dirección es $w \propto S_W^{-1}(\mu_1 - \mu_0)$, donde $S_W$ suma la dispersión de cada grupo. Con $k$ grupos se pueden obtener como mucho $k - 1$ direcciones.
+
+| Llamada | Qué hace |
+|---|---|
+| `machine.linear_discriminant_analysis()` | Crea la herramienta. |
+| `fit(X, y)` | Aprende, **con** las respuestas. |
+| `transform` / `predict` / `score` | Proyectar, clasificar y la exactitud. |
+| `classes_`, `prior_`, `means_`, `n_components` | Los grupos, su proporción, sus centros y cuántas direcciones guarda. |
+
+??? warning "Error común: un solo grupo"
+    ```kafe
+    --8<-- "tests/DocsExamples/machine/linear_discriminant_analysis-one-class.error.kf"
+    ```
+
+    ```text
+    --8<-- "tests/DocsExamples/machine/linear_discriminant_analysis-one-class.error.stderr.expec"
+    ```
+
+## PolynomialFeatures: curvas con un modelo de rectas { #polynomialfeatures }
+
+### La idea en una frase
+
+**PolynomialFeatures** agrega columnas nuevas hechas con las que ya tienes: cuadrados ($x^2$), productos ($x \cdot y$)… Con eso, un modelo **lineal** puede dibujar **curvas**.
+
+### Una comparación de la vida diaria
+
+El área de un cuadrado no crece en línea recta con su lado: lado 2 da área 4, lado 3 da área 9. Una regla recta no puede seguir esos puntos. Pero si le das al modelo la columna "lado²", la relación vuelve a ser recta: área = 1 × lado².
+
+<figure class="kafe-fig">
+--8<-- "docs/assets/illustrations/machine-polynomial-features.svg"
+<figcaption>Cuadrados de lado 1 a 4 con áreas 1, 4, 9 y 16 forman una curva. Una recta (punteada) no puede seguirlos. Al agregar la columna x², el mismo modelo lineal dibuja una curva que pasa por todos los puntos.</figcaption>
+</figure>
+
+```kafe
+--8<-- "tests/DocsExamples/machine/polynomial_features-curve.kf"
+```
+
+```text
+--8<-- "tests/DocsExamples/machine/polynomial_features-curve.expec"
+```
+
+La regresión lineal predijo `25.0` para un lado de 5: exactamente 5². Con dos columnas y grado 2 aparecen todas las combinaciones:
+
+```kafe
+--8<-- "tests/DocsExamples/machine/polynomial_features.kf"
+```
+
+```text
+--8<-- "tests/DocsExamples/machine/polynomial_features.expec"
+```
+
+Para `[2, 3]` salen 6 columnas: `1` (el sesgo), `3`, `9` (3²), `2`, `6` (2 × 3) y `4` (2²).
+
+| Llamada | Qué hace |
+|---|---|
+| `machine.polynomial_features(degree, include_bias)` | `degree` (`INT`, por defecto `2`); `include_bias` (`BOOL`, por defecto `True`) agrega la columna de unos. |
+| `fit` / `transform` / `fit_transform` | Aprender y agregar columnas. |
+| `n_features_in_` / `n_features_out_` | Cuántas columnas entran y cuántas salen. |
+
+??? warning "Error común: intentar deshacerlo"
+    ```kafe
+    --8<-- "tests/DocsExamples/machine/polynomial_features-inverse.error.kf"
+    ```
+
+    ```text
+    --8<-- "tests/DocsExamples/machine/polynomial_features-inverse.error.stderr.expec"
+    ```
+
+!!! note "Cuidado con el grado"
+    Las columnas crecen muy rápido: con 10 columnas y grado 3 salen 286. Con un grado alto, el modelo puede memorizar los datos.
+
+## VarianceThreshold: fuera lo que no cambia { #variancethreshold }
+
+### La idea en una frase
+
+Una columna que **siempre vale lo mismo** no ayuda a distinguir nada. **VarianceThreshold** quita las columnas cuya varianza no supera un umbral.
+
+### Una comparación de la vida diaria
+
+Si en una encuesta todos respondieron "sí" a una pregunta, esa pregunta no te sirve para separar a nadie.
+
+<figure class="kafe-fig">
+--8<-- "docs/assets/illustrations/machine-variance-threshold.svg"
+<figcaption>Tres barras muestran la varianza de tres columnas: 0, 0.125 y 5. Un umbral en 0 tacha la primera, que nunca cambia. Después el umbral sube a 0.5 y tacha también la segunda; solo queda la tercera.</figcaption>
+</figure>
+
+```kafe
+--8<-- "tests/DocsExamples/machine/variance_threshold.kf"
+```
+
+```text
+--8<-- "tests/DocsExamples/machine/variance_threshold.expec"
+```
+
+!!! tip "¿Qué pasó aquí?"
+    Las varianzas son `0.0`, `0.125` y `5.0`. Con el umbral por defecto (`0.0`) se va la primera columna y quedan las posiciones `[1, 2]`. Con `0.5` se va también la segunda y solo queda `[2]`.
+
+| Llamada | Qué hace |
+|---|---|
+| `machine.variance_threshold(threshold)` | `threshold` (`FLOAT`, por defecto `0.0`). |
+| `fit` / `transform` / `fit_transform` | Medir y quitar columnas. |
+| `variances_` / `selected_indices_` | La varianza de cada columna y las que quedan. |
+
+??? warning "Error común: umbral negativo"
+    ```kafe
+    --8<-- "tests/DocsExamples/machine/variance_threshold-negative.error.kf"
+    ```
+
+    ```text
+    --8<-- "tests/DocsExamples/machine/variance_threshold-negative.error.stderr.expec"
+    ```
+
+## RecursiveFeatureElimination: quitar lo que menos ayuda { #recursivefeatureelimination }
+
+### La idea en una frase
+
+**RFE** entrena una regresión lineal, mira qué columna tiene el **peso más pequeño**, la quita y vuelve a entrenar, hasta que quedan las columnas que pediste.
+
+### Una comparación de la vida diaria
+
+Un entrenador quiere un equipo de 2. Ve jugar a los 3, saca al que menos aportó, y si todavía sobran, los vuelve a ver jugar.
+
+<figure class="kafe-fig">
+--8<-- "docs/assets/illustrations/machine-rfe.svg"
+<figcaption>Tres barras muestran cuánto usa un modelo lineal cada columna: 2.00, 0.00 y 3.00. Se tacha la de peso más pequeño, x1, y el ranking muestra con 1 las columnas que quedan y con 3 la que salió.</figcaption>
+</figure>
+
+```kafe
+--8<-- "tests/DocsExamples/machine/recursive_feature_elimination.kf"
+```
+
+```text
+--8<-- "tests/DocsExamples/machine/recursive_feature_elimination.expec"
+```
+
+!!! tip "¿Qué pasó aquí?"
+    El precio de estas casas es exactamente 2 × columna 0 + 3 × columna 2: la columna 1 es puro ruido. RFE la quitó: `support_` es `[True, False, True]` y `ranking_` es `[1, 3, 1]` (1 = se queda).
+
+| Llamada | Qué hace |
+|---|---|
+| `machine.recursive_feature_elimination(n_features)` | `n_features` (`INT`, por defecto `1`): cuántas columnas quedan. |
+| `fit(X, y)` / `transform(X)` | Elegir columnas (con las respuestas) y quedarse con ellas. |
+| `support_`, `ranking_`, `selected_indices_` | Qué columnas quedan, su orden de salida y sus posiciones. |
+
+??? warning "Error común: pedir más columnas de las que hay"
+    ```kafe
+    --8<-- "tests/DocsExamples/machine/recursive_feature_elimination-too-many.error.kf"
+    ```
+
+    ```text
+    --8<-- "tests/DocsExamples/machine/recursive_feature_elimination-too-many.error.stderr.expec"
+    ```
+
+!!! warning "Los pesos dependen de la escala"
+    RFE compara pesos. Si una columna está en metros y otra en milímetros, sus pesos no son comparables: escala antes con [`StandardScaler`](#standardscaler).
+
+## Tokenizer: texto a números { #tokenizer }
+
+### La idea en una frase
+
+**Tokenizer** pasa el texto a minúsculas, lo **parte en palabras** y le da a cada palabra un número, según qué tan frecuente es. Así una frase se vuelve una lista de números que un modelo (por ejemplo, una red de [GESHA](../gesha.md)) puede leer.
+
+### Una comparación de la vida diaria
+
+Es un diccionario numerado: la palabra más usada recibe el número más chico. En vez de enviar "the dog eats the bone", envías "2 5 3 2 6".
+
+<figure class="kafe-fig">
+--8<-- "docs/assets/illustrations/machine-tokenizer.svg"
+<figcaption>La frase "the dog eats the bone" se parte en cinco palabras, y cada una se convierte en su número del vocabulario: 2, 5, 3, 2, 6. El índice 0 queda reservado para el relleno y el 1 para las palabras desconocidas.</figcaption>
+</figure>
+
+```kafe
+--8<-- "tests/DocsExamples/machine/tokenizer.kf"
+```
+
+```text
+--8<-- "tests/DocsExamples/machine/tokenizer.expec"
+```
+
+!!! tip "¿Qué pasó aquí?"
+    1. `machine.tokenizer(0, "<?>")`: sin límite de palabras (`0`) y con `"<?>"` para las desconocidas, que ocupa el número `1`.
+    2. "the" aparece 3 veces: recibe el `2`. "eats" aparece 2: el `3`. Después vienen cat `4`, dog `5` y bone `6`.
+    3. "bird" no estaba en el vocabulario: se convierte en `1`.
+    4. `vocabulary_size` es `7`: los números del 0 al 6.
+    5. Con `machine.tokenizer(2)` solo se guardan las **2 palabras más frecuentes**, sin palabra desconocida: "the bird eats" queda `[1, 2]` y "bird" desaparece.
+
+| Llamada | Qué hace |
+|---|---|
+| `machine.tokenizer(num_words, oov_token)` | `num_words` (`INT`, `0` = sin límite); `oov_token` (`STR`, por defecto vacío): la marca para palabras desconocidas. |
+| `fit(textos)` / `transform(textos)` / `fit_transform(textos)` | Armar el vocabulario y convertir. Reciben `List[STR]`. |
+| `vocabulary_size`, `num_words`, `oov_token` | El tamaño del vocabulario (contando el 0) y los ajustes. |
+
+??? warning "Error común: convertir sin vocabulario"
+    ```kafe
+    --8<-- "tests/DocsExamples/machine/tokenizer-not-fitted.error.kf"
+    ```
+
+    ```text
+    --8<-- "tests/DocsExamples/machine/tokenizer-not-fitted.error.stderr.expec"
+    ```
+
+!!! tip "¿Qué aprendiste en esta página?"
+    - Los **escaladores** ponen las columnas en una escala parecida: StandardScaler (promedio y desviación), MinMaxScaler (0 a 1) y RobustScaler (mediana, a prueba de datos raros).
+    - **SimpleImputer** rellena huecos; los **encoders** convierten categorías en números.
+    - **PCA** y **LDA** resumen columnas proyectando; **PolynomialFeatures** agrega columnas para dibujar curvas.
+    - **VarianceThreshold** y **RFE** quitan columnas que no ayudan; **Tokenizer** convierte texto en números.
+    - Aprende con `fit` solo en el entrenamiento y aplica con `transform` en todo lo demás.

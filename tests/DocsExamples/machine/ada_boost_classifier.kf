@@ -1,0 +1,12 @@
+import machine;
+
+List[List[FLOAT]] fruits = [[1.0, 2.0], [2.0, 3.0], [3.0, 3.0],
+                            [6.0, 5.0], [7.0, 7.0], [8.0, 6.0]];
+List[INT] kind = [0, 0, 0, 1, 1, 1];
+
+MACHINE model = machine.ada_boost_classifier(10, 1.0);
+model.fit(fruits, kind);
+
+show(model.predict([[2.0, 2.0], [7.0, 6.0]]));
+show(model.score(fruits, kind));
+show(model.classes_);

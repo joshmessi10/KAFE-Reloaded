@@ -1,0 +1,8 @@
+import machine;
+
+List[INT] real = [1, 1, 1, 1, 0, 0, 0, 0, 0, 0];
+List[INT] guess = [1, 1, 1, 0, 1, 1, 0, 0, 0, 0];
+
+List[List[INT]] table = machine.confusion_matrix(real, guess);
+show(table[0]);
+show(table[1]);

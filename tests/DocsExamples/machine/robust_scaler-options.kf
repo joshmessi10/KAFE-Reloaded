@@ -1,0 +1,12 @@
+import machine;
+
+List[List[FLOAT]] coins = [[1.0], [2.0], [3.0], [4.0], [100.0]];
+
+MACHINE center_only = machine.robust_scaler(1, 0);
+show(center_only.fit_transform(coins));
+show(center_only.with_scaling);
+
+MACHINE wide = machine.robust_scaler(1, 1, 0);
+wide.fit(coins);
+show(wide.scale_);
+show(wide.inverse_transform([[0.0], [1.0]]));

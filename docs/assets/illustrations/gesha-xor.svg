@@ -1,0 +1,24 @@
+<svg viewBox="0 0 600 270" role="img" aria-labelledby="ill-xor-t ill-xor-d" xmlns="http://www.w3.org/2000/svg">
+<title id="ill-xor-t">Una recta no separa XOR; una capa oculta sí / One line cannot split XOR; a hidden layer can</title>
+<desc id="ill-xor-d">The four XOR points: squares at (0, 1) and (1, 0), circles at (0, 0) and (1, 1). A single dashed line turns to several angles, and every time at least one point ends up on the wrong side. Then two lines from a hidden layer appear and fence the squares into a diagonal band, separating them from the circles.</desc>
+<style>
+@keyframes ill-xor-try { 0%,8% { transform: rotate(-20deg) } 20%,26% { transform: rotate(25deg) } 38%,44% { transform: rotate(-60deg) } 50%,100% { transform: rotate(-60deg) } }
+.ill-xor-try { transform-box: view-box; transform-origin: 260px 130px; transform: rotate(-60deg); animation: ill-xor-try 12s ease-in-out infinite; }
+@keyframes ill-xor-one { 0%,46% { opacity: 1 } 52%,100% { opacity: 0 } }
+.ill-xor-one { opacity: 0; animation: ill-xor-one 12s linear infinite; }
+@keyframes ill-xor-band { 0%,56% { opacity: 0 } 66%,100% { opacity: 1 } }
+.ill-xor-band { animation: ill-xor-band 12s linear infinite; }
+@keyframes ill-xor-miss { 0%,8% { opacity: 1 } 12%,100% { opacity: 0 } }
+.ill-xor-miss { opacity: 0; animation: ill-xor-miss 12s linear infinite; }
+@keyframes ill-xor-all { 0% { opacity: 0 } 4%,94% { opacity: 1 } 100% { opacity: 0 } }
+.ill-xor-all { animation: ill-xor-all 12s linear infinite; }
+.ill-xor-dash { stroke-dasharray: 6 5; }
+</style>
+<path class="k-thin" d="M120 230 H420 M140 250 V20"/><text x="156" y="250">0</text><text x="356" y="250">1</text><text x="115" y="220">0</text><text x="115" y="50">1</text>
+<g class="ill-xor-all">
+<g class="ill-xor-band"><path class="k-soft" d="M140 140 L250 20 L420 20 L420 60 L300 230 L140 230 Z" opacity="0"/><path class="k-accent-line" d="M150 121.49999999999999 L270.0 25"/><path class="k-accent-line" d="M250.0 230 L410 138.5"/></g>
+<g class="ill-xor-one"><g class="ill-xor-try"><line class="k-line ill-xor-dash" x1="60" y1="130" x2="460" y2="130"/></g></g>
+<circle class="k-fill" cx="160" cy="215" r="11"/><rect class="k-accent" x="149" y="34" width="22" height="22"/><rect class="k-accent" x="349" y="204" width="22" height="22"/><circle class="k-fill" cx="360" cy="45" r="11"/>
+</g>
+<text class="k-label" x="470" y="70">x₁ XOR x₂</text><circle class="k-fill" cx="480" cy="110" r="8"/><text x="495" y="115">0</text><rect class="k-accent" x="472" y="137" width="16" height="16"/><text x="495" y="150">1</text>
+</svg>

@@ -1,0 +1,10 @@
+import machine;
+
+List[STR] fruits = ["pear", "apple", "pear", "kiwi"];
+
+MACHINE encoder = machine.label_encoder();
+List[INT] codes = encoder.fit_transform(fruits);
+show(encoder.classes_);
+show(codes);
+show(encoder.transform(["kiwi", "kiwi"]));
+show(encoder.inverse_transform([0, 2]));

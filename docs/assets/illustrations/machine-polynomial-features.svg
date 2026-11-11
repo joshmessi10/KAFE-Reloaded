@@ -1,0 +1,22 @@
+<svg viewBox="0 0 600 270" role="img" aria-labelledby="ill-poly-t ill-poly-d" xmlns="http://www.w3.org/2000/svg">
+<title id="ill-poly-t">Agregar x² deja que una recta dibuje una curva / Adding x² lets a straight-line model draw a curve</title>
+<desc id="ill-poly-d">Squares of side 1 to 4 with areas 1, 4, 9 and 16 lie on a curve. A straight line, dashed, cannot follow them. When a new column with x squared is added, the same linear model draws a curve that passes through every point.</desc>
+<style>
+@keyframes ill-poly-cols { 0%,40% { opacity: 0 } 48%,100% { opacity: 1 } }
+.ill-poly-cols { animation: ill-poly-cols 10s linear infinite; }
+@keyframes ill-poly-curve { 0%,55% { opacity: 0 } 68%,100% { opacity: 1 } }
+.ill-poly-curve { animation: ill-poly-curve 10s linear infinite; }
+@keyframes ill-poly-out { 0%,35% { opacity: 1 } 45%,100% { opacity: 0 } }
+.ill-poly-out { opacity: 0; animation: ill-poly-out 10s linear infinite; }
+@keyframes ill-poly-all { 0% { opacity: 0 } 4%,94% { opacity: 1 } 100% { opacity: 0 } }
+.ill-poly-all { animation: ill-poly-all 10s linear infinite; }
+.ill-poly-dash { stroke-dasharray: 6 5; }
+</style>
+<path class="k-line" d="M80 20 V235 H500"/><text x="166" y="256">1</text><text x="256" y="256">2</text><text x="346" y="256">3</text><text x="436" y="256">4</text>
+<g class="ill-poly-all">
+<g class="ill-poly-out"><line class="k-line ill-poly-dash" x1="170" y1="235" x2="476.00000000000006" y2="48"/></g>
+<path class="k-accent-line ill-poly-curve" d="M80.0 235.0 L89.0 234.9 L98.0 234.6 L107.0 234.0 L116.0 233.2 L125.0 232.2 L134.0 231.0 L143.0 229.6 L152.0 228.0 L161.0 226.1 L170.0 224.0 L179.0 221.7 L188.0 219.2 L197.0 216.4 L206.0 213.4 L215.0 210.2 L224.0 206.8 L233.0 203.2 L242.0 199.4 L251.0 195.3 L260.0 191.0 L269.0 186.5 L278.0 181.8 L287.0 176.8 L296.0 171.6 L305.0 166.2 L314.0 160.6 L323.0 154.8 L332.0 148.8 L341.0 142.5 L350.0 136.0 L359.0 129.3 L368.0 122.4 L377.0 115.2 L386.0 107.8 L395.0 100.2 L404.0 92.4 L413.0 84.4 L422.0 76.2 L431.0 67.7 L440.0 59.0 L449.0 50.1 L458.0 41.0 L467.0 31.6 L476.0 22.0 L485.0 12.2"/>
+<circle class="k-fill" cx="170" cy="224" r="7"/><circle class="k-fill" cx="260" cy="191" r="7"/><circle class="k-fill" cx="350" cy="136" r="7"/><circle class="k-fill" cx="440" cy="59" r="7"/>
+<g class="ill-poly-cols"><rect class="k-soft" x="120" y="24" width="190" height="34" rx="8"/><text class="k-label" x="140" y="47">x → [ x , x² ]</text></g>
+</g>
+</svg>

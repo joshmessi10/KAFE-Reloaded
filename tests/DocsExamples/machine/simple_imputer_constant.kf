@@ -1,0 +1,8 @@
+import machine;
+import math;
+
+List[List[FLOAT]] days = [[20.0, 4.0], [22.0, math.nan], [math.nan, 6.0]];
+
+MACHINE imputer = machine.simple_imputer_constant(0.0);
+show(imputer.fit_transform(days));
+show(imputer.fill_value);

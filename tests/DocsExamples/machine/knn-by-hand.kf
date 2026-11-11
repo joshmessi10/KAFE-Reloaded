@@ -1,0 +1,11 @@
+import math;
+
+List[List[FLOAT]] points = [[1.0, 1.0], [2.0, 1.0], [4.0, 3.0], [5.0, 5.0], [1.0, 3.0]];
+List[INT] color = [0, 0, 1, 1, 0];
+List[FLOAT] new = [3.0, 3.0];
+
+for (i in range(0, len(points))):
+    FLOAT dx = points[i][0] - new[0];
+    FLOAT dy = points[i][1] - new[1];
+    show(math.round(math.sqrt(dx * dx + dy * dy), 2));
+;

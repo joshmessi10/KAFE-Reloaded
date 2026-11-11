@@ -1,0 +1,15 @@
+import machine;
+
+List[STR] notes = ["The cat eats", "the dog eats the bone"];
+
+MACHINE tok = machine.tokenizer(0, "<?>");
+show(tok.fit_transform(notes));
+show(tok.transform(["the bird eats"]));
+show(tok.vocabulary_size);
+show(tok.num_words);
+show(tok.oov_token);
+
+MACHINE small = machine.tokenizer(2);
+small.fit(notes);
+show(small.transform(["the bird eats"]));
+show(small.vocabulary_size);

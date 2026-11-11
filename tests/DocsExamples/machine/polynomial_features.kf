@@ -1,0 +1,8 @@
+import machine;
+
+MACHINE poly = machine.polynomial_features(2);
+show(poly.fit_transform([[2.0, 3.0]]));
+show(poly.degree);
+show(poly.include_bias);
+show(poly.n_features_in_);
+show(poly.n_features_out_);

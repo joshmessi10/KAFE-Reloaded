@@ -1,0 +1,16 @@
+List[FLOAT] x = [1.0, 2.0, 6.0, 7.0];
+List[FLOAT] side = [1.0, 1.0, -1.0, -1.0];
+FLOAT w = -0.5;
+FLOAT b = 2.0;
+
+for (i in range(0, len(x))):
+    FLOAT f = w * x[i] + b;
+    FLOAT cost = 1.0 - side[i] * f;
+    if (cost < 0.0):
+        cost = 0.0;
+    ;
+    show(f);
+    show(cost);
+;
+show(2.0 / 0.5);
+show((0.0 - b) / w);

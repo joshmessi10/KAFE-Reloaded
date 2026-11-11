@@ -1,0 +1,17 @@
+List[FLOAT] price = [10.0, 20.0, 30.0, 40.0];
+
+FLOAT start = 0.0;
+for (i in range(0, 4)):
+    start = start + price[i] / 4;
+;
+show(start);
+
+List[FLOAT] left = [price[0] - start, price[1] - start];
+List[FLOAT] right = [price[2] - start, price[3] - start];
+show(left);
+show(right);
+
+FLOAT fix_left = (left[0] + left[1]) / 2;
+FLOAT fix_right = (right[0] + right[1]) / 2;
+show(start + 0.5 * fix_left);
+show(start + 0.5 * fix_right);

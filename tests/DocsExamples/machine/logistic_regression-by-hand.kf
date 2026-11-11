@@ -1,0 +1,20 @@
+import math;
+
+List[FLOAT] hours = [2.0, 3.0, 5.0];
+List[INT] passed = [0, 0, 1];
+FLOAT w = 2.0;
+FLOAT b = -7.0;
+
+FLOAT loss = 0.0;
+for (i in range(0, len(hours))):
+    FLOAT z = w * hours[i] + b;
+    FLOAT p = 1.0 / (1.0 + math.exp(0.0 - z));
+    show(math.round(p, 2));
+    if (passed[i] == 1):
+        loss = loss - math.log(p);
+    ;
+    if (passed[i] == 0):
+        loss = loss - math.log(1.0 - p);
+    ;
+;
+show(math.round(loss / len(hours), 3));

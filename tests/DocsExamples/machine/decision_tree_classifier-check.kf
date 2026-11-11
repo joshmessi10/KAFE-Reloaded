@@ -1,0 +1,15 @@
+import machine;
+import math;
+
+List[FLOAT] x = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0];
+List[INT] y = [0, 0, 1, 0, 1, 1];
+
+MACHINE stump = machine.decision_tree_classifier("gini", 1);
+stump.fit(x, y);
+show(stump.tree_);
+show(stump.predict([2.0, 3.0, 6.0]));
+
+MACHINE full = machine.decision_tree_classifier();
+full.fit(x, y);
+show(full.score(x, y));
+show(math.round(stump.score(x, y), 2));

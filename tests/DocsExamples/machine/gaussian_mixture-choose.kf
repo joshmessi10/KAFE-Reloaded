@@ -1,0 +1,18 @@
+import machine;
+import math;
+
+List[List[FLOAT]] weights = [[1.0], [2.0], [3.0], [10.0], [11.0], [12.0]];
+
+MACHINE one = machine.gaussian_mixture(1, 100, 0.001, 1);
+one.fit(weights);
+show(math.round(one.score(weights), 2));
+show(math.round(one.aic(weights), 2));
+show(math.round(one.bic(weights), 2));
+
+MACHINE two = machine.gaussian_mixture(2, 100, 0.001, 1);
+show(two.fit_predict(weights));
+show(math.round(two.score(weights), 2));
+show(math.round(two.aic(weights), 2));
+show(math.round(two.bic(weights), 2));
+show(two.converged_);
+show(two.n_iter_);

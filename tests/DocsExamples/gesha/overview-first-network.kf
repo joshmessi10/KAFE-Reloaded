@@ -1,0 +1,14 @@
+import gesha;
+
+List[List[FLOAT]] X = [[0.0, 0.0], [0.0, 1.0], [1.0, 0.0], [1.0, 1.0]];
+List[INT] y = [0, 0, 0, 1];
+
+GESHA layer = gesha.create_dense(1, "sigmoid", [2], 0.0, 42);
+GESHA model = gesha.sequential([layer]);
+model.compile("sgd", "binary_crossentropy", []);
+model.set_lr(2.0);
+model.fit(X, y, 10, 1);
+
+for (i in range(0, 4)):
+    show(str(X[i]) + " -> " + str(model.predict_label(X[i])));
+;

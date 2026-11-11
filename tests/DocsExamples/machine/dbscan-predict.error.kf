@@ -1,0 +1,6 @@
+import machine;
+
+List[List[FLOAT]] houses = [[1.0, 1.0], [1.0, 2.0], [2.0, 1.0], [8.0, 8.0]];
+MACHINE model = machine.dbscan(1.0, 3);
+model.fit(houses);
+show(model.predict([[1.5, 1.5]]));

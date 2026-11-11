@@ -1,0 +1,18 @@
+List[INT] real = [1, 1, 1, 1, 0, 0, 0, 0, 0, 0];
+List[FLOAT] spam = [0.9, 0.8, 0.7, 0.3, 0.6, 0.55, 0.2, 0.2, 0.1, 0.1];
+List[FLOAT] cuts = [0.95, 0.75, 0.5, 0.25, 0.05];
+
+for (c in cuts):
+    INT tp = 0;
+    INT fp = 0;
+    for (i in range(0, len(real))):
+        if (spam[i] >= c):
+            if (real[i] == 1):
+                tp = tp + 1;
+            else:
+                fp = fp + 1;
+            ;
+        ;
+    ;
+    show([c, tp / 4, fp / 6]);
+;

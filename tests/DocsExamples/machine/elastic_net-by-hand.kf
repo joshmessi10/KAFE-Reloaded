@@ -1,0 +1,15 @@
+import math;
+
+FLOAT top = 20.0;
+FLOAT bottom = 10.0;
+FLOAT alpha = 20.0;
+List[FLOAT] mix = [0.0, 0.5, 1.0];
+
+for (i in range(0, len(mix))):
+    FLOAT rest = top - alpha * mix[i];
+    if (rest < 0.0):
+        rest = 0.0;
+    ;
+    FLOAT w = rest / (bottom + alpha * (1.0 - mix[i]));
+    show(math.round(w, 2));
+;

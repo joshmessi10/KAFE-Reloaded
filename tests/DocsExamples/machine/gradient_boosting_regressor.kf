@@ -1,0 +1,14 @@
+import machine;
+import math;
+
+List[FLOAT] size = [1.0, 2.0, 3.0, 4.0];
+List[FLOAT] price = [10.0, 20.0, 30.0, 40.0];
+
+MACHINE model = machine.gradient_boosting_regressor(50, 0.5, 1);
+model.fit(size, price);
+
+show(model.initial_prediction_);
+List[FLOAT] guess = model.predict([1.0, 4.0]);
+show(math.round(guess[0], 2));
+show(math.round(guess[1], 2));
+show(math.round(model.score(size, price), 3));

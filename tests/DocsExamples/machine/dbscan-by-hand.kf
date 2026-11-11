@@ -1,0 +1,23 @@
+import math;
+
+List[List[FLOAT]] houses = [[1.0, 1.0], [1.0, 2.0], [2.0, 1.0], [2.0, 2.0], [3.0, 2.0],
+                            [6.0, 6.0],
+                            [8.0, 8.0], [8.0, 9.0], [9.0, 8.0]];
+FLOAT eps = 1.0;
+INT min_samples = 3;
+
+for (i in range(0, len(houses))):
+    INT count = 0;
+    for (j in range(0, len(houses))):
+        FLOAT dx = houses[i][0] - houses[j][0];
+        FLOAT dy = houses[i][1] - houses[j][1];
+        if (math.sqrt(dx * dx + dy * dy) <= eps):
+            count = count + 1;
+        ;
+    ;
+    if (count >= min_samples):
+        show(str(i) + ": " + str(count) + " core");
+    else:
+        show(str(i) + ": " + str(count));
+    ;
+;

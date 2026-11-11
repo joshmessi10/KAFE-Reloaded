@@ -1,0 +1,5 @@
+import machine;
+
+List[INT] real = [1, 0, 1];
+List[INT] guess = [1, 0];
+show(machine.accuracy_score(real, guess));

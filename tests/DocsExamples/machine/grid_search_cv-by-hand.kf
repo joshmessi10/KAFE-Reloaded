@@ -1,0 +1,18 @@
+import machine;
+
+List[List[FLOAT]] fruits = [[150.0, 7.0], [160.0, 8.0], [155.0, 7.5], [40.0, 3.0], [170.0, 8.5], [5.0, 1.5], [6.0, 1.8], [45.0, 3.2], [4.0, 1.4], [7.0, 2.0]];
+List[INT] kind = [0, 0, 0, 0, 0, 1, 1, 1, 1, 1];
+
+List[INT] options = [1, 3, 5, 7];
+INT best_k = 0;
+FLOAT best = -1.0;
+for (i in range(0, len(options))):
+    MACHINE cv = machine.cross_val_score(5, "accuracy", 7);
+    cv.fit(machine.knn(options[i]), fruits, kind);
+    show(cv.mean_score_);
+    if (cv.mean_score_ > best):
+        best = cv.mean_score_;
+        best_k = options[i];
+    ;
+;
+show(best_k);

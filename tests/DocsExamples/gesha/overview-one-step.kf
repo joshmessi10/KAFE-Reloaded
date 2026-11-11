@@ -1,0 +1,20 @@
+import gesha;
+import math;
+
+GESHA layer = gesha.create_dense(1, "sigmoid", [2], 0.0, 42, gesha.constant_initializer(0.0));
+GESHA model = gesha.sequential([layer]);
+model.compile("sgd", "binary_crossentropy", []);
+model.set_lr(0.1);
+
+List[FLOAT] before = model.predict([1.0, 1.0]);
+show(before[0]);
+
+model.fit([[1.0, 1.0]], [1], 1, 1);
+
+List[List[FLOAT]] w = layer.weights;
+List[FLOAT] b = layer.biases;
+show(math.round(w[0][0], 4));
+show(math.round(w[1][0], 4));
+show(math.round(b[0], 4));
+List[FLOAT] after = model.predict([1.0, 1.0]);
+show(math.round(after[0], 4));

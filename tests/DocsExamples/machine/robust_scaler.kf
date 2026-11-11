@@ -1,0 +1,18 @@
+import machine;
+import math;
+
+List[List[FLOAT]] coins = [[1.0], [2.0], [3.0], [4.0], [100.0]];
+
+MACHINE robust = machine.robust_scaler();
+List[List[FLOAT]] r = robust.fit_transform(coins);
+show(robust.center_);
+show(robust.scale_);
+for (i in range(0, len(r))):
+    show(r[i][0]);
+;
+
+MACHINE standard = machine.standard_scaler();
+List[List[FLOAT]] s = standard.fit_transform(coins);
+for (i in range(0, len(s))):
+    show(math.round(s[i][0], 2));
+;

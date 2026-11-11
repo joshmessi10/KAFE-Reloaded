@@ -1,0 +1,13 @@
+Epoch 1/12 — Loss 0.9470 — Accuracy 0.00%
+Epoch 2/12 — Loss 0.7772 — Accuracy 50.00%
+Epoch 3/12 — Loss 0.7371 — Accuracy 50.00%
+Epoch 4/12 — Loss 0.7262 — Accuracy 50.00%
+Epoch 5/12 — Loss 0.7272 — Accuracy 25.00%
+Epoch 6/12 — Loss 0.7266 — Accuracy 25.00%
+Epoch 7/12 — Loss 0.7241 — Accuracy 25.00%
+Epoch 8/12 — Loss 0.7215 — Accuracy 25.00%
+Epoch 9/12 — Loss 0.7198 — Accuracy 50.00%
+Epoch 10/12 — Loss 0.7189 — Accuracy 50.00%
+Epoch 11/12 — Loss 0.7182 — Accuracy 0.00%
+Epoch 12/12 — Loss 0.7204 — Accuracy 0.00%
+[1, 0, 1, 0]

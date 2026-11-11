@@ -1,0 +1,14 @@
+import machine;
+import math;
+
+List[List[FLOAT]] points = [[1.0, 1.0], [2.0, 1.0], [4.0, 3.0], [5.0, 5.0], [1.0, 3.0]];
+List[INT] color = [0, 0, 1, 1, 0];
+
+MACHINE model = machine.knn(3);
+model.fit(points, color);
+
+show(model.predict([[3.0, 3.0]]));
+List[List[FLOAT]] p = model.predict_proba([[3.0, 3.0]]);
+show(math.round(p[0][0], 2));
+show(math.round(p[0][1], 2));
+show(model.k);

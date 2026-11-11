@@ -1,0 +1,15 @@
+import machine;
+import math;
+
+List[FLOAT] x = [1.0, 2.0, 6.0, 7.0];
+List[INT] group = [0, 0, 1, 1];
+
+MACHINE model = machine.svm();
+model.fit(x, group);
+
+List[FLOAT] w = model.coef_;
+show(math.round(w[0], 2));
+show(math.round(model.intercept_, 2));
+show(math.round((0.0 - model.intercept_) / w[0], 2));
+show(math.round(2.0 / (0.0 - w[0]), 2));
+show(model.predict([3.0, 5.0]));

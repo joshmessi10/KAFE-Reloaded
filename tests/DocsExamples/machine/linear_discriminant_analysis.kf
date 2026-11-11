@@ -1,0 +1,19 @@
+import machine;
+import math;
+
+List[List[FLOAT]] pets = [[1.0, 2.0], [2.0, 1.0], [3.0, 3.0], [6.0, 5.0], [8.0, 7.0], [7.0, 6.0]];
+List[INT] kind = [0, 0, 0, 1, 1, 1];
+
+MACHINE lda = machine.linear_discriminant_analysis();
+lda.fit(pets, kind);
+show(lda.n_components);
+show(lda.classes_);
+show(lda.prior_);
+show(lda.means_);
+show(lda.predict([[3.0, 3.0], [7.0, 6.0]]));
+show(lda.score(pets, kind));
+
+List[List[FLOAT]] line = lda.transform(pets);
+for (i in range(0, len(line))):
+    show(math.round(line[i][0], 2));
+;

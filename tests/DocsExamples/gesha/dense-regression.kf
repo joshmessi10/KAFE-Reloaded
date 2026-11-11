@@ -1,0 +1,18 @@
+import gesha;
+import math;
+
+List[List[FLOAT]] X = [[0.0], [1.0], [2.0], [3.0]];
+List[FLOAT] y = [1.0, 3.0, 5.0, 7.0];
+
+GESHA output = gesha.create_dense(1, "linear", [1], 0.0, 1);
+GESHA model = gesha.sequential([output]);
+model.compile("sgd", "mse", []);
+model.set_lr(0.05);
+model.fit(X, y, 10, 1);
+
+List[FLOAT] p = model.predict([4.0]);
+show(math.round(p[0], 2));
+List[List[FLOAT]] w = output.weights;
+List[FLOAT] b = output.biases;
+show(math.round(w[0][0], 2));
+show(math.round(b[0], 2));

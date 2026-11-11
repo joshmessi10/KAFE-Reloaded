@@ -1,0 +1,16 @@
+import gesha;
+import math;
+
+List[FLOAT] z = [-2.0, 0.0, 2.0];
+GESHA s = gesha.sequential([gesha.sigmoid_layer()]);
+GESHA t = gesha.sequential([gesha.tanh_layer()]);
+GESHA r = gesha.sequential([gesha.relu_layer()]);
+GESHA m = gesha.sequential([gesha.softmax_layer()]);
+
+List[FLOAT] a = s.predict(z);
+show([math.round(a[0], 2), math.round(a[1], 2), math.round(a[2], 2)]);
+List[FLOAT] b = t.predict(z);
+show([math.round(b[0], 2), math.round(b[1], 2), math.round(b[2], 2)]);
+show(r.predict([0.5, 2.0]));
+List[FLOAT] c = m.predict([1.0, 2.0, 3.0]);
+show([math.round(c[0], 2), math.round(c[1], 2), math.round(c[2], 2)]);
