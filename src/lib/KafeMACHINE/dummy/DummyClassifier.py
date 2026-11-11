@@ -1,7 +1,13 @@
 import random
 
 from global_utils import check_sig
-from TypeUtils import integer_type, numeric_matrix_types, numeric_vector_types, pardos_type, string_type
+from TypeUtils import (
+    integer_type,
+    numeric_matrix_types,
+    numeric_vector_types,
+    pardos_type,
+    string_type,
+)
 
 from ..BaseMachine import BaseMachine
 
