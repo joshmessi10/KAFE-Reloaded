@@ -1,0 +1,17 @@
+import machine;
+import math;
+
+List[List[FLOAT]] houses = [[50.0, 1.0], [80.0, 2.0], [100.0, 3.0], [120.0, 3.0], [150.0, 4.0]];
+List[FLOAT] price = [110.0, 180.0, 230.0, 270.0, 340.0];
+
+MACHINE pipe = machine.pipeline("scale", machine.standard_scaler(), "model", machine.linear_regression());
+pipe.fit(houses, price);
+
+show(pipe.get_params());
+List[FLOAT] guess = pipe.predict([[90.0, 2.0]]);
+show(math.round(guess[0], 2));
+show(math.round(pipe.score(houses, price), 3));
+
+List[List[FLOAT]] scaled = pipe.transform(houses);
+show(math.round(scaled[0][0], 2));
+show(math.round(scaled[0][1], 2));

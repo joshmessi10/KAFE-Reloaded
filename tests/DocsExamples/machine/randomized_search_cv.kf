@@ -1,0 +1,12 @@
+import machine;
+
+List[List[FLOAT]] fruits = [[150.0, 7.0], [160.0, 8.0], [155.0, 7.5], [40.0, 3.0], [170.0, 8.5], [5.0, 1.5], [6.0, 1.8], [45.0, 3.2], [4.0, 1.4], [7.0, 2.0]];
+List[INT] kind = [0, 0, 0, 0, 0, 1, 1, 1, 1, 1];
+
+MACHINE search = machine.randomized_search_cv(3, 5, "accuracy", 7);
+search.fit(machine.knn(3), fruits, kind);
+
+show(search.cv_results_);
+show(search.best_score_);
+show(search.n_iter_);
+show(search.best_params_);
