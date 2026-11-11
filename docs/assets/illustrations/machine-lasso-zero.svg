@@ -1,0 +1,33 @@
+<svg viewBox="0 0 600 270" role="img" aria-labelledby="ill-lso-t ill-lso-d" xmlns="http://www.w3.org/2000/svg">
+<title id="ill-lso-t">Ridge encoge, Lasso apaga / Ridge shrinks, Lasso switches off</title>
+<desc id="ill-lso-d">Two bars show the same weight learned by Ridge and by Lasso. As alpha goes from 0 to 10 to 20, the Ridge bar goes 2.0, 1.0, 0.67 and never reaches zero, while the Lasso bar goes 2.0, 1.0 and then exactly 0, and its switch turns off.</desc>
+<style>
+@keyframes ill-lso-r { 0%,20% { transform: scaleY(1) } 40%,55% { transform: scaleY(0.5) } 75%,100% { transform: scaleY(0.335) } }
+@keyframes ill-lso-l { 0%,20% { transform: scaleY(1) } 40%,55% { transform: scaleY(0.5) } 75%,100% { transform: scaleY(0) } }
+@keyframes ill-lso-s0 { 0%,25% { opacity: 1 } 30%,100% { opacity: 0 } }
+@keyframes ill-lso-s1 { 0%,30% { opacity: 0 } 35%,60% { opacity: 1 } 65%,100% { opacity: 0 } }
+@keyframes ill-lso-s2 { 0%,65% { opacity: 0 } 70%,100% { opacity: 1 } }
+@keyframes ill-lso-off { 0%,72% { transform: translateX(0) } 78%,100% { transform: translateX(-26px) } }
+@keyframes ill-lso-all { 0% { opacity: 0 } 4%,94% { opacity: 1 } 100% { opacity: 0 } }
+.ill-lso-all { animation: ill-lso-all 12s linear infinite; }
+.ill-lso-r { transform-box: view-box; transform-origin: 180px 220px; transform: scaleY(0.335); animation: ill-lso-r 12s ease-in-out infinite; }
+.ill-lso-l { transform-box: view-box; transform-origin: 400px 220px; transform: scaleY(0); animation: ill-lso-l 12s ease-in-out infinite; }
+.ill-lso-s0 { opacity: 0; animation: ill-lso-s0 12s linear infinite; }
+.ill-lso-s1 { opacity: 0; animation: ill-lso-s1 12s linear infinite; }
+.ill-lso-s2 { animation: ill-lso-s2 12s linear infinite; }
+.ill-lso-knob { transform: translateX(-26px); animation: ill-lso-off 12s ease-in-out infinite; }
+</style>
+<path class="k-line" d="M80 220 H520"/>
+<text class="k-label" x="150" y="248">Ridge</text><text class="k-label" x="370" y="248">Lasso</text>
+<g class="ill-lso-all">
+<rect class="k-thin" x="140" y="60" width="80" height="160" rx="3"/>
+<rect class="k-accent ill-lso-r" x="140" y="60" width="80" height="160"/>
+<rect class="k-thin" x="360" y="60" width="80" height="160" rx="3"/>
+<rect class="k-accent ill-lso-l" x="360" y="60" width="80" height="160"/>
+<rect class="k-thin" x="455" y="196" width="52" height="24" rx="12"/>
+<circle class="k-fill ill-lso-knob" cx="494" cy="208" r="9"/>
+<g class="ill-lso-s0"><text class="k-label" x="260" y="34">α = 0</text><text x="166" y="50">2.0</text><text x="386" y="50">2.0</text></g>
+<g class="ill-lso-s1"><text class="k-label" x="256" y="34">α = 10</text><text x="166" y="50">1.0</text><text x="386" y="50">1.0</text></g>
+<g class="ill-lso-s2"><text class="k-label" x="256" y="34">α = 20</text><text x="162" y="50">0.67</text><text x="392" y="50">0</text></g>
+</g>
+</svg>

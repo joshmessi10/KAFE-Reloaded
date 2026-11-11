@@ -1,0 +1,21 @@
+import machine;
+import math;
+
+List[List[FLOAT]] data = [[1.0, 3.0], [2.0, 1.0], [3.0, 4.0], [4.0, 1.0], [5.0, 5.0]];
+List[FLOAT] grade = [3.2, 4.9, 7.3, 8.8, 11.2];
+
+MACHINE plain = machine.linear_regression();
+plain.fit(data, grade);
+List[FLOAT] a = plain.coef_;
+show(math.round(a[0], 2));
+show(math.round(a[1], 2));
+
+MACHINE model = machine.lasso_regression(3.0);
+model.fit(data, grade);
+List[FLOAT] b = model.coef_;
+show(math.round(b[0], 2));
+show(math.round(b[1], 2));
+show(math.round(model.intercept_, 2));
+
+List[FLOAT] guess = model.predict([[6.0, 2.0]]);
+show(math.round(guess[0], 2));

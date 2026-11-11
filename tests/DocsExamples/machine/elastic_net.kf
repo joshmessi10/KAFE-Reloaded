@@ -1,0 +1,21 @@
+import machine;
+import math;
+
+List[List[FLOAT]] twins = [[1.0, 1.0], [2.0, 2.0], [3.0, 3.0], [4.0, 4.0], [5.0, 5.0]];
+List[FLOAT] grade = [3.0, 5.0, 7.0, 9.0, 11.0];
+
+MACHINE lasso = machine.lasso_regression(1.0);
+lasso.fit(twins, grade);
+List[FLOAT] a = lasso.coef_;
+show(math.round(a[0], 2));
+show(math.round(a[1], 2));
+
+MACHINE model = machine.elastic_net(1.0, 0.5);
+model.fit(twins, grade);
+List[FLOAT] b = model.coef_;
+show(math.round(b[0], 2));
+show(math.round(b[1], 2));
+show(math.round(model.intercept_, 2));
+
+List[FLOAT] guess = model.predict([[6.0, 6.0]]);
+show(math.round(guess[0], 2));

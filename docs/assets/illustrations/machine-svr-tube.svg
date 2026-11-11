@@ -1,0 +1,30 @@
+<svg viewBox="0 0 600 270" role="img" aria-labelledby="ill-svr-t ill-svr-d" xmlns="http://www.w3.org/2000/svg">
+<title id="ill-svr-t">El tubo de SVR ignora el dato raro / The SVR tube ignores the odd point</title>
+<desc id="ill-svr-d">Four points on a straight line and one odd point far above. A tube of width epsilon appears around the SVR line, which stays close to the four regular points. Then the ordinary regression line appears, pulled up towards the odd point.</desc>
+<style>
+@keyframes ill-svr-tube { 0%,15% { opacity: 0 } 30%,100% { opacity: 1 } }
+@keyframes ill-svr-lr { 0%,50% { opacity: 0 } 65%,100% { opacity: 1 } }
+@keyframes ill-svr-all { 0% { opacity: 0 } 4%,94% { opacity: 1 } 100% { opacity: 0 } }
+.ill-svr-all { animation: ill-svr-all 10s linear infinite; }
+.ill-svr-tube { animation: ill-svr-tube 10s linear infinite; }
+.ill-svr-lr { animation: ill-svr-lr 10s linear infinite; }
+.ill-svr-dash { stroke-dasharray: 8 7; }
+</style>
+<path class="k-line" d="M60 20 V230 H500"/>
+<text x="136" y="252">1</text><text x="216" y="252">2</text><text x="296" y="252">3</text><text x="376" y="252">4</text><text x="456" y="252">5</text>
+<text x="38" y="206">3</text><text x="30" y="149">9</text><text x="30" y="45">20</text>
+<g class="ill-svr-all">
+<g class="ill-svr-tube">
+<path class="k-soft" d="M100 192.5 L500 96.5 L500 115.5 L100 211.5 Z"/>
+<text class="k-label" x="505" y="104">ε</text>
+</g>
+<line class="k-accent-line" x1="100" y1="202" x2="500" y2="106"/>
+<line class="k-line ill-svr-lr ill-svr-dash" x1="100" y1="236.6" x2="500" y2="56.2"/>
+<circle class="k-fill" cx="140" cy="201.5" r="7"/>
+<circle class="k-fill" cx="220" cy="182.5" r="7"/>
+<circle class="k-fill" cx="300" cy="163.5" r="7"/>
+<circle class="k-fill" cx="380" cy="144.5" r="7"/>
+<circle class="k-fill" cx="460" cy="40" r="7"/>
+<circle class="k-accent-line" cx="460" cy="40" r="13"/>
+</g>
+</svg>

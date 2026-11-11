@@ -1,0 +1,32 @@
+<svg viewBox="0 0 600 270" role="img" aria-labelledby="ill-svm-t ill-svm-d" xmlns="http://www.w3.org/2000/svg">
+<title id="ill-svm-t">SVM busca la calle más ancha / SVM looks for the widest street</title>
+<desc id="ill-svm-d">Circles in the lower left and squares in the upper right. A dividing line turns until it sits between the two groups, then the street around it widens until its edges touch the closest circle and the closest square, which get highlighted.</desc>
+<style>
+@keyframes ill-svm-turn { 0%,10% { transform: rotate(-60deg) } 40%,100% { transform: rotate(0deg) } }
+@keyframes ill-svm-wide { 0%,40% { transform: scaleY(0.08) } 70%,100% { transform: scaleY(1) } }
+@keyframes ill-svm-sv { 0%,70% { opacity: 0 } 78%,100% { opacity: 1 } }
+@keyframes ill-svm-all { 0% { opacity: 0 } 4%,94% { opacity: 1 } 100% { opacity: 0 } }
+.ill-svm-all { animation: ill-svm-all 10s linear infinite; }
+.ill-svm-turn { transform-box: view-box; transform-origin: 280px 117.5px; animation: ill-svm-turn 10s ease-in-out infinite; }
+.ill-svm-wide { transform-box: view-box; transform-origin: 280px 117.5px; animation: ill-svm-wide 10s ease-in-out infinite; }
+.ill-svm-sv { animation: ill-svm-sv 10s linear infinite; }
+</style>
+<path class="k-line" d="M60 20 V230 H500"/>
+<g class="ill-svm-all">
+<g class="ill-svm-turn"><g transform="rotate(24.4 280 117.5)">
+<rect class="k-soft ill-svm-wide" x="40" y="45.5" width="480" height="144"/>
+<line class="k-accent-line" x1="40" y1="117.5" x2="520" y2="117.5"/>
+</g></g>
+<circle class="k-fill" cx="115" cy="180" r="9"/>
+<circle class="k-fill" cx="170" cy="205" r="9"/>
+<circle class="k-fill" cx="170" cy="155" r="9"/>
+<rect class="k-fill" x="381" y="71" width="18" height="18"/>
+<rect class="k-fill" x="436" y="96" width="18" height="18"/>
+<rect class="k-fill" x="381" y="21" width="18" height="18"/>
+<g class="ill-svm-sv">
+<circle class="k-accent-line" cx="170" cy="155" r="16"/>
+<circle class="k-accent-line" cx="390" cy="80" r="17"/>
+<circle class="k-accent-line" cx="445" cy="105" r="17"/>
+</g>
+</g>
+</svg>
