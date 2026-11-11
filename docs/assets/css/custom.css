@@ -58,6 +58,67 @@
   --kafe-soft-bg: #1b1f10;
 }
 
+/* ---------- Left navigation (wide screens) ---------- */
+
+@media screen and (min-width: 76.25em) {
+  /* Section title, e.g. "Librerías": small caps in the accent colour. */
+  .md-nav--primary > .md-nav__title,
+  .md-nav--primary .md-nav__item--active > .md-nav > .md-nav__title {
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--md-accent-fg-color);
+    box-shadow: none;
+    background: transparent;
+  }
+
+  /* Every link is a rounded row with a soft hover. */
+  .md-nav--primary .md-nav__link {
+    margin: 0.1rem 0;
+    padding: 0.3rem 0.6rem;
+    border-radius: 0.45rem;
+    transition: background-color 120ms, color 120ms;
+  }
+
+  .md-nav--primary .md-nav__link:hover {
+    background-color: var(--md-accent-fg-color--transparent);
+    color: var(--md-default-fg-color);
+  }
+
+  /* Groups (MATH, FILES, MACHINE…) stand out from their pages. */
+  .md-nav--primary .md-nav__item--nested > .md-nav__link {
+    font-weight: 600;
+    color: var(--md-default-fg-color);
+  }
+
+  /* An open group's pages hang from a thin line. */
+  .md-nav--primary .md-nav__item--nested > .md-nav {
+    margin-left: 0.85rem;
+    padding-left: 0.4rem;
+    border-left: 2px solid var(--md-default-fg-color--lightest);
+  }
+
+  /* The open group's own row keeps a light background. */
+  .md-nav--primary .md-nav__item--nested.md-nav__item--active > .md-nav__link {
+    background-color: var(--md-default-fg-color--lightest);
+  }
+
+  /* The current page: an accent pill with a lime bar. */
+  .md-nav--primary .md-nav__link--active,
+  .md-nav--primary .md-nav__link--active:hover {
+    font-weight: 700;
+    color: var(--md-typeset-a-color);
+    background-color: var(--md-accent-fg-color--transparent);
+    box-shadow: inset 3px 0 0 var(--kafe-lime);
+  }
+
+  /* Expand arrows follow the text colour. */
+  .md-nav--primary .md-nav__icon {
+    color: var(--md-default-fg-color--light);
+  }
+}
+
 .md-nav--primary .md-nav__link--active {
   font-weight: 700;
 }
