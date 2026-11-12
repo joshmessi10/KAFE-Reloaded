@@ -1,0 +1,16 @@
+import gesha;
+import math;
+
+List[List[FLOAT]] X = [[0.0], [1.0], [2.0], [3.0]];
+List[FLOAT] y = [1.0, 3.0, 5.0, 7.0];
+List[STR] names = ["sgd", "adam", "rmsprop"];
+
+for (i in range(0, len(names))):
+    GESHA layer = gesha.create_dense(1, "linear", [1], 0.0, 1);
+    GESHA model = gesha.sequential([layer]);
+    model.compile(names[i], "mse", []);
+    model.set_lr(0.1);
+    model.fit(X, y, 6, 1);
+    List[FLOAT] p = model.predict([4.0]);
+    show(names[i] + " -> " + str(math.round(p[0], 2)));
+;

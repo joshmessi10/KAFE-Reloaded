@@ -1,82 +1,121 @@
-# Convolutional networks
+# GESHA: redes convolucionales
 
-A convolution shares a small kernel across spatial positions. This reduces the number of parameters compared with connecting every pixel to every output unit, while preserving local structure. For a `C × H × W` image and `F` filters of size `K_h × K_w`, the convolution kernel has approximately `F × C × K_h × K_w` weights. Runtime also depends on output height and width.
+Las **redes convolucionales** (CNN) están hechas para **imágenes**. En vez de conectar cada píxel con cada neurona, pasan un **filtro** pequeño por toda la imagen buscando el mismo patrón en todas partes: un borde, una esquina, una línea.
 
-KAFE uses **channel-first** image tensors: `[channels][height][width]`. `kaggle.load_image_folder_dataset` returns this layout, and `gesha.create_conv2d` expects it. A common pipeline is convolution → activation → pooling → convolution → global average pooling → dense softmax.
+## La convolución: un filtro que recorre la imagen { #convolution }
 
-## Convolutional layers
+### La idea en una frase
 
+Un **filtro** (o *kernel*) es una tablita de pesos, por ejemplo de 2 × 2. Se apoya sobre un pedazo de la imagen, multiplica casilla por casilla, suma, y se corre al lado. El resultado es un **mapa** que dice dónde aparece el patrón del filtro.
 
-| Function | Signature | Description |
-|---------|-------|-------------|
-| `gesha.create_conv1d` | `(filters, kernel_size, activation, input_shape, stride, padding, seed) -> GESHA` | 1-D convolution for **`[channels, length]`** inputs |
-| `gesha.create_conv2d` | `(filters, kernel_size, activation, input_shape, stride, padding, seed, kernel_initializer, kernel_regularizer) -> GESHA` | 2-D convolution for `[channels, height, width]` inputs |
-| `gesha.create_conv2d_transpose` | `(filters, kernel_size, activation, input_shape, stride, padding, seed) -> GESHA` | Transposed 2-D convolution (upsampling) |
-| `gesha.create_depthwise_conv2d` | `(kernel_size, depth_multiplier, activation, input_shape, stride, padding, seed) -> GESHA` | Depthwise 2-D convolution |
+### Una comparación de la vida diaria
 
+Es como buscar a Wally con una lupa: la mueves por toda la página buscando **lo mismo** (camiseta a rayas) en cada lugar. No necesitas una lupa distinta para cada rincón.
 
-## Pooling and spatial layers
+<figure class="kafe-fig">
+--8<-- "docs/assets/illustrations/gesha-convolution.svg"
+<figcaption>Una imagen de 3 × 3 con los números del 1 al 9. Una ventana de 2 × 2 llena de unos la recorre, una posición a la vez. En cada parada suma los cuatro números de abajo y escribe el resultado en una salida de 2 × 2: 12, 16, 24 y 28.</figcaption>
+</figure>
 
+```kafe
+--8<-- "tests/DocsExamples/gesha/cnn-filter-by-hand.kf"
+```
 
-| Function | Signature | Description |
-|---------|-------|-------------|
-| `gesha.max_pooling1d` | `(pool_size, stride) -> GESHA` | Max pooling over 1-D inputs |
-| `gesha.max_pooling2d` | `(pool_size, stride) -> GESHA` | Max pooling (default `[2, 2]`) |
-| `gesha.average_pooling2d` | `(pool_size, stride) -> GESHA` | Average pooling (default `[2, 2]`) |
-| `gesha.global_average_pooling2d` | `() -> GESHA` | Global average pooling |
-| `gesha.global_max_pooling2d` | `() -> GESHA` | Global max pooling |
-| `gesha.zero_padding2d` | `(padding) -> GESHA` | Zero padding (default `[1, 1]`) |
-| `gesha.up_sampling2d` | `(size) -> GESHA` | Upsampling (default `[2, 2]`) |
-| `gesha.reshape_layer` | `(target_shape) -> GESHA` | Reshapes its input |
-| `gesha.permute_layer` | `(dims) -> GESHA` | Reorders the input dimensions |
+```text
+--8<-- "tests/DocsExamples/gesha/cnn-filter-by-hand.expec"
+```
 
+!!! tip "¿Qué pasó aquí?"
+    1. La primera parada, arriba a la izquierda, suma 1 + 2 + 4 + 5 = `12`.
+    2. `gesha.create_conv2d(1, [2, 2], "linear", [1, 3, 3], 1, "valid", 7, gesha.ones_initializer())` crea **1** filtro de **2 × 2**, sin activación, para imágenes de **1 canal de 3 × 3**, que avanza de a **1** casilla, sin relleno (`"valid"`), con semilla 7 y todos sus pesos en 1.
+    3. `conv.forward(image)` da la salida completa: `[[12, 16], [24, 28]]`.
 
-Pooling reduces spatial resolution, while global average pooling collapses each channel to one value. Flattening creates a vector for a dense layer. Check shapes after every stage: a kernel or stride can make an output dimension invalid when the input is too small.
+En una red real los pesos del filtro **se aprenden**: la red descubre sola qué patrones buscar.
 
-## Related programs
+!!! warning "La forma de las imágenes: canal primero"
+    En KAFE una imagen es `[canales][alto][ancho]`. Una imagen en blanco y negro de 3 × 3 es `[[[...], [...], [...]]]`: una lista (el canal) de 3 filas de 3 números. Una imagen a color tiene 3 canales (rojo, verde y azul).
 
-- [CNN on CIFAR-10](../../ejemplos/ejemplo-cnn-cifar10.kf)
-- [Convolution demonstration](../../ejemplos/gesha-conv2d.kf)
+??? info "Para curiosos 🤓"
+    Con alto $H$, filtro $K$, relleno $P$ y paso $S$, el alto de la salida es $\lfloor (H + 2P - K)/S \rfloor + 1$; el ancho sigue la misma regla. Aquí, $(3 - 2)/1 + 1 = 2$. Un filtro tiene $F \times C \times K_h \times K_w$ pesos más $F$ sesgos, **sin importar el tamaño de la imagen**, porque se reutiliza en cada posición. Una capa densa sobre la misma imagen necesitaría un peso por píxel y por neurona.
 
-## Shapes and parameters
+## Pooling: achicar sin perder lo importante { #pooling }
 
-For an input with height `H`, kernel height `K`, padding `P`, and stride `S`, the output height for an ordinary convolution is `floor((H + 2P − K)/S) + 1`; width follows the same rule. Check both dimensions before adding pooling or another convolution. A `valid` convolution uses no padding; padding preserves more border information but adds arithmetic.
+### La idea en una frase
 
-The parameter count is `filters × input_channels × kernel_height × kernel_width` plus biases. The same kernel weights are reused at every spatial location. In contrast, flattening the image first and using a dense layer would connect every pixel to every output unit.
+El **pooling** divide el mapa en bloques y deja un solo número por bloque: el **mayor** (*max pooling*) o el **promedio** (*average pooling*). La imagen se achica, pero conserva las señales fuertes.
 
-Conv2D, DepthwiseConv2D and Conv2DTranspose require `kernel_size` to contain exactly two positive **INTs**; a float shape such as `[3.0, 3.0]` is rejected by their constructors even though the wrapper's broad vector type accepts numeric lists. Conv2D and DepthwiseConv2D additionally require both kernel dimensions to be odd with `"same"` padding. Conv1D likewise requires an odd kernel with `"same"`. Filters, depth multipliers, strides and pooling dimensions are positive integer choices; use nonnegative integer padding and positive integer upsampling factors.
+### Una comparación de la vida diaria
 
-## Spatial dropout
+Es como resumir un partido por cuartos: de cada cuarto anotas solo la jugada más importante.
 
-`gesha.spatial_dropout2d(0.5, 42)` drops entire feature maps during training instead of individual scalar activations. These are positional KAFE arguments: rate, then seed. Omitting them uses rate `0.5` and an unseeded generator; `None` is not a KAFE literal. A high rate can underfit a small dataset; compare training and validation behavior. Prediction uses the complete network.
+<figure class="kafe-fig">
+--8<-- "docs/assets/illustrations/gesha-pooling.svg"
+<figcaption>Una imagen de 4 × 4 dividida en cuatro bloques de 2 × 2. En cada bloque se enciende el número mayor (4, 2, 2 y 8) y se copia a una salida de 2 × 2: la imagen conserva sus señales más fuertes a la mitad de tamaño.</figcaption>
+</figure>
 
-## Conv1D and recurrent layouts differ
+```kafe
+--8<-- "tests/DocsExamples/gesha/cnn-pooling.kf"
+```
 
-Conv1D and MaxPooling1D use `[channels][length]`. RNN/LSTM/GRU use `[timesteps][features]`. For example, a single-channel three-position signal is `[[1.0, 2.0, 3.0]]` for Conv1D. Do not pass that layout directly to an RNN without arranging the axes to match the recurrent feature count. `permute_layer([1, 0])` changes the two-dimensional axis order; `reshape_layer` merely changes shape while preserving element order.
+```text
+--8<-- "tests/DocsExamples/gesha/cnn-pooling.expec"
+```
 
-## Normalization and weight files
+`max_pooling2d([2, 2], 2)` deja el mayor de cada bloque; `average_pooling2d` el promedio (el primer bloque, 1, 3, 4, 2, da `2.5`); y `global_average_pooling2d` resume **todo** el canal en un número: `2.8125`.
 
-The implemented `batch_normalization` accepts one **CHW** sample and normalizes each channel over its spatial positions. It is not generic normalization of a dense vector or a statistic computed across the fit minibatch. Training updates running mean/variance; prediction uses that running state. `save_weights` saves trainable gamma/beta parameters but omits running mean/variance, so loading weights alone does not reproduce the complete normalization state.
+## Tu primera red convolucional { #first-cnn }
 
-## A one-image prediction is still a batch
+Imágenes de 3 × 3 con una línea: `0` si es vertical, `1` si es horizontal.
 
-`model.predict([image])` wraps one `[C,H,W]` image in a batch. Calling `model.predict(image)` treats the channel lists as separate samples and does not perform architecture-aware single-image detection. The same outer-batch rule applies to recurrent and token-sequence models.
+```kafe
+--8<-- "tests/DocsExamples/gesha/cnn-lines.kf"
+```
 
-The bounded `tests/TutorLibraries/gesha-cnn.kf` fixture exercises all convolution/pooling/spatial factories, checks dimensions and predicts one batched image without downloading data or performing long training. Shape evidence establishes these examples' behavior, not the accuracy of arbitrary image models.
+```text
+--8<-- "tests/DocsExamples/gesha/cnn-lines.expec"
+```
 
-## Choosing layers
+!!! tip "¿Qué pasó aquí?"
+    1. La red es **convolución → aplanar → densa**: 2 filtros de 2 × 2 con `"tanh"` buscan patrones, `flatten_layer` convierte los mapas en una lista, y una neurona `"sigmoid"` decide.
+    2. La exactitud de cada época se mide **mientras** la red todavía está aprendiendo, por eso la última dice 83 %. Al terminar, `predict_label` acierta las 6 imágenes.
+    3. También clasifica bien dos imágenes **con ruido** que nunca vio: una línea vertical (`0`) y una horizontal (`1`).
 
-| Need | Layer or function | Effect |
-|---|---|---|
-| Detect local patterns | `create_conv2d` | Shared spatial kernels. |
-| Reduce resolution | `max_pooling2d` or `average_pooling2d` | Summarizes a local region. |
-| Convert feature maps to a compact vector | `global_average_pooling2d` | One value per channel. |
-| Connect spatial features to a classifier | `flatten_layer` then `create_dense` | Converts to a vector, then predicts. |
-| Enlarge a spatial representation | `up_sampling2d` or `create_conv2d_transpose` | Increases spatial dimensions. |
-| Stabilize activations | `batch_normalization` | Normalizes intermediate values. |
+## Las capas { #layers }
 
-## Limits and checks
+| Función | Qué hace |
+|---|---|
+| `gesha.create_conv2d(filtros, [kh, kw], activación, [C, H, W], paso, relleno, semilla, inicializador, regularizador)` | Convolución 2D. Relleno `"valid"` (sin relleno) o `"same"` (mismo tamaño). |
+| `gesha.create_conv1d(filtros, k, activación, [C, L], paso, relleno, semilla)` | Convolución 1D para señales `[canales][largo]`. |
+| `gesha.create_depthwise_conv2d([kh, kw], multiplicador, activación, forma, paso, relleno, semilla)` | Un filtro por canal: más barata. |
+| `gesha.create_conv2d_transpose(filtros, [kh, kw], activación, forma, paso, relleno, semilla)` | La "inversa": agranda la imagen. |
+| `gesha.max_pooling2d([ph, pw], paso)` / `average_pooling2d` / `max_pooling1d(p, paso)` | Pooling. |
+| `gesha.global_average_pooling2d()` / `global_max_pooling2d()` | Un número por canal. |
+| `gesha.flatten_layer()` | Aplana para pasar a capas densas. |
+| `gesha.zero_padding2d([p, p])` / `up_sampling2d([f, f])` | Agrega bordes de ceros / agranda repitiendo. |
+| `gesha.reshape_layer(forma)` / `permute_layer(orden)` | Cambia la forma / reordena los ejes. |
+| `gesha.batch_normalization(epsilon, momentum)` | Normaliza cada canal de una imagen. |
+| `gesha.spatial_dropout2d(tasa, semilla)` | Mientras entrena, apaga mapas completos al azar. |
 
-Channel order is a frequent error: KAFE image examples use `[C][H][W]`, not `[H][W][C]`. Confirm the shape of one loaded image before fitting. Convolutional models can be costly on nested Python lists, so begin with a small sample and inspect loss and predictions before scaling up. The CIFAR-10 example shows the complete pipeline but takes much longer than the dense gate examples.
+??? warning "Error común: tamaño de filtro con decimales"
+    El tamaño del filtro son dos **enteros**:
 
-[Back to Gesha overview](../gesha.md)
+    ```kafe
+    --8<-- "tests/DocsExamples/gesha/cnn-kernel-float.error.kf"
+    ```
+
+    ```text
+    --8<-- "tests/DocsExamples/gesha/cnn-kernel-float.error.stderr.expec"
+    ```
+
+## Detalles técnicos { #details }
+
+- Con `"same"`, las convoluciones 2D y depthwise (y la 1D) necesitan un filtro de tamaño **impar**.
+- Para predecir **una** imagen, envuélvela: `model.predict([image])`. Sin la lista externa, KAFE toma cada canal como un ejemplo distinto.
+- `batch_normalization` normaliza cada canal de **una** imagen `[C][H][W]` sobre sus posiciones; al entrenar actualiza su promedio y varianza internos, y al predecir los usa. `save_weights` no guarda esos dos valores.
+- Conv1D usa `[canales][largo]`, pero las [redes recurrentes](recurrent-networks.md) usan `[pasos][rasgos]`: no son intercambiables sin reordenar con `permute_layer([1, 0])`.
+- Las CNN sobre listas anidadas son lentas: empieza con pocas imágenes. El [ejemplo de CIFAR-10](../../ejemplos/gesha/cnn-cifar10.md) muestra el flujo completo.
+
+| 👍 Ventajas | 👎 Límites |
+|---|---|
+| Pocos pesos: el mismo filtro sirve en toda la imagen. | Lentas en KAFE con imágenes grandes. |
+| Encuentran un patrón esté donde esté. | Hay que cuidar la forma `[C][H][W]` en cada paso. |

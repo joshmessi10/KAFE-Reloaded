@@ -1,0 +1,10 @@
+Epoch 1/8 — Loss 1.0741 — Accuracy 33.33%
+Epoch 2/8 — Loss 0.7476 — Accuracy 50.00%
+Epoch 3/8 — Loss 0.8089 — Accuracy 0.00%
+Epoch 4/8 — Loss 0.7094 — Accuracy 33.33%
+Epoch 5/8 — Loss 0.6338 — Accuracy 66.67%
+Epoch 6/8 — Loss 0.5677 — Accuracy 83.33%
+Epoch 7/8 — Loss 0.4823 — Accuracy 83.33%
+Epoch 8/8 — Loss 0.3885 — Accuracy 83.33%
+[0, 0, 0, 1, 1, 1]
+[0, 1]

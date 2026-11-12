@@ -1,0 +1,1 @@
+Exception: gesha: Conv2D kernel_size debe ser [alto, ancho]

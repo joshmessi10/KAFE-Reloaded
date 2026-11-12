@@ -1,0 +1,12 @@
+Epoch 1/10 — Loss 1.2786 — Accuracy 50.00%
+Epoch 2/10 — Loss 0.6374 — Accuracy 50.00%
+Epoch 3/10 — Loss 0.6580 — Accuracy 83.33%
+Epoch 4/10 — Loss 0.6753 — Accuracy 50.00%
+Epoch 5/10 — Loss 0.6666 — Accuracy 50.00%
+Epoch 6/10 — Loss 0.6008 — Accuracy 66.67%
+Epoch 7/10 — Loss 0.3422 — Accuracy 100.00%
+Epoch 8/10 — Loss 0.1084 — Accuracy 100.00%
+Epoch 9/10 — Loss 0.0436 — Accuracy 100.00%
+Epoch 10/10 — Loss 0.0219 — Accuracy 100.00%
+[1, 1, 1, 0, 0, 0]
+[1, 0]

@@ -1,0 +1,10 @@
+import gesha;
+
+List[List[List[FLOAT]]] image = [[[1.0, 3.0, 2.0, 0.0], [4.0, 2.0, 1.0, 1.0], [0.0, 1.0, 5.0, 6.0], [2.0, 2.0, 7.0, 8.0]]];
+
+GESHA max_pool = gesha.max_pooling2d([2, 2], 2);
+GESHA avg_pool = gesha.average_pooling2d([2, 2], 2);
+GESHA global_avg = gesha.global_average_pooling2d();
+show(max_pool.forward(image));
+show(avg_pool.forward(image));
+show(global_avg.forward(image));

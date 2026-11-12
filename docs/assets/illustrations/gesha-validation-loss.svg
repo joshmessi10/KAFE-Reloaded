@@ -1,0 +1,17 @@
+<svg viewBox="0 0 600 270" role="img" aria-labelledby="ill-val-t ill-val-d" xmlns="http://www.w3.org/2000/svg">
+<title id="ill-val-t">Pérdida de entrenamiento y de validación / Training and validation loss</title>
+<desc id="ill-val-d">Two loss curves over six epochs. The training loss falls from 1.05 to 0.37. The validation loss falls from 0.45 to 0.06 and then rises a little at epoch 6; a ring marks epoch 5, its lowest point.</desc>
+<style>
+@keyframes ill-val-draw { 0%,5% { stroke-dashoffset: 600 } 70%,100% { stroke-dashoffset: 0 } }
+.ill-val-ln { stroke-dasharray: 600; animation: ill-val-draw 12s linear infinite; }
+@keyframes ill-val-mark { 0%,70% { opacity: 0 } 78%,100% { opacity: 1 } }
+.ill-val-mark { animation: ill-val-mark 12s linear infinite; }
+@keyframes ill-val-all { 0% { opacity: 0 } 4%,94% { opacity: 1 } 100% { opacity: 0 } }
+.ill-val-all { animation: ill-val-all 12s linear infinite; }
+.ill-val-dash { stroke-dasharray: 6 5; }
+</style>
+<path class="k-line" d="M80 20 V230 H540"/><text x="86" y="250">1</text><text x="171" y="250">2</text><text x="256" y="250">3</text><text x="341" y="250">4</text><text x="426" y="250">5</text><text x="511" y="250">6</text><text class="k-label" x="40" y="30">L</text>
+<g class="ill-val-all">
+<path class="k-line ill-val-ln" d="M90 41.6 L175 45.2 L260 81.0 L345 112.7 L430 141.0 L515 163.7"/><path class="k-accent-line ill-val-ln" d="M90 148.9 L175 191.2 L260 210.1 L345 217.1 L430 218.9 L515 218.3"/><g class="ill-val-mark"><text class="k-label" x="523" y="168">train</text><text class="k-label" x="523" y="212">val</text><circle class="k-accent-line" cx="430" cy="218.9" r="10"/></g>
+</g>
+</svg>

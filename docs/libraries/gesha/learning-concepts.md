@@ -1,31 +1,31 @@
-# Reasoning about neural model behavior
+# Cómo razonar sobre el comportamiento de una red
 
-[GESHA overview](../gesha.md) · [Models and training](models-training.md)
+[Resumen de GESHA](../gesha.md) · [Modelos y entrenamiento](models-training.md)
 
-Treat model outputs and training traces as evidence to interpret. A conceptual explanation should help the learner form a hypothesis and choose a small experiment; it does not replace the learner's architecture, code or final conclusion.
+Trata las salidas del modelo y los registros del entrenamiento como **evidencia que hay que interpretar**. Una explicación conceptual debe ayudar al estudiante a formular una hipótesis y elegir un experimento pequeño; no reemplaza su arquitectura, su código ni su conclusión final.
 
-## Scores and predicted labels
+## Puntajes y etiquetas predichas { #scores }
 
-A raw numeric output and a predicted class are different. A suitable sigmoid output can represent a binary score. A threshold converts the score into a decision; changing that decision rule changes the balance of errors. A sigmoid output is not automatically a calibrated probability, and arbitrary regression outputs are not probabilities.
+Una salida numérica cruda y una clase predicha son cosas distintas. Una salida sigmoide adecuada puede representar un puntaje binario. Un umbral convierte el puntaje en una decisión; cambiar esa regla cambia el equilibrio de los errores. Una salida sigmoide no es automáticamente una probabilidad calibrada, y las salidas de una regresión no son probabilidades.
 
-`model.predict` supplies numeric outputs; batches can return nested rows. `model.predict_label` uses the fixed half-probability threshold for a single output and selects the largest component for multiple outputs. It exposes no custom-threshold argument. Interpret the output shape and class meaning before considering a small explicit score comparison. Multiclass and regression outputs require their own interpretation.
+`model.predict` da las salidas numéricas; con lotes puede devolver filas anidadas. `model.predict_label` usa el umbral fijo de la mitad para una sola salida y elige el componente mayor con varias salidas. No tiene argumento para un umbral propio. Interpreta la forma de la salida y el significado de cada clase antes de comparar puntajes explícitamente. Las salidas de varias clases y de regresión necesitan su propia interpretación.
 
-An optional reflection is to explain what one output position means, then predict how a different decision rule would affect errors before checking held-out labels.
+Una reflexión opcional: explica qué significa una posición de la salida y predice cómo afectaría a los errores otra regla de decisión, antes de revisar las respuestas de prueba.
 
-## Representation and nonlinear transformations
+## Representación y transformaciones no lineales { #representation }
 
-A dense layer computes a weighted sum and applies an activation. A single affine score with a monotonic binary decision rule has a linear boundary. Stacking affine layers without nonlinear activations still produces an affine transformation. Nonlinear hidden transformations can change the features available to a later decision.
+Una capa densa calcula una suma con pesos y aplica una activación. Un solo puntaje afín con una regla de decisión binaria monótona tiene una frontera recta. Apilar capas afines sin activaciones no lineales sigue produciendo una transformación afín. Las transformaciones ocultas no lineales pueden cambiar los rasgos que tiene disponibles una decisión posterior.
 
-For patterns such as XOR, ask the learner to sketch the labelled groups and test a proposed boundary. Let that geometry motivate a hypothesis about representation. Epoch count, learning rate and random seed affect optimization within the chosen architecture; they do not enlarge its hypothesis class. Do not replace that reasoning with a finished architecture, solved weights or copied program. Adequate representation also does not guarantee successful training or generalization.
+Para patrones como [XOR](dense-networks.md#xor), pide al estudiante que dibuje los grupos etiquetados y pruebe una frontera propuesta. Deja que esa geometría motive una hipótesis sobre la representación. La cantidad de épocas, la tasa de aprendizaje y la semilla afectan la optimización dentro de la arquitectura elegida; no amplían lo que esa arquitectura puede representar. No reemplaces ese razonamiento con una arquitectura terminada, pesos resueltos o un programa copiado. Tener una representación adecuada tampoco garantiza que el entrenamiento o la generalización salgan bien.
 
-## Learning rate and a changing loss
+## Tasa de aprendizaje y una pérdida que cambia { #learning-rate }
 
-A gradient step subtracts a learning-rate-scaled gradient from the parameters. Steps too large for the local loss geometry can overshoot or diverge; very small steps can be slow. Mini-batch noise, scaling, initialization and optimizer state also affect the curve, so oscillation is not a unique diagnosis.
+Un paso de gradiente le resta a los parámetros el gradiente multiplicado por la tasa. Pasos demasiado grandes para la forma local de la pérdida pueden pasarse de largo o divergir; pasos muy pequeños pueden ser lentos. El ruido de los lotes, la escala, la inicialización y el estado del optimizador también afectan la curva, así que una oscilación no tiene un solo diagnóstico.
 
-Compile before `model.set_lr` or `gesha.set_lr`, and choose a positive rate. Ask the learner to predict one effect, change one condition in a short controlled run and compare a trend rather than one epoch. A smoother training curve cannot repair every loss/target/shape problem and does not by itself establish stronger held-out performance.
+Llama a `compile` antes de `model.set_lr` o `gesha.set_lr`, y elige una tasa positiva. Pide al estudiante que prediga un efecto, cambie una sola condición en una corrida corta y controlada, y compare una tendencia, no una sola época. Una curva de entrenamiento más suave no arregla cualquier problema de pérdida, respuestas o formas, y no demuestra por sí sola un mejor rendimiento con datos aparte.
 
-## Overfitting and validation
+## Sobreajuste y validación { #overfitting }
 
-Improving training fit alongside worsening validation behavior can suggest that training is adapting to sample-specific detail. Compare trends and compatible quantities, rather than treating one noisy observation as proof. This runtime may include regularization penalties in training loss while validation reports data loss, so absolute loss values are not always directly comparable.
+Que el ajuste al entrenamiento mejore mientras la validación empeora puede indicar que el entrenamiento se está adaptando a detalles propios de esa muestra. Compara tendencias y cantidades comparables, en vez de tomar una observación ruidosa como prueba. Este runtime puede incluir castigos de regularización en la pérdida de entrenamiento mientras la validación informa solo la pérdida de los datos, así que los valores absolutos no siempre se pueden comparar directamente.
 
-Early stopping needs an actual monitored quantity, with validation data when monitoring validation loss. Dropout changes training behavior and is disabled for prediction. L2 penalties discourage large weights. These are possible controls to justify and test; they are not guarantees, and too much regularization or too little training can underfit. Keep the final test set separate from validation-driven choices. Ask which new observation would support or weaken the learner's explanation.
+La parada temprana necesita una cantidad que de verdad se vigile, con datos de validación si vigila la pérdida de validación. El dropout cambia el comportamiento al entrenar y se apaga al predecir. Los castigos L2 desalientan los pesos grandes. Son controles posibles que hay que justificar y probar; no son garantías, y demasiada regularización o muy poco entrenamiento pueden hacer que el modelo aprenda de menos. Deja el conjunto de prueba final fuera de las decisiones guiadas por la validación. Pregunta qué observación nueva apoyaría o debilitaría la explicación del estudiante.

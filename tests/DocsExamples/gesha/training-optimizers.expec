@@ -1,0 +1,21 @@
+Epoch 1/6 — Loss 6.0725
+Epoch 2/6 — Loss 0.1417
+Epoch 3/6 — Loss 0.0754
+Epoch 4/6 — Loss 0.0402
+Epoch 5/6 — Loss 0.0214
+Epoch 6/6 — Loss 0.0114
+sgd -> 9.03
+Epoch 1/6 — Loss 23.7186
+Epoch 2/6 — Loss 16.2849
+Epoch 3/6 — Loss 10.4029
+Epoch 4/6 — Loss 6.0486
+Epoch 5/6 — Loss 3.1283
+Epoch 6/6 — Loss 1.4213
+adam -> 6.42
+Epoch 1/6 — Loss 14.7903
+Epoch 2/6 — Loss 5.8202
+Epoch 3/6 — Loss 2.8357
+Epoch 4/6 — Loss 1.4352
+Epoch 5/6 — Loss 0.7860
+Epoch 6/6 — Loss 0.5060
+rmsprop -> 7.8

@@ -1,0 +1,9 @@
+import gesha;
+
+List[List[FLOAT]] sequence = [[1.0, 0.0], [0.0, 1.0], [1.0, 1.0]];
+
+GESHA last = gesha.create_rnn(4, "tanh", [3, 2], False, 7);
+GESHA every = gesha.create_rnn(4, "tanh", [3, 2], True, 7);
+show(len(last.forward(sequence)));
+List[List[FLOAT]] steps = every.forward(sequence);
+show([len(steps), len(steps[0])]);

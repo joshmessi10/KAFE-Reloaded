@@ -1,104 +1,82 @@
-# Initializers, regularization, and callbacks
+# GESHA: inicializadores, regularización y callbacks
 
-Initialization controls the starting scale of weights. Very small weights can weaken signals; very large weights can destabilize gradients. Glorot initialization balances variance for many symmetric activations. He initialization is often a better starting point for ReLU. A fixed seed makes a teaching run reproducible, though it does not turn one train/test split into a robust estimate.
+La **inicialización** controla el tamaño de los pesos al empezar. Pesos muy pequeños pueden debilitar las señales; pesos muy grandes pueden desestabilizar los gradientes. La inicialización Glorot equilibra la varianza para muchas activaciones simétricas. La inicialización He suele ser mejor punto de partida para ReLU. Una semilla fija hace que un ejemplo se pueda repetir, pero no convierte una sola división entrenamiento/prueba en una estimación robusta.
 
-## Initializers
+## Inicializadores { #initializers }
 
-
-| Function | Signature | Description |
+| Función | Firma | Qué hace |
 |---------|-------|-------------|
-| `gesha.zeros_initializer` | `() -> initializer` | All zeros |
-| `gesha.ones_initializer` | `() -> initializer` | All ones |
-| `gesha.constant_initializer` | `(value) -> initializer` | Constant value |
-| `gesha.random_uniform` | `(minval, maxval, seed) -> initializer` | Uniform random |
-| `gesha.random_normal` | `(mean, stddev, seed) -> initializer` | Gaussian random |
-| `gesha.glorot_uniform` | `(seed) -> initializer` | Glorot/Xavier uniform |
-| `gesha.glorot_normal` | `(seed) -> initializer` | Glorot/Xavier normal |
-| `gesha.he_uniform` | `(seed) -> initializer` | He uniform (ReLU networks) |
-| `gesha.he_normal` | `(seed) -> initializer` | He normal (ReLU networks) |
-| `gesha.orthogonal` | `(gain, seed) -> initializer` | Orthogonal matrix (recurrent weights) |
+| `gesha.zeros_initializer` | `() -> inicializador` | Todo ceros. |
+| `gesha.ones_initializer` | `() -> inicializador` | Todo unos. |
+| `gesha.constant_initializer` | `(valor) -> inicializador` | Un valor constante. |
+| `gesha.random_uniform` | `(mínimo, máximo, semilla) -> inicializador` | Al azar, uniforme. |
+| `gesha.random_normal` | `(promedio, desviación, semilla) -> inicializador` | Al azar, normal. |
+| `gesha.glorot_uniform` | `(semilla) -> inicializador` | Glorot/Xavier uniforme. |
+| `gesha.glorot_normal` | `(semilla) -> inicializador` | Glorot/Xavier normal. |
+| `gesha.he_uniform` | `(semilla) -> inicializador` | He uniforme (redes con ReLU). |
+| `gesha.he_normal` | `(semilla) -> inicializador` | He normal (redes con ReLU). |
+| `gesha.orthogonal` | `(ganancia, semilla) -> inicializador` | Matriz ortogonal (pesos recurrentes). |
 
-Initializers are passed to layer factories through the `kernel_initializer` argument, e.g. `gesha.create_dense(16, "relu", [8], 0.0, 42, gesha.he_normal(42))`.
+Los inicializadores se pasan a las capas en la posición `kernel_initializer`, por ejemplo `gesha.create_dense(16, "relu", [8], 0.0, 42, gesha.he_normal(42))`.
 
+### Elegir un inicializador
 
-## Regularizers
-
-
-| Function | Signature | Description |
-|---------|-------|-------------|
-| `gesha.l1_regularizer` | `(value) -> regularizer` | L1 penalty |
-| `gesha.l2_regularizer` | `(value) -> regularizer` | L2 penalty |
-| `gesha.l1_l2_regularizer` | `(l1, l2) -> backend object` | **Unavailable as a GESHA value in runtime 0.4.0**; see the limitation below |
-
-Regularizers are passed to layer factories through the final positional `kernel_regularizer` argument. `create_dense` also exposes a scalar per-layer `regularization_lambda` in its fourth position. `create_conv2d` does **not** expose that scalar: its fourth position is `input_shape`. Use its final regularizer object/string position, or the separate seventh `model.fit` argument for the training loop's scalar L2 contribution.
-
-The combined L1L2 factory currently returns a Python object missing from the GESHA type registry. Assigning it to `GESHA` raises a `KeyError`; the negative fixture `tests/TutorLibraries/gesha-l1-l2-unavailable.error.kf` preserves that behavior. A verified alternative for the implemented combined default penalty is the string `"l1_l2"` in the final Dense regularizer position, for example `gesha.create_dense(2, "relu", [2], 0.0, 42, gesha.he_normal(42), "l1_l2")`. This does not supply custom L1/L2 strengths through a usable factory object.
-
-L1 and L2 factory objects are GESHA values and expose `penalty(weights)` and `gradient(weights)` for numerical explanations. L2 here uses `lambda * sum(weights²)` and gradient `2 * lambda * weights`; the scalar per-layer Dense penalty uses the separate half-squared-norm convention described on the training page.
-
-
-L1 penalizes the absolute weight magnitude and can encourage sparse weights. L2 penalizes squared magnitude and shrinks large weights. Dropout randomly suppresses activations during training. These tools can reduce overfitting but do not replace held-out evaluation.
-
-## Callbacks
-
-
-| Function | Signature | Description |
-|---------|-------|-------------|
-| `gesha.early_stopping` | `(monitor, patience, min_delta, mode, restore_best_weights) -> callback` | Stops training when the monitored metric stops improving |
-| `gesha.model_checkpoint` | `(filepath, monitor, save_best_only, mode) -> callback` | Saves weights at epoch end |
-| `gesha.add_callback` | `(model, callback) -> VOID` | Attaches a callback to a model |
-
-Callbacks can also occupy the last positional `model.fit` argument. With no validation data, the valid KAFE form is `model.fit(X, Y, epochs, batch_size, [], [], 0.0, [callback])`. Python keyword syntax such as `callbacks=[...]` is not a KAFE call form.
-
-
-Early stopping monitors a validation metric and can stop after a patience window. A checkpoint saves weights for later reuse. Supply validation data when monitoring `val_loss`; otherwise choose a metric that the run actually computes.
-
-## Tensor helpers
-
-
-| Function | Signature | Description |
-|---------|-------|-------------|
-| `gesha.tensor` | `(data) -> List` | Copy of a homogeneous numeric nested list; use numeric inputs for numerical operations |
-| `gesha.tensor_zeros` | `(shape) -> List` | Zero-filled tensor |
-| `gesha.tensor_ones` | `(shape) -> List` | One-filled tensor |
-| `gesha.tensor_random` | `(shape) -> List` | Random-filled tensor |
-
-These return NUMK numeric lists; Gesha does not define a separate Tensor type.
-
-The broad list signature is not a guarantee that every non-numeric element will be rejected at this helper. There are no Tensor object methods such as `.numpy()`, `.to()` or `.shape` on these returned Python lists. Keep the intended numeric list types and inspect dimensions by the known data layout. `tensor_random` exposes shape only, without a seed argument; use seeded initializer factories when a reproducible parameter draw is needed.
-
----
-
-
-## Choosing an initializer
-
-| Hidden activation or purpose | Useful starting choice | Why |
+| Activación oculta o propósito | Buena opción inicial | Por qué |
 |---|---|---|
-| ReLU hidden layer | `he_normal` or `he_uniform` | Scales variance for rectified activations. |
-| Tanh or balanced dense layer | `glorot_uniform` or `glorot_normal` | Balances input and output variance. |
-| Recurrent matrix | `orthogonal` | Helps preserve signal directions initially. |
-| Reproducible teaching example | Any seeded random initializer | Makes comparisons repeatable. |
+| Capa oculta ReLU | `he_normal` o `he_uniform` | Escala la varianza para activaciones rectificadas. |
+| Tanh o capa densa equilibrada | `glorot_uniform` o `glorot_normal` | Equilibra la varianza de entrada y de salida. |
+| Matriz recurrente | `orthogonal` | Ayuda a conservar la dirección de las señales al principio. |
+| Ejemplo que se pueda repetir | Cualquier inicializador al azar con semilla | Las comparaciones se repiten igual. |
 
-An initializer affects the start of training, not the final objective. It cannot compensate for a wrong target encoding or data leakage.
+Un inicializador afecta el comienzo del entrenamiento, no el objetivo final. No compensa unas respuestas mal codificadas ni una fuga de datos.
 
-## Regularization tradeoffs
+## Regularizadores { #regularizers }
 
-L1 adds a penalty proportional to the sum of absolute weights; L2 adds one proportional to squared weights. Strong penalties can underfit, while weak penalties may leave overfitting unchanged. Dropout applies random masking during training and is disabled for prediction. Compare training and validation behavior when choosing a strength.
+| Función | Firma | Qué hace |
+|---------|-------|-------------|
+| `gesha.l1_regularizer` | `(valor) -> regularizador` | Castigo L1. |
+| `gesha.l2_regularizer` | `(valor) -> regularizador` | Castigo L2. |
+| `gesha.l1_l2_regularizer` | `(l1, l2) -> objeto del backend` | **No disponible como valor GESHA en el runtime 0.4.0**; ver el límite más abajo. |
 
-## Callbacks and monitoring
+Los regularizadores se pasan en la última posición, `kernel_regularizer`. `create_dense` además tiene un número `regularization_lambda` en su cuarta posición. `create_conv2d` **no** lo tiene: su cuarta posición es `input_shape`. Usa su última posición (objeto o texto de regularizador), o el séptimo argumento de `model.fit` para el castigo L2 escalar del entrenamiento.
 
-Early stopping prevents further epochs after a monitored quantity stops improving for the configured patience. Restoring best weights can keep the strongest observed validation state. Model checkpointing writes weights during training. A `val_loss` monitor requires validation data; otherwise there is no validation loss to monitor. Keep a final test set untouched by this selection process.
+El constructor combinado L1L2 hoy devuelve un objeto de Python que no está en el registro de tipos de GESHA. Asignarlo a `GESHA` produce un `KeyError`; el fixture negativo `tests/TutorLibraries/gesha-l1-l2-unavailable.error.kf` conserva ese comportamiento. Una alternativa verificada para el castigo combinado por defecto es el texto `"l1_l2"` en la última posición de una capa densa, por ejemplo `gesha.create_dense(2, "relu", [2], 0.0, 42, gesha.he_normal(42), "l1_l2")`. Así no se pueden elegir fuerzas L1/L2 propias.
 
-The pinned early-stopping implementation stops after the non-improvement counter exceeds `patience`. With `patience=0`, the first observation establishes the best value and the next non-improving observation can stop training. A missing monitor produces no early-stopping decision. For model checkpointing, `save_best_only=False` writes every epoch even if the chosen monitor is absent; `True` writes only after an observed improvement.
+Los objetos L1 y L2 son valores GESHA y tienen `penalty(weights)` y `gradient(weights)` para explicaciones numéricas. Aquí L2 usa `lambda * suma(pesos²)` y gradiente `2 * lambda * pesos`; el castigo escalar por capa de la capa densa usa la convención de la mitad del cuadrado de la norma, descrita en [modelos y entrenamiento](models-training.md).
 
-## Filesystem effects and restoration
+L1 castiga el tamaño absoluto de los pesos y puede dejar muchos en cero. L2 castiga el cuadrado y encoge los pesos grandes. El dropout apaga activaciones al azar mientras entrena. Estas herramientas pueden reducir el sobreajuste, pero no reemplazan la evaluación con datos aparte. Un castigo fuerte puede hacer que el modelo aprenda de menos; uno débil puede no cambiar nada: compara entrenamiento y validación al elegirlo.
 
-`model_checkpoint`, `model.save_weights` and `model.load_weights` perform explicit local file I/O when a learner runs the program. The `tests/TutorLibraries/gesha-weights.kf` evidence is classified as isolated-only: validation stages it in a disposable runtime and checks the resulting local weight file. It is not executed from an ordinary Tutor question. The Tutor's explanation of an API is not a grant to execute code or write learner files.
+## Callbacks { #callbacks }
 
-A weight file contains parameter names/data only. It omits architecture, optimizer moments, preprocessing and normalization running statistics. Build a matching model before loading and retain preprocessing separately. `restore_best_weights` has the same parameter-only limitation.
+| Función | Firma | Qué hace |
+|---------|-------|-------------|
+| `gesha.early_stopping` | `(monitor, paciencia, mejora_mínima, modo, restaurar_mejores_pesos) -> callback` | Detiene el entrenamiento cuando lo vigilado deja de mejorar. |
+| `gesha.model_checkpoint` | `(archivo, monitor, solo_el_mejor, modo) -> callback` | Guarda los pesos al final de cada época. |
+| `gesha.add_callback` | `(modelo, callback) -> VOID` | Agrega un callback a un modelo. |
 
-## Tensor representation
+Los callbacks también pueden ir en el último argumento de `model.fit`. Sin datos de validación, la forma válida en KAFE es `model.fit(X, Y, épocas, lote, [], [], 0.0, [callback])`. La sintaxis de Python `callbacks=[...]` no es válida en KAFE.
 
-NUMK lists carry numeric arrays; a GESHA model owns the layer graph and trainable parameters. `tensor_zeros`, `tensor_ones`, and `tensor_random` help create numeric inputs, but they do not replace `gesha.sequential` or determine the task loss.
+La **parada temprana** vigila una métrica de validación y puede detenerse después de una ventana de paciencia. Restaurar los mejores pesos conserva el mejor estado de validación observado. El **checkpoint** guarda los pesos para usarlos después. Para vigilar `val_loss` hay que dar datos de validación; si no, elige algo que el entrenamiento realmente calcule. Deja el conjunto de prueba final fuera de esta selección.
 
-[Back to Gesha overview](../gesha.md)
+La implementación actual se detiene cuando el contador de épocas sin mejora **supera** `patience`. Con `patience=0`, la primera observación fija el mejor valor y la siguiente sin mejora puede detener el entrenamiento. Si lo vigilado no existe, no se toma ninguna decisión. En el checkpoint, `save_best_only=False` escribe en cada época aunque lo vigilado no exista; `True` escribe solo después de una mejora observada.
+
+## Efectos en archivos y restauración { #files }
+
+`model_checkpoint`, `model.save_weights` y `model.load_weights` leen y escriben archivos locales cuando el estudiante ejecuta el programa. La evidencia de `tests/TutorLibraries/gesha-weights.kf` está clasificada como aislada: la validación la corre en un runtime descartable y revisa el archivo de pesos resultante. No se ejecuta desde una pregunta común del Tutor; que el Tutor explique una API no le da permiso para ejecutar código ni escribir archivos del estudiante.
+
+Un archivo de pesos contiene solo nombres y datos de los parámetros. No guarda la arquitectura, los momentos del optimizador, el preprocesamiento ni las estadísticas de normalización. Construye un modelo igual antes de cargar y guarda el preprocesamiento por separado. `restore_best_weights` tiene el mismo límite.
+
+## Ayudas para tensores { #tensors }
+
+| Función | Firma | Qué hace |
+|---------|-------|-------------|
+| `gesha.tensor` | `(datos) -> List` | Copia de una lista numérica anidada homogénea. |
+| `gesha.tensor_zeros` | `(forma) -> List` | Tensor lleno de ceros. |
+| `gesha.tensor_ones` | `(forma) -> List` | Tensor lleno de unos. |
+| `gesha.tensor_random` | `(forma) -> List` | Tensor al azar. |
+
+Devuelven listas numéricas de NUMK: GESHA no tiene un tipo Tensor aparte. Que la firma acepte listas en general no garantiza que rechace todo elemento no numérico. No hay métodos como `.numpy()`, `.to()` o `.shape`: revisa las dimensiones por la forma conocida de los datos. `tensor_random` no tiene semilla; usa inicializadores con semilla cuando necesites repetir un sorteo.
+
+Las listas NUMK llevan los números; un modelo GESHA es dueño del grafo de capas y de los parámetros entrenables. Estas ayudas crean entradas numéricas, pero no reemplazan a `gesha.sequential` ni deciden la pérdida.
+
+[Volver al resumen de GESHA](../gesha.md)
