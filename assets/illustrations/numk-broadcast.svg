@@ -1,0 +1,30 @@
+<svg viewBox="0 0 560 190" role="img" aria-labelledby="ill-nkb-t ill-nkb-d" xmlns="http://www.w3.org/2000/svg">
+<title id="ill-nkb-t">Broadcasting: estirar lo pequeño / Broadcasting: stretching the small one</title>
+<desc id="ill-nkb-d">The matrix [[1, 2], [3, 4]] plus the single row [10, 20]. A dashed copy of the row slides down so the row now covers both rows of the matrix. Then the result [[11, 22], [13, 24]] appears.</desc>
+<style>
+@keyframes ill-nkb-copy { 0%,15% { opacity: 0; transform: translateY(-40px) } 35%,92% { opacity: 1; transform: translateY(0) } 100% { opacity: 0 } }
+@keyframes ill-nkb-res { 0%,45% { opacity: 0 } 55%,92% { opacity: 1 } 100% { opacity: 0 } }
+.ill-nkb-copy { animation: ill-nkb-copy 7s ease-in-out infinite; }
+.ill-nkb-res { animation: ill-nkb-res 7s linear infinite; }
+</style>
+<rect class="k-line" x="20" y="40" width="80" height="80" rx="4"/>
+<path class="k-thin" d="M60 40 V120 M20 80 H100"/>
+<text x="35" y="65">1</text><text x="75" y="65">2</text><text x="35" y="105">3</text><text x="75" y="105">4</text>
+<text class="k-label" x="118" y="86">+</text>
+<rect class="k-soft" x="150" y="40" width="80" height="40" rx="4"/>
+<rect class="k-accent-line" x="150" y="40" width="80" height="40" rx="4"/>
+<path class="k-thin" d="M190 40 V80"/>
+<text x="160" y="65">10</text><text x="200" y="65">20</text>
+<g class="ill-nkb-copy">
+<rect class="k-accent-line" x="150" y="80" width="80" height="40" rx="4" stroke-dasharray="6 6"/>
+<path class="k-thin" d="M190 80 V120"/>
+<text x="160" y="105">10</text><text x="200" y="105">20</text>
+</g>
+<text class="k-label" x="248" y="86">=</text>
+<g class="ill-nkb-res">
+<rect class="k-line" x="280" y="40" width="80" height="80" rx="4"/>
+<path class="k-thin" d="M320 40 V120 M280 80 H360"/>
+<text x="290" y="65">11</text><text x="330" y="65">22</text><text x="290" y="105">13</text><text x="330" y="105">24</text>
+</g>
+<text x="20" y="160">(2, 2) + (2,) → (2, 2)</text>
+</svg>

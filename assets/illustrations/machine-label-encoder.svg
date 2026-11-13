@@ -1,0 +1,18 @@
+<svg viewBox="0 0 600 270" role="img" aria-labelledby="ill-lbl-t ill-lbl-d" xmlns="http://www.w3.org/2000/svg">
+<title id="ill-lbl-t">LabelEncoder cambia cada palabra por un número / LabelEncoder swaps each word for a number</title>
+<desc id="ill-lbl-d">Four words: pear, apple, pear, kiwi. A dictionary appears with the words in alphabetical order, apple 0, kiwi 1, pear 2, and each word turns into its number: 2, 0, 2, 1.</desc>
+<style>
+@keyframes ill-lbl-dict { 0%,15% { opacity: 0 } 25%,100% { opacity: 1 } }
+.ill-lbl-dict { animation: ill-lbl-dict 10s linear infinite; }
+@keyframes ill-lbl-arrows { 0%,35% { opacity: 0 } 42%,100% { opacity: 1 } }
+.ill-lbl-arrows { animation: ill-lbl-arrows 10s linear infinite; }
+@keyframes ill-lbl-codes { 0%,45% { opacity: 0 } 55%,100% { opacity: 1 } }
+.ill-lbl-codes { animation: ill-lbl-codes 10s linear infinite; }
+@keyframes ill-lbl-all { 0% { opacity: 0 } 4%,94% { opacity: 1 } 100% { opacity: 0 } }
+.ill-lbl-all { animation: ill-lbl-all 10s linear infinite; }
+.ill-lbl-dash { stroke-dasharray: 6 5; }
+</style>
+<g class="ill-lbl-all">
+<rect class="k-thin" x="70" y="30" width="100" height="36" rx="18"/><text x="100" y="54">pear</text><path class="k-line ill-lbl-arrows" d="M120 72 V170"/><g class="ill-lbl-codes"><circle class="k-accent" cx="120" cy="200" r="20"/><text class="k-label" x="115" y="206">2</text></g><rect class="k-thin" x="190" y="30" width="100" height="36" rx="18"/><text x="220" y="54">apple</text><path class="k-line ill-lbl-arrows" d="M240 72 V170"/><g class="ill-lbl-codes"><circle class="k-accent" cx="240" cy="200" r="20"/><text class="k-label" x="235" y="206">0</text></g><rect class="k-thin" x="310" y="30" width="100" height="36" rx="18"/><text x="340" y="54">pear</text><path class="k-line ill-lbl-arrows" d="M360 72 V170"/><g class="ill-lbl-codes"><circle class="k-accent" cx="360" cy="200" r="20"/><text class="k-label" x="355" y="206">2</text></g><rect class="k-thin" x="430" y="30" width="100" height="36" rx="18"/><text x="460" y="54">kiwi</text><path class="k-line ill-lbl-arrows" d="M480 72 V170"/><g class="ill-lbl-codes"><circle class="k-accent" cx="480" cy="200" r="20"/><text class="k-label" x="475" y="206">1</text></g><g class="ill-lbl-dict"><rect class="k-soft" x="150" y="100" width="300" height="40" rx="8"/><text x="170" y="126">apple → 0 · kiwi → 1 · pear → 2</text></g>
+</g>
+</svg>

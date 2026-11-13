@@ -1,0 +1,24 @@
+<svg viewBox="0 0 600 270" role="img" aria-labelledby="ill-lgr-t ill-lgr-d" xmlns="http://www.w3.org/2000/svg">
+<title id="ill-lgr-t">La curva en S convierte horas en probabilidad / The S curve turns hours into a probability</title>
+<desc id="ill-lgr-d">Students who studied 1 to 3 hours failed (bottom) and 4 to 6 hours passed (top). An S-shaped curve draws itself from 0 to 1, a dashed line marks one half, and a probe at 3.5 hours reads a probability of 0.54.</desc>
+<style>
+@keyframes ill-lgr-draw { 0%,10% { stroke-dashoffset: 516 } 45%,100% { stroke-dashoffset: 0 } }
+.ill-lgr-curve { stroke-dasharray: 516; animation: ill-lgr-draw 10s ease-in-out infinite; }
+@keyframes ill-lgr-half { 0%,45% { opacity: 0 } 55%,100% { opacity: 1 } }
+.ill-lgr-half { animation: ill-lgr-half 10s linear infinite; }
+@keyframes ill-lgr-probe { 0%,60% { opacity: 0 } 70%,100% { opacity: 1 } }
+.ill-lgr-probe { animation: ill-lgr-probe 10s linear infinite; }
+.ill-lgr-dash { stroke-dasharray: 6 6; }
+@keyframes ill-lgr-all { 0% { opacity: 0 } 4%,94% { opacity: 1 } 100% { opacity: 0 } }
+.ill-lgr-all { animation: ill-lgr-all 10s linear infinite; }
+</style>
+<path class="k-line" d="M60 20 V210 H500"/>
+<text x="40" y="45">1</text><text x="40" y="130.0">½</text><text x="40" y="215">0</text>
+<text x="116" y="232">1</text><text x="176" y="232">2</text><text x="236" y="232">3</text><text x="296" y="232">4</text><text x="356" y="232">5</text><text x="416" y="232">6</text>
+<g class="ill-lgr-all">
+<path class="k-accent-line ill-lgr-curve" d="M60.0 210.0 L66.0 210.0 L72.0 210.0 L78.0 210.0 L84.0 210.0 L90.0 210.0 L96.0 210.0 L102.0 210.0 L108.0 210.0 L114.0 210.0 L120.0 210.0 L126.0 210.0 L132.0 210.0 L138.0 210.0 L144.0 210.0 L150.0 210.0 L156.0 209.9 L162.0 209.9 L168.0 209.8 L174.0 209.7 L180.0 209.6 L186.0 209.4 L192.0 209.1 L198.0 208.7 L204.0 208.0 L210.0 207.0 L216.0 205.5 L222.0 203.2 L228.0 200.0 L234.0 195.3 L240.0 188.6 L246.0 179.6 L252.0 167.9 L258.0 153.4 L264.0 136.8 L270.0 119.3 L276.0 102.2 L282.0 86.9 L288.0 74.2 L294.0 64.2 L300.0 56.8 L306.0 51.5 L312.0 47.8 L318.0 45.2 L324.0 43.5 L330.0 42.3 L336.0 41.5 L342.0 41.0 L348.0 40.7 L354.0 40.4 L360.0 40.3 L366.0 40.2 L372.0 40.1 L378.0 40.1 L384.0 40.1 L390.0 40.0 L396.0 40.0 L402.0 40.0 L408.0 40.0 L414.0 40.0 L420.0 40.0 L426.0 40.0 L432.0 40.0 L438.0 40.0 L444.0 40.0 L450.0 40.0 L456.0 40.0 L462.0 40.0 L468.0 40.0 L474.0 40.0 L480.0 40.0"/>
+<line class="k-thin ill-lgr-dash ill-lgr-half" x1="60" y1="125.0" x2="500" y2="125.0"/>
+<circle class="k-fill" cx="120" cy="210" r="7"/><circle class="k-fill" cx="180" cy="210" r="7"/><circle class="k-fill" cx="240" cy="210" r="7"/><rect class="k-fill" x="293" y="33" width="14" height="14"/><rect class="k-fill" x="353" y="33" width="14" height="14"/><rect class="k-fill" x="413" y="33" width="14" height="14"/>
+<g class="ill-lgr-probe"><line class="k-thin" x1="270.0" y1="210" x2="270.0" y2="119.2711979764068"/><circle class="k-accent" cx="270.0" cy="119.3" r="8"/><text class="k-label" x="282.0" y="141">0.54</text></g>
+</g>
+</svg>

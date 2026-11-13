@@ -1,0 +1,59 @@
+-- Linear Regression: regression with Salary Data.
+-- Five held-out predictions are printed below.
+import kaggle;
+import machine;
+import plot;
+
+List[STR] columnas = ["YearsExperience"];
+List[List[FLOAT]] X = kaggle.load_dataset_matrix(
+    "karthickveerakumar/salary-data-simple-linear-regression",
+    columnas, "Salary_Data.csv", 0
+);
+PARDOS df = kaggle.load_dataset(
+    "karthickveerakumar/salary-data-simple-linear-regression", "Salary_Data.csv"
+);
+List[FLOAT] salarios = df.col("Salary");
+List[FLOAT] y = [];
+INT i = 0;
+while (i < len(salarios)):
+    append(y, salarios[i] / 1000.0);
+    i = i + 1;
+;
+MACHINE split = machine.train_test_split(X, y, 0.2, 42);
+List[List[FLOAT]] X_train = split[0];
+List[List[FLOAT]] X_test = split[1];
+List[FLOAT] y_train = split[2];
+List[FLOAT] y_test = split[3];
+MACHINE scaler = machine.standard_scaler();
+scaler.fit(X_train);
+List[List[FLOAT]] train_scaled = scaler.transform(X_train);
+List[List[FLOAT]] test_scaled = scaler.transform(X_test);
+show("Train/test:");
+show([len(X_train), len(X_test)]);
+
+MACHINE lineal = machine.linear_regression();
+lineal.fit(train_scaled, y_train);
+List[FLOAT] pred_lineal = lineal.predict(test_scaled);
+show("Linear Regression - Salary Data: MAE (thousands) and R2:");
+show(machine.mean_absolute_error(y_test, pred_lineal));
+show(machine.r2_score(y_test, pred_lineal));
+
+List[FLOAT] pred_ejemplos = lineal.predict(test_scaled);
+show("Five test cases: expected -> predicted:");
+for (j in range(0, 5)):
+    show(str(y_test[j]) + " -> " + str(pred_ejemplos[j]));
+;
+
+List[FLOAT] indices_plot = [];
+for (j in range(0, len(y_test))):
+    append(indices_plot, float(j));
+;
+plot.figure();
+plot.title("salary linear regression: test set");
+plot.xlabel("Test sample index");
+plot.ylabel("Actual and predicted values");
+plot.pointColor("blue");
+plot.graph(indices_plot, y_test, "point");
+plot.pointColor("orange");
+plot.graph(indices_plot, pred_ejemplos, "point");
+plot.render();

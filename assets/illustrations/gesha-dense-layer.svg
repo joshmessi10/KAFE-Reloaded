@@ -1,0 +1,20 @@
+<svg viewBox="0 0 600 270" role="img" aria-labelledby="ill-dns-t ill-dns-d" xmlns="http://www.w3.org/2000/svg">
+<title id="ill-dns-t">Una capa densa conecta todo con todo / A dense layer connects everything to everything</title>
+<desc id="ill-dns-d">Four inputs on the left and three neurons on the right. The connections of each neuron light up in turn: every neuron receives all four inputs. The count shows 4 times 3 equals 12 weights, plus 3 biases, equals 15 parameters.</desc>
+<style>
+@keyframes ill-dns-c0 { 0%,8% { opacity: 0 } 16%,100% { opacity: 1 } }
+.ill-dns-c0 { animation: ill-dns-c0 10s linear infinite; }
+@keyframes ill-dns-c1 { 0%,22% { opacity: 0 } 30%,100% { opacity: 1 } }
+.ill-dns-c1 { animation: ill-dns-c1 10s linear infinite; }
+@keyframes ill-dns-c2 { 0%,36% { opacity: 0 } 44%,100% { opacity: 1 } }
+.ill-dns-c2 { animation: ill-dns-c2 10s linear infinite; }
+@keyframes ill-dns-count { 0%,58% { opacity: 0 } 66%,100% { opacity: 1 } }
+.ill-dns-count { animation: ill-dns-count 10s linear infinite; }
+@keyframes ill-dns-all { 0% { opacity: 0 } 4%,94% { opacity: 1 } 100% { opacity: 0 } }
+.ill-dns-all { animation: ill-dns-all 10s linear infinite; }
+.ill-dns-dash { stroke-dasharray: 6 5; }
+</style>
+<g class="ill-dns-all">
+<g class="ill-dns-c0"><line class="k-accent-line" x1="126" y1="50" x2="382" y2="80" stroke-width="1.5"/><line class="k-accent-line" x1="126" y1="105" x2="382" y2="80" stroke-width="1.5"/><line class="k-accent-line" x1="126" y1="160" x2="382" y2="80" stroke-width="1.5"/><line class="k-accent-line" x1="126" y1="215" x2="382" y2="80" stroke-width="1.5"/></g><g class="ill-dns-c1"><line class="k-accent-line" x1="126" y1="50" x2="382" y2="135" stroke-width="1.5"/><line class="k-accent-line" x1="126" y1="105" x2="382" y2="135" stroke-width="1.5"/><line class="k-accent-line" x1="126" y1="160" x2="382" y2="135" stroke-width="1.5"/><line class="k-accent-line" x1="126" y1="215" x2="382" y2="135" stroke-width="1.5"/></g><g class="ill-dns-c2"><line class="k-accent-line" x1="126" y1="50" x2="382" y2="190" stroke-width="1.5"/><line class="k-accent-line" x1="126" y1="105" x2="382" y2="190" stroke-width="1.5"/><line class="k-accent-line" x1="126" y1="160" x2="382" y2="190" stroke-width="1.5"/><line class="k-accent-line" x1="126" y1="215" x2="382" y2="190" stroke-width="1.5"/></g><circle class="k-thin" cx="110" cy="50" r="16"/><text x="102" y="55">x1</text><circle class="k-thin" cx="110" cy="105" r="16"/><text x="102" y="110">x2</text><circle class="k-thin" cx="110" cy="160" r="16"/><text x="102" y="165">x3</text><circle class="k-thin" cx="110" cy="215" r="16"/><text x="102" y="220">x4</text><circle class="k-soft" cx="400" cy="80" r="18"/><circle class="k-thin" cx="400" cy="80" r="18"/><text x="426" y="85">+b</text><circle class="k-soft" cx="400" cy="135" r="18"/><circle class="k-thin" cx="400" cy="135" r="18"/><text x="426" y="140">+b</text><circle class="k-soft" cx="400" cy="190" r="18"/><circle class="k-thin" cx="400" cy="190" r="18"/><text x="426" y="195">+b</text><g class="ill-dns-count"><text class="k-label" x="470" y="120">4 × 3 = 12 w</text><text class="k-label" x="470" y="150">+ 3 b</text><text class="k-label" x="470" y="185">= 15</text></g>
+</g>
+</svg>

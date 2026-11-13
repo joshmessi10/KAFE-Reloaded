@@ -1,0 +1,38 @@
+<svg viewBox="0 0 600 310" role="img" aria-labelledby="ill-pdm-t ill-pdm-d" xmlns="http://www.w3.org/2000/svg">
+<title id="ill-pdm-t">merge: unir dos tablas por una columna / merge: joining two tables on a column</title>
+<desc id="ill-pdm-d">On the left a table of names and scores, on the right a table of names and clubs. Lines join the rows that share the same name, Ana and Sofia. Then a new table appears below with name, score and club for those two students. Luis and Pablo have no partner, so they stay out.</desc>
+<style>
+@keyframes ill-pdm-a { 0%,10% { stroke-dashoffset: 200 } 30%,100% { stroke-dashoffset: 0 } }
+@keyframes ill-pdm-b { 0%,25% { stroke-dashoffset: 200 } 45%,100% { stroke-dashoffset: 0 } }
+@keyframes ill-pdm-r1 { 0%,50% { opacity: 0; transform: translateY(-12px) } 60%,100% { opacity: 1; transform: translateY(0) } }
+@keyframes ill-pdm-r2 { 0%,62% { opacity: 0; transform: translateY(-12px) } 72%,100% { opacity: 1; transform: translateY(0) } }
+@keyframes ill-pdm-dim { 0%,75% { opacity: 1 } 85%,100% { opacity: 0.35 } }
+.ill-pdm-a { stroke-dasharray: 200; animation: ill-pdm-a 9s ease-in-out infinite; }
+.ill-pdm-b { stroke-dasharray: 200; animation: ill-pdm-b 9s ease-in-out infinite; }
+.ill-pdm-r1 { animation: ill-pdm-r1 9s ease-out infinite; }
+.ill-pdm-r2 { animation: ill-pdm-r2 9s ease-out infinite; }
+.ill-pdm-dim { opacity: 0.35; animation: ill-pdm-dim 9s linear infinite; }
+</style>
+<rect class="k-soft" x="20" y="20" width="200" height="35"/>
+<path class="k-line" d="M20 20 H220 V160 H20 Z"/>
+<path class="k-thin" d="M20 55 H220 M20 90 H220 M20 125 H220 M120 20 V160"/>
+<text class="k-label" x="32" y="43">name</text><text class="k-label" x="132" y="43">score</text>
+<text x="32" y="78">Ana</text><text x="132" y="78">8.5</text>
+<g class="ill-pdm-dim"><text x="32" y="113">Luis</text><text x="132" y="113">7.0</text></g>
+<text x="32" y="148">Sofia</text><text x="132" y="148">9.5</text>
+<rect class="k-soft" x="380" y="20" width="200" height="35"/>
+<path class="k-line" d="M380 20 H580 V160 H380 Z"/>
+<path class="k-thin" d="M380 55 H580 M380 90 H580 M380 125 H580 M480 20 V160"/>
+<text class="k-label" x="392" y="43">name</text><text class="k-label" x="492" y="43">club</text>
+<text x="392" y="78">Ana</text><text x="492" y="78">chess</text>
+<text x="392" y="113">Sofia</text><text x="492" y="113">music</text>
+<g class="ill-pdm-dim"><text x="392" y="148">Pablo</text><text x="492" y="148">art</text></g>
+<path class="k-accent-line ill-pdm-a" d="M224 72 H376"/>
+<path class="k-accent-line ill-pdm-b" d="M224 142 C300 142 300 107 376 107"/>
+<rect class="k-soft" x="150" y="190" width="300" height="35"/>
+<path class="k-line" d="M150 190 H450 V295 H150 Z"/>
+<path class="k-thin" d="M150 225 H450 M150 260 H450 M250 190 V295 M350 190 V295"/>
+<text class="k-label" x="162" y="213">name</text><text class="k-label" x="262" y="213">score</text><text class="k-label" x="362" y="213">club</text>
+<g class="ill-pdm-r1"><text x="162" y="248">Ana</text><text x="262" y="248">8.5</text><text x="362" y="248">chess</text></g>
+<g class="ill-pdm-r2"><text x="162" y="283">Sofia</text><text x="262" y="283">9.5</text><text x="362" y="283">music</text></g>
+</svg>

@@ -1,0 +1,27 @@
+<svg viewBox="0 0 560 220" role="img" aria-labelledby="ill-l2i-t ill-l2i-d" xmlns="http://www.w3.org/2000/svg">
+<title id="ill-l2i-t">Los índices de una lista empiezan en 0 / List indexes start at 0</title>
+<desc id="ill-l2i-d">A list of three boxes holding 10, 20 and 30. Above each box is its index 0, 1 and 2; below, the negative indexes -3, -2 and -1. A highlight moves from box to box.</desc>
+<style>
+@keyframes ill-l2i-move { 0%,22% { transform: translateX(0) } 33%,55% { transform: translateX(130px) } 66%,88% { transform: translateX(260px) } 100% { transform: translateX(0) } }
+.ill-l2i-hi { animation: ill-l2i-move 7s ease-in-out infinite; }
+</style>
+<text x="20" y="30" font-size="15">nums = [10, 20, 30]</text>
+<g class="ill-l2i-hi">
+<rect class="k-accent" x="95" y="70" width="110" height="80" rx="10" opacity="0.35"/>
+<path class="k-accent" d="M140 52 H160 L150 64 Z"/>
+</g>
+<text class="k-label" x="143" y="48" font-size="18">0</text>
+<text class="k-label" x="273" y="48" font-size="18">1</text>
+<text class="k-label" x="403" y="48" font-size="18">2</text>
+<rect class="k-line" x="95" y="70" width="110" height="80" rx="10"/>
+<rect class="k-line" x="225" y="70" width="110" height="80" rx="10"/>
+<rect class="k-line" x="355" y="70" width="110" height="80" rx="10"/>
+<text x="133" y="119" font-size="24">10</text>
+<text x="263" y="119" font-size="24">20</text>
+<text x="393" y="119" font-size="24">30</text>
+<text x="137" y="180" font-size="16">-3</text>
+<text x="267" y="180" font-size="16">-2</text>
+<text x="397" y="180" font-size="16">-1</text>
+<text x="490" y="48" font-size="13">[i]</text>
+<text x="482" y="180" font-size="13">[-i]</text>
+</svg>

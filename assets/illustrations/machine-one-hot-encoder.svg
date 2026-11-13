@@ -1,0 +1,22 @@
+<svg viewBox="0 0 600 270" role="img" aria-labelledby="ill-ohe-t ill-ohe-d" xmlns="http://www.w3.org/2000/svg">
+<title id="ill-ohe-t">OneHotEncoder abre una columna por categoría / OneHotEncoder opens one column per category</title>
+<desc id="ill-ohe-d">A pet column with cat, dog, fish and cat. Three new columns appear, pet_cat, pet_dog and pet_fish, and each row lights up a 1 in the column of its pet and 0 in the others.</desc>
+<style>
+@keyframes ill-ohe-cols { 0%,20% { opacity: 0 } 30%,100% { opacity: 1 } }
+.ill-ohe-cols { animation: ill-ohe-cols 10s linear infinite; }
+@keyframes ill-ohe-r0 { 0%,35% { opacity: 0 } 41%,100% { opacity: 1 } }
+.ill-ohe-r0 { animation: ill-ohe-r0 10s linear infinite; }
+@keyframes ill-ohe-r1 { 0%,43% { opacity: 0 } 49%,100% { opacity: 1 } }
+.ill-ohe-r1 { animation: ill-ohe-r1 10s linear infinite; }
+@keyframes ill-ohe-r2 { 0%,51% { opacity: 0 } 57%,100% { opacity: 1 } }
+.ill-ohe-r2 { animation: ill-ohe-r2 10s linear infinite; }
+@keyframes ill-ohe-r3 { 0%,59% { opacity: 0 } 65%,100% { opacity: 1 } }
+.ill-ohe-r3 { animation: ill-ohe-r3 10s linear infinite; }
+@keyframes ill-ohe-all { 0% { opacity: 0 } 4%,94% { opacity: 1 } 100% { opacity: 0 } }
+.ill-ohe-all { animation: ill-ohe-all 10s linear infinite; }
+.ill-ohe-dash { stroke-dasharray: 6 5; }
+</style>
+<text class="k-label" x="60" y="34">pet</text><g class="ill-ohe-all">
+<rect class="k-thin" x="40" y="50" width="110" height="36" rx="4"/><text x="70" y="74">cat</text><path class="k-thin ill-ohe-r0" d="M155 68 H215"/><g class="ill-ohe-r0"><rect class="k-accent" x="230" y="50" width="100" height="36" rx="4"/><text class="k-label" x="275" y="74">1</text></g><g class="ill-ohe-r0"><rect class="k-soft" x="340" y="50" width="100" height="36" rx="4"/><text class="k-label" x="385" y="74">0</text></g><g class="ill-ohe-r0"><rect class="k-soft" x="450" y="50" width="100" height="36" rx="4"/><text class="k-label" x="495" y="74">0</text></g><rect class="k-thin" x="40" y="96" width="110" height="36" rx="4"/><text x="70" y="120">dog</text><path class="k-thin ill-ohe-r1" d="M155 114 H215"/><g class="ill-ohe-r1"><rect class="k-soft" x="230" y="96" width="100" height="36" rx="4"/><text class="k-label" x="275" y="120">0</text></g><g class="ill-ohe-r1"><rect class="k-accent" x="340" y="96" width="100" height="36" rx="4"/><text class="k-label" x="385" y="120">1</text></g><g class="ill-ohe-r1"><rect class="k-soft" x="450" y="96" width="100" height="36" rx="4"/><text class="k-label" x="495" y="120">0</text></g><rect class="k-thin" x="40" y="142" width="110" height="36" rx="4"/><text x="70" y="166">fish</text><path class="k-thin ill-ohe-r2" d="M155 160 H215"/><g class="ill-ohe-r2"><rect class="k-soft" x="230" y="142" width="100" height="36" rx="4"/><text class="k-label" x="275" y="166">0</text></g><g class="ill-ohe-r2"><rect class="k-soft" x="340" y="142" width="100" height="36" rx="4"/><text class="k-label" x="385" y="166">0</text></g><g class="ill-ohe-r2"><rect class="k-accent" x="450" y="142" width="100" height="36" rx="4"/><text class="k-label" x="495" y="166">1</text></g><rect class="k-thin" x="40" y="188" width="110" height="36" rx="4"/><text x="70" y="212">cat</text><path class="k-thin ill-ohe-r3" d="M155 206 H215"/><g class="ill-ohe-r3"><rect class="k-accent" x="230" y="188" width="100" height="36" rx="4"/><text class="k-label" x="275" y="212">1</text></g><g class="ill-ohe-r3"><rect class="k-soft" x="340" y="188" width="100" height="36" rx="4"/><text class="k-label" x="385" y="212">0</text></g><g class="ill-ohe-r3"><rect class="k-soft" x="450" y="188" width="100" height="36" rx="4"/><text class="k-label" x="495" y="212">0</text></g><g class="ill-ohe-cols"><text class="k-label" x="244" y="34">pet_cat</text><text class="k-label" x="354" y="34">pet_dog</text><text class="k-label" x="464" y="34">pet_fish</text></g>
+</g>
+</svg>

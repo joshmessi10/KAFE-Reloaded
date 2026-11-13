@@ -1,0 +1,22 @@
+<svg viewBox="0 0 600 250" role="img" aria-labelledby="ill-fin-t ill-fin-d" xmlns="http://www.w3.org/2000/svg">
+<title id="ill-fin-t">files.read("a.txt") → os.path.join → open → STR</title>
+<desc id="ill-fin-d">Step 1: the program calls files.read with a file name. Step 2: KAFE joins the folder of the .kf program with that name to build the full path. Step 3: Python opens the file at that path and reads it. Step 4: the text comes back to the program as a STR.</desc>
+<style>
+@keyframes ill-fin-s1 { 0%,2% { opacity: 0 } 8%,92% { opacity: 1 } 100% { opacity: 0 } }
+@keyframes ill-fin-s2 { 0%,22% { opacity: 0 } 28%,92% { opacity: 1 } 100% { opacity: 0 } }
+@keyframes ill-fin-s3 { 0%,44% { opacity: 0 } 50%,92% { opacity: 1 } 100% { opacity: 0 } }
+@keyframes ill-fin-s4 { 0%,66% { opacity: 0 } 72%,92% { opacity: 1 } 100% { opacity: 0 } }
+@keyframes ill-fin-dot { 0%,8% { transform: translate(0,0) } 22% { transform: translate(0,58px) } 44% { transform: translate(0,116px) } 66%,100% { transform: translate(0,174px) } }
+.ill-fin-s1 { animation: ill-fin-s1 10s linear infinite; }
+.ill-fin-s2 { animation: ill-fin-s2 10s linear infinite; }
+.ill-fin-s3 { animation: ill-fin-s3 10s linear infinite; }
+.ill-fin-s4 { animation: ill-fin-s4 10s linear infinite; }
+.ill-fin-dot { transform: translate(0,174px); animation: ill-fin-dot 10s ease-in-out infinite; }
+</style>
+<path class="k-thin" d="M40 36 V210"/>
+<g class="ill-fin-dot"><circle class="k-accent" cx="40" cy="36" r="9"/></g>
+<g class="ill-fin-s1"><text class="k-label" x="64" y="30">1</text><rect class="k-soft" x="90" y="14" width="300" height="32" rx="6"/><text x="104" y="35">files.read("a.txt")</text></g>
+<g class="ill-fin-s2"><text class="k-label" x="64" y="88">2</text><rect class="k-soft" x="90" y="72" width="490" height="32" rx="6"/><text x="104" y="93">os.path.join(current_dir, "a.txt")</text></g>
+<g class="ill-fin-s3"><text class="k-label" x="64" y="146">3</text><rect class="k-paper k-line" x="90" y="130" width="300" height="32" rx="6"/><text x="104" y="151">open(".../a.txt", "r")</text></g>
+<g class="ill-fin-s4"><text class="k-label" x="64" y="204">4</text><rect class="k-soft" x="90" y="188" width="300" height="32" rx="6"/><text x="104" y="209">STR "x = 10\n"</text><path class="k-accent-line" d="M400 204 H440"/><text x="450" y="209">show</text></g>
+</svg>

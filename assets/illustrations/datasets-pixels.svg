@@ -1,0 +1,109 @@
+<svg viewBox="0 0 560 230" role="img" aria-labelledby="ill-dpx-t ill-dpx-d" xmlns="http://www.w3.org/2000/svg">
+<title id="ill-dpx-t">Una imagen es una cuadrícula de números / A picture is a grid of numbers</title>
+<desc id="ill-dpx-d">A tiny 5 by 5 picture of a heart. Each lit square becomes the number 1 and each empty square becomes 0, giving a 5 by 5 grid of numbers.</desc>
+<style>
+@keyframes ill-dpx-pic { 0%,4% { opacity: 0 } 12%,92% { opacity: 1 } 100% { opacity: 0 } }
+@keyframes ill-dpx-arrow { 0%,18% { stroke-dashoffset: 120; opacity: 1 } 30%,92% { stroke-dashoffset: 0; opacity: 1 } 100% { opacity: 0 } }
+@keyframes ill-dpx-r0 { 0%,34% { opacity: 0 } 40%,92% { opacity: 1 } 100% { opacity: 0 } }
+@keyframes ill-dpx-r1 { 0%,44% { opacity: 0 } 50%,92% { opacity: 1 } 100% { opacity: 0 } }
+@keyframes ill-dpx-r2 { 0%,54% { opacity: 0 } 60%,92% { opacity: 1 } 100% { opacity: 0 } }
+@keyframes ill-dpx-r3 { 0%,64% { opacity: 0 } 70%,92% { opacity: 1 } 100% { opacity: 0 } }
+@keyframes ill-dpx-r4 { 0%,74% { opacity: 0 } 80%,92% { opacity: 1 } 100% { opacity: 0 } }
+.ill-dpx-pic { animation: ill-dpx-pic 9s ease-out infinite; }
+.ill-dpx-arrow { stroke-dasharray: 120; animation: ill-dpx-arrow 9s ease-in-out infinite; }
+.ill-dpx-r0 { animation: ill-dpx-r0 9s linear infinite; }
+.ill-dpx-r1 { animation: ill-dpx-r1 9s linear infinite; }
+.ill-dpx-r2 { animation: ill-dpx-r2 9s linear infinite; }
+.ill-dpx-r3 { animation: ill-dpx-r3 9s linear infinite; }
+.ill-dpx-r4 { animation: ill-dpx-r4 9s linear infinite; }
+</style>
+<g class="ill-dpx-pic">
+<rect class="k-soft" x="40" y="30" width="30" height="30" rx="3"/>
+<rect class="k-accent" x="72" y="30" width="30" height="30" rx="3"/>
+<rect class="k-soft" x="104" y="30" width="30" height="30" rx="3"/>
+<rect class="k-accent" x="136" y="30" width="30" height="30" rx="3"/>
+<rect class="k-soft" x="168" y="30" width="30" height="30" rx="3"/>
+<rect class="k-accent" x="40" y="62" width="30" height="30" rx="3"/>
+<rect class="k-accent" x="72" y="62" width="30" height="30" rx="3"/>
+<rect class="k-accent" x="104" y="62" width="30" height="30" rx="3"/>
+<rect class="k-accent" x="136" y="62" width="30" height="30" rx="3"/>
+<rect class="k-accent" x="168" y="62" width="30" height="30" rx="3"/>
+<rect class="k-accent" x="40" y="94" width="30" height="30" rx="3"/>
+<rect class="k-accent" x="72" y="94" width="30" height="30" rx="3"/>
+<rect class="k-accent" x="104" y="94" width="30" height="30" rx="3"/>
+<rect class="k-accent" x="136" y="94" width="30" height="30" rx="3"/>
+<rect class="k-accent" x="168" y="94" width="30" height="30" rx="3"/>
+<rect class="k-soft" x="40" y="126" width="30" height="30" rx="3"/>
+<rect class="k-accent" x="72" y="126" width="30" height="30" rx="3"/>
+<rect class="k-accent" x="104" y="126" width="30" height="30" rx="3"/>
+<rect class="k-accent" x="136" y="126" width="30" height="30" rx="3"/>
+<rect class="k-soft" x="168" y="126" width="30" height="30" rx="3"/>
+<rect class="k-soft" x="40" y="158" width="30" height="30" rx="3"/>
+<rect class="k-soft" x="72" y="158" width="30" height="30" rx="3"/>
+<rect class="k-accent" x="104" y="158" width="30" height="30" rx="3"/>
+<rect class="k-soft" x="136" y="158" width="30" height="30" rx="3"/>
+<rect class="k-soft" x="168" y="158" width="30" height="30" rx="3"/>
+</g>
+<path class="k-accent-line ill-dpx-arrow" d="M230 110 H320 M306 98 L322 110 L306 122"/>
+<g class="ill-dpx-r0">
+<rect class="k-thin" x="350" y="30" width="30" height="30" rx="3"/>
+<text x="361" y="50">0</text>
+<rect class="k-thin" x="382" y="30" width="30" height="30" rx="3"/>
+<text class="k-label" x="393" y="50">1</text>
+<rect class="k-thin" x="414" y="30" width="30" height="30" rx="3"/>
+<text x="425" y="50">0</text>
+<rect class="k-thin" x="446" y="30" width="30" height="30" rx="3"/>
+<text class="k-label" x="457" y="50">1</text>
+<rect class="k-thin" x="478" y="30" width="30" height="30" rx="3"/>
+<text x="489" y="50">0</text>
+</g>
+<g class="ill-dpx-r1">
+<rect class="k-thin" x="350" y="62" width="30" height="30" rx="3"/>
+<text class="k-label" x="361" y="82">1</text>
+<rect class="k-thin" x="382" y="62" width="30" height="30" rx="3"/>
+<text class="k-label" x="393" y="82">1</text>
+<rect class="k-thin" x="414" y="62" width="30" height="30" rx="3"/>
+<text class="k-label" x="425" y="82">1</text>
+<rect class="k-thin" x="446" y="62" width="30" height="30" rx="3"/>
+<text class="k-label" x="457" y="82">1</text>
+<rect class="k-thin" x="478" y="62" width="30" height="30" rx="3"/>
+<text class="k-label" x="489" y="82">1</text>
+</g>
+<g class="ill-dpx-r2">
+<rect class="k-thin" x="350" y="94" width="30" height="30" rx="3"/>
+<text class="k-label" x="361" y="114">1</text>
+<rect class="k-thin" x="382" y="94" width="30" height="30" rx="3"/>
+<text class="k-label" x="393" y="114">1</text>
+<rect class="k-thin" x="414" y="94" width="30" height="30" rx="3"/>
+<text class="k-label" x="425" y="114">1</text>
+<rect class="k-thin" x="446" y="94" width="30" height="30" rx="3"/>
+<text class="k-label" x="457" y="114">1</text>
+<rect class="k-thin" x="478" y="94" width="30" height="30" rx="3"/>
+<text class="k-label" x="489" y="114">1</text>
+</g>
+<g class="ill-dpx-r3">
+<rect class="k-thin" x="350" y="126" width="30" height="30" rx="3"/>
+<text x="361" y="146">0</text>
+<rect class="k-thin" x="382" y="126" width="30" height="30" rx="3"/>
+<text class="k-label" x="393" y="146">1</text>
+<rect class="k-thin" x="414" y="126" width="30" height="30" rx="3"/>
+<text class="k-label" x="425" y="146">1</text>
+<rect class="k-thin" x="446" y="126" width="30" height="30" rx="3"/>
+<text class="k-label" x="457" y="146">1</text>
+<rect class="k-thin" x="478" y="126" width="30" height="30" rx="3"/>
+<text x="489" y="146">0</text>
+</g>
+<g class="ill-dpx-r4">
+<rect class="k-thin" x="350" y="158" width="30" height="30" rx="3"/>
+<text x="361" y="178">0</text>
+<rect class="k-thin" x="382" y="158" width="30" height="30" rx="3"/>
+<text x="393" y="178">0</text>
+<rect class="k-thin" x="414" y="158" width="30" height="30" rx="3"/>
+<text class="k-label" x="425" y="178">1</text>
+<rect class="k-thin" x="446" y="158" width="30" height="30" rx="3"/>
+<text x="457" y="178">0</text>
+<rect class="k-thin" x="478" y="158" width="30" height="30" rx="3"/>
+<text x="489" y="178">0</text>
+</g>
+<text x="90" y="215">5 × 5</text><text x="370" y="215">[[0, 1, 0, 1, 0], …]</text>
+</svg>

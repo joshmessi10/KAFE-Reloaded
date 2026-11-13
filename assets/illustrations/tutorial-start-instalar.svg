@@ -1,0 +1,46 @@
+<svg viewBox="0 0 600 200" role="img" aria-labelledby="ill-tsi-t ill-tsi-d" xmlns="http://www.w3.org/2000/svg">
+<title id="ill-tsi-t">Instalar KAFE en VS Code / Installing KAFE in VS Code</title>
+<desc id="ill-tsi-d">Five steps in a row: the VS Code editor window, the Extensions view with a search box that says KAFE and an install check mark, a folder marked as trusted, a progress bar that fills while the runtime is prepared, and a .kf file whose run button produces output. A highlight moves from step to step.</desc>
+<style>
+@keyframes ill-tsi-hl { 0%,16% { transform: translateX(0) } 20%,36% { transform: translateX(118px) } 40%,56% { transform: translateX(236px) } 60%,76% { transform: translateX(354px) } 80%,96% { transform: translateX(472px) } 100% { transform: translateX(0) } }
+@keyframes ill-tsi-ok { 0%,26% { opacity: 0 } 31%,100% { opacity: 1 } }
+@keyframes ill-tsi-tr { 0%,46% { opacity: 0 } 51%,100% { opacity: 1 } }
+@keyframes ill-tsi-bar { 0%,60% { transform: scaleX(0) } 76%,100% { transform: scaleX(1) } }
+@keyframes ill-tsi-out { 0%,84% { opacity: 0 } 88%,96% { opacity: 1 } 100% { opacity: 0 } }
+.ill-tsi-hl { animation: ill-tsi-hl 10s ease-in-out infinite; }
+.ill-tsi-ok { animation: ill-tsi-ok 10s linear infinite; }
+.ill-tsi-tr { animation: ill-tsi-tr 10s linear infinite; }
+.ill-tsi-bar { transform-box: fill-box; transform-origin: left; animation: ill-tsi-bar 10s linear infinite; }
+.ill-tsi-out { animation: ill-tsi-out 10s linear infinite; }
+</style>
+<rect class="k-accent ill-tsi-hl" x="8" y="20" width="104" height="130" rx="16" opacity="0.25"/>
+<path class="k-thin" d="M112 85 H126 M230 85 H244 M348 85 H362 M466 85 H480"/>
+<rect class="k-paper" x="20" y="44" width="80" height="80" rx="10"/>
+<rect class="k-line" x="20" y="44" width="80" height="80" rx="10"/>
+<path class="k-line" d="M20 62 H100 M40 62 V124"/>
+<text x="48" y="100">&lt;/&gt;</text>
+<text x="56" y="180">1</text>
+<rect class="k-paper" x="138" y="44" width="80" height="80" rx="10"/>
+<rect class="k-line" x="138" y="44" width="80" height="80" rx="10"/>
+<rect class="k-soft" x="146" y="54" width="64" height="20" rx="6"/>
+<text x="158" y="69">KAFE</text>
+<path class="k-accent-line ill-tsi-ok" d="M160 98 L172 110 L196 86"/>
+<text x="174" y="180">2</text>
+<path class="k-paper" d="M256 58 H282 L290 66 H336 V124 H256 Z"/>
+<path class="k-line" d="M256 58 H282 L290 66 H336 V124 H256 Z"/>
+<path class="k-accent-line ill-tsi-tr" d="M280 94 L292 106 L314 82"/>
+<text x="292" y="180">3</text>
+<rect class="k-paper" x="374" y="44" width="80" height="80" rx="10"/>
+<rect class="k-line" x="374" y="44" width="80" height="80" rx="10"/>
+<text x="386" y="74">3.11</text>
+<rect class="k-soft" x="384" y="94" width="60" height="12" rx="6"/>
+<rect class="k-accent ill-tsi-bar" x="384" y="94" width="60" height="12" rx="6"/>
+<text x="410" y="180">4</text>
+<rect class="k-paper" x="492" y="44" width="80" height="80" rx="10"/>
+<rect class="k-line" x="492" y="44" width="80" height="80" rx="10"/>
+<text x="502" y="66">.kf</text>
+<path class="k-accent" d="M546 52 L560 60 L546 68 Z"/>
+<rect class="k-accent ill-tsi-out" x="502" y="86" width="56" height="10" rx="5"/>
+<rect class="k-accent ill-tsi-out" x="502" y="104" width="38" height="10" rx="5"/>
+<text x="528" y="180">5</text>
+</svg>

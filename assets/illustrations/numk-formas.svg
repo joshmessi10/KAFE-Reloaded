@@ -1,0 +1,41 @@
+<svg viewBox="0 0 560 230" role="img" aria-labelledby="ill-nkf-t ill-nkf-d" xmlns="http://www.w3.org/2000/svg">
+<title id="ill-nkf-t">Vector, matriz y tensor / Vector, matrix and tensor</title>
+<desc id="ill-nkf-d">A vector is one row of three numbers with shape (3,). A matrix is a table of two rows and three columns with shape (2, 3). A tensor is a stack of three small 2 by 2 tables, like the red, green and blue layers of a picture, with shape (3, 2, 2). They appear one after another.</desc>
+<style>
+@keyframes ill-nkf-a { 0% { opacity: 0; transform: translateY(12px) } 10%,92% { opacity: 1; transform: translateY(0) } 100% { opacity: 0 } }
+@keyframes ill-nkf-b { 0%,25% { opacity: 0; transform: translateY(12px) } 35%,92% { opacity: 1; transform: translateY(0) } 100% { opacity: 0 } }
+@keyframes ill-nkf-c { 0%,50% { opacity: 0; transform: translateY(12px) } 60%,92% { opacity: 1; transform: translateY(0) } 100% { opacity: 0 } }
+.ill-nkf-a { animation: ill-nkf-a 8s ease-out infinite; }
+.ill-nkf-b { animation: ill-nkf-b 8s ease-out infinite; }
+.ill-nkf-c { animation: ill-nkf-c 8s ease-out infinite; }
+</style>
+<g class="ill-nkf-a">
+<rect class="k-line" x="20" y="90" width="40" height="40" rx="4"/>
+<rect class="k-line" x="60" y="90" width="40" height="40" rx="4"/>
+<rect class="k-line" x="100" y="90" width="40" height="40" rx="4"/>
+<text x="35" y="115">4</text><text x="75" y="115">2</text><text x="115" y="115">7</text>
+<text class="k-label" x="58" y="175">(3,)</text>
+</g>
+<g class="ill-nkf-b">
+<rect class="k-soft" x="180" y="70" width="120" height="80" rx="4"/>
+<rect class="k-line" x="180" y="70" width="120" height="80" rx="4"/>
+<path class="k-thin" d="M220 70 V150 M260 70 V150 M180 110 H300"/>
+<text x="195" y="95">1</text><text x="235" y="95">2</text><text x="275" y="95">3</text>
+<text x="195" y="135">4</text><text x="235" y="135">5</text><text x="275" y="135">6</text>
+<text class="k-label" x="215" y="175">(2, 3)</text>
+</g>
+<g class="ill-nkf-c">
+<rect class="k-paper" x="420" y="40" width="80" height="80" rx="4"/>
+<rect class="k-line" x="420" y="40" width="80" height="80" rx="4"/>
+<path class="k-thin" d="M460 40 V120 M420 80 H500"/>
+<rect class="k-paper" x="400" y="60" width="80" height="80" rx="4"/>
+<rect class="k-line" x="400" y="60" width="80" height="80" rx="4"/>
+<path class="k-thin" d="M440 60 V140 M400 100 H480"/>
+<rect class="k-soft" x="380" y="80" width="80" height="80" rx="4"/>
+<rect class="k-accent-line" x="380" y="80" width="80" height="80" rx="4"/>
+<path class="k-thin" d="M420 80 V160 M380 120 H460"/>
+<text x="395" y="105">1</text><text x="435" y="105">2</text>
+<text x="395" y="145">3</text><text x="435" y="145">4</text>
+<text class="k-label" x="400" y="200">(3, 2, 2)</text>
+</g>
+</svg>

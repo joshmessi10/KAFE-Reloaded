@@ -1,0 +1,26 @@
+<svg viewBox="0 0 600 270" role="img" aria-labelledby="ill-dtc-t ill-dtc-d" xmlns="http://www.w3.org/2000/svg">
+<title id="ill-dtc-t">El árbol prueba cortes y elige el mejor / The tree tries cuts and keeps the best</title>
+<desc id="ill-dtc-d">Six points on a line, circles and squares mixed. A dashed cut tries 4.5, then 3.5, then 2.5, showing how much each cut tidies the groups (0.25, 0.056, 0.25). It keeps 2.5, and a tree appears: a question x ≤ 2.5 with a circle leaf on the left and a square leaf on the right.</desc>
+<style>
+@keyframes ill-dtc-cut { 0%,12% { transform: translateX(130.0px) } 22%,34% { transform: translateX(65.0px) } 44%,100% { transform: translateX(0) } }
+.ill-dtc-cut { animation: ill-dtc-cut 12s ease-in-out infinite; }
+@keyframes ill-dtc-g0 { 0%,4% { opacity: 0 } 6%,14% { opacity: 1 } 16%,100% { opacity: 0 } }
+.ill-dtc-g0 { opacity: 0; animation: ill-dtc-g0 12s linear infinite; }
+@keyframes ill-dtc-g1 { 0%,18% { opacity: 0 } 22%,34% { opacity: 1 } 36%,100% { opacity: 0 } }
+.ill-dtc-g1 { opacity: 0; animation: ill-dtc-g1 12s linear infinite; }
+@keyframes ill-dtc-g2 { 0%,40% { opacity: 0 } 44%,100% { opacity: 1 } 100%,100% { opacity: 1 } }
+.ill-dtc-g2 { animation: ill-dtc-g2 12s linear infinite; }
+@keyframes ill-dtc-tree { 0%,55% { opacity: 0 } 65%,100% { opacity: 1 } }
+.ill-dtc-tree { animation: ill-dtc-tree 12s linear infinite; }
+.ill-dtc-dash { stroke-dasharray: 6 5; }
+@keyframes ill-dtc-all { 0% { opacity: 0 } 4%,94% { opacity: 1 } 100% { opacity: 0 } }
+.ill-dtc-all { animation: ill-dtc-all 12s linear infinite; }
+</style>
+<path class="k-thin" d="M80 95 H460"/><text x="121" y="112">1</text><text x="186" y="112">2</text><text x="251" y="112">3</text><text x="316" y="112">4</text><text x="381" y="112">5</text><text x="446" y="112">6</text>
+<g class="ill-dtc-all">
+<circle class="k-fill" cx="125" cy="70" r="9"/><circle class="k-fill" cx="190" cy="70" r="9"/><rect class="k-fill" x="246" y="61" width="18" height="18"/><circle class="k-fill" cx="320" cy="70" r="9"/><rect class="k-fill" x="376" y="61" width="18" height="18"/><rect class="k-fill" x="441" y="61" width="18" height="18"/>
+<g class="ill-dtc-cut"><line class="k-accent-line ill-dtc-dash" x1="222.5" y1="35" x2="222.5" y2="130"/></g>
+<text class="k-label ill-dtc-g0" x="360.5" y="125">0.25</text><text class="k-label ill-dtc-g1" x="295.5" y="125">0.056</text><text class="k-label ill-dtc-g2" x="230.5" y="125">0.25</text>
+<g class="ill-dtc-tree"><rect class="k-thin" x="230" y="150" width="140" height="34" rx="6"/><text class="k-label" x="258" y="173">x ≤ 2.5</text><path class="k-line" d="M270 184 L200 220 M330 184 L400 220"/><circle class="k-accent" cx="200" cy="232" r="12"/><rect class="k-accent" x="388" y="220" width="24" height="24"/></g>
+</g>
+</svg>

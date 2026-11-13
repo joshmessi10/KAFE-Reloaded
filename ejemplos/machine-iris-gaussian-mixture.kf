@@ -1,0 +1,44 @@
+-- Gaussian Mixture: clustering with Iris Species.
+-- Five representative cluster assignments are printed below.
+import kaggle;
+import machine;
+import plot;
+
+List[List[FLOAT]] petalos = kaggle.load_dataset_matrix(
+    "uciml/iris", ["PetalLengthCm", "PetalWidthCm"], "Iris.csv", 0
+);
+MACHINE gmm = machine.gaussian_mixture(3, 50, 0.001, 42);
+gmm.fit(petalos);
+List[INT] grupos = gmm.predict(petalos);
+show("Gaussian Mixture - Iris Species: samples and first arbitrary cluster label:");
+show(len(grupos));
+show(grupos[0]);
+show("Silhouette Gaussian Mixture - Iris Species:");
+show(machine.silhouette_score(petalos, grupos));
+
+show("Five examples: features -> assigned cluster:");
+List[INT] casos = [0, 37, 75, 112, 149];
+for (indice in casos):
+    show(str(petalos[indice]) + " -> " + str(grupos[indice]));
+;
+
+plot.figure();
+plot.title("iris gaussian mixture: clusters");
+plot.xlabel("Feature 1");
+plot.ylabel("Feature 2");
+List[STR] colores = ["gray", "blue", "red", "green", "orange", "purple", "brown", "black"];
+for (grupo in range(-1, 3)):
+    List[FLOAT] xs_grupo = [];
+    List[FLOAT] ys_grupo = [];
+    for (j in range(0, len(petalos))):
+        if (grupos[j] == grupo):
+            append(xs_grupo, petalos[j][0]);
+            append(ys_grupo, petalos[j][1]);
+        ;
+    ;
+    if (len(xs_grupo) > 0):
+        plot.pointColor(colores[grupo + 1]);
+        plot.graph(xs_grupo, ys_grupo, "point");
+    ;
+;
+plot.render();

@@ -1,0 +1,41 @@
+<svg viewBox="0 0 560 240" role="img" aria-labelledby="ill-dsp-t ill-dsp-d" xmlns="http://www.w3.org/2000/svg">
+<title id="ill-dsp-t">Dividir un dataset en train y test / Splitting a dataset into train and test</title>
+<desc id="ill-dsp-d">A box holds ten examples. Eight of them move down into a train box and two move into a test box, about 80 percent and 20 percent.</desc>
+<style>
+@keyframes ill-dsp-tr { 0%,15% { transform: translateY(-140px); opacity: 1 } 45%,92% { transform: translateY(0); opacity: 1 } 100% { opacity: 0 } }
+@keyframes ill-dsp-te { 0%,45% { transform: translateY(-140px); opacity: 1 } 70%,92% { transform: translateY(0); opacity: 1 } 100% { opacity: 0 } }
+@keyframes ill-dsp-lb { 0%,72% { opacity: 0 } 80%,92% { opacity: 1 } 100% { opacity: 0 } }
+.ill-dsp-tr { animation: ill-dsp-tr 8s ease-in-out infinite; }
+.ill-dsp-te { animation: ill-dsp-te 8s ease-in-out infinite; }
+.ill-dsp-lb { animation: ill-dsp-lb 8s linear infinite; }
+</style>
+<rect class="k-line" x="60" y="20" width="440" height="60" rx="10"/>
+<text class="k-label" x="66" y="16">dataset</text>
+<circle class="k-thin" cx="95" cy="50" r="13"/>
+<circle class="k-thin" cx="135" cy="50" r="13"/>
+<circle class="k-thin" cx="175" cy="50" r="13"/>
+<circle class="k-thin" cx="215" cy="50" r="13"/>
+<circle class="k-thin" cx="255" cy="50" r="13"/>
+<circle class="k-thin" cx="295" cy="50" r="13"/>
+<circle class="k-thin" cx="335" cy="50" r="13"/>
+<circle class="k-thin" cx="375" cy="50" r="13"/>
+<circle class="k-thin" cx="415" cy="50" r="13"/>
+<circle class="k-thin" cx="455" cy="50" r="13"/>
+<rect class="k-line" x="60" y="160" width="330" height="60" rx="10"/>
+<rect class="k-line" x="400" y="160" width="100" height="60" rx="10"/>
+<g class="ill-dsp-tr">
+<circle class="k-fill" cx="95" cy="190" r="13"/>
+<circle class="k-fill" cx="135" cy="190" r="13"/>
+<circle class="k-fill" cx="175" cy="190" r="13"/>
+<circle class="k-fill" cx="215" cy="190" r="13"/>
+<circle class="k-fill" cx="255" cy="190" r="13"/>
+<circle class="k-fill" cx="295" cy="190" r="13"/>
+<circle class="k-fill" cx="335" cy="190" r="13"/>
+<circle class="k-fill" cx="375" cy="190" r="13"/>
+</g>
+<g class="ill-dsp-te">
+<circle class="k-accent" cx="415" cy="190" r="13"/>
+<circle class="k-accent" cx="455" cy="190" r="13"/>
+</g>
+<g class="ill-dsp-lb"><text class="k-label" x="66" y="154">train · 80%</text><text class="k-label" x="400" y="154">test · 20%</text></g>
+</svg>

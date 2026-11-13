@@ -1,0 +1,35 @@
+<svg viewBox="0 0 600 270" role="img" aria-labelledby="ill-nrn-t ill-nrn-d" xmlns="http://www.w3.org/2000/svg">
+<title id="ill-nrn-t">Una neurona: suma con pesos y activación / One neuron: weighted sum and activation</title>
+<desc id="ill-nrn-d">Two inputs, both 1, travel along their weights into a summing circle and then through an S-shaped activation box. With every weight at 0 the output is 0.5. After one training step the weights and the bias become 0.05, the inputs travel again, and the output rises to 0.537, closer to the correct answer 1.</desc>
+<style>
+@keyframes ill-nrn-d1 { 0%,5% { opacity: 0; transform: translate(-210px, -65px) } 6% { opacity: 1; transform: translate(-210px, -65px) } 20% { opacity: 1; transform: translate(0, 0) } 21%,100% { opacity: 0; transform: translate(0, 0) } }
+.ill-nrn-d1 { opacity: 0; animation: ill-nrn-d1 12s linear infinite; }
+@keyframes ill-nrn-d2 { 0%,5% { opacity: 0; transform: translate(-210px, 65px) } 6% { opacity: 1; transform: translate(-210px, 65px) } 20% { opacity: 1; transform: translate(0, 0) } 21%,100% { opacity: 0; transform: translate(0, 0) } }
+.ill-nrn-d2 { opacity: 0; animation: ill-nrn-d2 12s linear infinite; }
+@keyframes ill-nrn-d3 { 0%,22% { opacity: 0; transform: translate(-130px, 0px) } 23% { opacity: 1; transform: translate(-130px, 0px) } 32% { opacity: 1; transform: translate(0, 0) } 33%,100% { opacity: 0; transform: translate(0, 0) } }
+.ill-nrn-d3 { opacity: 0; animation: ill-nrn-d3 12s linear infinite; }
+@keyframes ill-nrn-w0 { 0%,50% { opacity: 1 } 56%,100% { opacity: 0 } }
+.ill-nrn-w0 { opacity: 0; animation: ill-nrn-w0 12s linear infinite; }
+@keyframes ill-nrn-w1 { 0%,52% { opacity: 0 } 58%,100% { opacity: 1 } }
+.ill-nrn-w1 { animation: ill-nrn-w1 12s linear infinite; }
+@keyframes ill-nrn-d4 { 0%,60% { opacity: 0; transform: translate(-210px, -65px) } 61% { opacity: 1; transform: translate(-210px, -65px) } 72% { opacity: 1; transform: translate(0, 0) } 73%,100% { opacity: 0; transform: translate(0, 0) } }
+.ill-nrn-d4 { opacity: 0; animation: ill-nrn-d4 12s linear infinite; }
+@keyframes ill-nrn-d5 { 0%,60% { opacity: 0; transform: translate(-210px, 65px) } 61% { opacity: 1; transform: translate(-210px, 65px) } 72% { opacity: 1; transform: translate(0, 0) } 73%,100% { opacity: 0; transform: translate(0, 0) } }
+.ill-nrn-d5 { opacity: 0; animation: ill-nrn-d5 12s linear infinite; }
+@keyframes ill-nrn-d6 { 0%,74% { opacity: 0; transform: translate(-130px, 0px) } 75% { opacity: 1; transform: translate(-130px, 0px) } 82% { opacity: 1; transform: translate(0, 0) } 83%,100% { opacity: 0; transform: translate(0, 0) } }
+.ill-nrn-d6 { opacity: 0; animation: ill-nrn-d6 12s linear infinite; }
+@keyframes ill-nrn-o0 { 0%,78% { opacity: 1 } 84%,100% { opacity: 0 } }
+.ill-nrn-o0 { opacity: 0; animation: ill-nrn-o0 12s linear infinite; }
+@keyframes ill-nrn-o1 { 0%,80% { opacity: 0 } 86%,100% { opacity: 1 } }
+.ill-nrn-o1 { animation: ill-nrn-o1 12s linear infinite; }
+@keyframes ill-nrn-first { 0%,26% { opacity: 0 } 32%,100% { opacity: 1 } }
+.ill-nrn-first { animation: ill-nrn-first 12s linear infinite; }
+@keyframes ill-nrn-all { 0% { opacity: 0 } 4%,94% { opacity: 1 } 100% { opacity: 0 } }
+.ill-nrn-all { animation: ill-nrn-all 12s linear infinite; }
+.ill-nrn-dash { stroke-dasharray: 6 5; }
+</style>
+<g class="ill-nrn-all">
+<circle class="k-thin" cx="70" cy="70" r="24"/><text class="k-label" x="58" y="76">x₁</text><text x="40" y="112">1</text><circle class="k-thin" cx="70" cy="200" r="24"/><text class="k-label" x="58" y="206">x₂</text><text x="40" y="242">1</text><path class="k-line" d="M94 75 L270 128 M94 195 L270 142"/><g class="ill-nrn-w0"><text x="170" y="88">w₁ = 0</text><text x="170" y="198">w₂ = 0</text><text x="275" y="200">b = 0</text></g><g class="ill-nrn-w1"><text class="k-label" x="160" y="88">w₁ = 0.05</text><text class="k-label" x="160" y="198">w₂ = 0.05</text><text class="k-label" x="268" y="200">b = 0.05</text></g><circle class="k-soft" cx="300" cy="135" r="34"/><text class="k-label" x="290" y="143">Σ</text><path class="k-line" d="M334 135 H400"/><rect class="k-thin" x="400" y="105" width="60" height="60" rx="8"/><path class="k-accent-line" d="M408 155 C 425 155, 425 115, 452 115"/><path class="k-line" d="M460 135 H500"/><g class="ill-nrn-o0"><text class="k-label" x="508" y="142">0.5</text></g><g class="ill-nrn-o1"><text class="k-label" x="508" y="142">0.537</text></g><text x="508" y="172">y = 1</text>
+<circle class="k-accent ill-nrn-d1" cx="300" cy="135" r="7"/><circle class="k-accent ill-nrn-d2" cx="300" cy="135" r="7"/><circle class="k-accent ill-nrn-d4" cx="300" cy="135" r="7"/><circle class="k-accent ill-nrn-d5" cx="300" cy="135" r="7"/><circle class="k-accent ill-nrn-d3" cx="430" cy="135" r="7"/><circle class="k-accent ill-nrn-d6" cx="430" cy="135" r="7"/>
+</g>
+</svg>

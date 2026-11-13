@@ -1,0 +1,20 @@
+<svg viewBox="0 0 520 260" role="img" aria-labelledby="ill-knn-t ill-knn-d" xmlns="http://www.w3.org/2000/svg">
+<title id="ill-knn-t">Clasificar mirando a los vecinos / Classifying by looking at the neighbors</title>
+<desc id="ill-knn-d">Two groups of known examples: circles on the left and squares on the right. A new point with a question mark appears, a ring grows around its three nearest neighbors, all squares, and the new point becomes a square.</desc>
+<style>
+@keyframes ill-knn-q { 0%,10% { opacity: 0 } 16%,62% { opacity: 1 } 68%,100% { opacity: 0 } }
+@keyframes ill-knn-ring { 0%,22% { transform: scale(0); opacity: 0 } 40%,70% { transform: scale(1); opacity: 1 } 80%,100% { transform: scale(1); opacity: 0 } }
+@keyframes ill-knn-ans { 0%,64% { opacity: 0; transform: scale(.4) } 72%,94% { opacity: 1; transform: scale(1) } 100% { opacity: 0 } }
+.ill-knn-q { animation: ill-knn-q 7s linear infinite; }
+.ill-knn-ring { transform-box: fill-box; transform-origin: center; animation: ill-knn-ring 7s ease-out infinite; }
+.ill-knn-ans { transform-box: fill-box; transform-origin: center; animation: ill-knn-ans 7s cubic-bezier(.3,1.5,.6,1) infinite; }
+</style>
+<circle class="k-line" cx="70" cy="80" r="12"/><circle class="k-line" cx="110" cy="140" r="12"/><circle class="k-line" cx="60" cy="180" r="12"/>
+<circle class="k-line" cx="140" cy="70" r="12"/><circle class="k-line" cx="160" cy="190" r="12"/><circle class="k-line" cx="200" cy="120" r="12"/>
+<rect class="k-fill" x="318" y="62" width="24" height="24" rx="4"/><rect class="k-fill" x="388" y="102" width="24" height="24" rx="4"/>
+<rect class="k-fill" x="438" y="52" width="24" height="24" rx="4"/><rect class="k-fill" x="348" y="172" width="24" height="24" rx="4"/>
+<rect class="k-fill" x="428" y="182" width="24" height="24" rx="4"/><rect class="k-fill" x="458" y="132" width="24" height="24" rx="4"/>
+<circle class="k-accent-line ill-knn-ring" cx="370" cy="130" r="78" stroke-dasharray="8 8"/>
+<g class="ill-knn-q"><circle class="k-accent" cx="365" cy="135" r="13"/><text class="k-label" x="359" y="141" font-size="16">?</text></g>
+<rect class="k-accent ill-knn-ans" x="352" y="122" width="26" height="26" rx="4"/>
+</svg>

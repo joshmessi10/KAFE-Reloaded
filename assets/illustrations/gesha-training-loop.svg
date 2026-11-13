@@ -1,0 +1,19 @@
+<svg viewBox="0 0 600 270" role="img" aria-labelledby="ill-loop-t ill-loop-d" xmlns="http://www.w3.org/2000/svg">
+<title id="ill-loop-t">Predecir, medir, culpar, ajustar / Predict, measure, blame, adjust</title>
+<desc id="ill-loop-d">A dot goes round a loop of four steps: predict with the network, measure the loss, compute the gradient that blames each weight, and nudge each weight against it. Next to it, the real loss of the AND network draws itself over 10 epochs, falling from 1.05 to 0.17.</desc>
+<style>
+@keyframes ill-loop-draw { 0%,5% { stroke-dashoffset: 400 } 85%,100% { stroke-dashoffset: 0 } }
+.ill-loop-curve { stroke-dasharray: 400; animation: ill-loop-draw 12s linear infinite; }
+@keyframes ill-loop-spin { 0% { transform: rotate(0deg) } 100% { transform: rotate(1800deg) } }
+.ill-loop-spin { transform-box: view-box; transform-origin: 150px 130px; animation: ill-loop-spin 12s linear infinite; }
+@keyframes ill-loop-all { 0% { opacity: 0 } 4%,94% { opacity: 1 } 100% { opacity: 0 } }
+.ill-loop-all { animation: ill-loop-all 12s linear infinite; }
+.ill-loop-dash { stroke-dasharray: 6 5; }
+</style>
+<g class="ill-loop-all">
+<circle class="k-thin" cx="150" cy="130" r="90"/>
+<g class="ill-loop-spin"><circle class="k-accent" cx="150" cy="40" r="9"/></g>
+<rect class="k-paper" x="88" y="24" width="124" height="30" rx="15"/><rect class="k-thin" x="88" y="24" width="124" height="30" rx="15"/><text class="k-label" x="100" y="45">ŷ = f(x)</text><rect class="k-paper" x="178" y="114" width="124" height="30" rx="15"/><rect class="k-thin" x="178" y="114" width="124" height="30" rx="15"/><text class="k-label" x="190" y="135">L(ŷ, y)</text><rect class="k-paper" x="88" y="204" width="124" height="30" rx="15"/><rect class="k-thin" x="88" y="204" width="124" height="30" rx="15"/><text class="k-label" x="100" y="225">∂L/∂w</text><rect class="k-paper" x="-2" y="114" width="124" height="30" rx="15"/><rect class="k-thin" x="-2" y="114" width="124" height="30" rx="15"/><text class="k-label" x="10" y="135">w ← w − η·∂L/∂w</text>
+<path class="k-line" d="M320 30 V230 H600"/><text class="k-label" x="325" y="24">L</text><text x="326" y="250">1</text><text x="438" y="250">5</text><text x="578" y="250">10</text><path class="k-accent-line ill-loop-curve" d="M330 62.5 L358 65.7 L386 97.5 L414 125.7 L442 150.9 L470 171.1 L498 184.8 L526 193.3 L554 198.9 L582 202.7"/>
+</g>
+</svg>

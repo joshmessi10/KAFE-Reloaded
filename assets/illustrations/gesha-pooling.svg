@@ -1,0 +1,20 @@
+<svg viewBox="0 0 600 270" role="img" aria-labelledby="ill-pool-t ill-pool-d" xmlns="http://www.w3.org/2000/svg">
+<title id="ill-pool-t">Max pooling se queda con el mayor de cada bloque / Max pooling keeps the largest of each block</title>
+<desc id="ill-pool-d">A 4 by 4 image split into four 2 by 2 blocks. In each block the largest number lights up, 4, 2, 2 and 8, and is copied into a 2 by 2 output: the image keeps its strongest signals at half the size.</desc>
+<style>
+@keyframes ill-pool-q0 { 0%,10% { opacity: 0 } 16%,100% { opacity: 1 } }
+.ill-pool-q0 { animation: ill-pool-q0 12s linear infinite; }
+@keyframes ill-pool-q1 { 0%,26% { opacity: 0 } 32%,100% { opacity: 1 } }
+.ill-pool-q1 { animation: ill-pool-q1 12s linear infinite; }
+@keyframes ill-pool-q2 { 0%,42% { opacity: 0 } 48%,100% { opacity: 1 } }
+.ill-pool-q2 { animation: ill-pool-q2 12s linear infinite; }
+@keyframes ill-pool-q3 { 0%,58% { opacity: 0 } 64%,100% { opacity: 1 } }
+.ill-pool-q3 { animation: ill-pool-q3 12s linear infinite; }
+@keyframes ill-pool-all { 0% { opacity: 0 } 4%,94% { opacity: 1 } 100% { opacity: 0 } }
+.ill-pool-all { animation: ill-pool-all 12s linear infinite; }
+.ill-pool-dash { stroke-dasharray: 6 5; }
+</style>
+<g class="ill-pool-all">
+<rect class="k-thin" x="60" y="48" width="44" height="44"/><text x="77" y="76">1</text><rect class="k-thin" x="104" y="48" width="44" height="44"/><text x="121" y="76">3</text><rect class="k-thin" x="148" y="48" width="44" height="44"/><rect class="k-accent ill-pool-q1" x="150" y="50" width="40" height="40" opacity="0.6"/><text x="165" y="76">2</text><rect class="k-thin" x="192" y="48" width="44" height="44"/><text x="209" y="76">0</text><rect class="k-thin" x="60" y="92" width="44" height="44"/><rect class="k-accent ill-pool-q0" x="62" y="94" width="40" height="40" opacity="0.6"/><text x="77" y="120">4</text><rect class="k-thin" x="104" y="92" width="44" height="44"/><text x="121" y="120">2</text><rect class="k-thin" x="148" y="92" width="44" height="44"/><text x="165" y="120">1</text><rect class="k-thin" x="192" y="92" width="44" height="44"/><text x="209" y="120">1</text><rect class="k-thin" x="60" y="136" width="44" height="44"/><text x="77" y="164">0</text><rect class="k-thin" x="104" y="136" width="44" height="44"/><text x="121" y="164">1</text><rect class="k-thin" x="148" y="136" width="44" height="44"/><text x="165" y="164">5</text><rect class="k-thin" x="192" y="136" width="44" height="44"/><text x="209" y="164">6</text><rect class="k-thin" x="60" y="180" width="44" height="44"/><rect class="k-accent ill-pool-q2" x="62" y="182" width="40" height="40" opacity="0.6"/><text x="77" y="208">2</text><rect class="k-thin" x="104" y="180" width="44" height="44"/><rect class="k-accent ill-pool-q2" x="106" y="182" width="40" height="40" opacity="0.6"/><text x="121" y="208">2</text><rect class="k-thin" x="148" y="180" width="44" height="44"/><text x="165" y="208">7</text><rect class="k-thin" x="192" y="180" width="44" height="44"/><rect class="k-accent ill-pool-q3" x="194" y="182" width="40" height="40" opacity="0.6"/><text x="209" y="208">8</text><path class="k-line" d="M148 48 V224 M60 136 H236" stroke-width="3"/><text class="k-label" x="270" y="142">max →</text><g class="ill-pool-q0"><rect class="k-soft" x="380" y="92" width="44" height="44"/><rect class="k-thin" x="380" y="92" width="44" height="44"/><text class="k-label" x="397" y="120">4</text></g><g class="ill-pool-q1"><rect class="k-soft" x="424" y="92" width="44" height="44"/><rect class="k-thin" x="424" y="92" width="44" height="44"/><text class="k-label" x="441" y="120">2</text></g><g class="ill-pool-q2"><rect class="k-soft" x="380" y="136" width="44" height="44"/><rect class="k-thin" x="380" y="136" width="44" height="44"/><text class="k-label" x="397" y="164">2</text></g><g class="ill-pool-q3"><rect class="k-soft" x="424" y="136" width="44" height="44"/><rect class="k-thin" x="424" y="136" width="44" height="44"/><text class="k-label" x="441" y="164">8</text></g>
+</g>
+</svg>

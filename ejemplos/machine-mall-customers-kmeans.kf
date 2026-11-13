@@ -1,0 +1,60 @@
+-- K-Means: clustering with Mall Customers.
+-- Five representative cluster assignments are printed below.
+import kaggle;
+import machine;
+import plot;
+
+List[STR] columnas = ["Annual Income (k$)", "Spending Score (1-100)"];
+List[List[FLOAT]] X = kaggle.load_dataset_matrix(
+    "vjchoudhary7/customer-segmentation-tutorial-in-python",
+    columnas, "Mall_Customers.csv", 0
+);
+MACHINE scaler = machine.standard_scaler();
+scaler.fit(X);
+List[List[FLOAT]] X_scaled = scaler.transform(X);
+show("Customers:");
+show(len(X_scaled));
+
+MACHINE kmeans = machine.kmeans(5, 100, 42);
+kmeans.fit(X_scaled);
+List[INT] grupos_kmeans = kmeans.labels();
+show("K-Means - Mall Customers: five clusters; first assignment:");
+show(grupos_kmeans[0]);
+show("Silhouette K-Means - Mall Customers:");
+show(machine.silhouette_score(X_scaled, grupos_kmeans));
+
+List[FLOAT] ingresos = [];
+List[FLOAT] gasto = [];
+INT i = 0;
+while (i < len(X_scaled)):
+    append(ingresos, X_scaled[i][0]);
+    append(gasto, X_scaled[i][1]);
+    i = i + 1;
+;
+List[List[FLOAT]] centros = kmeans.cluster_centers();
+List[FLOAT] centro_x = [];
+List[FLOAT] centro_y = [];
+i = 0;
+while (i < len(centros)):
+    append(centro_x, centros[i][0]);
+    append(centro_y, centros[i][1]);
+    i = i + 1;
+;
+plot.figure();
+plot.title("Mall Customers - K-Means");
+plot.xlabel("Standardized annual income");
+plot.ylabel("Standardized spending score");
+plot.pointColor("blue");
+plot.graph(ingresos, gasto, "point");
+plot.pointColor("red");
+plot.pointSize(11);
+plot.graph(centro_x, centro_y, "point");
+plot.render();
+
+List[List[FLOAT]] nuevos = [[25.0, 80.0], [80.0, 20.0], [50.0, 50.0], [100.0, 90.0], [20.0, 20.0]];
+List[List[FLOAT]] nuevos_scaled = scaler.transform(nuevos);
+List[INT] nuevos_grupos = kmeans.predict(nuevos_scaled);
+show("Five examples: income, spending score, cluster:");
+for (j in range(0, len(nuevos))):
+    show(str(nuevos[j]) + " -> " + str(nuevos_grupos[j]));
+;

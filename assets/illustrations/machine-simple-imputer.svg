@@ -1,0 +1,18 @@
+<svg viewBox="0 0 600 270" role="img" aria-labelledby="ill-imp-t ill-imp-d" xmlns="http://www.w3.org/2000/svg">
+<title id="ill-imp-t">SimpleImputer rellena los huecos con el promedio / SimpleImputer fills the gaps with the average</title>
+<desc id="ill-imp-d">A table of four days with two columns and two missing cells marked with question marks. The average of each column appears below, 22 and 8, and the question marks are replaced by those averages.</desc>
+<style>
+@keyframes ill-imp-mean { 0%,20% { opacity: 0 } 30%,100% { opacity: 1 } }
+.ill-imp-mean { animation: ill-imp-mean 10s linear infinite; }
+@keyframes ill-imp-q { 0%,40% { opacity: 1 } 48%,100% { opacity: 0 } }
+.ill-imp-q { opacity: 0; animation: ill-imp-q 10s linear infinite; }
+@keyframes ill-imp-fill { 0%,45% { opacity: 0 } 55%,100% { opacity: 1 } }
+.ill-imp-fill { animation: ill-imp-fill 10s linear infinite; }
+@keyframes ill-imp-all { 0% { opacity: 0 } 4%,94% { opacity: 1 } 100% { opacity: 0 } }
+.ill-imp-all { animation: ill-imp-all 10s linear infinite; }
+.ill-imp-dash { stroke-dasharray: 6 5; }
+</style>
+<g class="ill-imp-all">
+<rect class="k-thin" x="200" y="30" width="100" height="36" rx="4"/><text x="240" y="54">20</text><rect class="k-thin" x="310" y="30" width="100" height="36" rx="4"/><text x="350" y="54">4</text><rect class="k-thin" x="200" y="72" width="100" height="36" rx="4"/><text x="240" y="96">22</text><rect class="k-thin" x="310" y="72" width="100" height="36" rx="4"/><text class="k-label ill-imp-q" x="354" y="96">?</text><g class="ill-imp-fill"><rect class="k-soft" x="312" y="74" width="96" height="32" rx="4"/><text class="k-label" x="350" y="96">8</text></g><rect class="k-thin" x="200" y="114" width="100" height="36" rx="4"/><text class="k-label ill-imp-q" x="244" y="138">?</text><g class="ill-imp-fill"><rect class="k-soft" x="202" y="116" width="96" height="32" rx="4"/><text class="k-label" x="240" y="138">22</text></g><rect class="k-thin" x="310" y="114" width="100" height="36" rx="4"/><text x="350" y="138">6</text><rect class="k-thin" x="200" y="156" width="100" height="36" rx="4"/><text x="240" y="180">24</text><rect class="k-thin" x="310" y="156" width="100" height="36" rx="4"/><text x="350" y="180">14</text><g class="ill-imp-mean"><path class="k-line" d="M200 210 H410"/><text class="k-label" x="236" y="240">x̄ = 22</text><text class="k-label" x="350" y="240">x̄ = 8</text></g>
+</g>
+</svg>

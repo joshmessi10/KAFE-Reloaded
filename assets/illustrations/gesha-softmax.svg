@@ -1,0 +1,25 @@
+<svg viewBox="0 0 600 270" role="img" aria-labelledby="ill-smx-t ill-smx-d" xmlns="http://www.w3.org/2000/svg">
+<title id="ill-smx-t">Softmax convierte puntajes en probabilidades / Softmax turns scores into probabilities</title>
+<desc id="ill-smx-d">Three bars with scores 1, 2 and 3. They reshape into probabilities 0.09, 0.24 and 0.67: the largest score gets most of the share, and all three add up to 1.</desc>
+<style>
+@keyframes ill-smx-b0 { 0%,30% { transform: scaleY(3.702) } 55%,100% { transform: scaleY(1) } }
+.ill-smx-b0 { transform-box: view-box; transform-origin: 0 220px; animation: ill-smx-b0 10s ease-in-out infinite; }
+@keyframes ill-smx-b1 { 0%,30% { transform: scaleY(2.724) } 55%,100% { transform: scaleY(1) } }
+.ill-smx-b1 { transform-box: view-box; transform-origin: 0 220px; animation: ill-smx-b1 10s ease-in-out infinite; }
+@keyframes ill-smx-b2 { 0%,30% { transform: scaleY(1.503) } 55%,100% { transform: scaleY(1) } }
+.ill-smx-b2 { transform-box: view-box; transform-origin: 0 220px; animation: ill-smx-b2 10s ease-in-out infinite; }
+@keyframes ill-smx-s { 0%,30% { opacity: 1 } 38%,100% { opacity: 0 } }
+.ill-smx-s { opacity: 0; animation: ill-smx-s 10s linear infinite; }
+@keyframes ill-smx-p { 0%,45% { opacity: 0 } 55%,100% { opacity: 1 } }
+.ill-smx-p { animation: ill-smx-p 10s linear infinite; }
+@keyframes ill-smx-sum { 0%,60% { opacity: 0 } 70%,100% { opacity: 1 } }
+.ill-smx-sum { animation: ill-smx-sum 10s linear infinite; }
+@keyframes ill-smx-all { 0% { opacity: 0 } 4%,94% { opacity: 1 } 100% { opacity: 0 } }
+.ill-smx-all { animation: ill-smx-all 10s linear infinite; }
+.ill-smx-dash { stroke-dasharray: 6 5; }
+</style>
+<path class="k-line" d="M100 220 H500"/>
+<g class="ill-smx-all">
+<rect class="k-accent ill-smx-b0" x="150" y="195.7" width="70" height="24.3"/><text class="k-label ill-smx-s" x="176" y="245">1</text><text class="k-label ill-smx-p" x="168" y="245">0.09</text><rect class="k-accent ill-smx-b1" x="270" y="153.9" width="70" height="66.1"/><text class="k-label ill-smx-s" x="296" y="245">2</text><text class="k-label ill-smx-p" x="288" y="245">0.24</text><rect class="k-accent ill-smx-b2" x="390" y="40.4" width="70" height="179.6"/><text class="k-label ill-smx-s" x="416" y="245">3</text><text class="k-label ill-smx-p" x="408" y="245">0.67</text><text class="k-label ill-smx-sum" x="190" y="30">0.09 + 0.24 + 0.67 = 1</text>
+</g>
+</svg>

@@ -1,0 +1,35 @@
+<svg viewBox="0 0 600 330" role="img" aria-labelledby="ill-pdi-t ill-pdi-d" xmlns="http://www.w3.org/2000/svg">
+<title id="ill-pdi-t">Cómo read_csv convierte una línea en una fila / How read_csv turns a line into a row</title>
+<desc id="ill-pdi-d">Step by step. First there is one line of text from the CSV file: Luis,11,7.0,Quito. Step 1: split cuts it at every comma into four pieces of text. Step 2: infer_type tries each piece as an INT, then as a FLOAT, and otherwise keeps it as a STR, giving Luis, 11, 7.0 and Quito with the types STR, INT, FLOAT, STR. Step 3: the finished row is added at the end of data, a list of lists, next to the list of column names.</desc>
+<style>
+@keyframes ill-pdi-s1 { 0%,12% { opacity: 0; transform: translateY(-10px) } 20%,100% { opacity: 1; transform: translateY(0) } }
+@keyframes ill-pdi-s2 { 0%,34% { opacity: 0; transform: translateY(-10px) } 42%,100% { opacity: 1; transform: translateY(0) } }
+@keyframes ill-pdi-s3 { 0%,56% { opacity: 0; transform: translateY(-10px) } 64%,100% { opacity: 1; transform: translateY(0) } }
+@keyframes ill-pdi-cut { 0%,8% { opacity: 0 } 12%,30% { opacity: 1 } 36%,100% { opacity: 0 } }
+.ill-pdi-s1 { animation: ill-pdi-s1 10s ease-out infinite; }
+.ill-pdi-s2 { animation: ill-pdi-s2 10s ease-out infinite; }
+.ill-pdi-s3 { animation: ill-pdi-s3 10s ease-out infinite; }
+.ill-pdi-cut { opacity: 0; animation: ill-pdi-cut 10s ease-in-out infinite; }
+</style>
+<text class="k-label" x="30" y="34">"Luis,11,7.0,Quito"</text>
+<path class="k-accent-line ill-pdi-cut" d="M117 18 V42 M150 18 V42 M191 18 V42"/>
+<g class="ill-pdi-s1">
+<path class="k-thin" d="M80 48 V88"/>
+<text x="96" y="74">1 · split(",")</text>
+<path class="k-line" d="M30 95 H150 V130 H30 Z M170 95 H290 V130 H170 Z M310 95 H430 V130 H310 Z M450 95 H570 V130 H450 Z"/>
+<text x="44" y="118">"Luis"</text><text x="184" y="118">"11"</text><text x="324" y="118">"7.0"</text><text x="464" y="118">"Quito"</text>
+</g>
+<g class="ill-pdi-s2">
+<path class="k-thin" d="M80 136 V176"/>
+<text x="96" y="162">2 · infer_type()</text>
+<rect class="k-accent" x="30" y="183" width="540" height="35" fill-opacity="0.25"/>
+<path class="k-line" d="M30 183 H150 V218 H30 Z M170 183 H290 V218 H170 Z M310 183 H430 V218 H310 Z M450 183 H570 V218 H450 Z"/>
+<text x="44" y="206">'Luis'</text><text x="184" y="206">11</text><text x="324" y="206">7.0</text><text x="464" y="206">'Quito'</text>
+<text class="k-label" x="44" y="238">STR</text><text class="k-label" x="184" y="238">INT</text><text class="k-label" x="324" y="238">FLOAT</text><text class="k-label" x="464" y="238">STR</text>
+</g>
+<g class="ill-pdi-s3">
+<text x="30" y="270">3 · columns = ['name', 'age', 'score', 'city']</text>
+<text x="64" y="296">data = [['Ana', 10, 8.5, 'Lima'],</text>
+<text class="k-label" x="131" y="318">['Luis', 11, 7.0, 'Quito']]</text>
+</g>
+</svg>

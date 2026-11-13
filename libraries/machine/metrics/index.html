@@ -1,0 +1,8044 @@
+
+<!doctype html>
+<html lang="es" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Aprende a programar, Machine Learning y redes neuronales con KAFE, paso a paso.">
+      
+      
+      
+        <link rel="canonical" href="https://joshmessi10.github.io/KAFE-Reloaded/libraries/machine/metrics/">
+      
+      
+        <link rel="prev" href="../learning-concepts/">
+      
+      
+        <link rel="next" href="../linear/">
+      
+      
+        
+          <link rel="alternate" href="./" hreflang="es">
+        
+          <link rel="alternate" href="../../../en/libraries/machine/metrics/" hreflang="en">
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Funciones y métricas - KAFE</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.25/dist/katex.min.css">
+    
+      <link rel="stylesheet" href="../../../assets/css/custom.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  <!-- The site ships its own dark theme: stop Dark Reader from repainting it. -->
+  <meta name="darkreader-lock">
+
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="custom">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#machine-funciones-y-metricas" class="md-skip">
+          Saltar a contenido
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Cabecera">
+    <a href="../../.." title="KAFE" class="md-header__button md-logo" aria-label="KAFE" data-md-component="logo">
+      
+  <img src="../../../assets/images/kafe-logo-horizontal.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            KAFE
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Funciones y métricas
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="custom"  aria-label="Modo oscuro"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Modo oscuro" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="custom" data-md-color-accent="custom"  aria-label="Modo claro"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Modo claro" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="Seleccionar idioma">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="./" hreflang="es" class="md-select__link">
+              Español
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="../../../en/libraries/machine/metrics/" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Búsqueda" placeholder="Búsqueda" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Buscar">
+        
+          <a href="javascript:void(0)" class="md-search__icon md-icon" title="Compartir" aria-label="Compartir" data-clipboard data-clipboard-text="" data-md-component="search-share" tabindex="-1">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.15c-.05.21-.08.43-.08.66 0 1.61 1.31 2.91 2.92 2.91s2.92-1.3 2.92-2.91A2.92 2.92 0 0 0 18 16.08"/></svg>
+          </a>
+        
+        <button type="reset" class="md-search__icon md-icon" title="Limpiar" aria-label="Limpiar" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Inicializando búsqueda
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/joshmessi10/KAFE-Reloaded" title="Ir al repositorio" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    KAFE-Reloaded
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="Pestañas" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Inicio
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../aprende/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Aprende
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../getting-started/installation/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Tutorial
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../../math/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Librerías
+
+        </a>
+      </li>
+    
+  
+
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../ejemplos/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Ejemplos
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../specification/ebnf-grammar/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Avanzado
+
+        </a>
+      </li>
+    
+  
+
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../about/credits/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Acerca de
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navegación" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="KAFE" class="md-nav__button md-logo" aria-label="KAFE" data-md-component="logo">
+      
+  <img src="../../../assets/images/kafe-logo-horizontal.png" alt="logo">
+
+    </a>
+    KAFE
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/joshmessi10/KAFE-Reloaded" title="Ir al repositorio" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    KAFE-Reloaded
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Inicio
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../aprende/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Aprende
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_2" id="__nav_2_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Aprende
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../aprende/programar/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ¿Qué es programar?
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../aprende/variables/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Variables y tipos
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../aprende/funciones/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Funciones
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../aprende/aprender-de-datos/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ¿Qué es aprender de datos?
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../aprende/neuronas/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ¿Qué es una neurona?
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tutorial
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Tutorial
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../getting-started/installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Instalación
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../getting-started/first-program/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tu primer programa
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../getting-started/basic-examples/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Ejemplos básicos
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_4" id="__nav_3_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    El lenguaje paso a paso
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    El lenguaje paso a paso
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../language/lexical-structure/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Estructura léxica
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../language/type-system/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sistema de tipos
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../language/operators/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operadores y expresiones
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../language/control-structures/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Estructuras de control
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../language/functions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Funciones
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../language/lists/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Listas
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../language/imports/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Imports
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Librerías
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Librerías
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_1" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_1" id="__nav_4_1_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MATH (matemáticas)
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_1">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    MATH (matemáticas)
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../math/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Resumen y cómo funciona
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../math/constants/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Constantes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../math/rounding/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Redondeo
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../math/powers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Potencias y raíces
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../math/logarithms/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Logaritmos
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../math/division/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Restos y divisores
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../math/trigonometry/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Trigonometría
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../math/hyperbolic/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Hiperbólicas
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../math/combinatorics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Combinatoria
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../math/lists/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Listas de números
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../math/checks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Comprobar números
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../math/special/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Funciones especiales
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_2" id="__nav_4_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    FILES (archivos)
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    FILES (archivos)
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../files/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Resumen y cómo funciona
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../files/reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Referencia
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_3" id="__nav_4_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PLOT (gráficas)
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    PLOT (gráficas)
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../plot/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Resumen y cómo funciona
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../plot/lines/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Líneas y puntos
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../plot/bars-pies/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Barras y pasteles
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../plot/style/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Títulos, ejes y colores
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_4" id="__nav_4_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    NUMK (álgebra lineal)
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    NUMK (álgebra lineal)
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../numk/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Resumen y cómo funciona
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../numk/creating/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Crear y medir tensores
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../numk/element-wise/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operaciones casilla por casilla
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../numk/matrix-multiplication/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Multiplicar matrices
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../numk/broadcasting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Broadcasting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../numk/reductions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reducir: sumas y máximos
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../numk/reshaping/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cambiar la forma
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../numk/convolution/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Convolución
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_5" id="__nav_4_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PARDOS (tablas de datos)
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    PARDOS (tablas de datos)
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../pardos/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Resumen y cómo funciona
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../pardos/tables/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Crear y leer tablas
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../pardos/inspect/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Mirar los datos
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../pardos/select/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Elegir columnas y filas
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../pardos/summarize/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contar y resumir
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../pardos/missing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Datos que faltan
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../pardos/combine/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Juntar tablas
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../pardos/save/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Guardar tablas
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../pardos/to-numbers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    De tabla a números para MACHINE
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_6" id="__nav_4_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Datasets de Kaggle
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Datasets de Kaggle
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../bibliotecas/kaggle/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Resumen y cómo funciona
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../bibliotecas/kaggle/tablas/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tablas
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../bibliotecas/kaggle/imagenes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Imágenes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../bibliotecas/kaggle/texto/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Frases con etiqueta
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_7" id="__nav_4_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Datasets de Hugging Face
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Datasets de Hugging Face
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../bibliotecas/huggingface/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Resumen y cómo funciona
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../bibliotecas/huggingface/referencia/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Referencia
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_8" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_4_8" id="__nav_4_8_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MACHINE (Machine Learning)
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_8_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    MACHINE (Machine Learning)
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Resumen
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../contracts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contratos y límites de la API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../learning-concepts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Conceptos de aprendizaje
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Funciones y métricas
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Funciones y métricas
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Tabla de contenidos">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Tabla de contenidos
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#main-functions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Todas las funciones de un vistazo
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#classification-metrics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Métricas de clasificación
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Métricas de clasificación">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#la-idea-en-una-frase" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        La idea en una frase
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#una-comparacion-de-la-vida-diaria" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Una comparación de la vida diaria
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#classification-first" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tu primera matriz de confusión
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#classification-math" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Las matemáticas con números pequeños
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#accuracy_score" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        machine.accuracy_score(y_true, y_pred)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#confusion_matrix" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        machine.confusion_matrix(y_true, y_pred)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#precision_score" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        machine.precision_score(y_true, y_pred)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#recall_score" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        machine.recall_score(y_true, y_pred)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#f1_score" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        machine.f1_score(y_true, y_pred)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#classification_report" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        machine.classification_report(y_true, y_pred)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#roc_auc_score" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        machine.roc_auc_score(y_true, y_score)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#regression-metrics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Métricas de regresión
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Métricas de regresión">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#la-idea-en-una-frase_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        La idea en una frase
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#una-comparacion-de-la-vida-diaria_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Una comparación de la vida diaria
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#regression-math" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Las matemáticas con números pequeños
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mean_absolute_error" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        machine.mean_absolute_error(y_true, y_pred)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mean_squared_error" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        machine.mean_squared_error(y_true, y_pred)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#root_mean_squared_error" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        machine.root_mean_squared_error(y_true, y_pred)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#max_error" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        machine.max_error(y_true, y_pred)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#median_absolute_error" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        machine.median_absolute_error(y_true, y_pred)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mean_absolute_percentage_error" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        machine.mean_absolute_percentage_error(y_true, y_pred)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#r2_score" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        machine.r2_score(y_true, y_pred)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#explained_variance_score" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        machine.explained_variance_score(y_true, y_pred)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#clustering-metrics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Métrica de clustering
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Métrica de clustering">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#la-idea-en-una-frase_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        La idea en una frase
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#una-comparacion-de-la-vida-diaria_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Una comparación de la vida diaria
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#clustering-math" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Las matemáticas con números pequeños
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#silhouette_score" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        machine.silhouette_score(X, labels)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#one-metric-api-for-machine-and-gesha" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Las mismas métricas para MACHINE y GESHA
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#which-metric" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ¿Qué métrica uso?
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#que-aprendiste" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ¿Qué aprendiste?
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../linear/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modelos lineales y SVM
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../selection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Selección de modelos
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../classifiers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Clasificación y árboles
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../clustering/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Clustering y ensambles
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../preprocessing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Preprocesamiento y reducción
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_9" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_9" id="__nav_4_9_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    GESHA (Deep Learning)
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    GESHA (Deep Learning)
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../gesha/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Resumen
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../gesha/api-coverage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cobertura y límites de la API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../gesha/learning-concepts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Conceptos de aprendizaje
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../gesha/models-training/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modelos y entrenamiento
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../gesha/dense-networks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Redes densas
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../gesha/convolutional-networks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Redes convolucionales
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../gesha/recurrent-networks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Redes recurrentes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../gesha/training-tools/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Herramientas de entrenamiento
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../gesha/soft-clustering/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Clustering suave
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../ejemplos/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Ejemplos
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_5" id="__nav_5_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Ejemplos
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_5_2" id="__nav_5_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Programas completos
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Programas completos
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../examples/hello-world.kf" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Hello World
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../examples/fibonacci-currying.kf" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fibonacci con currying
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../examples/merge-sort.kf" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Merge Sort
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../examples/linear-regression.kf" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Regresión lineal
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../examples/neural-network.kf" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Red neuronal
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../examples/decision-tree.kf" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Árbol de decisión
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_5_3" id="__nav_5_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Ejemplos de MACHINE
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Ejemplos de MACHINE
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../ejemplos/machine-kaggle/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Resumen
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../ejemplos/machine/kmeans/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    K-Means
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../ejemplos/machine/agglomerative-clustering/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Agglomerative Clustering
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../ejemplos/machine/dbscan/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    DBSCAN
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../ejemplos/machine/gaussian-mixture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gaussian Mixture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../ejemplos/machine/linear-discriminant-analysis/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Linear Discriminant Analysis
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../ejemplos/machine/gaussian-naive-bayes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gaussian Naive Bayes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../ejemplos/machine/knn/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    K-Nearest Neighbors
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../ejemplos/machine/decision-tree/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Decision Tree
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../ejemplos/machine/adaboost/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AdaBoost
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../ejemplos/machine/gradient-boosting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gradient Boosting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../ejemplos/machine/logistic-regression/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Logistic Regression
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../ejemplos/machine/svm/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Support Vector Machine
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../ejemplos/machine/random-forest/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Random Forest
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../ejemplos/machine/ridge-regression/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Ridge Regression
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../ejemplos/machine/lasso-regression/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lasso Regression
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../ejemplos/machine/elastic-net/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Elastic Net
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../ejemplos/machine/linear-regression/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Linear Regression
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../ejemplos/machine/svr/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Support Vector Regression
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../ejemplos/machine/interpret-results/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interpretar resultados
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_5_4" id="__nav_5_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Ejemplos de GESHA
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Ejemplos de GESHA
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../ejemplos/gesha-examples/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Resumen
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../ejemplos/gesha/perceptron-and/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Single perceptron: AND
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../ejemplos/gesha/perceptron-or/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Single perceptron: OR
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../ejemplos/gesha/mlp-xor/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Multilayer perceptron: XOR
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../ejemplos/gesha/function-approximation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Nonlinear function approximation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../ejemplos/gesha/iris-mlp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Multiclass MLP: Iris
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../ejemplos/gesha/breast-cancer-mlp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Binary MLP: Breast Cancer Wisconsin
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../ejemplos/gesha/wine-regression-mlp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Regression MLP: Red Wine Quality
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../ejemplos/gesha/mnist-dense-classifier/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Dense classifier: MNIST digits
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../ejemplos/gesha/cnn-cifar10/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CNN: CIFAR-10
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../ejemplos/gesha/cnn-small/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CNN: small image classifier
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../ejemplos/gesha/cnn-depthwise/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Depthwise CNN block
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../ejemplos/gesha/rnn-sequences/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RNN: sequence classification
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../ejemplos/gesha/rnn-temperature/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RNN: temperature forecasting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../ejemplos/gesha/rnn-sentiment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Embedding and RNN: sentiment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../ejemplos/gesha/lstm-embedding/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bidirectional LSTM: token vectors
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../ejemplos/gesha/numk-dense/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    NUMK and dense classifier
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../ejemplos/gesha/autoencoder-clustering/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Autoencoder and K-Means: Iris
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Avanzado
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Avanzado
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6_1" >
+        
+          
+          <label class="md-nav__link" for="__nav_6_1" id="__nav_6_1_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Especificación
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_6_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6_1">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Especificación
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../specification/ebnf-grammar/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gramática formal (EBNF)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../specification/operational-semantics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Semántica operacional
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../specification/lexical-syntactic-semantic-analysis/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Análisis léxico, sintáctico y semántico
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../specification/operator-precedence/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Precedencia de operadores
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_6_2" id="__nav_6_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Errores
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_6_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Errores
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../errors/error-types/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tipos de error
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../errors/lexical-errors/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Errores léxicos
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../errors/syntax-errors/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Errores de sintaxis
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../errors/semantic-errors/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Errores semánticos
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../errors/error-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Referencia de errores
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Acerca de
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Acerca de
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../about/credits/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Créditos
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../about/license/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Licencia
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Tabla de contenidos">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Tabla de contenidos
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#main-functions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Todas las funciones de un vistazo
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#classification-metrics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Métricas de clasificación
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Métricas de clasificación">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#la-idea-en-una-frase" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        La idea en una frase
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#una-comparacion-de-la-vida-diaria" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Una comparación de la vida diaria
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#classification-first" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tu primera matriz de confusión
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#classification-math" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Las matemáticas con números pequeños
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#accuracy_score" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        machine.accuracy_score(y_true, y_pred)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#confusion_matrix" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        machine.confusion_matrix(y_true, y_pred)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#precision_score" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        machine.precision_score(y_true, y_pred)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#recall_score" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        machine.recall_score(y_true, y_pred)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#f1_score" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        machine.f1_score(y_true, y_pred)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#classification_report" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        machine.classification_report(y_true, y_pred)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#roc_auc_score" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        machine.roc_auc_score(y_true, y_score)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#regression-metrics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Métricas de regresión
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Métricas de regresión">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#la-idea-en-una-frase_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        La idea en una frase
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#una-comparacion-de-la-vida-diaria_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Una comparación de la vida diaria
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#regression-math" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Las matemáticas con números pequeños
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mean_absolute_error" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        machine.mean_absolute_error(y_true, y_pred)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mean_squared_error" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        machine.mean_squared_error(y_true, y_pred)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#root_mean_squared_error" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        machine.root_mean_squared_error(y_true, y_pred)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#max_error" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        machine.max_error(y_true, y_pred)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#median_absolute_error" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        machine.median_absolute_error(y_true, y_pred)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mean_absolute_percentage_error" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        machine.mean_absolute_percentage_error(y_true, y_pred)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#r2_score" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        machine.r2_score(y_true, y_pred)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#explained_variance_score" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        machine.explained_variance_score(y_true, y_pred)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#clustering-metrics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Métrica de clustering
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Métrica de clustering">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#la-idea-en-una-frase_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        La idea en una frase
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#una-comparacion-de-la-vida-diaria_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Una comparación de la vida diaria
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#clustering-math" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Las matemáticas con números pequeños
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#silhouette_score" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        machine.silhouette_score(X, labels)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#one-metric-api-for-machine-and-gesha" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Las mismas métricas para MACHINE y GESHA
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#which-metric" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ¿Qué métrica uso?
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#que-aprendiste" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ¿Qué aprendiste?
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+                
+
+
+
+  
+
+
+  <nav class="md-path" aria-label="Navegación" >
+    <ol class="md-path__list">
+      
+        
+  
+  
+    <li class="md-path__item">
+      <a href="../../.." class="md-path__link">
+        
+  <span class="md-ellipsis">
+    Inicio
+  </span>
+
+      </a>
+    </li>
+  
+
+      
+      
+        
+  
+  
+    
+    
+      
+  
+  
+    
+    
+      <li class="md-path__item">
+        <a href="../../math/" class="md-path__link">
+          
+  <span class="md-ellipsis">
+    Librerías
+  </span>
+
+        </a>
+      </li>
+    
+  
+
+    
+  
+
+      
+        
+  
+  
+    
+    
+      <li class="md-path__item">
+        <a href="../" class="md-path__link">
+          
+  <span class="md-ellipsis">
+    MACHINE (Machine Learning)
+  </span>
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ol>
+  </nav>
+
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="machine-funciones-y-metricas">MACHINE: funciones y métricas<a class="headerlink" href="#machine-funciones-y-metricas" title="Permanent link">&para;</a></h1>
+<p>Una <strong>métrica</strong> es una <strong>nota</strong> para tu modelo: un número que dice qué tan bien respondió. Para calcularla comparas dos listas: las <strong>respuestas correctas</strong> (<code>y_true</code>) y las <strong>respuestas del modelo</strong> (<code>y_pred</code>).</p>
+<p>En esta página están todas las métricas de MACHINE. Son <strong>funciones</strong>, no modelos: no tienen <code>fit</code> ni <code>predict</code>. Les das las dos listas y te devuelven la nota.</p>
+<table>
+<thead>
+<tr>
+<th>Grupo</th>
+<th>Para qué sirve</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="#classification-metrics">Métricas de clasificación</a></td>
+<td>Poner nota cuando el modelo elige una <strong>etiqueta</strong> (spam o no spam).</td>
+</tr>
+<tr>
+<td><a href="#regression-metrics">Métricas de regresión</a></td>
+<td>Poner nota cuando el modelo predice un <strong>número</strong> (un precio, una nota).</td>
+</tr>
+<tr>
+<td><a href="#clustering-metrics">Métrica de clustering</a></td>
+<td>Poner nota a unos <strong>grupos</strong> cuando no hay respuestas correctas.</td>
+</tr>
+<tr>
+<td><a href="#one-metric-api-for-machine-and-gesha">Las mismas métricas para GESHA</a></td>
+<td>Usar estas funciones con redes neuronales.</td>
+</tr>
+<tr>
+<td><a href="#which-metric">¿Qué métrica uso?</a></td>
+<td>Una tabla para elegir rápido.</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition tip">
+<p class="admonition-title">Antes de empezar</p>
+<p>Si todavía no sabes qué son <code>fit</code> y <code>predict</code>, lee primero <a href="../">cómo funciona MACHINE</a>.</p>
+</div>
+<h2 id="main-functions">Todas las funciones de un vistazo<a class="headerlink" href="#main-functions" title="Permanent link">&para;</a></h2>
+<p>Todas se llaman con <code>machine.</code> delante y reciben sus argumentos <strong>en orden</strong>.</p>
+<table>
+<thead>
+<tr>
+<th>Función</th>
+<th>Devuelve</th>
+<th>En una frase</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="#accuracy_score"><code>accuracy_score(y_true, y_pred)</code></a></td>
+<td><code>FLOAT</code></td>
+<td>Qué parte de las respuestas acertó.</td>
+</tr>
+<tr>
+<td><a href="#precision_score"><code>precision_score(y_true, y_pred)</code></a></td>
+<td><code>FLOAT</code></td>
+<td>Cuando el modelo dice "es de esta clase", ¿cuántas veces tiene razón?</td>
+</tr>
+<tr>
+<td><a href="#recall_score"><code>recall_score(y_true, y_pred)</code></a></td>
+<td><code>FLOAT</code></td>
+<td>De los que sí eran de esa clase, ¿cuántos encontró?</td>
+</tr>
+<tr>
+<td><a href="#f1_score"><code>f1_score(y_true, y_pred)</code></a></td>
+<td><code>FLOAT</code></td>
+<td>Una sola nota que mezcla precisión y recall.</td>
+</tr>
+<tr>
+<td><a href="#confusion_matrix"><code>confusion_matrix(y_true, y_pred)</code></a></td>
+<td><code>List[List[INT]]</code></td>
+<td>La tabla de aciertos y confusiones.</td>
+</tr>
+<tr>
+<td><a href="#classification_report"><code>classification_report(y_true, y_pred)</code></a></td>
+<td><code>STR</code></td>
+<td>Un informe con todo lo anterior.</td>
+</tr>
+<tr>
+<td><a href="#roc_auc_score"><code>roc_auc_score(y_true, y_score)</code></a></td>
+<td><code>FLOAT</code></td>
+<td>Qué tan bien ordena el modelo: positivos arriba, negativos abajo.</td>
+</tr>
+<tr>
+<td><a href="#mean_absolute_error"><code>mean_absolute_error(y_true, y_pred)</code></a></td>
+<td><code>FLOAT</code></td>
+<td>El error promedio.</td>
+</tr>
+<tr>
+<td><a href="#mean_squared_error"><code>mean_squared_error(y_true, y_pred)</code></a></td>
+<td><code>FLOAT</code></td>
+<td>El promedio de los errores al cuadrado.</td>
+</tr>
+<tr>
+<td><a href="#root_mean_squared_error"><code>root_mean_squared_error(y_true, y_pred)</code></a></td>
+<td><code>FLOAT</code></td>
+<td>La raíz del anterior.</td>
+</tr>
+<tr>
+<td><a href="#max_error"><code>max_error(y_true, y_pred)</code></a></td>
+<td><code>FLOAT</code></td>
+<td>El peor error.</td>
+</tr>
+<tr>
+<td><a href="#median_absolute_error"><code>median_absolute_error(y_true, y_pred)</code></a></td>
+<td><code>FLOAT</code></td>
+<td>El error "del medio".</td>
+</tr>
+<tr>
+<td><a href="#mean_absolute_percentage_error"><code>mean_absolute_percentage_error(y_true, y_pred)</code></a></td>
+<td><code>FLOAT</code></td>
+<td>El error promedio en porcentaje.</td>
+</tr>
+<tr>
+<td><a href="#r2_score"><code>r2_score(y_true, y_pred)</code></a></td>
+<td><code>FLOAT</code></td>
+<td>Cuánto mejor es el modelo que decir siempre el promedio.</td>
+</tr>
+<tr>
+<td><a href="#explained_variance_score"><code>explained_variance_score(y_true, y_pred)</code></a></td>
+<td><code>FLOAT</code></td>
+<td>Parecida a <span class="arithmatex">\(R^2\)</span>, pero perdona un error fijo.</td>
+</tr>
+<tr>
+<td><a href="#silhouette_score"><code>silhouette_score(X, labels)</code></a></td>
+<td><code>FLOAT</code></td>
+<td>Qué tan bien separados quedaron los grupos.</td>
+</tr>
+</tbody>
+</table>
+<p>Las funciones que <strong>crean modelos</strong> (<code>machine.knn</code>, <code>machine.linear_regression</code>…) están en la página de cada modelo. Empieza por la <a href="../">página de entrada de MACHINE</a>.</p>
+<h2 id="classification-metrics">Métricas de clasificación<a class="headerlink" href="#classification-metrics" title="Permanent link">&para;</a></h2>
+<h3 id="la-idea-en-una-frase">La idea en una frase<a class="headerlink" href="#la-idea-en-una-frase" title="Permanent link">&para;</a></h3>
+<p>Un modelo de clasificación puede equivocarse de <strong>dos maneras distintas</strong>, y las métricas de clasificación cuentan cuántas veces pasó cada una.</p>
+<h3 id="una-comparacion-de-la-vida-diaria">Una comparación de la vida diaria<a class="headerlink" href="#una-comparacion-de-la-vida-diaria" title="Permanent link">&para;</a></h3>
+<p>Piensa en un <strong>filtro de spam</strong> (correo basura). Mira cada correo y decide: "es spam" (<code>1</code>) o "es normal" (<code>0</code>). Hay cuatro cosas que pueden pasar:</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>El filtro dijo <strong>spam</strong></th>
+<th>El filtro dijo <strong>normal</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Era spam</strong></td>
+<td>✅ Acertó. Se llama <strong>verdadero positivo</strong> (TP).</td>
+<td>❌ Se le escapó un spam. <strong>Falso negativo</strong> (FN).</td>
+</tr>
+<tr>
+<td><strong>Era normal</strong></td>
+<td>❌ Mandó un correo bueno a la basura. <strong>Falso positivo</strong> (FP).</td>
+<td>✅ Acertó. <strong>Verdadero negativo</strong> (TN).</td>
+</tr>
+</tbody>
+</table>
+<p>"Positivo" significa que el filtro dijo "sí, es spam". "Verdadero" o "falso" dice si tenía razón.</p>
+<p>Los dos errores <strong>no duelen igual</strong>. Un falso negativo es una molestia: ves un spam en tu bandeja. Un falso positivo puede ser grave: pierdes un correo importante. Por eso una sola nota no alcanza.</p>
+<!-- figura pendiente: 10 correos caen uno a uno en las 4 casillas de la matriz de confusión (TN 4, FP 2, FN 1, TP 3); luego se resalta la columna "dijo spam" (precisión 3/5) y la fila "era spam" (recall 3/4) -->
+
+<h3 id="classification-first">Tu primera matriz de confusión<a class="headerlink" href="#classification-first" title="Permanent link">&para;</a></h3>
+<p>Llegaron <strong>10 correos</strong>. Cuatro eran spam y seis eran normales. <code>real</code> es la verdad y <code>guess</code> es lo que dijo el filtro:</p>
+<div class="language-kafe highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>import machine;
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>List[INT] real = [1, 1, 1, 1, 0, 0, 0, 0, 0, 0];
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>List[INT] guess = [1, 1, 1, 0, 1, 1, 0, 0, 0, 0];
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>List[List[INT]] table = machine.confusion_matrix(real, guess);
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>show(table[0]);
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>show(table[1]);
+</span></code></pre></div>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>[4, 2]
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>[1, 3]
+</span></code></pre></div>
+<div class="admonition tip">
+<p class="admonition-title">¿Qué pasó aquí?</p>
+<ol>
+<li><code>machine.confusion_matrix(real, guess)</code> comparó las dos listas, correo por correo.</li>
+<li>Devolvió una tabla. Cada <strong>fila</strong> es lo que el correo <strong>era</strong>; cada <strong>columna</strong> es lo que el filtro <strong>dijo</strong>. Las clases van en orden: primero <code>0</code>, luego <code>1</code>.</li>
+<li>Fila <code>[4, 2]</code>: de los 6 correos normales, 4 quedaron bien (TN) y 2 fueron a la basura por error (FP).</li>
+<li>Fila <code>[1, 3]</code>: de los 4 spam, 1 se escapó (FN) y 3 fueron atrapados (TP).</li>
+<li>Los aciertos están en la <strong>diagonal</strong>: 4 y 3.</li>
+</ol>
+</div>
+<p>Esa tabla se llama <strong>matriz de confusión</strong> porque muestra con qué confunde el modelo cada clase.</p>
+<h3 id="classification-math">Las matemáticas con números pequeños<a class="headerlink" href="#classification-math" title="Permanent link">&para;</a></h3>
+<p>Todas las métricas de clasificación salen de esos cuatro números. Usaremos siempre la misma tabla:</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Dijo spam</th>
+<th>Dijo normal</th>
+<th>Total</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Era spam</strong></td>
+<td>TP = 3</td>
+<td>FN = 1</td>
+<td>4</td>
+</tr>
+<tr>
+<td><strong>Era normal</strong></td>
+<td>FP = 2</td>
+<td>TN = 4</td>
+<td>6</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Exactitud (<em>accuracy</em>):</strong> de todos los correos, ¿qué parte acertó?</p>
+<div class="arithmatex">\[\text{exactitud} = \frac{\text{aciertos}}{\text{total}} = \frac{3 + 4}{10} = 0.7\]</div>
+<p><strong>Precisión (<em>precision</em>):</strong> cuando el filtro dijo "spam", ¿cuántas veces tenía razón? Dijo "spam" 5 veces (3 + 2) y acertó 3.</p>
+<div class="arithmatex">\[\text{precisión} = \frac{TP}{TP + FP} = \frac{3}{3 + 2} = 0.6\]</div>
+<p><strong>Recall (sensibilidad):</strong> de los spam que había de verdad, ¿cuántos atrapó? Había 4 y atrapó 3.</p>
+<div class="arithmatex">\[\text{recall} = \frac{TP}{TP + FN} = \frac{3}{3 + 1} = 0.75\]</div>
+<p><strong>F1:</strong> una sola nota que mezcla las dos anteriores. Solo es alta si <strong>las dos</strong> son altas.</p>
+<div class="arithmatex">\[F1 = \frac{2 \times \text{precisión} \times \text{recall}}{\text{precisión} + \text{recall}} = \frac{2 \times 0.6 \times 0.75}{0.6 + 0.75} = \frac{0.9}{1.35} \approx 0.667\]</div>
+<p>Este programa cuenta los cuatro casos con un bucle y saca las tres primeras notas, <strong>sin usar MACHINE</strong>:</p>
+<div class="language-kafe highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>List[INT] real = [1, 1, 1, 1, 0, 0, 0, 0, 0, 0];
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>List[INT] guess = [1, 1, 1, 0, 1, 1, 0, 0, 0, 0];
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>INT tp = 0;
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>INT fp = 0;
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>INT fn = 0;
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>INT tn = 0;
+</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>for (i in range(0, len(real))):
+</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>    if (real[i] == 1):
+</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>        if (guess[i] == 1):
+</span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>            tp = tp + 1;
+</span><span id="__span-2-12"><a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a>        else:
+</span><span id="__span-2-13"><a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a>            fn = fn + 1;
+</span><span id="__span-2-14"><a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a>        ;
+</span><span id="__span-2-15"><a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a>    else:
+</span><span id="__span-2-16"><a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a>        if (guess[i] == 1):
+</span><span id="__span-2-17"><a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a>            fp = fp + 1;
+</span><span id="__span-2-18"><a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a>        else:
+</span><span id="__span-2-19"><a id="__codelineno-2-19" name="__codelineno-2-19" href="#__codelineno-2-19"></a>            tn = tn + 1;
+</span><span id="__span-2-20"><a id="__codelineno-2-20" name="__codelineno-2-20" href="#__codelineno-2-20"></a>        ;
+</span><span id="__span-2-21"><a id="__codelineno-2-21" name="__codelineno-2-21" href="#__codelineno-2-21"></a>    ;
+</span><span id="__span-2-22"><a id="__codelineno-2-22" name="__codelineno-2-22" href="#__codelineno-2-22"></a>;
+</span><span id="__span-2-23"><a id="__codelineno-2-23" name="__codelineno-2-23" href="#__codelineno-2-23"></a>show(tp);
+</span><span id="__span-2-24"><a id="__codelineno-2-24" name="__codelineno-2-24" href="#__codelineno-2-24"></a>show(fp);
+</span><span id="__span-2-25"><a id="__codelineno-2-25" name="__codelineno-2-25" href="#__codelineno-2-25"></a>show(fn);
+</span><span id="__span-2-26"><a id="__codelineno-2-26" name="__codelineno-2-26" href="#__codelineno-2-26"></a>show(tn);
+</span><span id="__span-2-27"><a id="__codelineno-2-27" name="__codelineno-2-27" href="#__codelineno-2-27"></a>show((tp + tn) / len(real));
+</span><span id="__span-2-28"><a id="__codelineno-2-28" name="__codelineno-2-28" href="#__codelineno-2-28"></a>show(tp / (tp + fp));
+</span><span id="__span-2-29"><a id="__codelineno-2-29" name="__codelineno-2-29" href="#__codelineno-2-29"></a>show(tp / (tp + fn));
+</span></code></pre></div>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>3
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>2
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>1
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>4
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>0.7
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>0.6
+</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>0.75
+</span></code></pre></div>
+<p>Las cuatro primeras líneas son TP, FP, FN y TN. Las tres últimas son la exactitud, la precisión y el recall del spam.</p>
+<div class="admonition note">
+<p class="admonition-title">KAFE promedia las dos clases</p>
+<p>Arriba calculamos precisión, recall y F1 <strong>mirando solo el spam</strong>. Pero también puedes hacer las mismas preguntas sobre los correos <strong>normales</strong>. <code>precision_score</code>, <code>recall_score</code> y <code>f1_score</code> calculan la nota de <strong>cada clase</strong> y devuelven el <strong>promedio</strong>. A eso se le llama promedio <em>macro</em>.</p>
+<table>
+<thead>
+<tr>
+<th>Clase</th>
+<th>Precisión</th>
+<th>Recall</th>
+<th>F1</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Normal (<code>0</code>)</td>
+<td>4 ÷ (4 + 1) = 0.8</td>
+<td>4 ÷ (4 + 2) ≈ 0.667</td>
+<td>≈ 0.727</td>
+</tr>
+<tr>
+<td>Spam (<code>1</code>)</td>
+<td>3 ÷ (3 + 2) = 0.6</td>
+<td>3 ÷ (3 + 1) = 0.75</td>
+<td>≈ 0.667</td>
+</tr>
+<tr>
+<td><strong>Promedio (lo que devuelve KAFE)</strong></td>
+<td><strong>0.7</strong></td>
+<td><strong>≈ 0.708</strong></td>
+<td><strong>≈ 0.697</strong></td>
+</tr>
+</tbody>
+</table>
+<p>Las notas de cada clase por separado las ves con <a href="#classification_report"><code>classification_report</code></a>.</p>
+</div>
+<details class="info">
+<summary>Para curiosos 🤓</summary>
+<p>Para una clase <span class="arithmatex">\(c\)</span>, con sus conteos <span class="arithmatex">\(TP_c\)</span>, <span class="arithmatex">\(FP_c\)</span> y <span class="arithmatex">\(FN_c\)</span>:</p>
+<div class="arithmatex">\[P_c = \frac{TP_c}{TP_c + FP_c} \qquad R_c = \frac{TP_c}{TP_c + FN_c} \qquad F1_c = \frac{2\,P_c\,R_c}{P_c + R_c}\]</div>
+<p>Si un denominador es 0, KAFE usa 0 para esa nota. El promedio macro sobre las <span class="arithmatex">\(K\)</span> clases que aparecen en <code>y_true</code> es <span class="arithmatex">\(\frac{1}{K}\sum_c P_c\)</span> (igual para recall y F1). El F1 es la <strong>media armónica</strong> de precisión y recall: castiga que una de las dos sea baja. Todas estas funciones recorren las listas una vez por clase: cuestan del orden de <span class="arithmatex">\(n \cdot K\)</span> operaciones.</p>
+</details>
+<h3 id="accuracy_score"><code>machine.accuracy_score(y_true, y_pred)</code><a class="headerlink" href="#accuracy_score" title="Permanent link">&para;</a></h3>
+<p><strong>Qué hace:</strong> Calcula la exactitud: la parte de las respuestas que el modelo acertó.</p>
+<p><strong>Cuándo usarla:</strong> Como primera nota, cuando las clases están <strong>parejas</strong> (más o menos la misma cantidad de cada una).</p>
+<table>
+<thead>
+<tr>
+<th>Parámetro</th>
+<th>Tipo</th>
+<th>Qué significa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>y_true</code></td>
+<td><code>List[INT]</code> o <code>List[FLOAT]</code></td>
+<td>Las etiquetas correctas.</td>
+</tr>
+<tr>
+<td><code>y_pred</code></td>
+<td><code>List[INT]</code> o <code>List[FLOAT]</code></td>
+<td>Las etiquetas que dijo el modelo, en el mismo orden.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Devuelve:</strong> <code>FLOAT</code> entre 0 y 1. Un <code>1.0</code> es acertar todo. Multiplica por 100 si quieres un porcentaje.</p>
+<p><strong>Ejemplo:</strong></p>
+<div class="language-kafe highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>import machine;
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>List[INT] real = [1, 1, 1, 1, 0, 0, 0, 0, 0, 0];
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>List[INT] guess = [1, 1, 1, 0, 1, 1, 0, 0, 0, 0];
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>
+</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>show(machine.accuracy_score(real, guess));
+</span></code></pre></div>
+<p><strong>Resultado:</strong></p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>0.7
+</span></code></pre></div>
+<div class="admonition warning">
+<p class="admonition-title">La exactitud puede engañar</p>
+<p>Si de 100 correos solo 2 son spam, un filtro que <strong>nunca</strong> dice "spam" acierta 98 de 100: exactitud 0.98. Y no atrapó ni uno. Con clases desparejas mira también la precisión y el recall.</p>
+</div>
+<details class="warning">
+<summary>Error común: listas de distinto tamaño</summary>
+<p>Las dos listas deben medir lo mismo. Este error es igual en todas las métricas:</p>
+<div class="language-kafe highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>import machine;
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>List[INT] real = [1, 0, 1];
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>List[INT] guess = [1, 0];
+</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>show(machine.accuracy_score(real, guess));
+</span></code></pre></div>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>Exception: machine: accuracy_score: y_true and y_pred must have same length
+</span></code></pre></div>
+</details>
+<h3 id="confusion_matrix"><code>machine.confusion_matrix(y_true, y_pred)</code><a class="headerlink" href="#confusion_matrix" title="Permanent link">&para;</a></h3>
+<p><strong>Qué hace:</strong> Arma la tabla que cuenta cuántas veces cada clase real recibió cada respuesta.</p>
+<p><strong>Cuándo usarla:</strong> Cuando quieres ver <strong>en qué</strong> se equivoca el modelo, no solo cuánto.</p>
+<table>
+<thead>
+<tr>
+<th>Parámetro</th>
+<th>Tipo</th>
+<th>Qué significa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>y_true</code></td>
+<td><code>List[INT]</code> o <code>List[FLOAT]</code></td>
+<td>Las etiquetas correctas.</td>
+</tr>
+<tr>
+<td><code>y_pred</code></td>
+<td><code>List[INT]</code> o <code>List[FLOAT]</code></td>
+<td>Las etiquetas que dijo el modelo.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Devuelve:</strong> <code>List[List[INT]]</code>: una tabla cuadrada. La fila es la clase real y la columna es la clase que dijo el modelo. Las clases van ordenadas de menor a mayor. Con dos clases <code>0</code> y <code>1</code> queda <code>[[TN, FP], [FN, TP]]</code>. También funciona con tres clases o más.</p>
+<p><strong>Ejemplo y resultado:</strong> el de <a href="#classification-first">Tu primera matriz de confusión</a>.</p>
+<h3 id="precision_score"><code>machine.precision_score(y_true, y_pred)</code><a class="headerlink" href="#precision_score" title="Permanent link">&para;</a></h3>
+<p><strong>Qué hace:</strong> Calcula la precisión de cada clase y devuelve el promedio.</p>
+<p><strong>Cuándo usarla:</strong> Cuando una <strong>falsa alarma</strong> sale cara. Por ejemplo, mandar a la basura un correo importante.</p>
+<table>
+<thead>
+<tr>
+<th>Parámetro</th>
+<th>Tipo</th>
+<th>Qué significa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>y_true</code></td>
+<td><code>List[INT]</code> o <code>List[FLOAT]</code></td>
+<td>Las etiquetas correctas.</td>
+</tr>
+<tr>
+<td><code>y_pred</code></td>
+<td><code>List[INT]</code> o <code>List[FLOAT]</code></td>
+<td>Las etiquetas que dijo el modelo.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Devuelve:</strong> <code>FLOAT</code> entre 0 y 1: el promedio de la precisión de todas las clases.</p>
+<p><strong>Ejemplo:</strong></p>
+<div class="language-kafe highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>import machine;
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>import math;
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>
+</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>List[INT] real = [1, 1, 1, 1, 0, 0, 0, 0, 0, 0];
+</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>List[INT] guess = [1, 1, 1, 0, 1, 1, 0, 0, 0, 0];
+</span><span id="__span-8-6"><a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>
+</span><span id="__span-8-7"><a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a>show(math.round(machine.precision_score(real, guess), 3));
+</span></code></pre></div>
+<p><strong>Resultado:</strong></p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>0.7
+</span></code></pre></div>
+<p>Es el promedio de 0.8 (normales) y 0.6 (spam). Que coincida con la exactitud es casualidad.</p>
+<h3 id="recall_score"><code>machine.recall_score(y_true, y_pred)</code><a class="headerlink" href="#recall_score" title="Permanent link">&para;</a></h3>
+<p><strong>Qué hace:</strong> Calcula el recall de cada clase y devuelve el promedio.</p>
+<p><strong>Cuándo usarla:</strong> Cuando <strong>dejar pasar</strong> un caso sale caro. Por ejemplo, una prueba médica que no detecta a un enfermo.</p>
+<table>
+<thead>
+<tr>
+<th>Parámetro</th>
+<th>Tipo</th>
+<th>Qué significa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>y_true</code></td>
+<td><code>List[INT]</code> o <code>List[FLOAT]</code></td>
+<td>Las etiquetas correctas.</td>
+</tr>
+<tr>
+<td><code>y_pred</code></td>
+<td><code>List[INT]</code> o <code>List[FLOAT]</code></td>
+<td>Las etiquetas que dijo el modelo.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Devuelve:</strong> <code>FLOAT</code> entre 0 y 1: el promedio del recall de todas las clases.</p>
+<p><strong>Ejemplo:</strong></p>
+<div class="language-kafe highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>import machine;
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>import math;
+</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>
+</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a>List[INT] real = [1, 1, 1, 1, 0, 0, 0, 0, 0, 0];
+</span><span id="__span-10-5"><a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a>List[INT] guess = [1, 1, 1, 0, 1, 1, 0, 0, 0, 0];
+</span><span id="__span-10-6"><a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>
+</span><span id="__span-10-7"><a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a>show(math.round(machine.recall_score(real, guess), 3));
+</span></code></pre></div>
+<p><strong>Resultado:</strong></p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>0.708
+</span></code></pre></div>
+<p>Es el promedio de 0.667 (normales) y 0.75 (spam).</p>
+<h3 id="f1_score"><code>machine.f1_score(y_true, y_pred)</code><a class="headerlink" href="#f1_score" title="Permanent link">&para;</a></h3>
+<p><strong>Qué hace:</strong> Calcula el F1 de cada clase y devuelve el promedio.</p>
+<p><strong>Cuándo usarla:</strong> Cuando quieres <strong>una sola nota</strong> y las clases están desparejas.</p>
+<table>
+<thead>
+<tr>
+<th>Parámetro</th>
+<th>Tipo</th>
+<th>Qué significa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>y_true</code></td>
+<td><code>List[INT]</code> o <code>List[FLOAT]</code></td>
+<td>Las etiquetas correctas.</td>
+</tr>
+<tr>
+<td><code>y_pred</code></td>
+<td><code>List[INT]</code> o <code>List[FLOAT]</code></td>
+<td>Las etiquetas que dijo el modelo.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Devuelve:</strong> <code>FLOAT</code> entre 0 y 1: el promedio del F1 de todas las clases.</p>
+<p><strong>Ejemplo:</strong></p>
+<div class="language-kafe highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>import machine;
+</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>import math;
+</span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>
+</span><span id="__span-12-4"><a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a>List[INT] real = [1, 1, 1, 1, 0, 0, 0, 0, 0, 0];
+</span><span id="__span-12-5"><a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a>List[INT] guess = [1, 1, 1, 0, 1, 1, 0, 0, 0, 0];
+</span><span id="__span-12-6"><a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a>
+</span><span id="__span-12-7"><a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a>show(math.round(machine.f1_score(real, guess), 3));
+</span></code></pre></div>
+<p><strong>Resultado:</strong></p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>0.697
+</span></code></pre></div>
+<p>Es el promedio de 0.727 (normales) y 0.667 (spam).</p>
+<h3 id="classification_report"><code>machine.classification_report(y_true, y_pred)</code><a class="headerlink" href="#classification_report" title="Permanent link">&para;</a></h3>
+<p><strong>Qué hace:</strong> Escribe un informe con la precisión, el recall y el F1 de <strong>cada clase</strong>, más los promedios.</p>
+<p><strong>Cuándo usarla:</strong> Cuando quieres ver todas las notas juntas, clase por clase.</p>
+<table>
+<thead>
+<tr>
+<th>Parámetro</th>
+<th>Tipo</th>
+<th>Qué significa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>y_true</code></td>
+<td><code>List[INT]</code> o <code>List[FLOAT]</code></td>
+<td>Las etiquetas correctas.</td>
+</tr>
+<tr>
+<td><code>y_pred</code></td>
+<td><code>List[INT]</code> o <code>List[FLOAT]</code></td>
+<td>Las etiquetas que dijo el modelo.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Devuelve:</strong> <code>STR</code>: un texto de varias líneas, listo para <code>show</code>.</p>
+<p><strong>Ejemplo:</strong></p>
+<div class="language-kafe highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>import machine;
+</span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>
+</span><span id="__span-14-3"><a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>List[INT] real = [1, 1, 1, 1, 0, 0, 0, 0, 0, 0];
+</span><span id="__span-14-4"><a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a>List[INT] guess = [1, 1, 1, 0, 1, 1, 0, 0, 0, 0];
+</span><span id="__span-14-5"><a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a>
+</span><span id="__span-14-6"><a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a>show(machine.classification_report(real, guess));
+</span></code></pre></div>
+<p><strong>Resultado:</strong></p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>          precision   recall  f1-score  support
+</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>       0       0.80     0.67      0.73        6
+</span><span id="__span-15-3"><a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a>       1       0.60     0.75      0.67        4
+</span><span id="__span-15-4"><a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a>
+</span><span id="__span-15-5"><a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a>accuracy       0.70                          10
+</span><span id="__span-15-6"><a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a>macro avg       0.70     0.71      0.70       10
+</span><span id="__span-15-7"><a id="__codelineno-15-7" name="__codelineno-15-7" href="#__codelineno-15-7"></a>weighted avg       0.72     0.70      0.70       10
+</span></code></pre></div>
+<div class="admonition tip">
+<p class="admonition-title">Cómo leer el informe</p>
+<ul>
+<li>Hay una fila por clase (<code>0</code> y <code>1</code>). Son los mismos números que calculamos a mano.</li>
+<li><code>support</code> es cuántos ejemplos había de esa clase: 6 normales y 4 spam.</li>
+<li><code>macro avg</code> es el promedio simple de las clases: lo que devuelven <code>precision_score</code>, <code>recall_score</code> y <code>f1_score</code>.</li>
+<li><code>weighted avg</code> es un promedio donde la clase con más ejemplos pesa más.</li>
+</ul>
+</div>
+<h3 id="roc_auc_score"><code>machine.roc_auc_score(y_true, y_score)</code><a class="headerlink" href="#roc_auc_score" title="Permanent link">&para;</a></h3>
+<p><strong>La idea.</strong> Muchos modelos no responden "spam" o "normal" directamente. Dan un <strong>puntaje</strong> entre 0 y 1: "estoy 0.9 seguro de que es spam". Después alguien elige un <strong>umbral</strong> (una raya): por encima de la raya es spam, por debajo es normal.</p>
+<p>Si mueves la raya, cambian los errores:</p>
+<ul>
+<li>Raya <strong>alta</strong> (muy exigente): casi nada es spam. Pocas falsas alarmas, pero se escapan muchos spam.</li>
+<li>Raya <strong>baja</strong> (muy desconfiada): casi todo es spam. Atrapas todos, pero con muchas falsas alarmas.</li>
+</ul>
+<!-- figura pendiente: 10 puntos sobre una regla de 0 a 1 (4 spam rellenos, 6 normales huecos); una raya vertical (umbral) baja de 0.95 a 0.05 y, al lado, un punto dibuja la curva ROC (falsas alarmas → derecha, spam atrapados → arriba) -->
+
+<p>Estos son los puntajes de nuestros 10 correos. El programa mueve la raya por cinco valores. Para cada uno muestra: la raya, la parte de los spam atrapados y la parte de los normales que fueron falsa alarma:</p>
+<div class="language-kafe highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a>List[INT] real = [1, 1, 1, 1, 0, 0, 0, 0, 0, 0];
+</span><span id="__span-16-2"><a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a>List[FLOAT] spam = [0.9, 0.8, 0.7, 0.3, 0.6, 0.55, 0.2, 0.2, 0.1, 0.1];
+</span><span id="__span-16-3"><a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a>List[FLOAT] cuts = [0.95, 0.75, 0.5, 0.25, 0.05];
+</span><span id="__span-16-4"><a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a>
+</span><span id="__span-16-5"><a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a>for (c in cuts):
+</span><span id="__span-16-6"><a id="__codelineno-16-6" name="__codelineno-16-6" href="#__codelineno-16-6"></a>    INT tp = 0;
+</span><span id="__span-16-7"><a id="__codelineno-16-7" name="__codelineno-16-7" href="#__codelineno-16-7"></a>    INT fp = 0;
+</span><span id="__span-16-8"><a id="__codelineno-16-8" name="__codelineno-16-8" href="#__codelineno-16-8"></a>    for (i in range(0, len(real))):
+</span><span id="__span-16-9"><a id="__codelineno-16-9" name="__codelineno-16-9" href="#__codelineno-16-9"></a>        if (spam[i] &gt;= c):
+</span><span id="__span-16-10"><a id="__codelineno-16-10" name="__codelineno-16-10" href="#__codelineno-16-10"></a>            if (real[i] == 1):
+</span><span id="__span-16-11"><a id="__codelineno-16-11" name="__codelineno-16-11" href="#__codelineno-16-11"></a>                tp = tp + 1;
+</span><span id="__span-16-12"><a id="__codelineno-16-12" name="__codelineno-16-12" href="#__codelineno-16-12"></a>            else:
+</span><span id="__span-16-13"><a id="__codelineno-16-13" name="__codelineno-16-13" href="#__codelineno-16-13"></a>                fp = fp + 1;
+</span><span id="__span-16-14"><a id="__codelineno-16-14" name="__codelineno-16-14" href="#__codelineno-16-14"></a>            ;
+</span><span id="__span-16-15"><a id="__codelineno-16-15" name="__codelineno-16-15" href="#__codelineno-16-15"></a>        ;
+</span><span id="__span-16-16"><a id="__codelineno-16-16" name="__codelineno-16-16" href="#__codelineno-16-16"></a>    ;
+</span><span id="__span-16-17"><a id="__codelineno-16-17" name="__codelineno-16-17" href="#__codelineno-16-17"></a>    show([c, tp / 4, fp / 6]);
+</span><span id="__span-16-18"><a id="__codelineno-16-18" name="__codelineno-16-18" href="#__codelineno-16-18"></a>;
+</span></code></pre></div>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a>[0.95, 0.0, 0.0]
+</span><span id="__span-17-2"><a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a>[0.75, 0.5, 0.0]
+</span><span id="__span-17-3"><a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a>[0.5, 0.75, 0.3333333333333333]
+</span><span id="__span-17-4"><a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a>[0.25, 1.0, 0.3333333333333333]
+</span><span id="__span-17-5"><a id="__codelineno-17-5" name="__codelineno-17-5" href="#__codelineno-17-5"></a>[0.05, 1.0, 1.0]
+</span></code></pre></div>
+<p>Con la raya en 0.5 el filtro atrapa 3 de 4 spam (0.75) y da 2 falsas alarmas de 6 (0.33): es justo la matriz de confusión de arriba. Si dibujas esos pares en un papel (falsas alarmas hacia la derecha, spam atrapados hacia arriba) obtienes la <strong>curva ROC</strong>. El <strong>AUC</strong> es el área que queda debajo de esa curva.</p>
+<p><strong>Las matemáticas a mano.</strong> Hay otra forma de calcular el AUC, sin dibujar nada. Arma todas las <strong>parejas</strong> de un spam con un normal y pregunta: ¿el spam tiene el puntaje más alto?</p>
+<ul>
+<li>Hay 4 spam y 6 normales: 4 × 6 = <strong>24 parejas</strong>.</li>
+<li>Los spam con 0.9, 0.8 y 0.7 les ganan a los 6 normales: 6 + 6 + 6 = 18.</li>
+<li>El spam con 0.3 solo les gana a los cuatro normales con 0.2 y 0.1: 4.</li>
+<li>Parejas ganadas: 18 + 4 = <strong>22</strong>.</li>
+</ul>
+<div class="arithmatex">\[AUC = \frac{\text{parejas ganadas}}{\text{parejas totales}} = \frac{22}{24} \approx 0.917\]</div>
+<p><strong>Qué hace:</strong> Mide qué tan bien el modelo <strong>ordena</strong> los ejemplos: los positivos con puntaje alto y los negativos con puntaje bajo.</p>
+<p><strong>Cuándo usarla:</strong> Cuando tu modelo da puntajes o probabilidades y quieres una nota que <strong>no dependa</strong> de dónde pongas la raya.</p>
+<table>
+<thead>
+<tr>
+<th>Parámetro</th>
+<th>Tipo</th>
+<th>Qué significa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>y_true</code></td>
+<td><code>List[INT]</code> o <code>List[FLOAT]</code></td>
+<td>Las etiquetas correctas. Debe haber <strong>exactamente dos</strong> clases. La mayor (por ejemplo <code>1</code>) es la positiva.</td>
+</tr>
+<tr>
+<td><code>y_score</code></td>
+<td><code>List[FLOAT]</code> o una tabla de <strong>una</strong> columna</td>
+<td>El puntaje de la clase positiva para cada ejemplo. No pases etiquetas ya decididas.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Devuelve:</strong> <code>FLOAT</code> entre 0 y 1. Un <code>1.0</code> es un orden perfecto; <code>0.5</code> es como lanzar una moneda; menos de <code>0.5</code> es ordenar al revés.</p>
+<p><strong>Ejemplo:</strong></p>
+<div class="language-kafe highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a>import machine;
+</span><span id="__span-18-2"><a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a>import math;
+</span><span id="__span-18-3"><a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a>
+</span><span id="__span-18-4"><a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a>List[INT] real = [1, 1, 1, 1, 0, 0, 0, 0, 0, 0];
+</span><span id="__span-18-5"><a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a>List[FLOAT] spam = [0.9, 0.8, 0.7, 0.3, 0.6, 0.55, 0.2, 0.2, 0.1, 0.1];
+</span><span id="__span-18-6"><a id="__codelineno-18-6" name="__codelineno-18-6" href="#__codelineno-18-6"></a>
+</span><span id="__span-18-7"><a id="__codelineno-18-7" name="__codelineno-18-7" href="#__codelineno-18-7"></a>show(math.round(machine.roc_auc_score(real, spam), 3));
+</span></code></pre></div>
+<p><strong>Resultado:</strong></p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-19-1"><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a>0.917
+</span></code></pre></div>
+<details class="warning">
+<summary>Error común: más de dos clases</summary>
+<p><code>roc_auc_score</code> solo sirve para dos clases:</p>
+<div class="language-kafe highlight"><pre><span></span><code><span id="__span-20-1"><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a>import machine;
+</span><span id="__span-20-2"><a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a>
+</span><span id="__span-20-3"><a id="__codelineno-20-3" name="__codelineno-20-3" href="#__codelineno-20-3"></a>List[INT] real = [0, 1, 2];
+</span><span id="__span-20-4"><a id="__codelineno-20-4" name="__codelineno-20-4" href="#__codelineno-20-4"></a>List[FLOAT] score = [0.1, 0.5, 0.9];
+</span><span id="__span-20-5"><a id="__codelineno-20-5" name="__codelineno-20-5" href="#__codelineno-20-5"></a>show(machine.roc_auc_score(real, score));
+</span></code></pre></div>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-21-1"><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a>Exception: machine: roc_auc_score: only supports binary classification
+</span></code></pre></div>
+</details>
+<details class="info">
+<summary>Para curiosos 🤓</summary>
+<p>La curva ROC dibuja la tasa de verdaderos positivos <span class="arithmatex">\(TPR = \frac{TP}{TP + FN}\)</span> contra la tasa de falsos positivos <span class="arithmatex">\(FPR = \frac{FP}{FP + TN}\)</span> para todos los umbrales. KAFE no dibuja la curva: usa la fórmula de las parejas (estadístico U de Mann-Whitney), que da la misma área:</p>
+<div class="arithmatex">\[AUC = \frac{1}{n_+ \, n_-} \sum_{i \in +} \sum_{j \in -} \left[ \mathbb{1}(s_i &gt; s_j) + \tfrac{1}{2}\,\mathbb{1}(s_i = s_j) \right]\]</div>
+<p>Un empate cuenta medio punto. Compara cada positivo con cada negativo: cuesta <span class="arithmatex">\(n_+ \cdot n_-\)</span> operaciones.</p>
+</details>
+<div class="admonition tip">
+<p class="admonition-title">¿Qué aprendiste?</p>
+<ul>
+<li>La matriz de confusión cuenta aciertos y los dos tipos de error: falsas alarmas (FP) y casos que se escapan (FN).</li>
+<li>Exactitud, precisión, recall y F1 salen todas de esa tabla.</li>
+<li>El AUC pone nota a los puntajes del modelo, sin elegir una raya.</li>
+</ul>
+</div>
+<h2 id="regression-metrics">Métricas de regresión<a class="headerlink" href="#regression-metrics" title="Permanent link">&para;</a></h2>
+<h3 id="la-idea-en-una-frase_1">La idea en una frase<a class="headerlink" href="#la-idea-en-una-frase_1" title="Permanent link">&para;</a></h3>
+<p>Cuando el modelo predice <strong>números</strong>, casi nunca acierta exacto; las métricas de regresión resumen <strong>qué tan lejos</strong> quedó.</p>
+<h3 id="una-comparacion-de-la-vida-diaria_1">Una comparación de la vida diaria<a class="headerlink" href="#una-comparacion-de-la-vida-diaria_1" title="Permanent link">&para;</a></h3>
+<p>Juegas a adivinar cuántos caramelos hay en un frasco. Si hay 50 y dices 48, te equivocaste por 2. Ese "por cuánto me equivoqué" es el <strong>error</strong> (también se llama <em>residuo</em>):</p>
+<div class="arithmatex">\[\text{error} = \text{valor real} - \text{predicción}\]</div>
+<p>Si juegas varias veces tienes varios errores. Cada métrica es una manera distinta de <strong>resumirlos en un solo número</strong>.</p>
+<!-- figura pendiente: 4 puntos reales (4, 6, 8, 10) y sus 4 predicciones (3, 7, 6, 10) unidos por rayitas de error; las rayitas bajan a una fila |e| = 1, 1, 2, 0 y luego se convierten en cuadrados e² = 1, 1, 4, 0 -->
+
+<h3 id="regression-math">Las matemáticas con números pequeños<a class="headerlink" href="#regression-math" title="Permanent link">&para;</a></h3>
+<p>Un puesto de limonada vendió 4, 6, 8 y 10 vasos en cuatro días. Un modelo había predicho 3, 7, 6 y 10. Hagamos la tabla de errores:</p>
+<table>
+<thead>
+<tr>
+<th>Día</th>
+<th>Real <span class="arithmatex">\(y\)</span></th>
+<th>Predicción <span class="arithmatex">\(\hat{y}\)</span></th>
+<th>Error <span class="arithmatex">\(e = y - \hat{y}\)</span></th>
+<th>Sin signo <span class="arithmatex">\(\lvert e \rvert\)</span></th>
+<th>Al cuadrado <span class="arithmatex">\(e^2\)</span></th>
+<th>En porcentaje <span class="arithmatex">\(\lvert e \rvert \div y\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>4</td>
+<td>3</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>25 %</td>
+</tr>
+<tr>
+<td>2</td>
+<td>6</td>
+<td>7</td>
+<td>−1</td>
+<td>1</td>
+<td>1</td>
+<td>16.67 %</td>
+</tr>
+<tr>
+<td>3</td>
+<td>8</td>
+<td>6</td>
+<td>2</td>
+<td>2</td>
+<td>4</td>
+<td>25 %</td>
+</tr>
+<tr>
+<td>4</td>
+<td>10</td>
+<td>10</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0 %</td>
+</tr>
+<tr>
+<td><strong>Suma</strong></td>
+<td></td>
+<td></td>
+<td><strong>2</strong></td>
+<td><strong>4</strong></td>
+<td><strong>6</strong></td>
+<td><strong>66.67 %</strong></td>
+</tr>
+</tbody>
+</table>
+<p>Con esa misma tabla salen <strong>todas</strong> las métricas:</p>
+<table>
+<thead>
+<tr>
+<th>Métrica</th>
+<th>La cuenta</th>
+<th>Resultado</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Error absoluto medio (MAE)</td>
+<td>promedio de <span class="arithmatex">\(\lvert e \rvert\)</span>: 4 ÷ 4</td>
+<td><strong>1</strong> vaso</td>
+</tr>
+<tr>
+<td>Error cuadrático medio (MSE)</td>
+<td>promedio de <span class="arithmatex">\(e^2\)</span>: 6 ÷ 4</td>
+<td><strong>1.5</strong> vasos²</td>
+</tr>
+<tr>
+<td>Raíz del MSE (RMSE)</td>
+<td><span class="arithmatex">\(\sqrt{1.5}\)</span></td>
+<td><strong>≈ 1.22</strong> vasos</td>
+</tr>
+<tr>
+<td>Error máximo</td>
+<td>el mayor <span class="arithmatex">\(\lvert e \rvert\)</span></td>
+<td><strong>2</strong> vasos</td>
+</tr>
+<tr>
+<td>Error absoluto mediano</td>
+<td>ordena 0, 1, 1, 2 y toma el del medio: (1 + 1) ÷ 2</td>
+<td><strong>1</strong> vaso</td>
+</tr>
+<tr>
+<td>Error porcentual medio (MAPE)</td>
+<td>promedio de los porcentajes: 66.67 ÷ 4</td>
+<td><strong>≈ 16.67 %</strong></td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(R^2\)</span></td>
+<td>1 − 6 ÷ 20 (se explica abajo)</td>
+<td><strong>0.7</strong></td>
+</tr>
+<tr>
+<td>Varianza explicada</td>
+<td>1 − 1.25 ÷ 5 (se explica abajo)</td>
+<td><strong>0.75</strong></td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="admonition-title">¿Por qué quitar el signo o elevar al cuadrado?</p>
+<p>Si sumas los errores tal cual, los positivos y los negativos <strong>se cancelan</strong>: 1 y −1 dan 0, como si no hubiera error. Por eso se quita el signo (<span class="arithmatex">\(\lvert e \rvert\)</span>) o se eleva al cuadrado (<span class="arithmatex">\(e^2\)</span>). Al cuadrado, además, un error grande pesa mucho más: el error de 2 se convierte en 4.</p>
+</div>
+<p><strong>¿De dónde sale el 20 de <span class="arithmatex">\(R^2\)</span>?</strong> <span class="arithmatex">\(R^2\)</span> compara tu modelo con el modelo más flojo posible: uno que <strong>siempre dice el promedio</strong>. El promedio de ventas es (4 + 6 + 8 + 10) ÷ 4 = 7. Los errores de decir siempre 7 serían −3, −1, 1 y 3; al cuadrado suman 9 + 1 + 1 + 9 = <strong>20</strong>. Los errores al cuadrado de nuestro modelo suman <strong>6</strong>.</p>
+<div class="arithmatex">\[R^2 = 1 - \frac{6}{20} = 0.7\]</div>
+<p>El modelo eliminó el 70 % del error que tendría el "modelo del promedio".</p>
+<p>Este programa calcula los errores, el MAE, el MSE y el RMSE con un bucle, <strong>sin usar MACHINE</strong>:</p>
+<div class="language-kafe highlight"><pre><span></span><code><span id="__span-22-1"><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a>import math;
+</span><span id="__span-22-2"><a id="__codelineno-22-2" name="__codelineno-22-2" href="#__codelineno-22-2"></a>
+</span><span id="__span-22-3"><a id="__codelineno-22-3" name="__codelineno-22-3" href="#__codelineno-22-3"></a>List[FLOAT] real = [4.0, 6.0, 8.0, 10.0];
+</span><span id="__span-22-4"><a id="__codelineno-22-4" name="__codelineno-22-4" href="#__codelineno-22-4"></a>List[FLOAT] guess = [3.0, 7.0, 6.0, 10.0];
+</span><span id="__span-22-5"><a id="__codelineno-22-5" name="__codelineno-22-5" href="#__codelineno-22-5"></a>
+</span><span id="__span-22-6"><a id="__codelineno-22-6" name="__codelineno-22-6" href="#__codelineno-22-6"></a>FLOAT abs_sum = 0.0;
+</span><span id="__span-22-7"><a id="__codelineno-22-7" name="__codelineno-22-7" href="#__codelineno-22-7"></a>FLOAT sq_sum = 0.0;
+</span><span id="__span-22-8"><a id="__codelineno-22-8" name="__codelineno-22-8" href="#__codelineno-22-8"></a>for (i in range(0, len(real))):
+</span><span id="__span-22-9"><a id="__codelineno-22-9" name="__codelineno-22-9" href="#__codelineno-22-9"></a>    FLOAT e = real[i] - guess[i];
+</span><span id="__span-22-10"><a id="__codelineno-22-10" name="__codelineno-22-10" href="#__codelineno-22-10"></a>    show(e);
+</span><span id="__span-22-11"><a id="__codelineno-22-11" name="__codelineno-22-11" href="#__codelineno-22-11"></a>    abs_sum = abs_sum + math.abs(e);
+</span><span id="__span-22-12"><a id="__codelineno-22-12" name="__codelineno-22-12" href="#__codelineno-22-12"></a>    sq_sum = sq_sum + e * e;
+</span><span id="__span-22-13"><a id="__codelineno-22-13" name="__codelineno-22-13" href="#__codelineno-22-13"></a>;
+</span><span id="__span-22-14"><a id="__codelineno-22-14" name="__codelineno-22-14" href="#__codelineno-22-14"></a>show(abs_sum / len(real));
+</span><span id="__span-22-15"><a id="__codelineno-22-15" name="__codelineno-22-15" href="#__codelineno-22-15"></a>show(sq_sum / len(real));
+</span><span id="__span-22-16"><a id="__codelineno-22-16" name="__codelineno-22-16" href="#__codelineno-22-16"></a>show(math.round(math.sqrt(sq_sum / len(real)), 2));
+</span></code></pre></div>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-23-1"><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a>1.0
+</span><span id="__span-23-2"><a id="__codelineno-23-2" name="__codelineno-23-2" href="#__codelineno-23-2"></a>-1.0
+</span><span id="__span-23-3"><a id="__codelineno-23-3" name="__codelineno-23-3" href="#__codelineno-23-3"></a>2.0
+</span><span id="__span-23-4"><a id="__codelineno-23-4" name="__codelineno-23-4" href="#__codelineno-23-4"></a>0.0
+</span><span id="__span-23-5"><a id="__codelineno-23-5" name="__codelineno-23-5" href="#__codelineno-23-5"></a>1.0
+</span><span id="__span-23-6"><a id="__codelineno-23-6" name="__codelineno-23-6" href="#__codelineno-23-6"></a>1.5
+</span><span id="__span-23-7"><a id="__codelineno-23-7" name="__codelineno-23-7" href="#__codelineno-23-7"></a>1.22
+</span></code></pre></div>
+<p>Las cuatro primeras líneas son los errores. Las tres últimas son el MAE, el MSE y el RMSE: los mismos números de la tabla.</p>
+<details class="info">
+<summary>Para curiosos 🤓</summary>
+<p>Con <span class="arithmatex">\(n\)</span> ejemplos, valores reales <span class="arithmatex">\(y_i\)</span>, predicciones <span class="arithmatex">\(\hat{y}_i\)</span>, errores <span class="arithmatex">\(e_i = y_i - \hat{y}_i\)</span> y promedios <span class="arithmatex">\(\bar{y}\)</span> y <span class="arithmatex">\(\bar{e}\)</span>:</p>
+<div class="arithmatex">\[MAE = \frac{1}{n}\sum_i \lvert e_i \rvert \qquad MSE = \frac{1}{n}\sum_i e_i^2 \qquad RMSE = \sqrt{MSE}\]</div>
+<div class="arithmatex">\[\text{error máximo} = \max_i \lvert e_i \rvert \qquad \text{error mediano} = \operatorname{mediana}(\lvert e_i \rvert) \qquad MAPE = \frac{100}{n}\sum_i \frac{\lvert e_i \rvert}{\lvert y_i \rvert}\]</div>
+<div class="arithmatex">\[R^2 = 1 - \frac{\sum_i e_i^2}{\sum_i (y_i - \bar{y})^2} \qquad \text{varianza explicada} = 1 - \frac{\frac{1}{n}\sum_i (e_i - \bar{e})^2}{\frac{1}{n}\sum_i (y_i - \bar{y})^2}\]</div>
+<p>Todas recorren las listas una vez (<span class="arithmatex">\(n\)</span> operaciones), menos el error mediano, que primero ordena (<span class="arithmatex">\(n \log n\)</span>). Si todos los valores reales son iguales, el denominador es 0: <code>r2_score</code> devuelve <code>1.0</code> si las predicciones son perfectas y <code>0.0</code> si no; <code>explained_variance_score</code> devuelve <code>0.0</code>.</p>
+</details>
+<p>Todas las funciones de regresión reciben los mismos dos parámetros:</p>
+<table>
+<thead>
+<tr>
+<th>Parámetro</th>
+<th>Tipo</th>
+<th>Qué significa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>y_true</code></td>
+<td><code>List[INT]</code> o <code>List[FLOAT]</code></td>
+<td>Los valores reales.</td>
+</tr>
+<tr>
+<td><code>y_pred</code></td>
+<td><code>List[INT]</code>, <code>List[FLOAT]</code> o una tabla de <strong>una</strong> columna como <code>[[3.0], [7.0]]</code></td>
+<td>Las predicciones del modelo, en el mismo orden.</td>
+</tr>
+</tbody>
+</table>
+<p>En todos los ejemplos, <code>real</code> son las ventas de limonada y <code>guess</code> las predicciones.</p>
+<h3 id="mean_absolute_error"><code>machine.mean_absolute_error(y_true, y_pred)</code><a class="headerlink" href="#mean_absolute_error" title="Permanent link">&para;</a></h3>
+<p><strong>Qué hace:</strong> Calcula el promedio de los errores sin signo (MAE).</p>
+<p><strong>Cuándo usarla:</strong> Cuando quieres decir en palabras sencillas "en promedio, el modelo se equivoca por tanto".</p>
+<p><strong>Devuelve:</strong> <code>FLOAT</code>, en las <strong>mismas unidades</strong> que tus datos (vasos, pesos, grados). <code>0.0</code> es perfecto.</p>
+<p><strong>Ejemplo:</strong></p>
+<div class="language-kafe highlight"><pre><span></span><code><span id="__span-24-1"><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a>import machine;
+</span><span id="__span-24-2"><a id="__codelineno-24-2" name="__codelineno-24-2" href="#__codelineno-24-2"></a>
+</span><span id="__span-24-3"><a id="__codelineno-24-3" name="__codelineno-24-3" href="#__codelineno-24-3"></a>List[FLOAT] real = [4.0, 6.0, 8.0, 10.0];
+</span><span id="__span-24-4"><a id="__codelineno-24-4" name="__codelineno-24-4" href="#__codelineno-24-4"></a>List[FLOAT] guess = [3.0, 7.0, 6.0, 10.0];
+</span><span id="__span-24-5"><a id="__codelineno-24-5" name="__codelineno-24-5" href="#__codelineno-24-5"></a>
+</span><span id="__span-24-6"><a id="__codelineno-24-6" name="__codelineno-24-6" href="#__codelineno-24-6"></a>show(machine.mean_absolute_error(real, guess));
+</span></code></pre></div>
+<p><strong>Resultado:</strong></p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-25-1"><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a>1.0
+</span></code></pre></div>
+<h3 id="mean_squared_error"><code>machine.mean_squared_error(y_true, y_pred)</code><a class="headerlink" href="#mean_squared_error" title="Permanent link">&para;</a></h3>
+<p><strong>Qué hace:</strong> Calcula el promedio de los errores al cuadrado (MSE).</p>
+<p><strong>Cuándo usarla:</strong> Cuando un error grande es <strong>mucho peor</strong> que varios pequeños. Es la nota que muchos modelos intentan bajar mientras aprenden.</p>
+<p><strong>Devuelve:</strong> <code>FLOAT</code>, en unidades <strong>al cuadrado</strong> (vasos²). <code>0.0</code> es perfecto.</p>
+<p><strong>Ejemplo:</strong></p>
+<div class="language-kafe highlight"><pre><span></span><code><span id="__span-26-1"><a id="__codelineno-26-1" name="__codelineno-26-1" href="#__codelineno-26-1"></a>import machine;
+</span><span id="__span-26-2"><a id="__codelineno-26-2" name="__codelineno-26-2" href="#__codelineno-26-2"></a>
+</span><span id="__span-26-3"><a id="__codelineno-26-3" name="__codelineno-26-3" href="#__codelineno-26-3"></a>List[FLOAT] real = [4.0, 6.0, 8.0, 10.0];
+</span><span id="__span-26-4"><a id="__codelineno-26-4" name="__codelineno-26-4" href="#__codelineno-26-4"></a>List[FLOAT] guess = [3.0, 7.0, 6.0, 10.0];
+</span><span id="__span-26-5"><a id="__codelineno-26-5" name="__codelineno-26-5" href="#__codelineno-26-5"></a>
+</span><span id="__span-26-6"><a id="__codelineno-26-6" name="__codelineno-26-6" href="#__codelineno-26-6"></a>show(machine.mean_squared_error(real, guess));
+</span></code></pre></div>
+<p><strong>Resultado:</strong></p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-27-1"><a id="__codelineno-27-1" name="__codelineno-27-1" href="#__codelineno-27-1"></a>1.5
+</span></code></pre></div>
+<h3 id="root_mean_squared_error"><code>machine.root_mean_squared_error(y_true, y_pred)</code><a class="headerlink" href="#root_mean_squared_error" title="Permanent link">&para;</a></h3>
+<p><strong>Qué hace:</strong> Calcula la raíz cuadrada del MSE (RMSE).</p>
+<p><strong>Cuándo usarla:</strong> Cuando quieres castigar los errores grandes como el MSE, pero leer el resultado en las unidades originales.</p>
+<p><strong>Devuelve:</strong> <code>FLOAT</code>, en las mismas unidades que tus datos. <code>0.0</code> es perfecto.</p>
+<p><strong>Ejemplo:</strong></p>
+<div class="language-kafe highlight"><pre><span></span><code><span id="__span-28-1"><a id="__codelineno-28-1" name="__codelineno-28-1" href="#__codelineno-28-1"></a>import machine;
+</span><span id="__span-28-2"><a id="__codelineno-28-2" name="__codelineno-28-2" href="#__codelineno-28-2"></a>import math;
+</span><span id="__span-28-3"><a id="__codelineno-28-3" name="__codelineno-28-3" href="#__codelineno-28-3"></a>
+</span><span id="__span-28-4"><a id="__codelineno-28-4" name="__codelineno-28-4" href="#__codelineno-28-4"></a>List[FLOAT] real = [4.0, 6.0, 8.0, 10.0];
+</span><span id="__span-28-5"><a id="__codelineno-28-5" name="__codelineno-28-5" href="#__codelineno-28-5"></a>List[FLOAT] guess = [3.0, 7.0, 6.0, 10.0];
+</span><span id="__span-28-6"><a id="__codelineno-28-6" name="__codelineno-28-6" href="#__codelineno-28-6"></a>
+</span><span id="__span-28-7"><a id="__codelineno-28-7" name="__codelineno-28-7" href="#__codelineno-28-7"></a>show(math.round(machine.root_mean_squared_error(real, guess), 2));
+</span></code></pre></div>
+<p><strong>Resultado:</strong></p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-29-1"><a id="__codelineno-29-1" name="__codelineno-29-1" href="#__codelineno-29-1"></a>1.22
+</span></code></pre></div>
+<p>El RMSE (1.22) es mayor que el MAE (1.0) porque el error de 2 vasos pesa más.</p>
+<h3 id="max_error"><code>machine.max_error(y_true, y_pred)</code><a class="headerlink" href="#max_error" title="Permanent link">&para;</a></h3>
+<p><strong>Qué hace:</strong> Devuelve el error más grande, sin signo.</p>
+<p><strong>Cuándo usarla:</strong> Cuando te importa el <strong>peor caso</strong>. Por ejemplo, "¿cuánto es lo máximo que puede fallar mi báscula?".</p>
+<p><strong>Devuelve:</strong> <code>FLOAT</code>, en las mismas unidades que tus datos.</p>
+<p><strong>Ejemplo:</strong></p>
+<div class="language-kafe highlight"><pre><span></span><code><span id="__span-30-1"><a id="__codelineno-30-1" name="__codelineno-30-1" href="#__codelineno-30-1"></a>import machine;
+</span><span id="__span-30-2"><a id="__codelineno-30-2" name="__codelineno-30-2" href="#__codelineno-30-2"></a>
+</span><span id="__span-30-3"><a id="__codelineno-30-3" name="__codelineno-30-3" href="#__codelineno-30-3"></a>List[FLOAT] real = [4.0, 6.0, 8.0, 10.0];
+</span><span id="__span-30-4"><a id="__codelineno-30-4" name="__codelineno-30-4" href="#__codelineno-30-4"></a>List[FLOAT] guess = [3.0, 7.0, 6.0, 10.0];
+</span><span id="__span-30-5"><a id="__codelineno-30-5" name="__codelineno-30-5" href="#__codelineno-30-5"></a>
+</span><span id="__span-30-6"><a id="__codelineno-30-6" name="__codelineno-30-6" href="#__codelineno-30-6"></a>show(machine.max_error(real, guess));
+</span></code></pre></div>
+<p><strong>Resultado:</strong></p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-31-1"><a id="__codelineno-31-1" name="__codelineno-31-1" href="#__codelineno-31-1"></a>2.0
+</span></code></pre></div>
+<h3 id="median_absolute_error"><code>machine.median_absolute_error(y_true, y_pred)</code><a class="headerlink" href="#median_absolute_error" title="Permanent link">&para;</a></h3>
+<p><strong>Qué hace:</strong> Ordena los errores sin signo y devuelve el <strong>del medio</strong> (la mediana). Si hay dos en el medio, devuelve su promedio.</p>
+<p><strong>Cuándo usarla:</strong> Cuando tus datos tienen algún valor muy raro y no quieres que un solo error enorme dañe la nota.</p>
+<p><strong>Devuelve:</strong> <code>FLOAT</code>, en las mismas unidades que tus datos.</p>
+<p><strong>Ejemplo:</strong></p>
+<div class="language-kafe highlight"><pre><span></span><code><span id="__span-32-1"><a id="__codelineno-32-1" name="__codelineno-32-1" href="#__codelineno-32-1"></a>import machine;
+</span><span id="__span-32-2"><a id="__codelineno-32-2" name="__codelineno-32-2" href="#__codelineno-32-2"></a>
+</span><span id="__span-32-3"><a id="__codelineno-32-3" name="__codelineno-32-3" href="#__codelineno-32-3"></a>List[FLOAT] real = [4.0, 6.0, 8.0, 10.0];
+</span><span id="__span-32-4"><a id="__codelineno-32-4" name="__codelineno-32-4" href="#__codelineno-32-4"></a>List[FLOAT] guess = [3.0, 7.0, 6.0, 10.0];
+</span><span id="__span-32-5"><a id="__codelineno-32-5" name="__codelineno-32-5" href="#__codelineno-32-5"></a>
+</span><span id="__span-32-6"><a id="__codelineno-32-6" name="__codelineno-32-6" href="#__codelineno-32-6"></a>show(machine.median_absolute_error(real, guess));
+</span></code></pre></div>
+<p><strong>Resultado:</strong></p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-33-1"><a id="__codelineno-33-1" name="__codelineno-33-1" href="#__codelineno-33-1"></a>1.0
+</span></code></pre></div>
+<h3 id="mean_absolute_percentage_error"><code>machine.mean_absolute_percentage_error(y_true, y_pred)</code><a class="headerlink" href="#mean_absolute_percentage_error" title="Permanent link">&para;</a></h3>
+<p><strong>Qué hace:</strong> Calcula el error promedio como <strong>porcentaje</strong> del valor real (MAPE).</p>
+<p><strong>Cuándo usarla:</strong> Cuando quieres comparar errores de cosas de tamaños muy distintos. Fallar por 1 vaso es mucho si vendiste 4 y poco si vendiste 100.</p>
+<p><strong>Devuelve:</strong> <code>FLOAT</code>: un <strong>porcentaje</strong> (16.67 significa 16.67 %), no una fracción entre 0 y 1.</p>
+<p><strong>Ejemplo:</strong></p>
+<div class="language-kafe highlight"><pre><span></span><code><span id="__span-34-1"><a id="__codelineno-34-1" name="__codelineno-34-1" href="#__codelineno-34-1"></a>import machine;
+</span><span id="__span-34-2"><a id="__codelineno-34-2" name="__codelineno-34-2" href="#__codelineno-34-2"></a>import math;
+</span><span id="__span-34-3"><a id="__codelineno-34-3" name="__codelineno-34-3" href="#__codelineno-34-3"></a>
+</span><span id="__span-34-4"><a id="__codelineno-34-4" name="__codelineno-34-4" href="#__codelineno-34-4"></a>List[FLOAT] real = [4.0, 6.0, 8.0, 10.0];
+</span><span id="__span-34-5"><a id="__codelineno-34-5" name="__codelineno-34-5" href="#__codelineno-34-5"></a>List[FLOAT] guess = [3.0, 7.0, 6.0, 10.0];
+</span><span id="__span-34-6"><a id="__codelineno-34-6" name="__codelineno-34-6" href="#__codelineno-34-6"></a>
+</span><span id="__span-34-7"><a id="__codelineno-34-7" name="__codelineno-34-7" href="#__codelineno-34-7"></a>show(math.round(machine.mean_absolute_percentage_error(real, guess), 2));
+</span></code></pre></div>
+<p><strong>Resultado:</strong></p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-35-1"><a id="__codelineno-35-1" name="__codelineno-35-1" href="#__codelineno-35-1"></a>16.67
+</span></code></pre></div>
+<details class="warning">
+<summary>Error común: un valor real igual a cero</summary>
+<p>Para sacar el porcentaje hay que dividir por el valor real, y no se puede dividir por cero:</p>
+<div class="language-kafe highlight"><pre><span></span><code><span id="__span-36-1"><a id="__codelineno-36-1" name="__codelineno-36-1" href="#__codelineno-36-1"></a>import machine;
+</span><span id="__span-36-2"><a id="__codelineno-36-2" name="__codelineno-36-2" href="#__codelineno-36-2"></a>
+</span><span id="__span-36-3"><a id="__codelineno-36-3" name="__codelineno-36-3" href="#__codelineno-36-3"></a>List[FLOAT] real = [0.0, 6.0];
+</span><span id="__span-36-4"><a id="__codelineno-36-4" name="__codelineno-36-4" href="#__codelineno-36-4"></a>List[FLOAT] guess = [1.0, 7.0];
+</span><span id="__span-36-5"><a id="__codelineno-36-5" name="__codelineno-36-5" href="#__codelineno-36-5"></a>show(machine.mean_absolute_percentage_error(real, guess));
+</span></code></pre></div>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-37-1"><a id="__codelineno-37-1" name="__codelineno-37-1" href="#__codelineno-37-1"></a>Exception: machine: mean_absolute_percentage_error: y_true contains zero, MAPE is undefined
+</span></code></pre></div>
+<p>Si tus datos tienen ceros, usa <code>mean_absolute_error</code>.</p>
+</details>
+<h3 id="r2_score"><code>machine.r2_score(y_true, y_pred)</code><a class="headerlink" href="#r2_score" title="Permanent link">&para;</a></h3>
+<p><strong>Qué hace:</strong> Compara tu modelo con uno que siempre dice el promedio (<span class="arithmatex">\(R^2\)</span>).</p>
+<p><strong>Cuándo usarla:</strong> Cuando quieres una nota <strong>sin unidades</strong>, fácil de comparar entre problemas distintos. Es la misma nota que da <code>model.score(X, y)</code> en los modelos de regresión.</p>
+<p><strong>Devuelve:</strong> <code>FLOAT</code>. <code>1.0</code> es perfecto. <code>0.0</code> es igual de bueno que decir siempre el promedio. Puede ser <strong>negativo</strong>: el modelo es peor que decir el promedio.</p>
+<p><strong>Ejemplo:</strong></p>
+<div class="language-kafe highlight"><pre><span></span><code><span id="__span-38-1"><a id="__codelineno-38-1" name="__codelineno-38-1" href="#__codelineno-38-1"></a>import machine;
+</span><span id="__span-38-2"><a id="__codelineno-38-2" name="__codelineno-38-2" href="#__codelineno-38-2"></a>
+</span><span id="__span-38-3"><a id="__codelineno-38-3" name="__codelineno-38-3" href="#__codelineno-38-3"></a>List[FLOAT] real = [4.0, 6.0, 8.0, 10.0];
+</span><span id="__span-38-4"><a id="__codelineno-38-4" name="__codelineno-38-4" href="#__codelineno-38-4"></a>List[FLOAT] guess = [3.0, 7.0, 6.0, 10.0];
+</span><span id="__span-38-5"><a id="__codelineno-38-5" name="__codelineno-38-5" href="#__codelineno-38-5"></a>
+</span><span id="__span-38-6"><a id="__codelineno-38-6" name="__codelineno-38-6" href="#__codelineno-38-6"></a>show(machine.r2_score(real, guess));
+</span></code></pre></div>
+<p><strong>Resultado:</strong></p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-39-1"><a id="__codelineno-39-1" name="__codelineno-39-1" href="#__codelineno-39-1"></a>0.7
+</span></code></pre></div>
+<h3 id="explained_variance_score"><code>machine.explained_variance_score(y_true, y_pred)</code><a class="headerlink" href="#explained_variance_score" title="Permanent link">&para;</a></h3>
+<p><strong>Qué hace:</strong> Mide qué parte de los "sube y baja" de los datos sigue el modelo. Se parece a <span class="arithmatex">\(R^2\)</span>, pero <strong>perdona</strong> un error fijo: si el modelo siempre se queda corto por lo mismo, no lo castiga.</p>
+<p><strong>Cuándo usarla:</strong> Junto con <code>r2_score</code>. Si las dos notas son distintas, tu modelo tiene un <strong>sesgo</strong>: tiende a quedarse corto o a pasarse.</p>
+<p><strong>Devuelve:</strong> <code>FLOAT</code>. <code>1.0</code> es lo mejor.</p>
+<p><strong>Ejemplo:</strong></p>
+<div class="language-kafe highlight"><pre><span></span><code><span id="__span-40-1"><a id="__codelineno-40-1" name="__codelineno-40-1" href="#__codelineno-40-1"></a>import machine;
+</span><span id="__span-40-2"><a id="__codelineno-40-2" name="__codelineno-40-2" href="#__codelineno-40-2"></a>
+</span><span id="__span-40-3"><a id="__codelineno-40-3" name="__codelineno-40-3" href="#__codelineno-40-3"></a>List[FLOAT] real = [4.0, 6.0, 8.0, 10.0];
+</span><span id="__span-40-4"><a id="__codelineno-40-4" name="__codelineno-40-4" href="#__codelineno-40-4"></a>List[FLOAT] guess = [3.0, 7.0, 6.0, 10.0];
+</span><span id="__span-40-5"><a id="__codelineno-40-5" name="__codelineno-40-5" href="#__codelineno-40-5"></a>
+</span><span id="__span-40-6"><a id="__codelineno-40-6" name="__codelineno-40-6" href="#__codelineno-40-6"></a>show(machine.explained_variance_score(real, guess));
+</span></code></pre></div>
+<p><strong>Resultado:</strong></p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-41-1"><a id="__codelineno-41-1" name="__codelineno-41-1" href="#__codelineno-41-1"></a>0.75
+</span></code></pre></div>
+<div class="admonition tip">
+<p class="admonition-title">La cuenta a mano</p>
+<ol>
+<li>El error promedio es (1 − 1 + 2 + 0) ÷ 4 = <strong>0.5</strong>: el modelo se queda corto medio vaso, en promedio.</li>
+<li>Réstale ese 0.5 a cada error: 0.5, −1.5, 1.5 y −0.5. Al cuadrado: 0.25 + 2.25 + 2.25 + 0.25 = 5. El promedio es 5 ÷ 4 = <strong>1.25</strong>.</li>
+<li>Los valores reales se alejan de su promedio (7) en −3, −1, 1 y 3. Al cuadrado suman 20; el promedio es 20 ÷ 4 = <strong>5</strong>.</li>
+<li>1 − 1.25 ÷ 5 = <strong>0.75</strong>.</li>
+</ol>
+<p>Da 0.75 y no 0.7 (el <span class="arithmatex">\(R^2\)</span>) justamente por ese medio vaso de sesgo.</p>
+</div>
+<div class="admonition tip">
+<p class="admonition-title">¿Qué aprendiste?</p>
+<ul>
+<li>El error es el valor real menos la predicción.</li>
+<li>MAE, MSE, RMSE, error máximo y error mediano son formas distintas de resumir los mismos errores.</li>
+<li><span class="arithmatex">\(R^2\)</span> compara tu modelo con decir siempre el promedio: 1 es perfecto, 0 es igual, negativo es peor.</li>
+</ul>
+</div>
+<h2 id="clustering-metrics">Métrica de clustering<a class="headerlink" href="#clustering-metrics" title="Permanent link">&para;</a></h2>
+<h3 id="la-idea-en-una-frase_2">La idea en una frase<a class="headerlink" href="#la-idea-en-una-frase_2" title="Permanent link">&para;</a></h3>
+<p>Cuando un modelo arma <strong>grupos</strong> sin que nadie le diga la respuesta, la <strong>silueta</strong> mide si cada punto quedó cerca de su grupo y lejos de los demás.</p>
+<h3 id="una-comparacion-de-la-vida-diaria_2">Una comparación de la vida diaria<a class="headerlink" href="#una-comparacion-de-la-vida-diaria_2" title="Permanent link">&para;</a></h3>
+<p>En el recreo los niños se juntan en grupos. Un niño está "bien ubicado" si sus amigos del grupo están <strong>cerca</strong> y los del otro grupo están <strong>lejos</strong>. Si está a la misma distancia de los dos grupos, no queda claro a cuál pertenece.</p>
+<!-- figura pendiente: 5 casas sobre una calle (posiciones 1, 2, 3 | 6, 8); desde la casa 2 salen flechas cortas a su grupo (a = 1) y flechas largas al otro (b = 5); aparece s = (5 − 1) / 5 = 0.8 -->
+
+<h3 id="clustering-math">Las matemáticas con números pequeños<a class="headerlink" href="#clustering-math" title="Permanent link">&para;</a></h3>
+<p>Hay cinco casas en una calle, en las posiciones 1, 2, 3, 6 y 8. Un modelo de <a href="../clustering/">clustering</a> hizo dos grupos: {1, 2, 3} y {6, 8}. Miremos la casa que está en <strong>2</strong>:</p>
+<ol>
+<li><strong><span class="arithmatex">\(a\)</span>: qué tan cerca está de su grupo.</strong> Sus vecinas están en 1 y 3. Las distancias son 1 y 1. Promedio: <span class="arithmatex">\(a = 1\)</span>.</li>
+<li><strong><span class="arithmatex">\(b\)</span>: qué tan lejos está del otro grupo.</strong> Las otras están en 6 y 8. Las distancias son 4 y 6. Promedio: <span class="arithmatex">\(b = 5\)</span>.</li>
+<li><strong><span class="arithmatex">\(s\)</span>: la silueta de esa casa.</strong></li>
+</ol>
+<div class="arithmatex">\[s = \frac{b - a}{\max(a, b)} = \frac{5 - 1}{5} = 0.8\]</div>
+<p>Cómo leer <span class="arithmatex">\(s\)</span>:</p>
+<ul>
+<li>Cerca de <strong>1</strong>: el punto está en el grupo correcto.</li>
+<li>Cerca de <strong>0</strong>: está en la frontera entre dos grupos.</li>
+<li><strong>Negativo</strong>: está más cerca de otro grupo que del suyo.</li>
+</ul>
+<p>Este programa hace esa cuenta para la casa 2, <strong>sin usar MACHINE</strong>:</p>
+<div class="language-kafe highlight"><pre><span></span><code><span id="__span-42-1"><a id="__codelineno-42-1" name="__codelineno-42-1" href="#__codelineno-42-1"></a>import math;
+</span><span id="__span-42-2"><a id="__codelineno-42-2" name="__codelineno-42-2" href="#__codelineno-42-2"></a>
+</span><span id="__span-42-3"><a id="__codelineno-42-3" name="__codelineno-42-3" href="#__codelineno-42-3"></a>List[FLOAT] same = [1.0, 3.0];
+</span><span id="__span-42-4"><a id="__codelineno-42-4" name="__codelineno-42-4" href="#__codelineno-42-4"></a>List[FLOAT] other = [6.0, 8.0];
+</span><span id="__span-42-5"><a id="__codelineno-42-5" name="__codelineno-42-5" href="#__codelineno-42-5"></a>FLOAT me = 2.0;
+</span><span id="__span-42-6"><a id="__codelineno-42-6" name="__codelineno-42-6" href="#__codelineno-42-6"></a>
+</span><span id="__span-42-7"><a id="__codelineno-42-7" name="__codelineno-42-7" href="#__codelineno-42-7"></a>FLOAT a = 0.0;
+</span><span id="__span-42-8"><a id="__codelineno-42-8" name="__codelineno-42-8" href="#__codelineno-42-8"></a>for (p in same):
+</span><span id="__span-42-9"><a id="__codelineno-42-9" name="__codelineno-42-9" href="#__codelineno-42-9"></a>    a = a + math.abs(p - me) / len(same);
+</span><span id="__span-42-10"><a id="__codelineno-42-10" name="__codelineno-42-10" href="#__codelineno-42-10"></a>;
+</span><span id="__span-42-11"><a id="__codelineno-42-11" name="__codelineno-42-11" href="#__codelineno-42-11"></a>FLOAT b = 0.0;
+</span><span id="__span-42-12"><a id="__codelineno-42-12" name="__codelineno-42-12" href="#__codelineno-42-12"></a>for (p in other):
+</span><span id="__span-42-13"><a id="__codelineno-42-13" name="__codelineno-42-13" href="#__codelineno-42-13"></a>    b = b + math.abs(p - me) / len(other);
+</span><span id="__span-42-14"><a id="__codelineno-42-14" name="__codelineno-42-14" href="#__codelineno-42-14"></a>;
+</span><span id="__span-42-15"><a id="__codelineno-42-15" name="__codelineno-42-15" href="#__codelineno-42-15"></a>show(a);
+</span><span id="__span-42-16"><a id="__codelineno-42-16" name="__codelineno-42-16" href="#__codelineno-42-16"></a>show(b);
+</span><span id="__span-42-17"><a id="__codelineno-42-17" name="__codelineno-42-17" href="#__codelineno-42-17"></a>show((b - a) / b);
+</span></code></pre></div>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-43-1"><a id="__codelineno-43-1" name="__codelineno-43-1" href="#__codelineno-43-1"></a>1.0
+</span><span id="__span-43-2"><a id="__codelineno-43-2" name="__codelineno-43-2" href="#__codelineno-43-2"></a>5.0
+</span><span id="__span-43-3"><a id="__codelineno-43-3" name="__codelineno-43-3" href="#__codelineno-43-3"></a>0.8
+</span></code></pre></div>
+<p><code>silhouette_score</code> repite la cuenta para <strong>cada</strong> casa y devuelve el promedio:</p>
+<table>
+<thead>
+<tr>
+<th>Casa</th>
+<th><span class="arithmatex">\(a\)</span></th>
+<th><span class="arithmatex">\(b\)</span></th>
+<th><span class="arithmatex">\(s\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>1.5</td>
+<td>6</td>
+<td>0.75</td>
+</tr>
+<tr>
+<td>2</td>
+<td>1</td>
+<td>5</td>
+<td>0.8</td>
+</tr>
+<tr>
+<td>3</td>
+<td>1.5</td>
+<td>4</td>
+<td>0.625</td>
+</tr>
+<tr>
+<td>6</td>
+<td>2</td>
+<td>4</td>
+<td>0.5</td>
+</tr>
+<tr>
+<td>8</td>
+<td>2</td>
+<td>6</td>
+<td>≈ 0.667</td>
+</tr>
+<tr>
+<td><strong>Promedio</strong></td>
+<td></td>
+<td></td>
+<td><strong>≈ 0.668</strong></td>
+</tr>
+</tbody>
+</table>
+<details class="info">
+<summary>Para curiosos 🤓</summary>
+<p>Para cada punto <span class="arithmatex">\(i\)</span>, <span class="arithmatex">\(a(i)\)</span> es la distancia promedio a los demás puntos de su grupo y <span class="arithmatex">\(b(i)\)</span> es la menor distancia promedio a los puntos de otro grupo:</p>
+<div class="arithmatex">\[s(i) = \frac{b(i) - a(i)}{\max(a(i),\, b(i))} \qquad \text{silueta} = \frac{1}{n}\sum_i s(i)\]</div>
+<p>KAFE usa la distancia euclidiana, <span class="arithmatex">\(d(p, q) = \sqrt{\sum_k (p_k - q_k)^2}\)</span>. Un punto que está solo en su grupo cuenta como <span class="arithmatex">\(s = 0\)</span>. La función calcula la distancia entre <strong>todos</strong> los pares de puntos: cuesta del orden de <span class="arithmatex">\(n^2 \cdot m\)</span> operaciones para <span class="arithmatex">\(n\)</span> puntos con <span class="arithmatex">\(m\)</span> columnas, así que es lenta con muchos datos.</p>
+</details>
+<h3 id="silhouette_score"><code>machine.silhouette_score(X, labels)</code><a class="headerlink" href="#silhouette_score" title="Permanent link">&para;</a></h3>
+<p><strong>Qué hace:</strong> Calcula la silueta promedio de todos los puntos.</p>
+<p><strong>Cuándo usarla:</strong> Después de <a href="../clustering/"><code>KMeans</code>, <code>DBSCAN</code> u otro modelo de clustering</a>, para saber si los grupos quedaron bien separados o para comparar distintas cantidades de grupos.</p>
+<table>
+<thead>
+<tr>
+<th>Parámetro</th>
+<th>Tipo</th>
+<th>Qué significa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>X</code></td>
+<td><code>List[List[FLOAT]]</code> o <code>List[List[INT]]</code></td>
+<td>Los puntos: una fila por punto.</td>
+</tr>
+<tr>
+<td><code>labels</code></td>
+<td><code>List[INT]</code></td>
+<td>El número de grupo de cada punto, en el mismo orden.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Devuelve:</strong> <code>FLOAT</code> entre −1 y 1. Más cerca de 1 es mejor.</p>
+<p><strong>Ejemplo:</strong></p>
+<div class="language-kafe highlight"><pre><span></span><code><span id="__span-44-1"><a id="__codelineno-44-1" name="__codelineno-44-1" href="#__codelineno-44-1"></a>import machine;
+</span><span id="__span-44-2"><a id="__codelineno-44-2" name="__codelineno-44-2" href="#__codelineno-44-2"></a>import math;
+</span><span id="__span-44-3"><a id="__codelineno-44-3" name="__codelineno-44-3" href="#__codelineno-44-3"></a>
+</span><span id="__span-44-4"><a id="__codelineno-44-4" name="__codelineno-44-4" href="#__codelineno-44-4"></a>List[List[FLOAT]] homes = [[1.0], [2.0], [3.0], [6.0], [8.0]];
+</span><span id="__span-44-5"><a id="__codelineno-44-5" name="__codelineno-44-5" href="#__codelineno-44-5"></a>List[INT] group = [0, 0, 0, 1, 1];
+</span><span id="__span-44-6"><a id="__codelineno-44-6" name="__codelineno-44-6" href="#__codelineno-44-6"></a>
+</span><span id="__span-44-7"><a id="__codelineno-44-7" name="__codelineno-44-7" href="#__codelineno-44-7"></a>show(math.round(machine.silhouette_score(homes, group), 3));
+</span></code></pre></div>
+<p><strong>Resultado:</strong></p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-45-1"><a id="__codelineno-45-1" name="__codelineno-45-1" href="#__codelineno-45-1"></a>0.668
+</span></code></pre></div>
+<details class="warning">
+<summary>Error común: un solo grupo</summary>
+<p>La silueta necesita comparar con <strong>otro</strong> grupo. Hacen falta al menos 2 grupos, y menos grupos que puntos:</p>
+<div class="language-kafe highlight"><pre><span></span><code><span id="__span-46-1"><a id="__codelineno-46-1" name="__codelineno-46-1" href="#__codelineno-46-1"></a>import machine;
+</span><span id="__span-46-2"><a id="__codelineno-46-2" name="__codelineno-46-2" href="#__codelineno-46-2"></a>
+</span><span id="__span-46-3"><a id="__codelineno-46-3" name="__codelineno-46-3" href="#__codelineno-46-3"></a>List[List[FLOAT]] homes = [[1.0], [2.0], [3.0]];
+</span><span id="__span-46-4"><a id="__codelineno-46-4" name="__codelineno-46-4" href="#__codelineno-46-4"></a>List[INT] group = [0, 0, 0];
+</span><span id="__span-46-5"><a id="__codelineno-46-5" name="__codelineno-46-5" href="#__codelineno-46-5"></a>show(machine.silhouette_score(homes, group));
+</span></code></pre></div>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-47-1"><a id="__codelineno-47-1" name="__codelineno-47-1" href="#__codelineno-47-1"></a>Exception: machine: silhouette_score: Need at least 2 clusters
+</span></code></pre></div>
+</details>
+<div class="admonition tip">
+<p class="admonition-title">¿Qué aprendiste?</p>
+<ul>
+<li>La silueta no necesita respuestas correctas: solo los puntos y sus grupos.</li>
+<li>Para cada punto compara <span class="arithmatex">\(a\)</span> (distancia a su grupo) con <span class="arithmatex">\(b\)</span> (distancia al grupo vecino).</li>
+<li>Cerca de 1 es un buen grupo; cerca de 0 o negativo, no.</li>
+</ul>
+</div>
+<h2 id="one-metric-api-for-machine-and-gesha">Las mismas métricas para MACHINE y GESHA<a class="headerlink" href="#one-metric-api-for-machine-and-gesha" title="Permanent link">&para;</a></h2>
+<p>Las métricas solo necesitan <strong>dos listas</strong>. No les importa quién hizo las predicciones. Por eso sirven igual para un modelo de MACHINE y para una red neuronal de <a href="../../gesha/">GESHA</a>: entrenas con la librería que quieras y pones la nota con <code>machine.&lt;métrica&gt;(...)</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Tarea</th>
+<th>Predicción con MACHINE</th>
+<th>Predicción con GESHA</th>
+<th>Métrica</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Clasificación</td>
+<td><code>model.predict(X)</code></td>
+<td><code>network.predict_label(X)</code></td>
+<td>Etiquetas → <code>machine.accuracy_score</code> y las demás.</td>
+</tr>
+<tr>
+<td>ROC AUC con dos clases</td>
+<td>Puntajes del modelo</td>
+<td><code>network.predict(X)</code></td>
+<td>Puntajes sin redondear → <code>machine.roc_auc_score</code>.</td>
+</tr>
+<tr>
+<td>Regresión con una salida</td>
+<td><code>model.predict(X)</code></td>
+<td><code>network.predict(X)</code></td>
+<td>Números → <code>machine.mean_squared_error</code>, <code>machine.r2_score</code>…</td>
+</tr>
+</tbody>
+</table>
+<p>Un detalle de GESHA: <code>network.predict(X)</code> devuelve una <strong>tabla</strong> con una fila por ejemplo, como <code>[[0.2], [0.9]]</code>. Las métricas de regresión y <code>roc_auc_score</code> aceptan esa tabla de <strong>una columna</strong> además de una lista simple. Las métricas de clasificación necesitan <strong>etiquetas</strong> en una lista simple: usa <code>predict_label</code>. Si la red tiene varias salidas por ejemplo (<code>[[0.1, 0.9], ...]</code>), las métricas no pueden elegir una sola por ti y dan error.</p>
+<div class="language-kafe highlight"><pre><span></span><code><span id="__span-48-1"><a id="__codelineno-48-1" name="__codelineno-48-1" href="#__codelineno-48-1"></a>import machine;
+</span><span id="__span-48-2"><a id="__codelineno-48-2" name="__codelineno-48-2" href="#__codelineno-48-2"></a>import gesha;
+</span><span id="__span-48-3"><a id="__codelineno-48-3" name="__codelineno-48-3" href="#__codelineno-48-3"></a>import math;
+</span><span id="__span-48-4"><a id="__codelineno-48-4" name="__codelineno-48-4" href="#__codelineno-48-4"></a>
+</span><span id="__span-48-5"><a id="__codelineno-48-5" name="__codelineno-48-5" href="#__codelineno-48-5"></a>List[List[FLOAT]] X = [[0.0], [1.0], [2.0], [3.0]];
+</span><span id="__span-48-6"><a id="__codelineno-48-6" name="__codelineno-48-6" href="#__codelineno-48-6"></a>List[FLOAT] y = [0.0, 1.0, 2.0, 3.0];
+</span><span id="__span-48-7"><a id="__codelineno-48-7" name="__codelineno-48-7" href="#__codelineno-48-7"></a>GESHA output = gesha.create_dense(1, "linear", [1], 0.0, 42);
+</span><span id="__span-48-8"><a id="__codelineno-48-8" name="__codelineno-48-8" href="#__codelineno-48-8"></a>GESHA network = gesha.sequential([output]);
+</span><span id="__span-48-9"><a id="__codelineno-48-9" name="__codelineno-48-9" href="#__codelineno-48-9"></a>network.compile("adam", "mse", []);
+</span><span id="__span-48-10"><a id="__codelineno-48-10" name="__codelineno-48-10" href="#__codelineno-48-10"></a>network.fit(X, y, 5, 2);
+</span><span id="__span-48-11"><a id="__codelineno-48-11" name="__codelineno-48-11" href="#__codelineno-48-11"></a>List[List[FLOAT]] p = network.predict(X);
+</span><span id="__span-48-12"><a id="__codelineno-48-12" name="__codelineno-48-12" href="#__codelineno-48-12"></a>show(math.round(machine.mean_squared_error(y, p), 2));
+</span></code></pre></div>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-49-1"><a id="__codelineno-49-1" name="__codelineno-49-1" href="#__codelineno-49-1"></a>Epoch 1/5 — Loss 2.5843
+</span><span id="__span-49-2"><a id="__codelineno-49-2" name="__codelineno-49-2" href="#__codelineno-49-2"></a>Epoch 2/5 — Loss 2.5711
+</span><span id="__span-49-3"><a id="__codelineno-49-3" name="__codelineno-49-3" href="#__codelineno-49-3"></a>Epoch 3/5 — Loss 2.5580
+</span><span id="__span-49-4"><a id="__codelineno-49-4" name="__codelineno-49-4" href="#__codelineno-49-4"></a>Epoch 4/5 — Loss 2.5447
+</span><span id="__span-49-5"><a id="__codelineno-49-5" name="__codelineno-49-5" href="#__codelineno-49-5"></a>Epoch 5/5 — Loss 2.5314
+</span><span id="__span-49-6"><a id="__codelineno-49-6" name="__codelineno-49-6" href="#__codelineno-49-6"></a>2.52
+</span></code></pre></div>
+<div class="admonition tip">
+<p class="admonition-title">¿Qué pasó aquí?</p>
+<ol>
+<li>Se creó una red de GESHA con una sola neurona y se entrenó 5 vueltas (por eso ves 5 líneas <code>Epoch</code>).</li>
+<li><code>network.predict(X)</code> devolvió una tabla de una columna.</li>
+<li><code>machine.mean_squared_error(y, p)</code> aceptó esa tabla y calculó el MSE. Sale alto (2.52) porque 5 vueltas son muy pocas para aprender.</li>
+</ol>
+</div>
+<p>En un trabajo real, primero <a href="../selection/">separa los datos</a> en entrenamiento y prueba, y calcula la métrica con los de <strong>prueba</strong>.</p>
+<h2 id="which-metric">¿Qué métrica uso?<a class="headerlink" href="#which-metric" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Tu situación</th>
+<th>Usa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Clasifico y mis clases están parejas</td>
+<td><code>accuracy_score</code></td>
+</tr>
+<tr>
+<td>Una falsa alarma sale cara (borrar un correo bueno)</td>
+<td><code>precision_score</code></td>
+</tr>
+<tr>
+<td>Dejar pasar un caso sale caro (no detectar una enfermedad)</td>
+<td><code>recall_score</code></td>
+</tr>
+<tr>
+<td>Clases desparejas y quiero una sola nota</td>
+<td><code>f1_score</code></td>
+</tr>
+<tr>
+<td>Quiero ver con qué se confunde el modelo</td>
+<td><code>confusion_matrix</code></td>
+</tr>
+<tr>
+<td>Quiero todas las notas, clase por clase</td>
+<td><code>classification_report</code></td>
+</tr>
+<tr>
+<td>Mi modelo da puntajes o probabilidades (dos clases)</td>
+<td><code>roc_auc_score</code></td>
+</tr>
+<tr>
+<td>Predigo números y quiero el error típico, fácil de explicar</td>
+<td><code>mean_absolute_error</code></td>
+</tr>
+<tr>
+<td>Predigo números y los errores grandes son muy graves</td>
+<td><code>mean_squared_error</code> o <code>root_mean_squared_error</code></td>
+</tr>
+<tr>
+<td>Me importa el peor caso</td>
+<td><code>max_error</code></td>
+</tr>
+<tr>
+<td>Hay datos muy raros que no quiero que dañen la nota</td>
+<td><code>median_absolute_error</code></td>
+</tr>
+<tr>
+<td>Quiero el error en porcentaje (sin ceros en los valores reales)</td>
+<td><code>mean_absolute_percentage_error</code></td>
+</tr>
+<tr>
+<td>Quiero una nota sin unidades, donde 1 es perfecto</td>
+<td><code>r2_score</code></td>
+</tr>
+<tr>
+<td>Quiero saber si el modelo tiene un sesgo fijo</td>
+<td><code>explained_variance_score</code> junto con <code>r2_score</code></td>
+</tr>
+<tr>
+<td>Hice grupos y no tengo respuestas correctas</td>
+<td><code>silhouette_score</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="que-aprendiste">¿Qué aprendiste?<a class="headerlink" href="#que-aprendiste" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Una métrica compara las respuestas correctas con las del modelo y devuelve una nota.</li>
+<li>En clasificación todo sale de la matriz de confusión; en regresión, de la lista de errores; en clustering, de las distancias.</li>
+<li>No hay una métrica "mejor": eliges según qué error te duele más.</li>
+</ul>
+<p><a class="md-button" href="../">Volver a MACHINE <span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg></span></a>
+<a class="md-button md-button--primary" href="../../gesha/">Siguiente librería: GESHA <span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg></span></a></p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Volver al principio
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Pie" >
+        
+          
+          <a href="../learning-concepts/" class="md-footer__link md-footer__link--prev" aria-label="Anterior: Conceptos de aprendizaje">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Anterior
+              </span>
+              <div class="md-ellipsis">
+                Conceptos de aprendizaje
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../linear/" class="md-footer__link md-footer__link--next" aria-label="Siguiente: Modelos lineales y SVM">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Siguiente
+              </span>
+              <div class="md-ellipsis">
+                Modelos lineales y SVM
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/joshmessi10/KAFE-Reloaded" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.path", "navigation.top", "navigation.indexes", "navigation.footer", "search.highlight", "search.suggest", "search.share", "content.code.copy", "content.code.annotate", "content.tabs.link", "toc.follow"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copiado al portapapeles", "clipboard.copy": "Copiar al portapapeles", "search.result.more.one": "1 m\u00e1s en esta p\u00e1gina", "search.result.more.other": "# m\u00e1s en esta p\u00e1gina", "search.result.none": "No se encontraron documentos", "search.result.one": "1 documento encontrado", "search.result.other": "# documentos encontrados", "search.result.placeholder": "Teclee para comenzar b\u00fasqueda", "search.result.term.missing": "Falta", "select.version": "Seleccionar versi\u00f3n"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/katex@0.16.25/dist/katex.min.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/katex@0.16.25/dist/contrib/auto-render.min.js"></script>
+      
+        <script src="../../../assets/js/math.js"></script>
+      
+        <script src="../../../assets/js/kafe-highlight.js"></script>
+      
+    
+  </body>
+</html>

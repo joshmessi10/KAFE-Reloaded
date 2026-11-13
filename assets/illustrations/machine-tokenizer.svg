@@ -1,0 +1,17 @@
+<svg viewBox="0 0 600 270" role="img" aria-labelledby="ill-tok-t ill-tok-d" xmlns="http://www.w3.org/2000/svg">
+<title id="ill-tok-t">Tokenizer parte el texto y numera cada palabra / Tokenizer splits text and numbers each word</title>
+<desc id="ill-tok-d">The sentence 'the dog eats the bone' splits into five word pills, and each pill becomes a number from the vocabulary: 2, 5, 3, 2, 6. Index 0 is reserved for padding and 1 for unknown words.</desc>
+<style>
+@keyframes ill-tok-split { 0%,15% { opacity: 0 } 25%,100% { opacity: 1 } }
+.ill-tok-split { animation: ill-tok-split 10s linear infinite; }
+@keyframes ill-tok-nums { 0%,50% { opacity: 0 } 60%,100% { opacity: 1 } }
+.ill-tok-nums { animation: ill-tok-nums 10s linear infinite; }
+@keyframes ill-tok-all { 0% { opacity: 0 } 4%,94% { opacity: 1 } 100% { opacity: 0 } }
+.ill-tok-all { animation: ill-tok-all 10s linear infinite; }
+.ill-tok-dash { stroke-dasharray: 6 5; }
+</style>
+<text x="150" y="40">"the dog eats the bone"</text>
+<g class="ill-tok-all">
+<g class="ill-tok-split"><rect class="k-thin" x="60" y="80" width="86" height="36" rx="18"/><text x="82" y="104">the</text></g><g class="ill-tok-nums"><path class="k-line" d="M103 122 V160"/><rect class="k-accent" x="78" y="168" width="50" height="40" rx="6"/><text class="k-label" x="97" y="194">2</text></g><g class="ill-tok-split"><rect class="k-thin" x="160" y="80" width="86" height="36" rx="18"/><text x="182" y="104">dog</text></g><g class="ill-tok-nums"><path class="k-line" d="M203 122 V160"/><rect class="k-accent" x="178" y="168" width="50" height="40" rx="6"/><text class="k-label" x="197" y="194">5</text></g><g class="ill-tok-split"><rect class="k-thin" x="260" y="80" width="86" height="36" rx="18"/><text x="282" y="104">eats</text></g><g class="ill-tok-nums"><path class="k-line" d="M303 122 V160"/><rect class="k-accent" x="278" y="168" width="50" height="40" rx="6"/><text class="k-label" x="297" y="194">3</text></g><g class="ill-tok-split"><rect class="k-thin" x="360" y="80" width="86" height="36" rx="18"/><text x="382" y="104">the</text></g><g class="ill-tok-nums"><path class="k-line" d="M403 122 V160"/><rect class="k-accent" x="378" y="168" width="50" height="40" rx="6"/><text class="k-label" x="397" y="194">2</text></g><g class="ill-tok-split"><rect class="k-thin" x="460" y="80" width="86" height="36" rx="18"/><text x="482" y="104">bone</text></g><g class="ill-tok-nums"><path class="k-line" d="M503 122 V160"/><rect class="k-accent" x="478" y="168" width="50" height="40" rx="6"/><text class="k-label" x="497" y="194">6</text></g><text x="60" y="245">0 = —   1 = &lt;?&gt;</text>
+</g>
+</svg>

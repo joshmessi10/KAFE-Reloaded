@@ -1,0 +1,36 @@
+<svg viewBox="0 0 600 270" role="img" aria-labelledby="ill-rdg-t ill-rdg-d" xmlns="http://www.w3.org/2000/svg">
+<title id="ill-rdg-t">Ridge aplana la recta cuando alpha crece / Ridge flattens the line as alpha grows</title>
+<desc id="ill-rdg-d">Five points on a straight line with slope 2. As alpha goes from 0 to 10 to 30, the line turns around the middle point and its slope drops to 1.0 and then 0.5; a bar on the right shows the weight shrinking but never reaching zero.</desc>
+<style>
+@keyframes ill-rdg-line { 0%,20% { transform: rotate(0deg) } 40%,55% { transform: rotate(11.03deg) } 75%,100% { transform: rotate(16.96deg) } }
+@keyframes ill-rdg-bar { 0%,20% { transform: scaleY(1) } 40%,55% { transform: scaleY(0.5) } 75%,100% { transform: scaleY(0.25) } }
+@keyframes ill-rdg-a0 { 0%,25% { opacity: 1 } 30%,100% { opacity: 0 } }
+@keyframes ill-rdg-a10 { 0%,30% { opacity: 0 } 35%,60% { opacity: 1 } 65%,100% { opacity: 0 } }
+@keyframes ill-rdg-a30 { 0%,65% { opacity: 0 } 70%,100% { opacity: 1 } }
+@keyframes ill-rdg-all { 0% { opacity: 0 } 4%,94% { opacity: 1 } 100% { opacity: 0 } }
+.ill-rdg-all { animation: ill-rdg-all 12s linear infinite; }
+.ill-rdg-line { transform-box: view-box; transform-origin: 300px 111px; transform: rotate(16.96deg); animation: ill-rdg-line 12s ease-in-out infinite; }
+.ill-rdg-bar { transform-box: view-box; transform-origin: 552px 220px; transform: scaleY(0.25); animation: ill-rdg-bar 12s ease-in-out infinite; }
+.ill-rdg-a0 { opacity: 0; animation: ill-rdg-a0 12s linear infinite; }
+.ill-rdg-a10 { opacity: 0; animation: ill-rdg-a10 12s linear infinite; }
+.ill-rdg-a30 { animation: ill-rdg-a30 12s linear infinite; }
+</style>
+<path class="k-line" d="M60 20 V230 H500"/>
+<path class="k-thin" d="M60 179 H500 M60 111 H500 M60 43 H500"/>
+<text x="136" y="252">1</text><text x="216" y="252">2</text><text x="296" y="252">3</text><text x="376" y="252">4</text><text x="456" y="252">5</text>
+<text x="38" y="184">3</text><text x="38" y="116">7</text><text x="30" y="48">11</text>
+<g class="ill-rdg-all">
+<line class="k-accent-line ill-rdg-line" x1="100" y1="196" x2="500" y2="26"/>
+<circle class="k-fill" cx="140" cy="179" r="7"/>
+<circle class="k-fill" cx="220" cy="145" r="7"/>
+<circle class="k-fill" cx="300" cy="111" r="7"/>
+<circle class="k-fill" cx="380" cy="77" r="7"/>
+<circle class="k-fill" cx="460" cy="43" r="7"/>
+<rect class="k-thin" x="540" y="60" width="24" height="160" rx="3"/>
+<rect class="k-accent ill-rdg-bar" x="540" y="60" width="24" height="160"/>
+<text class="k-label" x="545" y="50">w</text>
+<g class="ill-rdg-a0"><text class="k-label" x="90" y="34">α = 0</text><text x="520" y="248">2.0</text></g>
+<g class="ill-rdg-a10"><text class="k-label" x="90" y="34">α = 10</text><text x="520" y="248">1.0</text></g>
+<g class="ill-rdg-a30"><text class="k-label" x="90" y="34">α = 30</text><text x="520" y="248">0.5</text></g>
+</g>
+</svg>

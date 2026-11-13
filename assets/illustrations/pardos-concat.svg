@@ -1,0 +1,32 @@
+<svg viewBox="0 0 560 250" role="img" aria-labelledby="ill-pdc-t ill-pdc-d" xmlns="http://www.w3.org/2000/svg">
+<title id="ill-pdc-t">concat: apilar dos tablas / concat: stacking two tables</title>
+<desc id="ill-pdc-d">Two small tables with the same columns, name and score. The rows of the second table slide under the rows of the first one, making one longer table with four rows.</desc>
+<style>
+@keyframes ill-pdc-move { 0%,15% { transform: translate(280px, -80px) } 50%,100% { transform: translate(0, 0) } }
+@keyframes ill-pdc-head { 0%,15% { opacity: 1 } 40%,100% { opacity: 0 } }
+@keyframes ill-pdc-plus { 0%,10% { opacity: 1 } 25%,100% { opacity: 0 } }
+.ill-pdc-move { animation: ill-pdc-move 7s ease-in-out infinite alternate; }
+.ill-pdc-head { opacity: 0; animation: ill-pdc-head 7s ease-in-out infinite alternate; }
+.ill-pdc-plus { opacity: 0; animation: ill-pdc-plus 7s ease-in-out infinite alternate; }
+</style>
+<rect class="k-soft" x="40" y="30" width="200" height="40"/>
+<path class="k-line" d="M40 30 H240 V150 H40 Z"/>
+<path class="k-thin" d="M40 70 H240 M40 110 H240 M140 30 V150"/>
+<text class="k-label" x="52" y="55">name</text><text class="k-label" x="152" y="55">score</text>
+<text x="52" y="95">Ana</text><text x="152" y="95">8.5</text>
+<text x="52" y="135">Luis</text><text x="152" y="135">7.0</text>
+<text class="k-label ill-pdc-plus" x="272" y="100">+</text>
+<g class="ill-pdc-head">
+<rect class="k-soft" x="320" y="30" width="200" height="40"/>
+<path class="k-line" d="M320 30 H520 V70 H320 Z"/>
+<path class="k-thin" d="M420 30 V70"/>
+<text class="k-label" x="332" y="55">name</text><text class="k-label" x="432" y="55">score</text>
+</g>
+<g class="ill-pdc-move">
+<rect class="k-accent" x="40" y="150" width="200" height="80" fill-opacity="0.25"/>
+<path class="k-line" d="M40 150 H240 V230 H40 Z"/>
+<path class="k-thin" d="M40 190 H240 M140 150 V230"/>
+<text x="52" y="175">Sofia</text><text x="152" y="175">9.5</text>
+<text x="52" y="215">Mateo</text><text x="152" y="215">6.5</text>
+</g>
+</svg>

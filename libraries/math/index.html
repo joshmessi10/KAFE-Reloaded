@@ -1,0 +1,6684 @@
+
+<!doctype html>
+<html lang="es" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Aprende a programar, Machine Learning y redes neuronales con KAFE, paso a paso.">
+      
+      
+      
+        <link rel="canonical" href="https://joshmessi10.github.io/KAFE-Reloaded/libraries/math/">
+      
+      
+        <link rel="prev" href="../../language/imports/">
+      
+      
+        <link rel="next" href="constants/">
+      
+      
+        
+          <link rel="alternate" href="./" hreflang="es">
+        
+          <link rel="alternate" href="../../en/libraries/math/" hreflang="en">
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Resumen y cómo funciona - KAFE</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.25/dist/katex.min.css">
+    
+      <link rel="stylesheet" href="../../assets/css/custom.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  <!-- The site ships its own dark theme: stop Dark Reader from repainting it. -->
+  <meta name="darkreader-lock">
+
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="custom">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#math-matematicas" class="md-skip">
+          Saltar a contenido
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Cabecera">
+    <a href="../.." title="KAFE" class="md-header__button md-logo" aria-label="KAFE" data-md-component="logo">
+      
+  <img src="../../assets/images/kafe-logo-horizontal.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            KAFE
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Resumen y cómo funciona
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="custom"  aria-label="Modo oscuro"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Modo oscuro" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="custom" data-md-color-accent="custom"  aria-label="Modo claro"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Modo claro" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="Seleccionar idioma">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="./" hreflang="es" class="md-select__link">
+              Español
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="../../en/libraries/math/" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Búsqueda" placeholder="Búsqueda" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Buscar">
+        
+          <a href="javascript:void(0)" class="md-search__icon md-icon" title="Compartir" aria-label="Compartir" data-clipboard data-clipboard-text="" data-md-component="search-share" tabindex="-1">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.15c-.05.21-.08.43-.08.66 0 1.61 1.31 2.91 2.92 2.91s2.92-1.3 2.92-2.91A2.92 2.92 0 0 0 18 16.08"/></svg>
+          </a>
+        
+        <button type="reset" class="md-search__icon md-icon" title="Limpiar" aria-label="Limpiar" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Inicializando búsqueda
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/joshmessi10/KAFE-Reloaded" title="Ir al repositorio" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    KAFE-Reloaded
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="Pestañas" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Inicio
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../aprende/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Aprende
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../getting-started/installation/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Tutorial
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="./" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Librerías
+
+        </a>
+      </li>
+    
+  
+
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../ejemplos/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Ejemplos
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../specification/ebnf-grammar/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Avanzado
+
+        </a>
+      </li>
+    
+  
+
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../about/credits/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Acerca de
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navegación" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="KAFE" class="md-nav__button md-logo" aria-label="KAFE" data-md-component="logo">
+      
+  <img src="../../assets/images/kafe-logo-horizontal.png" alt="logo">
+
+    </a>
+    KAFE
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/joshmessi10/KAFE-Reloaded" title="Ir al repositorio" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    KAFE-Reloaded
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Inicio
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../aprende/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Aprende
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_2" id="__nav_2_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Aprende
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../aprende/programar/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ¿Qué es programar?
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../aprende/variables/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Variables y tipos
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../aprende/funciones/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Funciones
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../aprende/aprender-de-datos/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ¿Qué es aprender de datos?
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../aprende/neuronas/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ¿Qué es una neurona?
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tutorial
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Tutorial
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Instalación
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/first-program/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tu primer programa
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/basic-examples/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Ejemplos básicos
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_4" id="__nav_3_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    El lenguaje paso a paso
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    El lenguaje paso a paso
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/lexical-structure/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Estructura léxica
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/type-system/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sistema de tipos
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/operators/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operadores y expresiones
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/control-structures/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Estructuras de control
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/functions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Funciones
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/lists/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Listas
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/imports/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Imports
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Librerías
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Librerías
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_1" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_4_1" id="__nav_4_1_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MATH (matemáticas)
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_1_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4_1">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    MATH (matemáticas)
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Resumen y cómo funciona
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Resumen y cómo funciona
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Tabla de contenidos">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Tabla de contenidos
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#antes-de-empezar-importar-la-libreria" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Antes de empezar: importar la librería
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#inside" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cómo funciona por dentro
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Cómo funciona por dentro">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-el-viaje-de-mathsqrt16" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. El viaje de math.sqrt(16)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-todo-esta-hecho-a-mano" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Todo está hecho a mano
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Todo está hecho a mano">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#la-raiz-cuadrada-un-rectangulo-que-se-vuelve-cuadrado" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        La raíz cuadrada: un rectángulo que se vuelve cuadrado
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#el-numero-e-sumar-pedacitos-cada-vez-mas-pequenos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        El número e: sumar pedacitos cada vez más pequeños
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#el-seno-curvas-que-se-parecen-cada-vez-mas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        El seno: curvas que se parecen cada vez más
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sections" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Secciones de la librería
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Resumen de todas las funciones
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#que-aprendiste" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ¿Qué aprendiste?
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="constants/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Constantes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="rounding/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Redondeo
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="powers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Potencias y raíces
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="logarithms/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Logaritmos
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="division/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Restos y divisores
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="trigonometry/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Trigonometría
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="hyperbolic/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Hiperbólicas
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="combinatorics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Combinatoria
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="lists/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Listas de números
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="checks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Comprobar números
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="special/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Funciones especiales
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_2" id="__nav_4_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    FILES (archivos)
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    FILES (archivos)
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../files/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Resumen y cómo funciona
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../files/reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Referencia
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_3" id="__nav_4_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PLOT (gráficas)
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    PLOT (gráficas)
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../plot/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Resumen y cómo funciona
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../plot/lines/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Líneas y puntos
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../plot/bars-pies/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Barras y pasteles
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../plot/style/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Títulos, ejes y colores
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_4" id="__nav_4_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    NUMK (álgebra lineal)
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    NUMK (álgebra lineal)
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../numk/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Resumen y cómo funciona
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../numk/creating/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Crear y medir tensores
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../numk/element-wise/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operaciones casilla por casilla
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../numk/matrix-multiplication/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Multiplicar matrices
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../numk/broadcasting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Broadcasting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../numk/reductions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reducir: sumas y máximos
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../numk/reshaping/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cambiar la forma
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../numk/convolution/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Convolución
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_5" id="__nav_4_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PARDOS (tablas de datos)
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    PARDOS (tablas de datos)
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pardos/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Resumen y cómo funciona
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pardos/tables/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Crear y leer tablas
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pardos/inspect/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Mirar los datos
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pardos/select/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Elegir columnas y filas
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pardos/summarize/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contar y resumir
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pardos/missing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Datos que faltan
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pardos/combine/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Juntar tablas
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pardos/save/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Guardar tablas
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pardos/to-numbers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    De tabla a números para MACHINE
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_6" id="__nav_4_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Datasets de Kaggle
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Datasets de Kaggle
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bibliotecas/kaggle/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Resumen y cómo funciona
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bibliotecas/kaggle/tablas/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tablas
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bibliotecas/kaggle/imagenes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Imágenes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bibliotecas/kaggle/texto/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Frases con etiqueta
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_7" id="__nav_4_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Datasets de Hugging Face
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Datasets de Hugging Face
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bibliotecas/huggingface/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Resumen y cómo funciona
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bibliotecas/huggingface/referencia/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Referencia
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_8" id="__nav_4_8_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MACHINE (Machine Learning)
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    MACHINE (Machine Learning)
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../machine/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Resumen
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../machine/contracts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contratos y límites de la API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../machine/learning-concepts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Conceptos de aprendizaje
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../machine/metrics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Funciones y métricas
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../machine/linear/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modelos lineales y SVM
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../machine/selection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Selección de modelos
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../machine/classifiers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Clasificación y árboles
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../machine/clustering/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Clustering y ensambles
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../machine/preprocessing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Preprocesamiento y reducción
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_9" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_9" id="__nav_4_9_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    GESHA (Deep Learning)
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    GESHA (Deep Learning)
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../gesha/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Resumen
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../gesha/api-coverage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cobertura y límites de la API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../gesha/learning-concepts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Conceptos de aprendizaje
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../gesha/models-training/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modelos y entrenamiento
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../gesha/dense-networks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Redes densas
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../gesha/convolutional-networks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Redes convolucionales
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../gesha/recurrent-networks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Redes recurrentes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../gesha/training-tools/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Herramientas de entrenamiento
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../gesha/soft-clustering/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Clustering suave
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../ejemplos/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Ejemplos
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_5" id="__nav_5_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Ejemplos
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_5_2" id="__nav_5_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Programas completos
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Programas completos
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/hello-world.kf" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Hello World
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/fibonacci-currying.kf" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fibonacci con currying
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/merge-sort.kf" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Merge Sort
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/linear-regression.kf" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Regresión lineal
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/neural-network.kf" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Red neuronal
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/decision-tree.kf" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Árbol de decisión
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_5_3" id="__nav_5_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Ejemplos de MACHINE
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Ejemplos de MACHINE
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ejemplos/machine-kaggle/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Resumen
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ejemplos/machine/kmeans/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    K-Means
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ejemplos/machine/agglomerative-clustering/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Agglomerative Clustering
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ejemplos/machine/dbscan/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    DBSCAN
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ejemplos/machine/gaussian-mixture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gaussian Mixture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ejemplos/machine/linear-discriminant-analysis/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Linear Discriminant Analysis
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ejemplos/machine/gaussian-naive-bayes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gaussian Naive Bayes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ejemplos/machine/knn/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    K-Nearest Neighbors
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ejemplos/machine/decision-tree/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Decision Tree
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ejemplos/machine/adaboost/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AdaBoost
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ejemplos/machine/gradient-boosting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gradient Boosting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ejemplos/machine/logistic-regression/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Logistic Regression
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ejemplos/machine/svm/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Support Vector Machine
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ejemplos/machine/random-forest/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Random Forest
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ejemplos/machine/ridge-regression/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Ridge Regression
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ejemplos/machine/lasso-regression/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lasso Regression
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ejemplos/machine/elastic-net/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Elastic Net
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ejemplos/machine/linear-regression/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Linear Regression
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ejemplos/machine/svr/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Support Vector Regression
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ejemplos/machine/interpret-results/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interpretar resultados
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_5_4" id="__nav_5_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Ejemplos de GESHA
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Ejemplos de GESHA
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ejemplos/gesha-examples/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Resumen
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ejemplos/gesha/perceptron-and/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Single perceptron: AND
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ejemplos/gesha/perceptron-or/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Single perceptron: OR
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ejemplos/gesha/mlp-xor/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Multilayer perceptron: XOR
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ejemplos/gesha/function-approximation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Nonlinear function approximation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ejemplos/gesha/iris-mlp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Multiclass MLP: Iris
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ejemplos/gesha/breast-cancer-mlp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Binary MLP: Breast Cancer Wisconsin
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ejemplos/gesha/wine-regression-mlp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Regression MLP: Red Wine Quality
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ejemplos/gesha/mnist-dense-classifier/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Dense classifier: MNIST digits
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ejemplos/gesha/cnn-cifar10/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CNN: CIFAR-10
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ejemplos/gesha/cnn-small/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CNN: small image classifier
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ejemplos/gesha/cnn-depthwise/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Depthwise CNN block
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ejemplos/gesha/rnn-sequences/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RNN: sequence classification
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ejemplos/gesha/rnn-temperature/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RNN: temperature forecasting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ejemplos/gesha/rnn-sentiment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Embedding and RNN: sentiment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ejemplos/gesha/lstm-embedding/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bidirectional LSTM: token vectors
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ejemplos/gesha/numk-dense/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    NUMK and dense classifier
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ejemplos/gesha/autoencoder-clustering/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Autoencoder and K-Means: Iris
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Avanzado
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Avanzado
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6_1" >
+        
+          
+          <label class="md-nav__link" for="__nav_6_1" id="__nav_6_1_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Especificación
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_6_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6_1">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Especificación
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../specification/ebnf-grammar/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gramática formal (EBNF)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../specification/operational-semantics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Semántica operacional
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../specification/lexical-syntactic-semantic-analysis/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Análisis léxico, sintáctico y semántico
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../specification/operator-precedence/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Precedencia de operadores
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_6_2" id="__nav_6_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Errores
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_6_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Errores
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../errors/error-types/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tipos de error
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../errors/lexical-errors/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Errores léxicos
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../errors/syntax-errors/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Errores de sintaxis
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../errors/semantic-errors/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Errores semánticos
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../errors/error-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Referencia de errores
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Acerca de
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Acerca de
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../about/credits/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Créditos
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../about/license/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Licencia
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Tabla de contenidos">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Tabla de contenidos
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#antes-de-empezar-importar-la-libreria" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Antes de empezar: importar la librería
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#inside" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cómo funciona por dentro
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Cómo funciona por dentro">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-el-viaje-de-mathsqrt16" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. El viaje de math.sqrt(16)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-todo-esta-hecho-a-mano" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Todo está hecho a mano
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Todo está hecho a mano">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#la-raiz-cuadrada-un-rectangulo-que-se-vuelve-cuadrado" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        La raíz cuadrada: un rectángulo que se vuelve cuadrado
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#el-numero-e-sumar-pedacitos-cada-vez-mas-pequenos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        El número e: sumar pedacitos cada vez más pequeños
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#el-seno-curvas-que-se-parecen-cada-vez-mas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        El seno: curvas que se parecen cada vez más
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sections" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Secciones de la librería
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Resumen de todas las funciones
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#que-aprendiste" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ¿Qué aprendiste?
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+                
+
+
+
+  
+
+
+  <nav class="md-path" aria-label="Navegación" >
+    <ol class="md-path__list">
+      
+        
+  
+  
+    <li class="md-path__item">
+      <a href="../.." class="md-path__link">
+        
+  <span class="md-ellipsis">
+    Inicio
+  </span>
+
+      </a>
+    </li>
+  
+
+      
+      
+        
+  
+  
+    
+    
+      
+  
+  
+    
+    
+      <li class="md-path__item">
+        <a href="./" class="md-path__link">
+          
+  <span class="md-ellipsis">
+    Librerías
+  </span>
+
+        </a>
+      </li>
+    
+  
+
+    
+  
+
+      
+        
+  
+  
+    
+    
+      <li class="md-path__item">
+        <a href="./" class="md-path__link">
+          
+  <span class="md-ellipsis">
+    MATH (matemáticas)
+  </span>
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ol>
+  </nav>
+
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="math-matematicas">MATH: matemáticas<a class="headerlink" href="#math-matematicas" title="Permanent link">&para;</a></h1>
+<p>La librería <strong>MATH</strong> es tu calculadora científica dentro de KAFE: raíces, potencias, ángulos, redondeos y mucho más. Todas sus funciones están escritas desde cero en KAFE (sin usar la librería de matemáticas de Python), para que puedas ver cómo se calculan por dentro.</p>
+<h2 id="antes-de-empezar-importar-la-libreria">Antes de empezar: importar la librería<a class="headerlink" href="#antes-de-empezar-importar-la-libreria" title="Permanent link">&para;</a></h2>
+<p>Una librería es una <strong>caja de herramientas</strong> extra. Para usarla, primero la traes a tu programa con <code>import</code>, y luego usas cada herramienta con <code>math.</code> delante, como si dijeras "de la caja <em>math</em>, dame la herramienta <em>sqrt</em>":</p>
+<div class="language-kafe highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>import math;
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>show(math.sqrt(25));
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>show(math.sqrt(2));
+</span></code></pre></div>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>5.0
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>1.414213562373095
+</span></code></pre></div>
+<div class="admonition warning">
+<p class="admonition-title">Error común: olvidar el <code>import</code></p>
+<p>Si usas <code>math.</code> sin haber escrito <code>import math;</code>, KAFE no sabe de qué caja hablas:</p>
+<div class="language-kafe highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>show(math.sqrt(16));
+</span></code></pre></div>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>Exception: math: library not imported
+</span></code></pre></div>
+</div>
+<div class="admonition tip">
+<p class="admonition-title">INT o FLOAT</p>
+<p>Donde la tabla de parámetros dice <code>INT | FLOAT</code>, puedes pasar un entero o un decimal.</p>
+</div>
+<h2 id="inside">Cómo funciona por dentro<a class="headerlink" href="#inside" title="Permanent link">&para;</a></h2>
+<h3 id="1-el-viaje-de-mathsqrt16">1. El viaje de <code>math.sqrt(16)</code><a class="headerlink" href="#1-el-viaje-de-mathsqrt16" title="Permanent link">&para;</a></h3>
+<p>Cuando escribes <code>math.sqrt(16)</code>, pasan cuatro cosas, como un pedido en una cafetería:</p>
+<ol>
+<li><strong>KAFE lee tu línea.</strong> El intérprete (<code>src/InterpreterVisitor.py</code>) ve <code>math.</code> y busca la caja de herramientas <code>math</code> en su lista de librerías. Si no hiciste <code>import math;</code>, la caja está cerrada y te avisa.</li>
+<li><strong>Busca la herramienta.</strong> Dentro de la caja (<code>src/lib/KafeMATH/functions.py</code>) busca una función llamada <code>sqrt</code>.</li>
+<li><strong>Revisa los ingredientes.</strong> Antes de calcular, un "portero" llamado <code>check_sig</code> comprueba que le diste la cantidad y el tipo de datos correctos. Por eso <code>math.factorial(3.5)</code> da error: el portero solo deja pasar <code>INT</code>.</li>
+<li><strong>Calcula y devuelve.</strong> La función hace la cuenta y el resultado vuelve a tu programa.</li>
+</ol>
+<figure class="kafe-fig">
+<svg viewBox="0 0 640 250" role="img" aria-labelledby="ill-call-t ill-call-d" xmlns="http://www.w3.org/2000/svg">
+<title id="ill-call-t">Cómo KAFE llama a math.sqrt / How KAFE calls math.sqrt</title>
+<desc id="ill-call-d">A token travels from the line math.sqrt(16) in the program, to the KAFE interpreter, to the math toolbox, through a type check, into the sqrt function, and the result 4.0 travels back to the screen.</desc>
+<style>
+@keyframes ill-call-go { 0% { transform: translateX(0); opacity: 0 } 4% { opacity: 1 } 16% { transform: translateX(150px) } 30% { transform: translateX(300px) } 44%,50% { transform: translateX(450px); opacity: 1 } 54% { opacity: 0 } 100% { transform: translateX(450px); opacity: 0 } }
+@keyframes ill-call-back { 0%,52% { transform: translateX(450px); opacity: 0 } 56% { opacity: 1 } 80% { transform: translateX(0); opacity: 1 } 92% { transform: translateX(0); opacity: 1 } 100% { transform: translateX(0); opacity: 0 } }
+@keyframes ill-call-hl1 { 0%,10%,24%,100% { opacity: 0 } 13%,20% { opacity: .35 } }
+@keyframes ill-call-hl2 { 0%,24%,38%,100% { opacity: 0 } 27%,34% { opacity: .35 } }
+@keyframes ill-call-hl3 { 0%,38%,52%,100% { opacity: 0 } 41%,48% { opacity: .35 } }
+@keyframes ill-call-ok { 0%,30%,90%,100% { opacity: 0 } 34%,86% { opacity: 1 } }
+.ill-call-go { animation: ill-call-go 8s ease-in-out infinite; }
+.ill-call-back { animation: ill-call-back 8s ease-in-out infinite; }
+.ill-call-h1 { opacity: 0; animation: ill-call-hl1 8s linear infinite; }
+.ill-call-h2 { opacity: 0; animation: ill-call-hl2 8s linear infinite; }
+.ill-call-h3 { opacity: 0; animation: ill-call-hl3 8s linear infinite; }
+.ill-call-ok { animation: ill-call-ok 8s linear infinite; }
+</style>
+<rect class="k-line" x="10" y="60" width="120" height="110" rx="12"/>
+<text x="22" y="90">.kf</text>
+<text x="22" y="122" font-size="12">math.sqrt(16)</text>
+<rect class="k-accent ill-call-h1" x="160" y="60" width="120" height="110" rx="12"/>
+<rect class="k-line" x="160" y="60" width="120" height="110" rx="12"/>
+<text class="k-label" x="186" y="104">KAFE</text>
+<text x="172" y="130" font-size="11">Interpreter</text><text x="180" y="146" font-size="11">Visitor</text>
+<rect class="k-accent ill-call-h2" x="310" y="60" width="120" height="110" rx="12"/>
+<rect class="k-line" x="310" y="60" width="120" height="110" rx="12"/>
+<text class="k-label" x="340" y="104">math</text>
+<text x="322" y="130" font-size="11">check_sig</text>
+<text class="ill-call-ok k-label" x="400" y="132" font-size="16">✓</text>
+<text x="322" y="148" font-size="11">INT ✓ FLOAT ✓</text>
+<rect class="k-accent ill-call-h3" x="460" y="60" width="160" height="110" rx="12"/>
+<rect class="k-line" x="460" y="60" width="160" height="110" rx="12"/>
+<text class="k-label" x="500" y="104">sqrt(x)</text>
+<text x="472" y="130" font-size="11">functions.py</text>
+<path class="k-thin" d="M130 115 H160 M280 115 H310 M430 115 H460"/>
+<g class="ill-call-go"><circle class="k-accent" cx="70" cy="40" r="12"/><text x="62" y="45" font-size="12">16</text></g>
+<g class="ill-call-back"><circle class="k-accent" cx="70" cy="200" r="16"/><text x="56" y="205" font-size="12">4.0</text></g>
+<path class="k-thin" d="M70 186 V172"/>
+</svg>
+
+<figcaption>El 16 viaja de tu programa al intérprete, a la caja <code>math</code>, pasa el control de tipos y entra en <code>sqrt</code>. El resultado 4.0 regresa a tu programa.</figcaption>
+</figure>
+
+<h3 id="2-todo-esta-hecho-a-mano">2. Todo está hecho a mano<a class="headerlink" href="#2-todo-esta-hecho-a-mano" title="Permanent link">&para;</a></h3>
+<p>Una computadora solo sabe sumar, restar, multiplicar y dividir. ¿Cómo calcula entonces una raíz o un seno? MATH <strong>no usa</strong> la librería de matemáticas de Python: cada función está escrita paso a paso con esas cuatro operaciones. Aquí tienes tres de sus trucos.</p>
+<h4 id="la-raiz-cuadrada-un-rectangulo-que-se-vuelve-cuadrado">La raíz cuadrada: un rectángulo que se vuelve cuadrado<a class="headerlink" href="#la-raiz-cuadrada-un-rectangulo-que-se-vuelve-cuadrado" title="Permanent link">&para;</a></h4>
+<p>Para encontrar <span class="arithmatex">\(\sqrt{25}\)</span>, KAFE imagina un rectángulo de área 25. Empieza con uno muy alargado (25 × 1) y, en cada paso, cambia su ancho por el <strong>promedio</strong> entre el ancho y el alto. El área sigue siendo 25, pero el rectángulo se parece cada vez más a un cuadrado. Cuando es un cuadrado, su lado es la raíz: 5. Esto se llama <strong>método de Herón</strong> y tiene más de 2000 años. KAFE repite el paso 30 veces.</p>
+<figure class="kafe-fig">
+<svg viewBox="0 0 620 250" role="img" aria-labelledby="ill-her-t ill-her-d" xmlns="http://www.w3.org/2000/svg">
+<title id="ill-her-t">Cómo calcula KAFE la raíz cuadrada de 25 / How KAFE computes the square root of 25</title>
+<desc id="ill-her-d">A 25 by 1 rectangle of area 25 is reshaped step by step: the new width is the average of the old width and height. After a few steps it becomes a 5 by 5 square, so the square root of 25 is 5.</desc>
+<style>
+@keyframes ill-her-0 { 0%,0.0% { opacity: 0 } 2.0%,15.7% { opacity: 1 } 16.7%,100% { opacity: 0 } }
+.ill-her-0 { animation: ill-her-0 10s linear infinite; }
+@keyframes ill-her-1 { 0%,16.6% { opacity: 0 } 18.7%,32.3% { opacity: 1 } 33.3%,100% { opacity: 0 } }
+.ill-her-1 { animation: ill-her-1 10s linear infinite; }
+@keyframes ill-her-2 { 0%,33.2% { opacity: 0 } 35.3%,49.0% { opacity: 1 } 50.0%,100% { opacity: 0 } }
+.ill-her-2 { animation: ill-her-2 10s linear infinite; }
+@keyframes ill-her-3 { 0%,49.9% { opacity: 0 } 52.0%,65.7% { opacity: 1 } 66.7%,100% { opacity: 0 } }
+.ill-her-3 { animation: ill-her-3 10s linear infinite; }
+@keyframes ill-her-4 { 0%,66.6% { opacity: 0 } 68.7%,82.3% { opacity: 1 } 83.3%,100% { opacity: 0 } }
+.ill-her-4 { animation: ill-her-4 10s linear infinite; }
+@keyframes ill-her-5 { 0%,83.2% { opacity: 0 } 85.3%,99.0% { opacity: 1 } 100.0%,100% { opacity: 1 } }
+.ill-her-5 { animation: ill-her-5 10s linear infinite; }
+</style>
+<text x="400" y="70">area = 25</text>
+<text x="400" y="160" font-size="12">(guess + 25 / guess) / 2</text>
+<g class="ill-her-0" opacity="0"><rect class="k-accent" x="30" y="202.0" width="325.0" height="13.0" opacity="0.35"/><rect class="k-line" x="30" y="202.0" width="325.0" height="13.0"/><text x="178.5" y="235">25</text><text x="361.0" y="212.5">1</text><text class="k-label" x="400" y="120" font-size="17">guess = 25</text></g><g class="ill-her-1" opacity="0"><rect class="k-accent" x="30" y="190.0" width="169.0" height="25.0" opacity="0.35"/><rect class="k-line" x="30" y="190.0" width="169.0" height="25.0"/><text x="100.5" y="235">13</text><text x="205.0" y="206.5">1.923</text><text class="k-label" x="400" y="120" font-size="17">guess = 13</text></g><g class="ill-her-2" opacity="0"><rect class="k-accent" x="30" y="171.4" width="97.0" height="43.6" opacity="0.35"/><rect class="k-line" x="30" y="171.4" width="97.0" height="43.6"/><text x="64.5" y="235">7.462</text><text x="133.0" y="197.2">3.351</text><text class="k-label" x="400" y="120" font-size="17">guess = 7.4615</text></g><g class="ill-her-3" opacity="0"><rect class="k-accent" x="30" y="154.9" width="70.3" height="60.1" opacity="0.35"/><rect class="k-line" x="30" y="154.9" width="70.3" height="60.1"/><text x="51.1" y="235">5.406</text><text x="106.3" y="188.9">4.624</text><text class="k-label" x="400" y="120" font-size="17">guess = 5.406</text></g><g class="ill-her-4" opacity="0"><rect class="k-accent" x="30" y="150.2" width="65.2" height="64.8" opacity="0.35"/><rect class="k-line" x="30" y="150.2" width="65.2" height="64.8"/><text x="48.6" y="235">5.015</text><text x="101.2" y="186.6">4.985</text><text class="k-label" x="400" y="120" font-size="17">guess = 5.0152</text></g><g class="ill-her-5" opacity="1"><rect class="k-accent" x="30" y="150.0" width="65.0" height="65.0" opacity="0.35"/><rect class="k-line" x="30" y="150.0" width="65.0" height="65.0"/><text x="48.5" y="235">5</text><text x="101.0" y="186.5">5</text><text class="k-label" x="400" y="120" font-size="17">guess = 5</text></g>
+</svg>
+
+<figcaption>Pasos reales de <code>math.sqrt(25)</code>: 25 → 13 → 7.46 → 5.41 → 5.02 → 5.</figcaption>
+</figure>
+
+<h4 id="el-numero-e-sumar-pedacitos-cada-vez-mas-pequenos">El número e: sumar pedacitos cada vez más pequeños<a class="headerlink" href="#el-numero-e-sumar-pedacitos-cada-vez-mas-pequenos" title="Permanent link">&para;</a></h4>
+<p><code>math.exp</code> usa una <strong>serie</strong>: una suma de muchos pedacitos, cada uno más pequeño que el anterior. Para <span class="arithmatex">\(e^1\)</span> los pedacitos son 1, 1, 1/2, 1/6, 1/24… Con 50 pedacitos el resultado ya es exacto para la computadora.</p>
+<figure class="kafe-fig">
+<svg viewBox="0 0 520 220" role="img" aria-labelledby="ill-exp-t ill-exp-d" xmlns="http://www.w3.org/2000/svg">
+<title id="ill-exp-t">e como suma de pedacitos / e as a sum of small pieces</title>
+<desc id="ill-exp-d">Bars of length 1, 1, 1/2, 1/6, 1/24 and smaller appear one after another in a row. Together they reach 2.718, the number e.</desc>
+<style>
+@keyframes ill-exp-grow { 0% { transform: scaleX(0); opacity: 0 } 8%,90% { transform: scaleX(1); opacity: 1 } 100% { opacity: 0 } }
+[class^="ill-exp-"] { transform-box: fill-box; transform-origin: 0 50%; }
+.ill-exp-0 { animation: ill-exp-grow 8s ease-out infinite; animation-delay: 0.0s; }
+.ill-exp-1 { animation: ill-exp-grow 8s ease-out infinite; animation-delay: 0.6s; }
+.ill-exp-2 { animation: ill-exp-grow 8s ease-out infinite; animation-delay: 1.2s; }
+.ill-exp-3 { animation: ill-exp-grow 8s ease-out infinite; animation-delay: 1.8s; }
+.ill-exp-4 { animation: ill-exp-grow 8s ease-out infinite; animation-delay: 2.4s; }
+.ill-exp-5 { animation: ill-exp-grow 8s ease-out infinite; animation-delay: 3.0s; }
+.ill-exp-6 { animation: ill-exp-grow 8s ease-out infinite; animation-delay: 3.6s; }
+</style>
+<path class="k-thin" d="M40 80 V190"/><text x="34" y="70">0</text>
+<path class="k-accent-line" d="M447.7 80 V190" stroke-dasharray="5 5"/>
+<text class="k-label" x="417.7" y="70">e ≈ 2.718</text>
+<rect class="k-accent ill-exp-0" x="40.0" y="100" width="150.0" height="40" opacity="1.00"/><rect class="k-line" x="40.0" y="100" width="150.0" height="40" style="stroke-width:1.5"/><text class="ill-exp-0" x="111.0" y="170" font-size="13">1</text><rect class="k-accent ill-exp-1" x="190.0" y="100" width="150.0" height="40" opacity="0.90"/><rect class="k-line" x="190.0" y="100" width="150.0" height="40" style="stroke-width:1.5"/><text class="ill-exp-1" x="261.0" y="170" font-size="13">1</text><rect class="k-accent ill-exp-2" x="340.0" y="100" width="75.0" height="40" opacity="0.80"/><rect class="k-line" x="340.0" y="100" width="75.0" height="40" style="stroke-width:1.5"/><text class="ill-exp-2" x="365.5" y="170" font-size="13">1/2</text><rect class="k-accent ill-exp-3" x="415.0" y="100" width="25.0" height="40" opacity="0.70"/><rect class="k-line" x="415.0" y="100" width="25.0" height="40" style="stroke-width:1.5"/><text class="ill-exp-3" x="415.5" y="170" font-size="13">1/6</text><rect class="k-accent ill-exp-4" x="440.0" y="100" width="6.2" height="40" opacity="0.60"/><rect class="k-line" x="440.0" y="100" width="6.2" height="40" style="stroke-width:1.5"/><rect class="k-accent ill-exp-5" x="446.2" y="100" width="1.2" height="40" opacity="0.50"/><rect class="k-line" x="446.2" y="100" width="1.2" height="40" style="stroke-width:1.5"/><rect class="k-accent ill-exp-6" x="447.5" y="100" width="0.2" height="40" opacity="0.40"/><rect class="k-line" x="447.5" y="100" width="0.2" height="40" style="stroke-width:1.5"/>
+<text x="40" y="210" font-size="12">e = 1 + 1 + 1/2! + 1/3! + 1/4! + …</text>
+</svg>
+
+<figcaption>Cada barra es un pedacito de la suma. Juntas llegan a e ≈ 2.718.</figcaption>
+</figure>
+
+<h4 id="el-seno-curvas-que-se-parecen-cada-vez-mas">El seno: curvas que se parecen cada vez más<a class="headerlink" href="#el-seno-curvas-que-se-parecen-cada-vez-mas" title="Permanent link">&para;</a></h4>
+<p><code>math.sin</code> hace lo mismo con otra serie: <span class="arithmatex">\(x - \frac{x^3}{3!} + \frac{x^5}{5!} - \dots\)</span> Cada término nuevo corrige al anterior y la curva se acerca más a la onda del seno.</p>
+<figure class="kafe-fig">
+<svg viewBox="0 0 560 240" role="img" aria-labelledby="ill-tay-t ill-tay-d" xmlns="http://www.w3.org/2000/svg">
+<title id="ill-tay-t">Cómo calcula KAFE el seno / How KAFE computes sine</title>
+<desc id="ill-tay-d">The sine curve is drawn in gray. A lime curve made of sums of powers of x appears; with each extra term it hugs the sine curve more closely, until they overlap.</desc>
+<style>
+@keyframes ill-tay-0 { 0%,0% { opacity: 0 } 3%,24% { opacity: 1 } 27%,100% { opacity: 0 } }
+.ill-tay-0 { animation: ill-tay-0 9s linear infinite; }
+@keyframes ill-tay-1 { 0%,22% { opacity: 0 } 25%,46% { opacity: 1 } 49%,100% { opacity: 0 } }
+.ill-tay-1 { animation: ill-tay-1 9s linear infinite; }
+@keyframes ill-tay-2 { 0%,44% { opacity: 0 } 47%,68% { opacity: 1 } 71%,100% { opacity: 0 } }
+.ill-tay-2 { animation: ill-tay-2 9s linear infinite; }
+@keyframes ill-tay-3 { 0%,66% { opacity: 0 } 69%,90% { opacity: 1 } 93%,100% { opacity: 1 } }
+.ill-tay-3 { animation: ill-tay-3 9s linear infinite; }
+</style>
+<path class="k-thin" d="M50 120 H510 M280 20 V220"/>
+<text x="500" y="138">x</text><text x="286" y="30">y</text>
+<path class="k-line" style="opacity:.5" d="M60.1 120.0 L63.8 123.7 L67.4 127.3 L71.1 131.0 L74.7 134.6 L78.4 138.1 L82.1 141.6 L85.7 145.1 L89.4 148.5 L93.1 151.8 L96.7 155.0 L100.4 158.1 L104.1 161.1 L107.7 164.1 L111.4 166.8 L115.1 169.5 L118.7 172.0 L122.4 174.4 L126.1 176.6 L129.7 178.7 L133.4 180.6 L137.1 182.4 L140.7 183.9 L144.4 185.4 L148.1 186.6 L151.7 187.6 L155.4 188.5 L159.0 189.1 L162.7 189.6 L166.4 189.9 L170.0 190.0 L173.7 189.9 L177.4 189.6 L181.0 189.1 L184.7 188.5 L188.4 187.6 L192.0 186.6 L195.7 185.4 L199.4 183.9 L203.0 182.4 L206.7 180.6 L210.4 178.7 L214.0 176.6 L217.7 174.4 L221.4 172.0 L225.0 169.5 L228.7 166.8 L232.4 164.1 L236.0 161.1 L239.7 158.1 L243.3 155.0 L247.0 151.8 L250.7 148.5 L254.3 145.1 L258.0 141.6 L261.7 138.1 L265.3 134.6 L269.0 131.0 L272.7 127.3 L276.3 123.7 L280.0 120.0 L283.7 116.3 L287.3 112.7 L291.0 109.0 L294.7 105.4 L298.3 101.9 L302.0 98.4 L305.7 94.9 L309.3 91.5 L313.0 88.2 L316.7 85.0 L320.3 81.9 L324.0 78.9 L327.6 75.9 L331.3 73.2 L335.0 70.5 L338.6 68.0 L342.3 65.6 L346.0 63.4 L349.6 61.3 L353.3 59.4 L357.0 57.6 L360.6 56.1 L364.3 54.6 L368.0 53.4 L371.6 52.4 L375.3 51.5 L379.0 50.9 L382.6 50.4 L386.3 50.1 L390.0 50.0 L393.6 50.1 L397.3 50.4 L401.0 50.9 L404.6 51.5 L408.3 52.4 L411.9 53.4 L415.6 54.6 L419.3 56.1 L422.9 57.6 L426.6 59.4 L430.3 61.3 L433.9 63.4 L437.6 65.6 L441.3 68.0 L444.9 70.5 L448.6 73.2 L452.3 75.9 L455.9 78.9 L459.6 81.9 L463.3 85.0 L466.9 88.2 L470.6 91.5 L474.3 94.9 L477.9 98.4 L481.6 101.9 L485.3 105.4 L488.9 109.0 L492.6 112.7 L496.2 116.3 L499.9 120.0"/>
+<g class="ill-tay-0" opacity="0"><path class="k-accent-line" d="M60.1 232.0 L63.8 232.0 L67.4 232.0 L71.1 232.0 L74.7 232.0 L78.4 232.0 L82.1 232.0 L85.7 232.0 L89.4 232.0 L93.1 232.0 L96.7 232.0 L100.4 232.0 L104.1 232.0 L107.7 232.0 L111.4 232.0 L115.1 232.0 L118.7 232.0 L122.4 232.0 L126.1 232.0 L129.7 232.0 L133.4 232.0 L137.1 232.0 L140.7 232.0 L144.4 232.0 L148.1 232.0 L151.7 232.0 L155.4 232.0 L159.0 232.0 L162.7 232.0 L166.4 232.0 L170.0 230.0 L173.7 226.3 L177.4 222.6 L181.0 219.0 L184.7 215.3 L188.4 211.6 L192.0 208.0 L195.7 204.3 L199.4 200.6 L203.0 197.0 L206.7 193.3 L210.4 189.6 L214.0 186.0 L217.7 182.3 L221.4 178.6 L225.0 175.0 L228.7 171.3 L232.4 167.6 L236.0 164.0 L239.7 160.3 L243.3 156.7 L247.0 153.0 L250.7 149.3 L254.3 145.7 L258.0 142.0 L261.7 138.3 L265.3 134.7 L269.0 131.0 L272.7 127.3 L276.3 123.7 L280.0 120.0 L283.7 116.3 L287.3 112.7 L291.0 109.0 L294.7 105.3 L298.3 101.7 L302.0 98.0 L305.7 94.3 L309.3 90.7 L313.0 87.0 L316.7 83.3 L320.3 79.7 L324.0 76.0 L327.6 72.4 L331.3 68.7 L335.0 65.0 L338.6 61.4 L342.3 57.7 L346.0 54.0 L349.6 50.4 L353.3 46.7 L357.0 43.0 L360.6 39.4 L364.3 35.7 L368.0 32.0 L371.6 28.4 L375.3 24.7 L379.0 21.0 L382.6 17.4 L386.3 13.7 L390.0 10.0 L393.6 8.0 L397.3 8.0 L401.0 8.0 L404.6 8.0 L408.3 8.0 L411.9 8.0 L415.6 8.0 L419.3 8.0 L422.9 8.0 L426.6 8.0 L430.3 8.0 L433.9 8.0 L437.6 8.0 L441.3 8.0 L444.9 8.0 L448.6 8.0 L452.3 8.0 L455.9 8.0 L459.6 8.0 L463.3 8.0 L466.9 8.0 L470.6 8.0 L474.3 8.0 L477.9 8.0 L481.6 8.0 L485.3 8.0 L488.9 8.0 L492.6 8.0 L496.2 8.0 L499.9 8.0"/><text class="k-label" x="470" y="40">x</text></g><g class="ill-tay-1" opacity="0"><path class="k-accent-line" d="M60.1 8.0 L63.8 8.0 L67.4 8.0 L71.1 18.8 L74.7 31.1 L78.4 43.0 L82.1 54.2 L85.7 64.9 L89.4 75.1 L93.1 84.8 L96.7 93.9 L100.4 102.6 L104.1 110.7 L107.7 118.4 L111.4 125.6 L115.1 132.3 L118.7 138.6 L122.4 144.5 L126.1 149.9 L129.7 154.8 L133.4 159.4 L137.1 163.6 L140.7 167.4 L144.4 170.8 L148.1 173.8 L151.7 176.5 L155.4 178.8 L159.0 180.8 L162.7 182.4 L166.4 183.7 L170.0 184.7 L173.7 185.4 L177.4 185.9 L181.0 186.0 L184.7 185.9 L188.4 185.5 L192.0 184.8 L195.7 183.9 L199.4 182.8 L203.0 181.5 L206.7 179.9 L210.4 178.2 L214.0 176.2 L217.7 174.1 L221.4 171.8 L225.0 169.3 L228.7 166.7 L232.4 164.0 L236.0 161.1 L239.7 158.1 L243.3 155.0 L247.0 151.8 L250.7 148.5 L254.3 145.1 L258.0 141.6 L261.7 138.1 L265.3 134.6 L269.0 131.0 L272.7 127.3 L276.3 123.7 L280.0 120.0 L283.7 116.3 L287.3 112.7 L291.0 109.0 L294.7 105.4 L298.3 101.9 L302.0 98.4 L305.7 94.9 L309.3 91.5 L313.0 88.2 L316.7 85.0 L320.3 81.9 L324.0 78.9 L327.6 76.0 L331.3 73.3 L335.0 70.7 L338.6 68.2 L342.3 65.9 L346.0 63.8 L349.6 61.8 L353.3 60.1 L357.0 58.5 L360.6 57.2 L364.3 56.1 L368.0 55.2 L371.6 54.5 L375.3 54.1 L379.0 54.0 L382.6 54.1 L386.3 54.6 L390.0 55.3 L393.6 56.3 L397.3 57.6 L401.0 59.2 L404.6 61.2 L408.3 63.5 L411.9 66.2 L415.6 69.2 L419.3 72.6 L422.9 76.4 L426.6 80.6 L430.3 85.2 L433.9 90.1 L437.6 95.5 L441.3 101.4 L444.9 107.7 L448.6 114.4 L452.3 121.6 L455.9 129.3 L459.6 137.4 L463.3 146.1 L466.9 155.2 L470.6 164.9 L474.3 175.1 L477.9 185.8 L481.6 197.0 L485.3 208.9 L488.9 221.2 L492.6 232.0 L496.2 232.0 L499.9 232.0"/><text class="k-label" x="470" y="40">x − x³/3!</text></g><g class="ill-tay-2" opacity="0"><path class="k-accent-line" d="M60.1 156.7 L63.8 156.4 L67.4 156.5 L71.1 156.9 L74.7 157.6 L78.4 158.5 L82.1 159.6 L85.7 160.9 L89.4 162.4 L93.1 164.0 L96.7 165.7 L100.4 167.4 L104.1 169.2 L107.7 171.0 L111.4 172.9 L115.1 174.7 L118.7 176.5 L122.4 178.2 L126.1 179.9 L129.7 181.4 L133.4 182.9 L137.1 184.3 L140.7 185.6 L144.4 186.7 L148.1 187.7 L151.7 188.5 L155.4 189.2 L159.0 189.8 L162.7 190.1 L166.4 190.3 L170.0 190.3 L173.7 190.2 L177.4 189.8 L181.0 189.3 L184.7 188.6 L188.4 187.7 L192.0 186.6 L195.7 185.4 L199.4 184.0 L203.0 182.4 L206.7 180.6 L210.4 178.7 L214.0 176.6 L217.7 174.4 L221.4 172.0 L225.0 169.5 L228.7 166.8 L232.4 164.1 L236.0 161.1 L239.7 158.1 L243.3 155.0 L247.0 151.8 L250.7 148.5 L254.3 145.1 L258.0 141.6 L261.7 138.1 L265.3 134.6 L269.0 131.0 L272.7 127.3 L276.3 123.7 L280.0 120.0 L283.7 116.3 L287.3 112.7 L291.0 109.0 L294.7 105.4 L298.3 101.9 L302.0 98.4 L305.7 94.9 L309.3 91.5 L313.0 88.2 L316.7 85.0 L320.3 81.9 L324.0 78.9 L327.6 75.9 L331.3 73.2 L335.0 70.5 L338.6 68.0 L342.3 65.6 L346.0 63.4 L349.6 61.3 L353.3 59.4 L357.0 57.6 L360.6 56.0 L364.3 54.6 L368.0 53.4 L371.6 52.3 L375.3 51.4 L379.0 50.7 L382.6 50.2 L386.3 49.8 L390.0 49.7 L393.6 49.7 L397.3 49.9 L401.0 50.2 L404.6 50.8 L408.3 51.5 L411.9 52.3 L415.6 53.3 L419.3 54.4 L422.9 55.7 L426.6 57.1 L430.3 58.6 L433.9 60.1 L437.6 61.8 L441.3 63.5 L444.9 65.3 L448.6 67.1 L452.3 69.0 L455.9 70.8 L459.6 72.6 L463.3 74.3 L466.9 76.0 L470.6 77.6 L474.3 79.1 L477.9 80.4 L481.6 81.5 L485.3 82.4 L488.9 83.1 L492.6 83.5 L496.2 83.6 L499.9 83.3"/><text class="k-label" x="470" y="40">+ x⁵/5!</text></g><g class="ill-tay-3" opacity="1"><path class="k-accent-line" d="M60.1 114.7 L63.8 119.1 L67.4 123.4 L71.1 127.6 L74.7 131.7 L78.4 135.7 L82.1 139.6 L85.7 143.3 L89.4 147.0 L93.1 150.5 L96.7 154.0 L100.4 157.2 L104.1 160.4 L107.7 163.4 L111.4 166.3 L115.1 169.1 L118.7 171.7 L122.4 174.1 L126.1 176.4 L129.7 178.5 L133.4 180.5 L137.1 182.3 L140.7 183.9 L144.4 185.3 L148.1 186.5 L151.7 187.6 L155.4 188.4 L159.0 189.1 L162.7 189.6 L166.4 189.9 L170.0 190.0 L173.7 189.9 L177.4 189.6 L181.0 189.1 L184.7 188.5 L188.4 187.6 L192.0 186.6 L195.7 185.3 L199.4 183.9 L203.0 182.4 L206.7 180.6 L210.4 178.7 L214.0 176.6 L217.7 174.4 L221.4 172.0 L225.0 169.5 L228.7 166.8 L232.4 164.1 L236.0 161.1 L239.7 158.1 L243.3 155.0 L247.0 151.8 L250.7 148.5 L254.3 145.1 L258.0 141.6 L261.7 138.1 L265.3 134.6 L269.0 131.0 L272.7 127.3 L276.3 123.7 L280.0 120.0 L283.7 116.3 L287.3 112.7 L291.0 109.0 L294.7 105.4 L298.3 101.9 L302.0 98.4 L305.7 94.9 L309.3 91.5 L313.0 88.2 L316.7 85.0 L320.3 81.9 L324.0 78.9 L327.6 75.9 L331.3 73.2 L335.0 70.5 L338.6 68.0 L342.3 65.6 L346.0 63.4 L349.6 61.3 L353.3 59.4 L357.0 57.6 L360.6 56.1 L364.3 54.7 L368.0 53.4 L371.6 52.4 L375.3 51.5 L379.0 50.9 L382.6 50.4 L386.3 50.1 L390.0 50.0 L393.6 50.1 L397.3 50.4 L401.0 50.9 L404.6 51.6 L408.3 52.4 L411.9 53.5 L415.6 54.7 L419.3 56.1 L422.9 57.7 L426.6 59.5 L430.3 61.5 L433.9 63.6 L437.6 65.9 L441.3 68.3 L444.9 70.9 L448.6 73.7 L452.3 76.6 L455.9 79.6 L459.6 82.8 L463.3 86.0 L466.9 89.5 L470.6 93.0 L474.3 96.7 L477.9 100.4 L481.6 104.3 L485.3 108.3 L488.9 112.4 L492.6 116.6 L496.2 120.9 L499.9 125.3"/><text class="k-label" x="470" y="40">− x⁷/7!</text></g>
+</svg>
+
+<figcaption>En gris, la onda del seno. En lima, la suma con 1, 2, 3 y 4 términos: cada término la acerca más.</figcaption>
+</figure>
+
+<div class="admonition note">
+<p class="admonition-title">Por qué a veces sale 0.9999999999999999</p>
+<p>Como todo se calcula con sumas y aproximaciones, el último decimal puede salir un poquito distinto. Por eso <code>math.log(math.e)</code> da <code>0.9999999999999999</code> y <code>math.pow(2, 3)</code> da <code>7.999999999999994</code>. Para comparar decimales usa <a href="checks/#isclose"><code>math.isclose</code></a>.</p>
+</div>
+<details class="info">
+<summary>Para curiosos 🤓</summary>
+<ul>
+<li><strong>Herón:</strong> <span class="arithmatex">\(g_{n+1} = \dfrac{g_n + x / g_n}{2}\)</span>, empezando con <span class="arithmatex">\(g_0 = x\)</span>.</li>
+<li><strong>Exponencial:</strong> <span class="arithmatex">\(e^x = \sum_{n=0}^{\infty} \dfrac{x^n}{n!}\)</span>. Para números grandes KAFE primero divide <span class="arithmatex">\(x\)</span> entre 2 varias veces y al final eleva al cuadrado el resultado.</li>
+<li><strong>Seno:</strong> <span class="arithmatex">\(\sin x = \sum_{n=0}^{\infty} (-1)^n \dfrac{x^{2n+1}}{(2n+1)!}\)</span>, después de llevar <span class="arithmatex">\(x\)</span> a una vuelta (<span class="arithmatex">\(x \bmod 2\pi\)</span>).</li>
+<li><strong>Logaritmo:</strong> <span class="arithmatex">\(\ln x = k \ln 2 + \ln m\)</span>, partiendo <span class="arithmatex">\(x\)</span> por 2 hasta que <span class="arithmatex">\(m\)</span> queda entre 1 y 2, y luego una serie para <span class="arithmatex">\(\ln m\)</span>.</li>
+</ul>
+</details>
+<h2 id="sections">Secciones de la librería<a class="headerlink" href="#sections" title="Permanent link">&para;</a></h2>
+<div class="grid cards">
+<ul>
+<li>
+<p><strong><a href="constants/">Constantes</a></strong></p>
+<hr />
+<p><code>pi</code>, <code>e</code>, <code>tau</code>, <code>inf</code>, <code>nan</code></p>
+</li>
+<li>
+<p><strong><a href="rounding/">Redondeo</a></strong></p>
+<hr />
+<p><code>abs</code>, <code>round</code>, <code>floor</code>, <code>ceil</code>, <code>trunc</code>, <code>copysign</code></p>
+</li>
+<li>
+<p><strong><a href="powers/">Potencias y raíces</a></strong></p>
+<hr />
+<p><code>pow</code>, <code>sqrt</code>, <code>cbrt</code>, <code>exp</code>, <code>exp2</code>, <code>expm1</code></p>
+</li>
+<li>
+<p><strong><a href="logarithms/">Logaritmos</a></strong></p>
+<hr />
+<p><code>log</code>, <code>log2</code>, <code>log10</code></p>
+</li>
+<li>
+<p><strong><a href="division/">Restos y divisores</a></strong></p>
+<hr />
+<p><code>fmod</code>, <code>remainder</code>, <code>gcd</code>, <code>lcm</code></p>
+</li>
+<li>
+<p><strong><a href="trigonometry/">Trigonometría</a></strong></p>
+<hr />
+<p><code>sin</code>, <code>cos</code>, <code>tan</code>, <code>asin</code>, <code>acos</code>, <code>atan</code>, <code>degrees</code>, <code>radians</code></p>
+</li>
+<li>
+<p><strong><a href="hyperbolic/">Hiperbólicas</a></strong></p>
+<hr />
+<p><code>sinh</code>, <code>cosh</code>, <code>tanh</code></p>
+</li>
+<li>
+<p><strong><a href="combinatorics/">Combinatoria</a></strong></p>
+<hr />
+<p><code>factorial</code>, <code>comb</code>, <code>perm</code></p>
+</li>
+<li>
+<p><strong><a href="lists/">Listas de números</a></strong></p>
+<hr />
+<p><code>sum</code>, <code>prod</code>, <code>fsum</code>, <code>sumprod</code>, <code>dist</code>, <code>hypot</code></p>
+</li>
+<li>
+<p><strong><a href="checks/">Comprobar números</a></strong></p>
+<hr />
+<p><code>isclose</code>, <code>isinf</code>, <code>isnan</code>, <code>isfinite</code>, <code>ulp</code></p>
+</li>
+<li>
+<p><strong><a href="special/">Funciones especiales</a></strong></p>
+<hr />
+<p><code>erf</code>, <code>erfc</code>, <code>gamma</code>, <code>lgamma</code></p>
+</li>
+</ul>
+</div>
+<h2 id="summary">Resumen de todas las funciones<a class="headerlink" href="#summary" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Función</th>
+<th>Grupo</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="constants/#constants"><code>math.pi · math.e · math.tau · math.inf · math.nan</code></a></td>
+<td><a href="constants/">Constantes</a></td>
+</tr>
+<tr>
+<td><a href="rounding/#abs"><code>math.abs(x)</code></a></td>
+<td><a href="rounding/">Redondeo</a></td>
+</tr>
+<tr>
+<td><a href="rounding/#round"><code>math.round(x, ndigits)</code></a></td>
+<td><a href="rounding/">Redondeo</a></td>
+</tr>
+<tr>
+<td><a href="rounding/#floor"><code>math.floor(x)</code></a></td>
+<td><a href="rounding/">Redondeo</a></td>
+</tr>
+<tr>
+<td><a href="rounding/#ceil"><code>math.ceil(x)</code></a></td>
+<td><a href="rounding/">Redondeo</a></td>
+</tr>
+<tr>
+<td><a href="rounding/#trunc"><code>math.trunc(x)</code></a></td>
+<td><a href="rounding/">Redondeo</a></td>
+</tr>
+<tr>
+<td><a href="rounding/#copysign"><code>math.copysign(x, y)</code></a></td>
+<td><a href="rounding/">Redondeo</a></td>
+</tr>
+<tr>
+<td><a href="powers/#pow"><code>math.pow(x, y)</code></a></td>
+<td><a href="powers/">Potencias y raíces</a></td>
+</tr>
+<tr>
+<td><a href="powers/#sqrt"><code>math.sqrt(x)</code></a></td>
+<td><a href="powers/">Potencias y raíces</a></td>
+</tr>
+<tr>
+<td><a href="powers/#cbrt"><code>math.cbrt(x)</code></a></td>
+<td><a href="powers/">Potencias y raíces</a></td>
+</tr>
+<tr>
+<td><a href="powers/#exp"><code>math.exp(x)</code></a></td>
+<td><a href="powers/">Potencias y raíces</a></td>
+</tr>
+<tr>
+<td><a href="powers/#exp2"><code>math.exp2(x)</code></a></td>
+<td><a href="powers/">Potencias y raíces</a></td>
+</tr>
+<tr>
+<td><a href="powers/#expm1"><code>math.expm1(x)</code></a></td>
+<td><a href="powers/">Potencias y raíces</a></td>
+</tr>
+<tr>
+<td><a href="logarithms/#log"><code>math.log(x, base)</code></a></td>
+<td><a href="logarithms/">Logaritmos</a></td>
+</tr>
+<tr>
+<td><a href="logarithms/#log2"><code>math.log2(x)</code></a></td>
+<td><a href="logarithms/">Logaritmos</a></td>
+</tr>
+<tr>
+<td><a href="logarithms/#log10"><code>math.log10(x)</code></a></td>
+<td><a href="logarithms/">Logaritmos</a></td>
+</tr>
+<tr>
+<td><a href="division/#fmod"><code>math.fmod(x, y)</code></a></td>
+<td><a href="division/">Restos y divisores</a></td>
+</tr>
+<tr>
+<td><a href="division/#remainder"><code>math.remainder(x, y)</code></a></td>
+<td><a href="division/">Restos y divisores</a></td>
+</tr>
+<tr>
+<td><a href="division/#gcd"><code>math.gcd(a, b, ...)</code></a></td>
+<td><a href="division/">Restos y divisores</a></td>
+</tr>
+<tr>
+<td><a href="division/#lcm"><code>math.lcm(a, b, ...)</code></a></td>
+<td><a href="division/">Restos y divisores</a></td>
+</tr>
+<tr>
+<td><a href="trigonometry/#sin"><code>math.sin(x)</code></a></td>
+<td><a href="trigonometry/">Trigonometría</a></td>
+</tr>
+<tr>
+<td><a href="trigonometry/#cos"><code>math.cos(x)</code></a></td>
+<td><a href="trigonometry/">Trigonometría</a></td>
+</tr>
+<tr>
+<td><a href="trigonometry/#tan"><code>math.tan(x)</code></a></td>
+<td><a href="trigonometry/">Trigonometría</a></td>
+</tr>
+<tr>
+<td><a href="trigonometry/#asin"><code>math.asin(x)</code></a></td>
+<td><a href="trigonometry/">Trigonometría</a></td>
+</tr>
+<tr>
+<td><a href="trigonometry/#acos"><code>math.acos(x)</code></a></td>
+<td><a href="trigonometry/">Trigonometría</a></td>
+</tr>
+<tr>
+<td><a href="trigonometry/#atan"><code>math.atan(x)</code></a></td>
+<td><a href="trigonometry/">Trigonometría</a></td>
+</tr>
+<tr>
+<td><a href="trigonometry/#degrees"><code>math.degrees(x)</code></a></td>
+<td><a href="trigonometry/">Trigonometría</a></td>
+</tr>
+<tr>
+<td><a href="trigonometry/#radians"><code>math.radians(x)</code></a></td>
+<td><a href="trigonometry/">Trigonometría</a></td>
+</tr>
+<tr>
+<td><a href="hyperbolic/#sinh"><code>math.sinh(x)</code></a></td>
+<td><a href="hyperbolic/">Hiperbólicas</a></td>
+</tr>
+<tr>
+<td><a href="hyperbolic/#cosh"><code>math.cosh(x)</code></a></td>
+<td><a href="hyperbolic/">Hiperbólicas</a></td>
+</tr>
+<tr>
+<td><a href="hyperbolic/#tanh"><code>math.tanh(x)</code></a></td>
+<td><a href="hyperbolic/">Hiperbólicas</a></td>
+</tr>
+<tr>
+<td><a href="combinatorics/#factorial"><code>math.factorial(n)</code></a></td>
+<td><a href="combinatorics/">Combinatoria</a></td>
+</tr>
+<tr>
+<td><a href="combinatorics/#comb"><code>math.comb(n, k)</code></a></td>
+<td><a href="combinatorics/">Combinatoria</a></td>
+</tr>
+<tr>
+<td><a href="combinatorics/#perm"><code>math.perm(n, k)</code></a></td>
+<td><a href="combinatorics/">Combinatoria</a></td>
+</tr>
+<tr>
+<td><a href="lists/#sum"><code>math.sum(list) · math.sum(start, end)</code></a></td>
+<td><a href="lists/">Listas de números</a></td>
+</tr>
+<tr>
+<td><a href="lists/#prod"><code>math.prod(list) · math.prod(start, end)</code></a></td>
+<td><a href="lists/">Listas de números</a></td>
+</tr>
+<tr>
+<td><a href="lists/#fsum"><code>math.fsum(list)</code></a></td>
+<td><a href="lists/">Listas de números</a></td>
+</tr>
+<tr>
+<td><a href="lists/#sumprod"><code>math.sumprod(p, q)</code></a></td>
+<td><a href="lists/">Listas de números</a></td>
+</tr>
+<tr>
+<td><a href="lists/#dist"><code>math.dist(p, q)</code></a></td>
+<td><a href="lists/">Listas de números</a></td>
+</tr>
+<tr>
+<td><a href="lists/#hypot"><code>math.hypot(x, y, ...)</code></a></td>
+<td><a href="lists/">Listas de números</a></td>
+</tr>
+<tr>
+<td><a href="checks/#isclose"><code>math.isclose(a, b, rel_tol, abs_tol)</code></a></td>
+<td><a href="checks/">Comprobar números</a></td>
+</tr>
+<tr>
+<td><a href="checks/#isinf"><code>math.isinf(x)</code></a></td>
+<td><a href="checks/">Comprobar números</a></td>
+</tr>
+<tr>
+<td><a href="checks/#isnan"><code>math.isnan(x)</code></a></td>
+<td><a href="checks/">Comprobar números</a></td>
+</tr>
+<tr>
+<td><a href="checks/#isfinite"><code>math.isfinite(x)</code></a></td>
+<td><a href="checks/">Comprobar números</a></td>
+</tr>
+<tr>
+<td><a href="checks/#ulp"><code>math.ulp(x)</code></a></td>
+<td><a href="checks/">Comprobar números</a></td>
+</tr>
+<tr>
+<td><a href="special/#erf"><code>math.erf(x)</code></a></td>
+<td><a href="special/">Funciones especiales</a></td>
+</tr>
+<tr>
+<td><a href="special/#erfc"><code>math.erfc(x)</code></a></td>
+<td><a href="special/">Funciones especiales</a></td>
+</tr>
+<tr>
+<td><a href="special/#gamma"><code>math.gamma(x)</code></a></td>
+<td><a href="special/">Funciones especiales</a></td>
+</tr>
+<tr>
+<td><a href="special/#lgamma"><code>math.lgamma(x)</code></a></td>
+<td><a href="special/">Funciones especiales</a></td>
+</tr>
+</tbody>
+</table>
+<h2 id="que-aprendiste">¿Qué aprendiste?<a class="headerlink" href="#que-aprendiste" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Para usar MATH escribes <code>import math;</code> y luego <code>math.nombre(...)</code>.</li>
+<li>Los ángulos van en <strong>radianes</strong>: convierte con <code>math.radians</code>.</li>
+<li>Los decimales de la computadora no son exactos: compara con <code>math.isclose</code>.</li>
+<li>Para potencias enteras exactas, el operador <code>^</code> es mejor que <code>math.pow</code>.</li>
+</ul>
+<p><a class="md-button md-button--primary" href="constants/">Empieza: Constantes <span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg></span></a></p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Volver al principio
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Pie" >
+        
+          
+          <a href="../../language/imports/" class="md-footer__link md-footer__link--prev" aria-label="Anterior: Imports">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Anterior
+              </span>
+              <div class="md-ellipsis">
+                Imports
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="constants/" class="md-footer__link md-footer__link--next" aria-label="Siguiente: Constantes">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Siguiente
+              </span>
+              <div class="md-ellipsis">
+                Constantes
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/joshmessi10/KAFE-Reloaded" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.path", "navigation.top", "navigation.indexes", "navigation.footer", "search.highlight", "search.suggest", "search.share", "content.code.copy", "content.code.annotate", "content.tabs.link", "toc.follow"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copiado al portapapeles", "clipboard.copy": "Copiar al portapapeles", "search.result.more.one": "1 m\u00e1s en esta p\u00e1gina", "search.result.more.other": "# m\u00e1s en esta p\u00e1gina", "search.result.none": "No se encontraron documentos", "search.result.one": "1 documento encontrado", "search.result.other": "# documentos encontrados", "search.result.placeholder": "Teclee para comenzar b\u00fasqueda", "search.result.term.missing": "Falta", "select.version": "Seleccionar versi\u00f3n"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/katex@0.16.25/dist/katex.min.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/katex@0.16.25/dist/contrib/auto-render.min.js"></script>
+      
+        <script src="../../assets/js/math.js"></script>
+      
+        <script src="../../assets/js/kafe-highlight.js"></script>
+      
+    
+  </body>
+</html>

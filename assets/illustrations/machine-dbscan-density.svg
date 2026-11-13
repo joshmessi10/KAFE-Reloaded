@@ -1,0 +1,25 @@
+<svg viewBox="0 0 600 270" role="img" aria-labelledby="ill-dbs-t ill-dbs-d" xmlns="http://www.w3.org/2000/svg">
+<title id="ill-dbs-t">DBSCAN busca zonas con muchos vecinos / DBSCAN looks for crowded areas</title>
+<desc id="ill-dbs-d">Nine houses. A circle of radius epsilon appears around each one. Houses with at least three houses inside their circle (counting themselves) become core points. The crowded areas form groups 1 and 2, and the lonely house in the middle is marked as noise, label −1.</desc>
+<style>
+@keyframes ill-dbs-eps { 0%,8% { opacity: 0 } 22%,100% { opacity: 1 } }
+.ill-dbs-eps { animation: ill-dbs-eps 12s linear infinite; }
+@keyframes ill-dbs-core { 0%,32% { opacity: 0 } 42%,100% { opacity: 1 } }
+.ill-dbs-core { animation: ill-dbs-core 12s linear infinite; }
+@keyframes ill-dbs-groups { 0%,50% { opacity: 0 } 60%,100% { opacity: 1 } }
+.ill-dbs-groups { animation: ill-dbs-groups 12s linear infinite; }
+@keyframes ill-dbs-noise { 0%,64% { opacity: 0 } 72%,100% { opacity: 1 } }
+.ill-dbs-noise { animation: ill-dbs-noise 12s linear infinite; }
+@keyframes ill-dbs-all { 0% { opacity: 0 } 4%,94% { opacity: 1 } 100% { opacity: 0 } }
+.ill-dbs-all { animation: ill-dbs-all 12s linear infinite; }
+.ill-dbs-dash { stroke-dasharray: 6 5; }
+</style>
+<g class="ill-dbs-all">
+<g class="ill-dbs-groups"><rect class="k-soft" x="88" y="176" width="104" height="56" rx="14"/><rect class="k-soft" x="256" y="8" width="56" height="56" rx="14"/><text class="k-label" x="100" y="170">1</text><text class="k-label" x="268" y="2">2</text></g>
+<g class="ill-dbs-eps"><circle class="k-thin" cx="104" cy="216" r="24"/><circle class="k-thin" cx="104" cy="192" r="24"/><circle class="k-thin" cx="128" cy="216" r="24"/><circle class="k-thin" cx="128" cy="192" r="24"/><circle class="k-thin" cx="152" cy="192" r="24"/><circle class="k-thin" cx="224" cy="96" r="24"/><circle class="k-thin" cx="272" cy="48" r="24"/><circle class="k-thin" cx="272" cy="24" r="24"/><circle class="k-thin" cx="296" cy="48" r="24"/><text class="k-label" x="182" y="197">ε</text></g>
+<circle class="k-fill" cx="104" cy="216" r="6"/><circle class="k-fill" cx="104" cy="192" r="6"/><circle class="k-fill" cx="128" cy="216" r="6"/><circle class="k-fill" cx="128" cy="192" r="6"/><circle class="k-fill" cx="152" cy="192" r="6"/><circle class="k-fill" cx="224" cy="96" r="6"/><circle class="k-fill" cx="272" cy="48" r="6"/><circle class="k-fill" cx="272" cy="24" r="6"/><circle class="k-fill" cx="296" cy="48" r="6"/>
+<g class="ill-dbs-core"><circle class="k-accent" cx="104" cy="216" r="7"/><circle class="k-accent" cx="104" cy="192" r="7"/><circle class="k-accent" cx="128" cy="216" r="7"/><circle class="k-accent" cx="128" cy="192" r="7"/><circle class="k-accent" cx="272" cy="48" r="7"/></g>
+<g class="ill-dbs-noise"><circle class="k-line ill-dbs-dash" cx="224" cy="96" r="14"/><text class="k-label" x="244" y="101">−1</text></g>
+<g transform="translate(360 60)"><circle class="k-accent" cx="10" cy="10" r="7"/><text x="26" y="15">core</text><circle class="k-fill" cx="10" cy="45" r="6"/><circle class="k-line ill-dbs-dash" cx="10" cy="80" r="10"/><text x="26" y="85">−1</text></g>
+</g>
+</svg>
