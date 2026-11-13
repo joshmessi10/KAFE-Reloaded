@@ -86,3 +86,5 @@ termine
 calle
 represente
 percentil
+controles
+interpretes

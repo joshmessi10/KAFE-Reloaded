@@ -1,0 +1,9 @@
+import gesha;
+
+List[List[List[FLOAT]]] image = [[[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0]]];
+
+FLOAT top_left = 1.0 + 2.0 + 4.0 + 5.0;
+show(top_left);
+
+GESHA conv = gesha.create_conv2d(1, [2, 2], "linear", [1, 3, 3], 1, "valid", 7, gesha.ones_initializer());
+show(conv.forward(image));

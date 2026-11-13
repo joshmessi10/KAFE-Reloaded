@@ -1,0 +1,6 @@
+Epoch 1/6 — Loss 1.0468 — Accuracy 50.00% - val_loss: 0.4508
+Epoch 2/6 — Loss 1.0269 — Accuracy 25.00% - val_loss: 0.2158
+Epoch 3/6 — Loss 0.8279 — Accuracy 50.00% - val_loss: 0.1107
+Epoch 4/6 — Loss 0.6517 — Accuracy 75.00% - val_loss: 0.0714
+Epoch 5/6 — Loss 0.4942 — Accuracy 75.00% - val_loss: 0.0619
+Epoch 6/6 — Loss 0.3683 — Accuracy 100.00% - val_loss: 0.0651

@@ -1,0 +1,26 @@
+import gesha;
+
+List[List[List[List[FLOAT]]]] images = [
+    [[[1.0, 0.0, 0.0], [1.0, 0.0, 0.0], [1.0, 0.0, 0.0]]],
+    [[[0.0, 1.0, 0.0], [0.0, 1.0, 0.0], [0.0, 1.0, 0.0]]],
+    [[[0.0, 0.0, 1.0], [0.0, 0.0, 1.0], [0.0, 0.0, 1.0]]],
+    [[[1.0, 1.0, 1.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0]]],
+    [[[0.0, 0.0, 0.0], [1.0, 1.0, 1.0], [0.0, 0.0, 0.0]]],
+    [[[0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [1.0, 1.0, 1.0]]]
+];
+List[INT] kind = [0, 0, 0, 1, 1, 1];
+
+GESHA conv = gesha.create_conv2d(2, [2, 2], "tanh", [1, 3, 3], 1, "valid", 2);
+GESHA flat = gesha.flatten_layer();
+GESHA out = gesha.create_dense(1, "sigmoid", [], 0.0, 2);
+GESHA model = gesha.sequential([conv, flat, out]);
+model.compile("adam", "binary_crossentropy", []);
+model.set_lr(0.2);
+model.fit(images, kind, 8, 1);
+
+show(model.predict_label(images));
+List[List[List[List[FLOAT]]]] noisy = [
+    [[[0.1, 0.9, 0.0], [0.0, 0.8, 0.1], [0.1, 1.0, 0.0]]],
+    [[[0.0, 0.1, 0.0], [0.9, 0.8, 1.0], [0.1, 0.0, 0.1]]]
+];
+show(model.predict_label(noisy));

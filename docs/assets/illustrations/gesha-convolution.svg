@@ -1,0 +1,22 @@
+<svg viewBox="0 0 600 270" role="img" aria-labelledby="ill-cnv-t ill-cnv-d" xmlns="http://www.w3.org/2000/svg">
+<title id="ill-cnv-t">Un filtro recorre la imagen / A filter slides over the image</title>
+<desc id="ill-cnv-d">A 3 by 3 image with the numbers 1 to 9. A 2 by 2 window of ones slides over it, one position at a time. At each stop it adds the four numbers underneath and writes the result into a 2 by 2 output: 12, 16, 24 and 28.</desc>
+<style>
+@keyframes ill-cnv-win { 0% { transform: translate(0, 0) } 10%,22% { transform: translate(0px, 0px) } 28%,40% { transform: translate(52px, 0px) } 46%,58% { transform: translate(0px, 52px) } 64%,76% { transform: translate(52px, 52px) } 100% { transform: translate(52px, 52px) } }
+.ill-cnv-win { transform: translate(52px, 52px); animation: ill-cnv-win 12s ease-in-out infinite; }
+@keyframes ill-cnv-o0 { 0%,16% { opacity: 0 } 20%,100% { opacity: 1 } }
+.ill-cnv-o0 { animation: ill-cnv-o0 12s linear infinite; }
+@keyframes ill-cnv-o1 { 0%,34% { opacity: 0 } 38%,100% { opacity: 1 } }
+.ill-cnv-o1 { animation: ill-cnv-o1 12s linear infinite; }
+@keyframes ill-cnv-o2 { 0%,52% { opacity: 0 } 56%,100% { opacity: 1 } }
+.ill-cnv-o2 { animation: ill-cnv-o2 12s linear infinite; }
+@keyframes ill-cnv-o3 { 0%,70% { opacity: 0 } 74%,100% { opacity: 1 } }
+.ill-cnv-o3 { animation: ill-cnv-o3 12s linear infinite; }
+@keyframes ill-cnv-all { 0% { opacity: 0 } 4%,94% { opacity: 1 } 100% { opacity: 0 } }
+.ill-cnv-all { animation: ill-cnv-all 12s linear infinite; }
+.ill-cnv-dash { stroke-dasharray: 6 5; }
+</style>
+<g class="ill-cnv-all">
+<rect class="k-thin" x="60" y="60" width="52" height="52"/><text x="81" y="92">1</text><rect class="k-thin" x="112" y="60" width="52" height="52"/><text x="133" y="92">2</text><rect class="k-thin" x="164" y="60" width="52" height="52"/><text x="185" y="92">3</text><rect class="k-thin" x="60" y="112" width="52" height="52"/><text x="81" y="144">4</text><rect class="k-thin" x="112" y="112" width="52" height="52"/><text x="133" y="144">5</text><rect class="k-thin" x="164" y="112" width="52" height="52"/><text x="185" y="144">6</text><rect class="k-thin" x="60" y="164" width="52" height="52"/><text x="81" y="196">7</text><rect class="k-thin" x="112" y="164" width="52" height="52"/><text x="133" y="196">8</text><rect class="k-thin" x="164" y="164" width="52" height="52"/><text x="185" y="196">9</text><rect class="k-accent-line ill-cnv-win" x="60" y="60" width="104" height="104" fill="none" stroke-width="4"/><text class="k-label" x="250" y="140">∗ [1 1; 1 1] →</text><g class="ill-cnv-o0"><rect class="k-soft" x="400" y="86" width="52" height="52"/><rect class="k-thin" x="400" y="86" width="52" height="52"/><text class="k-label" x="416" y="118">12</text></g><g class="ill-cnv-o1"><rect class="k-soft" x="452" y="86" width="52" height="52"/><rect class="k-thin" x="452" y="86" width="52" height="52"/><text class="k-label" x="468" y="118">16</text></g><g class="ill-cnv-o2"><rect class="k-soft" x="400" y="138" width="52" height="52"/><rect class="k-thin" x="400" y="138" width="52" height="52"/><text class="k-label" x="416" y="170">24</text></g><g class="ill-cnv-o3"><rect class="k-soft" x="452" y="138" width="52" height="52"/><rect class="k-thin" x="452" y="138" width="52" height="52"/><text class="k-label" x="468" y="170">28</text></g>
+</g>
+</svg>

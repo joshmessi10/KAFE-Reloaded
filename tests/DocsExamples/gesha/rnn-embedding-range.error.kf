@@ -1,0 +1,4 @@
+import gesha;
+
+GESHA words = gesha.embedding(5, 3, 7);
+show(words.forward([2, 9]));

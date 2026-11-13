@@ -1,30 +1,30 @@
-# GESHA teaching contracts and evidence
+# GESHA: contratos de enseñanza y evidencia
 
-The Tutor's reviewed GESHA contracts distinguish intended KAFE calls from Python backend implementation details. The pinned runtime surface contains **56 wrapper functions and five compatibility activation aliases**. Reviewed object contracts cover model/layer operations, safe numerical properties and explicit backend-only boundaries. Function names appearing in Python imports do not automatically become supported learner APIs.
+Los contratos revisados de GESHA que usa el Tutor separan las llamadas previstas de KAFE de los detalles de implementación del backend de Python. La superficie del runtime fijado tiene **56 funciones y cinco alias de compatibilidad para activaciones**. Los contratos de objetos revisados cubren las operaciones de modelos y capas, las propiedades numéricas seguras y los límites explícitos que solo existen en el backend. Que un nombre de función aparezca en un import de Python no lo convierte en una API soportada para el estudiante.
 
-## Choose a learning topic
+## Elige un tema { #topics }
 
-| Topic | Reviewed scope |
+| Tema | Alcance revisado |
 |---|---|
-| [Models and training](models-training.md) | Sequential/Functional assembly, positional compile/fit, validation, prediction, metrics, summaries and weights. |
-| [Dense networks](dense-networks.md) | Perceptrons, MLPs, activation/output/loss choices, gradient properties and legacy aliases. |
-| [Convolution](convolutional-networks.md) | Conv1D/Conv2D/depthwise/transposed convolution, pooling, CHW shapes, transforms and normalization limits. |
-| [Sequences](recurrent-networks.md) | SimpleRNN/LSTM/GRU, bidirectional outputs, embeddings and batched prediction. |
-| [Training tools](training-tools.md) | Initializers, regularizers, callbacks, tensor lists and isolated parameter serialization. |
-| [Soft clustering](soft-clustering.md) | Empty-target experimental training and the interpretation of arbitrary cluster IDs. |
+| [Modelos y entrenamiento](models-training.md) | Armado Sequential/Functional, compile/fit por posición, validación, predicción, métricas, resúmenes y pesos. |
+| [Redes densas](dense-networks.md) | Perceptrones, MLP, elección de activación/salida/pérdida, propiedades de gradientes y alias antiguos. |
+| [Convolución](convolutional-networks.md) | Conv1D/Conv2D/depthwise/transpuesta, pooling, formas CHW, transformaciones y límites de normalización. |
+| [Secuencias](recurrent-networks.md) | SimpleRNN/LSTM/GRU, salidas bidireccionales, embeddings y predicción por lotes. |
+| [Herramientas de entrenamiento](training-tools.md) | Inicializadores, regularizadores, callbacks, listas tensor y guardado aislado de parámetros. |
+| [Clustering suave](soft-clustering.md) | Entrenamiento experimental con respuestas vacías e interpretación de números de grupo arbitrarios. |
 
-## What support means
+## Qué significa "soportado" { #support }
 
-A supported contract describes an available intended KAFE operation with reviewed usage evidence. Limited contracts identify restrictions such as prediction rank, Python-only training-history values or incomplete weight serialization. Functional graph construction remains experimental beyond its reviewed single-input branch-and-merge example. Compatibility aliases remain usable while canonical names are preferred. Unsupported contracts explain real backend boundaries rather than encourage invented KAFE APIs.
+Un contrato **soportado** describe una operación prevista de KAFE, disponible, con evidencia de uso revisada. Un contrato **limitado** marca restricciones, como la forma de lo que se predice, valores del historial de entrenamiento que solo existen en Python o un guardado de pesos incompleto. La construcción de grafos Functional sigue siendo experimental más allá de su ejemplo revisado de una entrada con una rama que se une. Los alias de compatibilidad siguen funcionando, aunque se prefieren los nombres canónicos. Los contratos **no soportados** explican límites reales del backend en vez de animar a inventar APIs de KAFE.
 
-The L1L2 factory is a known unavailable GESHA binding in runtime 0.4.0, even though its Python penalty implementation exists. Direct mixed INT/FLOAT ReLU outputs, raw parameter handles and `len(List[GESHA])` have additional DSL restrictions. The individual topic pages give supported alternatives and negative-case evidence.
+El constructor L1L2 es un enlace GESHA conocido como no disponible en el runtime 0.4.0, aunque su castigo exista en Python. Las salidas ReLU directas que mezclan INT y FLOAT, los manejadores crudos de parámetros y `len(List[GESHA])` tienen restricciones adicionales del lenguaje. Cada página de tema da alternativas soportadas y evidencia de los casos negativos.
 
-## Bounded runnable evidence
+## Evidencia ejecutable acotada { #evidence }
 
-Small seeded fixtures under `tests/TutorLibraries/gesha-*.kf` exercise every usable wrapper and all five activation aliases through actual KAFE calls. The unavailable L1L2 factory has an explicit expected-error fixture. The grouped positive cases cover constructors, numerical dimensions, a short training/early-stopping workflow and property inspection. Negative cases also record unsupported dictionary history, parameter handles, lazy weight loading, multiple Functional inputs and an unbatched recurrent sample.
+Pequeños fixtures con semilla en `tests/TutorLibraries/gesha-*.kf` ejercitan cada función utilizable y los cinco alias de activación con llamadas reales de KAFE. El constructor L1L2 no disponible tiene un fixture de error esperado. Los casos positivos agrupados cubren constructores, dimensiones numéricas, un entrenamiento corto con parada temprana e inspección de propiedades. Los casos negativos también registran el historial como diccionario (no soportado), los manejadores de parámetros, la carga perezosa de pesos, las entradas múltiples en Functional y una muestra recurrente sin lote.
 
-The weight/checkpoint fixture is isolated-only because it writes a local JSON parameter file. It is staged into a disposable runtime during validation. Ordinary Tutor reference lookup does not execute code or grant access to learner files.
+El fixture de pesos y checkpoints es solo aislado porque escribe un archivo JSON local de parámetros. Durante la validación se ejecuta en un runtime descartable. La consulta común de referencias del Tutor no ejecuta código ni da acceso a los archivos del estudiante.
 
-Strict parsing through the end of each program, exact outputs/exit codes and repeated seeded runs establish bounded fixture behavior. Separate Python backend tests check further numerical/gradient properties. Neither evidence source proves arbitrary architecture combinations, learning efficacy, calibrated probabilities or a current learner execution. The Tutor should explain that distinction and use the exact contract for the requested API.
+Analizar cada programa hasta el final, comparar salidas y códigos de salida exactos y repetir ejecuciones con semilla establece el comportamiento acotado de los fixtures. Otras pruebas del backend de Python revisan más propiedades numéricas y de gradientes. Ninguna de las dos fuentes de evidencia prueba combinaciones arbitrarias de arquitecturas, que el aprendizaje funcione, probabilidades calibradas ni una ejecución actual del estudiante. El Tutor debe explicar esa diferencia y usar el contrato exacto de la API pedida.
 
-[Back to Gesha overview](../gesha.md)
+[Volver al resumen de GESHA](../gesha.md)

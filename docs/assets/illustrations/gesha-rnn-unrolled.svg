@@ -1,0 +1,24 @@
+<svg viewBox="0 0 600 270" role="img" aria-labelledby="ill-rnn-t ill-rnn-d" xmlns="http://www.w3.org/2000/svg">
+<title id="ill-rnn-t">La red recurrente lee paso a paso y recuerda / The recurrent network reads step by step and remembers</title>
+<desc id="ill-rnn-d">Three copies of the same RNN cell side by side, one per time step. The values 0.1, 0.2 and 0.3 enter one at a time from below. After each step the cell passes its memory, the hidden state h, to the right. After the third step the final memory goes up to the output, which says the series is rising.</desc>
+<style>
+@keyframes ill-rnn-x0 { 0%,8% { opacity: 0 } 14%,100% { opacity: 1 } }
+.ill-rnn-x0 { animation: ill-rnn-x0 12s linear infinite; }
+@keyframes ill-rnn-h0 { 0%,14% { opacity: 0 } 20%,100% { opacity: 1 } }
+.ill-rnn-h0 { animation: ill-rnn-h0 12s linear infinite; }
+@keyframes ill-rnn-x1 { 0%,30% { opacity: 0 } 36%,100% { opacity: 1 } }
+.ill-rnn-x1 { animation: ill-rnn-x1 12s linear infinite; }
+@keyframes ill-rnn-h1 { 0%,36% { opacity: 0 } 42%,100% { opacity: 1 } }
+.ill-rnn-h1 { animation: ill-rnn-h1 12s linear infinite; }
+@keyframes ill-rnn-x2 { 0%,52% { opacity: 0 } 58%,100% { opacity: 1 } }
+.ill-rnn-x2 { animation: ill-rnn-x2 12s linear infinite; }
+@keyframes ill-rnn-h2 { 0%,58% { opacity: 0 } 64%,100% { opacity: 1 } }
+.ill-rnn-h2 { animation: ill-rnn-h2 12s linear infinite; }
+@keyframes ill-rnn-all { 0% { opacity: 0 } 4%,94% { opacity: 1 } 100% { opacity: 0 } }
+.ill-rnn-all { animation: ill-rnn-all 12s linear infinite; }
+.ill-rnn-dash { stroke-dasharray: 6 5; }
+</style>
+<g class="ill-rnn-all">
+<g class="ill-rnn-x0"><circle class="k-thin" cx="110" cy="220" r="22"/><text x="98" y="226">0.1</text><path class="k-line" d="M110 198 V160"/></g><rect class="k-soft" x="70" y="100" width="80" height="60" rx="12"/><rect class="k-thin" x="70" y="100" width="80" height="60" rx="12"/><text class="k-label" x="100" y="136">RNN</text><g class="ill-rnn-h0"><text class="k-label" x="154" y="118">h₁</text><path class="k-accent-line" d="M150 130 H230"/><path class="k-accent-line" d="M220 122 L230 130 L220 138"/></g><text x="104" y="250">t=1</text><g class="ill-rnn-x1"><circle class="k-thin" cx="270" cy="220" r="22"/><text x="258" y="226">0.2</text><path class="k-line" d="M270 198 V160"/></g><rect class="k-soft" x="230" y="100" width="80" height="60" rx="12"/><rect class="k-thin" x="230" y="100" width="80" height="60" rx="12"/><text class="k-label" x="260" y="136">RNN</text><g class="ill-rnn-h1"><text class="k-label" x="314" y="118">h₂</text><path class="k-accent-line" d="M310 130 H390"/><path class="k-accent-line" d="M380 122 L390 130 L380 138"/></g><text x="264" y="250">t=2</text><g class="ill-rnn-x2"><circle class="k-thin" cx="430" cy="220" r="22"/><text x="418" y="226">0.3</text><path class="k-line" d="M430 198 V160"/></g><rect class="k-soft" x="390" y="100" width="80" height="60" rx="12"/><rect class="k-thin" x="390" y="100" width="80" height="60" rx="12"/><text class="k-label" x="420" y="136">RNN</text><g class="ill-rnn-h2"><text class="k-label" x="474" y="118">h₃</text><path class="k-accent-line" d="M430 100 V50"/><text class="k-label" x="390" y="40">↑ ŷ = 1</text></g><text x="424" y="250">t=3</text><text class="k-label" x="40" y="80">W</text>
+</g>
+</svg>

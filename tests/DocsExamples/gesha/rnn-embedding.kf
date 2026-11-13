@@ -1,0 +1,6 @@
+import gesha;
+
+GESHA words = gesha.embedding(5, 3, 7);
+List[List[FLOAT]] vectors = words.forward([2, 4, 2]);
+show([len(vectors), len(vectors[0])]);
+show(vectors[0] == vectors[2]);
